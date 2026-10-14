@@ -49,3 +49,5 @@ pub mod bell_chsh_witness;
 pub mod cft_energy_ladder;
 pub mod heat_compress_qat;
 pub mod elastic_sheaf_ops;
+pub mod tri_silicon_affinity;
+pub mod relativistic_horizon_hud;

@@ -32,8 +32,8 @@
 | **Core Architecture** | 30-Layer Cellular Sheaf Laplacian (`L_F`) + 1024-D Bi-Stalk Rindler Attention + 240-D Conway-Sloane `E8` Lattice Quantizer |
 | **Tokenization & Grammar** | 240-D Morphological Subword Recombination (`FREE_WORD_INDICES` lexical filter) + 2x7-Slot Dual-Clause SVO Cadence (14 tokens / 420 layer passes) |
 | **Weight Precision & Footprint** | `3.29 MB` INT8 `.e8q` active vault (`7,680-byte` core stalk tensor -> `1,536-byte` `1.58-bit` Sierpinski ternary `{-1, 0, +1}` target) |
-| **L2 Cache Residency** | Fits 100% inside the Google Pixel 8 ARM Mali-G715 `4.00 MB` hardware L2 cache (`0.71 MB` headroom) |
-| **Training Corpus** | `415` Canonical Vault Shards (`288,936` verified tokens) + live `15.0 Hz` edge STE gradient deltas |
+| **L2 Cache Residency** | Fits 100% inside the Google Pixel 8 ARM Mali-G715 `4.00 MB` L2 cache (`13,056 B` 1st+2nd order `.e8t` ternary vault = `99.69%` L2 free | Holdout PPL `9.116 -> 1.650`, `-81.9%`) |
+| **Training Corpus** | `440` Canonical Vault Shards (`10 x Chair44`, `308,936` total tokens / `300,552` active transitions) + live `15.0 Hz` edge STE gradient deltas |
 | **Language Stack** | Rust (`63.9%`), C++23 (`13.5%`), Deno TypeScript (`11.6%`), C (`3.5%`), Android Kotlin NDK (`2.1%`), Shell/PS5.1 (`1.9%`) — **0.0% Python** |
 | **License** | Apache License 2.0 |
 

@@ -1,0 +1,38 @@
+#version 450 core
+layout(local_size_x = 240, local_size_y = 1, local_size_z = 1) in;
+
+layout(std430, binding = 0) readonly buffer InputStalk {
+    float in_stalk[256];
+};
+
+layout(std430, binding = 1) readonly buffer QuantizedWeights {
+    int w_packed[1920];
+};
+
+layout(std430, binding = 2) writeonly buffer OutputLogits {
+    float out_logits[240];
+};
+
+void main() {
+    uint v = gl_GlobalInvocationID.x;
+    if (v >= 240) return;
+
+    float acc = 0.0;
+    uint layer_idx = v % 30;
+    uint row_base = (layer_idx * 256) / 4;
+
+    for (uint i = 0; i < 2; ++i) {
+        int packed_w = w_packed[row_base + i];
+        int w0 = (packed_w << 24) >> 24;
+        int w1 = (packed_w << 16) >> 24;
+        int w2 = (packed_w << 8)  >> 24;
+        int w3 = (packed_w)       >> 24;
+
+        acc += in_stalk[i * 4 + 0] * float(w0);
+        acc += in_stalk[i * 4 + 1] * float(w1);
+        acc += in_stalk[i * 4 + 2] * float(w2);
+        acc += in_stalk[i * 4 + 3] * float(w3);
+    }
+
+    out_logits[v] = acc * 12.0 + 140.0;
+}

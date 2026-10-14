@@ -1,0 +1,16 @@
+{
+  "version": "30.0.0",
+  "carrier_hz": 15.0,
+  "clock_delta_ms": 62.636,
+  "sheaf_h1_target": 0.0,
+  "majorana_parity_lock": 1.000000,
+  "landauer_floor_joules": 1.4411,
+  "memory_ring_size": 67108864,
+  "rebar_slot_sensor": 50,
+  "propositions": [
+    "P1: Conway-Sloane E8 Construction B lattice quantizer bounds error to <= 0.548530",
+    "P2: Artin Braid crossings sigma_i sigma_j = sigma_j sigma_i commute concurrently for |i - j| >= 2",
+    "P3: Live host silicon telemetry provides non-synthetic thermodynamic entropy for SH-3 latent bias",
+    "P4: Tr(U_res) = 1.000000 strict Majorana-1 parity lock prevents topological phase decoherence"
+  ]
+}

@@ -1,0 +1,27 @@
+# Rust / Cargo build caches
+/01_l0_core/target/
+**/target/
+**/*.rs.bk
+
+# Node / Deno / Vite build artifacts
+/05_hud_webgpu/node_modules/
+/05_hud_webgpu/dist/
+**/node_modules/
+**/dist/
+
+# C++23 / MSVC intermediate compilation artifacts
+**/*.obj
+**/*.pdb
+**/*.exp
+**/*.ilk
+
+# OS & Editor temporary files
+.DS_Store
+Thumbs.db
+*.tmp
+*.bak
+*.log
+
+# Explicitly track Sovereign .e8q checkpoints & vault manifests
+!03_weights_e8/*.e8q
+!03_weights_e8/*.json

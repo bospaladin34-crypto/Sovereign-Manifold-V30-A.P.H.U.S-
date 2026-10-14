@@ -1,6 +1,6 @@
 $ErrorActionPreference="Stop";
 Write-Host "=========================================================================" -ForegroundColor Cyan;
-Write-Host "   ACT-OMEGA NET v31.0 — TRI-SILICON PRODUCTION CERTIFICATION SUITE      " -ForegroundColor Cyan;
+Write-Host "   ACT-OMEGA NET v31.0 -- TRI-SILICON PRODUCTION CERTIFICATION SUITE     " -ForegroundColor Cyan;
 Write-Host "=========================================================================" -ForegroundColor Cyan;
 $dirs=@("00_control","01_l0_rust","02_gateway_deno","03_vault","04_edge_silicon","05_hud_cockpit");
 foreach($d in $dirs){

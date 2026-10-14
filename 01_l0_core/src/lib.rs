@@ -39,3 +39,6 @@ pub mod conversational_bpe;
 pub mod sierpinski_158_quantizer;
 pub mod ab_plaquette_coincidence;
 pub mod hyperbolic_eraser_cavity;
+pub mod chair44_automorphism;
+pub mod stomachion_router;
+pub mod tangram_penrose_field;

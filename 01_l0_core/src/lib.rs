@@ -45,3 +45,7 @@ pub mod tangram_penrose_field;
 pub mod chromatic_triality_sheaf;
 pub mod braid_polyglot_ir;
 pub mod modular_braid_sl2z;
+pub mod bell_chsh_witness;
+pub mod cft_energy_ladder;
+pub mod heat_compress_qat;
+pub mod elastic_sheaf_ops;

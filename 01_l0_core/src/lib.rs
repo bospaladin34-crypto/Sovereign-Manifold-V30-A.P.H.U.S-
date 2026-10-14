@@ -38,3 +38,4 @@ pub mod conversational_bpe;
 
 pub mod sierpinski_158_quantizer;
 pub mod ab_plaquette_coincidence;
+pub mod hyperbolic_eraser_cavity;

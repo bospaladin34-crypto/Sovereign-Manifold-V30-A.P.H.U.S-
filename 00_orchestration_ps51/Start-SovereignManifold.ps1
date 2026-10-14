@@ -12,7 +12,7 @@ $devList = (& adb devices);
 if ($devList -match "58170DLCR0004V") {
     & adb -s 58170DLCR0004V reverse tcp:8097 tcp:8097;
     & adb -s 58170DLCR0004V reverse tcp:8098 tcp:8098;
-    & adb -s 58170DLCR0004V reverse tcp:8099 tcp:8099;
+    & adb -s 58170DLCR0004V reverse tcp:8099 tcp:8099; & adb -s 58170DLCR0004V push "$root\03_weights_e8\sierpinski_158_manifold.e8t" "/data/local/tmp/sierpinski_158_manifold.e8t" | Out-Null;
     Write-Host "  Pixel 10 (Tensor G5) : Tunnels Armed (8097, 8098, 8099)" -ForegroundColor Green;
     & adb -s 58170DLCR0004V shell "nohup sh /sdcard/act_omega/p2p_shard_daemon.sh > /sdcard/act_omega/daemon.log 2>&1 &";
 } else {
@@ -20,7 +20,7 @@ if ($devList -match "58170DLCR0004V") {
 };
 
 if ($devList -match "3A121FDJH00BW5") {
-    & adb -s 3A121FDJH00BW5 reverse tcp:8097 tcp:8097;
+    & adb -s 3A121FDJH00BW5 reverse tcp:8097 tcp:8097; & adb -s 3A121FDJH00BW5 push "$root\03_weights_e8\sierpinski_158_manifold.e8t" "/data/local/tmp/sierpinski_158_manifold.e8t" | Out-Null;
     Write-Host "  Pixel 8 (Tensor G3)  : Tunnel Armed (8097)" -ForegroundColor Green;
     & adb -s 3A121FDJH00BW5 shell "nohup sh /sdcard/act_omega/p2p_shard_daemon.sh > /sdcard/act_omega/daemon.log 2>&1 &";
 } else {

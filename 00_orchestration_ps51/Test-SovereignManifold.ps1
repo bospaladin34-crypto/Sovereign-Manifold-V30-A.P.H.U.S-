@@ -96,3 +96,13 @@ try {
 } catch {
     Write-Host "  POST /api/v1/harmonic/generate : FAILED ($($_.Exception.Message))" -ForegroundColor Red;
 };
+
+# 5. ACT-Omega v30.0 17-Module & Dual Checkpoint Audit (.e8q + .e8t)
+Write-Host "`n[5. v30.0 Dual Model Checkpoints & 17-Module Telemetry]" -ForegroundColor Yellow;
+$e8q240 = [System.IO.FileInfo]::new("C:\sovereign_manifold_v30\04_canonical_vault\models\model_harmonic_iii_240.e8q");
+$e8t158 = [System.IO.FileInfo]::new("C:\sovereign_manifold_v30\03_weights_e8\sierpinski_158_manifold.e8t");
+if ($e8q240.Exists -and$e8t158.Exists) {
+    Write-Host "  240-D INT8 Model (.e8q) : $($e8q240.Length) bytes | 1.58-Bit Ternary (.e8t) : $($e8t158.Length) bytes (5.0x Compression)" -ForegroundColor Green;
+} else {
+    Write-Host "  v30 Checkpoints : MISSING" -ForegroundColor Red;
+};

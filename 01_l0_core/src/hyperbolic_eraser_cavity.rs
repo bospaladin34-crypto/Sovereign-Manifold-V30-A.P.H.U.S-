@@ -146,7 +146,7 @@ pub fn evaluate_dual_clause_quantum_eraser(stalk_energies: &Vec<f32>, prompt_pha
         let mut best_c1_tok: usize = 0;
         let mut best_c1_score: f32 = -1.0e9;
         let mut tok: usize = 0;
-        while tok < VOCAB_SIZE_240 {
+        while tok < 200 {
             let stalk_idx = (tok + slot * 5) % MANIFOLD_STALKS;
             let base_amp = stalk_energies.get(stalk_idx).unwrap_or(&0.0).abs() + 0.1;
             let delta_phi = prompt_phase_rad + (tok as f32) * 0.13089969 + (slot as f32) * 0.44879895;
@@ -175,7 +175,7 @@ pub fn evaluate_dual_clause_quantum_eraser(stalk_energies: &Vec<f32>, prompt_pha
         let mut best_c2_tok: usize = 0;
         let mut best_c2_score: f32 = -1.0e9;
         let mut tok: usize = 0;
-        while tok < VOCAB_SIZE_240 {
+        while tok < 200 {
             let stalk_idx = (tok + (slot2 + SVO_CLAUSE_LEN) * 5) % MANIFOLD_STALKS;
             let base_amp = stalk_energies.get(stalk_idx).unwrap_or(&0.0).abs() + 0.1;
             let delta_phi = prompt_phase_rad + (tok as f32) * 0.13089969 + (slot2 as f32) * 0.44879895;

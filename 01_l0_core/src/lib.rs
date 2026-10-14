@@ -37,3 +37,4 @@ pub mod sheaf_cross_attention;
 pub mod conversational_bpe;
 
 pub mod sierpinski_158_quantizer;
+pub mod ab_plaquette_coincidence;

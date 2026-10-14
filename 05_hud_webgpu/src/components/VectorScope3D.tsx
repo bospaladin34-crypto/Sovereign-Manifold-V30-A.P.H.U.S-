@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { TelemetryData } from "../hooks/useTelemetryStream";
+import { computeHorizonShadowMetrics, computeRelativisticDopplerGain } from "./relativisticBeamingHud";
 
 interface VectorScope3DProps {
   telemetry: TelemetryData;
@@ -23,14 +24,13 @@ const ROOTS_240: Array<[number, number, number]> = (() => {
 export const VectorScope3D: React.FC<VectorScope3DProps> = ({ telemetry }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const telemetryRef = useRef<TelemetryData>(telemetry);
-  const [displayedStalks, setDisplayedStalks] = useState<number[]>([78, 167, 137]);
+  const [displayedStalks, setDisplayedStalks] = useState<number[]>([43, 190, 168]);
+  const horizonMetrics = computeHorizonShadowMetrics(1.0, 0.50);
 
-  // Keep telemetry ref fresh on every incoming packet
   useEffect(() => {
     telemetryRef.current = telemetry;
   }, [telemetry]);
 
-  // Decoupled 60 FPS Render Loop tracking live telemetry in real-time
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -51,12 +51,36 @@ export const VectorScope3D: React.FC<VectorScope3DProps> = ({ telemetry }) => {
       const cx = canvas.width / 2;
       const cy = canvas.height / 2;
 
+      // Track 5: Render Black-Hole Event Horizon Stiction Core (r_s), Photon Ring (r_ph), & Shadow Halo (b_c)
+      const rsPx = 14;
+      const rphPx = rsPx * horizonMetrics.photonRingRadiusRph;
+      const bcPx = rsPx * horizonMetrics.criticalShadowRadiusBc;
+
+      ctx.beginPath();
+      ctx.arc(cx, cy, bcPx, 0, Math.PI * 2);
+      ctx.strokeStyle = "rgba(244, 63, 94, 0.35)";
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.arc(cx, cy, rphPx, 0, Math.PI * 2);
+      ctx.strokeStyle = "rgba(251, 191, 36, 0.55)";
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.arc(cx, cy, rsPx, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(2, 6, 23, 0.96)";
+      ctx.fill();
+      ctx.strokeStyle = "rgba(56, 189, 248, 0.65)";
+      ctx.lineWidth = 1.0;
+      ctx.stroke();
+
       const cosX = Math.cos(angleX);
       const sinX = Math.sin(angleX);
       const cosY = Math.cos(angleY);
       const sinY = Math.sin(angleY);
 
-      // Compute live 3-stalk indices from real-time Pixel 10 telemetry
       const curTelem = telemetryRef.current;
       const bx = curTelem?.b_field_ut?.x ?? 250.0;
       const by = curTelem?.b_field_ut?.y ?? -140.0;
@@ -83,22 +107,33 @@ export const VectorScope3D: React.FC<VectorScope3DProps> = ({ telemetry }) => {
         const px = cx + x1 * scale;
         const py = cy + y2 * scale;
 
-        const isActive = currentStalks.includes(idx);
+        // Track 5 Relativistic Doppler Beaming: I(theta) = I_0 * [gamma * (1 - beta * cos(theta))]^-3
+        const orbitTheta = Math.atan2(z2, x1);
+        const dopplerGain = computeRelativisticDopplerGain(orbitTheta, 0.50);
+        const normBeam = Math.min(Math.max(dopplerGain / 5.2, 0.22), 1.65);
 
+        const isActive = currentStalks.includes(idx);
         if (isActive) {
           ctx.beginPath();
-          ctx.arc(px, py, 8, 0, Math.PI * 2);
-          ctx.fillStyle = "rgba(52, 211, 153, 0.4)";
+          ctx.arc(px, py, 8.5 * normBeam, 0, Math.PI * 2);
+          ctx.fillStyle = "rgba(52, 211, 153, 0.45)";
           ctx.fill();
 
           ctx.beginPath();
-          ctx.arc(px, py, 5, 0, Math.PI * 2);
+          ctx.arc(px, py, 5.0 * normBeam, 0, Math.PI * 2);
           ctx.fillStyle = "#10b981";
           ctx.fill();
         } else {
           ctx.beginPath();
-          ctx.arc(px, py, 2, 0, Math.PI * 2);
-          ctx.fillStyle = "#6366f1";
+          ctx.arc(px, py, 1.8 * normBeam, 0, Math.PI * 2);
+          // Track 11 Out(D4) = S3 Triality Sector Coloring: 112 (8_v) | 64 (8_+) | 64 (8_-)
+          if (idx < 112) {
+            ctx.fillStyle = normBeam > 0.85 ? "#38bdf8" : "#0284c7";
+          } else if (idx < 176) {
+            ctx.fillStyle = normBeam > 0.85 ? "#34d399" : "#059669";
+          } else {
+            ctx.fillStyle = normBeam > 0.85 ? "#a78bfa" : "#6366f1";
+          }
           ctx.fill();
         }
       });
@@ -107,7 +142,6 @@ export const VectorScope3D: React.FC<VectorScope3DProps> = ({ telemetry }) => {
     };
 
     render();
-
     return () => {
       cancelAnimationFrame(animId);
     };
@@ -124,14 +158,14 @@ export const VectorScope3D: React.FC<VectorScope3DProps> = ({ telemetry }) => {
     }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
         <div style={{ fontSize: 12, fontWeight: 700, color: "#38bdf8", letterSpacing: 0.8 }}>
-          3D TOPOLOGICAL VECTOR SCOPE (60 FPS DECOUPLED)
+          3D TOPOLOGICAL VECTOR SCOPE (60 FPS | EVENT HORIZON &amp; 27x DOPPLER BEAMING)
         </div>
         <div style={{ fontSize: 10, color: "#10b981", fontFamily: "monospace", fontWeight: 700 }}>
-          Active Stalks: [{displayedStalks.join(", ")}]
+          Attractor Stalks: [{displayedStalks.join(", ")}] | b_c={horizonMetrics.criticalShadowRadiusBc.toFixed(3)}r_s
         </div>
       </div>
-      <div style={{ fontSize: 11, color: "#64748b", marginBottom: 8 }}>
-        Gosset E8 Polytope (240 Roots) & 1024 Compound Pairs
+      <div style={{ fontSize: 11, color: "#94a3b8", marginBottom: 8 }}>
+        Gosset E8 Triality: 112 Vector (8_v Cyan) + 64 Spinor (8_+ Emerald) + 64 Spinor (8_- Violet) | Sierpinski 240/960
       </div>
       <div style={{ display: "flex", justifyContent: "center" }}>
         <canvas
@@ -139,7 +173,7 @@ export const VectorScope3D: React.FC<VectorScope3DProps> = ({ telemetry }) => {
           width={480}
           height={280}
           style={{
-            background: "rgba(5, 8, 20, 0.8)",
+            background: "rgba(5, 8, 20, 0.85)",
             borderRadius: 8,
             border: "1px solid rgba(56, 189, 248, 0.15)"
           }}

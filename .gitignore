@@ -3,11 +3,25 @@
 **/target/
 **/*.rs.bk
 
+# Android Gradle / CMake NDK intermediate build caches
+/02_edge_android/.cxx/
+/02_edge_android/.gradle/
+/02_edge_android/build/
+/02_edge_android/app/build/
+**/build/
+**/.cxx/
+**/.gradle/
+local.properties
+
 # Node / Deno / Vite build artifacts
 /05_hud_webgpu/node_modules/
 /05_hud_webgpu/dist/
 **/node_modules/
 **/dist/
+
+# 64MB Runtime Memory-Mapped Ring Dump (regenerated at runtime)
+/04_canonical_vault/hyper_manifold_e8.dat
+**/*.dat
 
 # C++23 / MSVC intermediate compilation artifacts
 **/*.obj
@@ -22,6 +36,7 @@ Thumbs.db
 *.bak
 *.log
 
-# Explicitly track Sovereign .e8q checkpoints & vault manifests
+# Explicitly track Sovereign .e8q checkpoints, shards, & vault manifests
 !03_weights_e8/*.e8q
 !03_weights_e8/*.json
+!01_l0_core/shards/*.bin

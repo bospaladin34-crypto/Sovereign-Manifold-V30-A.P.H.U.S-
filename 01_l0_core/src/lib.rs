@@ -42,3 +42,6 @@ pub mod hyperbolic_eraser_cavity;
 pub mod chair44_automorphism;
 pub mod stomachion_router;
 pub mod tangram_penrose_field;
+pub mod chromatic_triality_sheaf;
+pub mod braid_polyglot_ir;
+pub mod modular_braid_sl2z;

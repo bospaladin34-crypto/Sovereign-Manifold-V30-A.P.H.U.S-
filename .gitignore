@@ -40,3 +40,5 @@ Thumbs.db
 !03_weights_e8/*.e8q
 !03_weights_e8/*.json
 !01_l0_core/shards/*.bin
+
+!03_weights_e8/*.e8t

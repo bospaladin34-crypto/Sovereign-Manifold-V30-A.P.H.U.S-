@@ -1,4 +1,4 @@
-﻿pub mod bi_stalk_attention_1024;
+pub mod bi_stalk_attention_1024;
 pub mod rebar_slot;
 pub mod host_telemetry;
 pub mod e8_lattice;
@@ -35,3 +35,5 @@ pub mod dual_shell_head;
 pub mod sheaf_cross_attention;
 
 pub mod conversational_bpe;
+
+pub mod sierpinski_158_quantizer;

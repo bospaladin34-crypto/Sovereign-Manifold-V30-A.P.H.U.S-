@@ -1,0 +1,5 @@
+{
+  "tasks": {
+    "dev": "deno run -A --node-modules-dir npm:vite --port 5173 --host"
+  }
+}

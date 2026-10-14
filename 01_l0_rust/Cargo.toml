@@ -1,0 +1,33 @@
+[package]
+name = "act_omega_l0_core"
+version = "30.0.0"
+edition = "2021"
+authors = ["Sovereign Manifold Team"]
+description = "ACT-Omega v30.0 Deterministic Topological Compute Core"
+
+[dependencies]
+bytemuck = { version = "1.18", features = ["derive"] }
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+path = "src/lib.rs"
+
+[[bin]]
+name = "test_v30_host"
+path = "src/bin/test_v30_host.rs"
+
+[[bin]]
+name = "test_sh3_30l"
+path = "src/bin/test_sh3_30l.rs"
+
+[[bin]]
+name = "test_e8_table_gemv"
+path = "src/bin/test_e8_table_gemv.rs"
+
+[[bin]]
+name = "test_qat_kernel"
+path = "src/bin/test_qat_kernel.rs"
+
+[[bin]]
+name = "test_shard_training"
+path = "src/bin/test_shard_training.rs"

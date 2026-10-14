@@ -1,0 +1,9 @@
+01_l0_rust/target/
+05_hud_cockpit/node_modules/
+05_hud_cockpit/dist/
+04_edge_silicon/pixel10_ndk_app/.gradle/
+04_edge_silicon/pixel10_ndk_app/build/
+04_edge_silicon/pixel10_ndk_app/app/build/
+04_edge_silicon/pixel10_ndk_app/local.properties
+*.log
+*.tmp

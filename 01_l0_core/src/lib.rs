@@ -52,3 +52,4 @@ pub mod elastic_sheaf_ops;
 pub mod tri_silicon_affinity;
 pub mod relativistic_horizon_hud;
 pub mod tgnn_unified_pipeline;
+pub mod sheaf_context_tensor;

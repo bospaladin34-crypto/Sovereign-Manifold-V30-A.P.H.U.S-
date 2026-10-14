@@ -162,3 +162,10 @@ Java_com_actomega_manifold_HarmonicInferenceEngine_inferWithCompoundBiStalk(
 }
 
 } // extern "C"
+
+#include "sierpinski_stomachion_v30.hpp"
+
+extern "C" JNIEXPORT jint JNICALL
+Java_com_actomega_manifold_SierpinskiV30Bridge_getCutlerStomachionConfig(JNIEnv* /*env*/, jobject /*thiz*/, jlong windowId, jfloat bNormUt) {
+    return static_cast<jint>(act_omega_v30::select_cutler_stomachion_config(static_cast<uint64_t>(windowId), bNormUt));
+}

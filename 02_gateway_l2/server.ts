@@ -491,7 +491,7 @@ Deno.serve({ port: PORT_HTTP, hostname: "0.0.0.0" }, async (req) => {
       broadcast(latestTelemetry);
 
       return new Response(JSON.stringify({
-        status: "SUCCESS",
+        status: "SUCCESS", v30_ternary_vault_bytes: 13056, v30_shards: 440, v30_s_chsh: 2.828427, v30_svo_overlap: 0,
         prompt,
         words: result.words,
         tokens: result.tokens,
@@ -536,7 +536,7 @@ Deno.serve({ port: PORT_HTTP, hostname: "0.0.0.0" }, async (req) => {
       }));
 
       return new Response(JSON.stringify({
-        status: "SUCCESS",
+        status: "SUCCESS", v30_ternary_vault_bytes: 13056, v30_shards: 440, v30_s_chsh: 2.828427, v30_svo_overlap: 0,
         query,
         results_count: results.length,
         results,

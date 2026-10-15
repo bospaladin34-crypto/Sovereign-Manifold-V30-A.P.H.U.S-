@@ -101,7 +101,7 @@ export function App() {
         {/* Tri-Silicon Cluster Status Bar */}
         <div style={{
           display: "grid",
-          gridTemplateColumns: "repeat(3, 1fr)",
+          gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
           gap: 12,
           marginBottom: 16
         }}>
@@ -144,7 +144,7 @@ export function App() {
         <TelemetryHud telemetry={telemetry} connected={connected} />
 
         {/* 3D Scope & Oscilloscope Grid */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 16, marginBottom: 16 }}>
           <SafeComponent fallbackTitle="3D E8 Vector Scope">
             <VectorScope3D telemetry={telemetry} />
           </SafeComponent>

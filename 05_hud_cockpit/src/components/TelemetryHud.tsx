@@ -60,7 +60,7 @@ export function TelemetryHud({ telemetry, connected }: TelemetryHudProps) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 16 }}>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 12 }}>
         <div style={cStyle}>
           <div style={lStyle}>CARRIER PHASE LOCK</div>
           <div style={{ ...vStyle, color: connected ? "#34d399" : "#f87171" }}>15.00 Hz LOCKED</div>
@@ -83,11 +83,11 @@ export function TelemetryHud({ telemetry, connected }: TelemetryHudProps) {
         </div>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 12 }}>
         <div style={cStyle}>
           <div style={lStyle}>SIERPINSKI 1.58-BIT & MALI L2</div>
           <div style={vStyle}>13,056 B .e8t + 35,712 B .e8z</div>
-          <div style={{ ...sStyle, color: "#34d399" }}>PIXEL 8 MALI L2 FREE: 98.99% (Headless)</div>
+          <div style={{ ...sStyle, color: "#34d399" }}>PIXEL 8 C++23 mlock(48,768B) | L2 FREE: 98.84%</div>
         </div>
         <div style={cStyle}>
           <div style={lStyle}>POLYFORM & BRAID-IR ROUTER</div>
@@ -106,7 +106,7 @@ export function TelemetryHud({ telemetry, connected }: TelemetryHudProps) {
         </div>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 12 }}>
         <div style={{ ...cStyle, border: "1px solid rgba(56, 189, 248, 0.45)" }}>
           <div style={{ ...lStyle, color: "#38bdf8" }}>LEECH 8_v (0..7): FIELD TENSOR</div>
           <div style={vStyle}>{"Baro: " + baro.toFixed(1) + " hPa | Lux: " + lux.toFixed(0) + " lx"}</div>

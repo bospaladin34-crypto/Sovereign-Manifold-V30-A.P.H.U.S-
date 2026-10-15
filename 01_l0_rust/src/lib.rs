@@ -56,3 +56,4 @@ pub mod sheaf_context_tensor;
 pub mod sh4_leech_e8_zigzag;
 pub mod v31_desargues_dehornoy_teleparallel;
 pub mod utcp_v31_ring;
+pub mod uarm_cascade_sh4;

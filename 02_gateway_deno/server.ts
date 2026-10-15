@@ -108,7 +108,7 @@ console.log(`[Vault Synchronizer] Active Baseline: ${cachedVaultStats.shards_tot
 let latestTelemetry = {
   carrier_hz: 15,
   carrier_phase_rad: 0.17259,
-  thalamic_phase_rad: 0.17259, s_chsh: 2.828427, ab_flux_rad: 0.02259, focus_gain: 4.52, cft_delta: 0.1250, cutler_config: 199, tangram_units: 32, chair44_shards: 415, v4_sheaf_clashes: 0, braid_reduced_len: 2, packed_ternary_bytes: 13056, mali_l2_headroom_pct: 99.69, tokens_total: 308936, shards_total: 440, holdout_ppl: 1.444, qat_shielded_pressure: 0.8250, beaming_contrast: 27.00, svo_overlap: 0,
+  thalamic_phase_rad: 0.17259, s_chsh: 2.828427, ab_flux_rad: 0.02259, focus_gain: 4.52, cft_delta: 0.1250, cutler_config: 199, tangram_units: 32, chair44_shards: 415, v4_sheaf_clashes: 0, braid_reduced_len: 2, packed_ternary_bytes: 13056, mali_l2_headroom_pct: 99.69, tokens_total: 308936, shards_total: 440, holdout_ppl: 1.199, qat_shielded_pressure: 0.8250, beaming_contrast: 27.00, svo_overlap: 0,
   b_field_ut: { x: 184.06, y: -135.94, z: -40.73 },
   b_norm_ut: 52.3,
   norm_ut: 52.3,

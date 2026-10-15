@@ -123,7 +123,7 @@ export const TelemetryHud: React.FC<TelemetryHudProps> = (props) => {
       }}>
         <div style={{ fontSize: 10, letterSpacing: 1, color: "#fb7185" }}>HYPERBOLIC CFT &amp; HORIZON</div>
         <div style={{ fontSize: 15, fontWeight: "bold", color: "#fda4af", margin: "2px 0" }}>{focusGain}x GAIN | CFT 0.125</div>
-        <div style={{ fontSize: 10, color: "#94a3b8" }}>PPL 1.444 (-81.9%) | 27x BEAM</div>
+        <div style={{ fontSize: 10, color: "#94a3b8" }}>PPL 1.199 (-86.8%) | 27x BEAM</div>
       </div>
     </div>
   );

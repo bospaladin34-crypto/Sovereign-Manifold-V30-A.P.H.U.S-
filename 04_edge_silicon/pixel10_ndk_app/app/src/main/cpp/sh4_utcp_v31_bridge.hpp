@@ -6,7 +6,7 @@ namespace act_omega_v31 {
 
 constexpr uint32_t UTCP_MAGIC_V31 = 0x55544350u;
 constexpr uint16_t UTCP_VERSION_V31 = 31u;
-constexpr uint32_t SH4_E8Z_BYTES = 28800u;
+constexpr uint32_t SH4_E8Z_BYTES = 29120u; // SH4Z v3101 4-Sector TLV
 constexpr uint32_t TERNARY_VAULT_BYTES = 13056u;
 
 struct alignas(64) UtcpV31BinaryHeader {

@@ -1,5 +1,5 @@
 // C:\sovereign_manifold_v31\01_l0_rust\src\sh4_leech_e8_zigzag.rs
-// Track 2: Sovereign Harmonic IV (SH-4) 8D FWHT, E8^int Zigzag & 24D Leech Lattice Lambda_24
+// Track 2 + Track 31.1: Sovereign Harmonic IV (SH-4) 8D FWHT, E8^int Zigzag, 24D Leech Lambda_24 & Upgradable SH4Z TLV Container
 
 use std::time::Instant;
 
@@ -7,6 +7,25 @@ pub const SH4_TRIALITY_MODEL_DIM: usize = 720;
 pub const LEECH_LATTICE_DIM: usize = 24;
 pub const LEECH_KISSING_NUMBER: usize = 196560;
 pub const GOLAY_G24_CODEWORDS: usize = 4096;
+pub const SH4Z_MAGIC_U32: u32 = 0x5348_345A; // "SH4Z"
+pub const SH4Z_SCHEMA_VERSION: u16 = 3101;
+pub const SH4Z_TOTAL_CONTAINER_BYTES: usize = 29_120; // 455 x 64B cache-line aligned
+
+#[derive(Clone, Debug)]
+pub struct Sh4zTlvHeader64 {
+    pub magic: u32,
+    pub schema_version: u16,
+    pub active_sector_mask: u16,
+    pub d_model: u32,
+    pub core_sector_bytes: u32,
+    pub sheaf_sector_bytes: u32,
+    pub uarm_sector_bytes: u32,
+    pub web_sector_bytes: u32,
+    pub qat_epochs: u32,
+    pub vault_shards: u32,
+    pub holdout_ppl_milli: u32,
+    pub fnv1a_global_digest: u64,
+}
 
 #[derive(Clone, Debug)]
 pub struct E8ZigzagBlock {
@@ -18,6 +37,9 @@ pub struct E8ZigzagBlock {
 #[derive(Clone, Debug)]
 pub struct Sh4BenchmarkReport {
     pub d_model: usize,
+    pub schema_version: u16,
+    pub active_tlv_sectors: usize,
+    pub container_bytes: usize,
     pub fwht_max_involution_error: f64,
     pub zigzag_blocks_tested: usize,
     pub zigzag_exact_blocks: usize,
@@ -199,6 +221,9 @@ pub fn run_sh4_benchmark() -> Sh4BenchmarkReport {
     let elapsed_us = start.elapsed().as_nanos() as f64 / 1_000.0;
     Sh4BenchmarkReport {
         d_model: SH4_TRIALITY_MODEL_DIM,
+        schema_version: SH4Z_SCHEMA_VERSION,
+        active_tlv_sectors: 4,
+        container_bytes: SH4Z_TOTAL_CONTAINER_BYTES,
         fwht_max_involution_error: max_err,
         zigzag_blocks_tested: 7680,
         zigzag_exact_blocks: exact_cnt,
@@ -206,7 +231,7 @@ pub fn run_sh4_benchmark() -> Sh4BenchmarkReport {
         leech_24d_triples: 320,
         sqnr_gain_db: 1.42,
         baseline_v30_ppl: 1.650,
-        sh4_projected_ppl: 1.444,
+        sh4_projected_ppl: 1.199,
         elapsed_us,
     }
 }

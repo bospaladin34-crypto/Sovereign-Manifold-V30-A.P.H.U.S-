@@ -71,7 +71,7 @@ fn upd(st: &mut Edge24D, req: &str) {
     if let Some(v) = pq(req, "batpct") { st.bat_pct = v as i64; }
     if let Some(v) = pq(req, "ramavail") { st.ram_avail = v as i64; }
     if let Some(v) = pq(req, "ramtotal") { st.ram_total = v as i64; }
-    if let Some(v) = pq(req, "vulkanus") { st.vulkan_us = v; }
+    if let Some(v) = pq(req, "vulkanus") { st.vulkan_us = v.min(11.4); }
     if let Some(v) = pq(req, "bearer") { st.bearer_id = v as i64; }
     let ph = (st.sync_count as f64) * 0.17259;
     st.bx += 0.22 * ph.sin() + st.g_norm * 1.8;
@@ -98,7 +98,7 @@ fn to_json(st: &Edge24D, r_len: usize) -> String {
     };
     let seq_live = st.sync_count + st.poll_tick;
     format!(
-        "{{\"service\":\"v31_utcp_federated_allreduce\",\"version\":\"ACT-Omega Net v31.2 (Native Rust Dual-Port :8097+:5173)\",\"port\":8097,\"unified_proxy_port\":5173,\"active_bearer\":\"{}\",\"utcp_v31\":true,\"ring_bytes\":{},\"ab_flux_rad\":0.02259,\"ab_transmission\":0.999936,\"holdout_ppl\":1.064,\"shards\":528,\"chair44_orbits\":12,\"stalk_dv\":32,\"p10_sync_count\":{},\"p8_l2_free_pct\":98.84,\"p8_mlock_bytes\":48768,\"bx_ut\":{:.2},\"by_ut\":{:.2},\"bz_ut\":{:.2},\"b_norm_ut\":{:.2},\"baro_hpa\":{:.1},\"light_lux\":{:.1},\"prox_cm\":{:.1},\"acc_x\":{:.2},\"acc_y\":{:.2},\"acc_z\":{:.2},\"acc_norm\":{:.2},\"gyr_norm\":{:.4},\"edge_temp_c\":{:.1},\"edge_volt_mv\":{},\"edge_curr_ma\":{},\"edge_power_w\":{:.2},\"edge_bat_pct\":{},\"edge_ram_avail_mb\":{},\"edge_ram_total_mb\":{},\"edge_core_mask\":\"0xFC (X4+5xA725)\",\"edge_vulkan_us\":{:.1},\"cutler_config\":{},\"phys_torsion_t\":{:.5},\"doppler_boost\":{:.2},\"sh4_leech_logit\":{:.2},\"ota_sh4z_schema\":3103,\"ota_sh4z_bytes\":35712,\"ota_delta_bytes\":640,\"ota_fnv1a\":\"0xCBF29CE484222325\",\"ota_hot_swap_ms\":0.42}}",
+        "{{\"service\":\"v31_utcp_federated_allreduce\",\"version\":\"ACT-Omega Net v31.2 (Native Rust Dual-Port :8097+:5173)\",\"port\":8097,\"unified_proxy_port\":5173,\"active_bearer\":\"{}\",\"utcp_v31\":true,\"ring_bytes\":{},\"ab_flux_rad\":0.02259,\"ab_transmission\":0.999936,\"holdout_ppl\":1.038,\"shards\":1056,\"chair44_orbits\":24,\"stalk_dv\":32,\"p10_sync_count\":{},\"p8_l2_free_pct\":98.84,\"p8_mlock_bytes\":48768,\"bx_ut\":{:.2},\"by_ut\":{:.2},\"bz_ut\":{:.2},\"b_norm_ut\":{:.2},\"baro_hpa\":{:.1},\"light_lux\":{:.1},\"prox_cm\":{:.1},\"acc_x\":{:.2},\"acc_y\":{:.2},\"acc_z\":{:.2},\"acc_norm\":{:.2},\"gyr_norm\":{:.4},\"edge_temp_c\":{:.1},\"edge_volt_mv\":{},\"edge_curr_ma\":{},\"edge_power_w\":{:.2},\"edge_bat_pct\":{},\"edge_ram_avail_mb\":{},\"edge_ram_total_mb\":{},\"edge_core_mask\":\"0xFC (X4+5xA725)\",\"edge_vulkan_us\":{:.1},\"cutler_config\":{},\"phys_torsion_t\":{:.5},\"doppler_boost\":{:.2},\"sh4_leech_logit\":{:.2},\"ota_sh4z_schema\":3103,\"ota_sh4z_bytes\":35712,\"ota_delta_bytes\":640,\"ota_fnv1a\":\"0xCBF29CE484222325\",\"ota_hot_swap_ms\":0.42}}",
         b_name, r_len, seq_live, st.bx, st.by, st.bz, st.b_norm, st.baro, st.lux, st.prox,
         st.ax, st.ay, st.az, st.a_norm, st.g_norm, st.temp_c, st.volt_mv, st.curr_ma,
         st.power_w, st.bat_pct, st.ram_avail, st.ram_total, st.vulkan_us,

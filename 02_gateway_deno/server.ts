@@ -2,7 +2,7 @@ import { VOCAB_240, FREE_WORD_SET, SVO_SLOT_SETS, tokenizeSubwords240, detokeniz
 
 const PORT_TCP = 8098;
 const PORT_HTTP = 8099;
-const MODEL_PATH = "C:\\sovereign_manifold_v31\\04_canonical_vault\\models\\model_harmonic_iii_240.e8q";
+const MODEL_PATH = "C:\\sovereign_manifold_v31\\03_vault\\models\\model_harmonic_iii_240.e8q";
 
 const TOKEN_PROMPT = 237;
 const TOKEN_RESPONSE = 238;
@@ -61,10 +61,10 @@ interface VaultStats {
 
 function computeVaultStats(): VaultStats {
   const dirs = [
-    "C:\\sovereign_manifold_v31\\04_canonical_vault\\shards",
-    "C:\\sovereign_manifold_v31\\04_canonical_vault\\shards_240",
-    "C:\\sovereign_manifold_v31\\01_l0_core\\shards",
-    "C:\\sovereign_manifold_v31\\01_l0_core\\shards_240",
+    "C:\\sovereign_manifold_v31\\03_vault\\shards_base",
+    "C:\\sovereign_manifold_v31\\03_vault\\shards_240",
+    "C:\\sovereign_manifold_v31\\01_l0_rust\\shards",
+    "C:\\sovereign_manifold_v31\\01_l0_rust\\shards_240",
     "C:\\sovereign_manifold_v31\\shards",
     "C:\\sovereign_manifold_v31\\shards_240",
   ];

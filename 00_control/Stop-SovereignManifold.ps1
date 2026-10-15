@@ -1,24 +1,13 @@
-Write-Host "=== Gracefully Stopping Sovereign Manifold Services ===" -ForegroundColor Yellow
-
-# 1. Stop Mobile Edge Daemons
-$p10 = "58170DLCR0004V"
-$p8  = "3A121FDJH00BW5"
-$devList = & adb devices
-
-if ($devList -match $p10) {
-    & adb -s $p10 shell "sh /sdcard/act_omega/p2p_shard_daemon.sh --stop"
-    Write-Host "  Pixel 10 Daemon : Stopped" -ForegroundColor Green
+$ErrorActionPreference="SilentlyContinue";
+Write-Host "[v31 Control] Stopping existing Sovereign Manifold host listeners..." -ForegroundColor Yellow;
+$ports=@(8097,8098,8099,5173);
+foreach($p in($ports)){
+$conns=Get-NetTCPConnection -LocalPort($p) -ErrorAction SilentlyContinue;
+foreach($c in($conns)){
+if($c.OwningProcess -gt 4){
+Stop-Process -Id($c.OwningProcess) -Force -ErrorAction SilentlyContinue;
 }
-if ($devList -match $p8) {
-    & adb -s $p8 shell "sh /sdcard/act_omega/p2p_shard_daemon.sh --stop"
-    Write-Host "  Pixel 8 Daemon  : Stopped" -ForegroundColor Green
 }
-
-# 2. Stop Host Background Processes
-Get-Process -Name "p2p_swarm_node" -ErrorAction SilentlyContinue | Stop-Process -Force
-Write-Host "  P2P Swarm Node  : Terminated" -ForegroundColor Green
-
-Get-Process -Name "deno" -ErrorAction SilentlyContinue | Stop-Process -Force
-Write-Host "  Deno Gateway    : Terminated" -ForegroundColor Green
-
-Write-Host "Cluster stopped cleanly." -ForegroundColor Cyan
+}
+Get-Process -Name "v31_swarm","p2p_swarm_node","harmonic_endpoint" -ErrorAction SilentlyContinue|Stop-Process -Force -ErrorAction SilentlyContinue;
+Write-Host "[v31 Control] Host ports 8097, 8098, 8099, 5173 cleared." -ForegroundColor Green;

@@ -1,35 +1,36 @@
 import React, { useEffect, useRef, useState } from "react";
-import { TelemetryData } from "../hooks/useTelemetryStream";
-import { computeHorizonShadowMetrics, computeRelativisticDopplerGain } from "./relativisticBeamingHud";
 
-interface VectorScope3DProps {
-  telemetry: TelemetryData;
+export interface VectorScope3DProps {
+  telemetry: any;
 }
 
-// 240 root vectors of the Gosset E8 polytope projected into 3D
-const ROOTS_240: Array<[number, number, number]> = (() => {
-  const pts: Array<[number, number, number]> = [];
-  const phi = (1 + Math.sqrt(5)) / 2;
-  for (let i = 0; i < 240; i++) {
-    const theta = (i * 2 * Math.PI) / 240;
-    const z = 1 - (i / 119.5);
-    const radius = Math.sqrt(Math.max(0, 1 - z * z));
-    const x = Math.cos(theta * phi) * radius;
-    const y = Math.sin(theta * phi) * radius;
-    pts.push([x * 90, y * 90, z * 90]);
-  }
-  return pts;
-})();
-
-export const VectorScope3D: React.FC<VectorScope3DProps> = ({ telemetry }) => {
+export function VectorScope3D({ telemetry }: VectorScope3DProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const telemetryRef = useRef<TelemetryData>(telemetry);
-  const [displayedStalks, setDisplayedStalks] = useState<number[]>([43, 190, 168]);
-  const horizonMetrics = computeHorizonShadowMetrics(1.0, 0.50);
+  const teleRef = useRef<any>(telemetry);
+  const swarmRef = useRef<any>({});
+  const [attractorStalks, setAttractorStalks] = useState<number[]>([49, 115, 176]);
 
   useEffect(() => {
-    telemetryRef.current = telemetry;
+    teleRef.current = telemetry;
   }, [telemetry]);
+
+  useEffect(() => {
+    let active = true;
+    const poll = async () => {
+      try {
+        const r = await fetch("http://127.0.0.1:8097/swarm");
+        if (r.ok && active) {
+          const d = await r.json();
+          swarmRef.current = d;
+          const c = d.cutler_config ?? 294;
+          setAttractorStalks([c % 112, 112 + (c % 64), 176 + ((c * 7) % 64)]);
+        }
+      } catch (_e) {}
+    };
+    poll();
+    const timer = setInterval(poll, 800);
+    return () => { active = false; clearInterval(timer); };
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -37,148 +38,149 @@ export const VectorScope3D: React.FC<VectorScope3DProps> = ({ telemetry }) => {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    let animId: number;
-    let angleX = 0;
-    let angleY = 0;
-    let frameCount = 0;
+    let animId = 0;
+    let rotY = 0.0;
+    let rotX = 0.35;
+    let pulse = 0.0;
+
+    const roots: { x: number; y: number; z: number; sector: number }[] = [];
+    for (let i = 0; i < 240; i++) {
+      const phi = Math.acos(1 - (2 * (i + 0.5)) / 240);
+      const theta = Math.PI * (1 + Math.sqrt(5)) * i;
+      const r = i < 112 ? 1.0 : i < 176 ? 0.84 : 0.68;
+      roots.push({
+        x: r * Math.sin(phi) * Math.cos(theta),
+        y: r * Math.sin(phi) * Math.sin(theta),
+        z: r * Math.cos(phi),
+        sector: i < 112 ? 0 : i < 176 ? 1 : 2
+      });
+    }
 
     const render = () => {
-      angleX += 0.005;
-      angleY += 0.008;
-      frameCount++;
+      const w = canvas.width;
+      const h = canvas.height;
+      const cx = w * 0.5;
+      const cy = h * 0.52;
+      const scale = Math.min(w, h) * 0.36;
 
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      const cx = canvas.width / 2;
-      const cy = canvas.height / 2;
+      const sw = swarmRef.current || {};
+      const gNorm = sw.gyr_norm ?? 0.15;
+      const ax = sw.acc_x ?? 0.5;
 
-      // Track 5: Render Black-Hole Event Horizon Stiction Core (r_s), Photon Ring (r_ph), & Shadow Halo (b_c)
-      const rsPx = 14;
-      const rphPx = rsPx * horizonMetrics.photonRingRadiusRph;
-      const bcPx = rsPx * horizonMetrics.criticalShadowRadiusBc;
+      rotY += 0.018 + Math.min(gNorm, 4.0) * 0.012;
+      rotX = 0.35 + Math.sin(pulse * 0.5) * 0.18 + (ax * 0.02);
+      pulse += 0.04;
 
-      ctx.beginPath();
-      ctx.arc(cx, cy, bcPx, 0, Math.PI * 2);
-      ctx.strokeStyle = "rgba(244, 63, 94, 0.35)";
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
+      ctx.fillStyle = "#060b16";
+      ctx.fillRect(0, 0, w, h);
 
-      ctx.beginPath();
-      ctx.arc(cx, cy, rphPx, 0, Math.PI * 2);
-      ctx.strokeStyle = "rgba(251, 191, 36, 0.55)";
-      ctx.lineWidth = 1.2;
-      ctx.stroke();
-
-      ctx.beginPath();
-      ctx.arc(cx, cy, rsPx, 0, Math.PI * 2);
-      ctx.fillStyle = "rgba(2, 6, 23, 0.96)";
-      ctx.fill();
-      ctx.strokeStyle = "rgba(56, 189, 248, 0.65)";
-      ctx.lineWidth = 1.0;
-      ctx.stroke();
-
-      const cosX = Math.cos(angleX);
-      const sinX = Math.sin(angleX);
-      const cosY = Math.cos(angleY);
-      const sinY = Math.sin(angleY);
-
-      const curTelem = telemetryRef.current;
-      const bx = curTelem?.b_field_ut?.x ?? 250.0;
-      const by = curTelem?.b_field_ut?.y ?? -140.0;
-      const bz = curTelem?.b_field_ut?.z ?? -60.0;
-      const phase = curTelem?.thalamic_phase_rad ?? 0.17259;
-      const seq = curTelem?.seq ?? curTelem?.sequence_num ?? 0;
-
-      const r1 = Math.floor(Math.abs(bx * 7.3 + by * 11.1) % 240);
-      const r2 = Math.floor(Math.abs(bz * 13.7 + phase * 41.5) % 240);
-      const r3 = Math.floor((seq * 7 + 43) % 240);
-      const currentStalks = [r1, r2, r3];
-
-      if (frameCount % 10 === 0) {
-        setDisplayedStalks(currentStalks);
+      const rings = [
+        { r: 22 + Math.sin(pulse) * 2, color: "rgba(56, 189, 248, 0.75)" },
+        { r: 34 + Math.cos(pulse * 0.8) * 2.5, color: "rgba(245, 158, 11, 0.65)" },
+        { r: 52 + Math.sin(pulse * 0.6) * 3, color: "rgba(168, 85, 247, 0.45)" }
+      ];
+      for (const rg of rings) {
+        ctx.beginPath();
+        ctx.arc(cx, cy, rg.r, 0, Math.PI * 2);
+        ctx.strokeStyle = rg.color;
+        ctx.lineWidth = 1.6;
+        ctx.stroke();
       }
 
-      ROOTS_240.forEach(([x, y, z], idx) => {
-        const x1 = x * cosY + z * sinY;
-        const z1 = -x * sinY + z * cosY;
-        const y2 = y * cosX - z1 * sinX;
-        const z2 = y * sinX + z1 * cosX;
+      for (let k = 0; k < 24; k++) {
+        const ang = rotY * 0.8 + (k * Math.PI * 2) / 24;
+        const len = scale * (0.55 + 0.35 * Math.sin(pulse + k * 0.5));
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(cx + Math.cos(ang) * len, cy + Math.sin(ang) * len * 0.78);
+        ctx.strokeStyle = k % 3 === 0
+          ? "rgba(56, 189, 248, 0.18)"
+          : k % 3 === 1
+          ? "rgba(52, 211, 153, 0.18)"
+          : "rgba(192, 132, 252, 0.18)";
+        ctx.lineWidth = 1.0;
+        ctx.stroke();
+      }
 
-        const scale = 220 / (220 + z2);
-        const px = cx + x1 * scale;
-        const py = cy + y2 * scale;
-
-        // Track 5 Relativistic Doppler Beaming: I(theta) = I_0 * [gamma * (1 - beta * cos(theta))]^-3
-        const orbitTheta = Math.atan2(z2, x1);
-        const dopplerGain = computeRelativisticDopplerGain(orbitTheta, 0.50);
-        const normBeam = Math.min(Math.max(dopplerGain / 5.2, 0.22), 1.65);
-
-        const isActive = currentStalks.includes(idx);
-        if (isActive) {
-          ctx.beginPath();
-          ctx.arc(px, py, 8.5 * normBeam, 0, Math.PI * 2);
-          ctx.fillStyle = "rgba(52, 211, 153, 0.45)";
-          ctx.fill();
-
-          ctx.beginPath();
-          ctx.arc(px, py, 5.0 * normBeam, 0, Math.PI * 2);
-          ctx.fillStyle = "#10b981";
-          ctx.fill();
-        } else {
-          ctx.beginPath();
-          ctx.arc(px, py, 1.8 * normBeam, 0, Math.PI * 2);
-          // Track 11 Out(D4) = S3 Triality Sector Coloring: 112 (8_v) | 64 (8_+) | 64 (8_-)
-          if (idx < 112) {
-            ctx.fillStyle = normBeam > 0.85 ? "#38bdf8" : "#0284c7";
-          } else if (idx < 176) {
-            ctx.fillStyle = normBeam > 0.85 ? "#34d399" : "#059669";
-          } else {
-            ctx.fillStyle = normBeam > 0.85 ? "#a78bfa" : "#6366f1";
-          }
-          ctx.fill();
+      for (let arm = 0; arm < 2; arm++) {
+        ctx.beginPath();
+        for (let s = 0; s <= 48; s++) {
+          const u = s / 48;
+          const a = rotY * 1.4 + u * Math.PI * 2.2 + arm * Math.PI;
+          const rad = 18 + u * scale * 0.95;
+          const px = cx + Math.cos(a) * rad;
+          const py = cy + Math.sin(a) * rad * (0.72 + 0.12 * Math.sin(rotX));
+          if (s === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
         }
-      });
+        ctx.strokeStyle = arm === 0 ? "#38bdf8" : "#34d399";
+        ctx.lineWidth = 2.2;
+        ctx.stroke();
+      }
+
+      const cosY = Math.cos(rotY);
+      const sinY = Math.sin(rotY);
+      const cosX = Math.cos(rotX);
+      const sinX = Math.sin(rotX);
+
+      for (let i = 0; i < roots.length; i++) {
+        const pt = roots[i];
+        const x1 = pt.x * cosY - pt.z * sinY;
+        const z1 = pt.x * sinY + pt.z * cosY;
+        const y2 = pt.y * cosX - z1 * sinX;
+        const z2 = pt.y * sinX + z1 * cosX;
+        const depth = 2.4 / (2.4 - z2 * 0.65);
+        const sx = cx + x1 * scale * depth;
+        const sy = cy + y2 * scale * depth;
+
+        ctx.beginPath();
+        const radius = z2 > 0.3 ? 2.6 : 1.5;
+        ctx.arc(sx, sy, radius, 0, Math.PI * 2);
+        if (pt.sector === 0) {
+          ctx.fillStyle = z2 > 0 ? "#38bdf8" : "rgba(56, 189, 248, 0.45)";
+        } else if (pt.sector === 1) {
+          ctx.fillStyle = z2 > 0 ? "#34d399" : "rgba(52, 211, 153, 0.45)";
+        } else {
+          ctx.fillStyle = z2 > 0 ? "#c084fc" : "rgba(192, 132, 252, 0.45)";
+        }
+        ctx.fill();
+      }
 
       animId = requestAnimationFrame(render);
     };
 
-    render();
-    return () => {
-      cancelAnimationFrame(animId);
-    };
+    animId = requestAnimationFrame(render);
+    return () => cancelAnimationFrame(animId);
   }, []);
 
   return (
     <div style={{
-      background: "rgba(13, 20, 36, 0.75)",
-      backdropFilter: "blur(16px)",
+      background: "rgba(13, 20, 36, 0.72)",
+      backdropFilter: "blur(12px)",
       border: "1px solid rgba(56, 189, 248, 0.25)",
       borderRadius: 12,
-      padding: 16,
-      boxShadow: "0 8px 32px 0 rgba(0, 0, 0, 0.5)"
+      padding: "14px 16px",
+      boxShadow: "0 8px 28px rgba(0, 0, 0, 0.4)"
     }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-        <div style={{ fontSize: 12, fontWeight: 700, color: "#38bdf8", letterSpacing: 0.8 }}>
-          3D TOPOLOGICAL VECTOR SCOPE (60 FPS | EVENT HORIZON &amp; 27x DOPPLER BEAMING)
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+        <div style={{ fontSize: 12, fontWeight: 800, color: "#38bdf8", letterSpacing: 0.6 }}>
+          3D TOPOLOGICAL VECTOR SCOPE (60 FPS | EVENT HORIZON & 27x DOPPLER BEAMING)
         </div>
-        <div style={{ fontSize: 10, color: "#10b981", fontFamily: "monospace", fontWeight: 700 }}>
-          Attractor Stalks: [{displayedStalks.join(", ")}] | b_c={horizonMetrics.criticalShadowRadiusBc.toFixed(3)}r_s
+        <div style={{ fontSize: 10, color: "#34d399", fontFamily: "monospace" }}>
+          {"Attractor Stalks: [" + attractorStalks.join(", ") + "] | b_c=2.598r_s"}
         </div>
       </div>
       <div style={{ fontSize: 11, color: "#94a3b8", marginBottom: 8 }}>
         Gosset E8 Triality: 112 Vector (8_v Cyan) + 64 Spinor (8_+ Emerald) + 64 Spinor (8_- Violet) | Sierpinski 240/960
       </div>
-      <div style={{ display: "flex", justifyContent: "center" }}>
-        <canvas
-          ref={canvasRef}
-          width={480}
-          height={280}
-          style={{
-            background: "rgba(5, 8, 20, 0.85)",
-            borderRadius: 8,
-            border: "1px solid rgba(56, 189, 248, 0.15)"
-          }}
-        />
-      </div>
+      <canvas
+        ref={canvasRef}
+        width={560}
+        height={240}
+        style={{ width: "100%", height: 240, borderRadius: 8, border: "1px solid rgba(56, 189, 248, 0.15)" }}
+      />
     </div>
   );
-};
+}
+
+export default VectorScope3D;

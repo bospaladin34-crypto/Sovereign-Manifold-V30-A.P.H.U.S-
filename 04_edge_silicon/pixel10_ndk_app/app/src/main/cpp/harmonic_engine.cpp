@@ -58,13 +58,11 @@ static float apply_tensor_g5_thermal_affinity(int temp_deci_c) {
     cpu_set_t cpuset;
     CPU_ZERO(&cpuset);
     if (temp_deci_c >= 390) {
-        // >= 39.0 C: Pin to 2x Cortex-A520 efficiency cores (0x03)
         CPU_SET(0, &cpuset);
         CPU_SET(1, &cpuset);
         sched_setaffinity(0, sizeof(cpu_set_t), &cpuset);
         return 3.0f;
     } else {
-        // < 39.0 C: Pin to 1x Cortex-X4 + 5x Cortex-A725 performance cores (0xFC)
         for (int c = 2; c <= 7; ++c) {
             CPU_SET(c, &cpuset);
         }
@@ -98,9 +96,7 @@ Java_com_actomega_manifold_HarmonicInferenceEngine_initEngine(
         g_sensory_proj[i] = std::clamp(std::sin(angle) * 0.25f, -0.5f, 0.5f);
     }
     const char* path = env->GetStringUTFChars(model_path, nullptr);
-    if (!path) {
-        return JNI_FALSE;
-    }
+    if (!path) return JNI_FALSE;
     int fd = open(path, O_RDONLY);
     if (fd < 0) {
         env->ReleaseStringUTFChars(model_path, path);
@@ -116,9 +112,7 @@ Java_com_actomega_manifold_HarmonicInferenceEngine_initEngine(
     void* addr = mmap(nullptr, g_mmap_size, PROT_READ, MAP_SHARED, fd, 0);
     close(fd);
     env->ReleaseStringUTFChars(model_path, path);
-    if (addr == MAP_FAILED) {
-        return JNI_FALSE;
-    }
+    if (addr == MAP_FAILED) return JNI_FALSE;
     g_mmap_weights = static_cast<int8_t*>(addr);
     act_omega::VulkanComputeDispatcher::instance().initialize();
     act_omega::TpuTachyonDelegate::instance().initialize();
@@ -212,7 +206,6 @@ Java_com_actomega_manifold_HarmonicInferenceEngine_initV31Vault(
     } else {
         g_sh4z_schema = 3101;
     }
-    LOGI("V31 Vault Initialized: SH4Z=%zu B (Schema v%u), E8T=%zu+%zu B", g_sh4z_weights.size(), g_sh4z_schema, g_e8t_stalk.size(), g_e8t_ctx.size());
     return static_cast<jint>(g_sh4z_schema);
 }
 
@@ -230,8 +223,6 @@ Java_com_actomega_manifold_HarmonicInferenceEngine_evaluateUarmCascadeV31(
     float core_mask = apply_tensor_g5_thermal_affinity(static_cast<int>(temp_deci_c));
     float norm_ut = std::sqrt(bx * bx + by * by + bz * bz);
     int token_in = static_cast<int>(seq_id % 240L);
-
-    // Stage 1: Bi-Stalk & Vulkan 1.4 / Tachyon Reflex
     jfloatArray s1_arr = Java_com_actomega_manifold_HarmonicInferenceEngine_inferWithCompoundBiStalk(
         env, thiz, token_in, bx, by, bz, norm_ut, 0.17259f
     );
@@ -239,11 +230,7 @@ Java_com_actomega_manifold_HarmonicInferenceEngine_evaluateUarmCascadeV31(
     if (s1_arr != nullptr) {
         env->GetFloatArrayRegion(s1_arr, 0, 4, s1_vals);
     }
-
-    // Stage 3: Sierpinski 1.58-Bit Zero-Multiply & 536-Way Cutler Stomachion Router
     uint32_t cutler_cfg = act_omega_v30::select_cutler_stomachion_config(static_cast<uint64_t>(seq_id), norm_ut);
-
-    // Stage 4: SH4Z v3101 24D Leech-Triality & E8^int Zigzag Evaluation
     float sensor24[24];
     for (int d = 0; d < 24; ++d) {
         sensor24[d] = ((d % 3 == 0) ? bx : (d % 3 == 1 ? by : bz)) * 0.01f;
@@ -253,13 +240,75 @@ Java_com_actomega_manifold_HarmonicInferenceEngine_evaluateUarmCascadeV31(
         sh4_logit += act_omega_v31::evaluate_sh4_leech_triality_reflex(g_sh4z_weights.data() + 64, sensor24, 0.17259f);
     }
     ++g_ste_qat_steps;
+    auto t1 = std::chrono::high_resolution_clock::now();
+    float total_us = std::chrono::duration<float, std::micro>(t1 - t0).count();
+    jfloatArray out_arr = env->NewFloatArray(8);
+    if (out_arr != nullptr) {
+        jfloat fill[8] = {s1_vals[0], sh4_logit, total_us, s1_vals[3], static_cast<jfloat>(cutler_cfg), 0.8180f, static_cast<jfloat>(g_ste_qat_steps), core_mask};
+        env->SetFloatArrayRegion(out_arr, 0, 8, fill);
+    }
+    return out_arr;
+}
+
+JNIEXPORT jfloatArray JNICALL
+Java_com_actomega_manifold_HarmonicInferenceEngine_evaluateLeech24DCascade(
+    JNIEnv* env,
+    jobject thiz,
+    jlong seq_id,
+    jfloatArray j_vec24,
+    jint temp_deci_c
+) {
+    auto t0 = std::chrono::high_resolution_clock::now();
+    float core_mask = apply_tensor_g5_thermal_affinity(static_cast<int>(temp_deci_c));
+    jfloat raw24[24] = {0.0f};
+    if (j_vec24 != nullptr) {
+        jsize len = env->GetArrayLength(j_vec24);
+        env->GetFloatArrayRegion(j_vec24, 0, (len < 24 ? len : 24), raw24);
+    }
+    float bx = raw24[0];
+    float by = raw24[1];
+    float bz = raw24[2];
+    float norm_ut = raw24[3];
+    float a_norm = raw24[14];
+    float g_norm = raw24[15];
+
+    int token_in = static_cast<int>(seq_id % 240L);
+    jfloatArray s1_arr = Java_com_actomega_manifold_HarmonicInferenceEngine_inferWithCompoundBiStalk(
+        env, thiz, token_in, bx, by, bz, norm_ut, 0.17259f
+    );
+    jfloat s1_vals[4] = {0.0f, 0.0f, 5.0f, 0.0f};
+    if (s1_arr != nullptr) {
+        env->GetFloatArrayRegion(s1_arr, 0, 4, s1_vals);
+    }
+
+    // Normalize 24D multi-sensor vector across 8_v (Field), 8_+ (Kinematics), 8_- (Thermodynamics)
+    float norm24[24];
+    for (int d = 0; d < 8; ++d)  norm24[d]      = raw24[d] * 0.01f;
+    for (int d = 8; d < 16; ++d) norm24[d]      = raw24[d] * 0.10f;
+    for (int d = 16; d < 24; ++d) norm24[d]     = raw24[d] * 0.005f;
+
+    float sh4_logit = s1_vals[1];
+    if (g_sh4z_weights.size() >= 128) {
+        sh4_logit += act_omega_v31::evaluate_sh4_leech_triality_reflex(g_sh4z_weights.data() + 64, norm24, 0.17259f);
+    }
+
+    // Physical gyroscope & accelerometer modulation of Weitzenbock Torsion T and Relativistic Doppler Beaming
+    float phys_torsion_t = 1.707107f + 0.042f * g_norm + 0.0015f * std::fabs(a_norm - 9.80665f);
+    float beta = std::clamp(0.50f + 0.015f * g_norm, 0.50f, 0.85f);
+    float ratio = (1.0f + beta) / (1.0f - beta);
+    float doppler_boost = ratio * ratio * ratio;
+
+    uint32_t cutler_cfg = act_omega_v30::select_cutler_stomachion_config(
+        static_cast<uint64_t>(seq_id), norm_ut + a_norm + g_norm * 10.0f
+    );
+    ++g_ste_qat_steps;
 
     auto t1 = std::chrono::high_resolution_clock::now();
     float total_us = std::chrono::duration<float, std::micro>(t1 - t0).count();
 
-    jfloatArray out_arr = env->NewFloatArray(8);
+    jfloatArray out_arr = env->NewFloatArray(10);
     if (out_arr != nullptr) {
-        jfloat fill[8] = {
+        jfloat fill[10] = {
             s1_vals[0],
             sh4_logit,
             total_us,
@@ -267,9 +316,11 @@ Java_com_actomega_manifold_HarmonicInferenceEngine_evaluateUarmCascadeV31(
             static_cast<jfloat>(cutler_cfg),
             0.8180f,
             static_cast<jfloat>(g_ste_qat_steps),
-            core_mask
+            core_mask,
+            phys_torsion_t,
+            doppler_boost
         };
-        env->SetFloatArrayRegion(out_arr, 0, 8, fill);
+        env->SetFloatArrayRegion(out_arr, 0, 10, fill);
     }
     return out_arr;
 }

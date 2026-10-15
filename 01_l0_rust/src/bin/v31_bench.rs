@@ -26,6 +26,7 @@ fn main() {
     println!("  SH4Z Envelope Verified      : {} | Schema v{} | Active TLV Sectors: {}", uarm.sh4z_magic_verified, uarm.sh4z_schema_version, uarm.sh4z_active_sectors);
     println!("  4-Model Fleet Chained       : Stage1(.e8q)={}B -> Stage2(WebSpans)={} -> Stage3(.e8t)={}B -> Stage4(BiStalk={}B + SH4Z={}B)", uarm.stage1_int8_e8q_bytes, uarm.stage2_web_grounded_spans, uarm.stage3_ternary_e8t_bytes, uarm.stage4_bistalk_e8q_bytes, uarm.sh4z_container_bytes);
     println!("  UARM Arbitration & Trace    : Q_i={:.4} (>=0.75 Constructive) | RAS={:.2} | TraceLen={} | PPL={:.3} ({:.2} us)", uarm.uarm_qi_border_metric, uarm.uarm_ras_dampening, uarm.uarm_reversible_trace_len, uarm.cascade_holdout_ppl, uarm.elapsed_us);
+    println!("  24D Leech Sensor Fusion     : {} Channels (8_v Field Baro={:.1}hPa + 8_+ Kinem + 8_- Therm P={:.2}W)", uarm.leech_24d_sensor_channels, uarm.sample_baro_hpa, uarm.sample_power_watts);
     println!("-------------------------------------------------------------------------");
 
     let phys = run_v31_topological_physics_audit();

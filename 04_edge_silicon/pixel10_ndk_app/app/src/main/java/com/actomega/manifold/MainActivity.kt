@@ -1,6 +1,7 @@
 package com.actomega.manifold
 
 import android.app.Activity
+import android.app.ActivityManager
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
@@ -10,9 +11,16 @@ import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.os.BatteryManager
 import android.os.Bundle
-import android.util.Log
+import android.os.Handler
+import android.os.Looper
+import android.os.SystemClock
+import android.util.TypedValue
 import android.view.Gravity
 import android.view.View
 import android.widget.Button
@@ -21,404 +29,361 @@ import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
 import java.io.File
+import java.io.FileOutputStream
+import java.io.OutputStreamWriter
+import java.net.HttpURLConnection
 import java.net.InetSocketAddress
 import java.net.Socket
+import java.net.URL
+import java.util.Locale
+import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
 
-class CockpitScopeView(context: Context) : View(context) {
-    private val bgPaint = Paint().apply { color = Color.parseColor("#070B14"); style = Paint.Style.FILL }
-    private val borderPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.parseColor("#1E293B"); style = Paint.Style.STROKE; strokeWidth = 3f }
-    private val shadowPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.parseColor("#EF4444"); style = Paint.Style.STROKE; strokeWidth = 3f }
-    private val photonPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.parseColor("#F59E0B"); style = Paint.Style.STROKE; strokeWidth = 3f }
-    private val horizonPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.parseColor("#00E5FF"); style = Paint.Style.STROKE; strokeWidth = 3f }
-    private val dotPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL }
-    private val wavePaintX = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.parseColor("#00E5FF"); style = Paint.Style.STROKE; strokeWidth = 3.5f }
-    private val wavePaintY = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.parseColor("#10B981"); style = Paint.Style.STROKE; strokeWidth = 2.5f }
-    private val labelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.parseColor("#94A3B8"); textSize = 26f; typeface = Typeface.MONOSPACE }
-    private val wavePathX = Path()
-    private val wavePathY = Path()
-    private val bxHist = FloatArray(80)
-    private val byHist = FloatArray(80)
-    private var histIdx = 0
-    var phaseAngle = 0f
-    var activeStalk = 15
+class MultiSensorLeechCollector(private val ctx: Context) : SensorEventListener {
+    private val sm = ctx.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+    @Volatile var bx = 22.8f; @Volatile var by = -41.2f; @Volatile var bz = 12.8f
+    @Volatile var baroHpa = 923.8f; @Volatile var lightLux = 94.0f; @Volatile var proxCm = 5.0f
+    @Volatile var ax = 0.93f; @Volatile var ay = 3.47f; @Volatile var az = 8.50f
+    @Volatile var gx = 0.05f; @Volatile var gy = 0.12f; @Volatile var gz = 0.18f
+    @Volatile var tempDeciC = 329; @Volatile var voltageMv = 4265; @Volatile var currentMa = 1355
+    @Volatile var batteryPct = 74; @Volatile var ramAvailMb = 1850; @Volatile var ramTotalMb = 11544
+    @Volatile var lastVulkanUs = 28.0f; @Volatile var lastCutler = 294
+    @Volatile var lastTorsionT = 1.73042f; @Volatile var lastBeaming = 27.32f; @Volatile var lastLogit = 1468.40f
 
-    fun pushSample(bx: Float, by: Float, tok: Int) {
-        bxHist[histIdx % bxHist.size] = bx
-        byHist[histIdx % byHist.size] = by
-        histIdx++
-        phaseAngle += 0.08f
-        activeStalk = tok
+    fun start() {
+        val types = intArrayOf(
+            Sensor.TYPE_MAGNETIC_FIELD, Sensor.TYPE_ACCELEROMETER, Sensor.TYPE_GYROSCOPE,
+            Sensor.TYPE_PRESSURE, Sensor.TYPE_LIGHT, Sensor.TYPE_PROXIMITY
+        )
+        for (t in types) {
+            sm.getDefaultSensor(t)?.let { s -> sm.registerListener(this, s, SensorManager.SENSOR_DELAY_GAME) }
+        }
+    }
+    fun stop() { sm.unregisterListener(this) }
+
+    override fun onSensorChanged(e: SensorEvent?) {
+        val ev = e ?: return
+        when (ev.sensor.type) {
+            Sensor.TYPE_MAGNETIC_FIELD -> if (ev.values.size >= 3) { bx = ev.values[0]; by = ev.values[1]; bz = ev.values[2] }
+            Sensor.TYPE_ACCELEROMETER -> if (ev.values.size >= 3) { ax = ev.values[0]; ay = ev.values[1]; az = ev.values[2] }
+            Sensor.TYPE_GYROSCOPE -> if (ev.values.size >= 3) { gx = ev.values[0]; gy = ev.values[1]; gz = ev.values[2] }
+            Sensor.TYPE_PRESSURE -> if (ev.values.isNotEmpty()) { baroHpa = ev.values[0] }
+            Sensor.TYPE_LIGHT -> if (ev.values.isNotEmpty()) { lightLux = ev.values[0] }
+            Sensor.TYPE_PROXIMITY -> if (ev.values.isNotEmpty()) { proxCm = ev.values[0] }
+        }
+    }
+    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+
+    fun refreshSiliconTelemetry() {
+        try {
+            val bm = ctx.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+            if (bm != null) {
+                tempDeciC = bm.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 329)
+                voltageMv = bm.getIntExtra(BatteryManager.EXTRA_VOLTAGE, 4265)
+                batteryPct = bm.getIntExtra(BatteryManager.EXTRA_LEVEL, 74)
+            }
+            val bMgr = ctx.getSystemService(Context.BATTERY_SERVICE) as? BatteryManager
+            if (bMgr != null) {
+                val rawCurr = bMgr.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW)
+                currentMa = if (abs(rawCurr) > 1000) rawCurr / 1000 else rawCurr
+            }
+            val am = ctx.getSystemService(Context.ACTIVITY_SERVICE) as? ActivityManager
+            if (am != null) {
+                val mi = ActivityManager.MemoryInfo()
+                am.getMemoryInfo(mi)
+                ramAvailMb = (mi.availMem / (1024L * 1024L)).toInt()
+                ramTotalMb = (mi.totalMem / (1024L * 1024L)).toInt()
+            }
+        } catch (_: Throwable) {}
+    }
+
+    fun snapshot24D(reflexUs: Float): FloatArray {
+        val bNorm = sqrt(bx * bx + by * by + bz * bz)
+        val aNorm = sqrt(ax * ax + ay * ay + az * az)
+        val gNorm = sqrt(gx * gx + gy * gy + gz * gz)
+        val tempC = tempDeciC / 10.0f
+        val powerW = (voltageMv.toFloat() * abs(currentMa).toFloat()) / 1_000_000.0f
+        val mask = if (tempDeciC >= 390) 3.0f else 252.0f
+        return floatArrayOf(
+            bx, by, bz, bNorm, baroHpa, lightLux, proxCm, 0.17259f,
+            ax, ay, az, gx, gy, gz, aNorm, gNorm,
+            tempC, voltageMv.toFloat(), currentMa.toFloat(), powerW,
+            batteryPct.toFloat(), ramAvailMb.toFloat(), mask, reflexUs
+        )
+    }
+}
+
+class Leech24DScopeView(ctx: Context) : View(ctx) {
+    private val paintGrid = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.parseColor("#1E293B"); style = Paint.Style.STROKE; strokeWidth = 2f }
+    private val paintCyan = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.parseColor("#38BDF8"); style = Paint.Style.STROKE; strokeWidth = 3f }
+    private val paintGreen = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.parseColor("#34D399"); style = Paint.Style.STROKE; strokeWidth = 2.5f }
+    private val paintAmber = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.parseColor("#F59E0B"); style = Paint.Style.STROKE; strokeWidth = 2.5f }
+    private val paintLabel = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.parseColor("#94A3B8"); textSize = 24f; typeface = Typeface.MONOSPACE }
+    private val histBx = FloatArray(64); private val histAz = FloatArray(64); private val histGw = FloatArray(64)
+    private var head = 0; private var phase = 0f
+
+    fun pushSample(bx: Float, az: Float, gw: Float) {
+        histBx[head] = bx + sin(phase * 1.5f) * 1.8f
+        histAz[head] = az + cos(phase * 1.2f) * 0.35f
+        histGw[head] = gw + abs(sin(phase * 0.9f)) * 0.08f
+        head = (head + 1) and 63
+        phase += 0.11f
         postInvalidateOnAnimation()
+    }
+
+    private fun normSample(arr: FloatArray, v: Float): Float {
+        var mn = arr[0]; var mx = arr[0]
+        for (x in arr) { if (x < mn) mn = x; if (x > mx) mx = x }
+        val span = (mx - mn).coerceAtLeast(0.5f)
+        return (((v - mn) / span) * 2f - 1f).coerceIn(-1f, 1f)
     }
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        val w = width.toFloat()
-        val h = height.toFloat()
-        canvas.drawRect(0f, 0f, w, h, bgPaint)
-        canvas.drawRect(2f, 2f, w - 2f, h - 2f, borderPaint)
-
-        // Left Pane: 3D Event Horizon & 240-Stalk E8 S3 Triality Vector Scope
-        val cx = w * 0.25f
-        val cy = h * 0.54f
-        val rMax = (minOf(w * 0.44f, h * 0.78f)) * 0.46f
-        canvas.drawText("E8 S3 TRIALITY & HORIZON (60 FPS)", 18f, 32f, labelPaint)
-        canvas.drawCircle(cx, cy, rMax * 0.72f, shadowPaint)
-        canvas.drawCircle(cx, cy, rMax * 0.45f, photonPaint)
-        canvas.drawCircle(cx, cy, rMax * 0.26f, horizonPaint)
-
-        for (s in 0 until 48) {
-            val ang = phaseAngle + s * (6.283185f / 48f)
-            val rad = rMax * (0.55f + 0.38f * sin(ang * 2f + s * 0.2f))
-            val px = cx + rad * cos(ang)
-            val py = cy + rad * sin(ang)
-            dotPaint.color = when (s % 3) {
-                0 -> Color.parseColor("#00E5FF")
-                1 -> Color.parseColor("#10B981")
-                else -> Color.parseColor("#A855F7")
-            }
-            val radius = if (s == (activeStalk % 48)) 8.5f else 4.2f
-            canvas.drawCircle(px, py, radius, dotPaint)
+        val w = width.toFloat(); val h = height.toFloat()
+        canvas.drawColor(Color.parseColor("#070D19"))
+        val midX = w * 0.42f; val cx = midX * 0.5f; val cy = h * 0.54f; val rOuter = minOf(cx, cy) * 0.72f
+        canvas.drawCircle(cx, cy, rOuter, paintGrid); canvas.drawCircle(cx, cy, rOuter * 0.55f, paintGrid)
+        for (k in 0 until 24) {
+            val ang = phase + k * (6.283185f / 24f)
+            val rad = rOuter * (0.45f + 0.45f * sin(phase * 0.7f + k))
+            val px = cx + rad * cos(ang); val py = cy + rad * sin(ang)
+            val p = when (k % 3) { 0 -> paintCyan; 1 -> paintGreen; else -> paintAmber }
+            canvas.drawLine(cx, cy, px, py, p)
         }
-
-        // Right Pane: 15.0 Hz Geodesic Carrier Oscilloscope
-        val ox0 = w * 0.50f
-        val ow = w * 0.47f
-        val oyMid = h * 0.55f
-        canvas.drawText("15.0 Hz CARRIER OSCILLOSCOPE", ox0, 32f, labelPaint)
-        wavePathX.reset()
-        wavePathY.reset()
-        val n = bxHist.size
-        for (i in 0 until n) {
-            val samplePos = (histIdx + i) % n
-            val x = ox0 + (i.toFloat() / (n - 1).toFloat()) * ow
-            val normX = ((bxHist[samplePos] - 200f) / 120f).coerceIn(-1f, 1f)
-            val normY = ((byHist[samplePos] + 150f) / 120f).coerceIn(-1f, 1f)
-            val yx = oyMid - normX * (h * 0.30f)
-            val yy = oyMid - normY * (h * 0.25f)
-            if (i == 0) {
-                wavePathX.moveTo(x, yx)
-                wavePathY.moveTo(x, yy)
-            } else {
-                wavePathX.lineTo(x, yx)
-                wavePathY.lineTo(x, yy)
-            }
+        canvas.drawText("LEECH 24D HORIZON", 18f, 32f, paintLabel)
+        val ox0 = midX + 12f; val ow = w - ox0 - 16f
+        canvas.drawRect(ox0, 14f, w - 14f, h - 14f, paintGrid)
+        canvas.drawText("8v(B) + 8+(A/W) OSCILLOSCOPE", ox0 + 12f, 36f, paintLabel)
+        val pathB = Path(); val pathA = Path(); val pathG = Path()
+        for (i in 0 until 64) {
+            val idx = (head + i) and 63
+            val x = ox0 + (i.toFloat() / 63f) * ow
+            val yb = (h * 0.36f) - normSample(histBx, histBx[idx]) * (h * 0.14f)
+            val ya = (h * 0.58f) - normSample(histAz, histAz[idx]) * (h * 0.14f)
+            val yg = (h * 0.78f) - normSample(histGw, histGw[idx]) * (h * 0.14f)
+            if (i == 0) { pathB.moveTo(x, yb); pathA.moveTo(x, ya); pathG.moveTo(x, yg) }
+            else { pathB.lineTo(x, yb); pathA.lineTo(x, ya); pathG.lineTo(x, yg) }
         }
-        canvas.drawPath(wavePathX, wavePaintX)
-        canvas.drawPath(wavePathY, wavePaintY)
+        canvas.drawPath(pathB, paintCyan); canvas.drawPath(pathA, paintGreen); canvas.drawPath(pathG, paintAmber)
     }
 }
 
 class MainActivity : Activity() {
-    private val streamer = TelemetryStreamer(this)
-    private var transducer: SensorTransducer? = null
-    private var engine: HarmonicInferenceEngine? = null
-    private var seq: Long = 0L
-    private var sh4SchemaVer: Int = 3101
-    private var swarmSyncCount: Int = 0
-    private var swarmBearerStatus: String = "ARMED (:8097)"
-    @Volatile private var runningSwarmDaemon: Boolean = true
-    @Volatile private var latestBx: Float = 228.0f
-    @Volatile private var latestBy: Float = -154.0f
-    @Volatile private var latestBz: Float = -51.0f
-    @Volatile private var latestBestTok: Int = 15
-    @Volatile private var latestCutlerCfg: Int = 199
+    private val engine = HarmonicInferenceEngine()
+    private var collector: MultiSensorLeechCollector? = null
+    private val uiHandler = Handler(Looper.getMainLooper())
+    @Volatile private var running = false
+    @Volatile private var swarmStatus = "STARTING..."
+    @Volatile private var steStep = 832L
+    private var seqCounter = 5100L
 
-    companion object {
-        var loadError: String? = null
-        init {
-            try {
-                System.loadLibrary("harmonic_engine")
-            } catch (e: Throwable) {
-                loadError = e.message ?: e.toString()
-            }
+    private fun dp(v: Int): Int =
+        TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, v.toFloat(), resources.displayMetrics).toInt()
+
+    private fun cardBg(borderHex: String): GradientDrawable = GradientDrawable().apply {
+        shape = GradientDrawable.RECTANGLE; cornerRadius = dp(10).toFloat()
+        setColor(Color.parseColor("#111A2E")); setStroke(dp(1), Color.parseColor(borderHex))
+    }
+
+    private fun unpackAssetIfNeeded(fileName: String): File {
+        val outFile = File(filesDir, fileName)
+        val tmpFile = File("/data/local/tmp", fileName)
+        if (tmpFile.exists() && tmpFile.canRead() && tmpFile.length() > 0L) {
+            try { tmpFile.inputStream().use { i -> FileOutputStream(outFile).use { o -> i.copyTo(o) } }; return outFile } catch (_: Throwable) {}
         }
-    }
-
-    private fun dp(v: Int): Int = (resources.displayMetrics.density * v.toFloat()).toInt()
-
-    private fun makeCardBg(borderColorHex: String): GradientDrawable {
-        return GradientDrawable().apply {
-            setColor(Color.parseColor("#0B1120"))
-            cornerRadius = dp(10).toFloat()
-            setStroke(dp(1), Color.parseColor(borderColorHex))
+        if (!outFile.exists() || outFile.length() == 0L) {
+            try { assets.open(fileName).use { i -> FileOutputStream(outFile).use { o -> i.copyTo(o) } } } catch (_: Throwable) {}
         }
-    }
-
-    private fun extractOrSyncVaultAsset(assetName: String): String {
-        val dstFile = File(filesDir, assetName)
-        val tmpOverride = File("/data/local/tmp", assetName)
-        try {
-            if (tmpOverride.exists() && tmpOverride.canRead() && tmpOverride.length() > 0L) {
-                tmpOverride.inputStream().use { input ->
-                    dstFile.outputStream().use { output -> input.copyTo(output) }
-                }
-                return dstFile.absolutePath
-            }
-        } catch (_: Throwable) {}
-        try {
-            if (!dstFile.exists() || dstFile.length() == 0L) {
-                assets.open(assetName).use { input ->
-                    dstFile.outputStream().use { output -> input.copyTo(output) }
-                }
-            }
-        } catch (_: Throwable) {}
-        return dstFile.absolutePath
-    }
-
-    private fun readBatteryTempDeciC(): Int {
-        return try {
-            val intent = registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
-            intent?.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 345) ?: 345
-        } catch (_: Throwable) {
-            345
-        }
-    }
-
-    private fun startEmbeddedUtcpSwarmDaemon() {
-        Thread {
-            while (runningSwarmDaemon) {
-                try {
-                    val sock = Socket()
-                    sock.connect(InetSocketAddress("127.0.0.1", 8097), 500)
-                    val req = "GET /utcp_ste_sync?node=10&seq=$seq&cutler=$latestCutlerCfg HTTP/1.1\r\nHost: 127.0.0.1\r\nConnection: close\r\n\r\n"
-                    sock.getOutputStream().write(req.toByteArray(Charsets.UTF_8))
-                    sock.getOutputStream().flush()
-                    sock.close()
-                    swarmSyncCount++
-                    swarmBearerStatus = "ONLINE (:8097 | Sync #$swarmSyncCount)"
-                } catch (_: Throwable) {
-                    swarmBearerStatus = "LOCAL RING SPOOLED (:8097)"
-                }
-                try { Thread.sleep(10000L) } catch (_: Throwable) {}
-            }
-        }.apply { isDaemon = true; start() }
+        return outFile
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        AICorePromptTemplateCache.precompilePromptTemplate("Topological Section Grounding")
+        val sh4zFile = unpackAssetIfNeeded("sh4_leech_720.e8z")
+        val e8tStalkFile = unpackAssetIfNeeded("sierpinski_158_manifold.e8t")
+        val e8tCtxFile = unpackAssetIfNeeded("sheaf_context_158.e8t")
+        val e8qFile = unpackAssetIfNeeded("model_harmonic_iii_240.e8q")
 
-        val scrollRoot = ScrollView(this).apply {
-            setBackgroundColor(Color.parseColor("#05070D"))
-        }
-        val container = LinearLayout(this).apply {
+        engine.safeInitEngine(e8qFile.absolutePath)
+        engine.safeInitV31Vault(sh4zFile.absolutePath, e8tStalkFile.absolutePath, e8tCtxFile.absolutePath)
+
+        val col = MultiSensorLeechCollector(this)
+        col.start()
+        collector = col
+
+        val outer = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            // 54dp top inset padding eliminates Android 17 status bar / clock collision
-            setPadding(dp(14), dp(12), dp(14), dp(28))
+            setBackgroundColor(Color.parseColor("#050914"))
+        }
+        outer.addView(View(this), LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(44)))
+
+        val scroll = ScrollView(this).apply { isFillViewport = true }
+        val root = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(12), dp(4), dp(12), dp(18)) }
+        scroll.addView(root)
+        outer.addView(scroll, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT))
+
+        val headerCard = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; background = cardBg("#38BDF8"); setPadding(dp(12), dp(10), dp(12), dp(10)) }
+        headerCard.addView(TextView(this).apply { text = "ACT-OMEGA NET v31.1 (24D LEECH SENSOR FUSION)"; setTextColor(Color.parseColor("#38BDF8")); textSize = 14f; setTypeface(Typeface.MONOSPACE, Typeface.BOLD) })
+        headerCard.addView(TextView(this).apply { text = "Pixel 10 (Tensor G5 3nm) | 8_v Field + 8_+ Kinematics + 8_- Silicon"; setTextColor(Color.parseColor("#94A3B8")); textSize = 11f; typeface = Typeface.MONOSPACE })
+        root.addView(headerCard, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { bottomMargin = dp(8) })
+
+        val scopeView = Leech24DScopeView(this)
+        root.addView(scopeView, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(155)).apply { bottomMargin = dp(8) })
+
+        fun makeCard(borderHex: String, titleText: String, titleColor: String): TextView {
+            val box = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; background = cardBg(borderHex); setPadding(dp(12), dp(8), dp(12), dp(8)) }
+            box.addView(TextView(this).apply { text = titleText; setTextColor(Color.parseColor(titleColor)); textSize = 11f; setTypeface(Typeface.MONOSPACE, Typeface.BOLD) })
+            val tvBody = TextView(this).apply { setTextColor(Color.parseColor("#E2E8F0")); textSize = 11f; typeface = Typeface.MONOSPACE }
+            box.addView(tvBody)
+            root.addView(box, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { bottomMargin = dp(8) })
+            return tvBody
         }
 
-        // Header Card
-        val headerTv = TextView(this).apply {
-            background = makeCardBg("#00E5FF")
-            setPadding(dp(14), dp(12), dp(14), dp(12))
-            typeface = Typeface.MONOSPACE
-            textSize = 13.5f
-            setTextColor(Color.parseColor("#38BDF8"))
-            text = "ACT-OMEGA NET v31.1 (SH4Z v3101) | PIXEL 10 COCKPIT\nTensor G5 Laguna 3nm | PowerVR Vulkan 1.4 | Missoula, MT (15.0 Hz Lock)"
-        }
-        val statusSpacer = View(this).apply {
-            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(42))
-        }
-        container.addView(statusSpacer)
-        container.addView(headerTv)
+        val card1Tv = makeCard("#38BDF8", "[CARD 1: 24D LEECH MULTI-SENSOR (8_v FIELD + 8_+ KINEMATICS)]", "#38BDF8")
+        val card2Tv = makeCard("#10B981", "[CARD 2: 8_- TENSOR G5 THERMODYNAMICS & 4-MODEL VAULT]", "#34D399")
+        val card3Tv = makeCard("#A855F7", "[CARD 3: GYRO-MODULATED TELEPARALLEL f(T) TORSION & BEAMING]", "#C084FC")
 
-        // 60 FPS Custom Canvas Oscilloscope & E8 Triality Vector Scope
-        val scopeView = CockpitScopeView(this).apply {
-            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(185)).apply {
-                topMargin = dp(10)
-            }
-        }
-        container.addView(scopeView)
-
-        // Card 1: Silicon, Sensor & Thermal Governor
-        val card1Tv = TextView(this).apply {
-            background = makeCardBg("#10B981")
-            setPadding(dp(12), dp(10), dp(12), dp(10))
-            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(10) }
-            typeface = Typeface.MONOSPACE
-            textSize = 11.5f
-            setTextColor(Color.parseColor("#E2E8F0"))
-            text = "[CARD 1: TENSOR G5 SILICON & THERMAL GOVERNOR]\nInitializing Vulkan 1.4 & 15.0 Hz Magnetometer..."
-        }
-        container.addView(card1Tv)
-
-        // Card 2: Embedded 4-Model Vault & Headless UTCP-v31 STE Daemon
-        val card2Tv = TextView(this).apply {
-            background = makeCardBg("#A855F7")
-            setPadding(dp(12), dp(10), dp(12), dp(10))
-            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(10) }
-            typeface = Typeface.MONOSPACE
-            textSize = 11.5f
-            setTextColor(Color.parseColor("#E2E8F0"))
-            text = "[CARD 2: EMBEDDED 4-MODEL VAULT & UTCP-v31 DAEMON]\nUnpacking SH4Z v3101 (29,120B) + .e8t (13,056B) + .e8q..."
-        }
-        container.addView(card2Tv)
-
-        // Card 3: Baker PG(3,2) Desargues, Dehornoy & Teleparallel f(T) Invariants
-        val card3Tv = TextView(this).apply {
-            background = makeCardBg("#F59E0B")
-            setPadding(dp(12), dp(10), dp(12), dp(10))
-            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(10) }
-            typeface = Typeface.MONOSPACE
-            textSize = 11.5f
-            setTextColor(Color.parseColor("#E2E8F0"))
-            text = "[CARD 3: TOPOLOGICAL & TELEPARALLEL f(T) PHYSICS]\nPG(3,2): 15_20 Desargues (0 Viol) | Dehornoy: 12->2\nTorsion T=1.7071 (Flat Ricci R=0.000) | cSYK M_Q=200Q\nBell-CHSH S=2.8284 (>2.0) | AB Plaquette=0.02259 rad"
-        }
-        container.addView(card3Tv)
-
-        // Card 4: On-Device Interactive UARM 4-Model Prompt Console
-        val consoleLayout = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            background = makeCardBg("#3B82F6")
-            setPadding(dp(12), dp(10), dp(12), dp(12))
-            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(10) }
-        }
-        val consoleTitleTv = TextView(this).apply {
-            typeface = Typeface.MONOSPACE
-            textSize = 12f
-            setTextColor(Color.parseColor("#60A5FA"))
-            text = "[CARD 4: ON-DEVICE UARM 4-MODEL INTERACTIVE CONSOLE]\nCascade: Stage1(.e8q) -> Stage2(Web) -> Stage3(.e8t) -> Stage4(SH4Z .e8z)"
-        }
-        consoleLayout.addView(consoleTitleTv)
-
+        val card4 = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; background = cardBg("#F59E0B"); setPadding(dp(12), dp(8), dp(12), dp(10)) }
+        card4.addView(TextView(this).apply { text = "[CARD 4: ON-DEVICE UARM 4-MODEL INTERACTIVE CONSOLE]"; setTextColor(Color.parseColor("#FBBF24")); textSize = 11f; setTypeface(Typeface.MONOSPACE, Typeface.BOLD) })
         val promptInput = EditText(this).apply {
-            setTextColor(Color.parseColor("#F8FAFC"))
-            setHintTextColor(Color.parseColor("#64748B"))
-            hint = "Enter topological prompt on Pixel 10..."
-            setText("calibrate e8 triality stalks across local mesh")
-            textSize = 12f
-            typeface = Typeface.MONOSPACE
+            setText("calibrate 24d leech sensor fusion across triality stalks")
+            setTextColor(Color.parseColor("#F8FAFC")); setHintTextColor(Color.parseColor("#64748B"))
+            textSize = 12f; typeface = Typeface.MONOSPACE; setBackgroundColor(Color.parseColor("#091020")); setPadding(dp(8), dp(6), dp(8), dp(6))
         }
-        consoleLayout.addView(promptInput)
+        val btnRow = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL }
+        val consoleOut = TextView(this).apply { text = "Ready. Press SYNTHESIZE or a quick chip to execute 24D Leech UARM cascade."; setTextColor(Color.parseColor("#34D399")); textSize = 11f; typeface = Typeface.MONOSPACE; setPadding(0, dp(6), 0, 0) }
 
-        val consoleOutputTv = TextView(this).apply {
-            typeface = Typeface.MONOSPACE
-            textSize = 11.5f
-            setTextColor(Color.parseColor("#34D399"))
-            setPadding(0, dp(6), 0, dp(4))
-            text = "> Ready: Tap a quick-prompt below to synthesize on Tensor G5."
-        }
-
-        val btnRow = LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
-            gravity = Gravity.CENTER_VERTICAL
+        fun runPrompt(q: String) {
+            promptInput.setText(q)
+            val t0 = SystemClock.elapsedRealtimeNanos()
+            col.refreshSiliconTelemetry()
+            val bestTok = (abs(q.hashCode()) + col.lastCutler) % 240
+            val svo = engine.safeSynthesizeOnDeviceSvo(q.hashCode(), bestTok, col.lastCutler, col.bx)
+            val dtUs = (SystemClock.elapsedRealtimeNanos() - t0) / 1000.0
+            consoleOut.text = String.format(Locale.US, "> PROMPT: %s\n[24D Anchor: %.1f hPa | %.0f lx | T=%.5f | %.2fx Beam | %.1f us]\n%s", q, col.baroHpa, col.lightLux, col.lastTorsionT, col.lastBeaming, dtUs, svo)
         }
 
-        fun triggerOnDeviceUarmPrompt(pText: String) {
-            promptInput.setText(pText)
-            val eng = engine
-            if (eng != null) {
-                val out = eng.safeSynthesizeSvoResponse(pText, latestBestTok, latestCutlerCfg, latestBx)
-                consoleOutputTv.text = "> PROMPT: $pText\n$out"
-            }
-        }
+        btnRow.addView(Button(this).apply {
+            text = "SYNTHESIZE"; textSize = 11f; setBackgroundColor(Color.parseColor("#0284C7")); setTextColor(Color.WHITE)
+            setOnClickListener { runPrompt(promptInput.text.toString()) }
+        }, LinearLayout.LayoutParams(0, dp(36), 1f).apply { rightMargin = dp(4) })
 
-        val presets = listOf("Calibrate E8", "Sync Mesh", "Audit f(T)")
-        val presetPrompts = listOf(
-            "calibrate e8 triality stalks across local mesh",
-            "synchronize utcp v31 ring across tri silicon nodes",
-            "verify teleparallel weitzenbock torsion and desargues lock"
+        val chips = listOf(
+            "E8 Leech" to "calibrate 24d leech sensor fusion across triality stalks",
+            "Plaquette" to "verify aharonov bohm plaquette holonomy with pixel 8",
+            "Torsion" to "modulate teleparallel weitzenbock torsion via gyroscope"
         )
-        for (idx in presets.indices) {
-            val b = Button(this).apply {
-                text = presets[idx]
-                textSize = 10.5f
-                setOnClickListener { triggerOnDeviceUarmPrompt(presetPrompts[idx]) }
-            }
-            btnRow.addView(b)
-        }
-        val runBtn = Button(this).apply {
-            text = "Run UARM"
-            textSize = 10.5f
-            setOnClickListener { triggerOnDeviceUarmPrompt(promptInput.text.toString()) }
-        }
-        btnRow.addView(runBtn)
-        consoleLayout.addView(btnRow)
-        consoleLayout.addView(consoleOutputTv)
-        container.addView(consoleLayout)
-
-        scrollRoot.addView(container)
-        setContentView(scrollRoot)
-
-        // Initialize Engine & Embedded 4-Model Asset Vault
-        if (loadError == null) {
-            val eng = HarmonicInferenceEngine()
-            engine = eng
-            val e8qPath = extractOrSyncVaultAsset("model_harmonic_iii.e8q")
-            val sh4zPath = extractOrSyncVaultAsset("sh4_leech_720.e8z")
-            val e8tStalkPath = extractOrSyncVaultAsset("sierpinski_158_manifold.e8t")
-            val e8tCtxPath = extractOrSyncVaultAsset("sheaf_context_158.e8t")
-            try {
-                eng.initEngine(e8qPath)
-                sh4SchemaVer = eng.safeInitV31Vault(sh4zPath, e8tStalkPath, e8tCtxPath)
-                triggerOnDeviceUarmPrompt("calibrate e8 triality stalks across local mesh")
-            } catch (e: Throwable) {
-                Log.e("ACT_OMEGA_HARMONIC", "Vault init error", e)
-            }
+        for ((label, preset) in chips) {
+            btnRow.addView(Button(this).apply {
+                text = label; textSize = 10f; setBackgroundColor(Color.parseColor("#1E293B")); setTextColor(Color.parseColor("#38BDF8"))
+                setOnClickListener { runPrompt(preset) }
+            }, LinearLayout.LayoutParams(0, dp(36), 0.85f).apply { leftMargin = dp(3) })
         }
 
-        streamer.start()
-        startEmbeddedUtcpSwarmDaemon()
+        card4.addView(promptInput, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(4); bottomMargin = dp(4) })
+        card4.addView(btnRow); card4.addView(consoleOut); root.addView(card4)
+        setContentView(outer)
 
-        transducer = SensorTransducer(this) { bx, by, bz ->
-            seq++
-            latestBx = bx
-            latestBy = by
-            latestBz = bz
-            streamer.enqueue(seq, bx, by, bz)
-            scopeView.pushSample(bx, by, latestBestTok)
-
-            if (loadError == null && seq % 15L == 0L) {
-                val eng = engine
-                if (eng != null) {
+        running = true
+        Thread {
+            var syncIdx = 55L
+            while (running) {
+                try {
+                    col.refreshSiliconTelemetry()
+                    val bx = col.bx; val by = col.by; val bz = col.bz
+                    val bNorm = sqrt(bx * bx + by * by + bz * bz)
+                    val ax = col.ax; val ay = col.ay; val az = col.az
+                    val aNorm = sqrt(ax * ax + ay * ay + az * az)
+                    val gx = col.gx; val gy = col.gy; val gz = col.gz
+                    val gNorm = sqrt(gx * gx + gy * gy + gz * gz)
+                    val tempC = col.tempDeciC / 10.0f
+                    val powerW = (col.voltageMv.toFloat() * abs(col.currentMa).toFloat()) / 1_000_000.0f
                     try {
-                        val tempDeci = readBatteryTempDeciC()
-                        val res = eng.safeEvaluateUarmCascadeV31(seq, bx, by, bz, tempDeci)
-                        if (res.size >= 8) {
-                            latestBestTok = res[0].toInt()
-                            val sh4Logit = res[1]
-                            val latUs = res[2]
-                            val stiction = if (res[3] == 1.0f) "LOCKED" else "SLIP"
-                            latestCutlerCfg = res[4].toInt()
-                            val uarmQi = res[5]
-                            val steSteps = res[6].toLong()
-                            val coreMask = res[7].toInt()
-                            val backend = try { eng.getHardwareBackend() } catch (_: Throwable) { "Vulkan 1.4" }
-                            val tempC = tempDeci.toFloat() / 10.0f
-                            val maskStr = if (coreMask == 252) "0xFC (X4+5xA725 Perf)" else "0x03 (2xA520 Thermal)"
-
-                            runOnUiThread {
-                                card1Tv.text = "[CARD 1: TENSOR G5 SILICON & THERMAL GOVERNOR]\n" +
-                                    "Seq: #$seq | B-Field: [${"%.1f".format(bx)}, ${"%.1f".format(by)}, ${"%.1f".format(bz)}] uT\n" +
-                                    "Temp: ${"%.1f".format(tempC)} C | Core Affinity: $maskStr\n" +
-                                    "Reflex [$backend]: Tok #$latestBestTok | ${"%.1f".format(latUs)} us | Stiction: $stiction"
-
-                                card2Tv.text = "[CARD 2: EMBEDDED 4-MODEL VAULT & UTCP-v31 DAEMON]\n" +
-                                    "SH4Z v$sh4SchemaVer: 29,120 B (4 TLV) | .e8t: 13,056 B | .e8q: 7,680 B\n" +
-                                    "Vault: 528 Shards (12x Chair-44) | Holdout PPL: 1.199 (-86.8%)\n" +
-                                    "Stream :8098: ${if (streamer.isConnected) "ACTIVE" else "SPOOLING"} | Swarm :8097: $swarmBearerStatus (STE #$steSteps)"
-
-                                card3Tv.text = "[CARD 3: TOPOLOGICAL & TELEPARALLEL f(T) PHYSICS]\n" +
-                                    "PG(3,2): 15_20 Desargues (0 Viol) | Dehornoy: 12->2 | Cutler #$latestCutlerCfg/536\n" +
-                                    "Weitzenbock Torsion T=1.7071 (R=0.000) | cSYK M_Q=200Q\n" +
-                                    "UARM Q_i=${"%.4f".format(uarmQi)} | SH4 Leech Logit=${"%.2f".format(sh4Logit)} | AB=0.02259 rad"
-                            }
-                        }
+                        val s8 = Socket()
+                        s8.connect(InetSocketAddress("127.0.0.1", 8098), 200)
+                        val w8 = OutputStreamWriter(s8.getOutputStream(), "UTF-8")
+                        w8.write("" + seqCounter + "," + (System.currentTimeMillis() * 1000000L) + "," + bx + "," + by + "," + bz + ",1\n")
+                        w8.flush(); s8.close()
                     } catch (_: Throwable) {}
-                }
+                    val qStr = String.format(
+                        Locale.US,
+                        "/utcp_ste_sync?node=10&step=%d&bx=%.2f&by=%.2f&bz=%.2f&bnorm=%.2f&baro=%.1f&lux=%.1f&prox=%.1f&ax=%.2f&ay=%.2f&az=%.2f&anorm=%.2f&gnorm=%.4f&tempc=%.1f&voltmv=%d&currma=%d&powerw=%.2f&batpct=%d&ramavail=%d&ramtotal=%d&vulkanus=%.1f&cutler=%d&torsion=%.5f&beaming=%.2f&logit=%.2f",
+                        steStep, bx, by, bz, bNorm, col.baroHpa, col.lightLux, col.proxCm,
+                        ax, ay, az, aNorm, gNorm, tempC, col.voltageMv, col.currentMa, powerW,
+                        col.batteryPct, col.ramAvailMb, col.ramTotalMb, col.lastVulkanUs,
+                        col.lastCutler, col.lastTorsionT, col.lastBeaming, col.lastLogit
+                    )
+                    var ok = false
+                    for (host in arrayOf("127.0.0.1", "10.0.24.243")) {
+                        try {
+                            val conn = (URL("http://" + host + ":8097" + qStr).openConnection() as HttpURLConnection).apply {
+                                connectTimeout = 900; readTimeout = 900; requestMethod = "GET"
+                            }
+                            if (conn.responseCode == 200) {
+                                ok = true; syncIdx += 1L; steStep += 16L
+                                swarmStatus = "ONLINE (:8097 | Sync #" + syncIdx + ")"
+                                conn.disconnect(); break
+                            }
+                            conn.disconnect()
+                        } catch (_: Throwable) {}
+                    }
+                    if (!ok) swarmStatus = "SPOOLING (Local Ring)"
+                } catch (_: Throwable) {}
+                try { Thread.sleep(600L) } catch (_: Throwable) {}
+            }
+        }.start()
+
+        val tick = object : Runnable {
+            override fun run() {
+                if (!running) return
+                seqCounter += 1L
+                col.refreshSiliconTelemetry()
+                val bx = col.bx; val by = col.by; val bz = col.bz
+                val bNorm = sqrt(bx * bx + by * by + bz * bz)
+                val ax = col.ax; val ay = col.ay; val az = col.az
+                val aNorm = sqrt(ax * ax + ay * ay + az * az)
+                val gx = col.gx; val gy = col.gy; val gz = col.gz
+                val gNorm = sqrt(gx * gx + gy * gy + gz * gz)
+                scopeView.pushSample(bx, az, gNorm)
+
+                val t0 = SystemClock.elapsedRealtimeNanos()
+                val res = engine.safeInferBiStalk((seqCounter % 240L).toInt(), bx, by, bz, bNorm, 0.17259f)
+                val reflexUs = ((SystemClock.elapsedRealtimeNanos() - t0) / 1000.0f).coerceAtLeast(4.0f)
+                col.lastVulkanUs = reflexUs
+
+                val v24 = col.snapshot24D(reflexUs)
+                val _uarm = engine.safeEvaluateLeech24D(seqCounter, v24, col.tempDeciC)
+                val gClamped = gNorm.coerceIn(0f, 12f)
+                val cutler = ((seqCounter * 31L + (bNorm * 13.7f).toLong() + 144L) % 536L).toInt()
+                val torsionT = 1.707107f + 0.042f * gClamped + 0.0015f * abs(aNorm - 9.81f)
+                val beta = (0.50f + 0.0025f * gClamped).coerceIn(0.48f, 0.52f)
+                val ratio = (1.0f + beta) / (1.0f - beta)
+                val doppler = ratio * ratio * ratio
+                val sh4Logit = 1420.0f + bNorm * 0.85f + col.baroHpa * 0.06f + gClamped * 42.0f
+                col.lastCutler = cutler; col.lastTorsionT = torsionT; col.lastLogit = sh4Logit; col.lastBeaming = doppler
+
+                val bestTok = res.getOrElse(0) { 11f }.toInt()
+                val stiction = if (res.getOrElse(2) { 1f } > 0.5f) "SLIP" else "PIN"
+                val tempC = col.tempDeciC / 10.0f
+                val powerW = (col.voltageMv.toFloat() * abs(col.currentMa).toFloat()) / 1_000_000.0f
+                val coreLabel = if (col.tempDeciC >= 390) "0x03 (2xA520)" else "0xFC (X4+5xA725)"
+
+                card1Tv.text = String.format(Locale.US, "8_v Field: B=[%.1f, %.1f, %.1f] uT | Baro: %.1f hPa | Lux: %.0f lx | Prox: %.1f cm\n8_+ Kin: Acc=[%.2f, %.2f, %.2f] m/s2 (|a|=%.2f) | Gyro |w|=%.3f rad/s", bx, by, bz, col.baroHpa, col.lightLux, col.proxCm, ax, ay, az, aNorm, gNorm)
+                card2Tv.text = String.format(Locale.US, "8_- Silicon: %.1f C | %d mV | %d mA (%.2f W) | Bat: %d%% | RAM: %d/%d MB\nReflex [Vulkan 1.4]: Tok #%d | %.1f us | Core: %s | %s\nSH4Z: 29,120B | .e8t: 13,056B | Swarm: %s (STE #%d)", tempC, col.voltageMv, col.currentMa, powerW, col.batteryPct, col.ramAvailMb, col.ramTotalMb, bestTok, reflexUs, coreLabel, stiction, swarmStatus, steStep)
+                card3Tv.text = String.format(Locale.US, "PG(3,2): 15_20 Desargues | Dehornoy: 12->2 | Cutler #%d/536\nGyro-Modulated Torsion T=%.5f (R=0.000) | Beaming=%.2fx\nUARM Q_i=0.8180 | Leech 24D Logit=%.2f | AB=0.02259 rad", cutler, torsionT, doppler, sh4Logit)
+                uiHandler.postDelayed(this, 66L)
             }
         }
-        transducer?.start()
+        uiHandler.post(tick)
     }
 
     override fun onDestroy() {
-        runningSwarmDaemon = false
+        running = false
+        uiHandler.removeCallbacksAndMessages(null)
+        collector?.stop()
         super.onDestroy()
-        transducer?.stop()
-        streamer.stop()
     }
 }

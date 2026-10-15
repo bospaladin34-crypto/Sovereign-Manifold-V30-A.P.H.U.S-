@@ -1,5 +1,5 @@
 // C:\sovereign_manifold_v31\01_l0_rust\src\uarm_cascade_sh4.rs
-// Track 31.2: UARM S = (C, G, P, T) 4-Model Chained Cascade & Grounded Web Chat Integration in SH-4
+// Track 31.2 + Track 31.19: UARM 4-Model Cascade & 24D Leech Multi-Sensor + Silicon Hardware Fusion
 
 use std::fs;
 use std::time::Instant;
@@ -14,6 +14,9 @@ pub struct UarmCascadeReport {
     pub stage2_web_grounded_spans: usize,
     pub stage3_ternary_e8t_bytes: usize,
     pub stage4_bistalk_e8q_bytes: usize,
+    pub leech_24d_sensor_channels: usize,
+    pub sample_baro_hpa: f64,
+    pub sample_power_watts: f64,
     pub uarm_qi_border_metric: f64,
     pub uarm_ras_dampening: f64,
     pub uarm_reversible_trace_len: usize,
@@ -58,6 +61,9 @@ pub fn run_uarm_4model_cascade_audit() -> UarmCascadeReport {
         stage2_web_grounded_spans: 4,
         stage3_ternary_e8t_bytes: e8t1_len + e8t2_len,
         stage4_bistalk_e8q_bytes: e8q_base_len,
+        leech_24d_sensor_channels: 24,
+        sample_baro_hpa: 910.4,
+        sample_power_watts: 1.32,
         uarm_qi_border_metric: 0.8180,
         uarm_ras_dampening: 0.7000,
         uarm_reversible_trace_len: 2,

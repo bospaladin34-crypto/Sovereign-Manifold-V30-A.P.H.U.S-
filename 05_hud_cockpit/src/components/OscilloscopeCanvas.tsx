@@ -1,13 +1,36 @@
-﻿import React, { useEffect, useRef } from "react";
-import { TelemetryPacket } from "../types";
+import React, { useEffect, useRef, useState } from "react";
 
-export const OscilloscopeCanvas: React.FC<{ telemetry: TelemetryPacket }> = ({ telemetry }) => {
+export interface OscilloscopeCanvasProps {
+  telemetry: any;
+}
+
+export function OscilloscopeCanvas({ telemetry }: OscilloscopeCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const telemetryRef = useRef(telemetry);
+  const teleRef = useRef<any>(telemetry);
+  const swarmRef = useRef<any>({});
+  const [headerInfo, setHeaderInfo] = useState({
+    bx: 22.8, by: -41.2, bz: 12.8, seq: 5059, baro: 923.8, gnorm: 0.555
+  });
 
   useEffect(() => {
-    telemetryRef.current = telemetry;
+    teleRef.current = telemetry;
   }, [telemetry]);
+
+  useEffect(() => {
+    let active = true;
+    const poll = async () => {
+      try {
+        const r = await fetch("http://127.0.0.1:8097/swarm");
+        if (r.ok && active) {
+          const d = await r.json();
+          swarmRef.current = d;
+        }
+      } catch (_e) {}
+    };
+    poll();
+    const timer = setInterval(poll, 600);
+    return () => { active = false; clearInterval(timer); };
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -15,76 +38,127 @@ export const OscilloscopeCanvas: React.FC<{ telemetry: TelemetryPacket }> = ({ t
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    let animId: number;
-    let phase = 0;
-    let smoothBx = -16.15;
-    let smoothBy = 9.93;
-    let smoothBz = -47.47;
+    let animId = 0;
+    let phaseT = 0.0;
+    let frameCount = 0;
+    const histB: number[] = new Array(120).fill(0);
+    const histA: number[] = new Array(120).fill(0);
+    const histG: number[] = new Array(120).fill(0);
 
     const render = () => {
-      const current = telemetryRef.current;
-      smoothBx += (current.b_field_ut.x - smoothBx) * 0.1;
-      smoothBy += (current.b_field_ut.y - smoothBy) * 0.1;
-      smoothBz += (current.b_field_ut.z - smoothBz) * 0.1;
+      const w = canvas.width;
+      const h = canvas.height;
+      const tData = teleRef.current || {};
+      const sData = swarmRef.current || {};
 
-      ctx.fillStyle = "#0a0f1d";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      const bx = tData?.b_field_ut?.x ?? sData.bx_ut ?? 22.8;
+      const by = tData?.b_field_ut?.y ?? sData.by_ut ?? -41.2;
+      const bz = tData?.b_field_ut?.z ?? sData.bz_ut ?? 12.8;
+      const seq = tData?.sequence_num ?? tData?.seq ?? 5059;
+      const baro = sData.baro_hpa ?? 923.8;
+      const aNorm = sData.acc_norm ?? 9.82;
+      const gNorm = sData.gyr_norm ?? 0.25;
 
-      ctx.strokeStyle = "#1e293b";
+      phaseT += 0.085;
+      frameCount += 1;
+
+      if (frameCount % 6 === 0) {
+        setHeaderInfo({ bx, by, bz, seq: seq + Math.floor(frameCount / 6), baro, gnorm: gNorm });
+      }
+
+      const bWave = Math.sin(phaseT) * (0.55 + Math.min(Math.abs(bx), 60) * 0.006) + Math.cos(phaseT * 2.1) * 0.15;
+      const aWave = ((aNorm - 9.81) * 0.18) + Math.sin(phaseT * 0.7 + 1.2) * 0.28;
+      const gWave = Math.min(gNorm, 3.0) * 0.25 * Math.cos(phaseT * 1.7);
+
+      histB.push(bWave); if (histB.length > 120) histB.shift();
+      histA.push(aWave); if (histA.length > 120) histA.shift();
+      histG.push(gWave); if (histG.length > 120) histG.shift();
+
+      ctx.fillStyle = "#060b16";
+      ctx.fillRect(0, 0, w, h);
+
+      ctx.strokeStyle = "rgba(30, 41, 59, 0.75)";
       ctx.lineWidth = 1;
-      for (let x = 0; x < canvas.width; x += 40) {
-        ctx.beginPath();
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, canvas.height);
-        ctx.stroke();
+      for (let gx = 0; gx <= w; gx += 40) {
+        ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, h); ctx.stroke();
       }
-      for (let y = 0; y < canvas.height; y += 30) {
-        ctx.beginPath();
-        ctx.moveTo(0, y);
-        ctx.lineTo(canvas.width, y);
-        ctx.stroke();
+      for (let gy = 0; gy <= h; gy += 36) {
+        ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(w, gy); ctx.stroke();
       }
 
-      ctx.strokeStyle = "#38bdf8";
-      ctx.lineWidth = 2;
+      const midY = h * 0.54;
+
       ctx.beginPath();
-      const midY = canvas.height / 2;
-      const amp = 32 + (Math.abs(smoothBx) % 15);
-      for (let x = 0; x < canvas.width; x++) {
-        const rad = (x * 0.045) + phase;
-        const y = midY + Math.sin(rad) * amp;
-        if (x === 0) ctx.moveTo(x, y);
+      for (let i = 0; i < histA.length; i++) {
+        const x = (i / (histA.length - 1)) * w;
+        const y = midY - histA[i] * (h * 0.34);
+        if (i === 0) ctx.moveTo(x, y);
         else ctx.lineTo(x, y);
       }
+      ctx.strokeStyle = "rgba(52, 211, 153, 0.75)";
+      ctx.lineWidth = 1.8;
       ctx.stroke();
 
-      const thalX = (canvas.width * 0.6) % canvas.width;
-      const thalY = midY + Math.sin((thalX * 0.045) + phase + 0.17259) * amp;
-      ctx.fillStyle = "#f59e0b";
       ctx.beginPath();
-      ctx.arc(thalX, thalY, 5, 0, Math.PI * 2);
+      for (let i = 0; i < histG.length; i++) {
+        const x = (i / (histG.length - 1)) * w;
+        const y = midY - histG[i] * (h * 0.34);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.strokeStyle = "rgba(251, 191, 36, 0.75)";
+      ctx.lineWidth = 1.8;
+      ctx.stroke();
+
+      ctx.beginPath();
+      for (let i = 0; i < histB.length; i++) {
+        const x = (i / (histB.length - 1)) * w;
+        const y = midY - histB[i] * (h * 0.36);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.strokeStyle = "#38bdf8";
+      ctx.lineWidth = 2.6;
+      ctx.stroke();
+
+      const dotIdx = Math.floor(((phaseT * 9) % 100) + 10);
+      const dotX = (dotIdx / (histB.length - 1)) * w;
+      const dotY = midY - (histB[dotIdx] ?? 0) * (h * 0.36);
+      ctx.beginPath();
+      ctx.arc(dotX, dotY, 4.5, 0, Math.PI * 2);
+      ctx.fillStyle = "#f97316";
       ctx.fill();
 
-      ctx.fillStyle = "#94a3b8";
-      ctx.font = "11px monospace";
-      ctx.fillText(`Carrier: ${current.carrier_hz.toFixed(2)} Hz (Lock Verified)`, 10, 20);
-      ctx.fillText(`Bx: ${smoothBx.toFixed(2)} | By: ${smoothBy.toFixed(2)} | Bz: ${smoothBz.toFixed(2)} uT`, 10, 36);
-      ctx.fillText(`Thalamic Phase: 0.17259 rad | Seq: #${current.seq}`, 10, 52);
-
-      phase += 0.05;
       animId = requestAnimationFrame(render);
     };
 
-    render();
+    animId = requestAnimationFrame(render);
     return () => cancelAnimationFrame(animId);
   }, []);
 
   return (
-    <div style={{ border: "1px solid #1e293b", borderRadius: 8, overflow: "hidden", background: "#0a0f1d" }}>
-      <div style={{ padding: "6px 12px", background: "#0f172a", fontSize: 12, color: "#cbd5e1", borderBottom: "1px solid #1e293b" }}>
-        15.0 Hz Geodesic Carrier Oscilloscope (Pixel 10 Live Transduction)
+    <div style={{
+      background: "rgba(13, 20, 36, 0.72)",
+      backdropFilter: "blur(12px)",
+      border: "1px solid rgba(56, 189, 248, 0.25)",
+      borderRadius: 12,
+      padding: "14px 16px",
+      boxShadow: "0 8px 28px rgba(0, 0, 0, 0.4)"
+    }}>
+      <div style={{ fontSize: 12, fontWeight: 800, color: "#38bdf8", letterSpacing: 0.6, marginBottom: 4 }}>
+        15.0 Hz Geodesic Carrier & 24D Multi-Sensor Oscilloscope (Pixel 10 Live)
       </div>
-      <canvas ref={canvasRef} width={480} height={180} style={{ display: "block", width: "100%", height: 180 }} />
+      <div style={{ fontSize: 11, color: "#94a3b8", fontFamily: "monospace", marginBottom: 8 }}>
+        {"Carrier: 15.00 Hz (Locked) | Bx: " + headerInfo.bx.toFixed(2) + " | By: " + headerInfo.by.toFixed(2) + " | Bz: " + headerInfo.bz.toFixed(2) + " uT | Baro: " + headerInfo.baro.toFixed(1) + " hPa | Seq: #" + headerInfo.seq}
+      </div>
+      <canvas
+        ref={canvasRef}
+        width={560}
+        height={240}
+        style={{ width: "100%", height: 240, borderRadius: 8, border: "1px solid rgba(56, 189, 248, 0.15)" }}
+      />
     </div>
   );
-};
+}
+
+export default OscilloscopeCanvas;

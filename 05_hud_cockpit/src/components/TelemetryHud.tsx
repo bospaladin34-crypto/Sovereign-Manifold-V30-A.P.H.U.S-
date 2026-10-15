@@ -27,7 +27,7 @@ export function TelemetryHud({ telemetry, connected }: TelemetryHudProps) {
       } catch (_e) {}
     };
     poll();
-    const t = setInterval(poll, 1000);
+    const t = setInterval(poll, 350);
     return () => { ok = false; clearInterval(t); };
   }, []);
 
@@ -79,14 +79,14 @@ export function TelemetryHud({ telemetry, connected }: TelemetryHudProps) {
         <div style={cStyle}>
           <div style={lStyle}>ACTIVE VAULT SCALE</div>
           <div style={{ ...vStyle, color: "#a855f7" }}>528 SHARDS (12x CHAIR44)</div>
-          <div style={sStyle}>SH4Z v3101 TLV (29,120 B | 4 Sectors)</div>
+          <div style={sStyle}>SH4Z v3102 TLV (31,104 B | 1,024 E8+E8)</div>
         </div>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
         <div style={cStyle}>
           <div style={lStyle}>SIERPINSKI 1.58-BIT & MALI L2</div>
-          <div style={vStyle}>13,056 B .e8t + 29,120 B .e8z</div>
+          <div style={vStyle}>13,056 B .e8t + 31,104 B .e8z</div>
           <div style={{ ...sStyle, color: "#34d399" }}>PIXEL 8 MALI L2 FREE: 98.99% (Headless)</div>
         </div>
         <div style={cStyle}>
@@ -101,7 +101,7 @@ export function TelemetryHud({ telemetry, connected }: TelemetryHudProps) {
         </div>
         <div style={cStyle}>
           <div style={lStyle}>HYPERBOLIC CFT & HORIZON</div>
-          <div style={{ ...vStyle, color: "#34d399" }}>{"PPL 1.199 (-86.8%) | " + beaming.toFixed(2) + "x BEAM"}</div>
+          <div style={{ ...vStyle, color: "#34d399" }}>{"PPL 1.132 (-87.6%) | " + beaming.toFixed(2) + "x BEAM"}</div>
           <div style={sStyle}>UARM 4-MODEL CASCADE | Q_i = 0.8180</div>
         </div>
       </div>

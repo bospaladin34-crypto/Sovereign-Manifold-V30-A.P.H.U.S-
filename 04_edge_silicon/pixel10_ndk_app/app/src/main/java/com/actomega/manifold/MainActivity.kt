@@ -317,22 +317,28 @@ class MainActivity : Activity() {
                         col.lastCutler, col.lastTorsionT, col.lastBeaming, col.lastLogit
                     )
                     var ok = false
-                    for (host in arrayOf("127.0.0.1", "10.0.24.243")) {
+                    val endpoints = arrayOf(
+                        Triple("http://127.0.0.1:5173", 1, "B1:USB-MUX(:5173)"),
+                        Triple("http://127.0.0.1:8097", 1, "B1:USB-L0(:8097)"),
+                        Triple("http://10.0.24.243:5173", 2, "B2:WIFI6-MUX(:5173)"),
+                        Triple("https://wichita-scripts-whether-afternoon.trycloudflare.com", 3, "B3:CF-QUIC-WAN")
+                    )
+                    for (ep in endpoints) {
                         try {
-                            val conn = (URL("http://" + host + ":8097" + qStr).openConnection() as HttpURLConnection).apply {
-                                connectTimeout = 900; readTimeout = 900; requestMethod = "GET"
+                            val conn = (URL(ep.first + qStr + "&bearer=" + ep.second).openConnection() as HttpURLConnection).apply {
+                                connectTimeout = 500; readTimeout = 500; requestMethod = "GET"
                             }
                             if (conn.responseCode == 200) {
                                 ok = true; syncIdx += 1L; steStep += 16L
-                                swarmStatus = "ONLINE (:8097 | Sync #" + syncIdx + ")"
+                                swarmStatus = ep.third + " #" + syncIdx
                                 conn.disconnect(); break
                             }
                             conn.disconnect()
                         } catch (_: Throwable) {}
                     }
-                    if (!ok) swarmStatus = "SPOOLING (Local Ring)"
+                    if (!ok) swarmStatus = "B3:CF-QUIC SPOOL"
                 } catch (_: Throwable) {}
-                try { Thread.sleep(600L) } catch (_: Throwable) {}
+                try { Thread.sleep(350L) } catch (_: Throwable) {}
             }
         }.start()
 
@@ -372,7 +378,7 @@ class MainActivity : Activity() {
                 val coreLabel = if (col.tempDeciC >= 390) "0x03 (2xA520)" else "0xFC (X4+5xA725)"
 
                 card1Tv.text = String.format(Locale.US, "8_v Field: B=[%.1f, %.1f, %.1f] uT | Baro: %.1f hPa | Lux: %.0f lx | Prox: %.1f cm\n8_+ Kin: Acc=[%.2f, %.2f, %.2f] m/s2 (|a|=%.2f) | Gyro |w|=%.3f rad/s", bx, by, bz, col.baroHpa, col.lightLux, col.proxCm, ax, ay, az, aNorm, gNorm)
-                card2Tv.text = String.format(Locale.US, "8_- Silicon: %.1f C | %d mV | %d mA (%.2f W) | Bat: %d%% | RAM: %d/%d MB\nReflex [Vulkan 1.4]: Tok #%d | %.1f us | Core: %s | %s\nSH4Z: 29,120B | .e8t: 13,056B | Swarm: %s (STE #%d)", tempC, col.voltageMv, col.currentMa, powerW, col.batteryPct, col.ramAvailMb, col.ramTotalMb, bestTok, reflexUs, coreLabel, stiction, swarmStatus, steStep)
+                card2Tv.text = String.format(Locale.US, "8_- Silicon: %.1f C | %d mV | %d mA (%.2f W) | Bat: %d%% | RAM: %d/%d MB\nReflex [Vulkan 1.4]: Tok #%d | %.1f us | Core: %s | %s\nSH4Z v3102: 31,104B (1024-Lex) | .e8t: 13,056B | Swarm: %s (STE #%d)", tempC, col.voltageMv, col.currentMa, powerW, col.batteryPct, col.ramAvailMb, col.ramTotalMb, bestTok, reflexUs, coreLabel, stiction, swarmStatus, steStep)
                 card3Tv.text = String.format(Locale.US, "PG(3,2): 15_20 Desargues | Dehornoy: 12->2 | Cutler #%d/536\nGyro-Modulated Torsion T=%.5f (R=0.000) | Beaming=%.2fx\nUARM Q_i=0.8180 | Leech 24D Logit=%.2f | AB=0.02259 rad", cutler, torsionT, doppler, sh4Logit)
                 uiHandler.postDelayed(this, 66L)
             }

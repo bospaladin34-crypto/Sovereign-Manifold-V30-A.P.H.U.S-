@@ -28,7 +28,7 @@ export function OscilloscopeCanvas({ telemetry }: OscilloscopeCanvasProps) {
       } catch (_e) {}
     };
     poll();
-    const timer = setInterval(poll, 600);
+    const timer = setInterval(poll, 300);
     return () => { active = false; clearInterval(timer); };
   }, []);
 

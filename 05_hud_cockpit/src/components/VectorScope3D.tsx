@@ -28,7 +28,7 @@ export function VectorScope3D({ telemetry }: VectorScope3DProps) {
       } catch (_e) {}
     };
     poll();
-    const timer = setInterval(poll, 800);
+    const timer = setInterval(poll, 350);
     return () => { active = false; clearInterval(timer); };
   }, []);
 

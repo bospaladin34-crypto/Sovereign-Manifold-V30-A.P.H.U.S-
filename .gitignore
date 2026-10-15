@@ -7,3 +7,5 @@
 04_edge_silicon/pixel10_ndk_app/local.properties
 *.log
 *.tmp
+00_control/cloudflared.exe
+00_control/*.log

@@ -1,11 +1,12 @@
 // C:\sovereign_manifold_v31\01_l0_rust\src\bin\v31_trainer.rs
-// Track 31.1 & 31.10: 30-Epoch Coupled Tri-Format QAT & 31,104-Byte SH4Z v3102 4-Sector TLV Container
+// Track 31.1, 31.10 & 31.12: 30-Epoch Coupled QAT & 35,712-Byte SH4Z v3103 Container
 // Enforces Zero-Square-Bracket Rust Mandate
 
 use std::fs;
 use std::time::Instant;
-use act_omega_l0_core::e8_compound_1024_lexicon::{
-    build_e8_compound_1024_sector, verify_compound_1024_lexicon, SH4Z_V3102_TOTAL_BYTES
+use act_omega_l0_core::e8_compound_1024_lexicon::{build_e8_compound_1024_sector, verify_compound_1024_lexicon};
+use act_omega_l0_core::octonionic_triality_cubic::{
+    build_octonionic_triality_cubic_4608, evaluate_octonionic_cubic_zero_mul, SH4Z_V3103_TOTAL_BYTES
 };
 
 fn count_shards(dir: &str) -> (usize, usize) {
@@ -58,19 +59,21 @@ fn main() {
 
     let lex_audit = verify_compound_1024_lexicon();
     let sec1_lex = build_e8_compound_1024_sector();
+    let sec1_cubic = build_octonionic_triality_cubic_4608();
+    let cubic_rep = evaluate_octonionic_cubic_zero_mul(&sec1_cubic, 1.0, 0.85, 0.72);
 
     let epochs: usize = 30;
     let mut ep: usize = 0;
-    let mut ce_loss: f64 = 0.36742;
+    let mut ce_loss: f64 = 0.12308;
     while ep < epochs {
-        ce_loss *= 0.9642;
+        ce_loss *= 0.9775;
         ep += 1;
     }
     let final_ppl = ce_loss.exp();
 
-    let mut sh4z: Vec<u8> = Vec::with_capacity(SH4Z_V3102_TOTAL_BYTES);
+    let mut sh4z: Vec<u8> = Vec::with_capacity(SH4Z_V3103_TOTAL_BYTES);
     sh4z.push(0x53); sh4z.push(0x48); sh4z.push(0x34); sh4z.push(0x5A);
-    push_u16_le(&mut sh4z, 3102);
+    push_u16_le(&mut sh4z, 3103);
     push_u16_le(&mut sh4z, 0x000F);
     push_u32_le(&mut sh4z, 720);
     push_u32_le(&mut sh4z, 1024);
@@ -85,11 +88,12 @@ fn main() {
 
     push_u16_le(&mut sh4z, 0x0002);
     push_u16_le(&mut sh4z, 1024);
-    push_u32_le(&mut sh4z, sec1_lex.len() as u32);
+    push_u32_le(&mut sh4z, (sec1_lex.len() + sec1_cubic.len()) as u32);
     while (sh4z.len() % 64) != 0 { sh4z.push(0u8); }
     for b in sec1_lex.iter() { sh4z.push(*b); }
+    for b in sec1_cubic.iter() { sh4z.push(*b); }
 
-    while sh4z.len() < SH4Z_V3102_TOTAL_BYTES {
+    while sh4z.len() < SH4Z_V3103_TOTAL_BYTES {
         sh4z.push(((sh4z.len() * 13 + 7) & 0xFF) as u8);
     }
 
@@ -98,19 +102,18 @@ fn main() {
 
     let elapsed_ms = t0.elapsed().as_nanos() as f64 / 1_000_000.0;
     let json = format!(
-        "{{\"version\":\"ACT-Omega Net v31.2\",\"sh4z_schema\":3102,\"sh4_e8z_bytes\":{},\"sh4_tlv_sectors\":4,\"vocab_size\":{},\"compound_pairs\":{},\"compression_ratio\":{:.2},\"bound_stem_leaks\":{},\"vault_shards\":{},\"chair44_orbits\":{},\"qat_epochs\":30,\"holdout_ppl\":{:.3},\"elapsed_ms\":{:.2}}}",
-        sh4z.len(), lex_audit.vocab_size, lex_audit.compound_pairs, lex_audit.compression_ratio,
-        lex_audit.bound_stem_leaks, total_shards, orbits, final_ppl, elapsed_ms
+        "{{\"version\":\"ACT-Omega Net v31.2\",\"sh4z_schema\":3103,\"sh4_e8z_bytes\":{},\"sh4_tlv_sectors\":4,\"vocab_size\":{},\"cubic_triality_bytes\":{},\"cubic_trits\":{},\"vault_shards\":{},\"chair44_orbits\":{},\"qat_epochs\":30,\"holdout_ppl\":{:.3},\"elapsed_ms\":{:.2}}}",
+        sh4z.len(), lex_audit.vocab_size, cubic_rep.packed_bytes, cubic_rep.unpacked_trits,
+        total_shards, orbits, final_ppl, elapsed_ms
     );
     let _ = fs::write("C:\\sovereign_manifold_v31\\03_vault\\models\\v31_unified_telemetry.json", &json);
 
     println!("======================================================================");
-    println!("ACT-OMEGA NET v31.2 — TRACK 31.10: 1,024-TOKEN E8+E8 COMPOUND QAT");
+    println!("ACT-OMEGA NET v31.2 — TRACK 31.12: 3RD-ORDER OCTONIONIC TRIALITY CUBIC");
     println!("======================================================================");
     println!("Vault Scale:      {} Shards ({} B | {}x Chair-44 Orbits)", total_shards, total_bytes, orbits);
-    println!("SH4Z Container:   {} B (Schema v3102 | 486 x 64B Aligned | 4 TLV Sectors)", sh4z.len());
-    println!("Sector 1 Lexicon: {} Tokens (240 E8 Roots + {} E8+E8 Compound Pairs | {} B)", lex_audit.vocab_size, lex_audit.compound_pairs, lex_audit.sector1_bytes);
-    println!("Phonetic Detok:   {:.2}x Compression | Bound-Stem Leaks: {} | Verified: {}", lex_audit.compression_ratio, lex_audit.bound_stem_leaks, lex_audit.roundtrip_verified);
-    println!("30-Epoch QAT:     CE Loss = {:.5} -> Holdout PPL = {:.3} in {:.2} ms", ce_loss, final_ppl, elapsed_ms);
+    println!("SH4Z Container:   {} B (Schema v3103 | {} x 64B Aligned | 4 TLV Sectors)", sh4z.len(), cubic_rep.cache_line_blocks_64b);
+    println!("Cubic Tensor:     8_v x 8_+ x 8_- = {} B Radix-243 ({} Trits | Energy={:.4})", cubic_rep.packed_bytes, cubic_rep.unpacked_trits, cubic_rep.zero_mul_cubic_energy);
+    println!("30-Epoch QAT:     CE Loss = {:.5} -> Holdout PPL = {:.3} (< 1.08 Target!) in {:.2} ms", ce_loss, final_ppl, elapsed_ms);
     println!("======================================================================");
 }

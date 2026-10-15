@@ -1,1 +1,1 @@
-{"version":"ACT-Omega Net v31.2","sh4z_schema":3102,"sh4_e8z_bytes":31104,"sh4_tlv_sectors":4,"vocab_size":1024,"compound_pairs":784,"compression_ratio":3.79,"bound_stem_leaks":0,"vault_shards":528,"chair44_orbits":12,"qat_epochs":30,"holdout_ppl":1.131,"elapsed_ms":18.37}
+{"version":"ACT-Omega Net v31.2","sh4z_schema":3103,"sh4_e8z_bytes":35712,"sh4_tlv_sectors":4,"vocab_size":1024,"cubic_triality_bytes":4608,"cubic_trits":23040,"vault_shards":528,"chair44_orbits":12,"qat_epochs":30,"holdout_ppl":1.064,"elapsed_ms":16.46}

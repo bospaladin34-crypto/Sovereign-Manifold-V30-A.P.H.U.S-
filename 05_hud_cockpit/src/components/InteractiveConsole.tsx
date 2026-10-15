@@ -35,7 +35,7 @@ export const InteractiveConsole: React.FC<InteractiveConsoleProps> = ({ telemetr
     if (!webQuery.trim() || isSearching) return;
     setIsSearching(true);
     try {
-      const res = await fetch("http://localhost:8099/api/v1/web/search", {
+      const res = await fetch("/api/v1/web/search", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ query: webQuery.trim() })
@@ -65,7 +65,7 @@ export const InteractiveConsole: React.FC<InteractiveConsoleProps> = ({ telemetr
     setOutput((prev) => prev + (prev ? "\n\n" : "") + anchorHeader);
 
     try {
-      const response = await fetch("http://localhost:8099/api/v1/harmonic/generate", {
+      const response = await fetch("/api/v1/harmonic/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt: textToRun, length: 18 })

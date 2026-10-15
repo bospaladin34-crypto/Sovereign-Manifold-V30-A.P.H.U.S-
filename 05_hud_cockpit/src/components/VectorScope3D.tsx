@@ -18,7 +18,7 @@ export function VectorScope3D({ telemetry }: VectorScope3DProps) {
     let active = true;
     const poll = async () => {
       try {
-        const r = await fetch("http://127.0.0.1:8097/swarm");
+        const r = await fetch("/swarm");
         if (r.ok && active) {
           const d = await r.json();
           swarmRef.current = d;

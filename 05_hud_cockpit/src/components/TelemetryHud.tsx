@@ -74,7 +74,7 @@ export const TelemetryHud: React.FC<TelemetryHudProps> = (props) => {
         <div style={{ fontSize: 16, fontWeight: "bold", color: "#f59e0b", margin: "2px 0" }}>
           {tokensTotal.toLocaleString()} TOKENS
         </div>
-        <div style={{ fontSize: 10, color: "#94a3b8" }}>{shardsTotal} SHARDS (CHAIR44 BIJECTION)</div>
+        <div style={{ fontSize: 10, color: "#94a3b8" }}>{shardsTotal} SHARDS (CHAIR44 | SH4Z v3101 TLV)</div>
       </div>
 
       <div style={{
@@ -85,7 +85,7 @@ export const TelemetryHud: React.FC<TelemetryHudProps> = (props) => {
         padding: "12px 16px"
       }}>
         <div style={{ fontSize: 10, letterSpacing: 1, color: "#c084fc" }}>SIERPINSKI 1.58-BIT & MALI L2</div>
-        <div style={{ fontSize: 15, fontWeight: "bold", color: "#e9d5ff", margin: "2px 0" }}>240/960 STALKS (13,056 B)</div>
+        <div style={{ fontSize: 15, fontWeight: "bold", color: "#e9d5ff", margin: "2px 0" }}>240/960 STALKS (13,056B .e8t + 29,120B .e8z)</div>
         <div style={{ fontSize: 10, color: "#94a3b8" }}>PIXEL 8 MALI L2 FREE: {maliHeadroom}%</div>
       </div>
 
@@ -123,7 +123,7 @@ export const TelemetryHud: React.FC<TelemetryHudProps> = (props) => {
       }}>
         <div style={{ fontSize: 10, letterSpacing: 1, color: "#fb7185" }}>HYPERBOLIC CFT &amp; HORIZON</div>
         <div style={{ fontSize: 15, fontWeight: "bold", color: "#fda4af", margin: "2px 0" }}>{focusGain}x GAIN | CFT 0.125</div>
-        <div style={{ fontSize: 10, color: "#94a3b8" }}>PPL 1.199 (-86.8%) | 27x BEAM</div>
+        <div style={{ fontSize: 10, color: "#94a3b8" }}>PPL 1.199 (-86.8%) | UARM 4-MODEL | 27x BEAM</div>
       </div>
     </div>
   );

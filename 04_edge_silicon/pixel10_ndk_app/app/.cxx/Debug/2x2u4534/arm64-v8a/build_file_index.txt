@@ -1,0 +1,1 @@
+C:\sovereign_manifold_v31\04_edge_silicon\pixel10_ndk_app\jni\CMakeLists.txt

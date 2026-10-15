@@ -1,0 +1,1 @@
+C:\sovereign_manifold_v31\04_edge_silicon\pixel10_ndk_app\app\build\intermediates\cxx\Debug\2x2u4534\obj\arm64-v8a

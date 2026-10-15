@@ -31,11 +31,11 @@ export function TelemetryHud({ telemetry, connected }: TelemetryHudProps) {
     return () => { ok = false; clearInterval(t); };
   }, []);
 
-  const bx = telemetry?.b_field_ut?.x ?? sw.bx_ut ?? 227.9;
-  const by = telemetry?.b_field_ut?.y ?? sw.by_ut ?? -145.5;
-  const bz = telemetry?.b_field_ut?.z ?? sw.bz_ut ?? -55.0;
+  const bx = sw.bx_ut ?? telemetry?.b_field_ut?.x ?? 227.9;
+  const by = sw.by_ut ?? telemetry?.b_field_ut?.y ?? -145.5;
+  const bz = sw.bz_ut ?? telemetry?.b_field_ut?.z ?? -55.0;
   const bNorm = Math.sqrt(bx * bx + by * by + bz * bz);
-  const seqNum = telemetry?.sequence_num ?? telemetry?.seq ?? 8636;
+  const seqNum = sw.p10_sync_count ?? telemetry?.sequence_num ?? 8636;
   const baro = sw.baro_hpa ?? 917.2;
   const lux = sw.light_lux ?? 4.0;
   const prox = sw.prox_cm ?? 5.0;

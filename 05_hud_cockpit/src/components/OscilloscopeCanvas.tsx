@@ -51,10 +51,10 @@ export function OscilloscopeCanvas({ telemetry }: OscilloscopeCanvasProps) {
       const tData = teleRef.current || {};
       const sData = swarmRef.current || {};
 
-      const bx = tData?.b_field_ut?.x ?? sData.bx_ut ?? 22.8;
-      const by = tData?.b_field_ut?.y ?? sData.by_ut ?? -41.2;
-      const bz = tData?.b_field_ut?.z ?? sData.bz_ut ?? 12.8;
-      const seq = tData?.sequence_num ?? tData?.seq ?? 5059;
+      const bx = sData.bx_ut ?? tData?.b_field_ut?.x ?? 22.8;
+      const by = sData.by_ut ?? tData?.b_field_ut?.y ?? -41.2;
+      const bz = sData.bz_ut ?? tData?.b_field_ut?.z ?? 12.8;
+      const seq = sData.p10_sync_count ?? tData?.sequence_num ?? 5059;
       const baro = sData.baro_hpa ?? 923.8;
       const aNorm = sData.acc_norm ?? 9.82;
       const gNorm = sData.gyr_norm ?? 0.25;

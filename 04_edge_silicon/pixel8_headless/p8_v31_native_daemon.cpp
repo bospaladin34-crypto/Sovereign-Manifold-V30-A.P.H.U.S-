@@ -144,7 +144,7 @@ int main(int argc, char** argv) {
             std::printf("[P8 C++23 Daemon] Spawned background L2-resident worker PID=%d\n", static_cast<int>(fpid));
             return 0;
         }
-        setsid();
+        setsid(); close(0); close(1); close(2);
     }
 
     const pid_t my_pid = getpid();

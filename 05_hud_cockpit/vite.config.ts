@@ -3,6 +3,19 @@ import react from "@vitejs/plugin-react";
 import { Worker } from "node:worker_threads";
 import path from "node:path";
 
+process.on("uncaughtException", (_err) => {});
+process.on("unhandledRejection", (_reason) => {});
+
+const shieldProxy = (proxy: any) => {
+  proxy.on("error", (_err: any, _req: any, _res: any) => {});
+  proxy.on("proxyReqWs", (_proxyReq: any, _req: any, socket: any) => {
+    socket.on("error", () => {});
+  });
+  proxy.on("open", (proxySocket: any) => {
+    proxySocket.on("error", () => {});
+  });
+};
+
 function track3111WorkerPlugin() {
   return {
     name: "act-omega-track-31-11-worker",
@@ -37,19 +50,28 @@ export default defineConfig({
     proxy: {
       "/api": {
         target: "http://127.0.0.1:8099",
-        changeOrigin: true
+        changeOrigin: true,
+        configure: shieldProxy
       },
       "/ws": {
         target: "ws://127.0.0.1:8099",
-        ws: true
+        ws: true,
+        configure: shieldProxy
       },
       "/swarm": {
         target: "http://127.0.0.1:8097",
-        changeOrigin: true
+        changeOrigin: true,
+        configure: shieldProxy
       },
       "/utcp_ste_sync": {
         target: "http://127.0.0.1:8097",
-        changeOrigin: true
+        changeOrigin: true,
+        configure: shieldProxy
+      },
+      "/ota_sh4z_delta": {
+        target: "http://127.0.0.1:8097",
+        changeOrigin: true,
+        configure: shieldProxy
       }
     }
   }

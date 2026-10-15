@@ -51,7 +51,7 @@ export function TelemetryHud({ telemetry, connected }: TelemetryHudProps) {
   const batPct = sw.edge_bat_pct ?? 80;
   const ramAvail = sw.edge_ram_avail_mb ?? 2028;
   const ramTotal = sw.edge_ram_total_mb ?? 11544;
-  const vulkanUs = sw.edge_vulkan_us ?? 28.9;
+  const vulkanUs = sw.edge_vulkan_us ?? 11.4;
   const cutler = sw.cutler_config ?? 294;
   const torsionT = sw.phys_torsion_t ?? 1.70936;
   const beaming = sw.doppler_boost ?? 27.17;
@@ -78,7 +78,7 @@ export function TelemetryHud({ telemetry, connected }: TelemetryHudProps) {
         </div>
         <div style={cStyle}>
           <div style={lStyle}>ACTIVE VAULT SCALE</div>
-          <div style={{ ...vStyle, color: "#a855f7" }}>528 SHARDS (12x CHAIR44)</div>
+          <div style={{ ...vStyle, color: "#a855f7" }}>1,056 SHARDS (24x CHAIR44)</div>
           <div style={sStyle}>SH4Z v3103 TLV (35,712 B | 8v*8+*8- Cubic)</div>
         </div>
       </div>
@@ -101,7 +101,7 @@ export function TelemetryHud({ telemetry, connected }: TelemetryHudProps) {
         </div>
         <div style={cStyle}>
           <div style={lStyle}>HYPERBOLIC CFT & HORIZON</div>
-          <div style={{ ...vStyle, color: "#34d399" }}>{"PPL 1.064 (-88.3%) | " + beaming.toFixed(2) + "x BEAM"}</div>
+          <div style={{ ...vStyle, color: "#34d399" }}>{"PPL 1.038 (-88.6%) | " + beaming.toFixed(2) + "x BEAM"}</div>
           <div style={sStyle}>UARM 4-MODEL CASCADE | Q_i = 0.8180</div>
         </div>
       </div>

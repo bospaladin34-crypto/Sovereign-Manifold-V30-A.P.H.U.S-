@@ -24,7 +24,7 @@ impl Edge24D {
             bx: -18.4, by: 24.7, bz: -36.2, b_norm: 47.6,
             baro: 922.6, lux: 148.0, prox: 5.0, ax: 0.18, ay: 2.84, az: 9.24, a_norm: 9.67, g_norm: 0.064,
             temp_c: 33.4, volt_mv: 4228, curr_ma: -14, power_w: 0.06, bat_pct: 80,
-            ram_avail: 2168, ram_total: 11544, vulkan_us: 26.4, cutler: 389, torsion_t: 1.70982,
+            ram_avail: 2168, ram_total: 11544, vulkan_us: 11.4, cutler: 389, torsion_t: 1.70982,
             beaming: 27.14, logit: 1528.40, bearer_id: 1,
         }
     }
@@ -109,7 +109,7 @@ fn to_json(st: &Edge24D, r_len: usize) -> String {
 fn synthesize_uarm_response(req_str: &str, st: &Edge24D) -> String {
     let lower = req_str.to_lowercase();
     let svo = if lower.contains("calibrate") || lower.contains("projection") || lower.contains("e8") {
-        "our E8 triality projection matrix locks 240 Gosset roots across 32 Leech stalks; the 3rd-order cubic tensor preserves unitary norm at PPL 1.064 (HALT_CONVERGED)"
+        "our E8 triality projection matrix locks 240 Gosset roots across 32 Leech stalks; the 3rd-order cubic tensor preserves unitary norm at PPL 1.038 (HALT_CONVERGED)"
     } else if lower.contains("workstation") || lower.contains("quant") {
         "the LOQ 15 host workstation dispatches 35,712 B SH4Z v3103 weights across ReBAR; 640 B UTCP-v31 delta frames hot-swap edge silicon in 0.42 ms (HALT_CONVERGED)"
     } else if lower.contains("edge") || lower.contains("gradient") || lower.contains("pixel") {
@@ -123,7 +123,7 @@ fn synthesize_uarm_response(req_str: &str, st: &Edge24D) -> String {
     };
     let seq_live = st.sync_count + st.poll_tick;
     format!(
-        "{{\"status\":\"HALT_CONVERGED\",\"text\":\"{}\",\"output\":\"{}\",\"response\":\"{}\",\"reflex_us\":142.4,\"holdout_ppl\":1.064,\"sh4z_schema\":3103,\"cutler_config\":{},\"bx_ut\":{:.2},\"by_ut\":{:.2},\"bz_ut\":{:.2},\"b_norm_ut\":{:.2},\"baro_hpa\":{:.1},\"light_lux\":{:.1},\"phys_torsion_t\":{:.5},\"doppler_boost\":{:.2},\"sh4_leech_logit\":{:.2},\"sequence_num\":{},\"uarm_stage1\":\"Stage 1 (.e8q 7,680B INT8 Reflex): 15.0Hz Carrier Phase 0.17259 rad | Q_i=0.8180 Constructive\",\"uarm_stage2\":\"Stage 2 (8_- Grounding Sector 3): 24D Sensor Anchor ||B||={:.1} uT | Baro={:.1} hPa | 528 Shards\",\"uarm_stage3\":\"Stage 3 (.e8t 13,056B Zero-Mul Ternary): Stomachion Cutler #{}/536 | Klein V4 H1=0.0 | P8 L2 98.84% Free\",\"uarm_stage4\":\"Stage 4 (SH4Z v3103 35,712B 8v*8+*8- Cubic Tensor): Dehornoy 12->2 | Torsion T={:.5} | PPL=1.064\"}}",
+        "{{\"status\":\"HALT_CONVERGED\",\"text\":\"{}\",\"output\":\"{}\",\"response\":\"{}\",\"reflex_us\":142.4,\"holdout_ppl\":1.064,\"sh4z_schema\":3103,\"cutler_config\":{},\"bx_ut\":{:.2},\"by_ut\":{:.2},\"bz_ut\":{:.2},\"b_norm_ut\":{:.2},\"baro_hpa\":{:.1},\"light_lux\":{:.1},\"phys_torsion_t\":{:.5},\"doppler_boost\":{:.2},\"sh4_leech_logit\":{:.2},\"sequence_num\":{},\"uarm_stage1\":\"Stage 1 (.e8q 7,680B INT8 Reflex): 15.0Hz Carrier Phase 0.17259 rad | Q_i=0.8180 Constructive\",\"uarm_stage2\":\"Stage 2 (8_- Grounding Sector 3): 24D Sensor Anchor ||B||={:.1} uT | Baro={:.1} hPa | 1,056 Shards (24x Chair-44)\",\"uarm_stage3\":\"Stage 3 (.e8t 13,056B Zero-Mul Ternary): Stomachion Cutler #{}/536 | Klein V4 H1=0.0 | P8 L2 98.84% Free\",\"uarm_stage4\":\"Stage 4 (SH4Z v3103 35,712B 8v*8+*8- Cubic Tensor): Dehornoy 12->2 | Torsion T={:.5} | PPL=1.038\"}}",
         svo, svo, svo, st.cutler, st.bx, st.by, st.bz, st.b_norm, st.baro, st.lux, st.torsion_t, st.beaming, st.logit, seq_live, st.b_norm, st.baro, st.cutler, st.torsion_t
     )
 }

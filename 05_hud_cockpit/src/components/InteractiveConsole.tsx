@@ -13,8 +13,8 @@ const TOOL_CHIPS = [
   { id: "tool:silicon_cluster_audit", label: "TOOL: Silicon Audit" },
   { id: "tool:leech_24d_calculator", label: "TOOL: 24D Leech Calc" },
   { id: "tool:autopoietic_qat_step", label: "TOOL: Autopoietic QAT Step" },
-  { id: "tool:vault_shard_search", label: "TOOL: Vault Search (1,056)" },
-  { id: "tool:cloudflare_beacon_sync", label: "TOOL: Cloudflare WAN Beacon" }
+  { id: "tool:vault_shard_search", label: "TOOL: Vault Search (1,100)" },
+  { id: "tool:cloudflare_beacon_sync", label: "TOOL: Cloudflare WAN Beacon" }, { id: "tool:chain_all", label: "CHAIN: 4-Tool Auto-Loop" }
 ];
 
 export function InteractiveConsole({ telemetry }: { telemetry?: any }) {
@@ -34,7 +34,7 @@ export function InteractiveConsole({ telemetry }: { telemetry?: any }) {
   const [logs, setLogs] = useState<string[]>([
     "> PROMPT: the tri silicon cluster unifies loq pixel10 and pixel8",
     "[24D Sensory Anchor: Bx=-33.2 uT -- By=2.4 uT -- Bz=-71.2 uT (norm(B)=78.6 uT) -- Baro=922.5 hPa -- Autopoietic Gen #24]",
-    "> OUTPUT: Tri-Silicon Unification (LOQ 15 + Pixel 10 + Pixel 8) locks Aharonov-Bohm Plaquette phase at 0.02259 rad (W=0.999936) across 1,056 Chair-44 shards (24 orbits) with Autopoietic Gen #24 (PPL=1.011) (HALT_CONVERGED)"
+    "> OUTPUT: Tri-Silicon Unification (LOQ 15 + Pixel 10 + Pixel 8) locks Aharonov-Bohm Plaquette phase at 0.02259 rad (W=0.999936) across 1,100 Chair-44 shards (25 orbits) with Autopoietic Gen #24 (PPL=1.011) (HALT_CONVERGED)"
   ]);
 
   const bx = telemetry?.bx_ut ?? telemetry?.b_field_ut?.x ?? -33.2;
@@ -79,7 +79,7 @@ export function InteractiveConsole({ telemetry }: { telemetry?: any }) {
   const runToolCall = async (toolId: string) => {
     setIsGenerating(true);
     try {
-      const r = await fetch("/api/v1/harmonic/tool_call?tool=" + encodeURIComponent(toolId) + "&q=" + encodeURIComponent(prompt));
+      const ep = toolId === "tool:chain_all" ? "/api/v1/harmonic/tool_chain?q=" + encodeURIComponent(prompt) : "/api/v1/harmonic/tool_call?tool=" + encodeURIComponent(toolId) + "&q=" + encodeURIComponent(prompt); const r = await fetch(ep);
       const d = await r.json();
       if (d.autopoietic_gen) setAutoGen(d.autopoietic_gen);
       if (d.plasticity_norm) setPlasticity(d.plasticity_norm);

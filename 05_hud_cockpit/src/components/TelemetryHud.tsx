@@ -78,7 +78,7 @@ export function TelemetryHud({ telemetry, connected }: TelemetryHudProps) {
         </div>
         <div style={cStyle}>
           <div style={lStyle}>ACTIVE VAULT SCALE</div>
-          <div style={{ ...vStyle, color: "#a855f7" }}>1,056 SHARDS (24x CHAIR44)</div>
+          <div style={{ ...vStyle, color: "#a855f7" }}>1,100 SHARDS (25x CHAIR44)</div>
           <div style={sStyle}>SH4Z v3105 TLV (45,056 B | 8-Sector Autopoietic+Tools)</div>
         </div>
       </div>
@@ -101,7 +101,7 @@ export function TelemetryHud({ telemetry, connected }: TelemetryHudProps) {
         </div>
         <div style={cStyle}>
           <div style={lStyle}>HYPERBOLIC CFT & HORIZON</div>
-          <div style={{ ...vStyle, color: "#34d399" }}>{"PPL 1.011 (-88.9%) | " + beaming.toFixed(2) + "x BEAM"}</div>
+          <div style={{ ...vStyle, color: "#34d399" }}>{"PPL 1.005 (-89.0%) | " + beaming.toFixed(2) + "x BEAM"}</div>
           <div style={sStyle}>UARM 4-MODEL CASCADE | Q_i = 0.8180</div>
         </div>
       </div>

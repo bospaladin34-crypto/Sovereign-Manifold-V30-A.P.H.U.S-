@@ -1,6 +1,7 @@
 # ACT-Omega Net v31.3 (Sovereign Harmonic IV / SH4Z v3104 TLV) — Tri-Silicon Sovereign Compute Manifold
 
 <p align="left">
+  <a href="https://doi.org/10.5281/zenodo.23407176"><img src="https://img.shields.io/badge/ZENODO_DOI-10.5281%2Fzenodo.23407176-2563eb?style=for-the-badge" alt="DOI 10.5281/zenodo.23407176" /></a>
   <img src="https://img.shields.io/badge/STATUS-SOVEREIGN_PRODUCTION_V31.3_CERTIFIED-10b981?style=for-the-badge" alt="Status" />
   <img src="https://img.shields.io/badge/MANIFOLD-ACT--OMEGA_NET_V31.3-38bdf8?style=for-the-badge" alt="Manifold" />
   <img src="https://img.shields.io/badge/MODEL-SH4Z_v3104_6--SECTOR_40,960B-a855f7?style=for-the-badge" alt="Model" />

@@ -2,6 +2,7 @@ cff-version: 1.2.0
 message: "If you use ACT-Omega Net v31.3 or the Sovereign Harmonic IV (SH4Z v3104) model and framework in your research, please cite it using the metadata below."
 title: "ACT-Omega Net v31.3 & Sovereign Harmonic IV (SH4Z v3104): A Tri-Silicon 24D Leech Lattice, E8 Zigzag, and 1.58-Bit Ternary Topological Computing Framework"
 version: "31.3.0"
+doi: "10.5281/zenodo.23407176"
 date-released: "2026-10-15"
 license: "MIT"
 repository-code: "https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-"

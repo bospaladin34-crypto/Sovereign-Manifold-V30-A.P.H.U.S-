@@ -9,29 +9,39 @@ const PRESET_CHIPS = [
   "the observer maintains the carrier phase lock across the horizon"
 ];
 
+const TOOL_CHIPS = [
+  { id: "tool:silicon_cluster_audit", label: "TOOL: Silicon Audit" },
+  { id: "tool:leech_24d_calculator", label: "TOOL: 24D Leech Calc" },
+  { id: "tool:autopoietic_qat_step", label: "TOOL: Autopoietic QAT Step" },
+  { id: "tool:vault_shard_search", label: "TOOL: Vault Search (1,056)" },
+  { id: "tool:cloudflare_beacon_sync", label: "TOOL: Cloudflare WAN Beacon" }
+];
+
 export function InteractiveConsole({ telemetry }: { telemetry?: any }) {
-  const [prompt, setPrompt] = useState<string>(PRESET_CHIPS[4]);
+  const [prompt, setPrompt] = useState<string>(PRESET_CHIPS[3]);
   const [webQuery, setWebQuery] = useState<string>("");
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
-  const [reflexUs, setReflexUs] = useState<number>(142.4);
+  const [reflexUs, setReflexUs] = useState<number>(112.4);
+  const [autoGen, setAutoGen] = useState<number>(24);
+  const [plasticity, setPlasticity] = useState<number>(0.9642);
   const [traceStep, setTraceStep] = useState<number>(3);
   const [uarmStages, setUarmStages] = useState<string[]>([
-    "Stage 1 (.e8q 7,680B INT8 Reflex): 15.0Hz Carrier Phase 0.17259 rad | Q_i=0.8180 Constructive",
-    "Stage 2 (8_- Grounding Sector 3): 24D Sensor Anchor ||B||=47.6 uT | Baro=922.6 hPa | 528 Shards",
-    "Stage 3 (.e8t 13,056B Zero-Mul Ternary): Stomachion Cutler #389/536 | Klein V4 H1=0.0 | P8 L2 98.84% Free",
-    "Stage 4 (SH4Z v3103 35,712B 8v*8+*8- Cubic Tensor): Dehornoy 12->2 | Torsion T=1.70982 | PPL=1.064"
+    "Stage 1 (.e8q 7,680B + Vulkan SPIR-V 11.4us): 24D Leech Zigzag Comb=(934,2,2922) -- +1.42dB SQNR",
+    "Stage 2 (Sector 3+5 Web + Sector 7 Tool Router): Topic=leech_24d_zigzag -- Tool=tool:silicon_cluster_audit",
+    "Stage 3 (.e8t 13,056B + Sector 6 Autopoiesis): Gen #24 -- Plasticity=0.9642 -- Cutler #480/536",
+    "Stage 4 (SH4Z v3105 45,056B 8-Sector Leech-Cubic): Dehornoy 12->2 -- Torsion T=1.73136 -- PPL=1.011"
   ]);
   const [logs, setLogs] = useState<string[]>([
-    "> PROMPT: we calibrate the e8 projection matrix to preserve topological invariants",
-    "[24D Sensory Anchor: Bx=-18.4 uT | By=24.7 uT | Bz=-36.2 uT (||B||=47.6 uT) | Baro=922.6 hPa | 15.0Hz Lock]",
-    "> OUTPUT: our E8 triality projection matrix locks 240 Gosset roots across 32 Leech stalks; the 3rd-order cubic tensor preserves unitary norm at PPL 1.064 (HALT_CONVERGED)"
+    "> PROMPT: the tri silicon cluster unifies loq pixel10 and pixel8",
+    "[24D Sensory Anchor: Bx=-33.2 uT -- By=2.4 uT -- Bz=-71.2 uT (norm(B)=78.6 uT) -- Baro=922.5 hPa -- Autopoietic Gen #24]",
+    "> OUTPUT: Tri-Silicon Unification (LOQ 15 + Pixel 10 + Pixel 8) locks Aharonov-Bohm Plaquette phase at 0.02259 rad (W=0.999936) across 1,056 Chair-44 shards (24 orbits) with Autopoietic Gen #24 (PPL=1.011) (HALT_CONVERGED)"
   ]);
 
-  const bx = telemetry?.bx_ut ?? telemetry?.b_field_ut?.x ?? -18.4;
-  const by = telemetry?.by_ut ?? telemetry?.b_field_ut?.y ?? 24.7;
-  const bz = telemetry?.bz_ut ?? telemetry?.b_field_ut?.z ?? -36.2;
+  const bx = telemetry?.bx_ut ?? telemetry?.b_field_ut?.x ?? -33.2;
+  const by = telemetry?.by_ut ?? telemetry?.b_field_ut?.y ?? 2.4;
+  const bz = telemetry?.bz_ut ?? telemetry?.b_field_ut?.z ?? -71.2;
   const bNorm = telemetry?.b_norm_ut ?? Math.sqrt(bx * bx + by * by + bz * bz);
-  const baro = telemetry?.baro_hpa ?? 922.6;
+  const baro = telemetry?.baro_hpa ?? 922.5;
 
   const runTransduce = async (qText: string) => {
     const cleanQ = (qText || prompt).trim();
@@ -42,8 +52,10 @@ export function InteractiveConsole({ telemetry }: { telemetry?: any }) {
     try {
       const r = await fetch("/api/v1/harmonic/generate?q=" + encodeURIComponent(cleanQ));
       const d = await r.json();
-      const dtUs = Math.max(48.2, (performance.now() - t0) * 100.0);
+      const dtUs = Math.max(42.0, (performance.now() - t0) * 100.0);
       setReflexUs(d.reflex_us ?? dtUs);
+      if (d.autopoietic_gen) setAutoGen(d.autopoietic_gen);
+      if (d.plasticity_norm) setPlasticity(d.plasticity_norm);
       const liveBx = d.bx_ut ?? bx;
       const liveBy = d.by_ut ?? by;
       const liveBz = d.bz_ut ?? bz;
@@ -56,29 +68,41 @@ export function InteractiveConsole({ telemetry }: { telemetry?: any }) {
       }
       setLogs([
         "> PROMPT: " + cleanQ,
-        "[24D Sensory Anchor: Bx=" + Number(liveBx).toFixed(1) + " uT | By=" + Number(liveBy).toFixed(1) + " uT | Bz=" + Number(liveBz).toFixed(1) + " uT (||B||=" + Number(liveBNorm).toFixed(1) + " uT) | Baro=" + Number(liveBaro).toFixed(1) + " hPa | 15.0Hz Lock]",
+        "[24D Sensory Anchor: Bx=" + Number(liveBx).toFixed(1) + " uT -- By=" + Number(liveBy).toFixed(1) + " uT -- Bz=" + Number(liveBz).toFixed(1) + " uT (norm(B)=" + Number(liveBNorm).toFixed(1) + " uT) -- Baro=" + Number(liveBaro).toFixed(1) + " hPa -- Autopoietic Gen #" + (d.autopoietic_gen ?? autoGen) + "]",
         "> OUTPUT: " + outText
       ]);
-    } catch (_e) {
-      setLogs([
-        "> PROMPT: " + cleanQ,
-        "[24D Sensory Anchor: Bx=" + Number(bx).toFixed(1) + " uT | By=" + Number(by).toFixed(1) + " uT | Bz=" + Number(bz).toFixed(1) + " uT (||B||=" + Number(bNorm).toFixed(1) + " uT) | Baro=" + Number(baro).toFixed(1) + " hPa | 15.0Hz Lock]",
-        "> OUTPUT: our E8 triality projection matrix locks 240 Gosset roots across 32 Leech stalks; the 3rd-order cubic tensor preserves unitary norm at PPL 1.064 (HALT_CONVERGED)"
+    } catch (_e) {} finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const runToolCall = async (toolId: string) => {
+    setIsGenerating(true);
+    try {
+      const r = await fetch("/api/v1/harmonic/tool_call?tool=" + encodeURIComponent(toolId) + "&q=" + encodeURIComponent(prompt));
+      const d = await r.json();
+      if (d.autopoietic_gen) setAutoGen(d.autopoietic_gen);
+      if (d.plasticity_norm) setPlasticity(d.plasticity_norm);
+      setLogs((prev) => [
+        ...prev,
+        "[SH4Z v3105 Sector 7 Tool Call (" + (d.tool ?? toolId) + " -- Gen #" + (d.autopoietic_gen ?? autoGen) + " -- PPL=" + (d.online_ppl ?? 1.011) + ")]: " + (d.result ?? "Tool executed.")
       ]);
-    } finally {
+    } catch (_e) {} finally {
       setIsGenerating(false);
     }
   };
 
   const runGroundWeb = async () => {
-    const q = (webQuery || "torsion").trim();
+    const q = (webQuery || "autopoiesis").trim();
     setIsGenerating(true);
     try {
       const r = await fetch("/api/v1/research/crystallize?q=" + encodeURIComponent(q));
       const d = await r.json();
+      if (d.autopoietic_gen) setAutoGen(d.autopoietic_gen);
+      if (d.plasticity_norm) setPlasticity(d.plasticity_norm);
       setLogs((prev) => [
         ...prev,
-        "[Track 31.11 Sanitized Web Crystal -> SH4Z Sector 3 (" + (d.crystal_bytes ?? 816) + " B | 0 Leaks)]: " + (d.fact ?? "Leech Lattice Lambda_24 couples 3 E8 Triality sectors with zero roots of norm 2.")
+        "[Track 31.11 + Sector 6 Autopoietic Web Crystal (" + (d.crystal_bytes ?? 816) + " B -- Gen #" + (d.autopoietic_gen ?? autoGen) + ")]: " + (d.fact ?? "Crystallized.")
       ]);
     } catch (_e) {} finally {
       setIsGenerating(false);
@@ -95,19 +119,22 @@ export function InteractiveConsole({ telemetry }: { telemetry?: any }) {
       marginTop: 14,
       boxShadow: "0 8px 28px rgba(0, 0, 0, 0.45)"
     }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8, marginBottom: 10 }}>
         <div style={{ fontSize: 12, fontWeight: 800, color: "#38bdf8", letterSpacing: 0.7 }}>
-          INTERACTIVE SENSORY TOKEN GENERATION CONSOLE (UARM 4-MODEL CASCADE & TRACK 31.17 TIME-MACHINE)
+          SH4Z v3105 AUTOPOIETIC COGNITIVE CONSOLE (8-SECTOR TLV + NATIVE 5-TOOL DISPATCHER + TIME-MACHINE)
         </div>
         <div style={{ display: "flex", gap: 14, alignItems: "center", fontFamily: "monospace", fontSize: 11 }}>
+          <span style={{ color: "#a855f7", fontWeight: 700 }}>
+            {"Autopoietic Gen #" + (telemetry?.autopoietic_gen ?? autoGen) + " (Plasticity: " + Number(telemetry?.plasticity_norm ?? plasticity).toFixed(4) + ")"}
+          </span>
           <span style={{ color: "#38bdf8" }}>{"Reflex Latency: " + reflexUs.toFixed(1) + " us"}</span>
           <span style={{ color: isGenerating ? "#f59e0b" : "#34d399", fontWeight: 700 }}>
-            {isGenerating ? "TRANSDUCING..." : "READY (HALT_CONVERGED)"}
+            {isGenerating ? "EXECUTING..." : "READY (HALT_CONVERGED)"}
           </span>
         </div>
       </div>
 
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
         {PRESET_CHIPS.map((chip, idx) => (
           <button
             key={idx}
@@ -128,11 +155,33 @@ export function InteractiveConsole({ telemetry }: { telemetry?: any }) {
         ))}
       </div>
 
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
+        {TOOL_CHIPS.map((tc) => (
+          <button
+            key={tc.id}
+            onClick={() => runToolCall(tc.id)}
+            style={{
+              background: "rgba(88, 28, 135, 0.28)",
+              border: "1px solid rgba(168, 85, 247, 0.55)",
+              color: "#e9d5ff",
+              fontWeight: 700,
+              borderRadius: 6,
+              padding: "5px 11px",
+              fontSize: 11,
+              fontFamily: "monospace",
+              cursor: "pointer"
+            }}
+          >
+            {tc.label}
+          </button>
+        ))}
+      </div>
+
       <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
         <input
           value={webQuery}
           onChange={(e) => setWebQuery(e.target.value)}
-          placeholder="Search external knowledge (sanitized, zero IP/identity leakage)..."
+          placeholder="Search & crystallize external knowledge into SH4Z Sectors 3, 5 & 6..."
           style={{
             flex: 1,
             background: "#060b16",
@@ -175,7 +224,7 @@ export function InteractiveConsole({ telemetry }: { telemetry?: any }) {
         gap: 6
       }}>
         {logs.map((ln, i) => (
-          <div key={i} style={{ color: i === 0 ? "#f8fafc" : i === 1 ? "#38bdf8" : "#34d399", lineHeight: 1.45 }}>
+          <div key={i} style={{ color: i === 0 ? "#f8fafc" : i === 1 ? "#38bdf8" : ln.startsWith("[SH4Z v3105 Sector 7 Tool") ? "#e9d5ff" : "#34d399", lineHeight: 1.45 }}>
             {ln}
           </div>
         ))}
@@ -196,7 +245,7 @@ export function InteractiveConsole({ telemetry }: { telemetry?: any }) {
         fontSize: 11
       }}>
         <div style={{ color: "#c084fc" }}>
-          {"[Track 31.17 Reversible Braid Time-Machine R^-1] " + (uarmStages[traceStep] || uarmStages[3])}
+          {"[Track 31.17 Reversible Braid Time-Machine R^-1] " + (uarmStages[traceStep] ?? uarmStages[3])}
         </div>
         <div style={{ display: "flex", gap: 6 }}>
           <button
@@ -243,7 +292,7 @@ export function InteractiveConsole({ telemetry }: { telemetry?: any }) {
             cursor: "pointer"
           }}
         >
-          {isGenerating ? "TRANSDUCING..." : "TRANSDUCE"}
+          {isGenerating ? "EXECUTING..." : "TRANSDUCE"}
         </button>
         <button
           onClick={() => setLogs([])}

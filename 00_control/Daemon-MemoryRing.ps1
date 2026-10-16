@@ -13,8 +13,8 @@ while(1){
     if(-not($cfProc)){
         $cfLog = "C:\sovereign_manifold_v31\00_control\cloudflared_live.log"
         Remove-Item -Path($cfLog) -Force -ErrorAction SilentlyContinue
-        Start-Process -FilePath "C:\sovereign_manifold_v31\00_control\cloudflared.exe" -ArgumentList("tunnel --url http://127.0.0.1:5173 --no-autoupdate --logfile C:\sovereign_manifold_v31\00_control\cloudflared_live.log") -WindowStyle Hidden
-        Start-Sleep -Seconds 5
+        Start-Process -FilePath "C:\sovereign_manifold_v31\00_control\cloudflared.exe" -ArgumentList("tunnel --protocol http2 --url http://127.0.0.1:5173 --no-autoupdate --logfile C:\sovereign_manifold_v31\00_control\cloudflared_live.log") -WindowStyle Hidden
+        Start-Sleep -Seconds 6
         if(Test-Path -Path($cfLog)){
             $lines =
                 Get-Content -Path($cfLog) -ErrorAction SilentlyContinue

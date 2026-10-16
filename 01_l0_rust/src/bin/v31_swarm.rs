@@ -1,12 +1,13 @@
 // C:\sovereign_manifold_v31\01_l0_rust\src\bin\v31_swarm.rs
 // ACT-Omega Net v31.4 (SH4Z v3105): 8-Sector Autopoietic Hebbian STE Engine,
-// Native 5-Tool Calling Dispatcher & 4-Bearer Permanent WAN Multiplexer (:8097 + :5173)
+// Native 5-Tool Calling Dispatcher & No-502 Cloudflare Origin Multiplexer (:8097 + :5173)
 use std::env;
 use std::fs;
 use std::io::{self, Read, Write};
-use std::net::{TcpListener, TcpStream};
+use std::net::{Shutdown, TcpListener, TcpStream};
 use std::sync::{Arc, Mutex};
 use std::thread;
+use std::time::Duration;
 
 struct Edge24D {
     sync_count: u64, poll_tick: u64,
@@ -25,23 +26,36 @@ struct Edge24D {
 impl Edge24D {
     fn new(init_wan: String) -> Self {
         Edge24D {
-            sync_count: 10420, poll_tick: 0,
-            bx: -33.2, by: 2.4, bz: -71.2, b_norm: 78.6,
-            baro: 922.5, lux: 138.0, prox: 5.0, ax: 0.61, ay: -0.22, az: 9.65, a_norm: 9.67, g_norm: 0.573,
-            temp_c: 33.3, volt_mv: 4240, curr_ma: -4, power_w: 0.02, bat_pct: 80,
-            ram_avail: 2169, ram_total: 11544, vulkan_us: 11.4, cutler: 480, torsion_t: 1.73136,
-            beaming: 27.31, logit: 1566.84, bearer_id: 1,
-            zz_comb_8v: 934, zz_comb_8p: 2, zz_comb_8m: 2922,
+            sync_count: 10485, poll_tick: 0,
+            bx: -30.8, by: -38.6, bz: -42.6, b_norm: 65.2,
+            baro: 922.6, lux: 112.0, prox: 5.0, ax: 0.89, ay: 5.94, az: 7.58, a_norm: 9.67, g_norm: 0.419,
+            temp_c: 37.3, volt_mv: 4230, curr_ma: 7, power_w: 0.03, bat_pct: 80,
+            ram_avail: 1901, ram_total: 11544, vulkan_us: 11.4, cutler: 364, torsion_t: 1.72493,
+            beaming: 27.23, logit: 1548.39, bearer_id: 1,
+            zz_comb_8v: 974, zz_comb_8p: 6, zz_comb_8m: 3022,
             web_topic: String::from("leech_24d_zigzag"),
             web_fact: String::from("The 24D Leech Lattice Lambda_24 (kissing number 196,560) couples 3 E8 Triality sectors (8_v + 8_+ + 8_-) via 8D FWHT and bit-exact E8^int zigzag parity stripping (+1.42 dB SQNR, -1.0 bps)."),
             web_crystals: 18,
-            autopoietic_gen: 24, plasticity_norm: 0.9642, online_ppl: 1.011,
+            autopoietic_gen: 28, plasticity_norm: 0.9670, online_ppl: 1.011,
             last_tool_name: String::from("tool:silicon_cluster_audit"),
             last_tool_result: String::from("Tri-Silicon Cluster Healthy: LOQ 15 (:8097+:5173) + Pixel 10 (24D Leech 11.4us) + Pixel 8 (98.84% L2 Free)"),
-            tool_calls_count: 8,
+            tool_calls_count: 12,
             wan_url: init_wan,
         }
     }
+}
+
+fn finish_http(mut s: TcpStream, hdr: &str, body: &[u8]) {
+    let _ = s.set_write_timeout(Some(Duration::from_millis(2000)));
+    let _ = s.set_read_timeout(Some(Duration::from_millis(40)));
+    let _ = s.write_all(hdr.as_bytes());
+    if !body.is_empty() {
+        let _ = s.write_all(body);
+    }
+    let _ = s.flush();
+    let _ = s.shutdown(Shutdown::Write);
+    let mut drain: Vec<u8> = vec!(0u8; 512);
+    let _ = s.read(&mut drain);
 }
 
 fn pq(q: &str, k: &str) -> Option<f64> {
@@ -224,7 +238,7 @@ fn lookup_web_knowledge(q_clean: &str) -> (String, String) {
     } else if q_clean.contains("tool") || q_clean.contains("dispatch") || q_clean.contains("router") {
         (String::from("sh4z_tool_calling"), String::from("SH4Z v3105 Sector 7 Native Tool-Calling Router deterministically dispatches silicon_cluster_audit, leech_24d_calculator, autopoietic_qat_step, vault_shard_search, and cloudflare_beacon_sync."))
     } else if q_clean.contains("cloudflare") || q_clean.contains("beacon") || q_clean.contains("wan") || q_clean.contains("tunnel") {
-        (String::from("permanent_wan_beacon"), String::from("4-Bearer Constant Connectivity pairs outbound Cloudflare HTTP/3 QUIC with a permanent GitHub Raw HTTPS beacon so Pixel 10 auto-discovers active WAN endpoints anywhere on 5G."))
+        (String::from("permanent_wan_beacon"), String::from("4-Bearer Constant Connectivity pairs outbound Cloudflare HTTP/2-QUIC with a permanent GitHub Raw HTTPS beacon so Pixel 10 auto-discovers active WAN endpoints anywhere on 5G."))
     } else {
         let label = if q_clean.is_empty() { String::from("sovereign_manifold") } else { q_clean.replace(' ', "_") };
         let fact = format!("Sanitized Sector 3 Web Projection for '{}' anchors 240 E8 roots and 1,024 compound pairs across the 24D Leech Lattice Lambda_24 with 0 lexical boundary leaks.", if q_clean.is_empty() { "sovereign manifold" } else { q_clean });
@@ -294,7 +308,8 @@ fn synthesize_uarm_response(l1: &str, st: &mut Edge24D) -> String {
 }
 
 fn handle_client(mut s: TcpStream, st_c: Arc<Mutex<Edge24D>>, r_len: usize) {
-    let mut buf: Vec<u8> = vec!(0u8; 8192);
+    let _ = s.set_read_timeout(Some(Duration::from_millis(1500)));
+    let mut buf: Vec<u8> = vec!(0u8; 16384);
     if let Ok(n) = s.read(&mut buf) {
         if n == 0 { return; }
         let sl = buf.get(..n).unwrap_or(buf.as_slice());
@@ -307,7 +322,7 @@ fn handle_client(mut s: TcpStream, st_c: Arc<Mutex<Edge24D>>, r_len: usize) {
 
         if method == "OPTIONS" {
             let hdr = "HTTP/1.1 204 No Content\r\nAccess-Control-Allow-Origin: *\r\nAccess-Control-Allow-Methods: GET, POST, OPTIONS\r\nAccess-Control-Allow-Headers: *\r\nConnection: close\r\n\r\n";
-            let _ = s.write_all(hdr.as_bytes());
+            finish_http(s, hdr, &vec!(0u8; 0));
             return;
         }
         if clean_path.starts_with("/ws") || req.contains("Upgrade: websocket") || req.contains("upgrade: websocket") {
@@ -327,8 +342,8 @@ fn handle_client(mut s: TcpStream, st_c: Arc<Mutex<Edge24D>>, r_len: usize) {
             } else {
                 String::from("{\"status\":\"LOCK_ERR\"}")
             };
-            let hdr = format!("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nAccess-Control-Allow-Origin: *\r\nCache-Control: no-store\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}", body.len(), body);
-            let _ = s.write_all(hdr.as_bytes());
+            let hdr = format!("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nAccess-Control-Allow-Origin: *\r\nCache-Control: no-store\r\nContent-Length: {}\r\nConnection: close\r\n\r\n", body.len());
+            finish_http(s, &hdr, body.as_bytes());
             return;
         }
         if clean_path.starts_with("/api/v1/harmonic/tool_call") {
@@ -343,8 +358,8 @@ fn handle_client(mut s: TcpStream, st_c: Arc<Mutex<Edge24D>>, r_len: usize) {
             } else {
                 String::from("{\"status\":\"LOCK_ERR\"}")
             };
-            let hdr = format!("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nAccess-Control-Allow-Origin: *\r\nCache-Control: no-store\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}", body.len(), body);
-            let _ = s.write_all(hdr.as_bytes());
+            let hdr = format!("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nAccess-Control-Allow-Origin: *\r\nCache-Control: no-store\r\nContent-Length: {}\r\nConnection: close\r\n\r\n", body.len());
+            finish_http(s, &hdr, body.as_bytes());
             return;
         }
         if clean_path.starts_with("/api/v1/research/crystallize") {
@@ -361,8 +376,8 @@ fn handle_client(mut s: TcpStream, st_c: Arc<Mutex<Edge24D>>, r_len: usize) {
                 "{{\"status\":\"CRYSTALLIZED_SECTOR3_AND_6\",\"worker_thread\":true,\"sanitized_zero_leak\":true,\"query\":\"{}\",\"topic\":\"{}\",\"crystal_id\":{},\"crystal_bytes\":816,\"sh4z_sector\":6,\"autopoietic_gen\":{},\"plasticity_norm\":{:.4},\"blend_weight\":0.88,\"bound_stem_leaks\":0,\"fact\":\"{}\"}}",
                 if q_web.is_empty() { "autopoiesis" } else { &q_web }, topic, c_num, a_gen, p_norm, fact
             );
-            let hdr = format!("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nAccess-Control-Allow-Origin: *\r\nCache-Control: no-store\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}", body.len(), body);
-            let _ = s.write_all(hdr.as_bytes());
+            let hdr = format!("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nAccess-Control-Allow-Origin: *\r\nCache-Control: no-store\r\nContent-Length: {}\r\nConnection: close\r\n\r\n", body.len());
+            finish_http(s, &hdr, body.as_bytes());
             return;
         }
         if clean_path.starts_with("/api") {
@@ -372,8 +387,8 @@ fn handle_client(mut s: TcpStream, st_c: Arc<Mutex<Edge24D>>, r_len: usize) {
             } else {
                 String::from("{\"status\":\"HALT_CONVERGED\",\"text\":\"all E8 stalks synchronize at our unitary norm (HALT_CONVERGED)\"}")
             };
-            let hdr = format!("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nAccess-Control-Allow-Origin: *\r\nCache-Control: no-store\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}", body.len(), body);
-            let _ = s.write_all(hdr.as_bytes());
+            let hdr = format!("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nAccess-Control-Allow-Origin: *\r\nCache-Control: no-store\r\nContent-Length: {}\r\nConnection: close\r\n\r\n", body.len());
+            finish_http(s, &hdr, body.as_bytes());
             return;
         }
         let rel = if clean_path == "/" || clean_path.is_empty() || clean_path.contains("..") {
@@ -405,8 +420,7 @@ fn handle_client(mut s: TcpStream, st_c: Arc<Mutex<Edge24D>>, r_len: usize) {
             "application/octet-stream"
         };
         let hdr = format!("HTTP/1.1 200 OK\r\nContent-Type: {}\r\nAccess-Control-Allow-Origin: *\r\nCache-Control: no-cache\r\nContent-Length: {}\r\nConnection: close\r\n\r\n", mime, data.len());
-        let _ = s.write_all(hdr.as_bytes());
-        let _ = s.write_all(&data);
+        finish_http(s, &hdr, &data);
     }
 }
 
@@ -428,7 +442,7 @@ fn main() {
         .unwrap_or(String::from("https://trying-summaries-reduction-ours.trycloudflare.com"))
         .trim()
         .to_string();
-    println!("UTCP-v31 Federated Ring Active ({} B) -- SH4Z v3105 Autopoietic + Tool-Calling (:8097 + :5173)", rb.len());
+    println!("UTCP-v31 Federated Ring Active ({} B) -- SH4Z v3105 No-502 Origin Mux (:8097 + :5173)", rb.len());
     if daemon {
         let shared = Arc::new(Mutex::new(Edge24D::new(init_wan)));
         let shared_5173 = Arc::clone(&shared);

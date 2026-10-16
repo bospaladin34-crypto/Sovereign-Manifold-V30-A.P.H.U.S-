@@ -1,6 +1,6 @@
 # ACT-Omega Net v31.3 Wiki & Complete Track Registry (Tracks 31.1 – 31.21)
 
-## Certified Release Tag: `v31.3-sh4z-v3104-leech24d`
+## Certified Release Tag: `v31.3.0-sh4z-v3104-zenodo (Zenodo DOI: 10.5281/zenodo.23407176)`
 
 1. **Track 31.9:** Native Rust Dual-Port (`:8097`+`:5173`) Multiplexer + Cloudflare HTTP/3 QUIC 3-Bearer Failover.
 2. **Track 31.10:** 1,024-Token `E8+E8` Compound Lexicon (`SH4Z v3102`, `31,104 B`, `3.79x` compression).

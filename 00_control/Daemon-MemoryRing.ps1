@@ -1,7 +1,8 @@
 $ErrorActionPreference = "SilentlyContinue"
 while($true){
     $swProc = Get-Process -Name "v31_swarm" -ErrorAction SilentlyContinue
-    if(-not($swProc)){
+    $cargoProc = Get-Process -Name "cargo" -ErrorAction SilentlyContinue
+    if((-not($swProc)) -and (-not($cargoProc))){
         Start-Process -FilePath "C:\sovereign_manifold_v31\01_l0_rust\target\release\v31_swarm.exe" -ArgumentList("--daemon") -WindowStyle Hidden
     }
     $cfProc = Get-Process -Name "cloudflared" -ErrorAction SilentlyContinue

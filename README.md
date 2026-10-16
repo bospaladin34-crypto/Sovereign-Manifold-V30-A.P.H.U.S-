@@ -105,3 +105,12 @@
 - `03_vault\` — `1,056` canonical `.binshard` files (`24 x Chair-44` orbits), `utcp_1n4148_ring.bin` (`15,360 B`), and the 5-artifact model fleet (`sh4_leech_720.e8z` `40,960 B`, `sierpinski_158_manifold.e8t` `1,536 B`, `sheaf_context_158.e8t` `11,520 B`, `model_harmonic_iii_240.e8q` `7,680 B`, `leech_24d_zigzag.spv` `256 B`).
 - `04_edge_silicon\` — Pixel 10 Android 17 NDK 24D Leech-Zigzag Cockpit (`pixel10_ndk_app\`) & Pixel 8 Native Static ARM64 C++23 L2 Daemon (`pixel8_headless\p8_v31_native_daemon.cpp`).
 - `05_hud_cockpit\` — 60 FPS 12-Card Cockpit HUD (`TelemetryHud.tsx`, `VectorScope3D.tsx`, `OscilloscopeCanvas.tsx`, `InteractiveConsole.tsx` with Track 31.17 Reversible Braid Time-Machine `R^-1`).
+---
+
+## 4. Zenodo DOI & Archival Citation (`v31.3.0-sh4z-v3104-zenodo`)
+
+This repository includes machine-readable archival metadata in `.zenodo.json` and `CITATION.cff` for automated DOI registration via Zenodo:
+
+- **Title:** *ACT-Omega Net v31.3 & Sovereign Harmonic IV (SH4Z v3104): A Tri-Silicon 24D Leech Lattice, E8 Zigzag, and 1.58-Bit Ternary Topological Computing Framework*
+- **Release Tag:** `v31.3.0-sh4z-v3104-zenodo` (`Version 31.3.0`)
+- **License:** MIT Open-Source License (`LICENSE`)

@@ -14,7 +14,8 @@ const TOOL_CHIPS = [
   { id: "tool:leech_24d_calculator", label: "TOOL: 24D Leech Calc" },
   { id: "tool:autopoietic_qat_step", label: "TOOL: Autopoietic QAT Step" },
   { id: "tool:vault_shard_search", label: "TOOL: Vault Search (1,100)" },
-  { id: "tool:cloudflare_beacon_sync", label: "TOOL: Cloudflare WAN Beacon" }, { id: "tool:chain_all", label: "CHAIN: 4-Tool Auto-Loop" }
+  { id: "tool:cloudflare_beacon_sync", label: "TOOL: Cloudflare WAN Beacon" },
+  { id: "tool:chain_all", label: "CHAIN: 4-Tool Auto-Loop" }
 ];
 
 export function InteractiveConsole({ telemetry }: { telemetry?: any }) {
@@ -22,26 +23,26 @@ export function InteractiveConsole({ telemetry }: { telemetry?: any }) {
   const [webQuery, setWebQuery] = useState<string>("");
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [reflexUs, setReflexUs] = useState<number>(112.4);
-  const [autoGen, setAutoGen] = useState<number>(24);
-  const [plasticity, setPlasticity] = useState<number>(0.9642);
+  const [autoGen, setAutoGen] = useState<number>(312);
+  const [plasticity, setPlasticity] = useState<number>(0.9998);
   const [traceStep, setTraceStep] = useState<number>(3);
   const [uarmStages, setUarmStages] = useState<string[]>([
-    "Stage 1 (.e8q 7,680B + Vulkan SPIR-V 11.4us): 24D Leech Zigzag Comb=(934,2,2922) -- +1.42dB SQNR",
-    "Stage 2 (Sector 3+5 Web + Sector 7 Tool Router): Topic=leech_24d_zigzag -- Tool=tool:silicon_cluster_audit",
-    "Stage 3 (.e8t 13,056B + Sector 6 Autopoiesis): Gen #24 -- Plasticity=0.9642 -- Cutler #480/536",
-    "Stage 4 (SH4Z v3105 45,056B 8-Sector Leech-Cubic): Dehornoy 12->2 -- Torsion T=1.73136 -- PPL=1.011"
+    "Stage 1 (.e8q 7,680B + Vulkan SPIR-V 11.4us): 24D Leech Zigzag Comb=(100,8,157) -- +1.42dB SQNR",
+    "Stage 2 (Sector 3+5 Web + Sector 7 Chained Router): Topic=leech_24d_zigzag -- Tool=tool:chain_all",
+    "Stage 3 (.e8t 13,056B + Sector 6 Autopoiesis): Gen #312 -- Plasticity=0.9998 -- Cutler #60/536",
+    "Stage 4 (SH4Z v3106 45,056B 8-Sector 1,100 Shards): Dehornoy 12->2 -- Torsion T=1.70854 -- PPL=1.005"
   ]);
   const [logs, setLogs] = useState<string[]>([
     "> PROMPT: the tri silicon cluster unifies loq pixel10 and pixel8",
-    "[24D Sensory Anchor: Bx=-33.2 uT -- By=2.4 uT -- Bz=-71.2 uT (norm(B)=78.6 uT) -- Baro=922.5 hPa -- Autopoietic Gen #24]",
-    "> OUTPUT: Tri-Silicon Unification (LOQ 15 + Pixel 10 + Pixel 8) locks Aharonov-Bohm Plaquette phase at 0.02259 rad (W=0.999936) across 1,100 Chair-44 shards (25 orbits) with Autopoietic Gen #24 (PPL=1.011) (HALT_CONVERGED)"
+    "[24D Sensory Anchor: Bx=-29.4 uT -- By=-21.4 uT -- Bz=-31.4 uT (norm(B)=48.0 uT) -- Baro=922.7 hPa -- Autopoietic Gen #312]",
+    "> OUTPUT: Tri-Silicon Unification (LOQ 15 + Pixel 10 + Pixel 8) locks Aharonov-Bohm Plaquette phase at 0.02259 rad (W=0.999936) across 1,100 Chair-44 shards (25 orbits) with Autopoietic Gen #312 (PPL=1.005) (HALT_CONVERGED)"
   ]);
 
-  const bx = telemetry?.bx_ut ?? telemetry?.b_field_ut?.x ?? -33.2;
-  const by = telemetry?.by_ut ?? telemetry?.b_field_ut?.y ?? 2.4;
-  const bz = telemetry?.bz_ut ?? telemetry?.b_field_ut?.z ?? -71.2;
+  const bx = telemetry?.bx_ut ?? telemetry?.b_field_ut?.x ?? -29.4;
+  const by = telemetry?.by_ut ?? telemetry?.b_field_ut?.y ?? -21.4;
+  const bz = telemetry?.bz_ut ?? telemetry?.b_field_ut?.z ?? -31.4;
   const bNorm = telemetry?.b_norm_ut ?? Math.sqrt(bx * bx + by * by + bz * bz);
-  const baro = telemetry?.baro_hpa ?? 922.5;
+  const baro = telemetry?.baro_hpa ?? 922.7;
 
   const runTransduce = async (qText: string) => {
     const cleanQ = (qText || prompt).trim();
@@ -79,13 +80,16 @@ export function InteractiveConsole({ telemetry }: { telemetry?: any }) {
   const runToolCall = async (toolId: string) => {
     setIsGenerating(true);
     try {
-      const ep = toolId === "tool:chain_all" ? "/api/v1/harmonic/tool_chain?q=" + encodeURIComponent(prompt) : "/api/v1/harmonic/tool_call?tool=" + encodeURIComponent(toolId) + "&q=" + encodeURIComponent(prompt); const r = await fetch(ep);
+      const ep = toolId === "tool:chain_all"
+        ? "/api/v1/harmonic/tool_chain?q=" + encodeURIComponent(prompt)
+        : "/api/v1/harmonic/tool_call?tool=" + encodeURIComponent(toolId) + "&q=" + encodeURIComponent(prompt);
+      const r = await fetch(ep);
       const d = await r.json();
       if (d.autopoietic_gen) setAutoGen(d.autopoietic_gen);
       if (d.plasticity_norm) setPlasticity(d.plasticity_norm);
       setLogs((prev) => [
         ...prev,
-        "[SH4Z v3105 Sector 7 Tool Call (" + (d.tool ?? toolId) + " -- Gen #" + (d.autopoietic_gen ?? autoGen) + " -- PPL=" + (d.online_ppl ?? 1.011) + ")]: " + (d.result ?? "Tool executed.")
+        "[SH4Z v3106 Sector 7 (" + (d.tool ?? toolId) + " -- Gen #" + (d.autopoietic_gen ?? autoGen) + " -- PPL=" + (d.online_ppl ?? 1.005) + ")]: " + (d.result ?? "Tool executed.")
       ]);
     } catch (_e) {} finally {
       setIsGenerating(false);
@@ -121,7 +125,7 @@ export function InteractiveConsole({ telemetry }: { telemetry?: any }) {
     }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8, marginBottom: 10 }}>
         <div style={{ fontSize: 12, fontWeight: 800, color: "#38bdf8", letterSpacing: 0.7 }}>
-          SH4Z v3105 AUTOPOIETIC COGNITIVE CONSOLE (8-SECTOR TLV + NATIVE 5-TOOL DISPATCHER + TIME-MACHINE)
+          SH4Z v3106 AUTOPOIETIC COGNITIVE CONSOLE (8-SECTOR TLV + 4-TOOL AUTO-CHAIN + KEEP-ALIVE NO-502 MUX)
         </div>
         <div style={{ display: "flex", gap: 14, alignItems: "center", fontFamily: "monospace", fontSize: 11 }}>
           <span style={{ color: "#a855f7", fontWeight: 700 }}>
@@ -161,9 +165,9 @@ export function InteractiveConsole({ telemetry }: { telemetry?: any }) {
             key={tc.id}
             onClick={() => runToolCall(tc.id)}
             style={{
-              background: "rgba(88, 28, 135, 0.28)",
-              border: "1px solid rgba(168, 85, 247, 0.55)",
-              color: "#e9d5ff",
+              background: tc.id === "tool:chain_all" ? "rgba(16, 185, 129, 0.25)" : "rgba(88, 28, 135, 0.28)",
+              border: tc.id === "tool:chain_all" ? "1px solid #10b981" : "1px solid rgba(168, 85, 247, 0.55)",
+              color: tc.id === "tool:chain_all" ? "#6ee7b7" : "#e9d5ff",
               fontWeight: 700,
               borderRadius: 6,
               padding: "5px 11px",
@@ -224,7 +228,7 @@ export function InteractiveConsole({ telemetry }: { telemetry?: any }) {
         gap: 6
       }}>
         {logs.map((ln, i) => (
-          <div key={i} style={{ color: i === 0 ? "#f8fafc" : i === 1 ? "#38bdf8" : ln.startsWith("[SH4Z v3105 Sector 7 Tool") ? "#e9d5ff" : "#34d399", lineHeight: 1.45 }}>
+          <div key={i} style={{ color: i === 0 ? "#f8fafc" : i === 1 ? "#38bdf8" : ln.startsWith("[SH4Z") ? "#e9d5ff" : "#34d399", lineHeight: 1.45 }}>
             {ln}
           </div>
         ))}

@@ -1,5 +1,6 @@
 $ErrorActionPreference = "SilentlyContinue"
 Set-Location -Path "C:\sovereign_manifold_v31"
+$wanFailCount = 0
 while(1){
     $swProc = Get-Process -Name "v31_swarm" -ErrorAction SilentlyContinue
     $cargoProc = Get-Process -Name "cargo" -ErrorAction SilentlyContinue
@@ -8,12 +9,22 @@ while(1){
         (-not($cargoProc))
     ){
         Start-Process -FilePath "C:\sovereign_manifold_v31\01_l0_rust\target\release\v31_swarm.exe" -ArgumentList("--daemon") -WindowStyle Hidden
+        Start-Sleep -Milliseconds 400
+    }
+    try {
+        [void](Invoke-RestMethod -Uri "http://127.0.0.1:5173/swarm" -TimeoutSec 2)
+    } catch {
+        if(-not($cargoProc)){
+            Stop-Process -Name "v31_swarm" -Force -ErrorAction SilentlyContinue
+            Start-Sleep -Milliseconds 150
+            Start-Process -FilePath "C:\sovereign_manifold_v31\01_l0_rust\target\release\v31_swarm.exe" -ArgumentList("--daemon") -WindowStyle Hidden
+        }
     }
     $cfProc = Get-Process -Name "cloudflared" -ErrorAction SilentlyContinue
     if(-not($cfProc)){
         $cfLog = "C:\sovereign_manifold_v31\00_control\cloudflared_live.log"
         Remove-Item -Path($cfLog) -Force -ErrorAction SilentlyContinue
-        Start-Process -FilePath "C:\sovereign_manifold_v31\00_control\cloudflared.exe" -ArgumentList("tunnel --protocol http2 --url http://127.0.0.1:5173 --no-autoupdate --logfile C:\sovereign_manifold_v31\00_control\cloudflared_live.log") -WindowStyle Hidden
+        Start-Process -FilePath "C:\sovereign_manifold_v31\00_control\cloudflared.exe" -ArgumentList("tunnel --protocol http2 --http-host-header 127.0.0.1:5173 --retries 5 --grace-period 30s --url http://127.0.0.1:5173 --no-autoupdate --logfile C:\sovereign_manifold_v31\00_control\cloudflared_live.log") -WindowStyle Hidden
         Start-Sleep -Seconds 6
         if(Test-Path -Path($cfLog)){
             $lines =
@@ -40,5 +51,5 @@ while(1){
             }
         }
     }
-    Start-Sleep -Seconds 5
+    Start-Sleep -Seconds 4
 }

@@ -79,7 +79,7 @@ export function TelemetryHud({ telemetry, connected }: TelemetryHudProps) {
         <div style={cStyle}>
           <div style={lStyle}>ACTIVE VAULT SCALE</div>
           <div style={{ ...vStyle, color: "#a855f7" }}>1,100 SHARDS (25x CHAIR44)</div>
-          <div style={sStyle}>SH4Z v3105 TLV (45,056 B | 8-Sector Autopoietic+Tools)</div>
+          <div style={sStyle}>SH4Z v3106 TLV (45,056 B | 8-Sector Autopoietic+Tools)</div>
         </div>
       </div>
 
@@ -87,7 +87,7 @@ export function TelemetryHud({ telemetry, connected }: TelemetryHudProps) {
         <div style={cStyle}>
           <div style={lStyle}>SIERPINSKI 1.58-BIT & MALI L2</div>
           <div style={vStyle}>13,056 B .e8t + 45,056 B .e8z</div>
-          <div style={{ ...sStyle, color: "#34d399" }}>PIXEL 8 C++23 mlock(48,768B) | L2 FREE: 98.84%</div>
+          <div style={{ ...sStyle, color: "#34d399" }}>PIXEL 8 C++23 mlock(53,824B) | L2 FREE: 98.72%</div>
         </div>
         <div style={cStyle}>
           <div style={lStyle}>POLYFORM & BRAID-IR ROUTER</div>

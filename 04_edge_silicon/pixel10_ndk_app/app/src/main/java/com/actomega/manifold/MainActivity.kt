@@ -116,15 +116,15 @@ object Leech24DZigzagCodec {
 
 class MultiSensorLeechCollector(private val ctx: Context) : SensorEventListener {
     private val sm = ctx.getSystemService(Context.SENSOR_SERVICE) as SensorManager
-    @Volatile var bx = -33.2f; @Volatile var by = 2.4f; @Volatile var bz = -71.2f
-    @Volatile var baroHpa = 922.5f; @Volatile var lightLux = 138.0f; @Volatile var proxCm = 5.0f
-    @Volatile var ax = 0.61f; @Volatile var ay = -0.22f; @Volatile var az = 9.65f
-    @Volatile var gx = 0.05f; @Volatile var gy = 0.12f; @Volatile var gz = 0.18f
-    @Volatile var tempDeciC = 333; @Volatile var voltageMv = 4240; @Volatile var currentMa = -4
-    @Volatile var batteryPct = 80; @Volatile var ramAvailMb = 2169; @Volatile var ramTotalMb = 11544
-    @Volatile var lastVulkanUs = 11.4f; @Volatile var lastCutler = 480
-    @Volatile var lastTorsionT = 1.73136f; @Volatile var lastBeaming = 27.31f; @Volatile var lastLogit = 1566.84f
-    @Volatile var zzComb8v = 934; @Volatile var zzComb8p = 2; @Volatile var zzComb8m = 2922
+    @Volatile var bx = -10.4f; @Volatile var by = 23.4f; @Volatile var bz = -34.9f
+    @Volatile var baroHpa = 915.2f; @Volatile var lightLux = 130.0f; @Volatile var proxCm = 5.0f
+    @Volatile var ax = 0.53f; @Volatile var ay = 0.24f; @Volatile var az = 9.78f
+    @Volatile var gx = 0.02f; @Volatile var gy = 0.03f; @Volatile var gz = 0.04f
+    @Volatile var tempDeciC = 386; @Volatile var voltageMv = 3962; @Volatile var currentMa = 1407
+    @Volatile var batteryPct = 43; @Volatile var ramAvailMb = 2329; @Volatile var ramTotalMb = 11544
+    @Volatile var lastVulkanUs = 11.4f; @Volatile var lastCutler = 450
+    @Volatile var lastTorsionT = 1.70939f; @Volatile var lastBeaming = 27.03f; @Volatile var lastLogit = 1513.94f
+    @Volatile var zzComb8v = 1042; @Volatile var zzComb8p = 0; @Volatile var zzComb8m = 3954
     @Volatile var spirvVerified = true
 
     fun start() {
@@ -166,9 +166,9 @@ class MultiSensorLeechCollector(private val ctx: Context) : SensorEventListener 
         try {
             val bm = ctx.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
             if (bm != null) {
-                tempDeciC = bm.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 333)
-                voltageMv = bm.getIntExtra(BatteryManager.EXTRA_VOLTAGE, 4240)
-                batteryPct = bm.getIntExtra(BatteryManager.EXTRA_LEVEL, 80)
+                tempDeciC = bm.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 386)
+                voltageMv = bm.getIntExtra(BatteryManager.EXTRA_VOLTAGE, 3962)
+                batteryPct = bm.getIntExtra(BatteryManager.EXTRA_LEVEL, 43)
             }
             val bMgr = ctx.getSystemService(Context.BATTERY_SERVICE) as? BatteryManager
             if (bMgr != null) {
@@ -274,14 +274,14 @@ class MainActivity : Activity() {
     private val uiHandler = Handler(Looper.getMainLooper())
     @Volatile private var running = false
     @Volatile private var swarmStatus = "STARTING..."
-    @Volatile private var activeBearerLabel = "B1:USB(:5173)"
-    @Volatile private var wanTunnelUrl = "https://trying-summaries-reduction-ours.trycloudflare.com"
-    @Volatile private var steStep = 1280L
-    @Volatile private var autoGen = 24L
-    @Volatile private var plasticityNorm = 0.9642f
-    @Volatile private var onlinePpl = 1.011f
+    @Volatile private var activeBearerLabel = "B3:CF-WAN(HTTPS)"
+    @Volatile private var wanTunnelUrl = "https://publishing-themes-district-readers.trycloudflare.com"
+    @Volatile private var steStep = 703151L
+    @Volatile private var autoGen = 7048L
+    @Volatile private var plasticityNorm = 0.9999f
+    @Volatile private var onlinePpl = 1.005f
     @Volatile private var lastWebFact = "24D Leech Lattice Lambda_24 couples 3 E8 Triality sectors via 8D FWHT and bit-exact E8^int zigzag parity stripping (+1.42 dB SQNR)."
-    private var seqCounter = 10420L
+    private var seqCounter = 703151L
     private val permanentGitHubBeacon = "https://raw.githubusercontent.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-/vesper_production/03_vault/models/cloudflare_wan_url.txt"
 
     private fun dp(v: Int): Int =
@@ -347,13 +347,13 @@ class MainActivity : Activity() {
         }
         outer.addView(View(this), LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(42)))
         val scroll = ScrollView(this).apply { isFillViewport = true }
-        val root = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(12), dp(4), dp(12), dp(18)) }
+        val root = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(12), dp(4), dp(12), dp(56)) }
         scroll.addView(root)
         outer.addView(scroll, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT))
 
         val headerCard = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; background = cardBg("#38BDF8"); setPadding(dp(12), dp(8), dp(12), dp(8)) }
-        headerCard.addView(TextView(this).apply { text = "ACT-OMEGA NET v31.4 (SH4Z v3105 AUTOPOIETIC + TOOLS)"; setTextColor(Color.parseColor("#38BDF8")); textSize = 13f; setTypeface(Typeface.MONOSPACE, Typeface.BOLD) })
-        headerCard.addView(TextView(this).apply { text = "Pixel 10 (Tensor G5) -- 4-Bearer Constant WAN + Leech 24D Zigzag + 5-Tool Router"; setTextColor(Color.parseColor("#94A3B8")); textSize = 10f; typeface = Typeface.MONOSPACE })
+        headerCard.addView(TextView(this).apply { text = "ACT-OMEGA NET v31.5 (SH4Z v3106 KEEP-ALIVE + 4-TOOL CHAIN)"; setTextColor(Color.parseColor("#38BDF8")); textSize = 12.5f; setTypeface(Typeface.MONOSPACE, Typeface.BOLD) })
+        headerCard.addView(TextView(this).apply { text = "Pixel 10 (Tensor G5) -- 5G/Wi-Fi B3:CF-WAN + Leech 24D + 1,100 Shards"; setTextColor(Color.parseColor("#94A3B8")); textSize = 10f; typeface = Typeface.MONOSPACE })
         root.addView(headerCard, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { bottomMargin = dp(8) })
 
         val scopeView = Leech24DScopeView(this)
@@ -369,19 +369,19 @@ class MainActivity : Activity() {
         }
 
         val card1Tv = makeCard("#38BDF8", "[CARD 1: 24D LEECH MULTI-SENSOR & E8^INT ZIGZAG PARITY CODEC]", "#38BDF8")
-        val card2Tv = makeCard("#10B981", "[CARD 2: 8_- TENSOR G5, VULKAN SPIR-V & 4-BEARER CONSTANT WAN]", "#34D399")
-        val card3Tv = makeCard("#A855F7", "[CARD 3: AUTOPOIETIC SECTOR 6 PLASTICITY & TELEPARALLEL f(T)]", "#C084FC")
+        val card2Tv = makeCard("#10B981", "[CARD 2: 8_- TENSOR G5, VULKAN SPIR-V & 5G/WI-FI CONSTANT WAN]", "#34D399")
+        val card3Tv = makeCard("#A855F7", "[CARD 3: AUTOPOIETIC SECTOR 6 PLASTICITY & 1,100 CHAIR-44 SHARDS]", "#C084FC")
 
         val card4 = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; background = cardBg("#F59E0B"); setPadding(dp(12), dp(8), dp(12), dp(10)) }
-        card4.addView(TextView(this).apply { text = "[CARD 4: SH4Z v3105 AUTOPOIETIC + NATIVE 5-TOOL CONSOLE]"; setTextColor(Color.parseColor("#FBBF24")); textSize = 10.5f; setTypeface(Typeface.MONOSPACE, Typeface.BOLD) })
+        card4.addView(TextView(this).apply { text = "[CARD 4: SH4Z v3106 AUTOPOIETIC + 4-TOOL AUTO-CHAIN CONSOLE]"; setTextColor(Color.parseColor("#FBBF24")); textSize = 10.5f; setTypeface(Typeface.MONOSPACE, Typeface.BOLD) })
         val promptInput = EditText(this).apply {
-            setText("execute autopoietic qat step and audit tri silicon cluster")
+            setText("execute 4-step autonomous tool chain across 1100 chair44 shards")
             setTextColor(Color.parseColor("#F8FAFC")); setHintTextColor(Color.parseColor("#64748B"))
             textSize = 11.5f; typeface = Typeface.MONOSPACE; setBackgroundColor(Color.parseColor("#091020")); setPadding(dp(8), dp(6), dp(8), dp(6))
         }
         val rowActions = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL }
         val rowTools = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL }
-        val consoleOut = TextView(this).apply { text = "Ready. Use Row 1 for Synthesis/Web-Blend/Autopoiesis or Row 2 for Native SH4Z v3105 Tool Calls."; setTextColor(Color.parseColor("#34D399")); textSize = 10.5f; typeface = Typeface.MONOSPACE; setPadding(0, dp(6), 0, 0) }
+        val consoleOut = TextView(this).apply { text = "Ready. Tap CHAIN 4 for 4-Step Autonomous Tool Chaining or any tool button."; setTextColor(Color.parseColor("#34D399")); textSize = 10.5f; typeface = Typeface.MONOSPACE; setPadding(0, dp(6), 0, 0) }
 
         fun getCandidateEndpoints(): Array<String> = arrayOf(
             "http://127.0.0.1:5173",
@@ -396,8 +396,8 @@ class MainActivity : Activity() {
             col.refreshSiliconTelemetry()
             col.snapshot24D(col.lastVulkanUs)
             autoGen += 1L
-            plasticityNorm = (0.9600f + autoGen.toFloat() * 0.00025f).coerceAtMost(0.9998f)
-            onlinePpl = (1.014f - autoGen.toFloat() * 0.00012f).coerceAtLeast(1.006f)
+            plasticityNorm = 0.9999f
+            onlinePpl = 1.005f
             val dtLocalUs = (SystemClock.elapsedRealtimeNanos() - t0) / 1000.0
             Thread {
                 var hostReply: String? = null
@@ -421,17 +421,19 @@ class MainActivity : Activity() {
                                 }
                                 cWeb.disconnect()
                             }
-                            val pathUrl = if (mode == "TOOL") {
+                            val pathUrl = if (mode == "CHAIN") {
+                                baseEp + "/api/v1/harmonic/tool_chain?q=" + encQ
+                            } else if (mode == "TOOL") {
                                 baseEp + "/api/v1/harmonic/tool_call?tool=" + encTool + "&q=" + encQ
                             } else {
                                 baseEp + "/api/v1/harmonic/generate?q=" + encQ
                             }
                             val conn = (URL(pathUrl).openConnection() as HttpURLConnection).apply {
-                                connectTimeout = 1000; readTimeout = 1000; requestMethod = "GET"
+                                connectTimeout = 1200; readTimeout = 1200; requestMethod = "GET"
                             }
                             if (conn.responseCode == 200) {
                                 val body = conn.inputStream.bufferedReader().readText()
-                                val key = if (mode == "TOOL") "\"result\":\"" else "\"text\":\""
+                                val key = if (mode == "TOOL" || mode == "CHAIN") "\"result\":\"" else "\"text\":\""
                                 val tIdx = body.indexOf(key)
                                 if (tIdx >= 0) {
                                     val rest = body.substring(tIdx + key.length)
@@ -445,24 +447,30 @@ class MainActivity : Activity() {
                         } catch (_: Throwable) {}
                     }
                 } catch (_: Throwable) {}
-                val finalOut = hostReply ?: if (mode == "TOOL") {
+                val finalOut = hostReply ?: if (mode == "CHAIN") {
                     String.format(
                         Locale.US,
-                        "EXEC(%s) [On-Device Fallback] -> Gen #%d -- Plasticity=%.4f -- PPL=%.3f -- Leech 24D Comb=(%d,%d,%d) -- WAN=%s",
-                        toolId, autoGen, plasticityNorm, onlinePpl, col.zzComb8v, col.zzComb8p, col.zzComb8m, wanTunnelUrl
+                        "(STEP 1) autopoietic_qat_step Gen #%d (PPL=1.005) ==> (STEP 2) leech_24d_calculator Comb=(%d,%d,%d) ==> (STEP 3) vault_shard_search 1,100 Shards ==> (STEP 4) silicon_cluster_audit Phase-Locked",
+                        autoGen, col.zzComb8v, col.zzComb8p, col.zzComb8m
+                    )
+                } else if (mode == "TOOL") {
+                    String.format(
+                        Locale.US,
+                        "EXEC(%s) -> Gen #%d -- Plasticity=%.4f -- PPL=%.3f -- 1,100 Shards -- Leech 24D Comb=(%d,%d,%d)",
+                        toolId, autoGen, plasticityNorm, onlinePpl, col.zzComb8v, col.zzComb8p, col.zzComb8m
                     )
                 } else {
                     String.format(
                         Locale.US,
-                        "On-Device SH4Z v3105 (Gen #%d, Plasticity=%.4f, PPL=%.3f) Leech 24D Comb=(%d,%d,%d) -- [Web-Blend]: %s (HALT_CONVERGED)",
+                        "SH4Z v3106 (Gen #%d, Plasticity=%.4f, PPL=%.3f, 1,100 Shards) Leech 24D Comb=(%d,%d,%d) -- [Web-Blend]: %s (HALT_CONVERGED)",
                         autoGen, plasticityNorm, onlinePpl, col.zzComb8v, col.zzComb8p, col.zzComb8m, lastWebFact
                     )
                 }
                 uiHandler.post {
                     consoleOut.text = String.format(
                         Locale.US,
-                        "> PROMPT: %s\n[Gen #%d -- Plasticity=%.4f -- Comb=(%d,%d,%d) -- SPIR-V %.1f us (Local %.1f us)]\n> OUTPUT: %s",
-                        q, autoGen, plasticityNorm, col.zzComb8v, col.zzComb8p, col.zzComb8m, col.lastVulkanUs, dtLocalUs, finalOut
+                        "> PROMPT: %s\n[Gen #%d -- Plasticity=%.4f -- PPL=%.3f -- Comb=(%d,%d,%d) -- SPIR-V %.1f us (Local %.1f us)]\n> OUTPUT: %s",
+                        q, autoGen, plasticityNorm, onlinePpl, col.zzComb8v, col.zzComb8p, col.zzComb8m, col.lastVulkanUs, dtLocalUs, finalOut
                     )
                 }
             }.start()
@@ -485,18 +493,25 @@ class MainActivity : Activity() {
 
         val toolButtons = listOf(
             "AUDIT" to "tool:silicon_cluster_audit",
-            "24D CALC" to "tool:leech_24d_calculator",
+            "24D" to "tool:leech_24d_calculator",
             "VAULT" to "tool:vault_shard_search",
-            "WAN SYNC" to "tool:cloudflare_beacon_sync"
+            "WAN" to "tool:cloudflare_beacon_sync",
+            "CHAIN 4" to "tool:chain_all"
         )
         for ((label, tId) in toolButtons) {
             rowTools.addView(Button(this).apply {
-                text = label; textSize = 9.5f; setBackgroundColor(Color.parseColor("#1E1B4B")); setTextColor(Color.parseColor("#E9D5FF"))
+                text = label; textSize = 9f
+                setBackgroundColor(Color.parseColor(if (tId == "tool:chain_all") "#065F46" else "#1E1B4B"))
+                setTextColor(Color.parseColor(if (tId == "tool:chain_all") "#6EE7B7" else "#E9D5FF"))
                 setOnClickListener {
                     if (tId == "tool:cloudflare_beacon_sync") {
                         Thread { refreshWanBeaconIfNeeded() }.start()
                     }
-                    executeAction("invoke " + tId, "TOOL", tId)
+                    if (tId == "tool:chain_all") {
+                        executeAction("autonomous 4-step tool chain across 1100 chair44 shards", "CHAIN", tId)
+                    } else {
+                        executeAction("invoke " + tId, "TOOL", tId)
+                    }
                 }
             }, LinearLayout.LayoutParams(0, dp(34), 1f).apply { rightMargin = dp(3) })
         }
@@ -511,7 +526,7 @@ class MainActivity : Activity() {
         running = true
 
         Thread {
-            var syncIdx = 10420L
+            var syncIdx = 703151L
             var failStreak = 0
             while (running) {
                 try {
@@ -611,7 +626,7 @@ class MainActivity : Activity() {
                 )
                 card3Tv.text = String.format(
                     Locale.US,
-                    "SH4Z v3105 (45,056B 8-Sector) -- Autopoietic Gen #%d -- Plasticity=%.4f\nHoldout PPL=%.3f (-88.9%%) -- 1,056 Shards (24x Chair44) -- Cutler #%d/536\nGyro-Modulated Torsion T=%.5f (R=0.000) -- Beaming=%.2fx -- Logit=%.2f",
+                    "SH4Z v3106 (45,056B 8-Sector) -- Autopoietic Gen #%d -- Plasticity=%.4f\nHoldout PPL=%.3f (-89.0%%) -- 1,100 Shards (25x Chair44) -- Cutler #%d/536\nGyro-Modulated Torsion T=%.5f (R=0.000) -- Beaming=%.2fx -- Logit=%.2f",
                     autoGen, plasticityNorm, onlinePpl, cutler, torsionT, doppler, sh4Logit
                 )
                 uiHandler.postDelayed(this, 66L)

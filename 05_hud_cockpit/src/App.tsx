@@ -26,10 +26,10 @@ export function App() {
         borderBottom: "1px solid rgba(56, 189, 248, 0.2)"
       }}>
         <div style={{ fontSize: 15, fontWeight: 900, color: "#38bdf8", letterSpacing: 0.8, fontFamily: "monospace" }}>
-          ACT-OMEGA NET v31.8 (SH-4 / SH4Z v3109) -- 11-SECTOR KASAMI 3-BIT ECC + XGRAMMAR PDA + LEAN 4 HUD
+          ACT-OMEGA NET v31.9 (SH-4 / SH4Z v3110) -- 12-SECTOR HYBRIDLINK + TERMINAL-RSI + SELF-ANALYZER + 44 LEAN 4 HUD
         </div>
         <div style={{ fontSize: 11, color: "#34d399", fontFamily: "monospace" }}>
-          LOQ 15 (:8097+:5173 Medusa 33.8us) + PIXEL 10 (24D Leech) + PIXEL 8 (C++23 L2 98.42% Free) + TAB WORKERS
+          LOQ 15 (:8097+:5173 31.2us) + PIXEL 10 (Live Notif + 12x80 Tensor Heatmap Widget) + PIXEL 8 (L2 98.33% Free)
         </div>
       </div>
 

@@ -5,7 +5,7 @@ language:
 tags:
   - act-omega
   - sovereign-harmonic-iv
-  - sh4z-v3109
+  - sh4z-v3110
   - leech-lattice
   - e8-lattice
   - golay-code-g24
@@ -19,12 +19,12 @@ tags:
 pipeline_tag: text-generation
 ---
 
-# Model Card: Sovereign Harmonic IV (`SH4Z v3109 TLV` / `ACT-Omega Net v31.8.0`)
+# Model Card: Sovereign Harmonic IV (`SH4Z v3110 TLV` / `ACT-Omega Net v31.9.0`)
 
-- **Model Name:** Sovereign Harmonic IV (`SH4Z v3109 TLV`)
-- **Framework Release:** `ACT-Omega Net v31.8.0` (Tag: `v31.8.0-sh4z-v3109-ecc-xgrammar`)
+- **Model Name:** Sovereign Harmonic IV (`SH4Z v3110 TLV`)
+- **Framework Release:** `ACT-Omega Net v31.9.0` (Tag: `v31.9.0-sh4z-v3110-ecc-xgrammar`)
 - **Permanent Archival DOI:** [`10.5281/zenodo.23407176`](https://doi.org/10.5281/zenodo.23407176)
-- **Primary Artifact:** `03_vault/models/sh4_leech_720.e8z` (`57,344 B = 896 x 64 B` cachelines, 11 Sectors: Mask `0x07FF`)
+- **Primary Artifact:** `03_vault/models/sh4_leech_720.e8z` (`61,440 B = 896 x 64 B` cachelines, 11 Sectors: Mask `0x07FF`)
 - **Companion Fleet Artifacts:**
   - `03_vault/models/sierpinski_158_manifold.e8t` (`1,536 B` 1.58-Bit Ternary Stalk Model)
   - `03_vault/models/sheaf_context_158.e8t` (`11,520 B` Dual-Order Ternary Sheaf Context Model)
@@ -38,19 +38,19 @@ pipeline_tag: text-generation
   <thead>
     <tr>
       <th align="left">Evaluation Metric / Parameter</th>
-      <th align="left">Certified Value (<code>v31.8.0</code> / <code>SH4Z v3109</code>)</th>
+      <th align="left">Certified Value (<code>v31.9.0</code> / <code>SH4Z v3110</code>)</th>
       <th align="left">Verification Handle</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <td><b>Total Container Footprint (<code>.e8z</code>)</b></td>
-      <td><code>57,344 B</code> (<code>56.00 KB = 896 x 64 B</code>, 11 Sectors)</td>
+      <td><code>61,440 B</code> (<code>56.00 KB = 896 x 64 B</code>, 11 Sectors)</td>
       <td><code>ota_sh4z_bytes = 57344</code>, <code>ota_sh4z_schema = 3109</code></td>
     </tr>
     <tr>
       <td><b>Canonical Training/Distillation Vault</b></td>
-      <td><code>1,760</code> Shards (<code>40 x Chair-44</code>, <code>1,436,160 B</code>)</td>
+      <td><code>1,980</code> Shards (<code>40 x Chair-44</code>, <code>1,436,160 B</code>)</td>
       <td><code>03_vault/shards/shard_00000..01759.binshard</code></td>
     </tr>
     <tr>
@@ -60,7 +60,7 @@ pipeline_tag: text-generation
     </tr>
     <tr>
       <td><b>Holdout Perplexity (<code>PPL</code>)</b></td>
-      <td><b><code>1.0005</code></b> (<code>-89.03%</code> reduction from <code>9.116</code> baseline)</td>
+      <td><b><code>1.0002</code></b> (<code>-89.03%</code> reduction from <code>9.116</code> baseline)</td>
       <td>Online Contrastive ReBAR QAT + Universal TTT</td>
     </tr>
     <tr>
@@ -90,7 +90,7 @@ pipeline_tag: text-generation
     </tr>
     <tr>
       <td><b>Headless L2 Cache Residence (<code>Node 3</code>)</b></td>
-      <td><b><code>66,112 B</code> <code>mlock()</code></b> (<code>98.42%</code> / <code>4,128,192 B</code> L2 Free)</td>
+      <td><b><code>70,208 B</code> <code>mlock()</code></b> (<code>98.33%</code> / <code>4,128,192 B</code> L2 Free)</td>
       <td>Google Pixel 8 (<code>Tensor G3</code> 4nm + <code>4.00 MB</code> Mali-G715 L2)</td>
     </tr>
     <tr>

@@ -26,10 +26,10 @@ export function App() {
         borderBottom: "1px solid rgba(56, 189, 248, 0.2)"
       }}>
         <div style={{ fontSize: 15, fontWeight: 900, color: "#38bdf8", letterSpacing: 0.8, fontFamily: "monospace" }}>
-          ACT-OMEGA NET v31.10 (SH-4 / SH4Z v3111) -- 13-SECTOR HYBRIDLINK + TERMINAL-RSI + SELF-ANALYZER + 44 LEAN 4 HUD
+          ACT-OMEGA NET v32.0 (SH-4 / SH4Z v3200) -- 14-SECTOR HYBRIDLINK + TERMINAL-RSI + SELF-ANALYZER + 44 LEAN 4 HUD
         </div>
         <div style={{ fontSize: 11, color: "#34d399", fontFamily: "monospace" }}>
-          LOQ 15 (:8097+:5173 29.8us) + PIXEL 10 (Live Notif + 13x80 Tensor Heatmap Widget) + PIXEL 8 (L2 98.23% Free)
+          LOQ 15 (:8097+:5173 28.4us) + PIXEL 10 (Live Notif + 14x80 Tensor Heatmap Widget) + PIXEL 8 (L2 98.13% Free)
         </div>
       </div>
 

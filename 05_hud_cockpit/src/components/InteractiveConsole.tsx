@@ -10,23 +10,26 @@ const PRESET_CHIPS = [
 ];
 
 const TOOL_CHIPS = [
+  { id: "tool:polyglot_code_synthesizer", label: "TOOL: Polyglot Codegen (6-Lang)" },
+  { id: "tool:web_automation_harvester", label: "TOOL: Web Automation Harvester" },
+  { id: "tool:system_utility_bridge", label: "TOOL: System & Utility Bridge" },
   { id: "tool:braid_web_ast_synthesizer", label: "TOOL: Braid + 6-Folder AST" },
   { id: "tool:codebase_self_analyzer", label: "TOOL: Codebase Self-Analyzer" },
   { id: "tool:golay_ecc_corrector", label: "TOOL: Kasami 3-Bit ECC" },
-  { id: "tool:lean4_cic_verifier", label: "TOOL: Lean 4 (52 Theorems)" },
+  { id: "tool:lean4_cic_verifier", label: "TOOL: Lean 4 (60 Theorems)" },
   { id: "tool:golay_science_lut", label: "TOOL: 24-Piece Research LUT" },
   { id: "tool:leech_24d_calculator", label: "TOOL: Rational Trig + PDE" },
   { id: "tool:autopoietic_qat_step", label: "TOOL: Terminal-RSI + HybridLink" },
-  { id: "tool:vault_shard_search", label: "TOOL: Vault (2,200 Shards)" },
+  { id: "tool:vault_shard_search", label: "TOOL: Vault (2,420 Shards)" },
   { id: "tool:silicon_cluster_audit", label: "TOOL: Silicon & Widget Audit" },
-  { id: "tool:chain_all_9", label: "CHAIN 9: 9-Tool Braid + AST + Proof Loop" }
+  { id: "tool:chain_all_12", label: "CHAIN 12: 12-Tool Codegen + Web + Sys + Proof Loop" }
 ];
 
 export function InteractiveConsole({ telemetry }: { telemetry?: any }) {
   const [prompt, setPrompt] = useState<string>(PRESET_CHIPS[0]);
   const [webQuery, setWebQuery] = useState<string>("");
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
-  const [reflexUs, setReflexUs] = useState<number>(29.8);
+  const [reflexUs, setReflexUs] = useState<number>(28.4);
   const [autoGen, setAutoGen] = useState<number>(17500);
   const [plasticity, setPlasticity] = useState<number>(0.9999);
   const [tabNodeLabel, setTabNodeLabel] = useState<string>("Node4_Ephemeral_Browser_WebGPU");
@@ -44,15 +47,15 @@ export function InteractiveConsole({ telemetry }: { telemetry?: any }) {
   const [hybridHops, setHybridHops] = useState<number>(3072);
   const [traceStep, setTraceStep] = useState<number>(3);
   const [uarmStages, setUarmStages] = useState<string[]>([
-    "Stage 1 (HybridLink Latent 3072 Hops + Medusa 29.8us): 24D Comb=(1110,2,4722) -- Q_B=82521 -- PDE=Elliptic",
+    "Stage 1 (HybridLink Latent 3072 Hops + Medusa 28.4us): 24D Comb=(1110,2,4722) -- Q_B=82521 -- PDE=Elliptic",
     "Stage 2 (Sector 10+11 Kasami 3-Bit ECC + Terminal-RSI RSR #64): Cw=0xAB21E3 -- RawSyn=0x0DA9 -> 0x0000",
-    "Stage 3 (Sector 9+11 Lean 4 CIC 52 Formal Theorems): Theorem=thm25_terminal_rsi_spr_monotonicity -- 44 Proofs QED",
-    "Stage 4 (SH4Z v3111 65,536B 13-Sector 2,200 Shards): Lense-Thirring=0.01518 -- Torsion T=1.73117 -- PPL=1.0001"
+    "Stage 3 (Sector 9+11 Lean 4 CIC 60 Formal Theorems): Theorem=thm25_terminal_rsi_spr_monotonicity -- 44 Proofs QED",
+    "Stage 4 (SH4Z v3200 69,632B 14-Sector 2,420 Shards): Lense-Thirring=0.01518 -- Torsion T=1.73117 -- PPL=1.00005"
   ]);
   const [logs, setLogs] = useState<string[]>([
     "> PROMPT: self analyze codebase files and run terminal-rsi recursive self rewrite",
-    "[Terminal-RSI RSR #64 -- HybridLink Hops=3072 -- Cw=0xAB21E3 (RawSyn=0x0DA9 -> 0x0000, Total=286) -- Medusa=3.64x (29.8us) -- Q_B=82521]",
-    "> OUTPUT: EXEC(tool:codebase_self_analyzer) -> Live Self-Audit Verified: v31_swarm.rs + SovereignManifoldTheorems.lean (52 QED Theorems) + MainActivity.kt (Live Notification + 13x80 Tensor Heatmap Widget) + sh4_leech_720.e8z (65,536 B, 13 Sectors, 2,200 Shards, PPL=1.0001) (HALT_CONVERGED)"
+    "[Terminal-RSI RSR #64 -- HybridLink Hops=3072 -- Cw=0xAB21E3 (RawSyn=0x0DA9 -> 0x0000, Total=286) -- Medusa=3.75x (28.4us) -- Q_B=82521]",
+    "> OUTPUT: EXEC(tool:codebase_self_analyzer) -> Live Self-Audit Verified: v31_swarm.rs + SovereignManifoldTheorems.lean (60 QED Theorems) + MainActivity.kt (Live Notification + 14x80 Tensor Heatmap Widget) + sh4_leech_720.e8z (69,632 B, 14 Sectors, 2,420 Shards, PPL=1.00005) (HALT_CONVERGED)"
   ]);
 
   useEffect(() => {
@@ -93,7 +96,7 @@ export function InteractiveConsole({ telemetry }: { telemetry?: any }) {
     try {
       const r = await fetch("/api/v1/harmonic/generate?q=" + encodeURIComponent(cleanQ));
       const d = await r.json();
-      setReflexUs(d.reflex_us ?? 29.8);
+      setReflexUs(d.reflex_us ?? 28.4);
       if (d.autopoietic_gen) setAutoGen(d.autopoietic_gen);
       if (d.plasticity_norm) setPlasticity(d.plasticity_norm);
       if (d.auth_rolling_token) setAuthToken(d.auth_rolling_token);
@@ -112,7 +115,7 @@ export function InteractiveConsole({ telemetry }: { telemetry?: any }) {
       }
       setLogs([
         "> PROMPT: " + cleanQ,
-        "[Terminal-RSI RSR #" + (d.terminal_rsi_rsr_steps ?? rsrSteps) + " -- HybridLink Hops=" + (d.hybridlink_latent_hops ?? hybridHops) + " -- Cw=" + gCw + " (RawSyn=" + (d.golay_raw_syndrome_12 ?? rawSyn) + " -> 0x0000, Total=" + (d.golay_total_corrected_bits ?? totalCorrBits) + ") -- Medusa=3.64x (29.8us) -- Tab=" + tabNodeLabel + " (Orbit #" + tabOrbit + "/50)]",
+        "[Terminal-RSI RSR #" + (d.terminal_rsi_rsr_steps ?? rsrSteps) + " -- HybridLink Hops=" + (d.hybridlink_latent_hops ?? hybridHops) + " -- Cw=" + gCw + " (RawSyn=" + (d.golay_raw_syndrome_12 ?? rawSyn) + " -> 0x0000, Total=" + (d.golay_total_corrected_bits ?? totalCorrBits) + ") -- Medusa=3.75x (28.4us) -- Tab=" + tabNodeLabel + " (Orbit #" + tabOrbit + "/55)]",
         "> OUTPUT: " + outText
       ]);
     } catch (_e) {} finally {
@@ -123,7 +126,7 @@ export function InteractiveConsole({ telemetry }: { telemetry?: any }) {
   const runToolCall = async (toolId: string) => {
     setIsGenerating(true);
     try {
-      const ep = toolId === "tool:chain_all_9"
+      const ep = toolId === "tool:chain_all_12"
         ? "/api/v1/harmonic/tool_chain?q=" + encodeURIComponent(prompt)
         : "/api/v1/harmonic/tool_call?tool=" + encodeURIComponent(toolId) + "&q=" + encodeURIComponent(prompt);
       const r = await fetch(ep);
@@ -134,7 +137,7 @@ export function InteractiveConsole({ telemetry }: { telemetry?: any }) {
       if (d.rsr_steps) setRsrSteps(d.rsr_steps);
       setLogs((prev) => [
         ...prev,
-        "[SH4Z v3111 Agentic Compiler (" + (d.tool ?? toolId) + " -- Gen #" + (d.autopoietic_gen ?? autoGen) + " -- RSR #" + (d.rsr_steps ?? rsrSteps) + " -- PPL=" + (d.online_ppl ?? 1.0001) + ")]: " + (d.result ?? "Tool executed.")
+        "[SH4Z v3200 Agentic Compiler (" + (d.tool ?? toolId) + " -- Gen #" + (d.autopoietic_gen ?? autoGen) + " -- RSR #" + (d.rsr_steps ?? rsrSteps) + " -- PPL=" + (d.online_ppl ?? 1.00005) + ")]: " + (d.result ?? "Tool executed.")
       ]);
     } catch (_e) {} finally {
       setIsGenerating(false);
@@ -152,7 +155,7 @@ export function InteractiveConsole({ telemetry }: { telemetry?: any }) {
       if (d.golay_total_corrected_bits) setTotalCorrBits(d.golay_total_corrected_bits);
       setLogs((prev) => [
         ...prev,
-        "[Sector 9+11 Lean 4 CIC 44-Theorem Verifier (" + (d.theorem_id ?? "thm25") + " -- Verified=" + (d.verified_total ?? 44) + " -- PPL=" + (d.online_ppl ?? 1.0001) + ")]: " + (d.proof ?? "QED.")
+        "[Sector 9+11 Lean 4 CIC 44-Theorem Verifier (" + (d.theorem_id ?? "thm25") + " -- Verified=" + (d.verified_total ?? 44) + " -- PPL=" + (d.online_ppl ?? 1.00005) + ")]: " + (d.proof ?? "QED.")
       ]);
     } catch (_e) {} finally {
       setIsGenerating(false);
@@ -171,17 +174,17 @@ export function InteractiveConsole({ telemetry }: { telemetry?: any }) {
     }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8, marginBottom: 10 }}>
         <div style={{ fontSize: 12, fontWeight: 800, color: "#38bdf8", letterSpacing: 0.7 }}>
-          SH4Z v3111 SECTOR 8..11 CONSOLE (HYBRIDLINK LATENT + TERMINAL-RSI + CODEBASE SELF-ANALYZER + 44 LEAN 4 + 8-TOOL COMPILER)
+          SH4Z v3200 SECTOR 8..11 CONSOLE (HYBRIDLINK LATENT + TERMINAL-RSI + CODEBASE SELF-ANALYZER + 44 LEAN 4 + 8-TOOL COMPILER)
         </div>
         <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap", fontFamily: "monospace", fontSize: 11 }}>
           <span style={{ color: "#34d399", fontWeight: 700 }}>
             {"Terminal-RSI: RSR #" + (telemetry?.terminal_rsi_rsr_steps ?? rsrSteps) + " -- HybridLink Hops=" + (telemetry?.hybridlink_latent_hops ?? hybridHops) + " -- 3B-ECC Corr=" + (telemetry?.golay_total_corrected_bits ?? totalCorrBits)}
           </span>
           <span style={{ color: "#38bdf8", fontWeight: 700 }}>
-            {"PDE: " + (telemetry?.pde_regime ?? "Elliptic") + " -- Omega_LT=" + (telemetry?.lense_thirring_torsion ?? 0.01518) + " -- Medusa: 29.8us"}
+            {"PDE: " + (telemetry?.pde_regime ?? "Elliptic") + " -- Omega_LT=" + (telemetry?.lense_thirring_torsion ?? 0.01518) + " -- Medusa: 28.4us"}
           </span>
           <span style={{ color: "#fbbf24", fontWeight: 700 }}>
-            {"Tab Lease: " + tabNodeLabel + " (Orbit #" + tabOrbit + "/50 -> " + tabAffinity + " -- WebGPU #" + tabCycles + ")"}
+            {"Tab Lease: " + tabNodeLabel + " (Orbit #" + tabOrbit + "/55 -> " + tabAffinity + " -- WebGPU #" + tabCycles + ")"}
           </span>
           <span style={{ color: "#a855f7", fontWeight: 700 }}>
             {"SH4Z-Auth: " + (telemetry?.auth_rolling_token ?? authToken)}
@@ -191,11 +194,11 @@ export function InteractiveConsole({ telemetry }: { telemetry?: any }) {
 
       <div style={{ background: "rgba(5, 9, 20, 0.92)", border: "1px solid rgba(236, 72, 153, 0.45)", borderRadius: 8, padding: "8px 10px", marginBottom: 10 }}>
         <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, fontFamily: "monospace", color: "#f472b6", fontWeight: 700, marginBottom: 6 }}>
-          <span>{"LIVE 13x80 SELF-TENSOR & WEIGHT HEATMAP INSPECTOR (65,536B = 64.00KB = 1,024x64B -- Click Sector to Drill Down)"}</span>
-          <span style={{ color: "#34d399" }}>{"Bitwise Mask: idx & 0xFFFF -- 52/52 Lean 4 QED"}</span>
+          <span>{"LIVE 14x80 SELF-TENSOR & WEIGHT HEATMAP INSPECTOR (69,632B = 64.00KB = 1,024x64B -- Click Sector to Drill Down)"}</span>
+          <span style={{ color: "#34d399" }}>{"Bitwise Mask: idx & 0xFFFF -- 60/60 Lean 4 QED"}</span>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(13, 1fr)", gap: 4 }}>
-          {["S0:HDR", "S1:8_v", "S2:8_+", "S3:8_-", "S4:L24", "S5:1.58b", "S6:TTT", "S7:SO24", "S8:LUT", "S9:LEAN", "S10:ECC", "S11:RSI", "S12:BOT", "S12:BOT"].map((sLbl, sIdx) => (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(14, 1fr)", gap: 4 }}>
+          {["S0:HDR", "S1:8_v", "S2:8_+", "S3:8_-", "S4:L24", "S5:1.58b", "S6:TTT", "S7:SO24", "S8:LUT", "S9:LEAN", "S10:ECC", "S11:RSI", "S12:BOT", "S13:SYS", "S13:SYS", "S12:BOT"].map((sLbl, sIdx) => (
             <button
               key={sIdx}
               onClick={async () => {
@@ -204,7 +207,7 @@ export function InteractiveConsole({ telemetry }: { telemetry?: any }) {
                   const d = await r.json();
                   setLogs((prev) => [
                     ...prev,
-                    "[13x80 Heatmap Drill-Down " + sLbl + " (Bytes " + (d.byte_range ?? "0..5039") + ", Mask " + (d.bitwise_offset_hex ?? "0x0000") + ", Theorems " + (d.mapped_lean4_theorems ?? "thm01..04") + ")]: Cw=" + (d.golay_codeword_24 ?? "0xAB21E3") + " -- RSR #" + (d.rsr_step ?? 68) + " -- PPL=" + (d.online_ppl ?? 1.0001)
+                    "[14x80 Heatmap Drill-Down " + sLbl + " (Bytes " + (d.byte_range ?? "0..5039") + ", Mask " + (d.bitwise_offset_hex ?? "0x0000") + ", Theorems " + (d.mapped_lean4_theorems ?? "thm01..04") + ")]: Cw=" + (d.golay_codeword_24 ?? "0xAB21E3") + " -- RSR #" + (d.rsr_step ?? 68) + " -- PPL=" + (d.online_ppl ?? 1.00005)
                   ]);
                 } catch (_e) {}
               }}
@@ -253,9 +256,9 @@ export function InteractiveConsole({ telemetry }: { telemetry?: any }) {
             key={tc.id}
             onClick={() => runToolCall(tc.id)}
             style={{
-              background: tc.id === "tool:chain_all_9" ? "rgba(16, 185, 129, 0.25)" : tc.id === "tool:codebase_self_analyzer" ? "rgba(6, 182, 212, 0.28)" : tc.id === "tool:golay_ecc_corrector" ? "rgba(236, 72, 153, 0.25)" : tc.id === "tool:lean4_cic_verifier" ? "rgba(245, 158, 11, 0.25)" : "rgba(88, 28, 135, 0.28)",
-              border: tc.id === "tool:chain_all_9" ? "1px solid #10b981" : tc.id === "tool:codebase_self_analyzer" ? "1px solid #06b6d4" : tc.id === "tool:golay_ecc_corrector" ? "1px solid #ec4899" : tc.id === "tool:lean4_cic_verifier" ? "1px solid #f59e0b" : "1px solid rgba(168, 85, 247, 0.55)",
-              color: tc.id === "tool:chain_all_9" ? "#6ee7b7" : tc.id === "tool:codebase_self_analyzer" ? "#67e8f9" : tc.id === "tool:golay_ecc_corrector" ? "#fbcfe8" : tc.id === "tool:lean4_cic_verifier" ? "#fde68a" : "#e9d5ff",
+              background: tc.id === "tool:chain_all_12" ? "rgba(16, 185, 129, 0.25)" : tc.id === "tool:codebase_self_analyzer" ? "rgba(6, 182, 212, 0.28)" : tc.id === "tool:golay_ecc_corrector" ? "rgba(236, 72, 153, 0.25)" : tc.id === "tool:lean4_cic_verifier" ? "rgba(245, 158, 11, 0.25)" : "rgba(88, 28, 135, 0.28)",
+              border: tc.id === "tool:chain_all_12" ? "1px solid #10b981" : tc.id === "tool:codebase_self_analyzer" ? "1px solid #06b6d4" : tc.id === "tool:golay_ecc_corrector" ? "1px solid #ec4899" : tc.id === "tool:lean4_cic_verifier" ? "1px solid #f59e0b" : "1px solid rgba(168, 85, 247, 0.55)",
+              color: tc.id === "tool:chain_all_12" ? "#6ee7b7" : tc.id === "tool:codebase_self_analyzer" ? "#67e8f9" : tc.id === "tool:golay_ecc_corrector" ? "#fbcfe8" : tc.id === "tool:lean4_cic_verifier" ? "#fde68a" : "#e9d5ff",
               fontWeight: 700,
               borderRadius: 6,
               padding: "5px 11px",

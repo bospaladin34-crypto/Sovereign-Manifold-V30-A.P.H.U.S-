@@ -488,7 +488,7 @@ fn lookup_sector8_science_lut(q: &str, st: &Edge24D) -> (String, String) {
         (
             String::from("piece17_14_golay_science_composite"),
             format!(
-                "Sector 8 19-Piece Science/Math/Behavioral LUT Active (Golay G24=0x{:06X}, 3/3 Flips Corrected -> Syndrome=0x0000, 196,560 Leech Roots): 20 Physics Laws (dU=Q-W, E=mc^2, Maxwell, Einstein G_uv) + Z4 DNA Helix ({A,T,C,G}) + 24D Fractals + 118 Hex Elements + 20 VSEPR Rules at PPL=1.0005.",
+                "Sector 8 19-Piece Science/Math/Behavioral LUT Active (Golay G24=0x{:06X}, 3/3 Flips Corrected -> Syndrome=0x0000, 196,560 Leech Roots): 20 Physics Laws (dU=Q-W, E=mc^2, Maxwell, Einstein G_uv) + Z4 DNA Helix ((A,T,C,G)) + 24D Fractals + 118 Hex Elements + 20 VSEPR Rules at PPL=1.0005.",
                 st.golay_codeword_24
             )
         )

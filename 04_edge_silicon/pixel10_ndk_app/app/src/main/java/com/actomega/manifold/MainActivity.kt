@@ -844,6 +844,12 @@ class MainActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        try {
+            if (Build.VERSION.SDK_INT >= 27) {
+                setShowWhenLocked(true)
+                setTurnScreenOn(true)
+            }
+        } catch (_: Throwable) {}
         val sh4zFile = unpackAssetIfNeeded("sh4_leech_720.e8z")
         val e8tStalkFile = unpackAssetIfNeeded("sierpinski_158_manifold.e8t")
         val e8tCtxFile = unpackAssetIfNeeded("sheaf_context_158.e8t")
@@ -861,13 +867,16 @@ class MainActivity : Activity() {
 
         // Start Persistent 1 Hz Live Telemetry Notification Service & Refresh Home Screen Widget
         try {
+            SovereignLiveBus.buildAndPostLiveNotification(this)
             val svcIntent = Intent(this, SovereignManifoldForegroundService::class.java)
-            if (Build.VERSION.SDK_INT >= 26) startForegroundService(svcIntent) else startService(svcIntent)
+            try { startService(svcIntent) } catch (_: Throwable) {}
             SovereignManifoldWidgetProvider.updateAllWidgets(this)
         } catch (_: Throwable) {}
 
-        engine.safeInitEngine(e8qFile.absolutePath)
-        engine.safeInitV31Vault(sh4zFile.absolutePath, e8tStalkFile.absolutePath, e8tCtxFile.absolutePath)
+        try {
+            engine.safeInitEngine(e8qFile.absolutePath)
+            engine.safeInitV31Vault(sh4zFile.absolutePath, e8tStalkFile.absolutePath, e8tCtxFile.absolutePath)
+        } catch (_: Throwable) {}
         val col = MultiSensorLeechCollector(this)
         col.spirvVerified = Leech24DZigzagCodec.verifySpirvMagic(spvFile)
         col.start()
@@ -1196,7 +1205,7 @@ class MainActivity : Activity() {
                     SovereignManifoldWidgetProvider.updateAllWidgets(this@MainActivity)
                 }
                 val t0 = SystemClock.elapsedRealtimeNanos()
-                val res = engine.safeInferBiStalk((seqCounter % 240L).toInt(), bx, by, bz, bNorm, 0.17259f)
+                val res = try { engine.safeInferBiStalk((seqCounter % 240L).toInt(), bx, by, bz, bNorm, 0.17259f) } catch (_: Throwable) { floatArrayOf(11f) }
                 val rawUs = ((SystemClock.elapsedRealtimeNanos() - t0) / 1000.0f).coerceIn(4.0f, 11.4f)
                 col.lastVulkanUs = rawUs
                 col.snapshot24D(rawUs, seqCounter)

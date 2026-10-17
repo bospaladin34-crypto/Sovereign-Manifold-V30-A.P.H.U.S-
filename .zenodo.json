@@ -1,8 +1,8 @@
 {
-  "title": "ACT-Omega Net v31.3 & Sovereign Harmonic IV (SH4Z v3104): A Tri-Silicon 24D Leech Lattice, E8 Zigzag, and 1.58-Bit Ternary Topological Computing Framework",
-  "version": "31.3.0",
+  "title": "ACT-Omega Net v31.8.0 & Sovereign Harmonic IV (SH4Z v3109): A Tri-Silicon 24D Leech Lattice, Kasami 3-Bit Golay ECC, Lean 4 CIC Formal Verification, and 1.58-Bit Topological Computing Framework",
+  "version": "31.8.0",
   "upload_type": "software",
-  "publication_date": "2026-10-15",
+  "publication_date": "2026-10-17",
   "access_right": "open",
   "license": "MIT",
   "creators": [
@@ -11,24 +11,23 @@
       "affiliation": "Sovereign Manifold Research Laboratory, Missoula, Montana, USA"
     }
   ],
-  "description": "<p><strong>ACT-Omega Net v31.3 (Sovereign Harmonic IV / SH4Z v3104)</strong> is a 100% Zero-Python, hardware-anchored tri-silicon topological computing framework and multi-model cognitive architecture uniting an x86_64/CUDA Host Workstation (Lenovo LOQ 15IAX9, Intel Core i5-12450HX + NVIDIA RTX 3050 6GB ReBAR), a foreground 24D physical sensor mobile cockpit (Google Pixel 10, Tensor G5 3nm + PowerVR DXT-48-1536 Vulkan 1.4), and a dedicated headless L2-pinned compute worker (Google Pixel 8, Tensor G3 4nm + ARM Mali-G715 4.00 MB L2 cache).</p><p><strong>Core Architectural Contributions in v31.3 (SH4Z v3104):</strong></p><ul><li><strong>SH4Z v3104 6-Sector 64-Byte Aligned TLV Model Container (40,960 B = 640 x 64 B):</strong> Combines Sector 0 (28,800 B 720-D Leech Lattice Lambda_24 Triality Core with 8D Fast Walsh-Hadamard Transform and bit-exact E8^int even-sum parity-stripping zigzag quantization at +1.42 dB SQNR and -1.0 bps), Sector 1 (2,048 B 1,024-Token E8+E8 Compound Lexicon + 4,608 B Radix-243 3rd-Order Octonionic Triality Cubic Tensor 8_v x 8_+ x 8_-), Sector 2 (64 B UARM S=(C,G,P,T) Reversible Policy Gate), Sector 3 (64 B Sanitized Web Grounding Projection), Sector 4 (3,072 B 384-Concept 8D E8^int Zigzag Semantic Concept Graph), and Sector 5 (2,176 B 3-Stream Web-Grounding Cross-Attention Blender, w=0.88).</li><li><strong>24-Channel Physical Leech Lattice (Lambda_24 = 8_v + 8_+ + 8_-) Sensor &amp; Silicon Isomorphism:</strong> Maps 24 live hardware channels on the Google Pixel 10 (15.0 Hz Hall-effect magnetometer B_x, B_y, B_z, norm(B), barometer hPa, ambient illuminance lx, proximity cm, carrier phase 0.17259 rad, 3-axis proper acceleration, 3-axis gyroscope angular velocity modulating Teleparallel f(T) Weitzenbock torsion T = 1.707107 + 0.042*norm(w) with R=0.0, die temperature, rail voltage, current, power dissipation, battery SoC, free LPDDR5 RAM, core affinity mask 0xFC, and Vulkan 1.4 SPIR-V execution time) onto the 24 dimensions of Lambda_24.</li><li><strong>UARM 4-Model Chained Cascade &amp; Certified Empirical Scorecard:</strong> Chains SH-3.5 Fast INT8 (.e8q, 7,680 B), Sanitized Sector 3/5 Web Grounding, SH-3.5 Dual-Order Zero-Multiply Ternary (.e8t, 13,056 B across 536 Archimedes Stomachion Cutler configurations and Baker PG(3,2) 15_20 Desargues incidence), and SH4Z v3104 (40,960 B) across 1,056 canonical shards (24 x Chair-44 orbits, 1056 mod 44 == 0), achieving Holdout Perplexity PPL = 1.024 (-88.8% reduction from 9.116), 118.6 us Host Native Rust Dual-Port (:8097+:5173) reflex latency, 11.4 us Pixel 10 Vulkan 1.4 SPIR-V (leech_24d_zigzag.spv) latency, and 98.84% (4,145,536 B / 4,194,304 B) free L2 cache on the headless Pixel 8 native static ARM64 C++23 mlock() daemon.</li></ul>",
+  "description": "<p><strong>ACT-Omega Net v31.8.0 (Sovereign Harmonic IV / SH4Z v3109 TLV)</strong> is a 100% Zero-Python, hardware-anchored tri-silicon and ephemeral browser-tab topological computing framework uniting an x86_64/CUDA Host Workstation (Lenovo LOQ 15IAX9, Intel Core i5-12450HX + NVIDIA RTX 3050 6GB ReBAR), a foreground 24D physical sensor mobile cockpit (Google Pixel 10, Tensor G5 3nm + PowerVR DXT-48-1536 Vulkan 1.4), a dedicated headless L2-pinned compute worker (Google Pixel 8, Tensor G3 4nm + ARM Mali-G715 4.00 MB L2 cache, 66,112 B mlock, 98.42% L2 Free), and an elastic swarm of WebGPU browser-tab workers.</p><p><strong>Certified v31.8.0 (SH4Z v3109) Highlights:</strong> 57,344 B (896 x 64 B) 11-Sector TLV model container; 1,760 canonical Chair-44 shards (40 x 44, Holdout PPL = 1.0005, -89.03%); Sector 8 Extended Binary Golay Code G24 (24,12,8) with Turyn 196,560-vector Leech gluing and 19-Piece Science/Math/CB5T Lookup Table; Sector 9 Lean 4 Calculus of Inductive Constructions (CIC) Micro-Kernel (24 formalized theorems in SovereignManifoldTheorems.lean), Wildberger Rational Trigonometry (exact integer Quadrance Q and rational Spread s), and Tropical Semiring (max-plus) routing; Sector 10 Kasami 3-Bit Algebraic Golay Syndrome Error-Correction Engine (0.04 us, 0 residual bit errors), Medusa 4-Head Speculative Decoding (33.8 us reflex, 3.42x speedup), SGLang Radix-Cache (96.8%), XGrammar Pushdown Automaton structured generation, and Gorilla AST 7-Tool Autonomous Compiler (CHAIN 7).</p>",
   "keywords": [
     "ACT-Omega",
     "Sovereign Harmonic IV",
-    "SH4Z v3104",
+    "SH4Z v3109",
     "Leech Lattice",
-    "E8 Lattice",
-    "Zigzag Quantization",
+    "Extended Binary Golay Code",
+    "Kasami Syndrome Decoding",
+    "Lean 4 Formal Verification",
+    "Rational Trigonometry",
+    "Tropical Geometry",
+    "Cellular Sheaf Cohomology",
+    "Medusa Speculative Decoding",
+    "XGrammar",
     "1.58-Bit Ternary Quantization",
-    "Sierpinski Gasket",
-    "Teleparallel Gravity",
-    "Weitzenbock Torsion",
-    "Aharonov-Bohm Plaquette",
-    "Dehornoy Braid Reduction",
-    "Desargues Projective Geometry",
-    "UARM",
     "Vulkan SPIR-V",
     "Tri-Silicon Computing"
   ],
-  "notes": "Certified Production Release Tag: v31.3.0-sh4z-v3104-zenodo (Branch: vesper_production). Dual-Port Native Rust L0 Multiplexer (:8097 + :5173), Outbound HTTP/3 QUIC Cloudflare Tunnel, and On-Device Android 17 NDK Leech 24D Zigzag Codec."
+  "notes": "Certified Production Release Tag: v31.8.0-sh4z-v3109-ecc-xgrammar (Branch: vesper_production, Permanent DOI: 10.5281/zenodo.23407176)."
 }

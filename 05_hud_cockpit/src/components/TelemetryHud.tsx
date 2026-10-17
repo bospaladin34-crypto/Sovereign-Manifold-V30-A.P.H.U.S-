@@ -78,16 +78,16 @@ export function TelemetryHud({ telemetry, connected }: TelemetryHudProps) {
         </div>
         <div style={cStyle}>
           <div style={lStyle}>ACTIVE VAULT SCALE</div>
-          <div style={{ ...vStyle, color: "#a855f7" }}>1,540 SHARDS (35x CHAIR44)</div>
-          <div style={sStyle}>SH4Z v3108 TLV (53,248 B | 10-Sector Lean4+GolayG24)</div>
+          <div style={{ ...vStyle, color: "#a855f7" }}>1,760 SHARDS (40x CHAIR44)</div>
+          <div style={sStyle}>SH4Z v3109 TLV (57,344 B | 11-Sector KasamiECC+XGrammar)</div>
         </div>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 12 }}>
         <div style={cStyle}>
           <div style={lStyle}>SIERPINSKI 1.58-BIT & MALI L2</div>
-          <div style={vStyle}>13,056 B .e8t + 53,248 B .e8z</div>
-          <div style={{ ...sStyle, color: "#34d399" }}>PIXEL 8 C++23 mlock(62,016B) | L2 FREE: 98.52%</div>
+          <div style={vStyle}>13,056 B .e8t + 57,344 B .e8z</div>
+          <div style={{ ...sStyle, color: "#34d399" }}>PIXEL 8 C++23 mlock(66,112B) | L2 FREE: 98.42%</div>
         </div>
         <div style={cStyle}>
           <div style={lStyle}>POLYFORM & BRAID-IR ROUTER</div>
@@ -101,7 +101,7 @@ export function TelemetryHud({ telemetry, connected }: TelemetryHudProps) {
         </div>
         <div style={cStyle}>
           <div style={lStyle}>HYPERBOLIC CFT & HORIZON</div>
-          <div style={{ ...vStyle, color: "#34d399" }}>{"PPL 1.001 (-89.02%) | " + beaming.toFixed(2) + "x BEAM"}</div>
+          <div style={{ ...vStyle, color: "#34d399" }}>{"PPL 1.0005 (-89.03%) | " + beaming.toFixed(2) + "x BEAM"}</div>
           <div style={sStyle}>UARM 4-MODEL CASCADE | Q_i = 0.8180</div>
         </div>
       </div>

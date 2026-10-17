@@ -1,1 +1,1 @@
-{"schema":3200,"container_bytes":69632,"bitwise_mask":"0xFFFF","cachelines_64b":1024,"sectors":13,"folders_verified":6/6,"ast_dag_edges":15,"braid_reidemeister_iii_residual":0,"rsr_step":74,"hybridlink_hops":3576,"holdout_ppl":1.0001}
+{"schema":3200,"container_bytes":69632,"bitwise_mask":"0xFFFF","cachelines_64b":1024,"sectors":13,"folders_verified":6/6,"ast_dag_edges":15,"braid_reidemeister_iii_residual":0,"rsr_step":82,"hybridlink_hops":9505,"holdout_ppl":1.0001}

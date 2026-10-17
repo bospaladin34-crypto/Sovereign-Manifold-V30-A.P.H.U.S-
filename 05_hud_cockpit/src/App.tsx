@@ -26,10 +26,10 @@ export function App() {
         borderBottom: "1px solid rgba(56, 189, 248, 0.2)"
       }}>
         <div style={{ fontSize: 15, fontWeight: 900, color: "#38bdf8", letterSpacing: 0.8, fontFamily: "monospace" }}>
-          ACT-OMEGA NET v31.2 (SH-4 / SH4Z v3103) | TRI-SILICON SOVEREIGN COCKPIT HUD
+          ACT-OMEGA NET v31.7 (SH-4 / SH4Z v3108) -- 10-SECTOR LEAN 4 CIC + RATIONAL TRIG + GOLAY G24 HUD
         </div>
         <div style={{ fontSize: 11, color: "#34d399", fontFamily: "monospace" }}>
-          LOQ 15 (:8097+:5173 Native Rust) + PIXEL 10 (24D Leech) + PIXEL 8 (C++23 L2 98.84% Free)
+          LOQ 15 (:8097+:5173 Rust) + PIXEL 10 (24D Leech) + PIXEL 8 (C++23 L2 98.52% Free) + TAB WORKERS
         </div>
       </div>
 

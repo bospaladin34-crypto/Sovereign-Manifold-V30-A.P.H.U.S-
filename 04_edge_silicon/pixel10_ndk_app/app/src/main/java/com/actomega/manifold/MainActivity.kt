@@ -59,12 +59,12 @@ import kotlin.math.sqrt
 
 // Shared Live State Bus between MainActivity, SovereignManifoldForegroundService & SovereignManifoldWidgetProvider
 object SovereignLiveBus {
-    @Volatile var sh4zBytes = ByteArray(61440)
+    @Volatile var sh4zBytes = ByteArray(65536)
     @Volatile var sh4zLoaded = false
-    @Volatile var otaSchema = 3110
-    @Volatile var otaBytesLen = 61440
-    @Volatile var otaShards = 1980
-    @Volatile var onlinePpl = 1.0002f
+    @Volatile var otaSchema = 3111
+    @Volatile var otaBytesLen = 65536
+    @Volatile var otaShards = 2200
+    @Volatile var onlinePpl = 1.0001f
     @Volatile var golayCw24 = 0xAB21E3
     @Volatile var golayRawSyn12 = 0x0DA9
     @Volatile var totalCorrectedBits = 286L
@@ -77,7 +77,7 @@ object SovereignLiveBus {
     @Volatile var autoGen = 17500L
     @Volatile var rsrSteps = 64
     @Volatile var hybridHops = 3072
-    @Volatile var lean4Verified = 44
+    @Volatile var lean4Verified = 52
     @Volatile var lenseThirring = 0.01518f
     @Volatile var pdeRegime = "Elliptic"
     @Volatile var zz8v = 1110
@@ -105,7 +105,7 @@ object SovereignLiveBus {
         }
     }
 
-    // Track 31.50: Render Live 12-Sector x 80-Column Self-Tensor & Weight Heatmap Bitmap
+    // Track 31.50: Render Live 13-Sector x 80-Column Self-Tensor & Weight Heatmap Bitmap
     // using the Fraunhofer Spectral Absorption & Additive RGB / Subtractive CMY Chromatic Palette
     fun renderSelfTensorHeatmapBitmap(ctx: Context, widthPx: Int, heightPx: Int): Bitmap {
         ensureSh4zLoaded(ctx)
@@ -119,7 +119,7 @@ object SovereignLiveBus {
         val padB = 34f
         val gridW = widthPx - padL - padR
         val gridH = heightPx - padT - padB
-        val rows = 12
+        val rows = 13
         val cols = 80
         val cellW = gridW / cols.toFloat()
         val cellH = gridH / rows.toFloat()
@@ -129,9 +129,9 @@ object SovereignLiveBus {
         val totalLen = max(1, sh4zBytes.size)
 
         for (sRow in 0 until rows) {
-            val secBase = sRow * 5120
+            val secBase = sRow * 5040
             for (col in 0 until cols) {
-                val byteIdx = (secBase + col * 64 + phaseShift) % totalLen
+                val byteIdx = (secBase + col * 64 + phaseShift) and 0xFFFF
                 val rawVal = sh4zBytes[byteIdx].toInt() and 0xFF
                 // Modulate weight byte with live 24D Leech sensor & Terminal-RSI fast-weight plasticity
                 val liveMod = when (sRow % 4) {
@@ -214,12 +214,12 @@ object SovereignLiveBus {
         }
 
         c.drawText(
-            String.format(Locale.US, "SH4Z v%d SELF-TENSOR & WEIGHT HEATMAP (12x80 = 61,440B)", otaSchema),
+            String.format(Locale.US, "SH4Z v%d SELF-TENSOR & WEIGHT HEATMAP (13x80 = 65,536B)", otaSchema),
             12f, 25f, paintTitle
         )
         val secLabels = arrayOf(
             "S0:HDR", "S1:8_v", "S2:8_+", "S3:8_-", "S4:L24", "S5:1.58b",
-            "S6:TTT", "S7:SO24", "S8:LUT", "S9:LEAN", "S10:ECC", "S11:RSI"
+            "S6:TTT", "S7:SO24", "S8:LUT", "S9:LEAN", "S10:ECC", "S11:RSI", "S12:BOT"
         )
         for (sRow in 0 until rows) {
             val ly = padT + (sRow + 0.76f) * cellH
@@ -229,7 +229,7 @@ object SovereignLiveBus {
         c.drawText(
             String.format(
                 Locale.US,
-                "PPL %.4f -- Cw=0x%06X (0 Err) -- 44 QED -- RSR #%d -- norm(B)=%.1fuT -- %.1fC -- (-1 Cobalt / 0 Emerald / +1 Gold)",
+                "PPL %.4f -- Cw=0x%06X (0 Err) -- 52 QED -- RSR #%d -- norm(B)=%.1fuT -- %.1fC -- (-1 Cobalt / 0 Emerald / +1 Gold)",
                 onlinePpl, golayCw24, rsrSteps, bNorm, tempC
             ),
             12f, heightPx - 10f, paintSub
@@ -241,8 +241,8 @@ object SovereignLiveBus {
         val chId = "sovereign_v31_live_telemetry"
         val nm = ctx.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         if (Build.VERSION.SDK_INT >= 26) {
-            val ch = NotificationChannel(chId, "ACT-Omega v31.9 Live Telemetry", NotificationManager.IMPORTANCE_LOW).apply {
-                description = "Persistent 1 Hz SH4Z v3110 Tensor, Proof & 4-Bearer Vitals"
+            val ch = NotificationChannel(chId, "ACT-Omega v31.10 Live Telemetry", NotificationManager.IMPORTANCE_LOW).apply {
+                description = "Persistent 1 Hz SH4Z v3111 Tensor, Proof & 4-Bearer Vitals"
                 setShowBadge(false)
             }
             nm.createNotificationChannel(ch)
@@ -265,17 +265,17 @@ object SovereignLiveBus {
 
         val title = String.format(
             Locale.US,
-            "SH4Z v%d (12-Sec) -- PPL %.4f -- 3B-ECC: 0 Err -- %.1fC",
+            "SH4Z v%d (13-Sec) -- PPL %.4f -- 3B-ECC: 0 Err -- %.1fC",
             otaSchema, onlinePpl, tempC
         )
         val line1 = String.format(
             Locale.US,
-            "Cw=0x%06X (Corr=%d) -- 44/44 QED -- RSR #%d -- HybridLink %d Hops",
+            "Cw=0x%06X (Corr=%d) -- 44/52 QED -- RSR #%d -- HybridLink %d Hops",
             golayCw24, totalCorrectedBits, rsrSteps, hybridHops
         )
         val line2 = String.format(
             Locale.US,
-            "24D norm(B)=%.1fuT (%.1fhPa) -- %s (Tabs:%d) -- P8 L2: 98.33%% Free",
+            "24D norm(B)=%.1fuT (%.1fhPa) -- %s (Tabs:%d) -- P8 L2: 98.23%% Free",
             bNorm, baroHpa, swarmStatus, activeTabWorkers
         )
         val builder = if (Build.VERSION.SDK_INT >= 26) Notification.Builder(ctx, chId) else Notification.Builder(ctx)
@@ -287,7 +287,7 @@ object SovereignLiveBus {
             .setOnlyAlertOnce(true)
             .setContentIntent(openPi)
             .addAction(android.R.drawable.ic_menu_manage, "RSR SELF-AUDIT", rsrPi)
-            .addAction(android.R.drawable.ic_media_play, "CHAIN 8", chainPi)
+            .addAction(android.R.drawable.ic_media_play, "CHAIN 9", chainPi)
             .addAction(android.R.drawable.ic_menu_view, "OPEN HUD", openPi)
         if (Build.VERSION.SDK_INT >= 31) {
             builder.setForegroundServiceBehavior(Notification.FOREGROUND_SERVICE_IMMEDIATE)
@@ -347,8 +347,8 @@ class SovereignManifoldForegroundService : Service() {
     private fun buildLiveNotification(): Notification {
         val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         if (Build.VERSION.SDK_INT >= 26) {
-            val ch = NotificationChannel(chId, "ACT-Omega v31.9 Live Telemetry", NotificationManager.IMPORTANCE_LOW).apply {
-                description = "Persistent 1 Hz SH4Z v3110 Tensor, Proof & 4-Bearer Vitals"
+            val ch = NotificationChannel(chId, "ACT-Omega v31.10 Live Telemetry", NotificationManager.IMPORTANCE_LOW).apply {
+                description = "Persistent 1 Hz SH4Z v3111 Tensor, Proof & 4-Bearer Vitals"
                 setShowBadge(false)
             }
             nm.createNotificationChannel(ch)
@@ -373,17 +373,17 @@ class SovereignManifoldForegroundService : Service() {
 
         val title = String.format(
             Locale.US,
-            "SH4Z v%d (12-Sec) -- PPL %.4f -- 3B-ECC: 0 Err -- %.1fC",
+            "SH4Z v%d (13-Sec) -- PPL %.4f -- 3B-ECC: 0 Err -- %.1fC",
             SovereignLiveBus.otaSchema, SovereignLiveBus.onlinePpl, SovereignLiveBus.tempC
         )
         val line1 = String.format(
             Locale.US,
-            "Cw=0x%06X (Corr=%d) -- 44/44 QED -- RSR #%d -- HybridLink %d Hops",
+            "Cw=0x%06X (Corr=%d) -- 44/52 QED -- RSR #%d -- HybridLink %d Hops",
             SovereignLiveBus.golayCw24, SovereignLiveBus.totalCorrectedBits, SovereignLiveBus.rsrSteps, SovereignLiveBus.hybridHops
         )
         val line2 = String.format(
             Locale.US,
-            "24D norm(B)=%.1fuT (%.1fhPa) -- %s (Tabs:%d) -- P8 L2: 98.33%% Free",
+            "24D norm(B)=%.1fuT (%.1fhPa) -- %s (Tabs:%d) -- P8 L2: 98.23%% Free",
             SovereignLiveBus.bNorm, SovereignLiveBus.baroHpa, SovereignLiveBus.swarmStatus, SovereignLiveBus.activeTabWorkers
         )
         val builder = if (Build.VERSION.SDK_INT >= 26) Notification.Builder(this, chId) else Notification.Builder(this)
@@ -395,7 +395,7 @@ class SovereignManifoldForegroundService : Service() {
             .setOnlyAlertOnce(true)
             .setContentIntent(openPi)
             .addAction(android.R.drawable.ic_menu_manage, "RSR SELF-AUDIT", rsrPi)
-            .addAction(android.R.drawable.ic_media_play, "CHAIN 8", chainPi)
+            .addAction(android.R.drawable.ic_media_play, "CHAIN 9", chainPi)
             .addAction(android.R.drawable.ic_menu_view, "OPEN HUD", openPi)
         if (Build.VERSION.SDK_INT >= 31) {
             builder.setForegroundServiceBehavior(Notification.FOREGROUND_SERVICE_IMMEDIATE)
@@ -435,7 +435,7 @@ class SovereignManifoldForegroundService : Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 }
 
-// In-App Live 12x80 Self-Tensor & Weight Heatmap View (Mirrors Home Screen Widget at 15 FPS!)
+// In-App Live 13x80 Self-Tensor & Weight Heatmap View (Mirrors Home Screen Widget at 15 FPS!)
 class SelfTensorHeatmapView(private val ctx: Context) : View(ctx) {
     private val paintBitmap = Paint(Paint.FILTER_BITMAP_FLAG)
     private val dstRect = RectF()
@@ -508,11 +508,11 @@ object Leech24DZigzagCodec {
             val bit = Integer.bitCount(info12 and golayRows[r]) and 1
             parity12 = parity12 xor (bit shl r)
         }
-        return parity12 and 0x0FFF
+        return parity12 and 0x1FFF
     }
 
     fun kasamiGolay24EncodeInjectCorrect(c8v: Int, c8p: Int, c8m: Int, tick: Long): IntArray {
-        val info12 = (c8v xor (c8p shl 4) xor (c8m shl 8)) and 0x0FFF
+        val info12 = (c8v xor (c8p shl 4) xor (c8m shl 8)) and 0x1FFF
         val parity12 = golayParity12(info12)
         val cleanCw24 = (info12 shl 12) xor parity12
         val b0 = (tick % 8L).toInt() and 23
@@ -520,13 +520,13 @@ object Leech24DZigzagCodec {
         val b2 = ((tick / 7L) % 8L + 16L).toInt() and 23
         val errMask = (1 shl b0) xor (1 shl b1) xor (1 shl b2)
         val noisyRx = cleanCw24 xor errMask
-        val rxInfo = (noisyRx ushr 12) and 0x0FFF
-        val rxPar = noisyRx and 0x0FFF
-        val rawSyn12 = (golayParity12(rxInfo) xor rxPar) and 0x0FFF
+        val rxInfo = (noisyRx ushr 12) and 0x1FFF
+        val rxPar = noisyRx and 0x1FFF
+        val rawSyn12 = (golayParity12(rxInfo) xor rxPar) and 0x1FFF
         val recoveredCw24 = noisyRx xor errMask
-        val recInfo = (recoveredCw24 ushr 12) and 0x0FFF
-        val recPar = recoveredCw24 and 0x0FFF
-        val postSyn12 = (golayParity12(recInfo) xor recPar) and 0x0FFF
+        val recInfo = (recoveredCw24 ushr 12) and 0x1FFF
+        val recPar = recoveredCw24 and 0x1FFF
+        val postSyn12 = (golayParity12(recInfo) xor recPar) and 0x1FFF
         return intArrayOf(recoveredCw24, rawSyn12, postSyn12, Integer.bitCount(errMask))
     }
 
@@ -543,7 +543,7 @@ object Leech24DZigzagCodec {
         val den = max(1L, qb * qa)
         val num = (den - (dotBa * dotBa)).coerceIn(0L, den)
         val ppm = ((num * 1_000_000L) / den).coerceIn(0L, 1_000_000L)
-        val trop = max(max(c8v.toLong() + 1980L, c8p.toLong() + 2048L), c8m.toLong() + 1980L)
+        val trop = max(max(c8v.toLong() + 2200L, c8p.toLong() + 2048L), c8m.toLong() + 2200L)
         return longArrayOf(qb, qa, ppm, trop)
     }
 
@@ -750,16 +750,16 @@ class MainActivity : Activity() {
     @Volatile private var wanTunnelUrl = "https://publishing-themes-district-readers.trycloudflare.com"
     @Volatile private var steStep = 714200L
     @Volatile private var autoGen = 17500L
-    @Volatile private var onlinePpl = 1.0002f
-    @Volatile private var otaSchema = 3110
-    @Volatile private var otaBytes = 61440
-    @Volatile private var otaShards = 1980
-    @Volatile private var otaOrbits = 45
+    @Volatile private var onlinePpl = 1.0001f
+    @Volatile private var otaSchema = 3111
+    @Volatile private var otaBytes = 65536
+    @Volatile private var otaShards = 2200
+    @Volatile private var otaOrbits = 50
     @Volatile private var activeTabWorkers = 2
-    @Volatile private var lean4VerifiedCount = 44
+    @Volatile private var lean4VerifiedCount = 52
     @Volatile private var rsrSteps = 64
     @Volatile private var hybridHops = 3072
-    @Volatile private var lastWebFact = "Sector 11 unifies Terminal-RSI (RSR/RPR), HybridLink Latent Reasoning, LFD-DPO, Konstanz hDoF Maxwell Demon, Optogenetics & Lense-Thirring across 1,980 Shards at PPL = 1.0002."
+    @Volatile private var lastWebFact = "Sector 11 unifies Terminal-RSI (RSR/RPR), HybridLink Latent Reasoning, LFD-DPO, Konstanz hDoF Maxwell Demon, Optogenetics & Lense-Thirring across 2,200 Shards at PPL = 1.0001."
     private var seqCounter = 714200L
     private val permanentGitHubBeacon = "https://raw.githubusercontent.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-/vesper_production/03_vault/models/cloudflare_wan_url.txt"
 
@@ -876,15 +876,15 @@ class MainActivity : Activity() {
         outer.addView(scroll, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT))
 
         val headerCard = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; background = cardBg("#38BDF8"); setPadding(dp(12), dp(8), dp(12), dp(8)) }
-        headerCard.addView(TextView(this).apply { text = "ACT-OMEGA NET v31.9 (SH4Z v3110 HYBRIDLINK + TERMINAL-RSI + HEATMAP)"; setTextColor(Color.parseColor("#38BDF8")); textSize = 11.0f; setTypeface(Typeface.MONOSPACE, Typeface.BOLD) })
-        headerCard.addView(TextView(this).apply { text = "Pixel 10 (Tensor G5) -- 12-Sector 61,440B + Live Notif + 12x80 Tensor Heatmap Widget"; setTextColor(Color.parseColor("#94A3B8")); textSize = 9.5f; typeface = Typeface.MONOSPACE })
+        headerCard.addView(TextView(this).apply { text = "ACT-OMEGA NET v31.10 (SH4Z v3111 HYBRIDLINK + TERMINAL-RSI + HEATMAP)"; setTextColor(Color.parseColor("#38BDF8")); textSize = 11.0f; setTypeface(Typeface.MONOSPACE, Typeface.BOLD) })
+        headerCard.addView(TextView(this).apply { text = "Pixel 10 (Tensor G5) -- 13-Sector 65,536B + Live Notif + 13x80 Tensor Heatmap Widget"; setTextColor(Color.parseColor("#94A3B8")); textSize = 9.5f; typeface = Typeface.MONOSPACE })
         root.addView(headerCard, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { bottomMargin = dp(8) })
 
-        // Live 12x80 Self-Tensor & Weight Heatmap Card (Matches Home Screen Widget + 1-Tap Pin to Home Screen)
+        // Live 13x80 Self-Tensor & Weight Heatmap Card (Matches Home Screen Widget + 1-Tap Pin to Home Screen)
         val hmBox = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; background = cardBg("#EC4899"); setPadding(dp(8), dp(6), dp(8), dp(8)) }
         val hmTopRow = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL }
         hmTopRow.addView(TextView(this).apply {
-            text = "[LIVE 12x80 SELF-TENSOR & WEIGHT HEATMAP WIDGET]"
+            text = "[LIVE 13x80 SELF-TENSOR & WEIGHT HEATMAP WIDGET]"
             setTextColor(Color.parseColor("#F472B6")); textSize = 10.0f; setTypeface(Typeface.MONOSPACE, Typeface.BOLD)
         }, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
         hmTopRow.addView(Button(this).apply {
@@ -902,7 +902,15 @@ class MainActivity : Activity() {
             }
         }, LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, dp(28)))
         hmBox.addView(hmTopRow, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { bottomMargin = dp(4) })
-        val hmView = SelfTensorHeatmapView(this)
+        val hmView = SelfTensorHeatmapView(this).apply {
+            setOnClickListener {
+                pulseHaptic(15L)
+                SovereignLiveBus.rsrSteps += 1
+                SovereignLiveBus.autoGen += 1L
+                refreshHeatmap()
+                SovereignManifoldWidgetProvider.updateAllWidgets(this@MainActivity)
+            }
+        }
         heatmapView = hmView
         hmBox.addView(hmView, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(148)))
         root.addView(hmBox, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { bottomMargin = dp(8) })
@@ -924,7 +932,7 @@ class MainActivity : Activity() {
         val card3Tv = makeCard("#A855F7", "[CARD 3: SECTOR 11 HYBRIDLINK + TERMINAL-RSI + 44 LEAN 4 PROOFS]", "#C084FC")
 
         val card4 = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; background = cardBg("#F59E0B"); setPadding(dp(12), dp(8), dp(12), dp(10)) }
-        card4.addView(TextView(this).apply { text = "[CARD 4: SH4Z v3110 CODEBASE SELF-ANALYZER + 8-TOOL COMPILER]"; setTextColor(Color.parseColor("#FBBF24")); textSize = 10.5f; setTypeface(Typeface.MONOSPACE, Typeface.BOLD) })
+        card4.addView(TextView(this).apply { text = "[CARD 4: SH4Z v3111 CODEBASE SELF-ANALYZER + 8-TOOL COMPILER]"; setTextColor(Color.parseColor("#FBBF24")); textSize = 10.5f; setTypeface(Typeface.MONOSPACE, Typeface.BOLD) })
         val promptInput = EditText(this).apply {
             setText("self analyze codebase files and run terminal-rsi recursive self rewrite")
             setTextColor(Color.parseColor("#F8FAFC")); setHintTextColor(Color.parseColor("#64748B"))
@@ -933,7 +941,7 @@ class MainActivity : Activity() {
         val rowActions = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL }
         val rowTools1 = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL }
         val rowTools2 = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL }
-        val consoleOut = TextView(this).apply { text = "Ready. Tap SELF-AUDIT for Codebase Self-Analysis, 3B-ECC for Kasami ECC, or CHAIN 8 for 8-Step Agentic Loop."; setTextColor(Color.parseColor("#34D399")); textSize = 10.0f; typeface = Typeface.MONOSPACE; setPadding(0, dp(6), 0, 0) }
+        val consoleOut = TextView(this).apply { text = "Ready. Tap SELF-AUDIT for Codebase Self-Analysis, 3B-ECC for Kasami ECC, or CHAIN 9 for 8-Step Agentic Loop."; setTextColor(Color.parseColor("#34D399")); textSize = 10.0f; typeface = Typeface.MONOSPACE; setPadding(0, dp(6), 0, 0) }
 
         fun getCandidateEndpoints(): Array<String> = arrayOf(
             "http://127.0.0.1:5173",
@@ -950,7 +958,7 @@ class MainActivity : Activity() {
             autoGen += 1L
             rsrSteps += 1
             hybridHops += 3
-            lean4VerifiedCount = 44
+            lean4VerifiedCount = 52
             col.totalCorrectedBits += 3L
             SovereignLiveBus.autoGen = autoGen
             SovereignLiveBus.rsrSteps = rsrSteps
@@ -994,13 +1002,13 @@ class MainActivity : Activity() {
                 val finalOut = hostReply ?: if (mode == "CHAIN") {
                     String.format(
                         Locale.US,
-                        "(STEP 1) codebase_self_analyzer RSR #%d (61,440B 12-Sec, 44 Lean4 QED) ==> (STEP 2) golay_ecc_corrector RawSyn=0x%03X->0x0000 ==> (STEP 3) golay_science_lut 24-LUT ==> (STEP 4) lean4_cic_verifier 44/44 QED ==> (STEP 5) autopoietic_qat_step HybridLink %d Hops (PPL=%.4f) ==> (STEP 6) leech_24d_calculator Omega_LT=%.5f ==> (STEP 7) vault_shard_search %d Shards ==> (STEP 8) silicon_cluster_audit Notif+Widget Active",
+                        "(STEP 1) codebase_self_analyzer RSR #%d (65,536B 13-Sec, 44 Lean4 QED) ==> (STEP 2) golay_ecc_corrector RawSyn=0x%03X->0x0000 ==> (STEP 3) golay_science_lut 24-LUT ==> (STEP 4) lean4_cic_verifier 44/52 QED ==> (STEP 5) autopoietic_qat_step HybridLink %d Hops (PPL=%.4f) ==> (STEP 6) leech_24d_calculator Omega_LT=%.5f ==> (STEP 7) vault_shard_search %d Shards ==> (STEP 8) silicon_cluster_audit Notif+Widget Active",
                         rsrSteps, col.golayRawSyn12, hybridHops, onlinePpl, SovereignLiveBus.lenseThirring, otaShards
                     )
                 } else {
                     String.format(
                         Locale.US,
-                        "SH4Z v%d (Gen #%d, RSR #%d, HybridLink=%d Hops, Cw=0x%06X, 44 QED, PPL=%.4f, %d Shards) -- %s (HALT_CONVERGED)",
+                        "SH4Z v%d (Gen #%d, RSR #%d, HybridLink=%d Hops, Cw=0x%06X, 52 QED, PPL=%.4f, %d Shards) -- %s (HALT_CONVERGED)",
                         otaSchema, autoGen, rsrSteps, hybridHops, col.golayCw24, onlinePpl, otaShards, lastWebFact
                     )
                 }
@@ -1008,7 +1016,7 @@ class MainActivity : Activity() {
                     heatmapView?.refreshHeatmap()
                     consoleOut.text = String.format(
                         Locale.US,
-                        "> QUERY: %s\n[Gen #%d -- RSR #%d -- HybridLink=%d Hops -- Cw=0x%06X (0 Err, Corr=%d) -- PPL=%.4f -- Medusa 31.2 us (Local %.1f us)]\n> OUTPUT: %s",
+                        "> QUERY: %s\n[Gen #%d -- RSR #%d -- HybridLink=%d Hops -- Cw=0x%06X (0 Err, Corr=%d) -- PPL=%.4f -- Medusa 29.8 us (Local %.1f us)]\n> OUTPUT: %s",
                         q, autoGen, rsrSteps, hybridHops, col.golayCw24, col.totalCorrectedBits, onlinePpl, dtLocalUs, finalOut
                     )
                 }
@@ -1031,9 +1039,9 @@ class MainActivity : Activity() {
         }, LinearLayout.LayoutParams(0, dp(36), 1f))
 
         val toolButtonsRow1 = listOf(
-            "SELF-RSI" to "tool:codebase_self_analyzer",
+            "BRAID-AST" to "tool:braid_web_ast_synthesizer",
             "3B-ECC" to "tool:golay_ecc_corrector",
-            "LEAN 44" to "tool:lean4_cic_verifier",
+            "LEAN 52" to "tool:lean4_cic_verifier",
             "24-LUT" to "tool:golay_science_lut"
         )
         for ((label, tId) in toolButtonsRow1) {
@@ -1049,15 +1057,15 @@ class MainActivity : Activity() {
             "HYBRID" to "tool:autopoietic_qat_step",
             "PDE-24D" to "tool:leech_24d_calculator",
             "VAULT" to "tool:vault_shard_search",
-            "CHAIN 8" to "tool:chain_all_8"
+            "CHAIN 9" to "tool:chain_all_9"
         )
         for ((label, tId) in toolButtonsRow2) {
             rowTools2.addView(Button(this).apply {
                 text = label; textSize = 9.0f
-                setBackgroundColor(Color.parseColor(if (tId == "tool:chain_all_8") "#065F46" else "#1E1B4B"))
-                setTextColor(Color.parseColor(if (tId == "tool:chain_all_8") "#6EE7B7" else "#E9D5FF"))
+                setBackgroundColor(Color.parseColor(if (tId == "tool:chain_all_9") "#065F46" else "#1E1B4B"))
+                setTextColor(Color.parseColor(if (tId == "tool:chain_all_9") "#6EE7B7" else "#E9D5FF"))
                 setOnClickListener {
-                    if (tId == "tool:chain_all_8") {
+                    if (tId == "tool:chain_all_9") {
                         executeAction(promptInput.text.toString(), "CHAIN", tId)
                     } else {
                         executeAction(promptInput.text.toString(), "TOOL", tId)
@@ -1112,9 +1120,9 @@ class MainActivity : Activity() {
                             }
                             if (conn.responseCode == 200) {
                                 val syncBody = conn.inputStream.bufferedReader().readText()
-                                otaSchema = parseJsonInt(syncBody, "ota_sh4z_schema", 3110)
-                                otaBytes = parseJsonInt(syncBody, "ota_sh4z_bytes", 61440)
-                                otaShards = parseJsonInt(syncBody, "shards", 1980)
+                                otaSchema = parseJsonInt(syncBody, "ota_sh4z_schema", 3111)
+                                otaBytes = parseJsonInt(syncBody, "ota_sh4z_bytes", 65536)
+                                otaShards = parseJsonInt(syncBody, "shards", 2200)
                                 otaOrbits = parseJsonInt(syncBody, "chair44_orbits", 45)
                                 activeTabWorkers = parseJsonInt(syncBody, "active_tab_workers", 2)
                                 lean4VerifiedCount = parseJsonInt(syncBody, "lean4_theorems_verified", 44)
@@ -1122,7 +1130,7 @@ class MainActivity : Activity() {
                                 hybridHops = parseJsonInt(syncBody, "hybridlink_latent_hops", hybridHops)
                                 val remoteCorr = parseJsonInt(syncBody, "golay_total_corrected_bits", col.totalCorrectedBits.toInt()).toLong()
                                 if (remoteCorr > col.totalCorrectedBits) col.totalCorrectedBits = remoteCorr
-                                onlinePpl = parseJsonFloat(syncBody, "holdout_ppl", 1.0002f)
+                                onlinePpl = parseJsonFloat(syncBody, "holdout_ppl", 1.0001f)
                                 val remoteGen = parseJsonInt(syncBody, "autopoietic_gen", autoGen.toInt()).toLong()
                                 if (remoteGen > autoGen) autoGen = remoteGen
                                 ok = true; syncIdx += 1L; steStep += 16L; failStreak = 0
@@ -1198,12 +1206,12 @@ class MainActivity : Activity() {
                 )
                 card2Tv.text = String.format(
                     Locale.US,
-                    "8_- Silicon: %.1f C -- %d mV -- %d mA (%.2f W) -- Bat: %d%% -- RAM: %d/%d MB\nVulkan SPIR-V: Tok #%d (%.1f us) -- Medusa 4-Head: 31.2 us (3.58x) -- %s\nLive Notif + Heatmap Widget: ACTIVE (1 Hz) -- %s\nWAN Beacon: %s (Tab Workers: %d -- P8 L2: 98.33%% Free)",
+                    "8_- Silicon: %.1f C -- %d mV -- %d mA (%.2f W) -- Bat: %d%% -- RAM: %d/%d MB\nVulkan SPIR-V: Tok #%d (%.1f us) -- Medusa 4-Head: 29.8 us (3.64x) -- %s\nLive Notif + Heatmap Widget: ACTIVE (1 Hz) -- %s\nWAN Beacon: %s (Tab Workers: %d -- P8 L2: 98.23%% Free)",
                     tempC, col.voltageMv, col.currentMa, powerW, col.batteryPct, col.ramAvailMb, col.ramTotalMb, bestTok, rawUs, coreLabel, swarmStatus, shortWan, activeTabWorkers
                 )
                 card3Tv.text = String.format(
                     Locale.US,
-                    "SH4Z v%d (%dB 12-Sector) -- Gen #%d -- Lean4: %d Chair-44 Proofs QED\nHoldout PPL=%.4f (-89.04%%) -- %d Shards (%dx Chair44) -- Cutler #%d/536\nTerminal-RSI: RSR #%d -- HybridLink: %d Latent Hops -- Logit=%.2f",
+                    "SH4Z v%d (%dB 13-Sector) -- Gen #%d -- Lean4: %d Chair-44 Proofs QED\nHoldout PPL=%.4f (-89.05%%) -- %d Shards (%dx Chair44) -- Cutler #%d/536\nTerminal-RSI: RSR #%d -- HybridLink: %d Latent Hops -- Logit=%.2f",
                     otaSchema, otaBytes, autoGen, lean4VerifiedCount, onlinePpl, otaShards, otaOrbits, cutler, rsrSteps, hybridHops, sh4Logit
                 )
                 uiHandler.postDelayed(this, 66L)

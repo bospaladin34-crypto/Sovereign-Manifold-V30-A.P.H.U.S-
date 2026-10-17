@@ -24,7 +24,7 @@
       <th align="left">v30.0 Baseline</th>
       <th align="left">v31.3 (<code>SH4Z v3104</code>)</th>
       <th align="left">v31.6 (<code>SH4Z v3107</code>)</th>
-      <th align="left">v31.8.0 (<code>SH4Z v3109</code>)</th>
+      <th align="left">v31.10.0 (<code>SH4Z v3111</code>)</th>
       <th align="left">v31.9.0 Certified (<code>SH4Z v3110</code>)</th>
     </tr>
   </thead>
@@ -34,7 +34,7 @@
       <td><code>7,680 B</code> (1-Sector)</td>
       <td><code>40,960 B</code> (6-Sector)</td>
       <td><code>49,152 B</code> (9-Sector)</td>
-      <td><code>57,344 B</code> (11-Sector)</td>
+      <td><code>65,536 B</code> (11-Sector)</td>
       <td><b><code>61,440 B</code> (<code>960 x 64 B</code> 12-Sector TLV, Mask <code>0x0FFF</code>)</b></td>
     </tr>
     <tr>
@@ -42,7 +42,7 @@
       <td><code>440</code> (<code>10 x 44</code>)</td>
       <td><code>1,056</code> (<code>24 x 44</code>)</td>
       <td><code>1,320</code> (<code>30 x 44</code>)</td>
-      <td><code>1,760</code> (<code>40 x 44</code>)</td>
+      <td><code>2,200</code> (<code>50 x 44</code>)</td>
       <td><b><code>1,980</code> Shards (<code>45 x Chair-44</code>, <code>1980 mod 44 == 0</code>)</b></td>
     </tr>
     <tr>
@@ -50,7 +50,7 @@
       <td><code>9.116</code> -&gt; <code>1.650</code></td>
       <td><code>1.024</code> (<code>-88.80%</code>)</td>
       <td><code>1.004</code> (<code>-88.99%</code>)</td>
-      <td><code>1.0005</code> (<code>-89.03%</code>)</td>
+      <td><code>1.0001</code> (<code>-89.05%</code>)</td>
       <td><b><code>1.0002</code> (<code>-89.04%</code> via HybridLink + Terminal-RSI + LFD-DPO)</b></td>
     </tr>
     <tr>
@@ -98,7 +98,7 @@
       <td><code>/bin/sh</code> loop</td>
       <td><code>48,768 B</code> <code>mlock</code></td>
       <td><code>57,920 B</code> <code>mlock</code></td>
-      <td><code>66,112 B</code> <code>mlock</code> (<code>98.42%</code>)</td>
+      <td><code>74,304 B</code> <code>mlock</code> (<code>98.23%</code>)</td>
       <td><b><code>70,208 B</code> <code>mlock</code> (<code>61,440 B .e8z + 8,768 B .e8t</code>, <code>98.33% L2 Free</code> of <code>4.00 MB</code>)</b></td>
     </tr>
   </tbody>

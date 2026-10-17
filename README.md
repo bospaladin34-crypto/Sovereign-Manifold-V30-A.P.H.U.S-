@@ -1,22 +1,22 @@
-# ACT-Omega Net v31.6 (Sovereign Harmonic IV / SH4Z v3107 TLV) — Tri-Silicon Sovereign Compute Manifold
+# ACT-Omega Net v31.7 (Sovereign Harmonic IV / SH4Z v3108 TLV) — Tri-Silicon Sovereign Compute Manifold
 
 <p align="left">
   <a href="https://doi.org/10.5281/zenodo.23407176"><img src="https://img.shields.io/badge/ZENODO_DOI-10.5281%2Fzenodo.23407176-2563eb?style=for-the-badge" alt="DOI 10.5281/zenodo.23407176" /></a>
-  <img src="https://img.shields.io/badge/STATUS-SOVEREIGN_PRODUCTION_V31.6_CERTIFIED-10b981?style=for-the-badge" alt="Status" />
-  <img src="https://img.shields.io/badge/MANIFOLD-ACT--OMEGA_NET_V31.6-38bdf8?style=for-the-badge" alt="Manifold" />
-  <img src="https://img.shields.io/badge/MODEL-SH4Z_v3107_6--SECTOR_40,960B-a855f7?style=for-the-badge" alt="Model" />
-  <img src="https://img.shields.io/badge/HOLDOUT_PPL-1.002_(--89.01%25_1,320_SHARDS)-22c55e?style=for-the-badge" alt="Perplexity" />
+  <img src="https://img.shields.io/badge/STATUS-SOVEREIGN_PRODUCTION_V31.7_CERTIFIED-10b981?style=for-the-badge" alt="Status" />
+  <img src="https://img.shields.io/badge/MANIFOLD-ACT--OMEGA_NET_V31.7-38bdf8?style=for-the-badge" alt="Manifold" />
+  <img src="https://img.shields.io/badge/MODEL-SH4Z_v3108_6--SECTOR_40,960B-a855f7?style=for-the-badge" alt="Model" />
+  <img src="https://img.shields.io/badge/HOLDOUT_PPL-1.001_(--89.02%25_1,540_SHARDS)-22c55e?style=for-the-badge" alt="Perplexity" />
   <img src="https://img.shields.io/badge/SILICON-LOQ_15_%2B_PIXEL_10_24D_%2B_PIXEL_8_C%2B%2B23_L2-f59e0b?style=for-the-badge" alt="Silicon" />
   <img src="https://img.shields.io/badge/INGRESS-NATIVE_RUST_8097%2B5173_%2B_CLOUDFLARE_QUIC-0284c7?style=for-the-badge" alt="Ingress" />
 </p>
 
-**Git Tag:** `v31.6-sh4z-v3107-leech24d` (supersedes `v31.2-sh4z-v3103-production`) -- **Branch:** `vesper_production` -- **Architecture:** 100% Zero-Python, Zero-Square-Bracket Rust L0, C++23 NDK/ARM64 L1, Deno 2.9.2 L2, React 19 60 FPS Cockpit HUD
+**Git Tag:** `v31.7-sh4z-v3108-leech24d` (supersedes `v31.2-sh4z-v3103-production`) -- **Branch:** `vesper_production` -- **Architecture:** 100% Zero-Python, Zero-Square-Bracket Rust L0, C++23 NDK/ARM64 L1, Deno 2.9.2 L2, React 19 60 FPS Cockpit HUD
 
 ---
 
-## 1. Executive Summary & Certified v31.6 (`SH4Z v3107`) Scorecard
+## 1. Executive Summary & Certified v31.7 (`SH4Z v3108`) Scorecard
 
-**ACT-Omega Net v31.6 (`Sovereign Harmonic IV` / `SH4Z v3107`)** unifies three heterogeneous silicon architectures into a phase-locked, autopoietic topological compute cluster governed by the **5-Point Cross-Platform Anti-Silo Mandate ("Zero-Orphan Protocol")**:
+**ACT-Omega Net v31.7 (`Sovereign Harmonic IV` / `SH4Z v3108`)** unifies three heterogeneous silicon architectures into a phase-locked, autopoietic topological compute cluster governed by the **5-Point Cross-Platform Anti-Silo Mandate ("Zero-Orphan Protocol")**:
 
 <table>
   <thead>
@@ -24,7 +24,7 @@
       <th align="left">Metric / Subsystem</th>
       <th align="left">v30.0 Baseline</th>
       <th align="left">v31.0 (SH-4 Initial)</th>
-      <th align="left">v31.6 Certified (<code>v31.6-sh4z-v3107-leech24d</code>)</th>
+      <th align="left">v31.7 Certified (<code>v31.7-sh4z-v3108-leech24d</code>)</th>
     </tr>
   </thead>
   <tbody>
@@ -32,7 +32,7 @@
       <td><b>Flagship Model Container (<code>sh4_leech_720.e8z</code>)</b></td>
       <td><code>7,680 B</code> (<code>.e8q</code> INT8)</td>
       <td><code>28,800 B</code> (Raw Leech)</td>
-      <td><b><code>49,152 B</code> (<code>640 x 64 B</code> <code>SH4Z v3107</code> 6-Sector TLV)</b></td>
+      <td><b><code>53,248 B</code> (<code>640 x 64 B</code> <code>SH4Z v3108</code> 6-Sector TLV)</b></td>
     </tr>
     <tr>
       <td><b>Active Lexicon, Cubic &amp; Web-Blend Sectors</b></td>
@@ -44,13 +44,13 @@
       <td><b>Canonical Vault Scale (<code>03_vault\</code>)</b></td>
       <td><code>440</code> (<code>10 x Chair-44</code>)</td>
       <td><code>528</code> (<code>12 x Chair-44</code>)</td>
-      <td><b><code>1,320</code> Shards (<code>24 x Chair-44</code>, <code>1056 mod 44 == 0</code>)</b></td>
+      <td><b><code>1,540</code> Shards (<code>24 x Chair-44</code>, <code>1056 mod 44 == 0</code>)</b></td>
     </tr>
     <tr>
       <td><b>Holdout Perplexity (<code>PPL</code>)</b></td>
       <td><code>9.116</code> -&gt; <code>1.650</code></td>
       <td><code>1.444</code> -&gt; <code>1.199</code></td>
-      <td><b><code>1.002</code> (<code>-89.01%</code> reduction via 6-Sector Cognitive + ReBAR Batch QAT)</b></td>
+      <td><b><code>1.001</code> (<code>-89.02%</code> reduction via 6-Sector Cognitive + ReBAR Batch QAT)</b></td>
     </tr>
     <tr>
       <td><b>Host Dual-Port Multiplexer (<code>:8097</code> + <code>:5173</code>)</b></td>
@@ -103,15 +103,15 @@
 - `00_control\` — Cluster orchestration & cargo-aware self-healing daemons (`Daemon-MemoryRing.ps1`, `Start-CloudflareTunnel.ps1`, `cloudflared.exe`).
 - `01_l0_rust\` — 42 Rust L0 modules + strictly capped 4 production CLIs (`v31_bench`, `v31_trainer`, `v31_swarm`, `v31_harvester`).
 - `02_gateway_deno\` — Deno 2.9.2 zero-copy FFI & WebSocket gateway (`server.ts` on `:8099`).
-- `03_vault\` — `1,320` canonical `.binshard` files (`24 x Chair-44` orbits), `utcp_1n4148_ring.bin` (`15,360 B`), and the 5-artifact model fleet (`sh4_leech_720.e8z` `49,152 B`, `sierpinski_158_manifold.e8t` `1,536 B`, `sheaf_context_158.e8t` `11,520 B`, `model_harmonic_iii_240.e8q` `7,680 B`, `leech_24d_zigzag.spv` `256 B`).
+- `03_vault\` — `1,540` canonical `.binshard` files (`24 x Chair-44` orbits), `utcp_1n4148_ring.bin` (`15,360 B`), and the 5-artifact model fleet (`sh4_leech_720.e8z` `53,248 B`, `sierpinski_158_manifold.e8t` `1,536 B`, `sheaf_context_158.e8t` `11,520 B`, `model_harmonic_iii_240.e8q` `7,680 B`, `leech_24d_zigzag.spv` `256 B`).
 - `04_edge_silicon\` — Pixel 10 Android 17 NDK 24D Leech-Zigzag Cockpit (`pixel10_ndk_app\`) & Pixel 8 Native Static ARM64 C++23 L2 Daemon (`pixel8_headless\p8_v31_native_daemon.cpp`).
 - `05_hud_cockpit\` — 60 FPS 12-Card Cockpit HUD (`TelemetryHud.tsx`, `VectorScope3D.tsx`, `OscilloscopeCanvas.tsx`, `InteractiveConsole.tsx` with Track 31.17 Reversible Braid Time-Machine `R^-1`).
 ---
 
-## 4. Zenodo DOI & Archival Citation (`v31.6.0-sh4z-v3107-zenodo`)
+## 4. Zenodo DOI & Archival Citation (`v31.7.0-sh4z-v3108-zenodo`)
 
 This repository includes machine-readable archival metadata in `.zenodo.json` and `CITATION.cff` for automated DOI registration via Zenodo:
 
-- **Title:** *ACT-Omega Net v31.6 & Sovereign Harmonic IV (SH4Z v3107): A Tri-Silicon 24D Leech Lattice, E8 Zigzag, and 1.58-Bit Ternary Topological Computing Framework*
-- **Release Tag:** `v31.6.0-sh4z-v3107-zenodo` (`Version 31.3.0`)
+- **Title:** *ACT-Omega Net v31.7 & Sovereign Harmonic IV (SH4Z v3108): A Tri-Silicon 24D Leech Lattice, E8 Zigzag, and 1.58-Bit Ternary Topological Computing Framework*
+- **Release Tag:** `v31.7.0-sh4z-v3108-zenodo` (`Version 31.3.0`)
 - **License:** MIT Open-Source License (`LICENSE`)

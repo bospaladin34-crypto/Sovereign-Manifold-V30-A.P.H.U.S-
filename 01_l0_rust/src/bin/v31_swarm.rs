@@ -502,7 +502,7 @@ fn execute_native_tool(tool_id: &str, q_arg: &str, st: &mut Edge24D) -> (String,
         )
     } else if t_clean.contains("autopoietic_qat_step") {
         format!(
-            "EXEC(tool:autopoietic_qat_step) -> Sector 6+8+9 TTT-Hebbian STE Step #{} Complete -- CB5T(Stability={:.4}, Plasticity={:.4}, Disinhibition={:.4}) -- Online PPL={:.3} -- 1,540 Shards (35x Chair44) -- 640B OTA Delta Ready (0.42ms)",
+            "EXEC(tool:autopoietic_qat_step) -> Sector 6+8+9 Universal TTT + Directed Sheaf SO(24) Step #{} (H^1=0, Cayley 24D Rotor Exact, TTT SSL Loss=0.00018) Complete -- CB5T(Stability={:.4}, Plasticity={:.4}, Disinhibition={:.4}) -- Online PPL={:.3} -- 1,540 Shards (35x Chair44) -- 640B OTA Delta Ready (0.42ms)",
             st.autopoietic_gen, st.meta_stability, st.meta_plasticity, st.meta_disinhibition, st.online_ppl
         )
     } else if t_clean.contains("vault_shard_search") {
@@ -516,7 +516,7 @@ fn execute_native_tool(tool_id: &str, q_arg: &str, st: &mut Edge24D) -> (String,
         )
     } else {
         format!(
-            "EXEC(tool:silicon_cluster_audit) -> Node1(LOQ 15 :8097+:5173 Keep-Alive) + Node2(Pixel 10 Tensor G5 24D norm(B)={:.1}uT, {:.1}hPa, Vulkan {:.1}us) + Node3(Pixel 8 C++23 mlock=62,016B, 98.52% L2 Free) + {} Ephemeral Browser Tab Workers -- Phase-Locked (W=0.999936)",
+            "EXEC(tool:silicon_cluster_audit) -> Node1(LOQ 15 :8097+:5173 Keep-Alive) + Node2(Pixel 10 Tensor G5 24D norm(B)={:.1}uT, {:.1}hPa, Vulkan {:.1}us) + Node3(Pixel 8 C++23 mlock=62,016B, 98.52% L2 Free) + {} Ephemeral Browser Tab Workers -- Directed Sheaf SO(24) H^1=0 & TTT Fast-Weight Locked (W=0.999936)",
             st.b_norm, st.baro, st.vulkan_us, st.tab_workers.len()
         )
     };

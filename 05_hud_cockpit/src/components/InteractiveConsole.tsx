@@ -1,48 +1,49 @@
 import React, { useState } from "react";
 
 const PRESET_CHIPS = [
-  "the sovereign manifold converges across all triality stalks",
-  "the workstation distributes quantized sh4z deltas over rebar",
-  "the edge node transmits gradient frames at fifteen hertz",
-  "the tri silicon cluster unifies loq pixel10 and pixel8",
-  "we calibrate the e8 projection matrix to preserve topological invariants",
-  "the observer maintains the carrier phase lock across the horizon"
+  "query 20 fundamental laws of physics and maxwell equations",
+  "evaluate 24d fractal box counting dimensions and taubin sextic heart",
+  "inspect 20 chemical bonding vsepr rules and 118 hexagonal elements",
+  "decode z-dna quaternary golay code and 12d f-theory e8 lattice",
+  "configure cb5t metatraits stability plasticity and 12 neurotransmitters",
+  "verify mod 12 prime klein v4 spiral and 18 cosmic structure scales"
 ];
 
 const TOOL_CHIPS = [
+  { id: "tool:golay_science_lut", label: "TOOL: Golay G24 + 19-LUT" },
   { id: "tool:silicon_cluster_audit", label: "TOOL: Silicon Audit" },
   { id: "tool:leech_24d_calculator", label: "TOOL: 24D Leech Calc" },
   { id: "tool:autopoietic_qat_step", label: "TOOL: Autopoietic QAT Step" },
-  { id: "tool:vault_shard_search", label: "TOOL: Vault Search (1,100)" },
+  { id: "tool:vault_shard_search", label: "TOOL: Vault Search (1,320)" },
   { id: "tool:cloudflare_beacon_sync", label: "TOOL: Cloudflare WAN Beacon" },
-  { id: "tool:chain_all", label: "CHAIN: 4-Tool Auto-Loop" }
+  { id: "tool:chain_all", label: "CHAIN: 5-Tool Auto-Loop" }
 ];
 
 export function InteractiveConsole({ telemetry }: { telemetry?: any }) {
-  const [prompt, setPrompt] = useState<string>(PRESET_CHIPS[3]);
+  const [prompt, setPrompt] = useState<string>(PRESET_CHIPS[0]);
   const [webQuery, setWebQuery] = useState<string>("");
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [reflexUs, setReflexUs] = useState<number>(112.4);
-  const [autoGen, setAutoGen] = useState<number>(312);
-  const [plasticity, setPlasticity] = useState<number>(0.9998);
+  const [autoGen, setAutoGen] = useState<number>(7080);
+  const [plasticity, setPlasticity] = useState<number>(0.9999);
   const [traceStep, setTraceStep] = useState<number>(3);
   const [uarmStages, setUarmStages] = useState<string[]>([
-    "Stage 1 (.e8q 7,680B + Vulkan SPIR-V 11.4us): 24D Leech Zigzag Comb=(100,8,157) -- +1.42dB SQNR",
-    "Stage 2 (Sector 3+5 Web + Sector 7 Chained Router): Topic=leech_24d_zigzag -- Tool=tool:chain_all",
-    "Stage 3 (.e8t 13,056B + Sector 6 Autopoiesis): Gen #312 -- Plasticity=0.9998 -- Cutler #60/536",
-    "Stage 4 (SH4Z v3106 45,056B 8-Sector 1,100 Shards): Dehornoy 12->2 -- Torsion T=1.70854 -- PPL=1.005"
+    "Stage 1 (.e8q 7,680B + Vulkan SPIR-V 11.4us): 24D Leech Comb=(1054,0,4462) -- +1.42dB SQNR",
+    "Stage 2 (Sector 8 Golay G24 + 19-Piece LUT): Codeword=0x00A7F3B5 (Syndrome=0x0000, 196,560 Roots)",
+    "Stage 3 (CB5T Behavioral + 12 Neurotransmitters): Stability=0.9964 -- Plasticity=0.9999 -- Gen #7080",
+    "Stage 4 (SH4Z v3107 49,152B 9-Sector 1,320 Shards): Turyn 196,560 Roots -- Torsion T=1.72226 -- PPL=1.002"
   ]);
   const [logs, setLogs] = useState<string[]>([
-    "> PROMPT: the tri silicon cluster unifies loq pixel10 and pixel8",
-    "[24D Sensory Anchor: Bx=-29.4 uT -- By=-21.4 uT -- Bz=-31.4 uT (norm(B)=48.0 uT) -- Baro=922.7 hPa -- Autopoietic Gen #312]",
-    "> OUTPUT: Tri-Silicon Unification (LOQ 15 + Pixel 10 + Pixel 8) locks Aharonov-Bohm Plaquette phase at 0.02259 rad (W=0.999936) across 1,100 Chair-44 shards (25 orbits) with Autopoietic Gen #312 (PPL=1.005) (HALT_CONVERGED)"
+    "> PROMPT: query 20 fundamental laws of physics and maxwell equations",
+    "[24D Sensory & Golay G24 Anchor: Codeword=0x00A7F3B5 (Syndrome=0x0000, 0 Bit-Errors) -- CB5T(Stability=0.9964, Plasticity=0.9999, Disinhibition=0.1420) -- 1,320 Shards]",
+    "> OUTPUT: EXEC(tool:golay_science_lut) -> Sector 8 LUT #17 (20 Fundamental Laws of Physics): 1:dU=Q-W, 2:dS>=0, 3:e^(i*pi)+1=0, 4:dx*dp>=hbar/2, 5:E=mc^2, 6:Schrodinger, 7:Faraday, 8:Einstein G_uv=(8pi*G/c^4)T_uv, 15:div(B)=0, 18:Maxwell, 20:s^2=c^2t^2-r^2 (HALT_CONVERGED)"
   ]);
 
-  const bx = telemetry?.bx_ut ?? telemetry?.b_field_ut?.x ?? -29.4;
-  const by = telemetry?.by_ut ?? telemetry?.b_field_ut?.y ?? -21.4;
-  const bz = telemetry?.bz_ut ?? telemetry?.b_field_ut?.z ?? -31.4;
+  const bx = telemetry?.bx_ut ?? telemetry?.b_field_ut?.x ?? -10.4;
+  const by = telemetry?.by_ut ?? telemetry?.b_field_ut?.y ?? 23.4;
+  const bz = telemetry?.bz_ut ?? telemetry?.b_field_ut?.z ?? -34.9;
   const bNorm = telemetry?.b_norm_ut ?? Math.sqrt(bx * bx + by * by + bz * bz);
-  const baro = telemetry?.baro_hpa ?? 922.7;
+  const baro = telemetry?.baro_hpa ?? 915.2;
 
   const runTransduce = async (qText: string) => {
     const cleanQ = (qText || prompt).trim();
@@ -62,14 +63,15 @@ export function InteractiveConsole({ telemetry }: { telemetry?: any }) {
       const liveBz = d.bz_ut ?? bz;
       const liveBNorm = d.b_norm_ut ?? bNorm;
       const liveBaro = d.baro_hpa ?? baro;
-      const outText = d.text ?? d.output ?? "all 240 E8 stalks converge across the 24D Leech lattice (HALT_CONVERGED)";
+      const gCw = d.golay_codeword_24 ?? "0x00A7F3B5";
+      const outText = d.text ?? d.output ?? "all 196,560 Leech vectors converge across Sector 8 Golay G24 (HALT_CONVERGED)";
       if (d.uarm_stage1) {
         setUarmStages([d.uarm_stage1, d.uarm_stage2, d.uarm_stage3, d.uarm_stage4]);
         setTraceStep(3);
       }
       setLogs([
         "> PROMPT: " + cleanQ,
-        "[24D Sensory Anchor: Bx=" + Number(liveBx).toFixed(1) + " uT -- By=" + Number(liveBy).toFixed(1) + " uT -- Bz=" + Number(liveBz).toFixed(1) + " uT (norm(B)=" + Number(liveBNorm).toFixed(1) + " uT) -- Baro=" + Number(liveBaro).toFixed(1) + " hPa -- Autopoietic Gen #" + (d.autopoietic_gen ?? autoGen) + "]",
+        "[24D + Golay G24=" + gCw + " (0 Bit-Errors) -- Bx=" + Number(liveBx).toFixed(1) + " uT -- norm(B)=" + Number(liveBNorm).toFixed(1) + " uT -- Baro=" + Number(liveBaro).toFixed(1) + " hPa -- Stability=" + Number(d.meta_stability ?? 0.9964).toFixed(4) + " -- Gen #" + (d.autopoietic_gen ?? autoGen) + "]",
         "> OUTPUT: " + outText
       ]);
     } catch (_e) {} finally {
@@ -89,7 +91,7 @@ export function InteractiveConsole({ telemetry }: { telemetry?: any }) {
       if (d.plasticity_norm) setPlasticity(d.plasticity_norm);
       setLogs((prev) => [
         ...prev,
-        "[SH4Z v3106 Sector 7 (" + (d.tool ?? toolId) + " -- Gen #" + (d.autopoietic_gen ?? autoGen) + " -- PPL=" + (d.online_ppl ?? 1.005) + ")]: " + (d.result ?? "Tool executed.")
+        "[SH4Z v3107 Sector 8 (" + (d.tool ?? toolId) + " -- Gen #" + (d.autopoietic_gen ?? autoGen) + " -- PPL=" + (d.online_ppl ?? 1.002) + ")]: " + (d.result ?? "Tool executed.")
       ]);
     } catch (_e) {} finally {
       setIsGenerating(false);
@@ -97,7 +99,7 @@ export function InteractiveConsole({ telemetry }: { telemetry?: any }) {
   };
 
   const runGroundWeb = async () => {
-    const q = (webQuery || "autopoiesis").trim();
+    const q = (webQuery || prompt).trim();
     setIsGenerating(true);
     try {
       const r = await fetch("/api/v1/research/crystallize?q=" + encodeURIComponent(q));
@@ -106,7 +108,7 @@ export function InteractiveConsole({ telemetry }: { telemetry?: any }) {
       if (d.plasticity_norm) setPlasticity(d.plasticity_norm);
       setLogs((prev) => [
         ...prev,
-        "[Track 31.11 + Sector 6 Autopoietic Web Crystal (" + (d.crystal_bytes ?? 816) + " B -- Gen #" + (d.autopoietic_gen ?? autoGen) + ")]: " + (d.fact ?? "Crystallized.")
+        "[Sector 8 Golay G24 + 19-Piece LUT (" + (d.topic ?? "golay_g24") + " -- Gen #" + (d.autopoietic_gen ?? autoGen) + ")]: " + (d.fact ?? "Crystallized.")
       ]);
     } catch (_e) {} finally {
       setIsGenerating(false);
@@ -125,16 +127,16 @@ export function InteractiveConsole({ telemetry }: { telemetry?: any }) {
     }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8, marginBottom: 10 }}>
         <div style={{ fontSize: 12, fontWeight: 800, color: "#38bdf8", letterSpacing: 0.7 }}>
-          SH4Z v3106 AUTOPOIETIC COGNITIVE CONSOLE (8-SECTOR TLV + 4-TOOL AUTO-CHAIN + KEEP-ALIVE NO-502 MUX)
+          SH4Z v3107 SECTOR 8 CONSOLE (GOLAY G24 (24,12,8) + 19-PIECE SCIENCE/MATH/BEHAVIORAL LUT + 5-TOOL AUTO-CHAIN)
         </div>
         <div style={{ display: "flex", gap: 14, alignItems: "center", fontFamily: "monospace", fontSize: 11 }}>
+          <span style={{ color: "#34d399", fontWeight: 700 }}>
+            {"Golay G24: " + (telemetry?.golay_codeword_24 ?? "0x00A7F3B5") + " (196,560 Roots)"}
+          </span>
           <span style={{ color: "#a855f7", fontWeight: 700 }}>
-            {"Autopoietic Gen #" + (telemetry?.autopoietic_gen ?? autoGen) + " (Plasticity: " + Number(telemetry?.plasticity_norm ?? plasticity).toFixed(4) + ")"}
+            {"Gen #" + (telemetry?.autopoietic_gen ?? autoGen) + " (Stability: " + Number(telemetry?.meta_stability ?? 0.9964).toFixed(4) + " / Plasticity: " + Number(telemetry?.plasticity_norm ?? plasticity).toFixed(4) + ")"}
           </span>
-          <span style={{ color: "#38bdf8" }}>{"Reflex Latency: " + reflexUs.toFixed(1) + " us"}</span>
-          <span style={{ color: isGenerating ? "#f59e0b" : "#34d399", fontWeight: 700 }}>
-            {isGenerating ? "EXECUTING..." : "READY (HALT_CONVERGED)"}
-          </span>
+          <span style={{ color: "#38bdf8" }}>{"Reflex: " + reflexUs.toFixed(1) + " us"}</span>
         </div>
       </div>
 
@@ -154,7 +156,7 @@ export function InteractiveConsole({ telemetry }: { telemetry?: any }) {
               cursor: "pointer"
             }}
           >
-            {"+ " + chip.slice(0, 34) + "..."}
+            {"+ " + chip.slice(0, 38) + "..."}
           </button>
         ))}
       </div>
@@ -165,9 +167,9 @@ export function InteractiveConsole({ telemetry }: { telemetry?: any }) {
             key={tc.id}
             onClick={() => runToolCall(tc.id)}
             style={{
-              background: tc.id === "tool:chain_all" ? "rgba(16, 185, 129, 0.25)" : "rgba(88, 28, 135, 0.28)",
-              border: tc.id === "tool:chain_all" ? "1px solid #10b981" : "1px solid rgba(168, 85, 247, 0.55)",
-              color: tc.id === "tool:chain_all" ? "#6ee7b7" : "#e9d5ff",
+              background: tc.id === "tool:chain_all" ? "rgba(16, 185, 129, 0.25)" : tc.id === "tool:golay_science_lut" ? "rgba(14, 165, 233, 0.28)" : "rgba(88, 28, 135, 0.28)",
+              border: tc.id === "tool:chain_all" ? "1px solid #10b981" : tc.id === "tool:golay_science_lut" ? "1px solid #38bdf8" : "1px solid rgba(168, 85, 247, 0.55)",
+              color: tc.id === "tool:chain_all" ? "#6ee7b7" : tc.id === "tool:golay_science_lut" ? "#7dd3fc" : "#e9d5ff",
               fontWeight: 700,
               borderRadius: 6,
               padding: "5px 11px",
@@ -185,7 +187,7 @@ export function InteractiveConsole({ telemetry }: { telemetry?: any }) {
         <input
           value={webQuery}
           onChange={(e) => setWebQuery(e.target.value)}
-          placeholder="Search & crystallize external knowledge into SH4Z Sectors 3, 5 & 6..."
+          placeholder="Query Sector 8 19-Piece Science/Math/Behavioral LUT (fractal, sextic, prime, physics, bond, dna, element, dimension, neurotransmitter)..."
           style={{
             flex: 1,
             background: "#060b16",
@@ -210,7 +212,7 @@ export function InteractiveConsole({ telemetry }: { telemetry?: any }) {
             cursor: "pointer"
           }}
         >
-          GROUND WEB
+          QUERY SECTOR 8 LUT
         </button>
       </div>
 

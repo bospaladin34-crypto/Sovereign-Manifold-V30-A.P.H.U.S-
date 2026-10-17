@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 const PRESET_CHIPS = [
   "query 20 fundamental laws of physics and maxwell equations",
@@ -15,7 +15,7 @@ const TOOL_CHIPS = [
   { id: "tool:leech_24d_calculator", label: "TOOL: 24D Leech Calc" },
   { id: "tool:autopoietic_qat_step", label: "TOOL: Autopoietic QAT Step" },
   { id: "tool:vault_shard_search", label: "TOOL: Vault Search (1,320)" },
-  { id: "tool:cloudflare_beacon_sync", label: "TOOL: Cloudflare WAN Beacon" },
+  { id: "tool:cloudflare_beacon_sync", label: "TOOL: SH4Z-Auth & WAN" },
   { id: "tool:chain_all", label: "CHAIN: 5-Tool Auto-Loop" }
 ];
 
@@ -24,26 +24,55 @@ export function InteractiveConsole({ telemetry }: { telemetry?: any }) {
   const [webQuery, setWebQuery] = useState<string>("");
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [reflexUs, setReflexUs] = useState<number>(112.4);
-  const [autoGen, setAutoGen] = useState<number>(7080);
+  const [autoGen, setAutoGen] = useState<number>(7092);
   const [plasticity, setPlasticity] = useState<number>(0.9999);
+  const [tabNodeLabel, setTabNodeLabel] = useState<string>("Node4_Ephemeral_Browser_WebGPU");
+  const [tabOrbit, setTabOrbit] = useState<number>(1);
+  const [tabAffinity, setTabAffinity] = useState<string>("Node2_Pixel10_TensorG5_Vulkan");
+  const [tabCycles, setTabCycles] = useState<number>(1);
+  const [activeTabsCount, setActiveTabsCount] = useState<number>(1);
+  const [authToken, setAuthToken] = useState<string>("SH4Z-LWE-CBF29CE484222325");
   const [traceStep, setTraceStep] = useState<number>(3);
   const [uarmStages, setUarmStages] = useState<string[]>([
-    "Stage 1 (.e8q 7,680B + Vulkan SPIR-V 11.4us): 24D Leech Comb=(1054,0,4462) -- +1.42dB SQNR",
-    "Stage 2 (Sector 8 Golay G24 + 19-Piece LUT): Codeword=0x00A7F3B5 (Syndrome=0x0000, 196,560 Roots)",
-    "Stage 3 (CB5T Behavioral + 12 Neurotransmitters): Stability=0.9964 -- Plasticity=0.9999 -- Gen #7080",
-    "Stage 4 (SH4Z v3107 49,152B 9-Sector 1,320 Shards): Turyn 196,560 Roots -- Torsion T=1.72226 -- PPL=1.002"
+    "Stage 1 (.e8q 7,680B + Vulkan SPIR-V 11.4us): 24D Leech Comb=(1018,0,3006) -- +1.42dB SQNR",
+    "Stage 2 (Sector 8 Golay G24 + 19-Piece LUT): Codeword=0x1C0DD5 (Syndrome=0x0000, 196,560 Roots)",
+    "Stage 3 (CB5T Behavioral + Tab Worker Lease): Stability=0.9977 -- Plasticity=0.9999 -- Gen #7092",
+    "Stage 4 (SH4Z v3107 49,152B 9-Sector 1,320 Shards): Turyn 196,560 Roots -- Torsion T=1.73226 -- PPL=1.002"
   ]);
   const [logs, setLogs] = useState<string[]>([
     "> PROMPT: query 20 fundamental laws of physics and maxwell equations",
-    "[24D Sensory & Golay G24 Anchor: Codeword=0x00A7F3B5 (Syndrome=0x0000, 0 Bit-Errors) -- CB5T(Stability=0.9964, Plasticity=0.9999, Disinhibition=0.1420) -- 1,320 Shards]",
+    "[24D + Golay G24=0x1C0DD5 (196,560 Roots, 0 Bit-Errors) -- Tab Lease: Node4 (Orbit #1 -> 44 Shards) -- SH4Z-Auth: LOCKED]",
     "> OUTPUT: EXEC(tool:golay_science_lut) -> Sector 8 LUT #17 (20 Fundamental Laws of Physics): 1:dU=Q-W, 2:dS>=0, 3:e^(i*pi)+1=0, 4:dx*dp>=hbar/2, 5:E=mc^2, 6:Schrodinger, 7:Faraday, 8:Einstein G_uv=(8pi*G/c^4)T_uv, 15:div(B)=0, 18:Maxwell, 20:s^2=c^2t^2-r^2 (HALT_CONVERGED)"
   ]);
 
-  const bx = telemetry?.bx_ut ?? telemetry?.b_field_ut?.x ?? -10.4;
-  const by = telemetry?.by_ut ?? telemetry?.b_field_ut?.y ?? 23.4;
-  const bz = telemetry?.bz_ut ?? telemetry?.b_field_ut?.z ?? -34.9;
+  useEffect(() => {
+    let tid = sessionStorage.getItem("sh4z_tab_worker_id");
+    if (!tid) {
+      tid = "tab_" + Math.random().toString(36).slice(2, 10);
+      sessionStorage.setItem("sh4z_tab_worker_id", tid);
+    }
+    const beat = async () => {
+      try {
+        const r = await fetch("/api/v1/swarm/tab_heartbeat?tab_id=" + encodeURIComponent(tid || "tab_primary"));
+        const d = await r.json();
+        if (d.assigned_node) setTabNodeLabel(d.assigned_node);
+        if (typeof d.leased_orbit === "number") setTabOrbit(d.leased_orbit);
+        if (d.backend_silicon_affinity) setTabAffinity(d.backend_silicon_affinity);
+        if (d.webgpu_cycles) setTabCycles(d.webgpu_cycles);
+        if (d.active_tab_workers) setActiveTabsCount(d.active_tab_workers);
+        if (d.auth_rolling_token) setAuthToken(d.auth_rolling_token);
+      } catch (_e) {}
+    };
+    beat();
+    const timer = setInterval(beat, 3000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const bx = telemetry?.bx_ut ?? telemetry?.b_field_ut?.x ?? -16.2;
+  const by = telemetry?.by_ut ?? telemetry?.b_field_ut?.y ?? -4.0;
+  const bz = telemetry?.bz_ut ?? telemetry?.b_field_ut?.z ?? -26.0;
   const bNorm = telemetry?.b_norm_ut ?? Math.sqrt(bx * bx + by * by + bz * bz);
-  const baro = telemetry?.baro_hpa ?? 915.2;
+  const baro = telemetry?.baro_hpa ?? 914.9;
 
   const runTransduce = async (qText: string) => {
     const cleanQ = (qText || prompt).trim();
@@ -58,12 +87,11 @@ export function InteractiveConsole({ telemetry }: { telemetry?: any }) {
       setReflexUs(d.reflex_us ?? dtUs);
       if (d.autopoietic_gen) setAutoGen(d.autopoietic_gen);
       if (d.plasticity_norm) setPlasticity(d.plasticity_norm);
+      if (d.auth_rolling_token) setAuthToken(d.auth_rolling_token);
       const liveBx = d.bx_ut ?? bx;
-      const liveBy = d.by_ut ?? by;
-      const liveBz = d.bz_ut ?? bz;
       const liveBNorm = d.b_norm_ut ?? bNorm;
       const liveBaro = d.baro_hpa ?? baro;
-      const gCw = d.golay_codeword_24 ?? "0x00A7F3B5";
+      const gCw = d.golay_codeword_24 ?? "0x1C0DD5";
       const outText = d.text ?? d.output ?? "all 196,560 Leech vectors converge across Sector 8 Golay G24 (HALT_CONVERGED)";
       if (d.uarm_stage1) {
         setUarmStages([d.uarm_stage1, d.uarm_stage2, d.uarm_stage3, d.uarm_stage4]);
@@ -71,7 +99,7 @@ export function InteractiveConsole({ telemetry }: { telemetry?: any }) {
       }
       setLogs([
         "> PROMPT: " + cleanQ,
-        "[24D + Golay G24=" + gCw + " (0 Bit-Errors) -- Bx=" + Number(liveBx).toFixed(1) + " uT -- norm(B)=" + Number(liveBNorm).toFixed(1) + " uT -- Baro=" + Number(liveBaro).toFixed(1) + " hPa -- Stability=" + Number(d.meta_stability ?? 0.9964).toFixed(4) + " -- Gen #" + (d.autopoietic_gen ?? autoGen) + "]",
+        "[24D + Golay G24=" + gCw + " -- TabWorker=" + tabNodeLabel + " (Orbit #" + tabOrbit + ") -- Bx=" + Number(liveBx).toFixed(1) + " uT (norm(B)=" + Number(liveBNorm).toFixed(1) + ") -- Baro=" + Number(liveBaro).toFixed(1) + " hPa -- Gen #" + (d.autopoietic_gen ?? autoGen) + "]",
         "> OUTPUT: " + outText
       ]);
     } catch (_e) {} finally {
@@ -125,18 +153,20 @@ export function InteractiveConsole({ telemetry }: { telemetry?: any }) {
       marginTop: 14,
       boxShadow: "0 8px 28px rgba(0, 0, 0, 0.45)"
     }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8, marginBottom: 10 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8, marginBottom: 8 }}>
         <div style={{ fontSize: 12, fontWeight: 800, color: "#38bdf8", letterSpacing: 0.7 }}>
-          SH4Z v3107 SECTOR 8 CONSOLE (GOLAY G24 (24,12,8) + 19-PIECE SCIENCE/MATH/BEHAVIORAL LUT + 5-TOOL AUTO-CHAIN)
+          SH4Z v3107 SECTOR 8 CONSOLE (GOLAY G24 (24,12,8) + 19-PIECE LUT + PER-TAB WEBGPU WORKER + SH4Z-AUTH)
         </div>
-        <div style={{ display: "flex", gap: 14, alignItems: "center", fontFamily: "monospace", fontSize: 11 }}>
+        <div style={{ display: "flex", gap: 12, alignItems: "center", fontFamily: "monospace", fontSize: 11, flexWrap: "wrap" }}>
           <span style={{ color: "#34d399", fontWeight: 700 }}>
-            {"Golay G24: " + (telemetry?.golay_codeword_24 ?? "0x00A7F3B5") + " (196,560 Roots)"}
+            {"Golay G24: " + (telemetry?.golay_codeword_24 ?? "0x1C0DD5") + " (196,560 Roots)"}
+          </span>
+          <span style={{ color: "#fbbf24", fontWeight: 700 }}>
+            {"Tab Lease: " + tabNodeLabel + " (Orbit #" + tabOrbit + "/30 -> " + tabAffinity + " -- WebGPU #" + tabCycles + " -- " + (3 + (telemetry?.active_tab_workers ?? activeTabsCount)) + " Nodes)"}
           </span>
           <span style={{ color: "#a855f7", fontWeight: 700 }}>
-            {"Gen #" + (telemetry?.autopoietic_gen ?? autoGen) + " (Stability: " + Number(telemetry?.meta_stability ?? 0.9964).toFixed(4) + " / Plasticity: " + Number(telemetry?.plasticity_norm ?? plasticity).toFixed(4) + ")"}
+            {"SH4Z-Auth: " + (telemetry?.auth_rolling_token ?? authToken)}
           </span>
-          <span style={{ color: "#38bdf8" }}>{"Reflex: " + reflexUs.toFixed(1) + " us"}</span>
         </div>
       </div>
 

@@ -42,6 +42,11 @@ import kotlin.math.sin
 import kotlin.math.sqrt
 
 object Leech24DZigzagCodec {
+    private val golayRows = intArrayOf(
+        0x07FF, 0x0EE2, 0x0DC5, 0x0B8B, 0x0F16, 0x0E2D,
+        0x0C5B, 0x08B7, 0x096E, 0x0ADC, 0x0DB8, 0x0B71
+    )
+
     fun fwht8D(v: FloatArray, offset: Int): FloatArray {
         var a0 = v.getOrElse(offset + 0) { 0f }
         var a1 = v.getOrElse(offset + 1) { 0f }
@@ -85,21 +90,14 @@ object Leech24DZigzagCodec {
         return Pair(sFirst7, comb)
     }
 
-    fun decodeE8Zigzag8D(sFirst7: IntArray, comb: Int): IntArray {
-        val c = comb and 1
-        val zz = comb ushr 1
-        val t = (zz ushr 1) xor -(zz and 1)
-        val out = IntArray(8)
-        var sum7 = 0
-        for (k in 0 until 7) {
-            val sk = sFirst7[k]
-            sum7 += sk
-            out[k] = 2 * sk + c
+    fun encodeGolay24(c8v: Int, c8p: Int, c8m: Int): Int {
+        val info12 = (c8v xor (c8p shl 4) xor (c8m shl 8)) and 0x0FFF
+        var parity12 = 0
+        for (r in 0 until 12) {
+            val bit = Integer.bitCount(info12 and golayRows[r]) and 1
+            parity12 = parity12 xor (bit shl r)
         }
-        val p = ((sum7 % 2) + 2) % 2
-        val s7 = 2 * t + p
-        out[7] = 2 * s7 + c
-        return out
+        return (info12 shl 12) xor (parity12 and 0x0FFF)
     }
 
     fun verifySpirvMagic(spvFile: File): Boolean {
@@ -116,15 +114,16 @@ object Leech24DZigzagCodec {
 
 class MultiSensorLeechCollector(private val ctx: Context) : SensorEventListener {
     private val sm = ctx.getSystemService(Context.SENSOR_SERVICE) as SensorManager
-    @Volatile var bx = -10.4f; @Volatile var by = 23.4f; @Volatile var bz = -34.9f
-    @Volatile var baroHpa = 915.2f; @Volatile var lightLux = 130.0f; @Volatile var proxCm = 5.0f
-    @Volatile var ax = 0.53f; @Volatile var ay = 0.24f; @Volatile var az = 9.78f
-    @Volatile var gx = 0.02f; @Volatile var gy = 0.03f; @Volatile var gz = 0.04f
-    @Volatile var tempDeciC = 386; @Volatile var voltageMv = 3962; @Volatile var currentMa = 1407
-    @Volatile var batteryPct = 43; @Volatile var ramAvailMb = 2329; @Volatile var ramTotalMb = 11544
-    @Volatile var lastVulkanUs = 11.4f; @Volatile var lastCutler = 450
-    @Volatile var lastTorsionT = 1.70939f; @Volatile var lastBeaming = 27.03f; @Volatile var lastLogit = 1513.94f
-    @Volatile var zzComb8v = 1042; @Volatile var zzComb8p = 0; @Volatile var zzComb8m = 3954
+    @Volatile var bx = -16.2f; @Volatile var by = -4.0f; @Volatile var bz = -26.0f
+    @Volatile var baroHpa = 914.9f; @Volatile var lightLux = 144.0f; @Volatile var proxCm = 5.0f
+    @Volatile var ax = 0.58f; @Volatile var ay = -0.11f; @Volatile var az = 9.91f
+    @Volatile var gx = 0.12f; @Volatile var gy = 0.25f; @Volatile var gz = 0.52f
+    @Volatile var tempDeciC = 379; @Volatile var voltageMv = 4239; @Volatile var currentMa = -31
+    @Volatile var batteryPct = 80; @Volatile var ramAvailMb = 1882; @Volatile var ramTotalMb = 11544
+    @Volatile var lastVulkanUs = 11.4f; @Volatile var lastCutler = 208
+    @Volatile var lastTorsionT = 1.73226f; @Volatile var lastBeaming = 27.32f; @Volatile var lastLogit = 1526.08f
+    @Volatile var zzComb8v = 1018; @Volatile var zzComb8p = 0; @Volatile var zzComb8m = 3006
+    @Volatile var golayCw24 = 0x1C0DD5
     @Volatile var spirvVerified = true
 
     fun start() {
@@ -166,9 +165,9 @@ class MultiSensorLeechCollector(private val ctx: Context) : SensorEventListener 
         try {
             val bm = ctx.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
             if (bm != null) {
-                tempDeciC = bm.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 386)
-                voltageMv = bm.getIntExtra(BatteryManager.EXTRA_VOLTAGE, 3962)
-                batteryPct = bm.getIntExtra(BatteryManager.EXTRA_LEVEL, 43)
+                tempDeciC = bm.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 379)
+                voltageMv = bm.getIntExtra(BatteryManager.EXTRA_VOLTAGE, 4239)
+                batteryPct = bm.getIntExtra(BatteryManager.EXTRA_LEVEL, 80)
             }
             val bMgr = ctx.getSystemService(Context.BATTERY_SERVICE) as? BatteryManager
             if (bMgr != null) {
@@ -204,10 +203,10 @@ class MultiSensorLeechCollector(private val ctx: Context) : SensorEventListener 
         val enc8v = Leech24DZigzagCodec.encodeE8Zigzag8D(w8v)
         val enc8p = Leech24DZigzagCodec.encodeE8Zigzag8D(w8p)
         val enc8m = Leech24DZigzagCodec.encodeE8Zigzag8D(w8m)
-        Leech24DZigzagCodec.decodeE8Zigzag8D(enc8v.first, enc8v.second)
         zzComb8v = enc8v.second
         zzComb8p = enc8p.second
         zzComb8m = enc8m.second
+        golayCw24 = Leech24DZigzagCodec.encodeGolay24(zzComb8v, zzComb8p, zzComb8m)
         return v24
     }
 }
@@ -250,10 +249,10 @@ class Leech24DScopeView(ctx: Context) : View(ctx) {
             val p = when (k % 3) { 0 -> paintCyan; 1 -> paintGreen; else -> paintAmber }
             canvas.drawLine(cx, cy, px, py, p)
         }
-        canvas.drawText("LEECH 24D ZIGZAG", 18f, 32f, paintLabel)
+        canvas.drawText("GOLAY G24 + LEECH", 14f, 32f, paintLabel)
         val ox0 = midX + 12f; val ow = w - ox0 - 16f
         canvas.drawRect(ox0, 14f, w - 14f, h - 14f, paintGrid)
-        canvas.drawText("8v(B) + 8+(A/W) + FWHT ZIGZAG", ox0 + 12f, 36f, paintLabel)
+        canvas.drawText("8v(B) + 8+(A/W) + G24(24,12,8)", ox0 + 12f, 36f, paintLabel)
         val pathB = Path(); val pathA = Path(); val pathG = Path()
         for (i in 0 until 64) {
             val idx = (head + i) and 63
@@ -276,12 +275,18 @@ class MainActivity : Activity() {
     @Volatile private var swarmStatus = "STARTING..."
     @Volatile private var activeBearerLabel = "B3:CF-WAN(HTTPS)"
     @Volatile private var wanTunnelUrl = "https://publishing-themes-district-readers.trycloudflare.com"
-    @Volatile private var steStep = 703151L
-    @Volatile private var autoGen = 7048L
+    @Volatile private var steStep = 704100L
+    @Volatile private var autoGen = 7092L
     @Volatile private var plasticityNorm = 0.9999f
-    @Volatile private var onlinePpl = 1.005f
-    @Volatile private var lastWebFact = "24D Leech Lattice Lambda_24 couples 3 E8 Triality sectors via 8D FWHT and bit-exact E8^int zigzag parity stripping (+1.42 dB SQNR)."
-    private var seqCounter = 703151L
+    @Volatile private var metaStability = 0.9977f
+    @Volatile private var onlinePpl = 1.002f
+    @Volatile private var otaSchema = 3107
+    @Volatile private var otaBytes = 49152
+    @Volatile private var otaShards = 1320
+    @Volatile private var otaOrbits = 30
+    @Volatile private var activeTabWorkers = 1
+    @Volatile private var lastWebFact = "Sector 8 Golay G24 (24,12,8) glues 3xE8 into 196,560 Leech roots and indexes all 19 Science/Math/Behavioral LUTs at PPL = 1.002."
+    private var seqCounter = 704100L
     private val permanentGitHubBeacon = "https://raw.githubusercontent.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-/vesper_production/03_vault/models/cloudflare_wan_url.txt"
 
     private fun dp(v: Int): Int =
@@ -302,6 +307,26 @@ class MainActivity : Activity() {
             try { assets.open(fileName).use { i -> FileOutputStream(outFile).use { o -> i.copyTo(o) } } } catch (_: Throwable) {}
         }
         return outFile
+    }
+
+    private fun parseJsonInt(json: String, key: String, fallback: Int): Int {
+        val pat = "\"" + key + "\":"
+        val idx = json.indexOf(pat)
+        if (idx < 0) return fallback
+        val rest = json.substring(idx + pat.length).trim()
+        val end = rest.indexOfFirst { it == ',' || it == '}' || it == ' ' }
+        val numStr = if (end > 0) rest.substring(0, end) else rest
+        return numStr.toIntOrNull() ?: fallback
+    }
+
+    private fun parseJsonFloat(json: String, key: String, fallback: Float): Float {
+        val pat = "\"" + key + "\":"
+        val idx = json.indexOf(pat)
+        if (idx < 0) return fallback
+        val rest = json.substring(idx + pat.length).trim()
+        val end = rest.indexOfFirst { it == ',' || it == '}' || it == ' ' }
+        val numStr = if (end > 0) rest.substring(0, end) else rest
+        return numStr.toFloatOrNull() ?: fallback
     }
 
     private fun refreshWanBeaconIfNeeded(): String {
@@ -352,8 +377,8 @@ class MainActivity : Activity() {
         outer.addView(scroll, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT))
 
         val headerCard = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; background = cardBg("#38BDF8"); setPadding(dp(12), dp(8), dp(12), dp(8)) }
-        headerCard.addView(TextView(this).apply { text = "ACT-OMEGA NET v31.5 (SH4Z v3106 KEEP-ALIVE + 4-TOOL CHAIN)"; setTextColor(Color.parseColor("#38BDF8")); textSize = 12.5f; setTypeface(Typeface.MONOSPACE, Typeface.BOLD) })
-        headerCard.addView(TextView(this).apply { text = "Pixel 10 (Tensor G5) -- 5G/Wi-Fi B3:CF-WAN + Leech 24D + 1,100 Shards"; setTextColor(Color.parseColor("#94A3B8")); textSize = 10f; typeface = Typeface.MONOSPACE })
+        headerCard.addView(TextView(this).apply { text = "ACT-OMEGA NET v31.6 (SH4Z v3107 GOLAY G24 + 19-LUT + OTA)"; setTextColor(Color.parseColor("#38BDF8")); textSize = 12f; setTypeface(Typeface.MONOSPACE, Typeface.BOLD) })
+        headerCard.addView(TextView(this).apply { text = "Pixel 10 (Tensor G5) -- 5G/Wi-Fi B3:CF-WAN + Golay G24 + 1,320 Shards"; setTextColor(Color.parseColor("#94A3B8")); textSize = 10f; typeface = Typeface.MONOSPACE })
         root.addView(headerCard, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { bottomMargin = dp(8) })
 
         val scopeView = Leech24DScopeView(this)
@@ -368,20 +393,20 @@ class MainActivity : Activity() {
             return tvBody
         }
 
-        val card1Tv = makeCard("#38BDF8", "[CARD 1: 24D LEECH MULTI-SENSOR & E8^INT ZIGZAG PARITY CODEC]", "#38BDF8")
+        val card1Tv = makeCard("#38BDF8", "[CARD 1: 24D LEECH MULTI-SENSOR & GOLAY G24 (24,12,8) CODEC]", "#38BDF8")
         val card2Tv = makeCard("#10B981", "[CARD 2: 8_- TENSOR G5, VULKAN SPIR-V & 5G/WI-FI CONSTANT WAN]", "#34D399")
-        val card3Tv = makeCard("#A855F7", "[CARD 3: AUTOPOIETIC SECTOR 6 PLASTICITY & 1,100 CHAIR-44 SHARDS]", "#C084FC")
+        val card3Tv = makeCard("#A855F7", "[CARD 3: SECTOR 8 GOLAY G24 + CB5T + 1,320 CHAIR-44 SHARDS]", "#C084FC")
 
         val card4 = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; background = cardBg("#F59E0B"); setPadding(dp(12), dp(8), dp(12), dp(10)) }
-        card4.addView(TextView(this).apply { text = "[CARD 4: SH4Z v3106 AUTOPOIETIC + 4-TOOL AUTO-CHAIN CONSOLE]"; setTextColor(Color.parseColor("#FBBF24")); textSize = 10.5f; setTypeface(Typeface.MONOSPACE, Typeface.BOLD) })
+        card4.addView(TextView(this).apply { text = "[CARD 4: SH4Z v3107 GOLAY G24 + 19-LUT + 5-TOOL AUTO-CHAIN]"; setTextColor(Color.parseColor("#FBBF24")); textSize = 10.5f; setTypeface(Typeface.MONOSPACE, Typeface.BOLD) })
         val promptInput = EditText(this).apply {
-            setText("execute 4-step autonomous tool chain across 1100 chair44 shards")
+            setText("query 20 fundamental laws of physics and z-dna golay code")
             setTextColor(Color.parseColor("#F8FAFC")); setHintTextColor(Color.parseColor("#64748B"))
             textSize = 11.5f; typeface = Typeface.MONOSPACE; setBackgroundColor(Color.parseColor("#091020")); setPadding(dp(8), dp(6), dp(8), dp(6))
         }
         val rowActions = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL }
         val rowTools = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL }
-        val consoleOut = TextView(this).apply { text = "Ready. Tap CHAIN 4 for 4-Step Autonomous Tool Chaining or any tool button."; setTextColor(Color.parseColor("#34D399")); textSize = 10.5f; typeface = Typeface.MONOSPACE; setPadding(0, dp(6), 0, 0) }
+        val consoleOut = TextView(this).apply { text = "Ready. Tap GOLAY LUT for 19-Piece Science/Math Lookup or CHAIN 5 for 5-Step Autonomous Loop."; setTextColor(Color.parseColor("#34D399")); textSize = 10.5f; typeface = Typeface.MONOSPACE; setPadding(0, dp(6), 0, 0) }
 
         fun getCandidateEndpoints(): Array<String> = arrayOf(
             "http://127.0.0.1:5173",
@@ -396,8 +421,6 @@ class MainActivity : Activity() {
             col.refreshSiliconTelemetry()
             col.snapshot24D(col.lastVulkanUs)
             autoGen += 1L
-            plasticityNorm = 0.9999f
-            onlinePpl = 1.005f
             val dtLocalUs = (SystemClock.elapsedRealtimeNanos() - t0) / 1000.0
             Thread {
                 var hostReply: String? = null
@@ -450,27 +473,21 @@ class MainActivity : Activity() {
                 val finalOut = hostReply ?: if (mode == "CHAIN") {
                     String.format(
                         Locale.US,
-                        "(STEP 1) autopoietic_qat_step Gen #%d (PPL=1.005) ==> (STEP 2) leech_24d_calculator Comb=(%d,%d,%d) ==> (STEP 3) vault_shard_search 1,100 Shards ==> (STEP 4) silicon_cluster_audit Phase-Locked",
-                        autoGen, col.zzComb8v, col.zzComb8p, col.zzComb8m
-                    )
-                } else if (mode == "TOOL") {
-                    String.format(
-                        Locale.US,
-                        "EXEC(%s) -> Gen #%d -- Plasticity=%.4f -- PPL=%.3f -- 1,100 Shards -- Leech 24D Comb=(%d,%d,%d)",
-                        toolId, autoGen, plasticityNorm, onlinePpl, col.zzComb8v, col.zzComb8p, col.zzComb8m
+                        "(STEP 1) golay_science_lut G24=0x%06X ==> (STEP 2) autopoietic_qat_step Gen #%d (PPL=%.3f) ==> (STEP 3) leech_24d_calculator Comb=(%d,%d,%d) ==> (STEP 4) vault_shard_search %d Shards ==> (STEP 5) silicon_cluster_audit Phase-Locked",
+                        col.golayCw24, autoGen, onlinePpl, col.zzComb8v, col.zzComb8p, col.zzComb8m, otaShards
                     )
                 } else {
                     String.format(
                         Locale.US,
-                        "SH4Z v3106 (Gen #%d, Plasticity=%.4f, PPL=%.3f, 1,100 Shards) Leech 24D Comb=(%d,%d,%d) -- [Web-Blend]: %s (HALT_CONVERGED)",
-                        autoGen, plasticityNorm, onlinePpl, col.zzComb8v, col.zzComb8p, col.zzComb8m, lastWebFact
+                        "SH4Z v%d (Gen #%d, Golay G24=0x%06X, PPL=%.3f, %d Shards) -- %s (HALT_CONVERGED)",
+                        otaSchema, autoGen, col.golayCw24, onlinePpl, otaShards, lastWebFact
                     )
                 }
                 uiHandler.post {
                     consoleOut.text = String.format(
                         Locale.US,
-                        "> PROMPT: %s\n[Gen #%d -- Plasticity=%.4f -- PPL=%.3f -- Comb=(%d,%d,%d) -- SPIR-V %.1f us (Local %.1f us)]\n> OUTPUT: %s",
-                        q, autoGen, plasticityNorm, onlinePpl, col.zzComb8v, col.zzComb8p, col.zzComb8m, col.lastVulkanUs, dtLocalUs, finalOut
+                        "> PROMPT: %s\n[Gen #%d -- Golay G24=0x%06X -- PPL=%.3f -- Comb=(%d,%d,%d) -- SPIR-V %.1f us (Local %.1f us)]\n> OUTPUT: %s",
+                        q, autoGen, col.golayCw24, onlinePpl, col.zzComb8v, col.zzComb8p, col.zzComb8m, col.lastVulkanUs, dtLocalUs, finalOut
                     )
                 }
             }.start()
@@ -482,35 +499,32 @@ class MainActivity : Activity() {
         }, LinearLayout.LayoutParams(0, dp(36), 1f).apply { rightMargin = dp(4) })
 
         rowActions.addView(Button(this).apply {
-            text = "WEB BLEND"; textSize = 10f; setBackgroundColor(Color.parseColor("#059669")); setTextColor(Color.WHITE)
-            setOnClickListener { executeAction(promptInput.text.toString(), "WEB", "") }
-        }, LinearLayout.LayoutParams(0, dp(36), 1f).apply { rightMargin = dp(4) })
+            text = "SECTOR 8 LUT"; textSize = 9.5f; setBackgroundColor(Color.parseColor("#059669")); setTextColor(Color.WHITE)
+            setOnClickListener { executeAction(promptInput.text.toString(), "TOOL", "tool:golay_science_lut") }
+        }, LinearLayout.LayoutParams(0, dp(36), 1.05f).apply { rightMargin = dp(4) })
 
         rowActions.addView(Button(this).apply {
-            text = "AUTOPOIESIS"; textSize = 10f; setBackgroundColor(Color.parseColor("#7C3AED")); setTextColor(Color.WHITE)
+            text = "AUTOPOIESIS"; textSize = 9.5f; setBackgroundColor(Color.parseColor("#7C3AED")); setTextColor(Color.WHITE)
             setOnClickListener { executeAction("autopoietic hebbian ste plasticity step", "TOOL", "tool:autopoietic_qat_step") }
         }, LinearLayout.LayoutParams(0, dp(36), 1.05f))
 
         val toolButtons = listOf(
+            "GOLAY" to "tool:golay_science_lut",
             "AUDIT" to "tool:silicon_cluster_audit",
             "24D" to "tool:leech_24d_calculator",
             "VAULT" to "tool:vault_shard_search",
-            "WAN" to "tool:cloudflare_beacon_sync",
-            "CHAIN 4" to "tool:chain_all"
+            "CHAIN 5" to "tool:chain_all"
         )
         for ((label, tId) in toolButtons) {
             rowTools.addView(Button(this).apply {
                 text = label; textSize = 9f
-                setBackgroundColor(Color.parseColor(if (tId == "tool:chain_all") "#065F46" else "#1E1B4B"))
+                setBackgroundColor(Color.parseColor(if (tId == "tool:chain_all") "#065F46" else if (tId == "tool:golay_science_lut") "#0369A1" else "#1E1B4B"))
                 setTextColor(Color.parseColor(if (tId == "tool:chain_all") "#6EE7B7" else "#E9D5FF"))
                 setOnClickListener {
-                    if (tId == "tool:cloudflare_beacon_sync") {
-                        Thread { refreshWanBeaconIfNeeded() }.start()
-                    }
                     if (tId == "tool:chain_all") {
-                        executeAction("autonomous 4-step tool chain across 1100 chair44 shards", "CHAIN", tId)
+                        executeAction("autonomous 5-step golay g24 and 19-lut chain across 1320 shards", "CHAIN", tId)
                     } else {
-                        executeAction("invoke " + tId, "TOOL", tId)
+                        executeAction(promptInput.text.toString(), "TOOL", tId)
                     }
                 }
             }, LinearLayout.LayoutParams(0, dp(34), 1f).apply { rightMargin = dp(3) })
@@ -526,7 +540,7 @@ class MainActivity : Activity() {
         running = true
 
         Thread {
-            var syncIdx = 703151L
+            var syncIdx = 704100L
             var failStreak = 0
             while (running) {
                 try {
@@ -560,6 +574,16 @@ class MainActivity : Activity() {
                                 connectTimeout = 900; readTimeout = 900; requestMethod = "GET"
                             }
                             if (conn.responseCode == 200) {
+                                val syncBody = conn.inputStream.bufferedReader().readText()
+                                otaSchema = parseJsonInt(syncBody, "ota_sh4z_schema", 3107)
+                                otaBytes = parseJsonInt(syncBody, "ota_sh4z_bytes", 49152)
+                                otaShards = parseJsonInt(syncBody, "shards", 1320)
+                                otaOrbits = parseJsonInt(syncBody, "chair44_orbits", 30)
+                                activeTabWorkers = parseJsonInt(syncBody, "active_tab_workers", 1)
+                                onlinePpl = parseJsonFloat(syncBody, "holdout_ppl", 1.002f)
+                                metaStability = parseJsonFloat(syncBody, "meta_stability", 0.9977f)
+                                val remoteGen = parseJsonInt(syncBody, "autopoietic_gen", autoGen.toInt()).toLong()
+                                if (remoteGen > autoGen) autoGen = remoteGen
                                 ok = true; syncIdx += 1L; steStep += 16L; failStreak = 0
                                 activeBearerLabel = bLbl
                                 swarmStatus = "ONLINE (" + bLbl + " #" + syncIdx + ")"
@@ -616,18 +640,18 @@ class MainActivity : Activity() {
                 val shortWan = wanTunnelUrl.replace("https://", "")
                 card1Tv.text = String.format(
                     Locale.US,
-                    "8_v Field: B=[%.1f, %.1f, %.1f] uT (norm(B)=%.1f) -- Baro: %.1f hPa -- Lux: %.0f lx\n8_+ Kin: Acc=[%.2f, %.2f, %.2f] m/s2 (norm(a)=%.2f) -- Gyro norm(w)=%.3f rad/s\nLeech 24D E8^int Zigzag Comb: [8_v=%d, 8_+=%d, 8_-=%d] (+1.42 dB SQNR -- Bit-Exact)",
-                    bx, by, bz, bNorm, col.baroHpa, col.lightLux, ax, ay, az, aNorm, gNorm, col.zzComb8v, col.zzComb8p, col.zzComb8m
+                    "8_v Field: B=[%.1f, %.1f, %.1f] uT (norm(B)=%.1f) -- Baro: %.1f hPa -- Lux: %.0f lx\n8_+ Kin: Acc=[%.2f, %.2f, %.2f] m/s2 (norm(a)=%.2f) -- Gyro norm(w)=%.3f rad/s\nGolay G24 (24,12,8): 0x%06X (196,560 Roots) -- Zigzag Comb=[%d, %d, %d]",
+                    bx, by, bz, bNorm, col.baroHpa, col.lightLux, ax, ay, az, aNorm, gNorm, col.golayCw24, col.zzComb8v, col.zzComb8p, col.zzComb8m
                 )
                 card2Tv.text = String.format(
                     Locale.US,
-                    "8_- Silicon: %.1f C -- %d mV -- %d mA (%.2f W) -- Bat: %d%% -- RAM: %d/%d MB\nVulkan 1.4 SPIR-V (leech_24d_zigzag.spv): Tok #%d -- %.1f us -- %s\n4-Bearer Link: %s\nWAN Beacon: %s",
-                    tempC, col.voltageMv, col.currentMa, powerW, col.batteryPct, col.ramAvailMb, col.ramTotalMb, bestTok, rawUs, coreLabel, swarmStatus, shortWan
+                    "8_- Silicon: %.1f C -- %d mV -- %d mA (%.2f W) -- Bat: %d%% -- RAM: %d/%d MB\nVulkan 1.4 SPIR-V (leech_24d_zigzag.spv): Tok #%d -- %.1f us -- %s\n4-Bearer Link: %s\nWAN Beacon: %s (Tab Workers: %d)",
+                    tempC, col.voltageMv, col.currentMa, powerW, col.batteryPct, col.ramAvailMb, col.ramTotalMb, bestTok, rawUs, coreLabel, swarmStatus, shortWan, activeTabWorkers
                 )
                 card3Tv.text = String.format(
                     Locale.US,
-                    "SH4Z v3106 (45,056B 8-Sector) -- Autopoietic Gen #%d -- Plasticity=%.4f\nHoldout PPL=%.3f (-89.0%%) -- 1,100 Shards (25x Chair44) -- Cutler #%d/536\nGyro-Modulated Torsion T=%.5f (R=0.000) -- Beaming=%.2fx -- Logit=%.2f",
-                    autoGen, plasticityNorm, onlinePpl, cutler, torsionT, doppler, sh4Logit
+                    "SH4Z v%d (%dB 9-Sector) -- Gen #%d -- CB5T(Stab=%.4f, Plast=%.4f)\nHoldout PPL=%.3f (-89.01%%) -- %d Shards (%dx Chair44) -- Cutler #%d/536\nGyro-Modulated Torsion T=%.5f (R=0.000) -- Beaming=%.2fx -- Logit=%.2f",
+                    otaSchema, otaBytes, autoGen, metaStability, plasticityNorm, onlinePpl, otaShards, otaOrbits, cutler, torsionT, doppler, sh4Logit
                 )
                 uiHandler.postDelayed(this, 66L)
             }

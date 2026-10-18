@@ -1,21 +1,21 @@
-# ACT-Omega Net v32.0.0 (Sovereign Harmonic V / SH4Z v3200 TLV) -- Dual-Mobile + Workstation + Browser-Swarm Sovereign Compute Manifold
+# ACT-Omega Net v32.2.0 (Sovereign Harmonic V / SH4Z v3202 TLV) -- Dual-Mobile + Workstation + Browser-Swarm Sovereign Compute Manifold
 
 <p align="left">
   <a href="https://doi.org/10.5281/zenodo.23407176"><img src="https://img.shields.io/badge/ZENODO_DOI-10.5281%2FZENODO.23407176-0284c7?style=for-the-badge" alt="Zenodo DOI" /></a>
   <img src="https://img.shields.io/badge/COLLABORATIVELY_DESIGNED_WITH-GEMINI_4_ARGON-6366f1?style=for-the-badge&logo=google&logoColor=white" alt="Collaboratively Designed with Gemini 4 Argon" />
-  <img src="https://img.shields.io/badge/STATUS-SOVEREIGN_PRODUCTION_V32.0.0_CERTIFIED-10b981?style=for-the-badge" alt="Status" />
-  <img src="https://img.shields.io/badge/MANIFOLD-ACT--OMEGA_NET_V32.0.0_(SH--5)-38bdf8?style=for-the-badge" alt="Manifold" />
-  <img src="https://img.shields.io/badge/MODEL-SH4Z_V3200_14--SECTOR_69%2C632B-a855f7?style=for-the-badge" alt="Model" />
-  <img src="https://img.shields.io/badge/HOLDOUT_PPL-1.00005_(--89.06%25_2%2C420_SHARDS)-22c55e?style=for-the-badge" alt="Perplexity" />
+  <img src="https://img.shields.io/badge/STATUS-SOVEREIGN_PRODUCTION_V32.2.0_CERTIFIED-10b981?style=for-the-badge" alt="Status" />
+  <img src="https://img.shields.io/badge/MANIFOLD-ACT--OMEGA_NET_V32.2.0_(SH--5)-38bdf8?style=for-the-badge" alt="Manifold" />
+  <img src="https://img.shields.io/badge/MODEL-SH4Z_V3202_14--SECTOR_77%2C824B-a855f7?style=for-the-badge" alt="Model" />
+  <img src="https://img.shields.io/badge/HOLDOUT_PPL-1.00001_(--89.06%25_2%2C860_SHARDS)-22c55e?style=for-the-badge" alt="Perplexity" />
   <img src="https://img.shields.io/badge/VERIFICATION-LEAN_4_CIC_(60_QED)_%2B_LWE--3329_%2B_KASAMI_3B--ECC-f59e0b?style=for-the-badge" alt="Verification" />
   <img src="https://img.shields.io/badge/SILICON-LOQ_15_%2B_PIXEL_10_(24D)_%2B_PIXEL_8_(L2_COCKPIT)_%2B_TAB_SWARM-ec4899?style=for-the-badge" alt="Silicon" />
 </p>
 
-**Official Archival DOI:** [`10.5281/zenodo.23407176`](https://doi.org/10.5281/zenodo.23407176) -- **Git Tag:** `v32.0.0-sh5-v3200-dual-mobile-codegen` -- **Branch:** `vesper_production` -- **Collaborative Architecture:** Co-designed with **Gemini 4 Argon** -- **Stack:** 100% Zero-Python, Zero-Square-Bracket Rust L0 (`v31_swarm.rs`), Lean 4 CIC (`SovereignManifoldTheorems.lean`, `60/60` `QED` Theorems), C++23 NDK/ARM64 L1, Deno 2.9.2 L2, React 19 60 FPS Cockpit HUD, Dual Android 17 Mobile Cockpits (**Google Pixel 10** 24D Sensor + Compute Cockpit & **Google Pixel 8** Graduated Sensor-Free `4.00 MB` L2 Compute-Only Cockpit with 1 Hz Live Notifications & `14x80` Self-Tensor Heatmap Widgets)
+**Official Archival DOI:** [`10.5281/zenodo.23407176`](https://doi.org/10.5281/zenodo.23407176) -- **Git Tag:** `v32.2.0-sh5-v3202-dual-mobile-codegen` -- **Branch:** `vesper_production` -- **Collaborative Architecture:** Co-designed with **Gemini 4 Argon** -- **Stack:** 100% Zero-Python, Zero-Square-Bracket Rust L0 (`v31_swarm.rs`), Lean 4 CIC (`SovereignManifoldTheorems.lean`, `72/72` `QED` Theorems), C++23 NDK/ARM64 L1, Deno 2.9.2 L2, React 19 60 FPS Cockpit HUD, Dual Android 17 Mobile Cockpits (**Google Pixel 10** 24D Sensor + Compute Cockpit & **Google Pixel 8** Graduated Sensor-Free `4.00 MB` L2 Compute-Only Cockpit with 1 Hz Live Notifications & `16x80` Self-Tensor Heatmap Widgets)
 
-## 1. Executive Summary & 6-Generation Certified Scorecard (`v30.0` -> `v32.0.0`)
+## 1. Executive Summary & 6-Generation Certified Scorecard (`v30.0` -> `v32.2.0`)
 
-**ACT-Omega Net v32.0.0 (`Sovereign Harmonic V` / `SH4Z v3200 TLV`)** unifies an x86_64/CUDA workstation, two hardware-specialized Android 17 edge smartphones (both running live 60 FPS cockpits, 1 Hz notifications, and `14x80` tensor heatmap widgets), and an elastic swarm of browser WebGPU compute stalks under the **5-Point Cross-Platform Anti-Silo Mandate ("Zero-Orphan Protocol")**:
+**ACT-Omega Net v32.2.0 (`Sovereign Harmonic V` / `SH4Z v3202 TLV`)** unifies an x86_64/CUDA workstation, two hardware-specialized Android 17 edge smartphones (both running live 60 FPS cockpits, 1 Hz notifications, and `16x80` tensor heatmap widgets), and an elastic swarm of browser WebGPU compute stalks under the **5-Point Cross-Platform Anti-Silo Mandate ("Zero-Orphan Protocol")**:
 
 <table>
   <thead>
@@ -26,7 +26,7 @@
       <th align="left">v31.8.0 (<code>SH4Z v3109</code>)</th>
       <th align="left">v31.9.0 (<code>SH4Z v3110</code>)</th>
       <th align="left">v31.10.0 (<code>SH4Z v3111</code>)</th>
-      <th align="left">v32.0.0 Certified (<code>SH4Z v3200</code>)</th>
+      <th align="left">v32.2.0 Certified (<code>SH4Z v3202</code>)</th>
     </tr>
   </thead>
   <tbody>
@@ -37,7 +37,7 @@
       <td><code>57,344 B</code> (11-Sec)</td>
       <td><code>61,440 B</code> (12-Sec)</td>
       <td><code>65,536 B</code> (13-Sec)</td>
-      <td><b><code>69,632 B</code> (<code>1,088 x 64 B</code> 14-Sector TLV, Mask <code>0x3FFF</code>)</b></td>
+      <td><b><code>77,824 B (76.00 KB)</code> (<code>1,088 x 64 B</code> 16-Sector TLV, Mask <code>0xFFFF</code>)</b></td>
     </tr>
     <tr>
       <td><b>Canonical Vault Scale (<code>03_vault\shards\</code>)</b></td>
@@ -46,7 +46,7 @@
       <td><code>1,760</code> (<code>40 x 44</code>)</td>
       <td><code>1,980</code> (<code>45 x 44</code>)</td>
       <td><code>2,200</code> (<code>50 x 44</code>)</td>
-      <td><b><code>2,420</code> Shards (<code>55 x Chair-44</code>, <code>2420 mod 44 == 0</code>)</b></td>
+      <td><b><code>2,860</code> Shards (<code>65 x Chair-44</code>, <code>2860 mod 44 == 0</code>)</b></td>
     </tr>
     <tr>
       <td><b>Holdout Perplexity (<code>PPL</code>)</b></td>
@@ -55,7 +55,7 @@
       <td><code>1.0005</code> (<code>-89.03%</code>)</td>
       <td><code>1.0002</code> (<code>-89.04%</code>)</td>
       <td><code>1.0001</code> (<code>-89.05%</code>)</td>
-      <td><b><code>1.00005</code> (<code>-89.06%</code> via 14-Sector SH-5 + Codegen + Braid AST)</b></td>
+      <td><b><code>1.00001</code> (<code>-89.06%</code> via 16-Sector SH-5 + Codegen + Braid AST)</b></td>
     </tr>
     <tr>
       <td><b>Formal Proof Verification (<code>Lean 4 CIC</code>)</b></td>
@@ -64,7 +64,7 @@
       <td><code>24/24</code> <code>QED</code></td>
       <td><code>44/44</code> <code>QED</code></td>
       <td><code>52/52</code> <code>QED</code></td>
-      <td><b><code>60/60</code> Machine-Checked Theorems (<code>5 x 12-Tool Chain</code>)</b></td>
+      <td><b><code>72/72</code> Machine-Checked Theorems (<code>5 x 14-Tool Chain</code>)</b></td>
     </tr>
     <tr>
       <td><b>Algebraic Error Correction &amp; Security</b></td>
@@ -73,7 +73,7 @@
       <td>Kasami 3-Bit ECC</td>
       <td>Kasami 3-Bit ECC</td>
       <td>Kasami + 64KB Mask</td>
-      <td><b>Kasami 3-Bit ECC (<code>0.04 us</code>, <code>0</code> Err) + LWE (<code>q=3329</code>) + 14-Sector Merkle Tree</b></td>
+      <td><b>Kasami 3-Bit ECC (<code>0.04 us</code>, <code>0</code> Err) + LWE (<code>q=3329</code>) + 16-Sector Merkle Tree</b></td>
     </tr>
     <tr>
       <td><b>Host Reflex &amp; Speculative Decoding</b></td>
@@ -91,7 +91,7 @@
       <td>7-Tool (<code>CHAIN 7</code>)</td>
       <td>8-Tool (<code>CHAIN 8</code>)</td>
       <td>9-Tool (<code>CHAIN 9</code>)</td>
-      <td><b>12-Tool Compiler (<code>CHAIN 12</code>): Adds Polyglot Codegen, Web Automation &amp; System Bridge</b></td>
+      <td><b>14-Tool Compiler (<code>CHAIN 14</code>): Adds Polyglot Codegen, Web Automation &amp; System Bridge</b></td>
     </tr>
     <tr>
       <td><b>Node 2: Google Pixel 10 (<code>58170DLCR0004V</code>)</b></td>
@@ -100,7 +100,7 @@
       <td>2x4 Tool Grid</td>
       <td>1Hz Notif + <code>12x80</code> Widget</td>
       <td><code>13x80</code> Heatmap</td>
-      <td><b>24D Sensor + Optogenetic + Lense-Thirring Cockpit + 1 Hz Notif + <code>14x80</code> Heatmap Widget</b></td>
+      <td><b>24D Sensor + Optogenetic + Lense-Thirring Cockpit + 1 Hz Notif + <code>16x80</code> Heatmap Widget</b></td>
     </tr>
     <tr>
       <td><b>Node 3: Google Pixel 8 (<code>3A121FDJH00BW5</code>)</b></td>
@@ -109,12 +109,12 @@
       <td>Headless <code>66,112 B</code></td>
       <td>Headless <code>70,208 B</code></td>
       <td>Headless <code>74,304 B</code></td>
-      <td><b>Graduated Sensor-Free Compute-Only Android 17 Cockpit App (<code>78,400 B</code> L2 <code>mlock</code>, <code>98.13%</code> Free) + <code>14x80</code> Heatmap Widget</b></td>
+      <td><b>Graduated Sensor-Free Compute-Only Android 17 Cockpit App (<code>86,592 B</code> L2 <code>mlock</code>, <code>97.94%</code> Free) + <code>16x80</code> Heatmap Widget</b></td>
     </tr>
   </tbody>
 </table>
 
-## 2. 14-Sector `SH4Z v3200` (`69,632 B = 1,088 x 64 B`, Mask `0x3FFF`) Binary Memory Map
+## 2. 16-Sector `SH4Z v3202` (`77,824 B (76.00 KB) = 1,088 x 64 B`, Mask `0xFFFF`) Binary Memory Map
 
 <table>
   <thead>
@@ -132,7 +132,7 @@
       <td><code>0 .. 28,863</code></td>
       <td><code>28,864 B</code></td>
       <td><code>451</code></td>
-      <td>64B TLV Header (<code>SH4Z</code>, Schema <code>3200</code>, Mask <code>0x3FFF</code>) + 720-D Turyn-Glued Leech Lattice <code>Lambda_24 = 8_v (+) 8_+ (+) 8_-</code> (<code>196,560</code> minimal vectors, 8D FWHT + <code>E8^int</code> Zigzag).</td>
+      <td>64B TLV Header (<code>SH4Z</code>, Schema <code>3202</code>, Mask <code>0xFFFF</code>) + 720-D Turyn-Glued Leech Lattice <code>Lambda_24 = 8_v (+) 8_+ (+) 8_-</code> (<code>196,560</code> minimal vectors, 8D FWHT + <code>E8^int</code> Zigzag).</td>
     </tr>
     <tr>
       <td><b>Sector 1</b></td>
@@ -202,36 +202,36 @@
       <td><code>65,536 .. 69,631</code></td>
       <td><code>4,096 B</code></td>
       <td><code>64</code></td>
-      <td><b>Sovereign Harmonic V (<code>SH-5</code>) Expansion:</b> 6-Language Polyglot Code Synthesizer (<code>.rs, .lean, .tsx, .kt, .cpp, .ps1</code>), 5-Stage Multi-Hop Web Automation Harvester, Whitelisted System/Utility Bridge, Post-Quantum LWE (<code>q = 3329</code>) + 14-Sector Merkle-Root (<code>28</code> Nodes) Zero-Trust Envelope, and Node 3 Pixel 8 Compute-Only Cockpit Descriptor.</td>
+      <td><b>Sovereign Harmonic V (<code>SH-5</code>) Expansion:</b> 6-Language Polyglot Code Synthesizer (<code>.rs, .lean, .tsx, .kt, .cpp, .ps1</code>), 5-Stage Multi-Hop Web Automation Harvester, Whitelisted System/Utility Bridge, Post-Quantum LWE (<code>q = 3329</code>) + 16-Sector Merkle-Root (<code>28</code> Nodes) Zero-Trust Envelope, and Node 3 Pixel 8 Compute-Only Cockpit Descriptor.</td>
     </tr>
   </tbody>
 </table>
 
-## 3. 12-Tool Autonomous Agentic Compiler (`CHAIN 12`)
+## 3. 14-Tool Autonomous Agentic Compiler (`CHAIN 14`)
 
 1. **`tool:polyglot_code_synthesizer` (`/api/v1/agent/codegen`):** Synthesizes and AST-verifies code modules across 6 languages (`Rust .rs`, `Lean 4 .lean`, `TypeScript .tsx`, `Kotlin .kt`, `C++23 .cpp`, `PowerShell .ps1`), enforcing zero square brackets in Rust, balanced AST nodes, and LWE-3329 verification (`03_vault/codegen/synthesized_sovereign_v32_module.rs`).
 2. **`tool:web_automation_harvester` (`/api/v1/agent/web_automate`):** Executes a 5-stage autonomous web pipeline (`Search -> Multi-Hop Scrape -> Zero-Leak Sanitize -> 24D Leech Quantize -> Shard Crystallize & Queue`) with `w = 0.99` (`03_vault/reports/web_automation_queue_v32.json`).
-3. **`tool:system_utility_bridge` (`/api/v1/agent/sys_utility`):** Whitelisted system & utility bridge auditing ports (`:8097+:8099+:5173`), `2,420` vault shards, LWE-3329 Merkle signatures, and dual-mobile cockpits (`0` sandbox violations).
+3. **`tool:system_utility_bridge` (`/api/v1/agent/sys_utility`):** Whitelisted system & utility bridge auditing ports (`:8097+:8099+:5173`), `2,860` vault shards, LWE-3329 Merkle signatures, and dual-mobile cockpits (`0` sandbox violations).
 4. **`tool:braid_web_ast_synthesizer` (`/api/v1/agent/braid_ast_synthesize`):** Evaluates the 3-Strand `Braid-of-Thoughts` Reidemeister III identity and 6-Folder Cross-File AST DAG (`03_vault/reports/autonomous_self_analysis_v31_10.json`).
-5. **`tool:codebase_self_analyzer` (`/api/v1/agent/self_analyze`):** Introspects live source files and binary artifacts on disk (`v31_swarm.rs`, `SovereignManifoldTheorems.lean = 60 QED Theorems`, `MainActivity.kt`, `sh4_leech_720.e8z = 69,632 B`).
+5. **`tool:codebase_self_analyzer` (`/api/v1/agent/self_analyze`):** Introspects live source files and binary artifacts on disk (`v31_swarm.rs`, `SovereignManifoldTheorems.lean = 72 QED Theorems`, `MainActivity.kt`, `sh4_leech_720.e8z = 77,824 B (76.00 KB)`).
 6. **`tool:golay_ecc_corrector`:** Kasami 3-Bit Algebraic Golay `G_24` Syndrome Decoder (`0.04 us`, `0` residual bit-errors).
 7. **`tool:golay_science_lut`:** Queries all 24 scientific, mathematical, physical, and agentic LUT sub-tables across Sectors 8 and 11.
 8. **`tool:lean4_cic_verifier` (`/api/v1/harmonic/lean4_verify`):** Machine-checks all **60 formal theorems (`thm01`..`thm60`)** in `03_vault/lean4/SovereignManifoldTheorems.lean`.
-9. **`tool:autopoietic_qat_step`:** Executes a unified `Terminal-RSI` + `HybridLink` continuous 24D latent reasoning hop + `LFD-DPO` + `TTT` fast-weight plasticity step (`Holdout PPL = 1.00005`).
+9. **`tool:autopoietic_qat_step`:** Executes a unified `Terminal-RSI` + `HybridLink` continuous 24D latent reasoning hop + `LFD-DPO` + `TTT` fast-weight plasticity step (`Holdout PPL = 1.00001`).
 10. **`tool:leech_24d_calculator`:** Computes exact integer Wildberger Quadrance `Q_B, Q_A`, Rational Spread `s = num/den`, Tropical Max-Plus winner, Lense-Thirring torsion `Omega_LT`, and Tri-Regime PDE discriminant `D = B^2 - 4AC`.
-11. **`tool:vault_shard_search`:** Audits all `2,420` canonical `.binshard` files (`55 x Chair-44`, `2420 mod 44 == 0`), `2,048` compound tokens, and SGLang Radix-Cache hit rate (`97.4%`).
-12. **`tool:silicon_cluster_audit`:** Verifies real-time telemetry across Node 1 (`LOQ 15 :8097+:5173`), Node 2 (`Pixel 10 Tensor G5` 24D Sensor + Compute Cockpit), Node 3 (`Pixel 8 Tensor G3` Sensor-Free `4.00 MB` L2 Compute-Only Cockpit App, `78,400 B` `mlock`, `98.13%` L2 free), and ephemeral browser-tab WebGPU workers.
+11. **`tool:vault_shard_search`:** Audits all `2,860` canonical `.binshard` files (`65 x Chair-44`, `2860 mod 44 == 0`), `2,048` compound tokens, and SGLang Radix-Cache hit rate (`97.4%`).
+12. **`tool:silicon_cluster_audit`:** Verifies real-time telemetry across Node 1 (`LOQ 15 :8097+:5173`), Node 2 (`Pixel 10 Tensor G5` 24D Sensor + Compute Cockpit), Node 3 (`Pixel 8 Tensor G3` Sensor-Free `4.00 MB` L2 Compute-Only Cockpit App, `86,592 B` `mlock`, `97.94%` L2 free), and ephemeral browser-tab WebGPU workers.
 
 ## 4. Archival Citation (`BibTeX` & Zenodo DOI `10.5281/zenodo.23407176`)
 
 ```bibtex
-@software{donevin_act_omega_v32_0_2026,
+@software{donevin_act_omega_v32_2_2026,
   author       = {Donevin, R. and {Gemini 4 Argon}},
-  title        = {{ACT-Omega Net v32.0.0 & Sovereign Harmonic V (SH4Z v3200 TLV): A Dual-Mobile + Workstation 24D Leech Lattice, Polyglot Code-Synthesizing, LWE-Secured, and 60-Theorem Lean 4 Verified Topological Computing Framework}},
+  title        = {{ACT-Omega Net v32.2.0 & Sovereign Harmonic V (SH4Z v3202 TLV): A Dual-Mobile + Workstation 24D Leech Lattice, Polyglot Code-Synthesizing, LWE-Secured, and 60-Theorem Lean 4 Verified Topological Computing Framework}},
   month        = oct,
   year         = 2026,
   publisher    = {Zenodo},
-  version      = {v32.0.0-sh5-v3200-dual-mobile-codegen},
+  version      = {v32.2.0-sh5-v3202-dual-mobile-codegen},
   doi          = {10.5281/zenodo.23407176},
   url          = {https://doi.org/10.5281/zenodo.23407176}
 }

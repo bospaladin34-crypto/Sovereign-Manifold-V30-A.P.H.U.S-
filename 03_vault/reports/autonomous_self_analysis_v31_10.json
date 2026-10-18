@@ -1,1 +1,1 @@
-{"schema":3200,"container_bytes":69632,"bitwise_mask":"0xFFFF","cachelines_64b":1024,"sectors":13,"folders_verified":6/6,"ast_dag_edges":15,"braid_reidemeister_iii_residual":0,"rsr_step":82,"hybridlink_hops":9505,"holdout_ppl":1.0001}
+{"status":"BRAID_AST_VERIFIED","braid_relation":"sigma1*sigma2*sigma1 == sigma2*sigma1*sigma2","writhe_residual":0,"folders_audited":6,"dag_edges":15,"orphan_files":0,"sh4z_bytes":73728,"cacheline_idx":126,"byte_offset":8064,"web_blend_weight":0.99}

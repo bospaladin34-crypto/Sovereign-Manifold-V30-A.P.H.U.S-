@@ -454,6 +454,8 @@ object SovereignLiveBus : SensorEventListener {
             nm.notify(3206, notif)
         } catch (_: Throwable) {
         }
+    }
+
     override fun onSensorChanged(event: SensorEvent?) {
         if (event == null || isPixel8ComputeNode) return
         when (event.sensor.type) {

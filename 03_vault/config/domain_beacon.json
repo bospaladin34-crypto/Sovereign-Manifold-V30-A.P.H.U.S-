@@ -1,14 +1,17 @@
 {
-  "schema_version": "v32.6.1",
+  "schema_version": "v32.6.2",
   "active_wan_url": "https://publishing-themes-district-readers.trycloudflare.com",
   "active_wan_host": "publishing-themes-district-readers.trycloudflare.com",
   "custom_domain_configured": false,
-  "tunnel_mode": "CLOUDFLARE_PQ_HTTP2_KEEPALIVE",
-  "pq_kem": "X25519MLKEM768_FIPS203",
-  "local_ports": {
-    "swarm_l0": 8097,
-    "hud_mux": 5173
+  "subdomains": {
+    "apex": "https://publishing-themes-district-readers.trycloudflare.com",
+    "hud": "https://publishing-themes-district-readers.trycloudflare.com",
+    "api": "https://publishing-themes-district-readers.trycloudflare.com",
+    "agent": "https://publishing-themes-district-readers.trycloudflare.com",
+    "wiki": "https://publishing-themes-district-readers.trycloudflare.com/wiki"
   },
-  "github_repo": "https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-",
-  "cutover_instructions": "Run Switch_Official_Cloudflare_Domain_Cutover_v32_6_1.ps1 -NewDomain yourdomain.com to switch WAN domain and rebuild only Host & Mobile HUDs."
+  "tunnel_mode": "CLOUDFLARE_PQ_HTTP2_KEEPALIVE_SUBDOMAIN_MUX",
+  "pq_kem": "X25519MLKEM768_FIPS203",
+  "watchdog_script": "00_control/Daemon-MemoryRing.ps1",
+  "github_pages_root_portal": "https://bospaladin34-crypto.github.io/Sovereign-Manifold-V30-A.P.H.U.S-/"
 }

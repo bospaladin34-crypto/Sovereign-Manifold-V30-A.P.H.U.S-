@@ -120,6 +120,41 @@
       </div>
     </div>
 
+
+    <div class="panel">
+      <div class="row-between">
+        <span style="font-weight:bold;color:var(--amber);">[-] CLOUDFLARE POST-QUANTUM (X25519MLKEM768) 5-HOSTNAME SUBDOMAIN ROUTING MATRIX</span>
+        <span class="badge-green">AUTO-HEAL WATCHDOG: ACTIVE (15s RING)</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:8px;margin-top:8px;">
+        <div class="card" style="min-height:58px;" onclick="runApi('/api/v1/beacon/domain', 'APEX DOMAIN INGRESS')">
+          <div class="card-top"><span class="card-title">1. APEX ROOT DOMAIN</span><span class="card-pill">:5173 + :8097</span></div>
+          <div class="card-pri" style="font-size:11px;">&lt;domain&gt;.com</div>
+          <div class="card-sec">Primary 60-30-10 HUD &amp; API Mux</div>
+        </div>
+        <div class="card" style="min-height:58px;" onclick="runApi('/api/v1/telemetry', 'HUD SUBDOMAIN INGRESS')">
+          <div class="card-top"><span class="card-title">2. DEDICATED HUD SUBDOMAIN</span><span class="card-pill">http://127.0.0.1:5173</span></div>
+          <div class="card-pri" style="font-size:11px;">hud.&lt;domain&gt;.com</div>
+          <div class="card-sec">60 FPS WebGPU Cockpit &amp; 15 Cards</div>
+        </div>
+        <div class="card" style="min-height:58px;" onclick="runApi('/api/v1/telemetry', 'API SUBDOMAIN INGRESS')">
+          <div class="card-top"><span class="card-title">3. DEDICATED API SUBDOMAIN</span><span class="card-pill">http://127.0.0.1:8097</span></div>
+          <div class="card-pri" style="font-size:11px;">api.&lt;domain&gt;.com</div>
+          <div class="card-sec">L0 Rust Swarm &amp; 2.0Hz Phone Stream</div>
+        </div>
+        <div class="card" style="min-height:58px;" onclick="runApi('/.well-known/llm-agent.json', 'AGENT SUBDOMAIN INGRESS')">
+          <div class="card-top"><span class="card-title">4. LLM AGENT GATEWAY</span><span class="card-pill">http://127.0.0.1:8097</span></div>
+          <div class="card-pri" style="font-size:11px;">agent.&lt;domain&gt;.com</div>
+          <div class="card-sec">Zero-Trust Visiting LLM Sandbox</div>
+        </div>
+        <div class="card" style="min-height:58px;" onclick="window.location.href='./wiki.html'">
+          <div class="card-top"><span class="card-title">5. SYSTEM WIKI SUBDOMAIN</span><span class="card-pill">http://127.0.0.1:5173/wiki</span></div>
+          <div class="card-pri" style="font-size:11px;">wiki.&lt;domain&gt;.com</div>
+          <div class="card-sec">16-Sector Map &amp; 128 Lean 4 Proofs</div>
+        </div>
+      </div>
+    </div>
+
     <div class="panel">
       <div class="row-between">
         <span style="font-weight:bold;">[-] DRAWER A: 15 LIVE TELEMETRY CARDS (LOQ 15 RTX 3050 + PIXEL 10 G5 15.8Hz + PIXEL 8 4MB L2 + E:\ SSD TIER-2)</span>

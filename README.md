@@ -1,7 +1,7 @@
 # ACT-Omega Net v32.6.1 (`Sovereign Harmonic V-G` / `SH4Z v3206 TLV`)
 
 [![ACT-Omega Net](https://img.shields.io/badge/ACT--Omega_Net-v32.6.1_(SH4Z_v3206)-FFB454?style=for-the-badge&labelColor=0E1116)](https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-/releases/tag/v32.6.1-sh5g-v3206-fno-llm-ssd-15cards)
-[![GitHub Pages](https://img.shields.io/badge/GitHub_Pages-LIVE_PORTAL_%26_LLM_GATEWAY-E94E34?style=for-the-badge&labelColor=0E1116)](./docs/index.html)
+[![GitHub Pages](https://img.shields.io/badge/GitHub_Pages-LIVE_PORTAL_%26_LLM_GATEWAY-E94E34?style=for-the-badge&labelColor=0E1116)](https://bospaladin34-crypto.github.io/Sovereign-Manifold-V30-A.P.H.U.S-/)
 [![System Wiki](https://img.shields.io/badge/System_Wiki-WIKI.MD_%26_DOCS%2FWIKI-56D364?style=for-the-badge&labelColor=0E1116)](./WIKI.md)
 [![Lean 4 CIC](https://img.shields.io/badge/Lean_4_CIC-128%2F128_BASE_(131_RUNTIME)_QED-4B6B94?style=for-the-badge&labelColor=0E1116)](./03_vault/lean4/SovereignManifoldTheorems.lean)
 [![Vault](https://img.shields.io/badge/Vault-4%2C400_SHARDS_(100X_CHAIR--44)_--_8%2C192_NL%2BCOMPOUND_TOKENS-FFB454?style=for-the-badge&labelColor=0E1116)](./03_vault/lexicon/nl_compound_tokenizer_8192.json)

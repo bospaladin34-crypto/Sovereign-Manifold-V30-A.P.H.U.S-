@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ACT-Omega Net v32.6.1 (SH4Z v3206) -- System Wiki & LLM Gateway Reference</title>
+  <style>
+    :root {
+      --bg-void: #0E1116;
+      --bg-panel: #141922;
+      --bg-inset: #0A0D12;
+      --slate-surf: #1C2632;
+      --slate-border: #2A3B4D;
+      --text-ivory: #FFFEFB;
+      --text-muted: #9FB0C2;
+      --amber: #FFB454;
+      --red: #E94E34;
+      --green: #56D364;
+    }
+    body {
+      margin: 0;
+      padding: 24px;
+      background: var(--bg-void);
+      color: var(--text-ivory);
+      font-family: "JetBrains Mono", Consolas, monospace;
+      line-height: 1.55;
+    }
+    .container { max-width: 1120px; margin: 0 auto; }
+    .card {
+      background: var(--bg-panel);
+      border: 1px solid var(--slate-border);
+      border-radius: 8px;
+      padding: 18px 22px;
+      margin-bottom: 18px;
+    }
+    h1, h2, h3 { color: var(--amber); margin-top: 0; }
+    a { color: var(--amber); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+    th, td { border: 1px solid var(--slate-border); padding: 8px 10px; text-align: left; }
+    th { background: var(--slate-surf); color: var(--amber); }
+    pre {
+      background: var(--bg-inset);
+      border: 1px solid var(--slate-border);
+      padding: 12px;
+      border-radius: 6px;
+      overflow-x: auto;
+      color: var(--green);
+    }
+    .badge {
+      display: inline-block;
+      background: var(--slate-surf);
+      border: 1px solid var(--amber);
+      color: var(--text-ivory);
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      margin-right: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <h1>ACT-Omega Net v32.6.1 (Sovereign Harmonic V-G / SH4Z v3206 TLV) -- Official Wiki</h1>
+      <div>
+        <span class="badge">4,400 Shards (100x Chair-44)</span>
+        <span class="badge">8,192 NL+Compound Tokenizer</span>
+        <span class="badge">128/131 Lean 4 CIC QED</span>
+        <span class="badge">16-Mode FNO (686.3k ops/s)</span>
+        <span class="badge">Drive E:\ SSD Tier-2 Vault</span>
+      </div>
+      <p style="color:var(--text-muted);margin-top:12px;">
+        Navigation: <a href="./index.html">Interactive GitHub Pages Portal</a> --
+        <a href="./llms.txt">llms.txt</a> --
+        <a href="./agent-manifest.json">agent-manifest.json</a> --
+        <a href="https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-">GitHub Repository</a>
+      </p>
+    </div>
+
+    <div class="card">
+      <h2>1. 4-Tier Hardware & Storage Cluster Topology</h2>
+      <table>
+        <tr><th>Node / Tier</th><th>Silicon & Memory</th><th>Role & Invariants</th><th>Throughput</th></tr>
+        <tr><td>Node 1 (Host)</td><td>Lenovo LOQ 15IAX9 (i5-12450HX + RTX 3050 6GB)</td><td>Rust L0 v31_swarm.exe (:8097 + :5173), WebGPU FNO + Stiefel, Cloudflare Tunnel</td><td>486.4k ops/s (576 lines)</td></tr>
+        <tr><td>Node 2 (Pixel 10)</td><td>Tensor G5 3nm ARMv9.2-A (58170DLCR0004V)</td><td>Foreground 24D Leech Sensor Transducer + Medusa 4-Head Speculative Decode</td><td>114.6k ops/s (416 lines)</td></tr>
+        <tr><td>Node 3 (Pixel 8)</td><td>Tensor G3 Zuma + Mali-G715 4.00 MB L2 (3A121FDJH00BW5)</td><td>90,688 B mlock (97.84% L2 Free), Sensor Bus BYPASSED (0 sensor polls)</td><td>83.4k ops/s (288 lines)</td></tr>
+        <tr><td>Tier-2 SSD (Drive E:\)</td><td>E:\Sovereign_Manifold_SSD_Vault\ (Fallback: C:\)</td><td>4,400 Mirrored Shards + 8,192 NL Corpus + 16x80 FNO Green's + 32-Node Merkle</td><td>686.3k ops/s Cluster Total</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h2>2. Visiting LLM & Human API Endpoints (:8097 & :5173)</h2>
+      <pre>GET  /.well-known/llm-agent.json
+GET  /llms.txt
+GET  /api/v1/agent_gateway/interact?agent_id=visiting_llm&amp;q=hello+sovereign+manifold
+GET  /api/v1/tokenizer/nl_transduce?q=fourier+neural+operator+stiefel+manifold
+GET  /api/v1/operator/fno_solve?q=navier_stokes_helmholtz_16x80
+GET  /api/v1/storage/ssd_tier2?q=merkle32_verify
+GET  /api/v1/harmonic/tool_chain?q=full_23_tool_chain</pre>
+    </div>
+  </div>
+</body>
+</html>

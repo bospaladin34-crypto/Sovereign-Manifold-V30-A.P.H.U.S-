@@ -554,7 +554,7 @@ export function App() {
         <div style={{ background: "#141922", border: "1px solid #2A3B4D", borderRadius: 6, padding: "10px 14px" }}>
           <div
             onClick={() => setDrawerAOpen(!drawerAOpen)}
-            style={{ display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer", fontWeight: "bold", marginBottom: drawerAOpen ? 10 : 0 }}
+            style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12, cursor: "pointer", fontWeight: "bold", marginBottom: drawerAOpen ? 10 : 0 }}
           >
             <span>[-] DRAWER A: TRI-SILICON HARDWARE, 8,192 NL TOKENIZER, LLM AGENT GATEWAY, FNO PDE & E:\ SSD TIER-2 (15 LIVE CARDS)</span>
             <span style={{ color: "#FFB454" }}>Live Tick #{tel.generation} (2.00 Hz Poll / 15.00 Hz Sensor) -- Click Any Card to Execute</span>

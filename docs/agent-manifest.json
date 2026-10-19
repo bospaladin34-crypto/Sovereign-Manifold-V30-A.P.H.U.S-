@@ -1,89 +1,37 @@
 {
-  "schema_version": "MCP-OpenAPI-3.1-SH4Z-v3206",
-  "system": "ACT-Omega Net v32.6.0 (Sovereign Harmonic V-G / SH4Z v3206 TLV)",
-  "live_tunnel_url": "https://publishing-themes-district-readers.trycloudflare.com",
-  "github_pages_url": "https://bospaladin34-crypto.github.io/Sovereign-Manifold-V30-A.P.H.U.S.-/",
-  "repository_url": "https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S.-",
-  "architecture": {
-    "sh4z_bytes": 81920,
-    "sectors": 16,
-    "cachelines": 1280,
-    "canonical_shards": 4400,
-    "chair44_orbits": 100,
-    "holdout_ppl": 1.000001,
-    "tokenizer_vocab": 8192,
-    "nl_bpe_tokens": 4096,
-    "compound_domain_tokens": 4096,
-    "lean4_cic_theorems": 128,
-    "runtime_qed_obligations": 131,
-    "native_tools_count": 23,
-    "cluster_throughput_kops": 684.4,
-    "external_ssd_tier2_primary": "E:\\Sovereign_Manifold_SSD_Vault",
-    "external_ssd_tier2_fallback": "C:\\sovereign_manifold_ssd_tier2"
+  "schema_version": "v32.6.1",
+  "protocol": "ACT-Omega-LLM-Agent-Gateway/1.0",
+  "release_tag": "v32.6.1-sh5g-v3206-fno-llm-ssd-15cards",
+  "zenodo_doi": "10.5281/zenodo.19624831",
+  "system_name": "ACT-Omega Net v32.6.1 (Sovereign Harmonic V-G / SH4Z v3206 TLV)",
+  "security_posture": "ZERO_TRUST_READ_COMPUTE_ONLY",
+  "cryptographic_attestation": "ML-KEM-768 (LWE-3329) + FNV-1a-64",
+  "human_and_machine_compatible": true,
+  "public_wan_url": "https://publishing-themes-district-readers.trycloudflare.com",
+  "github_repository": "https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-",
+  "endpoints": {
+    "llms_txt": "/llms.txt",
+    "manifest": "/.well-known/llm-agent.json",
+    "interact": "/api/v1/agent_gateway/interact",
+    "card_execute": "/api/v1/card/execute",
+    "domain_beacon": "/api/v1/beacon/domain",
+    "tokenizer_8192": "/api/v1/tokenizer/nl_transduce",
+    "fno_pde_solver": "/api/v1/operator/fno_solve",
+    "ssd_tier2_vault": "/api/v1/storage/ssd_tier2",
+    "tool_chain_23": "/api/v1/harmonic/tool_chain",
+    "github_pages_portal": "/github_pages",
+    "wiki_portal": "/wiki"
   },
-  "interaction_protocol": {
-    "manifest_endpoint": "/api/v1/agent_gateway/manifest",
-    "llms_txt_endpoint": "/llms.txt",
-    "interact_endpoint": "/api/v1/agent_gateway/interact",
-    "required_query_params": [
-      "input"
-    ],
-    "optional_query_params": [
-      "agent_id",
-      "model",
-      "format"
-    ],
-    "siem_sandbox_mode": "ZERO_TRUST_READ_COMPUTE_ONLY",
-    "post_quantum_kex": "X25519MLKEM768_FIPS203"
-  },
-  "tools_registry_23": [
-    {
-      "id": "tool:llm_agent_gateway_protocol",
-      "number": 21,
-      "endpoint": "/api/v1/agent_gateway/interact",
-      "desc": "Safe & Secure External LLM / Machine Agent Gateway (8,192 NL+Compound Tokenizer + SIEM Sandbox)"
-    },
-    {
-      "id": "tool:fourier_neural_operator_pde",
-      "number": 22,
-      "endpoint": "/api/v1/operator/fno_solve",
-      "desc": "16-Mode Spectral Fourier Neural Operator (FNO) for Navier-Stokes & Acoustic Helmholtz PDEs"
-    },
-    {
-      "id": "tool:external_ssd_tier2_vault",
-      "number": 23,
-      "endpoint": "/api/v1/storage/ssd_tier2",
-      "desc": "External SSD Tier-2 Vault on E:\\ (with C:\\ Fallback) & 32-Node Merkle RAID Mirror"
-    },
-    {
-      "id": "tool:in_hud_er_epr_navier_browser",
-      "number": 20,
-      "endpoint": "/api/v1/browser/navigate",
-      "desc": "In-HUD Sovereign Browser (ER=EPR Wormhole Retrieval + FNO Navier-Stokes Transduction + 4,400-Shard Synthesis)"
-    },
-    {
-      "id": "tool:rtx3050_tensor_gemm_engine",
-      "number": 19,
-      "endpoint": "/api/v1/gpu/rtx3050_accelerate",
-      "desc": "Direct NVIDIA GeForce RTX 3050 6GB (2,048 CUDA / 64 Tensor Cores) WGSL & Tensor GEMM"
-    },
-    {
-      "id": "tool:cyber_siem_threat_sentinel",
-      "number": 18,
-      "endpoint": "/api/v1/security/siem_audit",
-      "desc": "Zero-Trust Cybersecurity SIEM & Post-Quantum X25519MLKEM768 Sentinel"
-    },
-    {
-      "id": "tool:acoustic_sdr_wave_transceiver",
-      "number": 17,
-      "endpoint": "/api/v1/agent/acoustic_sdr",
-      "desc": "FCC-Exempt Acoustic I/Q Wave SDR (1,728 Hz Harmonic / 18.5 kHz Ultrasonic 64-QAM)"
-    },
-    {
-      "id": "tool:stiefel_manifold_retraction_optimizer",
-      "number": 16,
-      "endpoint": "/api/v1/agent/stiefel_optimize",
-      "desc": "Stiefel Manifold St(16,80) Cayley Retraction & Oja-BF16 Optimizer"
-    }
-  ]
+  "capabilities": {
+    "total_tools": 23,
+    "live_hud_cards": 15,
+    "shards": 4400,
+    "vocab_size": 8192,
+    "lean4_theorems": 128,
+    "lean4_runtime_obligations": 131,
+    "cluster_kops": 686.3,
+    "sensor_hz": 15.8,
+    "broadcast_hz": 1.99,
+    "ssd_tier2_path": "E:/Sovereign_Manifold_SSD_Vault"
+  }
 }

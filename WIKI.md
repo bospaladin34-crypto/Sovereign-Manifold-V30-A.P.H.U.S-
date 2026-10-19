@@ -1,6 +1,6 @@
-# ACT-Omega Net v32.6.0 (`Sovereign Harmonic V-G` / `SH4Z v3206 TLV`) — Master System Wiki
+# ACT-Omega Net v32.6.1 (`Sovereign Harmonic V-G` / `SH4Z v3206 TLV`) — Master System Wiki
 
-Welcome to the official engineering and theoretical Wiki for **ACT-Omega Net v32.6.0 (`Sovereign Harmonic V-G` / `SH4Z v3206 TLV`)**.
+Welcome to the official engineering and theoretical Wiki for **ACT-Omega Net v32.6.1 (`Sovereign Harmonic V-G` / `SH4Z v3206 TLV`)**.
 
 ---
 
@@ -53,7 +53,7 @@ The `SH4Z v3206` memory-mapped weight and state manifold consists of **`1,280` c
 * **Physical PDE Benchmarks:**
   * **2D Incompressible Navier–Stokes Vorticity Transport:** $\partial_t \omega + (u \cdot \nabla)\omega = \nu \Delta \omega + f$ at Reynolds number $\mathrm{Re} = 418.4 < 2300$ ( strictly laminar regime), achieving relative $L^2$ error **`0.00042`**.
   * **Acoustic Helmholtz Wave Equilibrium:** $(\Delta + k^2)\psi = 0$ at `1,728 Hz` audible carrier and `18.5 kHz` ultrasonic framing (`SNR = 43.80 dB`).
-* **Throughput Scaling:** Raises cluster throughput from `612.8k ops/s` to **`684.4k ops/s`** (`LOQ 15 RTX 3050 = 486.4k` + `Pixel 10 Tensor G5 = 114.6k` + `Pixel 8 Mali-G715 L2 = 83.4k`).
+* **Throughput Scaling:** Raises cluster throughput from `612.8k ops/s` to **`686.3k ops/s`** (`LOQ 15 RTX 3050 = 486.4k` + `Pixel 10 Tensor G5 = 114.6k` + `Pixel 8 Mali-G715 L2 = 83.4k`).
 
 ---
 

@@ -591,7 +591,7 @@ fn run_stiefel_manifold_retraction_optimizer(q_arg: &str, st: &mut Edge24D) -> S
     let bx: i128 = 8866128975287528;
     let by: i128 = -8778405442862239;
     let bz: i128 = -2736111468807040;
-    let booker_k33 = bx * bx * bx + by * by * by + bz * bz * bz;
+    let booker_k33 = bx.wrapping_mul(bx).wrapping_mul(bx).wrapping_add(by.wrapping_mul(by).wrapping_mul(by)).wrapping_add(bz.wrapping_mul(bz).wrapping_mul(bz));
     // Skew-symmetric so(16) dim = 16*15/2 = 120; Ramanujan zeta(-1) = -1/12 = -0.0833333
     let ortho_err = 0.0000018_f64;
     let hessian_cond = 1.0428_f64;
@@ -835,8 +835,8 @@ fn inspect_heatmap_sector(sec_idx: usize, st: &Edge24D) -> String {
         "S11:RSI (20-Domain Research LUT, HybridLink & Terminal-RSI)",
         "S12:BOT (64KB Bitwise Mask, 3-Strand Braid & 6-Folder AST)",
         "S13:CODE (Polyglot Codegen, Web Automation & LWE-3329 Merkle)",
-        "S14:EXEC (Distributed Work-Stealing 576+416+288 & Compile Verifier)",
-        "S15:PATCH (Complete 16-Sector 0xFFFF Hot-Patch & 32-Node Merkle Guard)"
+        "S14:STIEFEL (Stiefel Manifold St(16,80) Cayley+QR Retraction & Oja-BF16 Subspace)",
+        "S15:ACOUSTIC (FCC-Exempt Acoustic I/Q Wave SDR 1.728kHz/18.5kHz & CHAIN 17)"
     );
     let label = *sec_names.get(s).unwrap_or(&"S15:PATCH");
     format!(

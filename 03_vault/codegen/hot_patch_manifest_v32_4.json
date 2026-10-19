@@ -1,0 +1,1 @@
+{"status":"HOT_PATCH_STAGED_AND_VERIFIED","tool":"tool:autonomous_hot_patch_engine","patch_id":22232,"query":"stiefel_acoustic_603010_v32_4","sh4z_schema":3204,"sector":15,"sector_mask":"0xFFFF","merkle_tree_nodes":32,"merkle_root_hex":"0x4B78051F","lwe_modulus":3329,"zero_downtime_swap_ms":0.24,"rollback_guard":true,"target_files":6,"orphan_files":0}

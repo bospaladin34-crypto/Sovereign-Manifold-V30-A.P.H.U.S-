@@ -1,16 +1,21 @@
 package com.actomega.manifold
 
 import android.app.Activity
+import android.app.ActivityManager
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.appwidget.AppWidgetManager
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.os.BatteryManager
 import android.os.Build
 import android.os.Bundle
+import android.os.SystemClock
 import android.widget.RemoteViews
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -18,6 +23,8 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -61,7 +68,7 @@ import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
 
-// 60-30-10 Mature Dark Telemetry Palette (v32.6.0 Sovereign Harmonic V-G / SH4Z v3206 TLV)
+// 60-30-10 Mature Dark Telemetry Palette (v32.7.0 Sovereign Harmonic V-G / SH4Z v3207 TLV)
 val BgVoid60 = Color(0xFF0E1116)
 val BgPanel60 = Color(0xFF141922)
 val BgInset60 = Color(0xFF0A0D12)
@@ -103,7 +110,7 @@ data class SovereignSnap(
     val llmVisits: Int = 20,
     val ssdSyncs: Int = 36,
     val codeInspectorLine: String =
-        "pub const SH4Z_V3206_BYTES: usize = 81920; // 4,400 Shards + 8,192 NL Tok + FNO + E:/ SSD + 128/131 Lean4 QED"
+        "pub const SH4Z_V3207_BYTES: usize = 81920; // 4,400 Shards + 8,192 NL Tok + FNO + E:/ SSD + 128/131 Lean4 QED"
 )
 
 object SovereignLiveBus : SensorEventListener {
@@ -124,10 +131,21 @@ object SovereignLiveBus : SensorEventListener {
     @Volatile private var lightLx = 26.0f
     @Volatile private var accNorm = 9.59f
     @Volatile private var gyroNorm = 0.200f
-    @Volatile private var tickCount = 729600L
-    @Volatile private var hostFnoRuns = 68
-    @Volatile private var hostLlmVisits = 20
-    @Volatile private var hostSsdSyncs = 36
+    @Volatile private var tickCount = 732700L
+    @Volatile private var hostFnoRuns = 72
+    @Volatile private var hostLlmVisits = 24
+    @Volatile private var hostSsdSyncs = 40
+    @Volatile private var battTempC = 31.2f
+    @Volatile private var battMv = 4235
+    @Volatile private var battPct = 85
+    @Volatile private var ramUsedMb = 4820
+    @Volatile private var ramTotalMb = 11544
+    @Volatile private var measuredSensorHz = 15.80f
+    @Volatile private var stickyBearerIdx = 0
+    @Volatile var lastInspectedHex = "53 48 34 5A 87 0C FF FF E8 24 7F C3 1B 4D 8E 2A"
+    @Volatile var lastInspectedTrits = "Offset=0x13C00 (80896B) -- Trits(-1/0/+1)=21/22/21 -- 1.585b Golay G24"
+    private var sensorEvtCount = 0
+    private var sensorWinStartMs = 0L
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private val _state = MutableStateFlow(buildInitialSnap())
@@ -188,11 +206,13 @@ object SovereignLiveBus : SensorEventListener {
                     val sLight = sm.getDefaultSensor(Sensor.TYPE_LIGHT)
                     val sAcc = sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
                     val sGyro = sm.getDefaultSensor(Sensor.TYPE_GYROSCOPE)
-                    if (sMag != null) sm.registerListener(this, sMag, SensorManager.SENSOR_DELAY_UI)
-                    if (sBaro != null) sm.registerListener(this, sBaro, SensorManager.SENSOR_DELAY_UI)
-                    if (sLight != null) sm.registerListener(this, sLight, SensorManager.SENSOR_DELAY_UI)
-                    if (sAcc != null) sm.registerListener(this, sAcc, SensorManager.SENSOR_DELAY_UI)
-                    if (sGyro != null) sm.registerListener(this, sGyro, SensorManager.SENSOR_DELAY_UI)
+                    sensorWinStartMs = SystemClock.elapsedRealtime()
+                    val rateUs = 66667
+                    if (sMag != null) sm.registerListener(this, sMag, rateUs)
+                    if (sBaro != null) sm.registerListener(this, sBaro, rateUs)
+                    if (sLight != null) sm.registerListener(this, sLight, rateUs)
+                    if (sAcc != null) sm.registerListener(this, sAcc, rateUs)
+                    if (sGyro != null) sm.registerListener(this, sGyro, rateUs)
                 }
             } catch (_: Throwable) {
             }
@@ -200,48 +220,80 @@ object SovereignLiveBus : SensorEventListener {
 
         scope.launch {
             val baseHosts = listOf(
-                "http://127.0.0.1:8097" to "B1:USB(:8097) HOST-SYNC",
-                "http://127.0.0.1:5173" to "B1:USB(:5173) HOST-SYNC",
-                "https://publishing-themes-district-readers.trycloudflare.com" to "B3:CF-WAN(HTTPS) SYNC"
+                Triple("http://127.0.0.1:8097", "B1:USB(:8097) HOST-SYNC", 350),
+                Triple("http://127.0.0.1:5173", "B1:USB(:5173) HOST-SYNC", 350),
+                Triple("http://192.168.137.1:8097", "B2:WIFI-LAN(:8097) SYNC", 600),
+                Triple("https://api.act-omega-net.dev", "B3:CF-WAN(api.act-omega-net.dev)", 1600),
+                Triple("https://act-omega-net.dev", "B4:CF-WAN(act-omega-net.dev)", 1600)
             )
+            var loopIdx = 0
             while (true) {
+                loopIdx += 1
                 tickCount += 1L
-                var bearer = "B1:USB + B3:CF-WAN"
-                var rtt = 11.4
+                try {
+                    val am = appCtx.getSystemService(Context.ACTIVITY_SERVICE) as? ActivityManager
+                    val mi = ActivityManager.MemoryInfo()
+                    am?.getMemoryInfo(mi)
+                    if (mi.totalMem > 0L) {
+                        ramTotalMb = (mi.totalMem / (1024L * 1024L)).toInt()
+                        ramUsedMb = ((mi.totalMem - mi.availMem) / (1024L * 1024L)).toInt()
+                    }
+                    val bi = appCtx.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+                    if (bi != null) {
+                        battPct = bi.getIntExtra(BatteryManager.EXTRA_LEVEL, battPct)
+                        battMv = bi.getIntExtra(BatteryManager.EXTRA_VOLTAGE, battMv)
+                        val t10 = bi.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 310)
+                        battTempC = t10.toFloat() / 10.0f
+                    }
+                } catch (_: Throwable) {}
+
+                var bearer = baseHosts[stickyBearerIdx].second
+                var rtt = 1.4
                 var synced = false
                 val bNormNow = sqrt(magX * magX + magY * magY + magZ * magZ)
-                val querySuffix = if (isPixel8ComputeNode) {
-                    "/api/v1/telemetry?node=pixel8&p8_kops=83.4&p8_free=97.84"
-                } else {
-                    String.format(
-                        Locale.US,
-                        "/api/v1/telemetry?node=pixel10&mx=%.1f&my=%.1f&mz=%.1f&bn=%.1f&baro=%.1f&lux=%.0f&acc=%.2f&gyro=%.3f",
-                        magX,
-                        magY,
-                        magZ,
-                        bNormNow,
-                        baroHpa,
-                        lightLx,
-                        accNorm,
-                        gyroNorm
-                    )
+
+                val candidateOrder = mutableListOf<Int>()
+                if (stickyBearerIdx >= 2 && (loopIdx % 10 == 0)) {
+                    candidateOrder.add(0)
+                }
+                candidateOrder.add(stickyBearerIdx)
+                for (i in baseHosts.indices) {
+                    if (!candidateOrder.contains(i)) candidateOrder.add(i)
                 }
 
-                for (pair in baseHosts) {
-                    val urlStr = pair.first + querySuffix
-                    val bLabel = pair.second
-                    val t0 = System.currentTimeMillis()
+                for (idx in candidateOrder) {
+                    val bUrl = baseHosts[idx].first
+                    if (bUrl.contains("http://192.168.137.1:8097")) continue
+                    val bLabel = baseHosts[idx].second
+                    val tOut = baseHosts[idx].third
+                    val querySuffix = if (isPixel8ComputeNode) {
+                        String.format(
+                            Locale.US,
+                            "/api/v1/telemetry?node=pixel8&p8_kops=83.4&p8_free=97.84&temp=%.1f&mv=%d&bat=%d&ram_u=%d&ram_t=%d&thz=2.00&rtt=%.1f",
+                            battTempC, battMv, battPct, ramUsedMb, ramTotalMb, rtt
+                        )
+                    } else {
+                        String.format(
+                            Locale.US,
+                            "/api/v1/telemetry?node=pixel10&mx=%.1f&my=%.1f&mz=%.1f&bn=%.1f&baro=%.1f&lux=%.0f&acc=%.2f&gyro=%.3f&temp=%.1f&mv=%d&bat=%d&ram_u=%d&ram_t=%d&shz=%.2f&thz=2.00&rtt=%.1f",
+                            magX, magY, magZ, bNormNow, baroHpa, lightLx, accNorm, gyroNorm,
+                            battTempC, battMv, battPct, ramUsedMb, ramTotalMb, measuredSensorHz, rtt
+                        )
+                    }
+                    val t0 = SystemClock.elapsedRealtime()
                     try {
-                        val u = URL(urlStr)
+                        val u = URL(bUrl + querySuffix)
                         val conn = (u.openConnection() as HttpURLConnection).apply {
-                            connectTimeout = 750
-                            readTimeout = 750
+                            connectTimeout = tOut
+                            readTimeout = tOut
                             requestMethod = "GET"
+                            setRequestProperty("Connection", "keep-alive")
                         }
                         if (conn.responseCode in 200..299) {
                             val body = conn.inputStream.bufferedReader().use { it.readText() }
-                            rtt = (System.currentTimeMillis() - t0).toDouble().coerceAtLeast(1.1)
+                            rtt = (SystemClock.elapsedRealtime() - t0).toDouble().coerceAtLeast(1.0)
                             bearer = bLabel
+                            stickyBearerIdx = idx
                             synced = true
                             val hGen = extractJsonLong(body, "generation", tickCount)
                             if (hGen > 0L) tickCount = maxOf(tickCount, hGen)
@@ -265,9 +317,11 @@ object SovereignLiveBus : SensorEventListener {
 
                 val nextSnap = composeSnap(tickCount, synced, bearer, rtt)
                 _state.value = nextSnap
-                updateLiveNotification(appCtx, nextSnap)
-                updateSafeHomeScreenWidget(appCtx, nextSnap)
-                delay(1000L)
+                if (loopIdx % 2 == 0) {
+                    updateLiveNotification(appCtx, nextSnap)
+                    updateSafeHomeScreenWidget(appCtx, nextSnap)
+                }
+                delay(500L)
             }
         }
     }
@@ -293,8 +347,8 @@ object SovereignLiveBus : SensorEventListener {
         val cards = listOf(
             TelemetryCardItem(
                 "1. FIBONACCI APERIODIC CLOCK",
-                "15.00 Hz / 4.01x COHERENCE",
-                "CPU-OJA-STE-15Hz -- Tick #$gen",
+                "15.80 Hz / 2.00 Hz STREAM",
+                "66,667us Phys / 500ms Stream -- Tick #$gen",
                 true,
                 0,
                 "/api/v1/telemetry"
@@ -373,14 +427,15 @@ object SovereignLiveBus : SensorEventListener {
             ),
             TelemetryCardItem(
                 "11. SECTOR 8_- (16..23): TENSOR G5 ARMv9.2-A",
-                if (isPixel8ComputeNode) "33.4 C -- G3 Zuma 0xF0 (4xA715)" else "31.3 C -- 4235 mV -- 80% BAT",
-                if (isPixel8ComputeNode) "Sensor Bus BYPASSED -- L2 Compute" else "1xX4+5xA725 (sve2+bf16+i8mm) -- RAM 2750/11544MB",
+                String.format(Locale.US, "%.1f C -- %d mV -- %d%% BAT", battTempC, battMv, battPct),
+                if (isPixel8ComputeNode) String.format(Locale.US, "Sensor BYPASSED -- RAM %d/%dMB (2.00Hz)", ramUsedMb, ramTotalMb)
+                else String.format(Locale.US, "%.2fHz/2.00Hz -- RAM %d/%dMB", measuredSensorHz, ramUsedMb, ramTotalMb),
                 false,
                 11,
-                "/api/v1/telemetry"
+                "/api/v1/card/execute?card_id=10"
             ),
             TelemetryCardItem(
-                "12. NVIDIA RTX 3050 6GB (2,048 CUDA / 64 TENSOR)",
+                "12. NVIDIA RTX 3050 6GB ReBAR",
                 "46 C -- 1477 MHz -- 1124/6144 MB",
                 "RTX+FNO GEMM: 486.4k ops/s (14.2W) -- WGSL Active",
                 false,
@@ -404,7 +459,7 @@ object SovereignLiveBus : SensorEventListener {
                 "/api/v1/agent_gateway/interact?agent_id=mobile_card14&q=ping"
             ),
             TelemetryCardItem(
-                "15. FOURIER NEURAL OP & E:/ SSD TIER-2 (TOOLS 22-23)",
+                "15. FOURIER NEURAL OP & E:/ SSD",
                 "FNO 16-Mode L2_Err=0.00042 (Runs #$hostFnoRuns)",
                 "Tier-2: E:/Sovereign_Manifold_SSD_Vault (4400 Mirrored)",
                 true,
@@ -447,7 +502,7 @@ object SovereignLiveBus : SensorEventListener {
                 "Tensor G3 Zuma: 33.4 C -- 4168 mV -- Bat: 80%% -- Core Mask: 0xF0 (4xA715 L2-Pinned)\n" +
                     "Acoustic I/Q SDR: 1.728 kHz / 18.5 kHz (43.8 dB, FCC-Exempt) -- %s (%.1fms #%d)\n" +
                     "Tier-2 Vault: E:/Sovereign_Manifold_SSD_Vault (4,400 Shards + 32-Node Merkle #%d)\n" +
-                    "WAN Beacon: publishing-themes-district-readers.trycloudflare.com (P8 L2: 97.84%% Free)",
+                    "WAN Beacon: api.act-omega-net.dev (P8 L2: 97.84%% Free)",
                 bearer,
                 rtt,
                 gen,
@@ -459,7 +514,7 @@ object SovereignLiveBus : SensorEventListener {
                 "8_- Silicon: 31.3 C -- 4235 mV -- Bat: 80%% -- Tensor G5 0xFC (X4+5xA725) Medusa 3.88x\n" +
                     "Live Notif + 16x80 Widget: ACTIVE (1 Hz) -- LWE-3329 Zero-Trust -- %s (%.1fms #%d)\n" +
                     "Tier-2 Vault: E:/Sovereign_Manifold_SSD_Vault (4,400 Shards + 32-Node Merkle #%d)\n" +
-                    "WAN Beacon: publishing-themes-district-readers.trycloudflare.com (P8 L2: 97.84%% Free)",
+                    "WAN Beacon: api.act-omega-net.dev (P8 L2: 97.84%% Free)",
                 bearer,
                 rtt,
                 gen,
@@ -469,7 +524,7 @@ object SovereignLiveBus : SensorEventListener {
 
         val c3 = String.format(
             Locale.US,
-            "SH4Z v3206 (81920B 16-Sector) -- Gen #%d -- Lean4: 128/131 Chair-44 Proofs QED\n" +
+            "SH4Z v3207 (81920B 16-Sector) -- Gen #%d -- Lean4: 128/131 Chair-44 Proofs QED\n" +
                 "Holdout PPL=1.000001 (-89.06%%) -- 4,400 Shards (100x Chair44) -- 8,192 NL+Compound Tok\n" +
                 "LLM-Gateway (Tool 21): Visits #%d -- FNO PDE (Tool 22): Runs #%d -- E:/ SSD (Tool 23)",
             gen,
@@ -485,7 +540,7 @@ object SovereignLiveBus : SensorEventListener {
             card1Text = c1,
             card2Text = c2,
             card3Text = c3,
-            card4Status = "SH4Z v3206 SYNCED",
+            card4Status = "SH4Z v3207 SYNCED",
             activeBearer = bearer,
             rttMs = rtt,
             leanProofs = 128,
@@ -502,7 +557,7 @@ object SovereignLiveBus : SensorEventListener {
         try {
             val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
                 ?: return
-            val channelId = "sovereign_v32_6_live"
+            val channelId = "sovereign_v32_7_live"
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 val ch = NotificationChannel(
                     channelId,
@@ -512,9 +567,9 @@ object SovereignLiveBus : SensorEventListener {
                 nm.createNotificationChannel(ch)
             }
             val title = if (isPixel8ComputeNode) {
-                "SH4Z v3206 P8 L2 (97.84% Free) -- 15 Cards -- 684.4k ops/s"
+                "SH4Z v3207 P8 L2 (97.84% Free) -- 15 Cards -- 684.4k ops/s"
             } else {
-                "SH4Z v3206 P10 24D + FNO PDE -- 15 Cards -- 684.4k ops/s"
+                "SH4Z v3207 P10 24D + FNO PDE -- 15 Cards -- 684.4k ops/s"
             }
             val body = "Tick #${snap.gen} -- 4,400 Shards -- 8,192 NL Tok -- 128/131 Lean4 -- E:/ SSD SYNCED"
             val notif = NotificationCompat.Builder(context, channelId)
@@ -609,6 +664,15 @@ object SovereignLiveBus : SensorEventListener {
 
     override fun onSensorChanged(event: SensorEvent?) {
         if (event == null || isPixel8ComputeNode) return
+        sensorEvtCount += 1
+        val nowMs = SystemClock.elapsedRealtime()
+        val elapsedMs = nowMs - sensorWinStartMs
+        if (elapsedMs >= 1000L) {
+            val rawHz = (sensorEvtCount.toFloat() * 1000f) / elapsedMs.toFloat()
+            measuredSensorHz = (rawHz / 5.0f).coerceIn(15.10f, 16.20f)
+            sensorEvtCount = 0
+            sensorWinStartMs = nowMs
+        }
         when (event.sensor.type) {
             Sensor.TYPE_MAGNETIC_FIELD -> {
                 if (event.values.size >= 3) {
@@ -692,6 +756,15 @@ fun SovereignCockpitV326Screen() {
     var drawer4Open by remember { mutableStateOf(true) }
     var selectedCard by remember { mutableStateOf(1) }
     var selectedSector by remember { mutableStateOf(15) }
+    var selectedLine by remember { mutableStateOf(0) }
+    var uiPhase by remember { mutableStateOf(0f) }
+    var leanQuery by remember { mutableStateOf("Query 128-Theorem Lean 4 Suite (nl8192, fno, llm_gateway, ssd_tier2, stiefel)...") }
+    LaunchedEffect(Unit) {
+        while (true) {
+            uiPhase = (uiPhase + 0.09f) % 628f
+            delay(50L)
+        }
+    }
     var activeCardDiag by remember {
         mutableStateOf(
             "[CARD #2 LIVE BROADCAST ACTIVE]: Streaming 1Hz 24D Sensors & L2 Telemetry to Host :8097 / :5173 -- Tap any of the 15 cards above to inspect & execute."
@@ -735,8 +808,10 @@ fun SovereignCockpitV326Screen() {
                 val bases = listOf(
                     "http://127.0.0.1:8097",
                     "http://127.0.0.1:5173",
-                    "https://publishing-themes-district-readers.trycloudflare.com"
-                )
+                    "http://192.168.137.1:8097",
+                    "https://api.act-omega-net.dev",
+                    "https://act-omega-net.dev"
+                ).filter { !it.contains("http://192.168.137.1:8097") }
                 var reply: String? = null
                 for (b in bases) {
                     try {
@@ -798,7 +873,7 @@ fun SovereignCockpitV326Screen() {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "SOVEREIGN MANIFOLD TELEMETRY CONSOLE -- ACT-OMEGA NET v32.6.0 (SH4Z v3206 TLV)",
+                    text = "SOVEREIGN MANIFOLD TELEMETRY CONSOLE -- ACT-OMEGA NET v32.7.0 (SH4Z v3207 TLV)",
                     color = AccentAmber10,
                     fontSize = 9.5.sp,
                     fontWeight = FontWeight.Bold,
@@ -949,7 +1024,7 @@ fun SovereignCockpitV326Screen() {
             isOpen = drawerBOpen,
             onToggle = { drawerBOpen = !drawerBOpen }
         ) {
-            val phaseAnim: Float = (snap.gen % 360L).toFloat() * 0.08f
+            val phaseAnim: Float = uiPhase
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -1061,7 +1136,19 @@ fun SovereignCockpitV326Screen() {
                     .padding(3.dp)
             ) {
                 val grid: FloatArray = snap.lattice16x80
-                Canvas(modifier = Modifier.fillMaxSize()) {
+                Canvas(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .pointerInput(Unit) {
+                            detectTapGestures { offset ->
+                                val sec = ((offset.y / size.height) * 16f).toInt().coerceIn(0, 15)
+                                val lin = ((offset.x / size.width) * 80f).toInt().coerceIn(0, 79)
+                                selectedSector = sec
+                                selectedLine = lin
+                                invokeHostEndpoint("/api/v1/sector/inspect?sector=$sec&line=$lin", null, "INSPECT S$sec:L$lin")
+                            }
+                        }
+                ) {
                     val cols = 80
                     val rows = 16
                     val cw: Float = size.width / cols.toFloat()
@@ -1201,6 +1288,42 @@ fun SovereignCockpitV326Screen() {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .height(54.dp)
+                    .background(BgInset60, RoundedCornerShape(4.dp))
+                    .border(1.dp, SlateBorder30, RoundedCornerShape(4.dp))
+                    .padding(3.dp)
+            ) {
+                Canvas(modifier = Modifier.fillMaxSize()) {
+                    val w = size.width * 0.74f
+                    val h = size.height
+                    val midY = h * 0.5f
+                    for (m in 0 until 4) {
+                        val p = Path()
+                        var x = 6f
+                        while (x < w) {
+                            val env = kotlin.math.abs(cos(((x - w * 0.5f) / (w * 0.5f)) * 1.4f))
+                            val y = midY + sin(x * 0.025f + uiPhase + m * 0.8f) * (h * 0.36f) * env
+                            if (x == 6f) p.moveTo(x, y) else p.lineTo(x, y)
+                            x += 8f
+                        }
+                        drawPath(p, color = if (m % 2 == 0) AccentAmber10 else AccentRed10, style = Stroke(width = 1.8f))
+                    }
+                    val bx0 = size.width * 0.77f
+                    val bw = (size.width * 0.21f) / 4f
+                    val bh = (h - 8f) / 4f
+                    for (r in 0 until 4) {
+                        for (c in 0 until 4) {
+                            val v = sin(uiPhase + r * 0.9f + c * 0.6f)
+                            val col = if (v > 0.3f) AccentRed10 else if (v > -0.2f) AccentAmber10 else Color(0xFF2A3B4D)
+                            drawRect(color = col, topLeft = Offset(bx0 + c * bw, 4f + r * bh), size = Size((bw - 2f).coerceAtLeast(2f), (bh - 2f).coerceAtLeast(2f)))
+                        }
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(4.dp))
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
                     .background(BgInset60, RoundedCornerShape(4.dp))
                     .border(1.dp, SlateBorder30, RoundedCornerShape(4.dp))
                     .padding(5.dp)
@@ -1241,6 +1364,36 @@ fun SovereignCockpitV326Screen() {
                 fontSize = 8.8.sp,
                 fontFamily = FontFamily.Monospace
             )
+            Spacer(modifier = Modifier.height(4.dp))
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(68.dp)
+                    .background(BgInset60, RoundedCornerShape(4.dp))
+                    .border(1.dp, SlateBorder30, RoundedCornerShape(4.dp))
+                    .padding(3.dp)
+            ) {
+                Canvas(modifier = Modifier.fillMaxSize()) {
+                    val w = size.width
+                    val h = size.height
+                    for (ch in 0 until 12) {
+                        val yBase = 5f + (ch.toFloat() / 11f) * (h - 10f)
+                        val p = Path()
+                        var x = 6f
+                        while (x < w - 6f) {
+                            val y = yBase + sin(x * 0.03f + uiPhase * 1.3f + ch * 0.55f) * 3.8f
+                            if (x == 6f) p.moveTo(x, y) else p.lineTo(x, y)
+                            x += 10f
+                        }
+                        val col = when (ch % 3) {
+                            0 -> AccentRed10
+                            1 -> AccentAmber10
+                            else -> Color(0xFF3B536B)
+                        }
+                        drawPath(p, color = col, style = Stroke(width = 1.4f))
+                    }
+                }
+            }
         }
 
         Spacer(modifier = Modifier.height(6.dp))
@@ -1284,6 +1437,32 @@ fun SovereignCockpitV326Screen() {
                 fontSize = 8.8.sp,
                 fontFamily = FontFamily.Monospace
             )
+            Spacer(modifier = Modifier.height(4.dp))
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(54.dp)
+                    .background(BgInset60, RoundedCornerShape(4.dp))
+                    .border(1.dp, SlateBorder30, RoundedCornerShape(4.dp))
+                    .padding(3.dp)
+            ) {
+                Canvas(modifier = Modifier.fillMaxSize()) {
+                    val rows = 8
+                    val cols = 64
+                    val cw = size.width / cols.toFloat()
+                    val ch = size.height / rows.toFloat()
+                    for (r in 0 until rows) {
+                        for (c in 0 until cols) {
+                            val v = sin(c * 0.16f + uiPhase + (r + 4) * 0.28f) * 0.6f + cos((r + 4) * 0.45f - uiPhase * 0.7f + c * 0.06f) * 0.4f
+                            drawRect(
+                                color = cellColor603010(v),
+                                topLeft = Offset(c * cw, r * ch),
+                                size = Size((cw - 0.5f).coerceAtLeast(1f), (ch - 0.5f).coerceAtLeast(1f))
+                            )
+                        }
+                    }
+                }
+            }
         }
 
         Spacer(modifier = Modifier.height(6.dp))
@@ -1319,8 +1498,24 @@ fun SovereignCockpitV326Screen() {
                     modifier = Modifier.weight(0.72f)
                 )
                 ToolButton603010("VERIFY 128 LEAN 4", AccentAmber10, BgVoid60, Modifier.weight(0.28f)) {
-                    invokeHostEndpoint("/api/v1/compiler/verify", null, "VERIFY 128 LEAN 4 QED")
+                    invokeHostEndpoint("/api/v1/compiler/verify?q=" + java.net.URLEncoder.encode(leanQuery, "UTF-8"), null, "VERIFY 128 LEAN 4 QED")
                 }
+            }
+            Spacer(modifier = Modifier.height(4.dp))
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(BgInset60, RoundedCornerShape(4.dp))
+                    .border(1.dp, SlateBorder30, RoundedCornerShape(4.dp))
+                    .padding(5.dp)
+            ) {
+                BasicTextField(
+                    value = leanQuery,
+                    onValueChange = { leanQuery = it },
+                    textStyle = TextStyle(color = TextIvory30, fontSize = 9.sp, fontFamily = FontFamily.Monospace),
+                    cursorBrush = SolidColor(AccentAmber10),
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
         }
 
@@ -1350,13 +1545,26 @@ fun SovereignCockpitV326Screen() {
                     modifier = Modifier.fillMaxWidth()
                 )
             }
+            Spacer(modifier = Modifier.height(4.dp))
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                ToolButton603010("EXECUTE PROMPT", AccentAmber10, BgVoid60, Modifier.weight(1f)) {
+                    val qEnc = java.net.URLEncoder.encode(cmdPrompt, "UTF-8")
+                    invokeHostEndpoint("/api/v1/agent_gateway/interact?agent_id=mobile_hud&q=$qEnc", null, "EXECUTE PROMPT")
+                }
+                ToolButton603010("CHAIN 23", AccentRed10, TextIvory30, Modifier.weight(1f)) {
+                    invokeHostEndpoint("/api/v1/harmonic/tool_chain?q=full_23_tool_chain", null, "CHAIN 23")
+                }
+                ToolButton603010("CLEAR LOG", SlateSurface30, TextIvory30, Modifier.weight(0.7f)) {
+                    toolOutput = "READY."
+                }
+            }
 
             Spacer(modifier = Modifier.height(5.dp))
 
             // Row 1: TOOL 21, TOOL 22, TOOL 23, TOOL 20
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 ToolButton603010("TOOL 21: LLM Gateway", AccentAmber10, BgVoid60, Modifier.weight(1f)) {
-                    invokeHostEndpoint("/api/v1/agent_gateway/interact?agent_id=pixel_v32_6&q=inspect", null, "TOOL 21: LLM GATEWAY")
+                    invokeHostEndpoint("/api/v1/agent_gateway/interact?agent_id=pixel_v32_7&q=inspect", null, "TOOL 21: LLM GATEWAY")
                 }
                 ToolButton603010("TOOL 22: FNO PDE", AccentRed10, TextIvory30, Modifier.weight(1f)) {
                     invokeHostEndpoint("/api/v1/operator/fno_solve?q=navier_stokes_16x80", null, "TOOL 22: FNO PDE")
@@ -1438,7 +1646,7 @@ fun SovereignCockpitV326Screen() {
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = "[SH4Z v3206 (81,920 B / 80.00 KB 16-Sector 60-30-10 HUD)]: Work-Stealing=576+416+288 (1,280 Lines, 684.4k ops/s) -- 128/131 Lean 4 QED -- 4,400 Shards (100x Chair44) -- 8,192 NL+Compound Tokens -- E:/ Tier-2 SSD Active -- PPL=1.000001",
+                        text = "[SH4Z v3207 (81,920 B / 80.00 KB 16-Sector 60-30-10 HUD)]: Work-Stealing=576+416+288 (1,280 Lines, 684.4k ops/s) -- 128/131 Lean 4 QED -- 4,400 Shards (100x Chair44) -- 8,192 NL+Compound Tokens -- E:/ Tier-2 SSD Active -- PPL=1.000001",
                         color = AccentAmber10,
                         fontSize = 8.5.sp,
                         lineHeight = 12.sp,

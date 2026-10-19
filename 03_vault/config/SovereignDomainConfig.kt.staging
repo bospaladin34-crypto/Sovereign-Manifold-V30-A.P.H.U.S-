@@ -1,0 +1,17 @@
+package com.actomega.manifold
+
+// Single-Source Multi-Subdomain Configuration for Android 17 Mobile Consoles (Pixel 10 & Pixel 8).
+// When switching to the official Cloudflare domain + subdomains, only this file is updated
+// before running `gradlew.bat assembleDebug`, leaving MainActivity.kt 100% untouched.
+object SovereignDomainConfig {
+    const val DEFAULT_WAN_URL: String = "https://publishing-themes-district-readers.trycloudflare.com"
+    const val DEFAULT_WAN_HOST: String = "publishing-themes-district-readers.trycloudflare.com"
+    const val HUD_SUBDOMAIN_URL: String = "https://publishing-themes-district-readers.trycloudflare.com"
+    const val API_SUBDOMAIN_URL: String = "https://publishing-themes-district-readers.trycloudflare.com"
+    const val AGENT_SUBDOMAIN_URL: String = "https://publishing-themes-district-readers.trycloudflare.com"
+    const val WIKI_SUBDOMAIN_URL: String = "https://publishing-themes-district-readers.trycloudflare.com/wiki"
+    const val USB_SWARM_URL: String = "http://127.0.0.1:8097"
+    const val USB_HUD_URL: String = "http://127.0.0.1:5173"
+    const val GITHUB_RAW_BEACON_URL: String =
+        "https://raw.githubusercontent.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-/vesper_production/03_vault/models/cloudflare_wan_url.txt"
+}

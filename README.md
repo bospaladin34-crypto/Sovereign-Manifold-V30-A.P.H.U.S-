@@ -1,6 +1,6 @@
-# ACT-Omega Net v32.6.1 (`Sovereign Harmonic V-G` / `SH4Z v3206 TLV`)
+# ACT-Omega Net v32.7.0 (`Sovereign Harmonic V-G` / `SH4Z v3207 TLV`)
 
-[![ACT-Omega Net](https://img.shields.io/badge/ACT--Omega_Net-v32.6.1_(SH4Z_v3206)-FFB454?style=for-the-badge&labelColor=0E1116)](https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-/releases/tag/v32.6.1-sh5g-v3206-fno-llm-ssd-15cards)
+[![ACT-Omega Net](https://img.shields.io/badge/ACT--Omega_Net-v32.7.0_(SH4Z_v3207)-FFB454?style=for-the-badge&labelColor=0E1116)](https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-/releases/tag/v32.7.0-sh5g-v3207-fno-llm-ssd-15cards)
 [![GitHub Pages](https://img.shields.io/badge/GitHub_Pages-LIVE_PORTAL_%26_LLM_GATEWAY-E94E34?style=for-the-badge&labelColor=0E1116)](https://bospaladin34-crypto.github.io/Sovereign-Manifold-V30-A.P.H.U.S-/)
 [![System Wiki](https://img.shields.io/badge/System_Wiki-WIKI.MD_%26_DOCS%2FWIKI-56D364?style=for-the-badge&labelColor=0E1116)](./WIKI.md)
 [![Lean 4 CIC](https://img.shields.io/badge/Lean_4_CIC-128%2F128_BASE_(131_RUNTIME)_QED-4B6B94?style=for-the-badge&labelColor=0E1116)](./03_vault/lean4/SovereignManifoldTheorems.lean)
@@ -15,7 +15,7 @@
 [![Zero-Bracket Rust](https://img.shields.io/badge/Rust_L0_Swarm-Zero_Square_Brackets_(0_'%5B'_or_'%5D')-E94E34?style=for-the-badge&labelColor=0E1116)](./01_l0_rust/src/bin/v31_swarm.rs)
 [![License: MIT](https://img.shields.io/badge/License-MIT-56D364?style=for-the-badge&labelColor=0E1116)](./LICENSE)
 
-**ACT-Omega Net v32.6.1 (`Sovereign Harmonic V-G` / `SH4Z v3206 TLV`, Release Tag `v32.6.1-sh5g-v3206-fno-llm-ssd-15cards`)** is a hardware-anchored 4-tier topological, geometric, and spectral computing cluster spanning:
+**ACT-Omega Net v32.7.0 (`Sovereign Harmonic V-G` / `SH4Z v3207 TLV`, Release Tag `v32.7.0-sh5g-v3207-fno-llm-ssd-15cards`)** is a hardware-anchored 4-tier topological, geometric, and spectral computing cluster spanning:
 
 1. **Node 1 — Host Workstation:** Lenovo LOQ 15IAX9 (`Intel Core i5-12450HX 4P+4E` + `NVIDIA GeForce RTX 3050 6GB ReBAR` `2,048` CUDA Cores / `64` Tensor Cores, 12GB DDR5, Windows 11, running Rust L0 `v31_swarm.exe` on `:8097` + `:5173` with a live non-blocking `nvidia-smi` GPU telemetry poller, and Cloudflare Post-Quantum `X25519MLKEM768` HTTP/2 Keep-Alive Tunnel: [`https://act-omega-net.dev`](https://act-omega-net.dev)).
 2. **Node 2 — Foreground 24D Sensor + Compute Mobile Console:** Google Pixel 10 (`frankel_beta`, Serial `58170DLCR0004V`, Tensor G5 `3nm ARMv9.2-A sve2+bf16+i8mm`, `0xFC X4+5xA725`, 12GB LPDDR5, Android 17) running the **60–30–10 Mature Dark Telemetry HUD** with all **15 Live Telemetry Cards + Companion Domain Beacon Card (Drawer A)**, **Stiefel `St(16,80)` Vector Scope & FNO Oscilloscope (Drawer B)**, **16x80 Heatmap + 16 Sector Pills (`S0..S15`)**, **In-HUD Browser**, **Drawers 1–4 (23 Tools)**, **Home Screen Widget**, and live **`15.00–15.80 Hz` (`66,667 us`)** 24D Leech Lattice physical sensor transduction streaming at **`2.00 Hz` (`500 ms`)** to the host.
@@ -30,12 +30,12 @@
 * **[Structured Wiki Directory (`wiki/Home.md`)](./wiki/Home.md)** — Modular Wiki pages for GitHub Wiki synchronization.
 * **[Interactive GitHub Pages Portal (`docs/index.html`)](./docs/index.html)** — 60–30–10 Mature Dark Telemetry HUD, 15-Card Live Inspector & Visiting LLM Playground.
 * **[Interactive Wiki Browser Page (`docs/wiki.html`)](./docs/wiki.html)** — Styled HTML Wiki reference hosted on GitHub Pages (`/wiki`).
-* **[Model Card & Verification Ledger (`MODEL_CARD.md`)](./MODEL_CARD.md)** — `SH4Z v3206 TLV` 1.58-bit ternary + E8/Leech/Stiefel + FNO model specifications (`03_vault/models/model_card_sh4z_v3206.json`).
+* **[Model Card & Verification Ledger (`MODEL_CARD.md`)](./MODEL_CARD.md)** — `SH4Z v3207 TLV` 1.58-bit ternary + E8/Leech/Stiefel + FNO model specifications (`03_vault/models/model_card_sh4z_v3207.json`).
 * **[Visiting LLM Discovery Manifest (`docs/llms.txt`)](./docs/llms.txt)** — Machine-readable `llms.txt` and [`docs/agent-manifest.json`](./docs/agent-manifest.json).
 
 ---
 
-## Six Architectural Pillars of `ACT-Omega Net v32.6.1` (`Tracks 32.34–32.40`)
+## Six Architectural Pillars of `ACT-Omega Net v32.7.0` (`Tracks 32.34–32.40`)
 
 | Track | Pillar Name | Core Artifacts & Endpoints | Mathematical & Hardware Invariant |
 | :--- | :--- | :--- | :--- |
@@ -74,7 +74,7 @@ Every card in **Drawer A** on both the Host WebGPU HUD (`:5173`) and Mobile HUDs
 
 ## 4-Tier Hardware & Storage Cluster Architecture
 
-| Tier / Node | Hardware Silicon | Role in `v32.6.1` (`SH4Z v3206 TLV`) | Work-Stealing Slice & Throughput |
+| Tier / Node | Hardware Silicon | Role in `v32.7.0` (`SH4Z v3207 TLV`) | Work-Stealing Slice & Throughput |
 | :--- | :--- | :--- | :--- |
 | **Node 1 (Host L0/L1/L2)** | Lenovo LOQ 15IAX9 (`i5-12450HX` + `RTX 3050 6GB` `2,048` CUDA / `64` Tensor Cores) | Runs `v31_swarm.exe` (`:8097` + `:5173`), WebGPU 16-Mode FNO + Stiefel `St(16,80)` shaders, `nvidia-smi` telemetry poller, and PQ Cloudflare Tunnel | `576 / 1,280` Cachelines (`486.4k–488.0k ops/s`) |
 | **Node 2 (Edge 24D + Compute)** | Google Pixel 10 (`58170DLCR0004V`, Tensor G5 `3nm ARMv9.2-A`, `0xFC X4+5xA725`) | Real-time `15.80 Hz` 24D physical sensor transduction (`8_v` magnetic/baro/opto + `8_+` kinematic) + `2.00 Hz` broadcast + Medusa 4-Head decode | `416 / 1,280` Cachelines (`114.6k–114.7k ops/s`) |
@@ -98,7 +98,7 @@ All WAN domain references are isolated into three single-source files so migrati
 ```bibtex
 @software{sovereign_manifold_v32_6_1_2026,
   author       = {Garlock, Richard},
-  title        = {{ACT-Omega Net v32.6.1 (Sovereign Harmonic V-G / SH4Z v3206 TLV): 4-Tier Tri-Silicon & External SSD Topological Compute Manifold with 16-Mode Fourier Neural Operators, 8,192-Token NL+Compound Lexicon, and Zero-Trust LLM Agent Gateway}},
+  title        = {{ACT-Omega Net v32.7.0 (Sovereign Harmonic V-G / SH4Z v3207 TLV): 4-Tier Tri-Silicon & External SSD Topological Compute Manifold with 16-Mode Fourier Neural Operators, 8,192-Token NL+Compound Lexicon, and Zero-Trust LLM Agent Gateway}},
   month        = oct,
   year         = 2026,
   publisher    = {Zenodo},

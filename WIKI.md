@@ -1,12 +1,12 @@
-# ACT-Omega Net v32.6.1 (`Sovereign Harmonic V-G` / `SH4Z v3206 TLV`) — Master System Wiki
+# ACT-Omega Net v32.7.0 (`Sovereign Harmonic V-G` / `SH4Z v3207 TLV`) — Master System Wiki
 
-Welcome to the official engineering and theoretical Wiki for **ACT-Omega Net v32.6.1 (`Sovereign Harmonic V-G` / `SH4Z v3206 TLV`)**.
+Welcome to the official engineering and theoretical Wiki for **ACT-Omega Net v32.7.0 (`Sovereign Harmonic V-G` / `SH4Z v3207 TLV`)**.
 
 ---
 
-## 1. System Architecture & 16-Sector `SH4Z v3206` Memory Map
+## 1. System Architecture & 16-Sector `SH4Z v3207` Memory Map
 
-The `SH4Z v3206` memory-mapped weight and state manifold consists of **`1,280` cachelines (`81,920` bytes = `16` sectors x `80` cachelines x `64` bytes)** paired with an **`8,768`-byte `.e8f` spectral/quantization footer (`90,688` bytes total `mlock` footprint)**:
+The `SH4Z v3207` memory-mapped weight and state manifold consists of **`1,280` cachelines (`81,920` bytes = `16` sectors x `80` cachelines x `64` bytes)** paired with an **`8,768`-byte `.e8f` spectral/quantization footer (`90,688` bytes total `mlock` footprint)**:
 
 | Sector | Mnemonic | Byte Offset | Primary Mathematical Invariant | Lean 4 Theorems (`SovereignManifoldTheorems.lean`) |
 | :--- | :--- | :--- | :--- | :--- |

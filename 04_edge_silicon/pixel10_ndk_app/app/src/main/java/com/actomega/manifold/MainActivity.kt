@@ -3,6 +3,7 @@ package com.actomega.manifold
 import android.app.Activity
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.appwidget.AppWidgetManager
 import android.content.Context
 import android.hardware.Sensor
 import android.hardware.SensorEvent
@@ -10,6 +11,7 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Build
 import android.os.Bundle
+import android.widget.RemoteViews
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Canvas
@@ -75,11 +77,13 @@ data class TelemetryCardItem(
     val title: String,
     val primary: String,
     val secondary: String,
-    val isAccent: Boolean = false
+    val isAccent: Boolean = false,
+    val sector: Int = 0,
+    val endpoint: String = "/api/v1/telemetry"
 )
 
 data class SovereignSnap(
-    val gen: Long = 729500L,
+    val gen: Long = 729600L,
     val hostSynced: Boolean = true,
     val lattice16x80: FloatArray = FloatArray(1280) { i ->
         sin(i * 0.11f) * cos((i / 80) * 0.37f)
@@ -95,9 +99,9 @@ data class SovereignSnap(
     val totalShards: Int = 4400,
     val p8L2FreePct: Double = 97.84,
     val clusterKops: Double = 684.4,
-    val fnoRuns: Int = 64,
-    val llmVisits: Int = 19,
-    val ssdSyncs: Int = 32,
+    val fnoRuns: Int = 68,
+    val llmVisits: Int = 20,
+    val ssdSyncs: Int = 36,
     val codeInspectorLine: String =
         "pub const SH4Z_V3206_BYTES: usize = 81920; // 4,400 Shards + 8,192 NL Tok + FNO + E:/ SSD + 128/131 Lean4 QED"
 )
@@ -113,24 +117,24 @@ object SovereignLiveBus : SensorEventListener {
     }
 
     @Volatile private var started = false
-    @Volatile private var magX = -23.6f
-    @Volatile private var magY = -42.3f
-    @Volatile private var magZ = -17.2f
-    @Volatile private var baroHpa = 905.4f
-    @Volatile private var lightLx = 18.0f
-    @Volatile private var accNorm = 9.81f
-    @Volatile private var gyroNorm = 0.250f
-    @Volatile private var tickCount = 729500L
-    @Volatile private var hostFnoRuns = 64
-    @Volatile private var hostLlmVisits = 19
-    @Volatile private var hostSsdSyncs = 32
+    @Volatile private var magX = -29.3f
+    @Volatile private var magY = -32.6f
+    @Volatile private var magZ = -30.3f
+    @Volatile private var baroHpa = 903.7f
+    @Volatile private var lightLx = 26.0f
+    @Volatile private var accNorm = 9.59f
+    @Volatile private var gyroNorm = 0.200f
+    @Volatile private var tickCount = 729600L
+    @Volatile private var hostFnoRuns = 68
+    @Volatile private var hostLlmVisits = 20
+    @Volatile private var hostSsdSyncs = 36
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private val _state = MutableStateFlow(buildInitialSnap())
     val state: StateFlow<SovereignSnap> = _state.asStateFlow()
 
     private fun buildInitialSnap(): SovereignSnap {
-        return composeSnap(729500L, true, "B1:USB(:8097/:5173) + B3:CF-WAN", 11.4)
+        return composeSnap(729600L, true, "B1:USB(:8097/:5173) + B3:CF-WAN", 11.4)
     }
 
     private fun extractJsonInt(json: String, key: String, defaultVal: Int): Int {
@@ -139,7 +143,7 @@ object SovereignLiveBus : SensorEventListener {
         if (idx < 0) return defaultVal
         val start = idx + pat.length
         var end = start
-        while (end < json.length && (json[end].isDigit() || json[end] == ' ')) {
+        while (end < json.length && (json[end].isDigit() || json[end] == ' ' || json[end] == '-')) {
             end++
         }
         return json.substring(start, end).trim().toIntOrNull() ?: defaultVal
@@ -151,10 +155,22 @@ object SovereignLiveBus : SensorEventListener {
         if (idx < 0) return defaultVal
         val start = idx + pat.length
         var end = start
-        while (end < json.length && (json[end].isDigit() || json[end] == ' ')) {
+        while (end < json.length && (json[end].isDigit() || json[end] == ' ' || json[end] == '-')) {
             end++
         }
         return json.substring(start, end).trim().toLongOrNull() ?: defaultVal
+    }
+
+    private fun extractJsonFloat(json: String, key: String, defaultVal: Float): Float {
+        val pat = "\"$key\":"
+        val idx = json.indexOf(pat)
+        if (idx < 0) return defaultVal
+        val start = idx + pat.length
+        var end = start
+        while (end < json.length && (json[end].isDigit() || json[end] == '.' || json[end] == '-' || json[end] == ' ')) {
+            end++
+        }
+        return json.substring(start, end).trim().toFloatOrNull() ?: defaultVal
     }
 
     fun start(context: Context) {
@@ -183,18 +199,36 @@ object SovereignLiveBus : SensorEventListener {
         }
 
         scope.launch {
-            val pollUrls = listOf(
-                "http://127.0.0.1:8097/api/v1/telemetry" to "B1:USB(:8097) HOST-SYNC",
-                "http://127.0.0.1:5173/api/v1/telemetry" to "B1:USB(:5173) HOST-SYNC",
-                "https://publishing-themes-district-readers.trycloudflare.com/api/v1/telemetry" to "B3:CF-WAN(HTTPS) SYNC"
+            val baseHosts = listOf(
+                "http://127.0.0.1:8097" to "B1:USB(:8097) HOST-SYNC",
+                "http://127.0.0.1:5173" to "B1:USB(:5173) HOST-SYNC",
+                "https://publishing-themes-district-readers.trycloudflare.com" to "B3:CF-WAN(HTTPS) SYNC"
             )
             while (true) {
                 tickCount += 1L
                 var bearer = "B1:USB + B3:CF-WAN"
                 var rtt = 11.4
                 var synced = false
-                for (pair in pollUrls) {
-                    val urlStr = pair.first
+                val bNormNow = sqrt(magX * magX + magY * magY + magZ * magZ)
+                val querySuffix = if (isPixel8ComputeNode) {
+                    "/api/v1/telemetry?node=pixel8&p8_kops=83.4&p8_free=97.84"
+                } else {
+                    String.format(
+                        Locale.US,
+                        "/api/v1/telemetry?node=pixel10&mx=%.1f&my=%.1f&mz=%.1f&bn=%.1f&baro=%.1f&lux=%.0f&acc=%.2f&gyro=%.3f",
+                        magX,
+                        magY,
+                        magZ,
+                        bNormNow,
+                        baroHpa,
+                        lightLx,
+                        accNorm,
+                        gyroNorm
+                    )
+                }
+
+                for (pair in baseHosts) {
+                    val urlStr = pair.first + querySuffix
                     val bLabel = pair.second
                     val t0 = System.currentTimeMillis()
                     try {
@@ -214,6 +248,15 @@ object SovereignLiveBus : SensorEventListener {
                             hostFnoRuns = extractJsonInt(body, "fno_solve_runs", hostFnoRuns)
                             hostLlmVisits = extractJsonInt(body, "agent_gateway_visits", hostLlmVisits)
                             hostSsdSyncs = extractJsonInt(body, "ssd_tier2_syncs", hostSsdSyncs)
+                            if (isPixel8ComputeNode) {
+                                magX = extractJsonFloat(body, "mag_x", magX)
+                                magY = extractJsonFloat(body, "mag_y", magY)
+                                magZ = extractJsonFloat(body, "mag_z", magZ)
+                                baroHpa = extractJsonFloat(body, "baro_hpa", baroHpa)
+                                lightLx = extractJsonFloat(body, "light_lx", lightLx)
+                                accNorm = extractJsonFloat(body, "acc_norm", accNorm)
+                                gyroNorm = extractJsonFloat(body, "gyro_norm", gyroNorm)
+                            }
                             break
                         }
                     } catch (_: Throwable) {
@@ -223,7 +266,7 @@ object SovereignLiveBus : SensorEventListener {
                 val nextSnap = composeSnap(tickCount, synced, bearer, rtt)
                 _state.value = nextSnap
                 updateLiveNotification(appCtx, nextSnap)
-
+                updateSafeHomeScreenWidget(appCtx, nextSnap)
                 delay(1000L)
             }
         }
@@ -252,91 +295,121 @@ object SovereignLiveBus : SensorEventListener {
                 "1. FIBONACCI APERIODIC CLOCK",
                 "15.00 Hz / 4.01x COHERENCE",
                 "CPU-OJA-STE-15Hz -- Tick #$gen",
-                true
+                true,
+                0,
+                "/api/v1/telemetry"
             ),
             TelemetryCardItem(
                 "2. PIXEL 10 24D MAGNETOMETER",
                 String.format(Locale.US, "(%.1f, %.1f, %.1f) uT", magX, magY, magZ),
                 String.format(Locale.US, "norm(B) = %.1f uT -- Baro %.1f hPa", bNorm, baroHpa),
-                true
+                true,
+                1,
+                "/api/v1/telemetry"
             ),
             TelemetryCardItem(
                 "3. STIEFEL St(16,80) & SHEAF H1",
                 "norm(W^T W - I) = 0.0000018",
                 "Cw=0xA92C40 -- dim H1 = 0",
-                false
+                false,
+                14,
+                "/api/v1/manifold/stiefel_step"
             ),
             TelemetryCardItem(
                 "4. VAULT (4,400) & 8,192 LEXICAL",
                 "4,400 SHARDS (100x CHAIR44)",
                 "8,192 NL+Compound (8-Lang) -- WS=684.4k ops/s",
-                true
+                true,
+                2,
+                "/api/v1/StateGraph"
             ),
             TelemetryCardItem(
                 "5. PIXEL 8 MALI-G715 4.00 MB L2",
                 "29.6 C -- mlock(90,688B) 97.84% FREE",
                 "288/1,280 Lines (83.4k ops/s, 99.9% L2 Hit)",
-                false
+                false,
+                5,
+                "/api/v1/telemetry"
             ),
             TelemetryCardItem(
                 "6. ACOUSTIC I/Q SDR WAVE BUS",
                 "SNR 43.8 dB (1.728 / 18.5 kHz)",
                 "FCC-Exempt 64-QAM Wave -- Cutler #159/536",
-                false
+                false,
+                15,
+                "/api/v1/acoustic/ping"
             ),
             TelemetryCardItem(
                 "7. CLOUDFLARE PQ & SIEM SENTINEL",
                 "0 BREACHES -- H(X)=4.826b/B",
                 "PQ: X25519MLKEM768_FIPS203 -- Pkts #14800",
-                false
+                false,
+                7,
+                "/.well-known/llm-agent.json"
             ),
             TelemetryCardItem(
                 "8. FORMAL VERIFICATION & PPL",
                 "PPL 1.000001 -- 131 PROOFS QED",
                 "128 Base + 3 Runtime Checks -- 27.3ms",
-                true
+                true,
+                9,
+                "/api/v1/compiler/verify"
             ),
             TelemetryCardItem(
                 "9. SECTOR 8_v (0..7): ENV BUS",
                 String.format(Locale.US, "Baro: %.1f hPa -- Lux: %.0f lx", baroHpa, lightLx),
                 "Prox: 5 cm -- Opto: ChR2(+1)",
-                false
+                false,
+                8,
+                "/api/v1/telemetry"
             ),
             TelemetryCardItem(
                 "10. SECTOR 8_+ (8..15): SO(3) KINEMATICS",
                 String.format(Locale.US, "norm(a): %.2f m/s2 -- norm(w): %.2f rad/s", accNorm, gyroNorm),
                 "Lense-Thirring Omega_LT = 0.00027",
-                false
+                false,
+                10,
+                "/api/v1/telemetry"
             ),
             TelemetryCardItem(
                 "11. SECTOR 8_- (16..23): TENSOR G5 ARMv9.2-A",
                 if (isPixel8ComputeNode) "33.4 C -- G3 Zuma 0xF0 (4xA715)" else "31.3 C -- 4235 mV -- 80% BAT",
                 if (isPixel8ComputeNode) "Sensor Bus BYPASSED -- L2 Compute" else "1xX4+5xA725 (sve2+bf16+i8mm) -- RAM 2750/11544MB",
-                false
+                false,
+                11,
+                "/api/v1/telemetry"
             ),
             TelemetryCardItem(
                 "12. NVIDIA RTX 3050 6GB (2,048 CUDA / 64 TENSOR)",
                 "46 C -- 1477 MHz -- 1124/6144 MB",
                 "RTX+FNO GEMM: 486.4k ops/s (14.2W) -- WGSL Active",
-                false
+                false,
+                12,
+                "/api/v1/compute/wgsl"
             ),
             TelemetryCardItem(
                 "13. 8,192 NL+COMPOUND TOKENIZER (TRACK 32.34)",
                 "4,096 NL BPE + 4,096 COMPOUND",
                 "NL<->24D Transduce Calls: #48 -- 100x Chair-44",
-                true
+                true,
+                13,
+                "/api/v1/tokenizer/nl_transduce?q=sovereign+fno"
             ),
             TelemetryCardItem(
                 "14. SAFE LLM AGENT GATEWAY (TOOL 21)",
                 "/.well-known/llm-agent.json + /llms.txt",
                 "Visits #$hostLlmVisits (external_llm_mcp_visitor) -- SIEM Sandboxed",
-                false
+                false,
+                3,
+                "/api/v1/agent_gateway/interact?agent_id=mobile_card14&q=ping"
             ),
             TelemetryCardItem(
                 "15. FOURIER NEURAL OP & E:/ SSD TIER-2 (TOOLS 22-23)",
                 "FNO 16-Mode L2_Err=0.00042 (Runs #$hostFnoRuns)",
                 "Tier-2: E:/Sovereign_Manifold_SSD_Vault (4400 Mirrored)",
-                true
+                true,
+                15,
+                "/api/v1/operator/fno_solve?q=navier_16x80"
             )
         )
 
@@ -456,6 +529,84 @@ object SovereignLiveBus : SensorEventListener {
         }
     }
 
+    fun refreshWidgetsNow(context: Context) {
+        updateSafeHomeScreenWidget(context.applicationContext, _state.value)
+    }
+
+    private fun updateSafeHomeScreenWidget(context: Context, snap: SovereignSnap) {
+        try {
+            val awm = AppWidgetManager.getInstance(context) ?: return
+            val providers = awm.getInstalledProvidersForPackage(context.packageName, null)
+            if (providers.isNullOrEmpty()) return
+
+            val bmpId = context.resources.getIdentifier(
+                "sovereign_widget_live_bmp",
+                "id",
+                context.packageName
+            )
+            val txtId = context.resources.getIdentifier(
+                "sovereign_widget_live_txt",
+                "id",
+                context.packageName
+            )
+            if (bmpId == 0 && txtId == 0) return
+
+            val w = 360
+            val h = 110
+            val bmp = android.graphics.Bitmap.createBitmap(
+                w,
+                h,
+                android.graphics.Bitmap.Config.RGB_565
+            )
+            val canvas = android.graphics.Canvas(bmp)
+            val paint = android.graphics.Paint()
+            paint.style = android.graphics.Paint.Style.FILL
+            paint.color = 0xFF0A0D12.toInt()
+            canvas.drawRect(0f, 0f, w.toFloat(), h.toFloat(), paint)
+
+            val cw = w.toFloat() / 80f
+            val ch = h.toFloat() / 16f
+            val grid = snap.lattice16x80
+            for (r in 0 until 16) {
+                for (c in 0 until 80) {
+                    val idx = r * 80 + c
+                    val v = if (idx < grid.size) grid[idx] else 0f
+                    val norm = ((v + 1f) * 0.5f).coerceIn(0f, 1f)
+                    paint.color = when {
+                        norm > 0.84f -> 0xFFE94E34.toInt()
+                        norm > 0.68f -> 0xFFFFB454.toInt()
+                        norm > 0.48f -> 0xFF3B536B.toInt()
+                        norm > 0.26f -> 0xFF1C2632.toInt()
+                        else -> 0xFF131922.toInt()
+                    }
+                    canvas.drawRect(c * cw, r * ch, (c + 1) * cw - 0.5f, (r + 1) * ch - 0.5f, paint)
+                }
+            }
+
+            val bNorm = sqrt(magX * magX + magY * magY + magZ * magZ)
+            val liveLine = String.format(
+                Locale.US,
+                "Tick #%d -- norm(B)=%.1f uT -- %.1f hPa -- FNORuns #%d -- 684.4k ops/s",
+                snap.gen,
+                bNorm,
+                baroHpa,
+                snap.fnoRuns
+            )
+
+            for (info in providers) {
+                val rv = RemoteViews(context.packageName, info.initialLayout)
+                if (bmpId != 0) {
+                    rv.setImageViewBitmap(bmpId, bmp)
+                }
+                if (txtId != 0) {
+                    rv.setTextViewText(txtId, liveLine)
+                }
+                awm.updateAppWidget(info.provider, rv)
+            }
+        } catch (_: Throwable) {
+        }
+    }
+
     override fun onSensorChanged(event: SensorEvent?) {
         if (event == null || isPixel8ComputeNode) return
         when (event.sensor.type) {
@@ -539,7 +690,13 @@ fun SovereignCockpitV326Screen() {
     var drawer2Open by remember { mutableStateOf(true) }
     var drawer3Open by remember { mutableStateOf(true) }
     var drawer4Open by remember { mutableStateOf(true) }
+    var selectedCard by remember { mutableStateOf(1) }
     var selectedSector by remember { mutableStateOf(15) }
+    var activeCardDiag by remember {
+        mutableStateOf(
+            "[CARD #2 LIVE BROADCAST ACTIVE]: Streaming 1Hz 24D Sensors & L2 Telemetry to Host :8097 / :5173 -- Tap any of the 15 cards above to inspect & execute."
+        )
+    }
 
     var browserUrl by remember { mutableStateOf("https://arxiv.org/abs/1306.0533") }
     var browserStageTrace by remember {
@@ -573,6 +730,7 @@ fun SovereignCockpitV326Screen() {
     fun invokeHostEndpoint(path: String, jsonBody: String?, label: String) {
         scope.launch {
             toolOutput = "[EXEC $label] -> Dispatching across (:8097 / :5173 / WAN)..."
+            activeCardDiag = "[EXEC $label] -> Querying $path ..."
             val res: String? = withContext(Dispatchers.IO) {
                 val bases = listOf(
                     "http://127.0.0.1:8097",
@@ -607,11 +765,14 @@ fun SovereignCockpitV326Screen() {
                 reply
             }
             if (res != null) {
-                val compact = res.replace("\n", " ").replace("\r", " ").replace("  ", " ").take(320)
+                val compact = res.replace("\n", " ").replace("\r", " ").replace("  ", " ").take(300)
                 toolOutput = "[$label OK]: $compact"
+                activeCardDiag = "[$label LIVE OK]: $compact"
             } else {
                 SovereignLiveBus.triggerManualCommand(cmdPrompt)
-                toolOutput = "[$label LOCAL-SYNTH]: 4,400 Shards -- 8,192 NL+Compound Tokens -- 128/131 Lean4 QED -- FNO L2=0.00042 (684.4k ops/s) -- E:/ SSD Tier-2 Mirrored."
+                val synth = "[$label LOCAL-SYNTH]: 4,400 Shards -- 8,192 NL+Compound Tokens -- 128/131 Lean4 QED -- FNO L2=0.00042 (684.4k ops/s) -- E:/ SSD Tier-2 Mirrored."
+                toolOutput = synth
+                activeCardDiag = synth
             }
         }
     }
@@ -651,9 +812,9 @@ fun SovereignCockpitV326Screen() {
                         .padding(horizontal = 6.dp, vertical = 2.dp)
                 ) {
                     Text(
-                        text = if (snap.hostSynced) "SYNC OK" else "LOCAL",
+                        text = if (snap.hostSynced) "BROADCAST OK" else "LOCAL",
                         color = if (snap.hostSynced) StatusOk else AccentAmber10,
-                        fontSize = 8.2.sp,
+                        fontSize = 8.0.sp,
                         fontWeight = FontWeight.Bold,
                         fontFamily = FontFamily.Monospace
                     )
@@ -714,7 +875,7 @@ fun SovereignCockpitV326Screen() {
 
         Spacer(modifier = Modifier.height(6.dp))
 
-        // DRAWER A: TRI-SILICON HARDWARE, 8,192 NL TOKENIZER, LLM AGENT GATEWAY, FNO PDE & E:/ SSD TIER-2 (15 CARDS)
+        // DRAWER A: TRI-SILICON HARDWARE, 8,192 NL TOKENIZER, LLM AGENT GATEWAY, FNO PDE & E:/ SSD TIER-2 (15 INTERACTIVE CARDS)
         DrawerCard603010(
             title = "[-] DRAWER A: TRI-SILICON HARDWARE, 8,192 NL TOKENIZER, LLM AGENT GATEWAY, FNO PDE & E:/ SSD TIER-2 (15 CARDS)",
             accentBorder = SlateBorder30,
@@ -732,15 +893,48 @@ fun SovereignCockpitV326Screen() {
                     val i0 = rowIdx * 2
                     val i1 = i0 + 1
                     if (i0 < cardsList.size) {
-                        MiniTelemetryCard(cardsList[i0], Modifier.weight(1f))
+                        val c0 = cardsList[i0]
+                        MiniTelemetryCard(
+                            item = c0,
+                            isSelected = (selectedCard == i0),
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            selectedCard = i0
+                            selectedSector = c0.sector
+                            invokeHostEndpoint(c0.endpoint, null, c0.title)
+                        }
                     }
                     if (i1 < cardsList.size) {
-                        MiniTelemetryCard(cardsList[i1], Modifier.weight(1f))
+                        val c1 = cardsList[i1]
+                        MiniTelemetryCard(
+                            item = c1,
+                            isSelected = (selectedCard == i1),
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            selectedCard = i1
+                            selectedSector = c1.sector
+                            invokeHostEndpoint(c1.endpoint, null, c1.title)
+                        }
                     } else {
                         Spacer(modifier = Modifier.weight(1f))
                     }
                 }
                 Spacer(modifier = Modifier.height(4.dp))
+            }
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(BgInset60, RoundedCornerShape(4.dp))
+                    .border(1.dp, AccentAmber10, RoundedCornerShape(4.dp))
+                    .padding(5.dp)
+            ) {
+                Text(
+                    text = activeCardDiag,
+                    color = StatusOk,
+                    fontSize = 8.4.sp,
+                    lineHeight = 11.5.sp,
+                    fontFamily = FontFamily.Monospace
+                )
             }
         }
 
@@ -900,7 +1094,10 @@ fun SovereignCockpitV326Screen() {
                         modifier = Modifier
                             .background(if (isSel) AccentRed10 else SlateSurface30, RoundedCornerShape(3.dp))
                             .border(1.dp, if (isSel) AccentAmber10 else SlateBorder30, RoundedCornerShape(3.dp))
-                            .clickable { selectedSector = sIdx }
+                            .clickable {
+                                selectedSector = sIdx
+                                invokeHostEndpoint("/api/v1/StateGraph?q=${sectorNames[sIdx]}", null, "SECTOR ${sectorNames[sIdx]}")
+                            }
                             .padding(horizontal = 6.dp, vertical = 3.dp)
                     ) {
                         Text(
@@ -1262,11 +1459,21 @@ fun SovereignCockpitV326Screen() {
 }
 
 @Composable
-fun MiniTelemetryCard(item: TelemetryCardItem, modifier: Modifier = Modifier) {
+fun MiniTelemetryCard(
+    item: TelemetryCardItem,
+    isSelected: Boolean = false,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit = {}
+) {
     Column(
         modifier = modifier
             .background(BgInset60, RoundedCornerShape(5.dp))
-            .border(1.dp, SlateBorder30, RoundedCornerShape(5.dp))
+            .border(
+                if (isSelected) 1.5.dp else 1.dp,
+                if (isSelected) AccentAmber10 else SlateBorder30,
+                RoundedCornerShape(5.dp)
+            )
+            .clickable { onClick() }
             .padding(6.dp)
     ) {
         Text(

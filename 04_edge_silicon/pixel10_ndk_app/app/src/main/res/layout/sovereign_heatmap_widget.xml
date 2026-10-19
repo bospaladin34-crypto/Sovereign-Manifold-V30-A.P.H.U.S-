@@ -1,13 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/widget_root"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#050914"
-    android:padding="2dp">
+    android:orientation="vertical"
+    android:background="#FF0E1116"
+    android:padding="8dp">
+    <FrameLayout android:id="@+id/widget_root" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
+    <ImageView android:id="@+id/widget_heatmap_img" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="SOVEREIGN MANIFOLD v32.6 (SH4Z v3206) -- 16x80 LIVE WIDGET"
+        android:textColor="#FFFFB454"
+        android:textSize="10sp"
+        android:textStyle="bold"
+        android:fontFamily="monospace" />
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="4,400 Shards (100x Chair44) -- 8,192 NL Tok -- 128/131 Lean4 QED"
+        android:textColor="#FFFFFEFB"
+        android:textSize="8.5sp"
+        android:fontFamily="monospace" />
+    <TextView
+        android:id="@+id/sovereign_widget_live_txt"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Tick #729600 -- 24D Sensors + FNO Re=418.4 -- E:/ SSD SYNCED -- 684.4k ops/s"
+        android:textColor="#FF56D364"
+        android:textSize="8.5sp"
+        android:fontFamily="monospace"
+        android:layout_marginBottom="4dp" />
     <ImageView
-        android:id="@+id/widget_heatmap_img"
+        android:id="@+id/sovereign_widget_live_bmp"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:scaleType="fitXY" />
-</FrameLayout>
+        android:scaleType="fitXY"
+        android:background="#FF141922" />
+</LinearLayout>

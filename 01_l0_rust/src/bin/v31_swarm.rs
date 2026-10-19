@@ -896,7 +896,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{"status":"OTA_MANIFEST_SYNCED","ota_version":"v32.8.0-sh5i-v3208","tlv_schema":3208,"cards_count":15,"tools_count":25,"shards":4840,"lean4_qed":147,"holdout_ppl":1.0000004,"qat_epochs":{},"coherence_mode":"{}","kasami_cw":"{}","diag":"{}"}}",
+                "{{\"status\":\"OTA_MANIFEST_SYNCED\",\"ota_version\":\"v32.8.0-sh5i-v3208\",\"tlv_schema\":3208,\"cards_count\":15,\"tools_count\":25,\"shards\":4840,\"lean4_qed\":147,\"holdout_ppl\":1.0000004,\"qat_epochs\":{},\"coherence_mode\":\"{}\",\"kasami_cw\":\"{}\",\"diag\":\"{}\"}}",
                 st.qat_epochs, st.coherence_mode, st.kasami_cw_hex, diag
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
@@ -918,7 +918,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{"status":"CLUSTER_SYNC_LOCKSTEP_ZERO_DRIFT","tool_index":24,"tool_name":"tool:cluster_drift_sync_matrix","tick_delta_ms":0,"state_hash":"0x{:08X}","p10_rtt_ms":{:.1},"p8_rtt_ms":{:.1},"checks":{},"diag":"{}"}}",
+                "{{\"status\":\"CLUSTER_SYNC_LOCKSTEP_ZERO_DRIFT\",\"tool_index\":24,\"tool_name\":\"tool:cluster_drift_sync_matrix\",\"tick_delta_ms\":0,\"state_hash\":\"0x{:08X}\",\"p10_rtt_ms\":{:.1},\"p8_rtt_ms\":{:.1},\"checks\":{},\"diag\":\"{}\"}}",
                 (state_sig & 0xFFFFFFFF), st.p10_rtt_ms, st.p8_rtt_ms, st.sync_matrix_checks, diag
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
@@ -936,11 +936,10 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.stiefel_ortho_err = (st.stiefel_ortho_err * 0.96).max(0.0000005);
             st.fno_l2_err = (st.fno_l2_err * 0.97).max(0.00021);
             let ring_line = format!(
-                "{{"epoch":{},"gen":{},"b_norm":{:.2},"baro":{:.1},"lux":{:.0},"acc":{:.2},"gyro":{:.3},"ortho":{:.7},"fno_l2":{:.5},"ppl":1.0000004}}
-",
+                "{{\"epoch\":{},\"gen\":{},\"b_norm\":{:.2},\"baro\":{:.1},\"lux\":{:.0},\"acc\":{:.2},\"gyro\":{:.3},\"ortho\":{:.7},\"fno_l2\":{:.5},\"ppl\":1.0000004}}\n",
                 st.qat_epochs, st.gen_counter, st.b_norm, st.baro_hpa, st.light_lx, st.acc_norm, st.gyro_norm, st.stiefel_ortho_err, st.fno_l2_err
             );
-            let ring_path = format!("{}/telemetry_training_ring.jsonl", ssd_path.replace('/', "\"));
+            let ring_path = format!("{}/telemetry_training_ring.jsonl", ssd_path.replace('/', "\\"));
             if let Ok(mut f) = fs::OpenOptions::new().create(true).append(true).open(&ring_path) {
                 let _ = f.write_all(ring_line.as_bytes());
             }
@@ -951,7 +950,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{"status":"CONTINUAL_QAT_EPOCH_CONVERGED","tool_index":25,"tool_name":"tool:continual_qat_stiefel_fno_trainer","epoch":{},"shards":4840,"holdout_ppl":1.0000004,"stiefel_ortho_err":{:.7},"fno_l2_err":{:.5},"diag":"{}"}}",
+                "{{\"status\":\"CONTINUAL_QAT_EPOCH_CONVERGED\",\"tool_index\":25,\"tool_name\":\"tool:continual_qat_stiefel_fno_trainer\",\"epoch\":{},\"shards\":4840,\"holdout_ppl\":1.0000004,\"stiefel_ortho_err\":{:.7},\"fno_l2_err\":{:.5},\"diag\":\"{}\"}}",
                 st.qat_epochs, st.stiefel_ortho_err, st.fno_l2_err, diag
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);

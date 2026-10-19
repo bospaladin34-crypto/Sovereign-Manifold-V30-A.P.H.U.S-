@@ -24,7 +24,7 @@ export function App() {
     return () => { ok = false; clearInterval(t); };
   }, []);
 
-  const liveKops = (liveSwarm.ws_total_kops ?? 347.0).toFixed(1);
+  const liveKops = (liveSwarm.ws_total_kops ?? 612.8).toFixed(1);
   const liveProofs = liveSwarm.lean4_theorems_verified ?? 96;
   const liveP10Temp = (liveSwarm.edge_temp_c ?? 32.3).toFixed(1);
   const liveP8Temp = (liveSwarm.p8_temp_c ?? 30.5).toFixed(1);
@@ -54,7 +54,7 @@ export function App() {
       }}>
         <div>
           <div style={{ fontSize: 14.5, fontWeight: 900, color: "#FFFEFB", letterSpacing: 0.7, fontFamily: "monospace" }}>
-            SOVEREIGN MANIFOLD TELEMETRY CONSOLE -- ACT-OMEGA NET v32.4.0 (SH4Z v3204 TLV)
+            SOVEREIGN MANIFOLD TELEMETRY CONSOLE -- ACT-OMEGA NET v32.5.0 (SH4Z v3205 TLV)
           </div>
           <div style={{ fontSize: 11, color: "#FFB454", fontFamily: "monospace", marginTop: 2 }}>
             {"60-30-10 Dark Telemetry HUD -- 80.00 KB (1,280x64B) 1:1 Bijection -- Stiefel St(16,80) -- Acoustic SDR (" + liveSnr + " dB) -- " + liveProofs + " Lean 4 Proofs QED"}

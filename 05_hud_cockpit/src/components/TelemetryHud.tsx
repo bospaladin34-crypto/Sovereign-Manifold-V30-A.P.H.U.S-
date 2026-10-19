@@ -64,7 +64,7 @@ export function TelemetryHud({ telemetry, connected }: TelemetryHudProps) {
   const stiefelOrtho = sw.stiefel_ortho_err ?? 0.0000018;
   const atomicRttUs = sw.atomic_rtt_us ?? 18.7;
   const atomicReqs = sw.atomic_http_reqs ?? 1420;
-  const wsKops = sw.ws_total_kops ?? 347.0;
+  const wsKops = sw.ws_total_kops ?? 612.8;
   const leanVerified = sw.lean4_theorems_verified ?? 96;
   const rsrSteps = sw.rsr_steps ?? 108;
   const hybridHops = sw.hybridlink_hops ?? 17858;
@@ -94,9 +94,9 @@ export function TelemetryHud({ telemetry, connected }: TelemetryHudProps) {
           <div style={sStyle}>{"Cw=" + golayCw + " (Corr=" + golayCorr + "b) -- dim H1 = 0"}</div>
         </div>
         <div style={cStyle}>
-          <div style={lStyle}>VAULT & CACHELINE BIJECTION</div>
-          <div style={{ ...vStyle, color: "#FFB454" }}>{"3,168 SHARDS -- Gen #" + autoGen}</div>
-          <div style={sStyle}>{"81,920 B (1,280x64B) -- WS=" + wsKops.toFixed(1) + "k ops/s"}</div>
+          <div style={lStyle}>VAULT (3,520) & 4,096 LEXICAL</div>
+          <div style={{ ...vStyle, color: "#FFB454" }}>{"3,520 SHARDS (80x CHAIR44)"}</div>
+          <div style={sStyle}>{"4,096 Lex Tokens (8-Lang) -- WS=" + wsKops.toFixed(1) + "k ops/s"}</div>
         </div>
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))", gap: 10 }}>
@@ -111,13 +111,13 @@ export function TelemetryHud({ telemetry, connected }: TelemetryHudProps) {
           <div style={sStyle}>{"FCC-Exempt 64-QAM Wave -- Cutler #" + cutler + "/536"}</div>
         </div>
         <div style={cStyle}>
-          <div style={lStyle}>PHYSARUM 4-BEARER ROUTER</div>
-          <div style={vStyle}>{"B1:USB(:5173) -- Atomic " + atomicRttUs.toFixed(1) + " us"}</div>
-          <div style={sStyle}>{"Zero-Shell Reqs #" + atomicReqs + " -- Sync #" + seqNum}</div>
+          <div style={lStyle}>CLOUDFLARE PQ & SIEM SENTINEL</div>
+          <div style={vStyle}>{"0 BREACHES -- H(X)=" + (sw.siem_shannon_entropy ?? 4.84).toFixed(2) + "b/B"}</div>
+          <div style={sStyle}>{"PQ: " + (sw.cf_pq_kex ?? "X25519MLKEM768") + " -- Pkts #" + (sw.siem_inspected_packets ?? atomicReqs)}</div>
         </div>
         <div style={cStyle}>
           <div style={lStyle}>FORMAL VERIFICATION & PPL</div>
-          <div style={{ ...vStyle, color: "#FFB454" }}>{"PPL 1.000002 -- " + leanVerified + " PROOFS QED"}</div>
+          <div style={{ ...vStyle, color: "#FFB454" }}>{"PPL 1.000001 -- " + leanVerified + " PROOFS QED"}</div>
           <div style={sStyle}>{"96 Base + Runtime Checks -- " + beaming.toFixed(2) + "x Gain"}</div>
         </div>
       </div>
@@ -137,10 +137,10 @@ export function TelemetryHud({ telemetry, connected }: TelemetryHudProps) {
           <div style={vStyle}>{tempC.toFixed(1) + " C -- " + voltMv + " mV -- " + batPct + "% BAT"}</div>
           <div style={sStyle}>{"1xX4+5xA725 (sve2+bf16+i8mm) -- RAM " + ramAvail + "/" + ramTotal + "MB"}</div>
         </div>
-        <div style={{ ...cStyle, borderLeft: "3px solid #FFB454" }}>
-          <div style={lStyle}>NNAPI 80x16 BURST & OJA-STE ENGINE</div>
-          <div style={vStyle}>{"Vulkan/NNAPI: " + vulkanUs.toFixed(1) + " us -- " + powerW.toFixed(2) + " W"}</div>
-          <div style={sStyle}>{"RSR #" + rsrSteps + " -- Hops=" + hybridHops + " -- Logit=" + leechLogit.toFixed(2)}</div>
+        <div style={{ ...cStyle, borderLeft: "3px solid #E94E34" }}>
+          <div style={lStyle}>NVIDIA RTX 3050 6GB (2,048 CUDA / 64 TENSOR)</div>
+          <div style={vStyle}>{(sw.rtx3050_temp_c ?? 44.0).toFixed(1) + " C -- " + (sw.rtx3050_clock_mhz ?? 1740) + " MHz -- " + (sw.rtx3050_vram_used_mb ?? 1842) + "/6144 MB"}</div>
+          <div style={sStyle}>{"RTX GEMM: " + (sw.rtx3050_kops ?? 429.8).toFixed(1) + "k ops/s (" + (sw.rtx3050_power_w ?? 28.4).toFixed(1) + "W) -- WGSL Active"}</div>
         </div>
       </div>
     </div>

@@ -1,7 +1,7 @@
 cff-version: 1.2.0
-message: "If you use ACT-Omega Net v32.4.0 or the Sovereign Harmonic V (SH4Z v3204 TLV) model and framework in your research, please cite it using the metadata below."
-title: "ACT-Omega Net v32.4.0 & Sovereign Harmonic V (SH4Z v3204 TLV): A Dual-Mobile + Workstation 24D Leech Lattice, Polyglot Code-Synthesizing, LWE-Secured, and 60-Theorem Lean 4 Verified Topological Computing Framework"
-version: "32.4.0"
+message: "If you use ACT-Omega Net v32.5.0 or the Sovereign Harmonic V (SH4Z v3205 TLV) model and framework in your research, please cite it using the metadata below."
+title: "ACT-Omega Net v32.5.0 & Sovereign Harmonic V (SH4Z v3205 TLV): A Dual-Mobile + Workstation 24D Leech Lattice, Polyglot Code-Synthesizing, LWE-Secured, and 60-Theorem Lean 4 Verified Topological Computing Framework"
+version: "32.5.0"
 doi: "10.5281/zenodo.23407176"
 date-released: "2026-10-17"
 license: "MIT"
@@ -14,7 +14,7 @@ authors:
 keywords:
   - "ACT-Omega"
   - "Sovereign Harmonic V"
-  - "SH4Z v3204"
+  - "SH4Z v3205"
   - "Gemini 4 Argon"
   - "Polyglot Code Synthesis"
   - "Braid-of-Thoughts"

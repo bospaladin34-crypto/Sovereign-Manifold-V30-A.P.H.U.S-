@@ -28,7 +28,7 @@ const SECTOR_NAMES = [
   "S12:BOT", "S13:CODE", "S14:STIEFEL", "S15:ACOUSTIC"
 ];
 
-export default function App() {
+export function App() {
   const [tel, setTel] = useState<TelemetryState>({
     generation: 729600,
     mag_x: -29.3,
@@ -696,3 +696,5 @@ export default function App() {
     </div>
   );
 }
+
+export default App;

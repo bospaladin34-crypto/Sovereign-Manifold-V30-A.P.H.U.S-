@@ -1,17 +1,16 @@
 {
   "schema_version": "v32.6.2",
-  "active_wan_url": "https://publishing-themes-district-readers.trycloudflare.com",
-  "active_wan_host": "publishing-themes-district-readers.trycloudflare.com",
-  "custom_domain_configured": false,
+  "active_wan_url": "https://act-omega-net.dev",
+  "active_wan_host": "act-omega-net.dev",
+  "custom_domain_configured": true,
   "subdomains": {
-    "apex": "https://publishing-themes-district-readers.trycloudflare.com",
-    "hud": "https://publishing-themes-district-readers.trycloudflare.com",
-    "api": "https://publishing-themes-district-readers.trycloudflare.com",
-    "agent": "https://publishing-themes-district-readers.trycloudflare.com",
-    "wiki": "https://publishing-themes-district-readers.trycloudflare.com/wiki"
+    "apex": "https://act-omega-net.dev",
+    "hud": "https://hud.act-omega-net.dev",
+    "api": "https://api.act-omega-net.dev",
+    "agent": "https://agent.act-omega-net.dev",
+    "wiki": "https://wiki.act-omega-net.dev/wiki"
   },
   "tunnel_mode": "CLOUDFLARE_PQ_HTTP2_KEEPALIVE_SUBDOMAIN_MUX",
   "pq_kem": "X25519MLKEM768_FIPS203",
-  "watchdog_script": "00_control/Daemon-MemoryRing.ps1",
-  "github_pages_root_portal": "https://bospaladin34-crypto.github.io/Sovereign-Manifold-V30-A.P.H.U.S-/"
+  "watchdog_script": "00_control/Daemon-MemoryRing.ps1"
 }

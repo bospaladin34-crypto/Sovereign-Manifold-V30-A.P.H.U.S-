@@ -7,7 +7,7 @@
   "security_posture": "ZERO_TRUST_READ_COMPUTE_ONLY",
   "cryptographic_attestation": "ML-KEM-768 (LWE-3329) + FNV-1a-64",
   "human_and_machine_compatible": true,
-  "public_wan_url": "https://publishing-themes-district-readers.trycloudflare.com",
+  "public_wan_url": "https://act-omega-net.dev",
   "github_repository": "https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-",
   "endpoints": {
     "llms_txt": "/llms.txt",

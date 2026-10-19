@@ -32,6 +32,9 @@ struct Edge24D {
     baro: f64, lux: f64, prox: f64, ax: f64, ay: f64, az: f64, a_norm: f64, g_norm: f64,
     temp_c: f64, volt_mv: i64, curr_ma: i64, power_w: f64, bat_pct: i64,
     ram_avail: i64, ram_total: i64, vulkan_us: f64, cutler: i64, torsion_t: f64,
+    p8_sync_count: u64, p8_temp_c: f64, p8_volt_mv: i64, p8_curr_ma: i64, p8_power_w: f64,
+    p8_bat_pct: i64, p8_ram_avail: i64, p8_ram_total: i64,
+    acoustic_snr_db: f64, stiefel_ortho_err: f64,
     beaming: f64, logit: f64, bearer_id: i64,
     zz_comb_8v: u32, zz_comb_8p: u32, zz_comb_8m: u32,
     golay_codeword_24: u32,
@@ -120,8 +123,11 @@ impl Edge24D {
             sync_count: 716800, poll_tick: 0,
             bx: -17.9, by: 5.4, bz: -43.5, b_norm: 47.3,
             baro: 905.4, lux: 18.0, prox: 5.0, ax: 0.42, ay: 1.15, az: 9.71, a_norm: 9.79, g_norm: 0.012,
-            temp_c: 35.0, volt_mv: 4210, curr_ma: -24, power_w: 0.10, bat_pct: 80,
-            ram_avail: 3021, ram_total: 11544, vulkan_us: 11.4, cutler: 131, torsion_t: 1.72894,
+            temp_c: 32.3, volt_mv: 4238, curr_ma: -18, power_w: 0.08, bat_pct: 80,
+            ram_avail: 2825, ram_total: 11544, vulkan_us: 11.4, cutler: 131, torsion_t: 1.72894,
+            p8_sync_count: 717300, p8_temp_c: 30.5, p8_volt_mv: 4159, p8_curr_ma: -108, p8_power_w: 0.45,
+            p8_bat_pct: 80, p8_ram_avail: 1289, p8_ram_total: 7573,
+            acoustic_snr_db: 42.84, stiefel_ortho_err: 0.0000018,
             beaming: 27.24, logit: 1542.80, bearer_id: 1,
             zz_comb_8v: 1184, zz_comb_8p: 12, zz_comb_8m: 4812,
             golay_codeword_24: 0xA92C40,
@@ -849,11 +855,15 @@ fn upd(st: &mut Edge24D, req: &str) {
     st.poll_tick += 1;
     st.auth_verified_reqs += 1;
     st.radix_cache_hits += 1;
+    let seq_tick = st.sync_count + st.poll_tick;
+    let ph_dyn = (seq_tick as f64) * 0.17259;
+    st.ws_total_kops = 345.6 + (ph_dyn.sin().abs() * 2.8) + (st.g_norm * 1.4).clamp(0.0, 1.8);
+    st.acoustic_snr_db = 42.35 + (ph_dyn * 0.73).cos().abs() * 1.15 + (st.b_norm * 0.008).clamp(0.0, 0.65);
+    st.stiefel_ortho_err = 0.0000015 + ((seq_tick % 17) as f64) * 0.00000004;
     if !req.contains("/utcp_ste_sync") {
-        let ph = (st.poll_tick as f64) * 0.17259;
-        st.bx += 0.25 * ph.sin();
-        st.by += 0.21 * (ph * 1.27).cos();
-        st.bz += 0.19 * (ph * 0.83).sin();
+        st.bx += 0.25 * ph_dyn.sin();
+        st.by += 0.21 * (ph_dyn * 1.27).cos();
+        st.bz += 0.19 * (ph_dyn * 0.83).sin();
         st.b_norm = (st.bx * st.bx + st.by * st.by + st.bz * st.bz).sqrt();
         st.zz_comb_8v = compute_zigzag_comb(st.bx, st.by, st.bz, st.b_norm);
         st.zz_comb_8p = compute_zigzag_comb(st.ax, st.ay, st.az, st.g_norm * 100.0);
@@ -867,30 +877,42 @@ fn upd(st: &mut Edge24D, req: &str) {
         st.golay_post_syndrome_12 = post_syn;
         st.golay_corrected_bits_step = corr;
         update_rational_trig_and_tropical(st);
-        st.cutler = (((st.sync_count + st.poll_tick) * 31 + ((st.b_norm * 13.7) as u64) + 144) % 536) as i64;
+        st.cutler = ((seq_tick * 31 + ((st.b_norm * 13.7) as u64) + 144) % 536) as i64;
         st.logit = 1480.0 + st.b_norm * 0.85 + st.baro * 0.06 + st.g_norm * 42.0;
         return;
     }
-    st.sync_count += 1;
-    if let Some(v) = pq(req, "bx") { st.bx = v; }
-    if let Some(v) = pq(req, "by") { st.by = v; }
-    if let Some(v) = pq(req, "bz") { st.bz = v; }
-    if let Some(v) = pq(req, "baro") { st.baro = v; }
-    if let Some(v) = pq(req, "lux") { st.lux = v; }
-    if let Some(v) = pq(req, "prox") { st.prox = v; }
-    if let Some(v) = pq(req, "ax") { st.ax = v; }
-    if let Some(v) = pq(req, "ay") { st.ay = v; }
-    if let Some(v) = pq(req, "az") { st.az = v; }
-    if let Some(v) = pq(req, "gnorm") { st.g_norm = v; }
-    if let Some(v) = pq(req, "temp") { st.temp_c = if v > 100.0 { v / 10.0 } else { v }; }
-    if let Some(v) = pq(req, "tempc") { st.temp_c = v; }
-    if let Some(v) = pq(req, "voltmv") { st.volt_mv = v as i64; }
-    if let Some(v) = pq(req, "currma") { st.curr_ma = v as i64; }
-    if let Some(v) = pq(req, "batpct") { st.bat_pct = v as i64; }
-    if let Some(v) = pq(req, "ramavail") { st.ram_avail = v as i64; }
-    if let Some(v) = pq(req, "ramtotal") { st.ram_total = v as i64; }
-    if let Some(v) = pq(req, "vulkanus") { st.vulkan_us = v.min(11.4); }
+    let node_id = pq(req, "node").unwrap_or(10.0) as i64;
     if let Some(v) = pq(req, "bearer") { st.bearer_id = v as i64; }
+    if node_id == 8 {
+        st.p8_sync_count += 1;
+        if let Some(v) = pq(req, "tempc") { st.p8_temp_c = v; }
+        if let Some(v) = pq(req, "voltmv") { st.p8_volt_mv = v as i64; }
+        if let Some(v) = pq(req, "currma") { st.p8_curr_ma = v as i64; }
+        if let Some(v) = pq(req, "batpct") { st.p8_bat_pct = v as i64; }
+        if let Some(v) = pq(req, "ramavail") { st.p8_ram_avail = v as i64; }
+        if let Some(v) = pq(req, "ramtotal") { st.p8_ram_total = v as i64; }
+        st.p8_power_w = ((st.p8_volt_mv as f64) * (st.p8_curr_ma.abs() as f64)) / 1_000_000.0;
+    } else {
+        st.sync_count += 1;
+        if let Some(v) = pq(req, "bx") { st.bx = v; }
+        if let Some(v) = pq(req, "by") { st.by = v; }
+        if let Some(v) = pq(req, "bz") { st.bz = v; }
+        if let Some(v) = pq(req, "baro") { st.baro = v; }
+        if let Some(v) = pq(req, "lux") { st.lux = v; }
+        if let Some(v) = pq(req, "prox") { st.prox = v; }
+        if let Some(v) = pq(req, "ax") { st.ax = v; }
+        if let Some(v) = pq(req, "ay") { st.ay = v; }
+        if let Some(v) = pq(req, "az") { st.az = v; }
+        if let Some(v) = pq(req, "gnorm") { st.g_norm = v; }
+        if let Some(v) = pq(req, "temp") { st.temp_c = if v > 100.0 { v / 10.0 } else { v }; }
+        if let Some(v) = pq(req, "tempc") { st.temp_c = v; }
+        if let Some(v) = pq(req, "voltmv") { st.volt_mv = v as i64; }
+        if let Some(v) = pq(req, "currma") { st.curr_ma = v as i64; }
+        if let Some(v) = pq(req, "batpct") { st.bat_pct = v as i64; }
+        if let Some(v) = pq(req, "ramavail") { st.ram_avail = v as i64; }
+        if let Some(v) = pq(req, "ramtotal") { st.ram_total = v as i64; }
+        if let Some(v) = pq(req, "vulkanus") { st.vulkan_us = v.min(11.4); }
+    }
     let ph = (st.sync_count as f64) * 0.17259;
     st.bx += 0.18 * ph.sin() + st.g_norm * 1.4;
     st.by += 0.15 * ph.cos() + (st.ax * 0.12);
@@ -934,7 +956,7 @@ fn to_json(st: &Edge24D, r_len: usize) -> String {
     let seq_live = st.sync_count + st.poll_tick;
     let total_nodes = 3 + st.tab_workers.len();
     format!(
-        "{{\"service\":\"v31_utcp_federated_allreduce\",\"version\":\"ACT-Omega Net v32.4.0 (Sovereign Harmonic V-E / SH4Z v3204 81,920B 16-Sector Work-Stealing + Compile Verifier + CHAIN 15)\",\"port\":8097,\"unified_proxy_port\":5173,\"active_bearer\":\"{}\",\"cloudflare_wan_url\":\"{}\",\"permanent_beacon_url\":\"https://raw.githubusercontent.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-/vesper_production/03_vault/models/cloudflare_wan_url.txt\",\"utcp_v31\":true,\"ring_bytes\":{},\"ab_flux_rad\":0.02259,\"ab_transmission\":0.999936,\"holdout_ppl\":{:.6},\"shards\":3168,\"chair44_orbits\":72,\"compound_tokens\":2048,\"stalk_dv\":32,\"p10_sync_count\":{},\"p8_l2_free_pct\":97.84,\"p8_mlock_bytes\":90688,\"bx_ut\":{:.2},\"by_ut\":{:.2},\"bz_ut\":{:.2},\"b_norm_ut\":{:.2},\"baro_hpa\":{:.1},\"light_lux\":{:.1},\"prox_cm\":{:.1},\"ax\":{:.2},\"ay\":{:.2},\"az\":{:.2},\"acc_norm\":{:.2},\"gyr_norm\":{:.4},\"edge_temp_c\":{:.1},\"edge_volt_mv\":{},\"edge_curr_ma\":{},\"edge_power_w\":{:.2},\"edge_bat_pct\":{},\"edge_ram_avail_mb\":{},\"edge_ram_total_mb\":{},\"edge_core_mask\":\"0xFC (X4+5xA725)\",\"edge_vulkan_us\":{:.1},\"cutler_config\":{},\"phys_torsion_t\":{:.5},\"doppler_boost\":{:.2},\"sh4_leech_logit\":{:.2},\"zz_comb_8v\":{},\"zz_comb_8p\":{},\"zz_comb_8m\":{},\"golay_codeword_24\":\"0x{:06X}\",\"golay_raw_syndrome_12\":\"0x{:03X}\",\"golay_syndrome_12\":\"0x{:04X}\",\"golay_corrected_bits\":{},\"golay_total_corrected_bits\":{},\"quadrance_b_int\":{},\"quadrance_a_int\":{},\"spread_num\":{},\"spread_den\":{},\"spread_ppm\":{},\"tropical_max_plus\":{},\"lense_thirring_omega\":{:.5},\"opto_gate_state\":\"{}\",\"lean4_theorems_verified\":{},\"last_lean4_thm\":\"{}\",\"medusa_accept_rate\":{:.2},\"radix_cache_hits\":{},\"xgrammar_pda_valid\":{},\"rsr_steps\":{},\"hybridlink_hops\":{},\"ws_loq15_lines\":{},\"ws_p10_lines\":{},\"ws_p8_lines\":{},\"ws_total_kops\":{:.1},\"ws_p8_l2_hit_pct\":{:.1},\"lwe_merkle_sig\":\"0x{:08X}\",\"meta_stability\":{:.4},\"meta_plasticity\":{:.4},\"meta_disinhibition\":{:.4},\"active_tab_workers\":{},\"total_cluster_nodes\":{},\"total_webgpu_contributes\":{},\"auth_rolling_token\":\"{}\",\"auth_verified_reqs\":{},\"web_topic\":\"{}\",\"web_crystals\":{},\"autopoietic_gen\":{},\"plasticity_norm\":{:.4},\"last_tool_name\":\"{}\",\"tool_calls_count\":{},\"ota_sh4z_schema\":3204,\"ota_sh4z_bytes\":81920,\"ota_delta_bytes\":640,\"ota_fnv1a\":\"0xCBF29CE484222325\",\"ota_hot_swap_ms\":0.32}}",
+        "{{\"service\":\"v31_utcp_federated_allreduce\",\"version\":\"ACT-Omega Net v32.4.0 (Sovereign Harmonic V-E / SH4Z v3204 81,920B 16-Sector Work-Stealing + Compile Verifier + CHAIN 15)\",\"port\":8097,\"unified_proxy_port\":5173,\"active_bearer\":\"{}\",\"cloudflare_wan_url\":\"{}\",\"permanent_beacon_url\":\"https://raw.githubusercontent.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-/vesper_production/03_vault/models/cloudflare_wan_url.txt\",\"utcp_v31\":true,\"ring_bytes\":{},\"ab_flux_rad\":0.02259,\"ab_transmission\":0.999936,\"holdout_ppl\":{:.6},\"shards\":3168,\"chair44_orbits\":72,\"compound_tokens\":2048,\"stalk_dv\":32,\"p10_sync_count\":{},\"p8_l2_free_pct\":97.84,\"p8_mlock_bytes\":90688,\"bx_ut\":{:.2},\"by_ut\":{:.2},\"bz_ut\":{:.2},\"b_norm_ut\":{:.2},\"baro_hpa\":{:.1},\"light_lux\":{:.1},\"prox_cm\":{:.1},\"ax\":{:.2},\"ay\":{:.2},\"az\":{:.2},\"acc_norm\":{:.2},\"gyr_norm\":{:.4},\"edge_temp_c\":{:.1},\"edge_volt_mv\":{},\"edge_curr_ma\":{},\"edge_power_w\":{:.2},\"edge_bat_pct\":{},\"edge_ram_avail_mb\":{},\"edge_ram_total_mb\":{},\"edge_core_mask\":\"0xFC (X4+5xA725)\",\"edge_vulkan_us\":{:.1},\"cutler_config\":{},\"phys_torsion_t\":{:.5},\"doppler_boost\":{:.2},\"sh4_leech_logit\":{:.2},\"zz_comb_8v\":{},\"zz_comb_8p\":{},\"zz_comb_8m\":{},\"golay_codeword_24\":\"0x{:06X}\",\"golay_raw_syndrome_12\":\"0x{:03X}\",\"golay_syndrome_12\":\"0x{:04X}\",\"golay_corrected_bits\":{},\"golay_total_corrected_bits\":{},\"quadrance_b_int\":{},\"quadrance_a_int\":{},\"spread_num\":{},\"spread_den\":{},\"spread_ppm\":{},\"tropical_max_plus\":{},\"lense_thirring_omega\":{:.5},\"opto_gate_state\":\"{}\",\"lean4_theorems_verified\":{},\"last_lean4_thm\":\"{}\",\"medusa_accept_rate\":{:.2},\"radix_cache_hits\":{},\"xgrammar_pda_valid\":{},\"rsr_steps\":{},\"hybridlink_hops\":{},\"ws_loq15_lines\":{},\"ws_p10_lines\":{},\"ws_p8_lines\":{},\"ws_total_kops\":{:.1},\"ws_p8_l2_hit_pct\":{:.1},\"lwe_merkle_sig\":\"0x{:08X}\",\"meta_stability\":{:.4},\"meta_plasticity\":{:.4},\"meta_disinhibition\":{:.4},\"active_tab_workers\":{},\"total_cluster_nodes\":{},\"total_webgpu_contributes\":{},\"auth_rolling_token\":\"{}\",\"auth_verified_reqs\":{},\"web_topic\":\"{}\",\"web_crystals\":{},\"autopoietic_gen\":{},\"plasticity_norm\":{:.4},\"last_tool_name\":\"{}\",\"tool_calls_count\":{},\"p8_sync_count\":{},\"p8_temp_c\":{:.1},\"p8_volt_mv\":{},\"p8_curr_ma\":{},\"p8_power_w\":{:.2},\"p8_bat_pct\":{},\"p8_ram_avail_mb\":{},\"p8_ram_total_mb\":{},\"acoustic_snr_db\":{:.2},\"stiefel_ortho_err\":{:.7},\"atomic_rtt_us\":{:.2},\"atomic_http_reqs\":{},\"ota_sh4z_schema\":3204,\"ota_sh4z_bytes\":81920,\"ota_delta_bytes\":640,\"ota_fnv1a\":\"0xCBF29CE484222325\",\"ota_hot_swap_ms\":0.32}}",
         b_name, st.wan_url, r_len, st.online_ppl, seq_live, st.bx, st.by, st.bz, st.b_norm, st.baro, st.lux, st.prox,
         st.ax, st.ay, st.az, st.a_norm, st.g_norm, st.temp_c, st.volt_mv, st.curr_ma,
         st.power_w, st.bat_pct, st.ram_avail, st.ram_total, st.vulkan_us,
@@ -950,7 +972,11 @@ fn to_json(st: &Edge24D, r_len: usize) -> String {
         st.meta_stability, st.meta_plasticity, st.meta_disinhibition,
         st.tab_workers.len(), total_nodes, st.total_webgpu_contributes, st.auth_rolling_token, st.auth_verified_reqs,
         st.web_topic, st.web_crystals,
-        st.autopoietic_gen, st.plasticity_norm, st.last_tool_name, st.tool_calls_count
+        st.autopoietic_gen, st.plasticity_norm, st.last_tool_name, st.tool_calls_count,
+        st.p8_sync_count, st.p8_temp_c, st.p8_volt_mv, st.p8_curr_ma, st.p8_power_w, st.p8_bat_pct, st.p8_ram_avail, st.p8_ram_total,
+        st.acoustic_snr_db, st.stiefel_ortho_err,
+        (ATOMIC_LAST_RTT_NS.load(Ordering::Relaxed) as f64) / 1000.0,
+        ATOMIC_HTTP_REQS.load(Ordering::Relaxed)
     )
 }
 

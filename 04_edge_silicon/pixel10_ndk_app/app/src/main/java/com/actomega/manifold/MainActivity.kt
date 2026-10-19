@@ -703,19 +703,23 @@ class MainActivity : Activity() {
             setTextColor(Color.parseColor("#FFFEFB")); textSize = 10.6f; setTypeface(Typeface.MONOSPACE, Typeface.BOLD)
         }, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
         hdrTopRow.addView(Button(this).apply {
-            text = "EXPAND"; textSize = 7.8f; setBackgroundColor(Color.parseColor("#FFB454")); setTextColor(Color.parseColor("#0E1116"))
+            text = "EXPAND"; textSize = 8.5f; includeFontPadding = false; minHeight = 0; minimumHeight = 0
+            setPadding(dp(10), dp(2), dp(10), dp(2))
+            setBackgroundColor(Color.parseColor("#FFB454")); setTextColor(Color.parseColor("#0E1116"))
             setOnClickListener {
                 for (b in drawerBodies) b.visibility = View.VISIBLE
                 for ((tv, base) in drawerTitles) tv.text = "[-] " + base
             }
-        }, LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, dp(26)).apply { rightMargin = dp(4) })
+        }, LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, dp(32)).apply { rightMargin = dp(4) })
         hdrTopRow.addView(Button(this).apply {
-            text = "COLLAPSE"; textSize = 7.8f; setBackgroundColor(Color.parseColor("#0E1116")); setTextColor(Color.parseColor("#FFFEFB"))
+            text = "COLLAPSE"; textSize = 8.5f; includeFontPadding = false; minHeight = 0; minimumHeight = 0
+            setPadding(dp(10), dp(2), dp(10), dp(2))
+            setBackgroundColor(Color.parseColor("#0E1116")); setTextColor(Color.parseColor("#FFFEFB"))
             setOnClickListener {
                 for (b in drawerBodies) b.visibility = View.GONE
                 for ((tv, base) in drawerTitles) tv.text = "[+] " + base
             }
-        }, LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, dp(26)))
+        }, LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, dp(32)))
         headerCard.addView(hdrTopRow)
         headerCard.addView(TextView(this).apply {
             text = if (isP8) "60-30-10 HUD -- Node 3: Mali-G715 4.00MB L2 (90,688B mlock, 97.84% Free, 288/1,280 Lines)" else "60-30-10 HUD -- Node 2: Tensor G5 ARMv9.2-A (sve2+bf16+i8mm, 416/1,280 Lines, 3,168 Shards)"
@@ -731,7 +735,9 @@ class MainActivity : Activity() {
             setTextColor(Color.parseColor("#FFFEFB")); textSize = 9.6f; setTypeface(Typeface.MONOSPACE, Typeface.BOLD)
         }, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
         hmHeader.addView(Button(this).apply {
-            text = "PIN WIDGET"; textSize = 8.0f; setBackgroundColor(Color.parseColor("#FFB454")); setTextColor(Color.parseColor("#0E1116"))
+            text = "PIN WIDGET"; textSize = 8.5f; includeFontPadding = false; minHeight = 0; minimumHeight = 0
+            setPadding(dp(10), dp(2), dp(10), dp(2))
+            setBackgroundColor(Color.parseColor("#FFB454")); setTextColor(Color.parseColor("#0E1116"))
             setOnClickListener {
                 try {
                     val mgr = AppWidgetManager.getInstance(this@MainActivity)
@@ -744,7 +750,7 @@ class MainActivity : Activity() {
                     }
                 } catch (_: Throwable) {}
             }
-        }, LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, dp(26)))
+        }, LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, dp(32)))
         heatmapCard.addView(hmHeader)
         val heatmapView = SelfTensorHeatmapView(this).apply {
             setOnClickListener {

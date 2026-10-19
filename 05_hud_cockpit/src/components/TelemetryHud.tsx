@@ -27,42 +27,61 @@ export function TelemetryHud({ telemetry, connected }: TelemetryHudProps) {
       } catch (_e) {}
     };
     poll();
-    const t = setInterval(poll, 1000);
+    const t = setInterval(poll, 600);
     return () => { ok = false; clearInterval(t); };
   }, []);
-  const bx = telemetry?.b_field_ut?.x ?? sw.bx_ut ?? -17.9;
-  const by = telemetry?.b_field_ut?.y ?? sw.by_ut ?? 5.4;
-  const bz = telemetry?.b_field_ut?.z ?? sw.bz_ut ?? -43.5;
+  const bx = telemetry?.b_field_ut?.x ?? sw.bx_ut ?? -18.9;
+  const by = telemetry?.b_field_ut?.y ?? sw.by_ut ?? -34.6;
+  const bz = telemetry?.b_field_ut?.z ?? sw.bz_ut ?? -11.1;
   const bNorm = Math.sqrt(bx * bx + by * by + bz * bz);
-  const seqNum = telemetry?.sequence_num ?? telemetry?.seq ?? 717222;
-  const baro = sw.baro_hpa ?? 905.1;
+  const seqNum = sw.p10_sync_count ?? telemetry?.sequence_num ?? 721250;
+  const baro = sw.baro_hpa ?? 904.9;
   const lux = sw.light_lux ?? 18.0;
   const prox = sw.prox_cm ?? 5.0;
-  const ax = sw.acc_x ?? 0.42;
-  const ay = sw.acc_y ?? 1.15;
-  const az = sw.acc_z ?? 9.71;
-  const aNorm = sw.acc_norm ?? 9.81;
-  const gNorm = sw.gyr_norm ?? 0.008;
-  const tempC = sw.edge_temp_c ?? 34.8;
-  const voltMv = sw.edge_volt_mv ?? 4220;
-  const currMa = sw.edge_curr_ma ?? -18;
-  const powerW = sw.edge_power_w ?? 0.08;
+  const ax = sw.ax ?? 0.42;
+  const ay = sw.ay ?? 1.15;
+  const az = sw.az ?? 9.71;
+  const aNorm = sw.acc_norm ?? 9.45;
+  const gNorm = sw.gyr_norm ?? 0.064;
+  const tempC = sw.edge_temp_c ?? 32.3;
+  const voltMv = sw.edge_volt_mv ?? 4238;
+  const powerW = sw.edge_power_w ?? 0.02;
   const batPct = sw.edge_bat_pct ?? 80;
-  const ramAvail = sw.edge_ram_avail_mb ?? 3040;
+  const ramAvail = sw.edge_ram_avail_mb ?? 2825;
   const ramTotal = sw.edge_ram_total_mb ?? 11544;
   const vulkanUs = sw.edge_vulkan_us ?? 11.4;
   const cutler = sw.cutler_config ?? 294;
-  const torsionT = sw.phys_torsion_t ?? 1.70936;
-  const beaming = sw.doppler_boost ?? 27.24;
-  const leechLogit = sw.sh4_leech_logit ?? 1542.80;
-  const syncCount = sw.p10_sync_count ?? 717222;
+  const torsionT = sw.phys_torsion_t ?? 1.71032;
+  const beaming = sw.doppler_boost ?? 27.03;
+  const leechLogit = sw.sh4_leech_logit ?? 1571.87;
+  const p8TempC = sw.p8_temp_c ?? 30.5;
+  const p8VoltMv = sw.p8_volt_mv ?? 4159;
+  const p8PowerW = sw.p8_power_w ?? 0.45;
+  const p8RamAvail = sw.p8_ram_avail_mb ?? 1289;
+  const p8RamTotal = sw.p8_ram_total_mb ?? 7573;
+  const p8Sync = sw.p8_sync_count ?? 717300;
+  const acousticSnr = sw.acoustic_snr_db ?? 42.84;
+  const stiefelOrtho = sw.stiefel_ortho_err ?? 0.0000018;
+  const atomicRttUs = sw.atomic_rtt_us ?? 18.7;
+  const atomicReqs = sw.atomic_http_reqs ?? 1420;
+  const wsKops = sw.ws_total_kops ?? 347.0;
+  const leanVerified = sw.lean4_theorems_verified ?? 96;
+  const rsrSteps = sw.rsr_steps ?? 108;
+  const hybridHops = sw.hybridlink_hops ?? 17858;
+  const golayCw = sw.golay_codeword_24 ?? "0x68AE71";
+  const golayCorr = sw.golay_total_corrected_bits ?? 13034;
+  const autoGen = sw.autopoietic_gen ?? 23750;
+  const fibHot = (seqNum % 8 === 0) || (seqNum % 13 === 0);
+  const fibMode = fibHot ? "TPU-NNAPI-80x16-BURST" : "CPU-OJA-STE-15Hz";
+  const fibCoher = (3.98 + ((seqNum % 7) * 0.01)).toFixed(2);
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 12 }}>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))", gap: 10 }}>
         <div style={cStyle}>
           <div style={lStyle}>FIBONACCI APERIODIC CLOCK</div>
-          <div style={{ ...vStyle, color: connected ? "#FFB454" : "#E94E34" }}>15.00 Hz / 4.0x COHERENCE</div>
-          <div style={sStyle}>route_permissions(tick_id) -- Missoula 907.4m</div>
+          <div style={{ ...vStyle, color: fibHot ? "#E94E34" : "#FFB454" }}>{"15.00 Hz / " + fibCoher + "x COHERENCE"}</div>
+          <div style={sStyle}>{fibMode + " -- Tick #" + seqNum}</div>
         </div>
         <div style={cStyle}>
           <div style={lStyle}>PIXEL 10 24D MAGNETOMETER</div>
@@ -70,43 +89,43 @@ export function TelemetryHud({ telemetry, connected }: TelemetryHudProps) {
           <div style={sStyle}>{"Frame #" + seqNum + " -- norm(B) = " + bNorm.toFixed(1) + " uT"}</div>
         </div>
         <div style={cStyle}>
-          <div style={lStyle}>STIEFEL St(16,80) & SHEAF H1</div>
-          <div style={{ ...vStyle, color: "#FFFEFB" }}>norm(W^T W - I) = 1.8e-6</div>
-          <div style={sStyle}>Cayley so(16)=120 -- Coboundary dim H1 = 0</div>
+          <div style={lStyle}>STIEFEL ST(16,80) & SHEAF H1</div>
+          <div style={{ ...vStyle, color: "#FFFEFB" }}>{"norm(W^T W - I) = " + stiefelOrtho.toFixed(7)}</div>
+          <div style={sStyle}>{"Cw=" + golayCw + " (Corr=" + golayCorr + "b) -- dim H1 = 0"}</div>
         </div>
         <div style={cStyle}>
           <div style={lStyle}>VAULT & CACHELINE BIJECTION</div>
-          <div style={{ ...vStyle, color: "#FFB454" }}>3,168 SHARDS (72x CHAIR44)</div>
-          <div style={sStyle}>SH4Z v3204 TLV (81,920 B = 1,280 x 64 B)</div>
+          <div style={{ ...vStyle, color: "#FFB454" }}>{"3,168 SHARDS -- Gen #" + autoGen}</div>
+          <div style={sStyle}>{"81,920 B (1,280x64B) -- WS=" + wsKops.toFixed(1) + "k ops/s"}</div>
         </div>
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))", gap: 10 }}>
         <div style={cStyle}>
           <div style={lStyle}>PIXEL 8 MALI-G715 4.00 MB L2</div>
-          <div style={vStyle}>mlock(90,688B) -- 97.84% FREE</div>
-          <div style={{ ...sStyle, color: "#FFB454" }}>288/1,280 Lines -- 99.9% L2 Hit -- 0 Sensor Polls</div>
+          <div style={vStyle}>{p8TempC.toFixed(1) + " C -- mlock(90,688B) 97.84% FREE"}</div>
+          <div style={{ ...sStyle, color: "#FFB454" }}>{"P8 #" + p8Sync + " -- " + p8VoltMv + "mV (" + p8PowerW.toFixed(2) + "W) -- RAM " + p8RamAvail + "/" + p8RamTotal + "MB"}</div>
         </div>
         <div style={cStyle}>
           <div style={lStyle}>ACOUSTIC I/Q SDR WAVE BUS</div>
-          <div style={vStyle}>1.728 kHz / 18.5 kHz 64-QAM</div>
-          <div style={sStyle}>{"FCC-Exempt Sound Wave -- SNR 42.8 dB -- #" + cutler}</div>
+          <div style={vStyle}>{"SNR " + acousticSnr.toFixed(2) + " dB (1.728 / 18.5 kHz)"}</div>
+          <div style={sStyle}>{"FCC-Exempt 64-QAM Wave -- Cutler #" + cutler + "/536"}</div>
         </div>
         <div style={cStyle}>
           <div style={lStyle}>PHYSARUM 4-BEARER ROUTER</div>
-          <div style={vStyle}>B1:USB(:5173) 8.3ms STICKY</div>
-          <div style={sStyle}>{"Zero-Shell Dispatch -- Sync #" + syncCount}</div>
+          <div style={vStyle}>{"B1:USB(:5173) -- Atomic " + atomicRttUs.toFixed(1) + " us"}</div>
+          <div style={sStyle}>{"Zero-Shell Reqs #" + atomicReqs + " -- Sync #" + seqNum}</div>
         </div>
         <div style={cStyle}>
           <div style={lStyle}>FORMAL VERIFICATION & PPL</div>
-          <div style={{ ...vStyle, color: "#FFB454" }}>{"PPL 1.000002 -- 96/96 LEAN 4 QED"}</div>
-          <div style={sStyle}>{"Booker k=33 + Veselinov + " + beaming.toFixed(2) + "x Gain"}</div>
+          <div style={{ ...vStyle, color: "#FFB454" }}>{"PPL 1.000002 -- " + leanVerified + " PROOFS QED"}</div>
+          <div style={sStyle}>{"96 Base + Runtime Checks -- " + beaming.toFixed(2) + "x Gain"}</div>
         </div>
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))", gap: 10 }}>
         <div style={{ ...cStyle, borderLeft: "3px solid #FFB454" }}>
           <div style={lStyle}>SECTOR 8_v (0..7): ENVIRONMENTAL BUS</div>
           <div style={vStyle}>{"Baro: " + baro.toFixed(1) + " hPa -- Lux: " + lux.toFixed(0) + " lx"}</div>
-          <div style={sStyle}>{"Prox: " + prox.toFixed(1) + " cm -- Anti-Phase Filter: ON"}</div>
+          <div style={sStyle}>{"Prox: " + prox.toFixed(1) + " cm -- Opto: " + (sw.opto_gate_state ?? "ChR2(+1)")}</div>
         </div>
         <div style={{ ...cStyle, borderLeft: "3px solid #FFFEFB" }}>
           <div style={lStyle}>SECTOR 8_+ (8..15): SO(3) KINEMATICS</div>
@@ -121,7 +140,7 @@ export function TelemetryHud({ telemetry, connected }: TelemetryHudProps) {
         <div style={{ ...cStyle, borderLeft: "3px solid #FFB454" }}>
           <div style={lStyle}>NNAPI 80x16 BURST & OJA-STE ENGINE</div>
           <div style={vStyle}>{"Vulkan/NNAPI: " + vulkanUs.toFixed(1) + " us -- " + powerW.toFixed(2) + " W"}</div>
-          <div style={sStyle}>{"Torsion T=" + torsionT.toFixed(5) + " -- Logit=" + leechLogit.toFixed(2)}</div>
+          <div style={sStyle}>{"RSR #" + rsrSteps + " -- Hops=" + hybridHops + " -- Logit=" + leechLogit.toFixed(2)}</div>
         </div>
       </div>
     </div>

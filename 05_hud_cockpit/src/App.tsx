@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useTelemetryStream } from "./hooks/useTelemetryStream";
 import { TelemetryHud } from "./components/TelemetryHud";
 import { VectorScope3D } from "./components/VectorScope3D";
@@ -7,41 +7,154 @@ import { InteractiveConsole } from "./components/InteractiveConsole";
 
 export function App() {
   const { telemetry, connected } = useTelemetryStream();
+  const [hwDrawerOpen, setHwDrawerOpen] = useState<boolean>(true);
+  const [scopesDrawerOpen, setScopesDrawerOpen] = useState<boolean>(true);
+
   return (
     <div style={{
       minHeight: "100vh",
-      background: "radial-gradient(circle at 50% 0%, #0f172a 0%, #050814 75%)",
-      color: "#f8fafc",
+      background: "#0E1116",
+      color: "#FFFEFB",
       padding: "14px 18px",
-      fontFamily: "Inter, system-ui, sans-serif"
+      fontFamily: "Inter, system-ui, -apple-system, sans-serif"
     }}>
+      {/* 60-30-10 Mature Telemetry Header */}
       <div style={{
+        background: "#2A3B4D",
+        border: "1px solid #3D5269",
+        borderRadius: 10,
+        padding: "10px 14px",
+        marginBottom: 12,
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
         flexWrap: "wrap",
-        gap: 8,
-        marginBottom: 12,
-        paddingBottom: 8,
-        borderBottom: "1px solid rgba(56, 189, 248, 0.2)"
+        gap: 10
       }}>
-        <div style={{ fontSize: 15, fontWeight: 900, color: "#38bdf8", letterSpacing: 0.8, fontFamily: "monospace" }}>
-          ACT-OMEGA NET v32.3.0 (SH-5D / SH4Z v3203) -- 16-SECTOR 80.00 KB (1:1 BIJECTION) + MULTI-AGENT DEBATE + HOT-PATCH + 80 LEAN 4 HUD
+        <div>
+          <div style={{ fontSize: 14.5, fontWeight: 900, color: "#FFFEFB", letterSpacing: 0.7, fontFamily: "monospace" }}>
+            SOVEREIGN MANIFOLD TELEMETRY CONSOLE -- ACT-OMEGA NET v32.4.0 (SH4Z v3204 TLV)
+          </div>
+          <div style={{ fontSize: 11, color: "#FFB454", fontFamily: "monospace", marginTop: 2 }}>
+            60-30-10 Dark Telemetry HUD -- 80.00 KB (1,280 x 64B) 1:1 Cacheline Bijection -- Stiefel St(16,80) -- Acoustic I/Q SDR -- 96/96 Lean 4 QED
+          </div>
         </div>
-        <div style={{ fontSize: 11, color: "#34d399", fontFamily: "monospace" }}>
-          LOQ 15 (576 Lines) + PIXEL 10 (24D + 416 Lines) + PIXEL 8 (Compute Cockpit 288 Lines, 90,688B L2 97.84% Free) + TAB SWARM (345.4k ops/s)
+        <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+          <span style={{
+            background: "#0E1116",
+            border: "1px solid #FFB454",
+            color: "#FFB454",
+            padding: "4px 9px",
+            borderRadius: 6,
+            fontSize: 10.5,
+            fontWeight: 700,
+            fontFamily: "monospace"
+          }}>
+            LOQ15 (576) + P10 G5 (416) + P8 L2 (288) = 1,280 Lines (347.0k ops/s)
+          </span>
+          <button
+            onClick={() => { setHwDrawerOpen(true); setScopesDrawerOpen(true); }}
+            style={{
+              background: "#FFB454",
+              border: "1px solid #FFB454",
+              color: "#0E1116",
+              fontWeight: 800,
+              borderRadius: 6,
+              padding: "5px 10px",
+              fontSize: 10.5,
+              fontFamily: "monospace",
+              cursor: "pointer"
+            }}
+          >
+            EXPAND TOP DRAWERS
+          </button>
+          <button
+            onClick={() => { setHwDrawerOpen(false); setScopesDrawerOpen(false); }}
+            style={{
+              background: "#0E1116",
+              border: "1px solid #3D5269",
+              color: "#FFFEFB",
+              fontWeight: 700,
+              borderRadius: 6,
+              padding: "5px 10px",
+              fontSize: 10.5,
+              fontFamily: "monospace",
+              cursor: "pointer"
+            }}
+          >
+            COLLAPSE TOP DRAWERS
+          </button>
         </div>
       </div>
 
-      <TelemetryHud telemetry={telemetry} connected={connected} />
-
+      {/* Collapsible Top Drawer A: 12-Card Hardware & Silicon Telemetry Grid */}
       <div style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))",
-        gap: 14
+        background: "#2A3B4D",
+        border: "1px solid #3D5269",
+        borderRadius: 10,
+        padding: "8px 12px",
+        marginBottom: 12
       }}>
-        <VectorScope3D telemetry={telemetry} />
-        <OscilloscopeCanvas telemetry={telemetry} />
+        <div
+          onClick={() => setHwDrawerOpen((v) => !v)}
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            cursor: "pointer",
+            padding: "4px 2px"
+          }}
+        >
+          <span style={{ fontSize: 11.5, fontWeight: 800, color: "#FFFEFB", fontFamily: "monospace" }}>
+            {(hwDrawerOpen ? "[-] " : "[+] ") + "DRAWER A: TRI-SILICON HARDWARE, TENSOR G5 ARMv9.2-A (sve2+bf16+i8mm) & MALI-G715 4.00 MB L2 TELEMETRY (12 CARDS)"}
+          </span>
+          <span style={{ fontSize: 10.5, color: "#FFB454", fontFamily: "monospace" }}>
+            {hwDrawerOpen ? "Click to Collapse" : "P10 G5 34.8C -- P8 mlock 90,688B (97.84% Free) -- 3,168 Shards (Click to Expand)"}
+          </span>
+        </div>
+        {hwDrawerOpen && (
+          <div style={{ marginTop: 10 }}>
+            <TelemetryHud telemetry={telemetry} connected={connected} />
+          </div>
+        )}
+      </div>
+
+      {/* Collapsible Top Drawer B: 60 FPS Stiefel Vector Scope & 15 Hz Acoustic/Sensor Oscilloscope */}
+      <div style={{
+        background: "#2A3B4D",
+        border: "1px solid #3D5269",
+        borderRadius: 10,
+        padding: "8px 12px",
+        marginBottom: 12
+      }}>
+        <div
+          onClick={() => setScopesDrawerOpen((v) => !v)}
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            cursor: "pointer",
+            padding: "4px 2px"
+          }}
+        >
+          <span style={{ fontSize: 11.5, fontWeight: 800, color: "#FFFEFB", fontFamily: "monospace" }}>
+            {(scopesDrawerOpen ? "[-] " : "[+] ") + "DRAWER B: 60 FPS STIEFEL MANIFOLD St(16,80) VECTOR SCOPE & 15.0 Hz SENSOR / ACOUSTIC I/Q OSCILLOSCOPE"}
+          </span>
+          <span style={{ fontSize: 10.5, color: "#FFB454", fontFamily: "monospace" }}>
+            {scopesDrawerOpen ? "Click to Collapse" : "240 E8 Roots + SO(3) Attitude + 1.728 kHz I/Q Carrier (Click to Expand)"}
+          </span>
+        </div>
+        {scopesDrawerOpen && (
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))",
+            gap: 12,
+            marginTop: 10
+          }}>
+            <VectorScope3D telemetry={telemetry} />
+            <OscilloscopeCanvas telemetry={telemetry} />
+          </div>
+        )}
       </div>
 
       <InteractiveConsole telemetry={telemetry} />

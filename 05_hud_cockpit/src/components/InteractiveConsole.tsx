@@ -456,10 +456,8 @@ export function InteractiveConsole({ telemetry }: { telemetry?: any }) {
       const r = await fetch("/api/v1/browser/navigate?url=" + encodeURIComponent(cleanU));
       const d = await r.json();
       setBrowserStatus(
-        "STAGE 1 (ER=EPR RETRIEVE): Target=" + (d.url ?? cleanU) + " <-> Ryu-Takayanagi I(A:B)=" + (d.er_epr_mi_bits ?? 19.64) + " bits (4,096 Compound Lexical Tokens)
-" +
-        "STAGE 2 (NAVIER-STOKES TRANSDUCE): Reynolds Re=" + (d.navier_reynolds ?? 412.6) + " < 2300 (" + (d.flow_regime ?? "LAMINAR_VORTICITY_LOCKED") + ") -- Vorticity norm(curl u)=" + (d.vorticity_norm ?? 1.732) + "
-" +
+        "STAGE 1 (ER=EPR RETRIEVE): Target=" + (d.url ?? cleanU) + " <-> Ryu-Takayanagi I(A:B)=" + (d.er_epr_mi_bits ?? 19.64) + " bits (4,096 Compound Lexical Tokens)\n" +
+        "STAGE 2 (NAVIER-STOKES TRANSDUCE): Reynolds Re=" + (d.navier_reynolds ?? 412.6) + " < 2300 (" + (d.flow_regime ?? "LAMINAR_VORTICITY_LOCKED") + ") -- Vorticity norm(curl u)=" + (d.vorticity_norm ?? 1.732) + "\n" +
         "STAGE 3 (VAULT SYNTHESIZE): " + (d.result ?? "Crystallized into 3,520-Shard Vault & Verified against 112 Lean 4 CIC Theorems")
       );
       setLogs((prev) => [

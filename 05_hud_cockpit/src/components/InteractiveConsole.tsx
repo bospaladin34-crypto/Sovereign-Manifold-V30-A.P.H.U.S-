@@ -84,9 +84,9 @@ export function InteractiveConsole({ telemetry }: { telemetry?: any }) {
   const [drawerBrowserOpen, setDrawerBrowserOpen] = useState<boolean>(true);
   const [browserUrl, setBrowserUrl] = useState<string>("https://arxiv.org/abs/1306.0533");
   const [browserStatus, setBrowserStatus] = useState<string>(
-    "STAGE 1 (ER=EPR RETRIEVE): Boundary A (https://arxiv.org/abs/1306.0533) <-> Einstein-Rosen Throat gamma_RT (I(A:B)=19.64 bits, 4,096 Lex Tokens)
-STAGE 2 (NAVIER-STOKES TRANSDUCE): Velocity norm(u)=1.84, Viscosity nu=0.0142, Vorticity norm(curl u)=1.73205, Reynolds Re=412.6 < 2300 (LAMINAR_VORTICITY_LOCKED)
-STAGE 3 (VAULT SYNTHESIZE): Crystallized shard_03188.binshard into 3,520-Shard Vault (80x Chair-44, 112/112 Lean 4 CIC Proofs QED, Holdout PPL=1.000001)"
+    "STAGE 1 (ER=EPR RETRIEVE): Boundary A (https://arxiv.org/abs/1306.0533) <-> Einstein-Rosen Throat gamma_RT (I(A:B)=19.64 bits, 4,096 Lex Tokens)\n" +
+    "STAGE 2 (NAVIER-STOKES TRANSDUCE): Velocity norm(u)=1.84, Viscosity nu=0.0142, Vorticity norm(curl u)=1.73205, Reynolds Re=412.6 < 2300 (LAMINAR_VORTICITY_LOCKED)\n" +
+    "STAGE 3 (VAULT SYNTHESIZE): Crystallized shard_03188.binshard into 3,520-Shard Vault (80x Chair-44, 112/112 Lean 4 CIC Proofs QED, Holdout PPL=1.000001)"
   );
   const browserCanvasRef = useRef<any>(null);
   const [drawerSynapseOpen, setDrawerSynapseOpen] = useState<boolean>(true);

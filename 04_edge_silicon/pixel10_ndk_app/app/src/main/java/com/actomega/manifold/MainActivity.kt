@@ -890,8 +890,7 @@ class MainActivity : Activity() {
                 } else {
                     String.format(
                         Locale.US,
-                        "EXEC(%s) -> Stiefel St(16,80) + Acoustic I/Q SDR + Work-Stealing (LOQ15=576 + P10=416 + P8=288 = 1,280 Lines, %.1fk ops/s, 112 Lean 4 Q
-ED, 3,520 Shards, PPL=%.6f) (HALT_CONVERGED)",
+                        "EXEC(%s) -> Stiefel St(16,80) + Acoustic I/Q SDR + Work-Stealing (LOQ15=576 + P10=416 + P8=288 = 1,280 Lines, %.1fk ops/s, 112 Lean 4 QED, 3,520 Shards, PPL=%.6f) (HALT_CONVERGED)",
                         if (toolId.isEmpty()) "tool:stiefel_manifold_retraction_optimizer" else toolId, wsTotalKops, onlinePpl
                     )
                 }

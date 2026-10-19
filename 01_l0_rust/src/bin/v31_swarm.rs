@@ -4,6 +4,7 @@
 // Distributed Cross-Silicon Work-Stealing (LOQ 15 512 + Pixel 10 384 + Pixel 8 256 = 1,280 Cachelines),
 // 13th Native Tool (tool:rust_lean_compile_verifier), 112 Lean 4 CIC Theorems, LWE-3329 Merkle Zero-Trust & CHAIN 15
 use std::env;
+use std::process::Command;
 use std::fs;
 use std::io::{self, Read, Write};
 use std::net::{Shutdown, TcpListener, TcpStream};
@@ -1009,9 +1010,6 @@ fn upd(st: &mut Edge24D, req: &str) {
     let seq_tick = st.sync_count + st.poll_tick;
     let ph_dyn = (seq_tick as f64) * 0.17259;
     st.siem_inspected_packets += 1;
-    if st.poll_tick % 25 == 1 {
-        refresh_rtx3050_nvidia_smi(st);
-    }
     st.rtx3050_kops = 429.8 + (ph_dyn.sin().abs() * 3.4);
     st.ws_total_kops = st.rtx3050_kops + 106.8 + 76.2 + (st.g_norm * 1.4).clamp(0.0, 1.8);
     st.siem_shannon_entropy = 4.815 + (ph_dyn * 0.5).cos().abs() * 0.065;

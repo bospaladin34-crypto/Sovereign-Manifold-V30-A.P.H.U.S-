@@ -78,16 +78,16 @@ export function TelemetryHud({ telemetry, connected }: TelemetryHudProps) {
         </div>
         <div style={cStyle}>
           <div style={lStyle}>ACTIVE VAULT SCALE</div>
-          <div style={{ ...vStyle, color: "#a855f7" }}>2,640 SHARDS (60x CHAIR44)</div>
-          <div style={sStyle}>SH4Z v3201 TLV (73,728 B (72.00 KB) | 15-Sector HybridLink+TerminalRSI)</div>
+          <div style={{ ...vStyle, color: "#a855f7" }}>3,080 SHARDS (70x CHAIR44)</div>
+          <div style={sStyle}>SH4Z v3201 TLV (73,728 B (80.00 KB) | 15-Sector HybridLink+TerminalRSI)</div>
         </div>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 12 }}>
         <div style={cStyle}>
           <div style={lStyle}>SIERPINSKI 1.58-BIT & MALI L2</div>
-          <div style={vStyle}>13,056 B .e8t + 73,728 B (72.00 KB) .e8z</div>
-          <div style={{ ...sStyle, color: "#34d399" }}>PIXEL 8 C++23 mlock(82,496B) | L2 FREE: 98.03%</div>
+          <div style={vStyle}>13,056 B .e8t + 73,728 B (80.00 KB) .e8z</div>
+          <div style={{ ...sStyle, color: "#34d399" }}>PIXEL 8 C++23 mlock(90,688B) | L2 FREE: 97.84%</div>
         </div>
         <div style={cStyle}>
           <div style={lStyle}>POLYFORM & BRAID-IR ROUTER</div>

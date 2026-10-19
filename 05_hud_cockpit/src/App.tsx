@@ -26,7 +26,7 @@ export function App() {
         borderBottom: "1px solid rgba(56, 189, 248, 0.2)"
       }}>
         <div style={{ fontSize: 15, fontWeight: 900, color: "#38bdf8", letterSpacing: 0.8, fontFamily: "monospace" }}>
-          ACT-OMEGA NET v32.3.0 (SH-5D / SH4Z v3203) -- 15-SECTOR 80.00 KB WORK-STEALING + COMPILE VERIFIER + 80 LEAN 4 HUD
+          ACT-OMEGA NET v32.3.0 (SH-5D / SH4Z v3203) -- 16-SECTOR 80.00 KB (1:1 BIJECTION) + MULTI-AGENT DEBATE + HOT-PATCH + 80 LEAN 4 HUD
         </div>
         <div style={{ fontSize: 11, color: "#34d399", fontFamily: "monospace" }}>
           LOQ 15 (576 Lines) + PIXEL 10 (24D + 416 Lines) + PIXEL 8 (Compute Cockpit 288 Lines, 90,688B L2 97.84% Free) + TAB SWARM (345.4k ops/s)

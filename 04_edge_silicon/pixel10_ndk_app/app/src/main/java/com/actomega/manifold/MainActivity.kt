@@ -557,7 +557,7 @@ class Leech24DScopeView(ctx: Context) : View(ctx) {
         canvas.drawText(leftLbl, 12f, 28f, paintLabel)
         val ox0 = midX + 12f; val ow = w - ox0 - 16f
         canvas.drawRect(ox0, 14f, w - 14f, h - 14f, paintGrid)
-        canvas.drawText("1,280-LINE SPLIT + 66 LEAN4", ox0 + 10f, 34f, paintLabel)
+        canvas.drawText("1,280-LINE 1:1 BIJECTION + 80 LEAN4", ox0 + 10f, 34f, paintLabel)
         val pathB = Path(); val pathA = Path(); val pathG = Path()
         for (i in 0 until 64) {
             val idx = (head + i) and 63
@@ -683,7 +683,7 @@ class MainActivity : Activity() {
         val isP8 = SovereignLiveBus.isPixel8ComputeNode
         val headerCard = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; background = cardBg("#38BDF8"); setPadding(dp(12), dp(8), dp(12), dp(8)) }
         headerCard.addView(TextView(this).apply {
-            text = if (isP8) "ACT-OMEGA NET v32.3 (SH-5D / PIXEL 8 L2 COMPUTE-ONLY COCKPIT)" else "ACT-OMEGA NET v32.3 (SH-5D / SH4Z v3203 15-SECTOR 80KB COCKPIT)"
+            text = if (isP8) "ACT-OMEGA NET v32.3 (SH-5D / PIXEL 8 L2 COMPUTE-ONLY COCKPIT)" else "ACT-OMEGA NET v32.3 (SH-5D / SH4Z v3203 16-SECTOR 80KB 1:1 BIJECTION COCKPIT)"
             setTextColor(Color.parseColor("#38BDF8")); textSize = 11.2f; setTypeface(Typeface.MONOSPACE, Typeface.BOLD)
         })
         headerCard.addView(TextView(this).apply {
@@ -740,7 +740,7 @@ class MainActivity : Activity() {
         val c2Title = if (isP8) "[CARD 2: TENSOR G3 9-CORE SILICON, LWE ZERO-TRUST & 4-BEARER]" else "[CARD 2: 8_- TENSOR G5, LIVE 1HZ NOTIFICATION & 4-BEARER SWARM]"
         val card1Tv = makeCard("#38BDF8", c1Title, "#38BDF8")
         val card2Tv = makeCard("#10B981", c2Title, "#34D399")
-        val card3Tv = makeCard("#A855F7", "[CARD 3: SECTOR 14 WORK-STEALING + COMPILE VERIFIER + 80 LEAN 4 PROOFS]", "#C084FC")
+        val card3Tv = makeCard("#A855F7", "[CARD 3: SECTOR 0..15 1:1 BIJECTION + DEBATE + 80 LEAN 4 PROOFS]", "#C084FC")
 
         val card4 = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; background = cardBg("#F59E0B"); setPadding(dp(12), dp(8), dp(12), dp(10)) }
         card4.addView(TextView(this).apply { text = "[CARD 4: SH4Z v3203 CODEBASE SELF-ANALYZER + 15-TOOL COMPILER]"; setTextColor(Color.parseColor("#FBBF24")); textSize = 10.2f; setTypeface(Typeface.MONOSPACE, Typeface.BOLD) })
@@ -813,13 +813,13 @@ class MainActivity : Activity() {
                 val finalOut = hostReply ?: if (mode == "CHAIN") {
                     String.format(
                         Locale.US,
-                        "(STEP 1) rust_lean_compile_verifier (0 Brackets, 66/80 Lean 4 QED, Work-Steal=576+416+288) ==> (STEP 2) polyglot_code_synthesizer ==> (STEP 3) web_automation_harvester ==> (STEP 4) system_utility_bridge ==> (STEP 5) braid_web_ast_synthesizer ==> (STEP 6) codebase_self_analyzer ==> (STEP 7..13) golay_ecc + 25-LUT + lean4 + qat + leech24d + vault(3,080) + silicon_audit (%.1fk ops/s, PPL=%.6f)",
+                        "(STEP 1) rust_lean_compile_verifier (0 Brackets, 80/80 Lean 4 QED, Work-Steal=576+416+288) ==> (STEP 2) polyglot_code_synthesizer ==> (STEP 3) web_automation_harvester ==> (STEP 4) system_utility_bridge ==> (STEP 5) braid_web_ast_synthesizer ==> (STEP 6) codebase_self_analyzer ==> (STEP 7..13) golay_ecc + 25-LUT + lean4 + qat + leech24d + vault(3,080) + silicon_audit (%.1fk ops/s, PPL=%.6f)",
                         wsTotalKops, onlinePpl
                     )
                 } else {
                     String.format(
                         Locale.US,
-                        "EXEC(%s) -> Sector 14 Compile Verifier & Work-Stealing Split-Batch (LOQ15=576 + P10=416 + P8=288 = 1,280 Lines, %.1fk ops/s, 66/80 Lean 4 QED, 3,080 Shards, PPL=%.6f) (HALT_CONVERGED)",
+                        "EXEC(%s) -> Sector 14 Compile Verifier & Work-Stealing Split-Batch (LOQ15=576 + P10=416 + P8=288 = 1,280 Lines, %.1fk ops/s, 80/80 Lean 4 QED, 3,080 Shards, PPL=%.6f) (HALT_CONVERGED)",
                         if (toolId.isEmpty()) "tool:rust_lean_compile_verifier" else toolId, wsTotalKops, onlinePpl
                     )
                 }

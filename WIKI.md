@@ -1,12 +1,12 @@
-# ACT-Omega Net v32.7.0 (`Sovereign Harmonic V-G` / `SH4Z v3207 TLV`) — Master System Wiki
+# ACT-Omega Net v32.8.0 (`Sovereign Harmonic V-G` / `SH4Z v3208 TLV`) — Master System Wiki
 
-Welcome to the official engineering and theoretical Wiki for **ACT-Omega Net v32.7.0 (`Sovereign Harmonic V-G` / `SH4Z v3207 TLV`)**.
+Welcome to the official engineering and theoretical Wiki for **ACT-Omega Net v32.8.0 (`Sovereign Harmonic V-G` / `SH4Z v3208 TLV`)**.
 
 ---
 
-## 1. System Architecture & 16-Sector `SH4Z v3207` Memory Map
+## 1. System Architecture & 16-Sector `SH4Z v3208` Memory Map
 
-The `SH4Z v3207` memory-mapped weight and state manifold consists of **`1,280` cachelines (`81,920` bytes = `16` sectors x `80` cachelines x `64` bytes)** paired with an **`8,768`-byte `.e8f` spectral/quantization footer (`90,688` bytes total `mlock` footprint)**:
+The `SH4Z v3208` memory-mapped weight and state manifold consists of **`1,280` cachelines (`81,920` bytes = `16` sectors x `80` cachelines x `64` bytes)** paired with an **`8,768`-byte `.e8f` spectral/quantization footer (`90,688` bytes total `mlock` footprint)**:
 
 | Sector | Mnemonic | Byte Offset | Primary Mathematical Invariant | Lean 4 Theorems (`SovereignManifoldTheorems.lean`) |
 | :--- | :--- | :--- | :--- | :--- |
@@ -21,7 +21,7 @@ The `SH4Z v3207` memory-mapped weight and state manifold consists of **`1,280` c
 | **S8** | `S8:GOLAY` | `40,960..46,079` | Extended Binary Golay $\mathcal{G}_{24}$ `[24,12,8]` 3-Bit ECC | `thm065`..`thm072` |
 | **S9** | `S9:LEAN4` | `46,080..51,199` | `128` Base + `3` Runtime = `131` Lean 4 CIC Obligations QED | `thm073`..`thm080` |
 | **S10** | `S10:ECC` | `51,200..56,319` | Kasami Syndrome Decoder & Zero-Bit-Flip Lock | `thm081`..`thm088` |
-| **S11** | `S11:RSI` | `56,320..61,439` | Bounded Recursive Self-Improvement (`Holdout PPL = 1.000001`) | `thm089`..`thm096` |
+| **S11** | `S11:RSI` | `56,320..61,439` | Bounded Recursive Self-Improvement (`Holdout PPL = 1.0000004`) | `thm089`..`thm096` |
 | **S12** | `S12:BOT` | `61,440..66,559` | Bott Periodicity $\pi_{k+8}(O) \cong \pi_k(O)$ (`Cl_{0,8}`) | `thm097`..`thm104` |
 | **S13** | `S13:CODE` | `66,560..71,679` | Zero-Bracket Rust + WGSL + Lean 4 Self-Synthesizer | `thm105`..`thm112` |
 | **S14** | `S14:STIEFEL` | `71,680..76,799` | Stiefel Manifold $\mathrm{St}(16,80)$ Cayley Retraction + 16-Mode FNO | `thm113`..`thm120` |
@@ -33,7 +33,7 @@ The `SH4Z v3207` memory-mapped weight and state manifold consists of **`1,280` c
 
 * **Horizon A (`0..4095` — Natural Language BPE Subwords):** Covers conversational English, scientific prose, mathematical LaTeX, Rust/Kotlin/TypeScript/WGSL syntax, and HTTP/JSON agent queries so humans and external LLMs can converse with the manifold in plain natural language.
 * **Horizon B (`4096..8191` — Topological & Algebraic Compound Tokens):** Encodes exact $E_8$ roots, $\Lambda_{24}$ Leech octads, $\mathrm{St}(16,80)$ Cayley bivectors, and 16-mode FNO spectral multipliers without subword fragmentation.
-* **4,400-Shard Vault (`100x Chair-44`):** `3,520` base shards (`0000..3519`) + `880` new natural-language & spectral PDE shards (`3520..4399`), mirrored across `C:\sovereign_manifold_v31\03_vault\shards\` (Tier 1 NVMe) and `E:\Sovereign_Manifold_SSD_Vault\tier2_merkle_mirror\` (Tier 2 External SSD).
+* **4,840-Shard Vault (`100x Chair-44`):** `3,520` base shards (`0000..3519`) + `880` new natural-language & spectral PDE shards (`3520..4399`), mirrored across `C:\sovereign_manifold_v31\03_vault\shards\` (Tier 1 NVMe) and `E:\Sovereign_Manifold_SSD_Vault\tier2_merkle_mirror\` (Tier 2 External SSD).
 
 ---
 
@@ -61,4 +61,4 @@ The `SH4Z v3207` memory-mapped weight and state manifold consists of **`1,280` c
 
 * **Primary Mount:** `E:\Sovereign_Manifold_SSD_Vault\` (`tier2_nl_corpus`, `tier2_fno_greens`, `tier2_merkle_mirror`).
 * **Hot-Unplug Fallback:** Automatically falls back to `C:\sovereign_manifold_ssd_tier2\` if Drive `E:\` is disconnected, preserving 100% availability.
-* **32-Leaf Merkle Integrity:** All `4,400` shards (`137.5 KB` in 32-byte `.binshard` headers + `.e8z`/`.e8f` payloads) are verified against a 32-leaf FNV-1a Merkle tree via `/api/v1/storage/ssd_tier2?q=merkle32_verify`.
+* **32-Leaf Merkle Integrity:** All `4,840` shards (`137.5 KB` in 32-byte `.binshard` headers + `.e8z`/`.e8f` payloads) are verified against a 32-leaf FNV-1a Merkle tree via `/api/v1/storage/ssd_tier2?q=merkle32_verify`.

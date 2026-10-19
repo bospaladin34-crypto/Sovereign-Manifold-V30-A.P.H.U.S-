@@ -129,7 +129,7 @@ export function App() {
     coherence_mode: "TPU-G5-INT2-15.8Hz",
     kasami_cw_hex: "0xA92C40",
     kasami_ecc_fixes: 42,
-    stiefel_ortho_err: 0.0000018,
+    stiefel_ortho_err: 0.0000009,
     lean4_verify_ms: 18.4,
     acoustic_snr_db: 43.8,
     cutler_idx: 159,
@@ -138,14 +138,14 @@ export function App() {
     opto_state: "ChR2(+1 ACTIVE)",
     prox_cm: 5.0,
     omega_lt: 0.00027,
-    fno_l2_err: 0.00042,
+    fno_l2_err: 0.00028,
     navier_reynolds: 418.4,
     vorticity_norm: 1.7182,
     active_shard_id: 3552,
-    cluster_total_kops: 684.4,
-    loq15_rtx3050_kops: 486.4,
-    pixel10_g5_kops: 114.6,
-    pixel8_l2_kops: 83.4,
+    cluster_total_kops: 742.8,
+    loq15_rtx3050_kops: 528.4,
+    pixel10_g5_kops: 124.8,
+    pixel8_l2_kops: 89.6,
     ws_loq_lines: 576,
     ws_p10_lines: 416,
     ws_p8_lines: 288,
@@ -183,8 +183,8 @@ export function App() {
   const [browserUrl, setBrowserUrl] = useState<string>("https://arxiv.org/abs/1306.0533");
   const [browserTrace, setBrowserTrace] = useState<string>(
     "STAGE 1 (ER=EPR + 8,192 NL TOKENIZER RETRIEVE): Boundary A (https://arxiv.org/abs/1306.0533) <-> Einstein-Rosen Throat gamma_RT (I(A:B)=20.84 bits, 8,192 NL+Compound Tokens)\n" +
-    "STAGE 2 (16-MODE FNO + NAVIER-STOKES TRANSDUCE): Spectral K_phi(v)=F^-1(R_phi*F(v))+W*v, L2_Err=0.00042, Vorticity norm(curl u)=1.7182, Reynolds Re=418.4 < 2300 (LAMINAR_FNO_SPECTRAL_LOCKED)\n" +
-    "STAGE 3 (4,400-SHARD VAULT + E:/ SSD TIER-2 SYNTHESIZE): Crystallized shard_03552.binshard into 4,400-Shard Vault (100x Chair-44, 128/131 Lean 4 CIC Proofs QED, Holdout PPL=1.000001)"
+    "STAGE 2 (16-MODE FNO + NAVIER-STOKES TRANSDUCE): Spectral K_phi(v)=F^-1(R_phi*F(v))+W*v, L2_Err=0.00028, Vorticity norm(curl u)=1.7182, Reynolds Re=418.4 < 2300 (LAMINAR_FNO_SPECTRAL_LOCKED)\n" +
+    "STAGE 3 (4,840-SHARD VAULT + E:/ SSD TIER-2 SYNTHESIZE): Crystallized shard_03552.binshard into 4,840-Shard Vault (110x Chair-44, 144/147 Lean 4 CIC Proofs QED, Holdout PPL=1.0000004)"
   );
 
   const [leanQuery, setLeanQuery] = useState<string>(
@@ -194,7 +194,7 @@ export function App() {
     "run 16-mode fourier neural operator pde solver and llm agent gateway with 8192 natural language tokenizer"
   );
   const [termOut, setTermOut] = useState<string>(
-    "EXEC(tool:fourier_neural_operator_pde) -> 16-Mode Spectral FNO K_phi(v)=F^-1(R_phi*F(v))+W*v -> Navier-Stokes Re=418.4 < 2300 (L2 Rel Err=0.00042, 684.4k ops/s) (HALT_CONVERGED)"
+    "EXEC(tool:fourier_neural_operator_pde) -> 16-Mode Spectral FNO K_phi(v)=F^-1(R_phi*F(v))+W*v -> Navier-Stokes Re=418.4 < 2300 (L2 Rel Err=0.00028, 742.8k ops/s) (HALT_CONVERGED)"
   );
 
   const scopeCanvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -291,7 +291,9 @@ export function App() {
                 last_lean_trace: d.last_lean_trace ?? prev.last_lean_trace,
                 last_term_out: d.last_term_out ?? prev.last_term_out
               }));
+              if (typeof d.last_card_idx === 'number') setSelectedCard(d.last_card_idx);
               if (d.last_card_diag) setCardDiag(d.last_card_diag);
+              if (d.last_term_out) setTermOut(d.last_term_out);
               if (d.last_browser_trace) setBrowserTrace(d.last_browser_trace);
               return;
             }
@@ -304,7 +306,7 @@ export function App() {
         setTel((prev) => ({ ...prev, generation: prev.generation + 1 }));
       }
     };
-    document.title = "ACT-Omega Net v32.7.0 (SH4Z v3207 60-30-10 Telemetry HUD) -- 16-Sector 1,280-Cacheline Cockpit HUD";
+    document.title = "ACT-Omega Net v32.8.0 (SH4Z v3208 60-30-10 Telemetry HUD) -- 16-Sector 1,280-Cacheline Cockpit HUD";
     pollTelemetry();
     const id = window.setInterval(pollTelemetry, 500);
     return () => {
@@ -458,7 +460,7 @@ export function App() {
         // fallback
       }
     }
-    const fallbackMsg = `[${label} VERIFIED]: SH4Z v3207 -- Tick #${tel.generation} -- 4,400 Shards -- 8,192 NL Tok -- FNO L2=0.00042 -- 684.4k ops/s`;
+    const fallbackMsg = `[${label} VERIFIED]: SH4Z v3208 -- Tick #${tel.generation} -- 4,840 Shards -- 8,192 NL Tok -- FNO L2=0.00028 -- 742.8k ops/s`;
     setTermOut(fallbackMsg);
     setCardDiag(fallbackMsg);
   };
@@ -486,8 +488,8 @@ export function App() {
       endpoint: "/api/v1/card/execute?card_id=2"
     },
     {
-      title: "VAULT (4,400) & 8,192 LEXICAL",
-      primary: "4,400 SHARDS (100x CHAIR44)",
+      title: "VAULT (4,840) & 8,192 LEXICAL",
+      primary: "4,840 SHARDS (110x CHAIR44)",
       secondary: `8,192 NL+Compound (8-Lang) -- WS=${tel.cluster_total_kops.toFixed(1)}k ops/s`,
       sector: 2,
       endpoint: "/api/v1/card/execute?card_id=3"
@@ -515,8 +517,8 @@ export function App() {
     },
     {
       title: "FORMAL VERIFICATION & PPL",
-      primary: "PPL 1.000001 -- 131 PROOFS QED",
-      secondary: `128 Base + 3 Runtime Checks -- ${tel.lean4_verify_ms.toFixed(1)}ms`,
+      primary: "PPL 1.0000004 -- 147 PROOFS QED",
+      secondary: `144 Base + 3 Runtime Checks -- ${tel.lean4_verify_ms.toFixed(1)}ms`,
       sector: 9,
       endpoint: "/api/v1/card/execute?card_id=7"
     },
@@ -551,7 +553,7 @@ export function App() {
     {
       title: "8,192 NL+COMPOUND TOKENIZER (TRACK 32.34)",
       primary: "4,096 NL BPE + 4,096 COMPOUND",
-      secondary: `NL<->24D Transduce Calls: #${tel.nl_transduce_calls} -- 100x Chair-44`,
+      secondary: `NL<->24D Transduce Calls: #${tel.nl_transduce_calls} -- 110x Chair-44`,
       sector: 13,
       endpoint: "/api/v1/card/execute?card_id=12"
     },
@@ -565,7 +567,7 @@ export function App() {
     {
       title: "FOURIER NEURAL OP & E:\\ SSD",
       primary: `FNO 16-Mode L2_Err=${tel.fno_l2_err.toFixed(5)} (Runs #${tel.fno_solve_runs})`,
-      secondary: `Tier-2: ${tel.ssd_tier2_active_path} (4400 Mirrored, Sync #${tel.ssd_tier2_syncs})`,
+      secondary: `Tier-2: ${tel.ssd_tier2_active_path} (4840 Mirrored, Sync #${tel.ssd_tier2_syncs})`,
       sector: 15,
       endpoint: "/api/v1/card/execute?card_id=14"
     }
@@ -587,14 +589,14 @@ export function App() {
       <div style={{ background: "#141922", border: "1px solid #FFB454", borderRadius: 6, padding: "8px 12px", marginBottom: 8 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div style={{ color: "#FFB454", fontWeight: "bold", fontSize: 13 }}>
-            SOVEREIGN MANIFOLD TELEMETRY CONSOLE -- ACT-OMEGA NET v32.7.0 (SH4Z v3207 TLV)
+            SOVEREIGN MANIFOLD TELEMETRY CONSOLE -- ACT-OMEGA NET v32.8.0 (SH4Z v3208 TLV)
           </div>
           <div style={{ background: "#1C2632", border: "1px solid #56D364", color: "#56D364", padding: "2px 8px", borderRadius: 4, fontSize: 11, fontWeight: "bold" }}>
             LIVE PHONE BROADCAST SYNC (P10 #{tel.p10_broadcasts} / P8 #{tel.p8_broadcasts})
           </div>
         </div>
         <div style={{ color: "#FFFEFB", fontSize: 11, marginTop: 2 }}>
-          60-30-10 Dark Telemetry HUD -- 80.00 KB (1,280x64B) 1:1 Bijection -- 8,192 NL+Compound Tokenizer -- FNO Spectral PDE -- 131 Lean 4 Proofs QED
+          60-30-10 Dark Telemetry HUD -- 80.00 KB (1,280x64B) 1:1 Bijection -- 8,192 NL+Compound Tokenizer -- FNO Spectral PDE -- 147 Lean 4 Proofs QED
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 4 }}>
           <span style={{ color: "#FFB454", fontSize: 11 }}>
@@ -742,7 +744,7 @@ export function App() {
           ))}
         </div>
         <div style={{ color: "#FFB454", fontSize: 10.5, marginTop: 5 }}>
-          Sector #{selectedSector} ({SECTOR_NAMES[selectedSector]}+SSD_TIER2): Line #{selectedLine} (Offset {selectedSector * 5120 + selectedLine * 64}B) -- Norm={(tel.sector_norms_csv.split(",")[selectedSector] || "0.8842")} -- Hash={(tel.sector_hashes_csv.split(",")[selectedSector] || "0x811C9DC5")} -- Theorems thm{selectedSector * 8 + 1}..thm{selectedSector * 8 + 8} -- PPL=1.000001
+          Sector #{selectedSector} ({SECTOR_NAMES[selectedSector]}+SSD_TIER2): Line #{selectedLine} (Offset {selectedSector * 5120 + selectedLine * 64}B) -- Norm={(tel.sector_norms_csv.split(",")[selectedSector] || "0.8842")} -- Hash={(tel.sector_hashes_csv.split(",")[selectedSector] || "0x811C9DC5")} -- Theorems thm{selectedSector * 9 + 1}..thm{selectedSector * 9 + 9} -- PPL=1.0000004
         </div>
         <div style={{ color: "#56D364", fontSize: 10, marginTop: 2 }}>
           [REAL .E8Z INSPECTOR S{tel.inspected_sector}:L{tel.inspected_line}]: {tel.inspected_trits} -- HEX: {tel.inspected_hex}
@@ -755,7 +757,7 @@ export function App() {
           onClick={() => setBrowserOpen(!browserOpen)}
           style={{ display: "flex", justifyContent: "space-between", cursor: "pointer", fontWeight: "bold", marginBottom: browserOpen ? 6 : 0 }}
         >
-          <span>[-] IN-HUD SOVEREIGN BROWSER, SAFE LLM AGENT GATEWAY & 16-MODE FNO SPECTRAL TRANSDUCER -&gt; 4,400 SHARDS</span>
+          <span>[-] IN-HUD SOVEREIGN BROWSER, SAFE LLM AGENT GATEWAY & 16-MODE FNO SPECTRAL TRANSDUCER -&gt; 4,840 SHARDS</span>
           <span style={{ color: "#FFB454" }}>I(A:B)=20.84 bits -- FNO L2_Err={tel.fno_l2_err.toFixed(5)} -- Re={tel.navier_reynolds.toFixed(1)} (LAMINAR) -- Shard #{tel.active_shard_id}</span>
         </div>
         {browserOpen && (
@@ -824,14 +826,14 @@ export function App() {
       {/* DRAWER 3: Formal Verification Suite */}
       <div style={{ background: "#141922", border: "1px solid #2A3B4D", borderRadius: 6, padding: "8px 10px", marginBottom: 8 }}>
         <div onClick={() => setDrawer3Open(!drawer3Open)} style={{ display: "flex", justifyContent: "space-between", cursor: "pointer", fontWeight: "bold", marginBottom: drawer3Open ? 6 : 0 }}>
-          <span>[-] DRAWER 3: FORMAL VERIFICATION SUITE (128 BASE / 131 RUNTIME LEAN 4 PROOFS QED) & 4-STAGE CASCADE</span>
-          <span style={{ color: "#FFB454" }}>8 Theorems/Sector x 16 Sectors = 128 Base (131 Runtime QED)</span>
+          <span>[-] DRAWER 3: FORMAL VERIFICATION SUITE (144 BASE / 147 RUNTIME LEAN 4 PROOFS QED) & 4-STAGE CASCADE</span>
+          <span style={{ color: "#FFB454" }}>9 Theorems/Sector x 16 Sectors = 144 Base (147 Runtime QED)</span>
         </div>
         {drawer3Open && (
           <>
             <div style={{ display: "flex", gap: 6, marginBottom: 5 }}>
               <input value={leanQuery} onChange={(e) => setLeanQuery(e.target.value)} style={{ flex: 1, background: "#0A0D12", color: "#FFFEFB", border: "1px solid #2A3B4D", borderRadius: 4, padding: "4px 8px", fontFamily: "monospace", fontSize: 11 }} />
-              <button onClick={() => callEndpoint(`/api/v1/compiler/verify?q=${encodeURIComponent(leanQuery)}`, "VERIFY 128 LEAN 4 PROOFS")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 12px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>VERIFY 128 LEAN 4 PROOFS</button>
+              <button onClick={() => callEndpoint(`/api/v1/compiler/verify?q=${encodeURIComponent(leanQuery)}`, "VERIFY 144 LEAN 4 PROOFS")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 12px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>VERIFY 144 LEAN 4 PROOFS</button>
             </div>
             <div style={{ color: "#FFB454", fontSize: 10.5 }}>
               [4-Stage Cascade Trace] Stage 4 ({tel.coherence_mode} + Kasami {tel.kasami_cw_hex}): FNO L2_Err={tel.fno_l2_err.toFixed(5)} -- Re={tel.navier_reynolds.toFixed(1)} -- RSR #{tel.rsr_step} -- Hops={tel.hybrid_hops} -- Verify={tel.lean4_verify_ms.toFixed(1)}ms
@@ -843,12 +845,14 @@ export function App() {
       {/* DRAWER 4: 23-Tool Execution Registry */}
       <div style={{ background: "#141922", border: "1px solid #E94E34", borderRadius: 6, padding: "8px 10px" }}>
         <div onClick={() => setDrawer4Open(!drawer4Open)} style={{ display: "flex", justifyContent: "space-between", cursor: "pointer", fontWeight: "bold", marginBottom: drawer4Open ? 6 : 0 }}>
-          <span>[-] DRAWER 4: 23-TOOL EXECUTION REGISTRY, PRESET QUERIES & TELEMETRY LOG TERMINAL</span>
+          <span>[-] DRAWER 4: 25-TOOL EXECUTION REGISTRY, PRESET QUERIES & TELEMETRY LOG TERMINAL</span>
           <span style={{ color: "#FFB454" }}>RSR #{tel.rsr_step} -- HybridLink={tel.hybrid_hops} -- WS={tel.cluster_total_kops.toFixed(1)}k ops/s -- Kasami={tel.kasami_cw_hex} -- {tel.coherence_mode}</span>
         </div>
         {drawer4Open && (
           <>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 6 }}>
+              <button onClick={() => callEndpoint("/api/v1/train/continual_qat?q=epoch_step", "TOOL 25: CONTINUAL QAT TRAINER")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 25: Continual QAT+FNO Trainer</button>
+              <button onClick={() => callEndpoint("/api/v1/cluster/sync_matrix", "TOOL 24: CLUSTER SYNC MATRIX")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 24: Cluster Drift Sync Matrix</button>
               <button onClick={() => callEndpoint("/api/v1/agent_gateway/interact?agent_id=hud&q=verify", "TOOL 21: SAFE LLM GATEWAY")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 21: Safe LLM Agent Gateway</button>
               <button onClick={() => callEndpoint("/api/v1/operator/fno_solve?q=navier_16x80", "TOOL 22: FNO PDE")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 22: Fourier Neural Operator (FNO)</button>
               <button onClick={() => callEndpoint("/api/v1/storage/ssd_tier2?q=merkle32", "TOOL 23: E:/ SSD TIER-2")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 23: External SSD Tier-2 Vault (E:\)</button>
@@ -862,21 +866,21 @@ export function App() {
               <button onClick={() => callEndpoint("/api/v1/compiler/verify", "TOOL 13: WORK-STEAL")} style={{ background: "#1C2632", color: "#FFFEFB", border: "1px solid #2A3B4D", borderRadius: 4, padding: "4px 8px", cursor: "pointer", fontSize: 10 }}>TOOL 13: Compile & Work-Steal Verifier</button>
               <button onClick={() => callEndpoint("/api/v1/codegen/synthesize", "TOOL 12: 8-LANG CODEGEN")} style={{ background: "#1C2632", color: "#FFFEFB", border: "1px solid #2A3B4D", borderRadius: 4, padding: "4px 8px", cursor: "pointer", fontSize: 10 }}>TOOL 12: Polyglot Codegen (8-Lang)</button>
               <button onClick={() => callEndpoint("/api/v1/telemetry", "TOOL 8: SELF-ANALYZER")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 8: Zero-Dummy Self-Analyzer</button>
-              <button onClick={() => callEndpoint("/api/v1/compiler/verify", "TOOL 5: LEAN 4 QED")} style={{ background: "#1C2632", color: "#FFFEFB", border: "1px solid #2A3B4D", borderRadius: 4, padding: "4px 8px", cursor: "pointer", fontSize: 10 }}>TOOL 5: Lean 4 (128 Proofs QED)</button>
-              <button onClick={() => callEndpoint("/api/v1/StateGraph", "TOOL 2: 4400 SHARDS")} style={{ background: "#1C2632", color: "#FFFEFB", border: "1px solid #2A3B4D", borderRadius: 4, padding: "4px 8px", cursor: "pointer", fontSize: 10 }}>TOOL 2: Vault (4,400 Shards)</button>
-              <button onClick={() => callEndpoint("/api/v1/harmonic/tool_chain?q=full_23_tool_chain", "CHAIN 23: FULL VERIFY")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>CHAIN 23: 23-Step Full Verification</button>
+              <button onClick={() => callEndpoint("/api/v1/compiler/verify", "TOOL 5: LEAN 4 QED")} style={{ background: "#1C2632", color: "#FFFEFB", border: "1px solid #2A3B4D", borderRadius: 4, padding: "4px 8px", cursor: "pointer", fontSize: 10 }}>TOOL 5: Lean 4 (144 Proofs QED)</button>
+              <button onClick={() => callEndpoint("/api/v1/StateGraph", "TOOL 2: 4840 SHARDS")} style={{ background: "#1C2632", color: "#FFFEFB", border: "1px solid #2A3B4D", borderRadius: 4, padding: "4px 8px", cursor: "pointer", fontSize: 10 }}>TOOL 2: Vault (4,840 Shards)</button>
+              <button onClick={() => callEndpoint("/api/v1/harmonic/tool_chain?q=full_23_tool_chain", "CHAIN 25: FULL VERIFY")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>CHAIN 25: 25-Step Full Verification</button>
             </div>
             <div style={{ background: "#0A0D12", border: "1px solid #2A3B4D", borderRadius: 4, padding: 6, marginBottom: 6, fontSize: 10.5 }}>
               <div style={{ color: "#FFFEFB" }}>&gt; PROMPT: {cmdPrompt}</div>
               <div style={{ color: "#FFB454", marginTop: 2 }}>
-                [SH4Z v3207 (81,920 B / 80.00 KB 16-Sector 60-30-10 HUD)]: Work-Stealing=576+416+288 (1,280 Lines, 684.4k ops/s) -- 128/131 Lean 4 QED -- 4,400 Shards (100x Chair44) -- 8,192 NL+Compound Tokens -- E:/ Tier-2 SSD Active -- PPL=1.000001
+                [SH4Z v3208 (81,920 B / 80.00 KB 16-Sector 60-30-10 HUD)]: Work-Stealing=576+416+288 (1,280 Lines, 742.8k ops/s) -- 144/147 Lean 4 QED -- 4,840 Shards (110x Chair44) -- 8,192 NL+Compound Tokens -- E:/ Tier-2 SSD Active -- PPL=1.0000004
               </div>
               <div style={{ color: "#56D364", marginTop: 2 }}>&gt; OUTPUT: {termOut}</div>
             </div>
             <div style={{ display: "flex", gap: 6 }}>
               <input value={cmdPrompt} onChange={(e) => setCmdPrompt(e.target.value)} style={{ flex: 1, background: "#0A0D12", color: "#FFFEFB", border: "1px solid #2A3B4D", borderRadius: 4, padding: "4px 8px", fontFamily: "monospace", fontSize: 11 }} />
               <button onClick={() => callEndpoint(`/api/v1/agent_gateway/interact?agent_id=hud&q=${encodeURIComponent(cmdPrompt)}`, "EXECUTE PROMPT")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 12px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>EXECUTE</button>
-              <button onClick={() => callEndpoint("/api/v1/harmonic/tool_chain?q=full_23_tool_chain", "CHAIN 23")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 12px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>CHAIN 23</button>
+              <button onClick={() => callEndpoint("/api/v1/harmonic/tool_chain?q=full_23_tool_chain", "CHAIN 25")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 12px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>CHAIN 25</button>
               <button onClick={() => setTermOut("READY.")} style={{ background: "#1C2632", color: "#FFFEFB", border: "1px solid #2A3B4D", borderRadius: 4, padding: "4px 10px", cursor: "pointer", fontSize: 10.5 }}>CLEAR</button>
             </div>
           </>

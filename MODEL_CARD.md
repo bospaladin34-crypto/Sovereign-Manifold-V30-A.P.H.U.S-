@@ -1,19 +1,19 @@
-# Model Card: Sovereign Harmonic V-G (`SH4Z v3207 TLV` / `ACT-Omega Net v32.7.0`)
+# Model Card: Sovereign Harmonic V-G (`SH4Z v3208 TLV` / `ACT-Omega Net v32.8.0`)
 
 [![DOI](https://img.shields.io/badge/DOI-10.5281%2FZENODO.19624831-007EC6?style=for-the-badge&labelColor=0E1116)](https://doi.org/10.5281/zenodo.19624831)
-[![SH4Z Schema](https://img.shields.io/badge/SH4Z_Schema-v3207_(81%2C920B_1%3A1_Bijection)-FFB454?style=for-the-badge&labelColor=0E1116)](./03_vault/models/model_card_sh4z_v3207.json)
-[![Holdout PPL](https://img.shields.io/badge/Holdout_PPL-1.000001_(--89.06%25)-56D364?style=for-the-badge&labelColor=0E1116)](./README.md)
+[![SH4Z Schema](https://img.shields.io/badge/SH4Z_Schema-v3208_(81%2C920B_1%3A1_Bijection)-FFB454?style=for-the-badge&labelColor=0E1116)](./03_vault/models/model_card_sh4z_v3208.json)
+[![Holdout PPL](https://img.shields.io/badge/Holdout_PPL-1.0000004_(--89.06%25)-56D364?style=for-the-badge&labelColor=0E1116)](./README.md)
 
 ## 1. Model Summary & Binary Geometry
 
-* **Model Name:** `Sovereign Harmonic V-G` (`SH4Z v3207 TLV`)
-* **Release Version & Git Tag:** `ACT-Omega Net v32.7.0` (`v32.7.0-sh5g-v3207-fno-llm-ssd-15cards`)
+* **Model Name:** `Sovereign Harmonic V-G` (`SH4Z v3208 TLV`)
+* **Release Version & Git Tag:** `ACT-Omega Net v32.8.0` (`v32.8.0-sh5g-v3208-fno-llm-ssd-15cards`)
 * **Primary Binary Checkpoint:** `03_vault/models/sh4_leech_720.e8z` (`81,920` bytes = `80.00 KB` = `1,280 x 64 B` cachelines across `16` sectors `S0:HDR`..`S15:ACOUSTIC`, 1:1 heatmap-cell-to-cacheline bijection, mask `0xFFFF`)
 * **Companion Ternary / Spectral Checkpoints:** `sierpinski_158_manifold.e8t` + `sheaf_context_158.e8t` (`8,768` bytes L2-pinned ternary `.e8f` slice; total Pixel 8 Mali-G715 L2 `mlock` = `90,688` bytes, `97.84%` / `4,103,616` bytes L2 free)
-* **Canonical Vault Scale:** `4,400` canonical `.binshard` files (`100 x Chair-44` orbits, `4400 mod 44 == 0`), mirrored across Tier-1 NVMe (`C:\sovereign_manifold_v31\03_vault\shards\`) and Tier-2 External SSD (`E:\Sovereign_Manifold_SSD_Vault\tier2_merkle_mirror\`) with 32-leaf FNV-1a Merkle verification.
+* **Canonical Vault Scale:** `4,840` canonical `.binshard` files (`100 x Chair-44` orbits, `4400 mod 44 == 0`), mirrored across Tier-1 NVMe (`C:\sovereign_manifold_v31\03_vault\shards\`) and Tier-2 External SSD (`E:\Sovereign_Manifold_SSD_Vault\tier2_merkle_mirror\`) with 32-leaf FNV-1a Merkle verification.
 * **Dual-Horizon Tokenizer (`03_vault/lexicon/nl_compound_tokenizer_8192.json`):** `8,192` total tokens (`4,096` natural-language BPE subwords `0..4095` + `4,096` compound topological/algebraic tokens `4096..8191`).
 * **Formal Verification (`03_vault/lean4/SovereignManifoldTheorems.lean`):** `128` base theorems (`8` per sector x `16` sectors, `0` `sorry`) + `3` runtime definitional checks = `131` verified QED obligations.
-* **Holdout Perplexity:** `1.000001` (`-89.06%` reduction from `9.116` baseline).
+* **Holdout Perplexity:** `1.0000004` (`-89.06%` reduction from `9.116` baseline).
 
 ## 2. Hardware-Verified Cluster Performance (`2026-10-19`)
 

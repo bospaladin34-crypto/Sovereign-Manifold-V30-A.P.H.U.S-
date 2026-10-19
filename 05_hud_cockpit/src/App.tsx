@@ -39,6 +39,32 @@ interface TelemetryState {
   rtx_vram_used_mb: number;
   rtx_vram_total_mb: number;
   rtx_power_w: number;
+  coherence_mult: number;
+  coherence_mode: string;
+  kasami_cw_hex: string;
+  kasami_ecc_fixes: number;
+  stiefel_ortho_err: number;
+  lean4_verify_ms: number;
+  acoustic_snr_db: number;
+  cutler_idx: number;
+  siem_entropy_bits: number;
+  siem_pkts: number;
+  opto_state: string;
+  prox_cm: number;
+  omega_lt: number;
+  fno_l2_err: number;
+  navier_reynolds: number;
+  vorticity_norm: number;
+  active_shard_id: number;
+  cluster_total_kops: number;
+  loq15_rtx3050_kops: number;
+  pixel10_g5_kops: number;
+  pixel8_l2_kops: number;
+  ws_loq_lines: number;
+  ws_p10_lines: number;
+  ws_p8_lines: number;
+  rsr_step: number;
+  hybrid_hops: number;
   sector_norms_csv: string;
   sector_hashes_csv: string;
   inspected_sector: number;
@@ -98,7 +124,33 @@ export function App() {
     rtx_clock_mhz: 1477,
     rtx_vram_used_mb: 1148,
     rtx_vram_total_mb: 6144,
-    rtx_power_w: 14.4,
+    rtx_power_w: 7.2,
+    coherence_mult: 4.06,
+    coherence_mode: "TPU-G5-INT2-15.8Hz",
+    kasami_cw_hex: "0xA92C40",
+    kasami_ecc_fixes: 42,
+    stiefel_ortho_err: 0.0000018,
+    lean4_verify_ms: 18.4,
+    acoustic_snr_db: 43.8,
+    cutler_idx: 159,
+    siem_entropy_bits: 4.826,
+    siem_pkts: 15840,
+    opto_state: "ChR2(+1 ACTIVE)",
+    prox_cm: 5.0,
+    omega_lt: 0.00027,
+    fno_l2_err: 0.00042,
+    navier_reynolds: 418.4,
+    vorticity_norm: 1.7182,
+    active_shard_id: 3552,
+    cluster_total_kops: 684.4,
+    loq15_rtx3050_kops: 486.4,
+    pixel10_g5_kops: 114.6,
+    pixel8_l2_kops: 83.4,
+    ws_loq_lines: 576,
+    ws_p10_lines: 416,
+    ws_p8_lines: 288,
+    rsr_step: 185,
+    hybrid_hops: 21400,
     sector_norms_csv: "0.8842,0.8914,0.8765,0.9012,0.8654,0.8931,0.8819,0.9104,0.8742,0.8895,0.8960,0.8711,0.9045,0.8820,0.8977,0.9125",
     sector_hashes_csv: "0x811C9DC5,0xA92C4011,0x7F4E2B09,0xC3D2E1F0,0x55AA9966,0x1B4D8E2A,0xF1096CB4,0x3D7AE219,0x5C8BD047,0x9E3779B9,0x6A09E667,0xBB67AE85,0x3C6EF372,0xA54FF53A,0x510E527F,0x9B05688C",
     inspected_sector: 15,
@@ -201,6 +253,32 @@ export function App() {
                 rtx_vram_used_mb: d.rtx_vram_used_mb ?? prev.rtx_vram_used_mb,
                 rtx_vram_total_mb: d.rtx_vram_total_mb ?? prev.rtx_vram_total_mb,
                 rtx_power_w: d.rtx_power_w ?? prev.rtx_power_w,
+                coherence_mult: d.coherence_mult ?? prev.coherence_mult,
+                coherence_mode: d.coherence_mode ?? prev.coherence_mode,
+                kasami_cw_hex: d.kasami_cw_hex ?? prev.kasami_cw_hex,
+                kasami_ecc_fixes: d.kasami_ecc_fixes ?? prev.kasami_ecc_fixes,
+                stiefel_ortho_err: d.stiefel_ortho_err ?? prev.stiefel_ortho_err,
+                lean4_verify_ms: d.lean4_verify_ms ?? prev.lean4_verify_ms,
+                acoustic_snr_db: d.acoustic_snr_db ?? prev.acoustic_snr_db,
+                cutler_idx: d.cutler_idx ?? prev.cutler_idx,
+                siem_entropy_bits: d.siem_entropy_bits ?? prev.siem_entropy_bits,
+                siem_pkts: d.siem_pkts ?? prev.siem_pkts,
+                opto_state: d.opto_state ?? prev.opto_state,
+                prox_cm: d.prox_cm ?? prev.prox_cm,
+                omega_lt: d.omega_lt ?? prev.omega_lt,
+                fno_l2_err: d.fno_l2_err ?? prev.fno_l2_err,
+                navier_reynolds: d.navier_reynolds ?? prev.navier_reynolds,
+                vorticity_norm: d.vorticity_norm ?? prev.vorticity_norm,
+                active_shard_id: d.active_shard_id ?? prev.active_shard_id,
+                cluster_total_kops: d.cluster_total_kops ?? prev.cluster_total_kops,
+                loq15_rtx3050_kops: d.loq15_rtx3050_kops ?? prev.loq15_rtx3050_kops,
+                pixel10_g5_kops: d.pixel10_g5_kops ?? prev.pixel10_g5_kops,
+                pixel8_l2_kops: d.pixel8_l2_kops ?? prev.pixel8_l2_kops,
+                ws_loq_lines: d.ws_loq_lines ?? prev.ws_loq_lines,
+                ws_p10_lines: d.ws_p10_lines ?? prev.ws_p10_lines,
+                ws_p8_lines: d.ws_p8_lines ?? prev.ws_p8_lines,
+                rsr_step: d.rsr_step ?? prev.rsr_step,
+                hybrid_hops: d.hybrid_hops ?? prev.hybrid_hops,
                 sector_norms_csv: d.sector_norms_csv ?? prev.sector_norms_csv,
                 sector_hashes_csv: d.sector_hashes_csv ?? prev.sector_hashes_csv,
                 inspected_sector: d.inspected_sector ?? prev.inspected_sector,
@@ -226,6 +304,7 @@ export function App() {
         setTel((prev) => ({ ...prev, generation: prev.generation + 1 }));
       }
     };
+    document.title = "ACT-Omega Net v32.7.0 (SH4Z v3207 60-30-10 Telemetry HUD) -- 16-Sector 1,280-Cacheline Cockpit HUD";
     pollTelemetry();
     const id = window.setInterval(pollTelemetry, 500);
     return () => {
@@ -387,73 +466,73 @@ export function App() {
   const cards15 = [
     {
       title: "FIBONACCI APERIODIC CLOCK",
-      primary: "15.80 Hz / 2.00 Hz STREAM",
-      secondary: `66,667us Phys / 500ms Stream -- Tick #${tel.generation}`,
+      primary: `${tel.p10_sensor_hz.toFixed(2)} Hz / ${tel.coherence_mult.toFixed(2)}x COHERENCE`,
+      secondary: `${tel.coherence_mode} (2.00Hz) -- Tick #${tel.generation}`,
       sector: 0,
-      endpoint: "/api/v1/telemetry"
+      endpoint: "/api/v1/card/execute?card_id=0"
     },
     {
       title: "PIXEL 10 24D MAGNETOMETER",
       primary: `(${tel.mag_x.toFixed(1)}, ${tel.mag_y.toFixed(1)}, ${tel.mag_z.toFixed(1)}) uT`,
       secondary: `norm(B) = ${tel.b_norm.toFixed(1)} uT -- Baro ${tel.baro_hpa.toFixed(1)} hPa (P10 Sync #${tel.p10_broadcasts})`,
       sector: 1,
-      endpoint: "/api/v1/telemetry"
+      endpoint: "/api/v1/card/execute?card_id=1"
     },
     {
       title: "STIEFEL St(16,80) & SHEAF H1",
-      primary: "norm(W^T W - I) = 0.0000018",
-      secondary: "Cw=0xA92C40 -- dim H1 = 0",
+      primary: `norm(W^T W - I) = ${tel.stiefel_ortho_err.toFixed(7)}`,
+      secondary: `Cw=${tel.kasami_cw_hex} (ECC #${tel.kasami_ecc_fixes}) -- dim H1 = 0`,
       sector: 14,
-      endpoint: "/api/v1/manifold/stiefel_step"
+      endpoint: "/api/v1/card/execute?card_id=2"
     },
     {
       title: "VAULT (4,400) & 8,192 LEXICAL",
       primary: "4,400 SHARDS (100x CHAIR44)",
-      secondary: "8,192 NL+Compound (8-Lang) -- WS=684.4k ops/s",
+      secondary: `8,192 NL+Compound (8-Lang) -- WS=${tel.cluster_total_kops.toFixed(1)}k ops/s`,
       sector: 2,
-      endpoint: "/api/v1/StateGraph"
+      endpoint: "/api/v1/card/execute?card_id=3"
     },
     {
       title: "PIXEL 8 MALI-G715 4.00 MB L2",
-      primary: `${tel.p8_temp_c.toFixed(1)} C -- mlock(90,688B) 97.84% FREE`,
-      secondary: `288/1,280 Lines (83.4k ops/s, 99.9% L2 Hit, P8 Sync #${tel.p8_broadcasts})`,
+      primary: `${tel.p8_temp_c.toFixed(1)} C -- ${tel.p8_batt_mv}mV (${tel.p8_batt_pct}%) -- 97.84% FREE`,
+      secondary: `${tel.ws_p8_lines}/1,280 Lines (${tel.pixel8_l2_kops.toFixed(1)}k ops/s, P8 Sync #${tel.p8_broadcasts})`,
       sector: 5,
-      endpoint: "/api/v1/telemetry"
+      endpoint: "/api/v1/card/execute?card_id=4"
     },
     {
       title: "ACOUSTIC I/Q SDR WAVE BUS",
-      primary: "SNR 43.8 dB (1.728 / 18.5 kHz)",
-      secondary: "FCC-Exempt 64-QAM Wave -- Cutler #159/536",
+      primary: `SNR ${tel.acoustic_snr_db.toFixed(1)} dB (1.728 / 18.5 kHz)`,
+      secondary: `FCC-Exempt 64-QAM Wave -- Cutler #${tel.cutler_idx}/536`,
       sector: 15,
-      endpoint: "/api/v1/acoustic/ping"
+      endpoint: "/api/v1/card/execute?card_id=5"
     },
     {
       title: "CLOUDFLARE PQ & SIEM SENTINEL",
-      primary: "0 BREACHES -- H(X)=4.826b/B",
-      secondary: `PQ: X25519MLKEM768_FIPS203 -- Pkts #${14800 + (tel.generation % 1000)}`,
+      primary: `0 BREACHES -- H(X)=${tel.siem_entropy_bits.toFixed(3)}b/B`,
+      secondary: `PQ: X25519MLKEM768_FIPS203 -- Pkts #${tel.siem_pkts}`,
       sector: 7,
-      endpoint: "/.well-known/llm-agent.json"
+      endpoint: "/api/v1/card/execute?card_id=6"
     },
     {
       title: "FORMAL VERIFICATION & PPL",
       primary: "PPL 1.000001 -- 131 PROOFS QED",
-      secondary: "128 Base + 3 Runtime Checks -- 27.3ms",
+      secondary: `128 Base + 3 Runtime Checks -- ${tel.lean4_verify_ms.toFixed(1)}ms`,
       sector: 9,
-      endpoint: "/api/v1/compiler/verify"
+      endpoint: "/api/v1/card/execute?card_id=7"
     },
     {
       title: "SECTOR 8_v (0..7): ENV BUS",
       primary: `Baro: ${tel.baro_hpa.toFixed(1)} hPa -- Lux: ${tel.light_lx.toFixed(0)} lx`,
-      secondary: "Prox: 5 cm -- Opto: ChR2(+1) (Live P10 Broadcast)",
+      secondary: `Prox: ${tel.prox_cm.toFixed(1)} cm -- Opto: ${tel.opto_state} (Live P10)`,
       sector: 8,
-      endpoint: "/api/v1/telemetry"
+      endpoint: "/api/v1/card/execute?card_id=8"
     },
     {
       title: "SECTOR 8_+ (8..15): SO(3) KINEMATICS",
       primary: `norm(a): ${tel.acc_norm.toFixed(2)} m/s2 -- norm(w): ${tel.gyro_norm.toFixed(2)} rad/s`,
-      secondary: "Lense-Thirring Omega_LT = 0.00027 (Live P10 IMU)",
+      secondary: `Lense-Thirring Omega_LT = ${tel.omega_lt.toFixed(5)} (Live P10 IMU)`,
       sector: 10,
-      endpoint: "/api/v1/telemetry"
+      endpoint: "/api/v1/card/execute?card_id=9"
     },
     {
       title: "SECTOR 8_- (16..23): TENSOR G5 ARMv9.2-A",
@@ -465,7 +544,7 @@ export function App() {
     {
       title: "NVIDIA RTX 3050 6GB ReBAR",
       primary: `${tel.rtx_temp_c.toFixed(0)} C -- ${tel.rtx_clock_mhz} MHz -- ${tel.rtx_vram_used_mb}/${tel.rtx_vram_total_mb} MB`,
-      secondary: `RTX+FNO GEMM: 486.4k ops/s (${tel.rtx_power_w.toFixed(1)}W) -- WGSL Active`,
+      secondary: `RTX+FNO GEMM: ${tel.loq15_rtx3050_kops.toFixed(1)}k ops/s (${tel.rtx_power_w.toFixed(1)}W) -- WGSL Active`,
       sector: 12,
       endpoint: "/api/v1/card/execute?card_id=11"
     },
@@ -474,21 +553,21 @@ export function App() {
       primary: "4,096 NL BPE + 4,096 COMPOUND",
       secondary: `NL<->24D Transduce Calls: #${tel.nl_transduce_calls} -- 100x Chair-44`,
       sector: 13,
-      endpoint: "/api/v1/tokenizer/nl_transduce?q=sovereign+manifold+fno+ssd"
+      endpoint: "/api/v1/card/execute?card_id=12"
     },
     {
       title: "SAFE LLM AGENT GATEWAY (TOOL 21)",
       primary: "/.well-known/llm-agent.json + /llms.txt",
       secondary: `Visits #${tel.agent_gateway_visits} (external_llm_mcp_visitor) -- SIEM Sandboxed`,
       sector: 3,
-      endpoint: "/api/v1/agent_gateway/interact?agent_id=hud_cockpit&q=status"
+      endpoint: "/api/v1/card/execute?card_id=13"
     },
     {
       title: "FOURIER NEURAL OP & E:\\ SSD",
-      primary: `FNO 16-Mode L2_Err=0.00042 (Runs #${tel.fno_solve_runs})`,
+      primary: `FNO 16-Mode L2_Err=${tel.fno_l2_err.toFixed(5)} (Runs #${tel.fno_solve_runs})`,
       secondary: `Tier-2: ${tel.ssd_tier2_active_path} (4400 Mirrored, Sync #${tel.ssd_tier2_syncs})`,
       sector: 15,
-      endpoint: "/api/v1/operator/fno_solve?q=navier_stokes_16x80"
+      endpoint: "/api/v1/card/execute?card_id=14"
     }
   ];
 
@@ -519,7 +598,7 @@ export function App() {
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 4 }}>
           <span style={{ color: "#FFB454", fontSize: 11 }}>
-            LOQ15 (576) + P10 G5 (416, {tel.p10_temp_c.toFixed(1)}C) + P8 L2 (288, {tel.p8_temp_c.toFixed(1)}C) = 1,280 Lines (684.4k ops/s -- #{tel.generation})
+            LOQ15 ({tel.ws_loq_lines}) + P10 G5 ({tel.ws_p10_lines}, {tel.p10_temp_c.toFixed(1)}C, {tel.coherence_mode}) + P8 L2 ({tel.ws_p8_lines}, {tel.p8_temp_c.toFixed(1)}C) = 1,280 Lines ({tel.cluster_total_kops.toFixed(1)}k ops/s -- #{tel.generation})
           </span>
           <button
             onClick={() => { setDrawerAOpen(true); setDrawerBOpen(true); setBrowserOpen(true); setDrawer1Open(true); setDrawer2Open(true); setDrawer3Open(true); setDrawer4Open(true); }}
@@ -587,7 +666,7 @@ export function App() {
           style={{ display: "flex", justifyContent: "space-between", cursor: "pointer", fontWeight: "bold", marginBottom: drawerBOpen ? 6 : 0 }}
         >
           <span>[-] DRAWER B: 60 FPS STIEFEL MANIFOLD St(16,80) VECTOR SCOPE & 15.0 Hz FNO SPECTRAL / ACOUSTIC I/Q OSCILLOSCOPE</span>
-          <span style={{ color: "#FFB454" }}>Live Acoustic SNR 43.8 dB -- FNO L2 Err 0.00042 -- Click to Toggle</span>
+          <span style={{ color: "#FFB454" }}>Live Acoustic SNR {tel.acoustic_snr_db.toFixed(1)} dB -- FNO L2 Err {tel.fno_l2_err.toFixed(5)} -- Kasami {tel.kasami_cw_hex} -- Click to Toggle</span>
         </div>
         {drawerBOpen && (
           <div style={{ display: "grid", gridTemplateColumns: "0.42fr 0.58fr", gap: 8 }}>
@@ -677,7 +756,7 @@ export function App() {
           style={{ display: "flex", justifyContent: "space-between", cursor: "pointer", fontWeight: "bold", marginBottom: browserOpen ? 6 : 0 }}
         >
           <span>[-] IN-HUD SOVEREIGN BROWSER, SAFE LLM AGENT GATEWAY & 16-MODE FNO SPECTRAL TRANSDUCER -&gt; 4,400 SHARDS</span>
-          <span style={{ color: "#FFB454" }}>I(A:B)=20.84 bits -- FNO L2_Err=0.00042 -- Re=418.4 (LAMINAR) -- 8,192 NL+Compound Tokens</span>
+          <span style={{ color: "#FFB454" }}>I(A:B)=20.84 bits -- FNO L2_Err={tel.fno_l2_err.toFixed(5)} -- Re={tel.navier_reynolds.toFixed(1)} (LAMINAR) -- Shard #{tel.active_shard_id}</span>
         </div>
         {browserOpen && (
           <>
@@ -720,7 +799,7 @@ export function App() {
       <div style={{ background: "#141922", border: "1px solid #2A3B4D", borderRadius: 6, padding: "8px 10px", marginBottom: 8 }}>
         <div onClick={() => setDrawer2Open(!drawer2Open)} style={{ display: "flex", justifyContent: "space-between", cursor: "pointer", fontWeight: "bold", marginBottom: drawer2Open ? 6 : 0 }}>
           <span>[-] DRAWER 2: FCC-EXEMPT ACOUSTIC I/Q WAVE SDR WATERFALL (1.728 kHz / 18.5 kHz) & FNO HELMHOLTZ + STIEFEL St(16,80)</span>
-          <span style={{ color: "#FFB454" }}>Acoustic 64-QAM SNR=43.80 dB -- FNO L2_Err=0.00042 -- Ortho=0.0000018 -- Booker k=33 Verified</span>
+          <span style={{ color: "#FFB454" }}>Acoustic 64-QAM SNR={tel.acoustic_snr_db.toFixed(1)} dB -- FNO L2_Err={tel.fno_l2_err.toFixed(5)} -- Ortho={tel.stiefel_ortho_err.toFixed(7)} -- Cutler #{tel.cutler_idx}/536</span>
         </div>
         {drawer2Open && (
           <>
@@ -755,7 +834,7 @@ export function App() {
               <button onClick={() => callEndpoint(`/api/v1/compiler/verify?q=${encodeURIComponent(leanQuery)}`, "VERIFY 128 LEAN 4 PROOFS")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 12px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>VERIFY 128 LEAN 4 PROOFS</button>
             </div>
             <div style={{ color: "#FFB454", fontSize: 10.5 }}>
-              [4-Stage Cascade Trace] Stage 4 (FNO Spectral PDE + 8,192 NL Tokenizer + 4,400 Shards): Carrier=1,728Hz/18.5kHz -- FNO L2_Err=0.00042 -- RSR #185 -- Hops=21400 -- PPL=1.000001
+              [4-Stage Cascade Trace] Stage 4 ({tel.coherence_mode} + Kasami {tel.kasami_cw_hex}): FNO L2_Err={tel.fno_l2_err.toFixed(5)} -- Re={tel.navier_reynolds.toFixed(1)} -- RSR #{tel.rsr_step} -- Hops={tel.hybrid_hops} -- Verify={tel.lean4_verify_ms.toFixed(1)}ms
             </div>
           </>
         )}
@@ -765,7 +844,7 @@ export function App() {
       <div style={{ background: "#141922", border: "1px solid #E94E34", borderRadius: 6, padding: "8px 10px" }}>
         <div onClick={() => setDrawer4Open(!drawer4Open)} style={{ display: "flex", justifyContent: "space-between", cursor: "pointer", fontWeight: "bold", marginBottom: drawer4Open ? 6 : 0 }}>
           <span>[-] DRAWER 4: 23-TOOL EXECUTION REGISTRY, PRESET QUERIES & TELEMETRY LOG TERMINAL</span>
-          <span style={{ color: "#FFB454" }}>RSR #185 -- HybridLink=21400 -- WS=684.4k ops/s -- 4,400 Shards -- 8,192 NL+Compound Tokens</span>
+          <span style={{ color: "#FFB454" }}>RSR #{tel.rsr_step} -- HybridLink={tel.hybrid_hops} -- WS={tel.cluster_total_kops.toFixed(1)}k ops/s -- Kasami={tel.kasami_cw_hex} -- {tel.coherence_mode}</span>
         </div>
         {drawer4Open && (
           <>

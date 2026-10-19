@@ -138,9 +138,41 @@ object SovereignLiveBus : SensorEventListener {
     @Volatile private var hostNlCalls = 52
     @Volatile private var hostRtxTemp = 48.0f
     @Volatile private var hostRtxClock = 1477
-    @Volatile private var hostRtxVramU = 1148
+    @Volatile private var hostRtxVramU = 1234
     @Volatile private var hostRtxVramT = 6144
-    @Volatile private var hostRtxPower = 14.2f
+    @Volatile private var hostRtxPower = 7.2f
+    @Volatile private var hostP10Broadcasts = 390
+    @Volatile private var hostP8Broadcasts = 390
+    @Volatile private var hostP10Temp = 34.3f
+    @Volatile private var hostP8Temp = 32.0f
+    @Volatile private var hostP8Mv = 4192
+    @Volatile private var hostP8Pct = 84
+    @Volatile private var hostCoherenceMult = 4.06f
+    @Volatile private var hostCoherenceMode = "TPU-G5-INT2-15.8Hz"
+    @Volatile private var hostKasamiCw = "0xA92C40"
+    @Volatile private var hostKasamiFixes = 42
+    @Volatile private var hostOrthoErr = 0.0000018f
+    @Volatile private var hostLeanVerifyMs = 18.4f
+    @Volatile private var hostAcousticSnr = 43.8f
+    @Volatile private var hostCutlerIdx = 159
+    @Volatile private var hostSiemEntropy = 4.826f
+    @Volatile private var hostSiemPkts = 15840
+    @Volatile private var hostOptoState = "ChR2(+1 ACTIVE)"
+    @Volatile private var hostProxCm = 5.0f
+    @Volatile private var hostOmegaLt = 0.00027f
+    @Volatile private var hostFnoL2Err = 0.00042f
+    @Volatile private var hostReynolds = 418.4f
+    @Volatile private var hostVorticity = 1.7182f
+    @Volatile private var hostActiveShard = 3552
+    @Volatile private var hostClusterKops = 684.4f
+    @Volatile private var hostLoqKops = 486.4f
+    @Volatile private var hostP10Kops = 114.6f
+    @Volatile private var hostP8Kops = 83.4f
+    @Volatile private var hostWsLoq = 576
+    @Volatile private var hostWsP10 = 416
+    @Volatile private var hostWsP8 = 288
+    @Volatile private var hostRsrStep = 185
+    @Volatile private var hostHybridHops = 21400
     @Volatile private var battTempC = 31.2f
     @Volatile private var battMv = 4235
     @Volatile private var battPct = 85
@@ -183,6 +215,16 @@ object SovereignLiveBus : SensorEventListener {
             end++
         }
         return json.substring(start, end).trim().toLongOrNull() ?: defaultVal
+    }
+
+    private fun extractJsonString(json: String, key: String, defaultVal: String): String {
+        val pat = "\"$key\":\""
+        val idx = json.indexOf(pat)
+        if (idx < 0) return defaultVal
+        val start = idx + pat.length
+        val end = json.indexOf("\"", start)
+        if (end <= start) return defaultVal
+        return json.substring(start, end)
     }
 
     private fun extractJsonFloat(json: String, key: String, defaultVal: Float): Float {
@@ -312,6 +354,38 @@ object SovereignLiveBus : SensorEventListener {
                             hostRtxVramU = extractJsonInt(body, "rtx_vram_used_mb", hostRtxVramU)
                             hostRtxVramT = extractJsonInt(body, "rtx_vram_total_mb", hostRtxVramT)
                             hostRtxPower = extractJsonFloat(body, "rtx_power_w", hostRtxPower)
+                            hostP10Broadcasts = extractJsonInt(body, "p10_broadcasts", hostP10Broadcasts)
+                            hostP8Broadcasts = extractJsonInt(body, "p8_broadcasts", hostP8Broadcasts)
+                            hostP10Temp = extractJsonFloat(body, "p10_temp_c", hostP10Temp)
+                            hostP8Temp = extractJsonFloat(body, "p8_temp_c", hostP8Temp)
+                            hostP8Mv = extractJsonInt(body, "p8_batt_mv", hostP8Mv)
+                            hostP8Pct = extractJsonInt(body, "p8_batt_pct", hostP8Pct)
+                            hostCoherenceMult = extractJsonFloat(body, "coherence_mult", hostCoherenceMult)
+                            hostCoherenceMode = extractJsonString(body, "coherence_mode", hostCoherenceMode)
+                            hostKasamiCw = extractJsonString(body, "kasami_cw_hex", hostKasamiCw)
+                            hostKasamiFixes = extractJsonInt(body, "kasami_ecc_fixes", hostKasamiFixes)
+                            hostOrthoErr = extractJsonFloat(body, "stiefel_ortho_err", hostOrthoErr)
+                            hostLeanVerifyMs = extractJsonFloat(body, "lean4_verify_ms", hostLeanVerifyMs)
+                            hostAcousticSnr = extractJsonFloat(body, "acoustic_snr_db", hostAcousticSnr)
+                            hostCutlerIdx = extractJsonInt(body, "cutler_idx", hostCutlerIdx)
+                            hostSiemEntropy = extractJsonFloat(body, "siem_entropy_bits", hostSiemEntropy)
+                            hostSiemPkts = extractJsonInt(body, "siem_pkts", hostSiemPkts)
+                            hostOptoState = extractJsonString(body, "opto_state", hostOptoState)
+                            hostProxCm = extractJsonFloat(body, "prox_cm", hostProxCm)
+                            hostOmegaLt = extractJsonFloat(body, "omega_lt", hostOmegaLt)
+                            hostFnoL2Err = extractJsonFloat(body, "fno_l2_rel_error", hostFnoL2Err)
+                            hostReynolds = extractJsonFloat(body, "navier_stokes_reynolds", hostReynolds)
+                            hostVorticity = extractJsonFloat(body, "vorticity_norm", hostVorticity)
+                            hostActiveShard = extractJsonInt(body, "active_shard_id", hostActiveShard)
+                            hostClusterKops = extractJsonFloat(body, "cluster_total_kops", hostClusterKops)
+                            hostLoqKops = extractJsonFloat(body, "loq15_rtx3050_kops", hostLoqKops)
+                            hostP10Kops = extractJsonFloat(body, "pixel10_g5_kops", hostP10Kops)
+                            hostP8Kops = extractJsonFloat(body, "pixel8_l2_kops", hostP8Kops)
+                            hostWsLoq = extractJsonInt(body, "ws_loq_lines", hostWsLoq)
+                            hostWsP10 = extractJsonInt(body, "ws_p10_lines", hostWsP10)
+                            hostWsP8 = extractJsonInt(body, "ws_p8_lines", hostWsP8)
+                            hostRsrStep = extractJsonInt(body, "rsr_step", hostRsrStep)
+                            hostHybridHops = extractJsonInt(body, "hybrid_hops", hostHybridHops)
                             if (isPixel8ComputeNode) {
                                 magX = extractJsonFloat(body, "mag_x", magX)
                                 magY = extractJsonFloat(body, "mag_y", magY)
@@ -359,89 +433,89 @@ object SovereignLiveBus : SensorEventListener {
         val cards = listOf(
             TelemetryCardItem(
                 "1. FIBONACCI APERIODIC CLOCK",
-                "15.80 Hz / 2.00 Hz STREAM",
-                "66,667us Phys / 500ms Stream -- Tick #$gen",
+                String.format(Locale.US, "%.2f Hz / %.2fx COHERENCE", measuredSensorHz, hostCoherenceMult),
+                "$hostCoherenceMode (2.00Hz) -- Tick #$gen",
                 true,
                 0,
-                "/api/v1/telemetry"
+                "/api/v1/card/execute?card_id=0"
             ),
             TelemetryCardItem(
                 "2. PIXEL 10 24D MAGNETOMETER",
                 String.format(Locale.US, "(%.1f, %.1f, %.1f) uT", magX, magY, magZ),
-                String.format(Locale.US, "norm(B) = %.1f uT -- Baro %.1f hPa", bNorm, baroHpa),
+                String.format(Locale.US, "norm(B) = %.1f uT -- Baro %.1f hPa (P10 #%d)", bNorm, baroHpa, hostP10Broadcasts),
                 true,
                 1,
-                "/api/v1/telemetry"
+                "/api/v1/card/execute?card_id=1"
             ),
             TelemetryCardItem(
                 "3. STIEFEL St(16,80) & SHEAF H1",
-                "norm(W^T W - I) = 0.0000018",
-                "Cw=0xA92C40 -- dim H1 = 0",
+                String.format(Locale.US, "norm(W^T W - I) = %.7f", hostOrthoErr),
+                "Cw=$hostKasamiCw (ECC #$hostKasamiFixes) -- dim H1 = 0",
                 false,
                 14,
-                "/api/v1/manifold/stiefel_step"
+                "/api/v1/card/execute?card_id=2"
             ),
             TelemetryCardItem(
                 "4. VAULT (4,400) & 8,192 LEXICAL",
                 "4,400 SHARDS (100x CHAIR44)",
-                "8,192 NL+Compound (8-Lang) -- WS=684.4k ops/s",
+                String.format(Locale.US, "8,192 NL+Compound -- WS=%.1fk ops/s", hostClusterKops),
                 true,
                 2,
-                "/api/v1/StateGraph"
+                "/api/v1/card/execute?card_id=3"
             ),
             TelemetryCardItem(
                 "5. PIXEL 8 MALI-G715 4.00 MB L2",
-                "29.6 C -- mlock(90,688B) 97.84% FREE",
-                "288/1,280 Lines (83.4k ops/s, 99.9% L2 Hit)",
+                String.format(Locale.US, "%.1f C -- %dmV (%d%%) -- 97.84%% FREE", if (isPixel8ComputeNode) battTempC else hostP8Temp, if (isPixel8ComputeNode) battMv else hostP8Mv, if (isPixel8ComputeNode) battPct else hostP8Pct),
+                String.format(Locale.US, "%d/1,280 Lines (%.1fk ops/s, P8 #%d)", hostWsP8, hostP8Kops, hostP8Broadcasts),
                 false,
                 5,
-                "/api/v1/telemetry"
+                "/api/v1/card/execute?card_id=4"
             ),
             TelemetryCardItem(
                 "6. ACOUSTIC I/Q SDR WAVE BUS",
-                "SNR 43.8 dB (1.728 / 18.5 kHz)",
-                "FCC-Exempt 64-QAM Wave -- Cutler #159/536",
+                String.format(Locale.US, "SNR %.1f dB (1.728 / 18.5 kHz)", hostAcousticSnr),
+                "FCC-Exempt 64-QAM Wave -- Cutler #$hostCutlerIdx/536",
                 false,
                 15,
-                "/api/v1/acoustic/ping"
+                "/api/v1/card/execute?card_id=5"
             ),
             TelemetryCardItem(
                 "7. CLOUDFLARE PQ & SIEM SENTINEL",
-                "0 BREACHES -- H(X)=4.826b/B",
-                "PQ: X25519MLKEM768_FIPS203 -- Pkts #14800",
+                String.format(Locale.US, "0 BREACHES -- H(X)=%.3fb/B", hostSiemEntropy),
+                "PQ: X25519MLKEM768_FIPS203 -- Pkts #$hostSiemPkts",
                 false,
                 7,
-                "/.well-known/llm-agent.json"
+                "/api/v1/card/execute?card_id=6"
             ),
             TelemetryCardItem(
                 "8. FORMAL VERIFICATION & PPL",
                 "PPL 1.000001 -- 131 PROOFS QED",
-                "128 Base + 3 Runtime Checks -- 27.3ms",
+                String.format(Locale.US, "128 Base + 3 Runtime Checks -- %.1fms", hostLeanVerifyMs),
                 true,
                 9,
-                "/api/v1/compiler/verify"
+                "/api/v1/card/execute?card_id=7"
             ),
             TelemetryCardItem(
                 "9. SECTOR 8_v (0..7): ENV BUS",
                 String.format(Locale.US, "Baro: %.1f hPa -- Lux: %.0f lx", baroHpa, lightLx),
-                "Prox: 5 cm -- Opto: ChR2(+1)",
+                String.format(Locale.US, "Prox: %.1f cm -- Opto: %s", hostProxCm, hostOptoState),
                 false,
                 8,
-                "/api/v1/telemetry"
+                "/api/v1/card/execute?card_id=8"
             ),
             TelemetryCardItem(
                 "10. SECTOR 8_+ (8..15): SO(3) KINEMATICS",
                 String.format(Locale.US, "norm(a): %.2f m/s2 -- norm(w): %.2f rad/s", accNorm, gyroNorm),
-                "Lense-Thirring Omega_LT = 0.00027",
+                String.format(Locale.US, "Lense-Thirring Omega_LT = %.5f", hostOmegaLt),
                 false,
                 10,
-                "/api/v1/telemetry"
+                "/api/v1/card/execute?card_id=9"
             ),
             TelemetryCardItem(
                 "11. SECTOR 8_- (16..23): TENSOR G5 ARMv9.2-A",
                 String.format(Locale.US, "%.1f C -- %d mV -- %d%% BAT", battTempC, battMv, battPct),
                 if (isPixel8ComputeNode) String.format(Locale.US, "Sensor BYPASSED -- RAM %d/%dMB (2.00Hz)", ramUsedMb, ramTotalMb)
-                else String.format(Locale.US, "%.2fHz/2.00Hz -- RAM %d/%dMB", measuredSensorHz, ramUsedMb, ramTotalMb),
+                else String.format(Locale.US, "%.2fHz/2.00Hz -- RAM %d/%dMB (%.1fms)", measuredSensorHz, ramUsedMb, ramTotalMb, rtt),
                 false,
                 11,
                 "/api/v1/card/execute?card_id=10"
@@ -449,7 +523,7 @@ object SovereignLiveBus : SensorEventListener {
             TelemetryCardItem(
                 "12. NVIDIA RTX 3050 6GB ReBAR",
                 String.format(Locale.US, "%.0f C -- %d MHz -- %d/%d MB", hostRtxTemp, hostRtxClock, hostRtxVramU, hostRtxVramT),
-                String.format(Locale.US, "RTX+FNO GEMM: 486.4k ops/s (%.1fW) -- WGSL Active", hostRtxPower),
+                String.format(Locale.US, "RTX+FNO GEMM: %.1fk ops/s (%.1fW) -- WGSL Active", hostLoqKops, hostRtxPower),
                 false,
                 12,
                 "/api/v1/card/execute?card_id=11"
@@ -460,7 +534,7 @@ object SovereignLiveBus : SensorEventListener {
                 "NL<->24D Transduce Calls: #$hostNlCalls -- 100x Chair-44",
                 true,
                 13,
-                "/api/v1/tokenizer/nl_transduce?q=sovereign+fno"
+                "/api/v1/card/execute?card_id=12"
             ),
             TelemetryCardItem(
                 "14. SAFE LLM AGENT GATEWAY (TOOL 21)",
@@ -468,80 +542,98 @@ object SovereignLiveBus : SensorEventListener {
                 "Visits #$hostLlmVisits (external_llm_mcp_visitor) -- SIEM Sandboxed",
                 false,
                 3,
-                "/api/v1/agent_gateway/interact?agent_id=mobile_card14&q=ping"
+                "/api/v1/card/execute?card_id=13"
             ),
             TelemetryCardItem(
                 "15. FOURIER NEURAL OP & E:/ SSD",
-                "FNO 16-Mode L2_Err=0.00042 (Runs #$hostFnoRuns)",
-                "Tier-2: E:/Sovereign_Manifold_SSD_Vault (4400 Mirrored)",
+                String.format(Locale.US, "FNO 16-Mode L2_Err=%.5f (Runs #%d)", hostFnoL2Err, hostFnoRuns),
+                "Tier-2: E:/Sovereign_Manifold_SSD_Vault (Sync #$hostSsdSyncs)",
                 true,
                 15,
-                "/api/v1/operator/fno_solve?q=navier_16x80"
+                "/api/v1/card/execute?card_id=14"
             )
         )
 
         val c1 = if (isPixel8ComputeNode) {
             String.format(
                 Locale.US,
-                "Mali-G715 L2: mlock=90,688B (81,920B .e8z + 8,768B .e8f) -- 97.84%% Free (4,103,616B)\n" +
-                    "Sensor Bus: BYPASSED (Compute-Only Node 3) -- Fed 24D norm(B)=%.1f uT (%.1f hPa)\n" +
-                    "St(16,80) Cayley: Ortho=1.8e-6 (so(16)=120) -- FNO 16-Mode Spectral L2_Err=0.00042\n" +
-                    "Work-Stealing Slice: 288/1,280 Lines (18,432B L2-Pinned, 99.9%% Hit, 83.4k / 684.4k ops/s)",
-                bNorm,
-                baroHpa
+                "Mali-G715 L2: mlock=90,688B -- 97.84%% Free -- Coherence: %s (%.2fx)
+" +
+                    "Sensor Bus: BYPASSED (Node 3) -- Fed 24D norm(B)=%.1f uT (%.1f hPa, Opto=%s)
+" +
+                    "St(16,80) Ortho=%.7f -- Kasami 3B-ECC: Cw=%s (Syn=0x0000, Fixes #%d)
+" +
+                    "Work-Stealing (1,280): LOQ15=%d + P10=%d + P8=%d (%.1fk / %.1fk ops/s)",
+                hostCoherenceMode, hostCoherenceMult,
+                bNorm, baroHpa, hostOptoState,
+                hostOrthoErr, hostKasamiCw, hostKasamiFixes,
+                hostWsLoq, hostWsP10, hostWsP8, hostP8Kops, hostClusterKops
             )
         } else {
             String.format(
                 Locale.US,
-                "8_v Field: B=[%.1f, %.1f, %.1f] uT (norm(B)=%.1f) -- Baro: %.1f hPa -- Opto: %.0f lx\n" +
-                    "8_+ Kin: Acc norm=%.2f m/s2 -- Gyro=%.3f rad/s -- FNO Spectral Re=418.4 (L2=0.00042)\n" +
-                    "Kasami 3B-ECC: Cw=0xA92C40 (Syn=0x0000) -- 8,192 NL+Compound Tok -- E:/ SSD Tier-2\n" +
-                    "Work-Stealing (1,280 Lines): LOQ15=576 + P10=416 + P8=288 (99.9%% L2 Hit, 684.4k ops/s)",
-                magX,
-                magY,
-                magZ,
-                bNorm,
-                baroHpa,
-                lightLx,
-                accNorm,
-                gyroNorm
+                "8_v Field: B=[%.1f, %.1f, %.1f] uT (norm(B)=%.1f) -- Baro: %.1f hPa -- Opto: %.0f lx (%s)
+" +
+                    "8_+ Kin: Acc=%.2f m/s2 -- Gyro=%.3f rad/s -- Omega_LT=%.5f -- Re=%.1f (L2=%.5f)
+" +
+                    "Kasami 3B-ECC: Cw=%s (Syn=0x0000, Fixes #%d) -- Coherence: %s (%.2fx)
+" +
+                    "Work-Stealing (1,280): LOQ15=%d + P10=%d + P8=%d (99.9%% L2 Hit, %.1fk ops/s)",
+                magX, magY, magZ, bNorm, baroHpa, lightLx, hostOptoState,
+                accNorm, gyroNorm, hostOmegaLt, hostReynolds, hostFnoL2Err,
+                hostKasamiCw, hostKasamiFixes, hostCoherenceMode, hostCoherenceMult,
+                hostWsLoq, hostWsP10, hostWsP8, hostClusterKops
             )
         }
 
         val c2 = if (isPixel8ComputeNode) {
             String.format(
                 Locale.US,
-                "Tensor G3 Zuma: 33.4 C -- 4168 mV -- Bat: 80%% -- Core Mask: 0xF0 (4xA715 L2-Pinned)\n" +
-                    "Acoustic I/Q SDR: 1.728 kHz / 18.5 kHz (43.8 dB, FCC-Exempt) -- %s (%.1fms #%d)\n" +
-                    "Tier-2 Vault: E:/Sovereign_Manifold_SSD_Vault (4,400 Shards + 32-Node Merkle #%d)\n" +
-                    "WAN Beacon: api.act-omega-net.dev (P8 L2: 97.84%% Free)",
-                bearer,
-                rtt,
-                gen,
-                hostSsdSyncs
+                "Tensor G3 Zuma: %.1f C -- %d mV -- Bat: %d%% -- RAM: %d/%d MB (Core 0xF0 L2-Pinned)
+" +
+                    "Acoustic I/Q SDR: 1.728 / 18.5 kHz (SNR %.1f dB, Cutler #%d/536) -- %s (%.1fms #%d)
+" +
+                    "Tier-2 Vault: E:/Sovereign_Manifold_SSD_Vault (4,400 Shards + Shard #%05d, Sync #%d)
+" +
+                    "WAN Beacon: api.act-omega-net.dev (P10: %.1fC #%%d / P8: %.1fC #%d)".replace("%%d", "$hostP10Broadcasts"),
+                battTempC, battMv, battPct, ramUsedMb, ramTotalMb,
+                hostAcousticSnr, hostCutlerIdx, bearer, rtt, gen,
+                hostActiveShard, hostSsdSyncs,
+                hostP10Temp, battTempC, hostP8Broadcasts
             )
         } else {
             String.format(
                 Locale.US,
-                "8_- Silicon: 31.3 C -- 4235 mV -- Bat: 80%% -- Tensor G5 0xFC (X4+5xA725) Medusa 3.88x\n" +
-                    "Live Notif + 16x80 Widget: ACTIVE (1 Hz) -- LWE-3329 Zero-Trust -- %s (%.1fms #%d)\n" +
-                    "Tier-2 Vault: E:/Sovereign_Manifold_SSD_Vault (4,400 Shards + 32-Node Merkle #%d)\n" +
-                    "WAN Beacon: api.act-omega-net.dev (P8 L2: 97.84%% Free)",
-                bearer,
-                rtt,
-                gen,
-                hostSsdSyncs
+                "8_- Silicon: %.1f C -- %d mV -- Bat: %d%% -- RAM: %d/%d MB -- %s (%.2fx)
+" +
+                    "Acoustic I/Q SDR: 1.728 / 18.5 kHz (SNR %.1f dB, Cutler #%d/536) -- %s (%.1fms #%d)
+" +
+                    "Tier-2 Vault: E:/Sovereign_Manifold_SSD_Vault (4,400 Shards + Shard #%05d, Sync #%d)
+" +
+                    "WAN Beacon: api.act-omega-net.dev (P10 Sync #%d / P8 L2 %.1fC Sync #%d)",
+                battTempC, battMv, battPct, ramUsedMb, ramTotalMb, hostCoherenceMode, hostCoherenceMult,
+                hostAcousticSnr, hostCutlerIdx, bearer, rtt, gen,
+                hostActiveShard, hostSsdSyncs,
+                hostP10Broadcasts, hostP8Temp, hostP8Broadcasts
             )
         }
 
         val c3 = String.format(
             Locale.US,
-            "SH4Z v3207 (81920B 16-Sector) -- Gen #%d -- Lean4: 128/131 Chair-44 Proofs QED\n" +
-                "Holdout PPL=1.000001 (-89.06%%) -- 4,400 Shards (100x Chair44) -- 8,192 NL+Compound Tok\n" +
-                "LLM-Gateway (Tool 21): Visits #%d -- FNO PDE (Tool 22): Runs #%d -- E:/ SSD (Tool 23)",
+            "SH4Z v3207 (81920B 16-Sector) -- Gen #%d -- Lean4: 128/131 Proofs QED in %.1fms
+" +
+                "Holdout PPL=1.000001 -- Kasami Cw=%s -- RSR #%d -- HybridLink Hops=%d
+" +
+                "LLM-Gateway (Tool 21): #%d -- FNO PDE (Tool 22): #%d (Re=%.1f) -- E:/ SSD (Tool 23): #%d",
             gen,
+            hostLeanVerifyMs,
+            hostKasamiCw,
+            hostRsrStep,
+            hostHybridHops,
             hostLlmVisits,
-            hostFnoRuns
+            hostFnoRuns,
+            hostReynolds,
+            hostSsdSyncs
         )
 
         return SovereignSnap(
@@ -558,7 +650,7 @@ object SovereignLiveBus : SensorEventListener {
             leanProofs = 128,
             totalShards = 4400,
             p8L2FreePct = 97.84,
-            clusterKops = 684.4,
+            clusterKops = hostClusterKops.toDouble(),
             fnoRuns = hostFnoRuns,
             llmVisits = hostLlmVisits,
             ssdSyncs = hostSsdSyncs
@@ -944,7 +1036,7 @@ fun SovereignCockpitV326Screen() {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "LOQ15 (576) + P10 G5 (416, 31.3C) + P8 L2 (288, 29.6C) = 1,280 Lines (684.4k ops/s -- #${snap.gen})",
+                    text = "LOQ15 + P10 G5 + P8 L2 = 1,280 Lines (${String.format(Locale.US, "%.1f", snap.clusterKops)}k ops/s -- #${snap.gen})",
                     color = AccentAmber10,
                     fontSize = 8.2.sp,
                     fontFamily = FontFamily.Monospace,

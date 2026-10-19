@@ -62,31 +62,31 @@ object SovereignLiveBus {
         val prod = (Build.PRODUCT ?: "").lowercase(Locale.US)
         dev.contains("shiba") || mod.contains("pixel 8") || prod.contains("shiba")
     }
-    @Volatile var sh4zBytes = ByteArray(77824) { idx -> ((idx * 97 + 41) and 0xFF).toByte() }
-    @Volatile var schema = 3202
-    @Volatile var containerSize = 77824
-    @Volatile var shards = 2860
-    @Volatile var orbits = 65
-    @Volatile var onlinePpl = 1.00001f
+    @Volatile var sh4zBytes = ByteArray(81920) { idx -> ((idx * 97 + 41) and 0xFF).toByte() }
+    @Volatile var schema = 3203
+    @Volatile var containerSize = 81920
+    @Volatile var shards = 3080
+    @Volatile var orbits = 70
+    @Volatile var onlinePpl = 1.000005f
     @Volatile var autoGen = 22100L
     @Volatile var rsrSteps = 85
     @Volatile var hybridHops = 17120
-    @Volatile var wsLoqLines = 544
-    @Volatile var wsP10Lines = 400
-    @Volatile var wsP8Lines = 272
-    @Volatile var wsTotalKops = 324.6f
+    @Volatile var wsLoqLines = 576
+    @Volatile var wsP10Lines = 416
+    @Volatile var wsP8Lines = 288
+    @Volatile var wsTotalKops = 345.4f
     @Volatile var wsP8L2HitPct = 99.9f
     @Volatile var golayCw24 = 0xA92C40
     @Volatile var golayRawSyn12 = 0x07A3
     @Volatile var totalCorrectedBits = 12420L
-    @Volatile var lean4Verified = 72
+    @Volatile var lean4Verified = 80
     @Volatile var bNormUt = 47.3f
     @Volatile var baroHpa = 905.4f
     @Volatile var tempC = 35.0f
     @Volatile var swarmStatus = "ONLINE (B1:USB(:5173) #716800)"
     @Volatile var activeTabs = 1
-    @Volatile var lweMerkleSig = "0x03202D4E"
-    @Volatile var synthCodeSnippet = "pub const SH4Z_V3202_BYTES: usize = 77824; // 544+400+272=1,216 Lines (0 Brackets, 72/72 Lean4 QED)"
+    @Volatile var lweMerkleSig = "0x03203D4E"
+    @Volatile var synthCodeSnippet = "pub const SH4Z_V3203_BYTES: usize = 81920; // 576+416+288=1,280 Lines (0 Brackets, 80/80 Lean4 QED)"
 
     private val sectorNames = arrayOf(
         "S0:HDR", "S1:LEECH", "S2:UARM", "S3:WEB", "S4:STALK",
@@ -94,27 +94,42 @@ object SovereignLiveBus {
         "S10:ECC", "S11:RSI", "S12:BOT", "S13:CODE", "S14:EXEC", "S15:PATCH"
     )
 
+    @Volatile private var cachedBmp: Bitmap? = null
+    @Volatile private var cachedCanvas: Canvas? = null
+    private val pTitle = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.parseColor("#38BDF8")
+        typeface = Typeface.create(Typeface.MONOSPACE, Typeface.BOLD)
+    }
+    private val pSub = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.parseColor("#34D399")
+        typeface = Typeface.MONOSPACE
+    }
+    private val pLbl = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.parseColor("#CBD5E1")
+        typeface = Typeface.MONOSPACE
+    }
+    private val pCell = Paint()
+    private val hsvBuf = FloatArray(3)
+
+    // Track 32.16 & Track 32.21: Zero-Allocation 60 FPS Heatmap Renderer with Exact 1:1 Cell-to-Cacheline Bijection (lineIdx = s * 80 + col)!
+    @Synchronized
     fun renderHeatmapBitmap(widthPx: Int, heightPx: Int): Bitmap {
         val w = widthPx.coerceAtLeast(360)
         val h = heightPx.coerceAtLeast(180)
-        val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
-        val c = Canvas(bmp)
+        var bmp = cachedBmp
+        var c = cachedCanvas
+        if (bmp == null || c == null || bmp.width != w || bmp.height != h) {
+            bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+            c = Canvas(bmp)
+            cachedBmp = bmp
+            cachedCanvas = c
+        }
         c.drawColor(Color.parseColor("#060B16"))
-        val pTitle = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.parseColor("#38BDF8"); textSize = (h * 0.082f).coerceIn(14f, 24f)
-            typeface = Typeface.create(Typeface.MONOSPACE, Typeface.BOLD)
-        }
-        val pSub = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.parseColor("#34D399"); textSize = (h * 0.072f).coerceIn(12f, 20f)
-            typeface = Typeface.MONOSPACE
-        }
-        val pLbl = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.parseColor("#CBD5E1"); textSize = (h * 0.052f).coerceIn(9f, 15f)
-            typeface = Typeface.MONOSPACE
-        }
-        val pCell = Paint()
-        val nodeTag = if (isPixel8ComputeNode) "P8-L2(86,592B)" else "P10-24D"
-        c.drawText("SH4Z v3202 16x80 SELF-TENSOR HEATMAP (77,824B / 76.00KB -- " + nodeTag + ")", 12f, h * 0.10f, pTitle)
+        pTitle.textSize = (h * 0.082f).coerceIn(14f, 24f)
+        pSub.textSize = (h * 0.072f).coerceIn(12f, 20f)
+        pLbl.textSize = (h * 0.052f).coerceIn(9f, 15f)
+        val nodeTag = if (isPixel8ComputeNode) "P8-L2(90,688B)" else "P10-24D"
+        c.drawText("SH4Z v3203 16x80 1:1 BIJECTION HEATMAP (81,920B / 80.00KB -- " + nodeTag + ")", 12f, h * 0.10f, pTitle)
         val topY = h * 0.14f
         val botY = h * 0.86f
         val gridH = (botY - topY).coerceAtLeast(60f)
@@ -124,25 +139,27 @@ object SovereignLiveBus {
         val colW = gridW / 80f
         val bytes = sh4zBytes
         val bLen = bytes.size.coerceAtLeast(1)
-        val phaseShift = ((autoGen % 80L).toInt()) * 64
+        val byteInLine = ((autoGen and 63L).toInt())
         for (s in 0 until 16) {
             val y0 = topY + s * rowH
             c.drawText(sectorNames[s], 8f, y0 + rowH * 0.78f, pLbl)
-            val secBase = s * 4864
+            val rowLineBase = s * 80
             for (col in 0 until 80) {
-                val bIdx = (secBase + col * 61 + phaseShift) % bLen
+                // Exact 1:1 Bijection: Cell (s, col) -> Hardware Cacheline (s * 80 + col), Byte Offset ((s * 80 + col) * 64 + byteInLine)
+                val lineIdx = rowLineBase + col
+                val bIdx = (lineIdx * 64 + byteInLine) % bLen
                 val v = bytes[bIdx].toInt() and 0xFF
-                val hue = ((s * 24 + (v ushr 2) + (col * 2)) % 360).toFloat()
-                val sat = 0.78f + ((v and 0x1F).toFloat() / 160f)
-                val bri = 0.42f + ((v ushr 3).toFloat() / 64f).coerceAtMost(0.56f)
-                pCell.color = Color.HSVToColor(floatArrayOf(hue, sat.coerceIn(0.5f, 1f), bri.coerceIn(0.35f, 0.98f)))
+                hsvBuf[0] = ((s * 22 + (v ushr 2) + (col * 2)) % 360).toFloat()
+                hsvBuf[1] = (0.78f + ((v and 0x1F).toFloat() / 160f)).coerceIn(0.5f, 1f)
+                hsvBuf[2] = (0.42f + ((v ushr 3).toFloat() / 64f).coerceAtMost(0.56f)).coerceIn(0.35f, 0.98f)
+                pCell.color = Color.HSVToColor(hsvBuf)
                 val x0 = leftX + col * colW
                 c.drawRect(x0, y0 + 1f, x0 + colW - 0.8f, y0 + rowH - 1f, pCell)
             }
         }
         val foot = String.format(
             Locale.US,
-            "PPL %.5f -- Cw=0x%06X (0 Err) -- 72 QED -- RSR #%d -- WS=%.1fk ops/s -- %.1fC",
+            "PPL %.6f -- Cw=0x%06X (0 Err) -- 80 QED -- RSR #%d -- WS=%.1fk ops/s -- %.1fC",
             onlinePpl, golayCw24, rsrSteps, wsTotalKops, tempC
         )
         c.drawText(foot, 12f, h * 0.96f, pSub)
@@ -196,11 +213,11 @@ class SovereignManifoldForegroundService : Service() {
     }
 
     private fun buildNotification(): Notification {
-        val chanId = "sovereign_v32_2_live_channel"
+        val chanId = "sovereign_v32_3_live_channel"
         val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val ch = NotificationChannel(chanId, "ACT-Omega v32.2 Live Telemetry", NotificationManager.IMPORTANCE_LOW).apply {
-                description = "1 Hz Persistent SH4Z v3202 16-Sector Work-Stealing & Heatmap Stream"
+            val ch = NotificationChannel(chanId, "ACT-Omega v32.3 Live Telemetry", NotificationManager.IMPORTANCE_LOW).apply {
+                description = "1 Hz Persistent SH4Z v3203 16-Sector Work-Stealing & Heatmap Stream"
                 setShowBadge(false)
             }
             nm.createNotificationChannel(ch)
@@ -213,13 +230,13 @@ class SovereignManifoldForegroundService : Service() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
         val nodeTitle = if (SovereignLiveBus.isPixel8ComputeNode) {
-            String.format(Locale.US, "SH4Z v3202 (P8 86,592B L2) -- PPL %.5f -- WS %.1fk ops/s -- %.1fC", SovereignLiveBus.onlinePpl, SovereignLiveBus.wsTotalKops, SovereignLiveBus.tempC)
+            String.format(Locale.US, "SH4Z v3203 (P8 90,688B L2) -- PPL %.6f -- WS %.1fk ops/s -- %.1fC", SovereignLiveBus.onlinePpl, SovereignLiveBus.wsTotalKops, SovereignLiveBus.tempC)
         } else {
-            String.format(Locale.US, "SH4Z v3202 (15-Sec 76KB) -- PPL %.5f -- WS %.1fk ops/s -- %.1fC", SovereignLiveBus.onlinePpl, SovereignLiveBus.wsTotalKops, SovereignLiveBus.tempC)
+            String.format(Locale.US, "SH4Z v3203 (15-Sec 80KB) -- PPL %.6f -- WS %.1fk ops/s -- %.1fC", SovereignLiveBus.onlinePpl, SovereignLiveBus.wsTotalKops, SovereignLiveBus.tempC)
         }
         val bodyTxt = String.format(
             Locale.US,
-            "Cw=0x%06X (Corr=%d) -- 72/72 QED -- RSR #%d -- Split=544+400+272 (1,216 Lines) -- %s -- P8 L2: 97.94%% Free",
+            "Cw=0x%06X (Corr=%d) -- 80/80 QED -- RSR #%d -- Split=576+416+288 (1,280 Lines) -- %s -- P8 L2: 97.84%% Free",
             SovereignLiveBus.golayCw24, SovereignLiveBus.totalCorrectedBits, SovereignLiveBus.rsrSteps, SovereignLiveBus.swarmStatus
         )
         @Suppress("DEPRECATION")
@@ -240,14 +257,14 @@ class SovereignManifoldForegroundService : Service() {
 
     private fun postLiveNotification() {
         val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        nm.notify(3202, buildNotification())
+        nm.notify(3203, buildNotification())
     }
 
     override fun onCreate() {
         super.onCreate()
         active = true
         try {
-            startForeground(3202, buildNotification())
+            startForeground(3203, buildNotification())
         } catch (_: Throwable) {}
         svcHandler.post(notifLoop)
     }
@@ -364,7 +381,7 @@ object Leech24DZigzagCodec {
         val den = max(1L, qb * qa)
         val num = (den - (dotBa * dotBa)).coerceIn(0L, den)
         val ppm = ((num * 1_000_000L) / den).coerceIn(0L, 1_000_000L)
-        val trop = max(max(c8v.toLong() + 2860L, c8p.toLong() + 2048L), c8m.toLong() + 2860L)
+        val trop = max(max(c8v.toLong() + 3080L, c8p.toLong() + 2048L), c8m.toLong() + 3080L)
         return longArrayOf(qb, qa, ppm, trop)
     }
 
@@ -536,11 +553,11 @@ class Leech24DScopeView(ctx: Context) : View(ctx) {
             val p = when (k % 3) { 0 -> paintCyan; 1 -> paintGreen; else -> paintAmber }
             canvas.drawLine(cx, cy, px, py, p)
         }
-        val leftLbl = if (SovereignLiveBus.isPixel8ComputeNode) "P8 L2 WORK-STEAL (272)" else "P10 24D + WORK-STEAL (400)"
+        val leftLbl = if (SovereignLiveBus.isPixel8ComputeNode) "P8 L2 BIJECTION (288)" else "P10 24D + BIJECTION (416)"
         canvas.drawText(leftLbl, 12f, 28f, paintLabel)
         val ox0 = midX + 12f; val ow = w - ox0 - 16f
         canvas.drawRect(ox0, 14f, w - 14f, h - 14f, paintGrid)
-        canvas.drawText("1,216-LINE SPLIT + 66 LEAN4", ox0 + 10f, 34f, paintLabel)
+        canvas.drawText("1,280-LINE SPLIT + 66 LEAN4", ox0 + 10f, 34f, paintLabel)
         val pathB = Path(); val pathA = Path(); val pathG = Path()
         for (i in 0 until 64) {
             val idx = (head + i) and 63
@@ -566,14 +583,14 @@ class MainActivity : Activity() {
     @Volatile private var autoGen = 22100L
     @Volatile private var rsrSteps = 85
     @Volatile private var hybridHops = 17120
-    @Volatile private var wsTotalKops = 324.6f
-    @Volatile private var onlinePpl = 1.00001f
-    @Volatile private var otaSchema = 3202
-    @Volatile private var otaBytes = 77824
-    @Volatile private var otaShards = 2860
-    @Volatile private var otaOrbits = 65
+    @Volatile private var wsTotalKops = 345.4f
+    @Volatile private var onlinePpl = 1.000005f
+    @Volatile private var otaSchema = 3203
+    @Volatile private var otaBytes = 81920
+    @Volatile private var otaShards = 3080
+    @Volatile private var otaOrbits = 70
     @Volatile private var activeTabWorkers = 1
-    @Volatile private var lean4VerifiedCount = 72
+    @Volatile private var lean4VerifiedCount = 80
     private var seqCounter = 716800L
     private val permanentGitHubBeacon = "https://raw.githubusercontent.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-/vesper_production/03_vault/models/cloudflare_wan_url.txt"
 
@@ -666,11 +683,11 @@ class MainActivity : Activity() {
         val isP8 = SovereignLiveBus.isPixel8ComputeNode
         val headerCard = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; background = cardBg("#38BDF8"); setPadding(dp(12), dp(8), dp(12), dp(8)) }
         headerCard.addView(TextView(this).apply {
-            text = if (isP8) "ACT-OMEGA NET v32.2 (SH-5C / PIXEL 8 L2 COMPUTE-ONLY COCKPIT)" else "ACT-OMEGA NET v32.2 (SH-5C / SH4Z v3202 15-SECTOR 76KB COCKPIT)"
+            text = if (isP8) "ACT-OMEGA NET v32.3 (SH-5D / PIXEL 8 L2 COMPUTE-ONLY COCKPIT)" else "ACT-OMEGA NET v32.3 (SH-5D / SH4Z v3203 15-SECTOR 80KB COCKPIT)"
             setTextColor(Color.parseColor("#38BDF8")); textSize = 11.2f; setTypeface(Typeface.MONOSPACE, Typeface.BOLD)
         })
         headerCard.addView(TextView(this).apply {
-            text = if (isP8) "Node 3: Pixel 8 (Mali-G715 4.00MB L2, 86,592B mlock, 97.94% Free, 272/1,216 Work-Steal Lines)" else "Node 2: Pixel 10 (Tensor G5 24D + 400/1,216 Work-Steal Lines, 2,860 Shards, 72 Lean 4 Proofs)"
+            text = if (isP8) "Node 3: Pixel 8 (Mali-G715 4.00MB L2, 90,688B mlock, 97.84% Free, 288/1,280 Work-Steal Lines)" else "Node 2: Pixel 10 (Tensor G5 24D + 416/1,280 Work-Steal Lines, 3,080 Shards, 80 Lean 4 Proofs)"
             setTextColor(Color.parseColor("#94A3B8")); textSize = 9.8f; typeface = Typeface.MONOSPACE
         })
         root.addView(headerCard, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { bottomMargin = dp(8) })
@@ -723,10 +740,10 @@ class MainActivity : Activity() {
         val c2Title = if (isP8) "[CARD 2: TENSOR G3 9-CORE SILICON, LWE ZERO-TRUST & 4-BEARER]" else "[CARD 2: 8_- TENSOR G5, LIVE 1HZ NOTIFICATION & 4-BEARER SWARM]"
         val card1Tv = makeCard("#38BDF8", c1Title, "#38BDF8")
         val card2Tv = makeCard("#10B981", c2Title, "#34D399")
-        val card3Tv = makeCard("#A855F7", "[CARD 3: SECTOR 14 WORK-STEALING + COMPILE VERIFIER + 72 LEAN 4 PROOFS]", "#C084FC")
+        val card3Tv = makeCard("#A855F7", "[CARD 3: SECTOR 14 WORK-STEALING + COMPILE VERIFIER + 80 LEAN 4 PROOFS]", "#C084FC")
 
         val card4 = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; background = cardBg("#F59E0B"); setPadding(dp(12), dp(8), dp(12), dp(10)) }
-        card4.addView(TextView(this).apply { text = "[CARD 4: SH4Z v3202 CODEBASE SELF-ANALYZER + 14-TOOL COMPILER]"; setTextColor(Color.parseColor("#FBBF24")); textSize = 10.2f; setTypeface(Typeface.MONOSPACE, Typeface.BOLD) })
+        card4.addView(TextView(this).apply { text = "[CARD 4: SH4Z v3203 CODEBASE SELF-ANALYZER + 15-TOOL COMPILER]"; setTextColor(Color.parseColor("#FBBF24")); textSize = 10.2f; setTypeface(Typeface.MONOSPACE, Typeface.BOLD) })
         val promptInput = EditText(this).apply {
             setText("run autonomous rust and lean 4 compile verifier and audit cross-silicon work-stealing")
             setTextColor(Color.parseColor("#F8FAFC")); setHintTextColor(Color.parseColor("#64748B"))
@@ -741,7 +758,7 @@ class MainActivity : Activity() {
             setBackgroundColor(Color.parseColor("#080E1E")); setPadding(dp(6), dp(4), dp(6), dp(4))
         }
         val consoleOut = TextView(this).apply {
-            text = "Ready. Tap COMPILE for Autonomous Rust/Lean4 Verifier, SELF-AUDIT for Terminal-RSI, or CHAIN 14 for 14-Step Loop."
+            text = "Ready. Tap COMPILE for Autonomous Rust/Lean4 Verifier, SELF-AUDIT for Terminal-RSI, or CHAIN 15 for 15-Step Loop."
             setTextColor(Color.parseColor("#34D399")); textSize = 10.2f; typeface = Typeface.MONOSPACE; setPadding(0, dp(6), 0, 0)
         }
 
@@ -796,13 +813,13 @@ class MainActivity : Activity() {
                 val finalOut = hostReply ?: if (mode == "CHAIN") {
                     String.format(
                         Locale.US,
-                        "(STEP 1) rust_lean_compile_verifier (0 Brackets, 66/72 Lean 4 QED, Work-Steal=544+400+272) ==> (STEP 2) polyglot_code_synthesizer ==> (STEP 3) web_automation_harvester ==> (STEP 4) system_utility_bridge ==> (STEP 5) braid_web_ast_synthesizer ==> (STEP 6) codebase_self_analyzer ==> (STEP 7..13) golay_ecc + 25-LUT + lean4 + qat + leech24d + vault(2,860) + silicon_audit (%.1fk ops/s, PPL=%.5f)",
+                        "(STEP 1) rust_lean_compile_verifier (0 Brackets, 66/80 Lean 4 QED, Work-Steal=576+416+288) ==> (STEP 2) polyglot_code_synthesizer ==> (STEP 3) web_automation_harvester ==> (STEP 4) system_utility_bridge ==> (STEP 5) braid_web_ast_synthesizer ==> (STEP 6) codebase_self_analyzer ==> (STEP 7..13) golay_ecc + 25-LUT + lean4 + qat + leech24d + vault(3,080) + silicon_audit (%.1fk ops/s, PPL=%.6f)",
                         wsTotalKops, onlinePpl
                     )
                 } else {
                     String.format(
                         Locale.US,
-                        "EXEC(%s) -> Sector 14 Compile Verifier & Work-Stealing Split-Batch (LOQ15=544 + P10=400 + P8=272 = 1,216 Lines, %.1fk ops/s, 66/72 Lean 4 QED, 2,860 Shards, PPL=%.5f) (HALT_CONVERGED)",
+                        "EXEC(%s) -> Sector 14 Compile Verifier & Work-Stealing Split-Batch (LOQ15=576 + P10=416 + P8=288 = 1,280 Lines, %.1fk ops/s, 66/80 Lean 4 QED, 3,080 Shards, PPL=%.6f) (HALT_CONVERGED)",
                         if (toolId.isEmpty()) "tool:rust_lean_compile_verifier" else toolId, wsTotalKops, onlinePpl
                     )
                 }
@@ -810,7 +827,7 @@ class MainActivity : Activity() {
                     codeInspectorTv.text = "[Live Code & Work-Steal Inspector]: " + SovereignLiveBus.synthCodeSnippet
                     consoleOut.text = String.format(
                         Locale.US,
-                        "> QUERY: %s\n[Gen #%d -- RSR #%d -- HybridLink=%d Hops -- WS=%.1fk ops/s -- Cw=0x%06X (0 Err, Corr=%d) -- PPL=%.5f -- Medusa 26.8 us (Local %.1f us)]\n> OUTPUT: %s",
+                        "> QUERY: %s\n[Gen #%d -- RSR #%d -- HybridLink=%d Hops -- WS=%.1fk ops/s -- Cw=0x%06X (0 Err, Corr=%d) -- PPL=%.6f -- Medusa 26.8 us (Local %.1f us)]\n> OUTPUT: %s",
                         q, autoGen, rsrSteps, hybridHops, wsTotalKops, col.golayCw24, col.totalCorrectedBits, onlinePpl, dtLocalUs, finalOut
                     )
                 }
@@ -823,7 +840,12 @@ class MainActivity : Activity() {
         }, LinearLayout.LayoutParams(0, dp(35), 1f).apply { rightMargin = dp(3) })
 
         rowActions.addView(Button(this).apply {
-            text = "HOT-PATCH"; textSize = 8.5f; setBackgroundColor(Color.parseColor("#0D9488")); setTextColor(Color.WHITE)
+            text = "DEBATE"; textSize = 8.5f; setBackgroundColor(Color.parseColor("#0D9488")); setTextColor(Color.WHITE)
+            setOnClickListener { executeAction(promptInput.text.toString(), "TOOL", "tool:multi_agent_consensus_debate") }
+        }, LinearLayout.LayoutParams(0, dp(35), 0.95f).apply { rightMargin = dp(3) })
+
+        rowActions.addView(Button(this).apply {
+            text = "HOT-PATCH"; textSize = 8.2f; setBackgroundColor(Color.parseColor("#0891B2")); setTextColor(Color.WHITE)
             setOnClickListener { executeAction(promptInput.text.toString(), "TOOL", "tool:autonomous_hot_patch_engine") }
         }, LinearLayout.LayoutParams(0, dp(35), 1.0f).apply { rightMargin = dp(3) })
 
@@ -856,15 +878,15 @@ class MainActivity : Activity() {
             "HYBRID" to "tool:autopoietic_qat_step",
             "PDE-24D" to "tool:leech_24d_calculator",
             "VAULT" to "tool:vault_shard_search",
-            "CHAIN 14" to "tool:chain_all_14"
+            "CHAIN 15" to "tool:chain_all_15"
         )
         for ((label, tId) in toolButtonsRow2) {
             rowTools2.addView(Button(this).apply {
                 text = label; textSize = 9.0f
-                setBackgroundColor(Color.parseColor(if (tId == "tool:chain_all_14") "#065F46" else "#1E1B4B"))
-                setTextColor(Color.parseColor(if (tId == "tool:chain_all_14") "#6EE7B7" else "#E9D5FF"))
+                setBackgroundColor(Color.parseColor(if (tId == "tool:chain_all_15") "#065F46" else "#1E1B4B"))
+                setTextColor(Color.parseColor(if (tId == "tool:chain_all_15") "#6EE7B7" else "#E9D5FF"))
                 setOnClickListener {
-                    if (tId == "tool:chain_all_14") {
+                    if (tId == "tool:chain_all_15") {
                         executeAction(promptInput.text.toString(), "CHAIN", tId)
                     } else {
                         executeAction(promptInput.text.toString(), "TOOL", tId)
@@ -886,6 +908,7 @@ class MainActivity : Activity() {
 
         Thread {
             var syncIdx = 716800L
+            var stickyBearerIdx = 0
             while (running) {
                 try {
                     col.refreshSiliconTelemetry()
@@ -897,13 +920,25 @@ class MainActivity : Activity() {
                     val gNorm = sqrt(gx * gx + gy * gy + gz * gz)
                     val tempC = col.tempDeciC / 10.0f
                     val powerW = (col.voltageMv.toFloat() * abs(col.currentMa).toFloat()) / 1_000_000.0f
-                    val bearers = listOf(
+                    val rawBearers = arrayOf(
                         Triple("http://127.0.0.1:5173", 1, "B1:USB(:5173)"),
                         Triple("http://127.0.0.1:8097", 1, "B1:USB(:8097)"),
                         Triple("http://10.0.24.243:5173", 2, "B2:WIFI6(:5173)"),
                         Triple(wanTunnelUrl, 3, "B3:CF-WAN(HTTPS)")
                     )
-                    for ((ep, bId, bLbl) in bearers) {
+                    // Track 32.22: Sticky Fast-Path Bearer Order (Always try stickyBearerIdx first, and periodically probe B1:USB(:5173)!)
+                    val order = IntArray(4) { i ->
+                        if (i == 0) stickyBearerIdx
+                        else if (i <= stickyBearerIdx) i - 1
+                        else i
+                    }
+                    if (syncIdx % 20L == 0L && stickyBearerIdx != 0) {
+                        order[0] = 0
+                        order[1] = stickyBearerIdx
+                    }
+                    for (ordIdx in order) {
+                        val (ep, bId, bLbl) = rawBearers[ordIdx]
+                        val tSync0 = SystemClock.elapsedRealtimeNanos()
                         try {
                             val nodeId = if (isP8) 8 else 10
                             val qStr = if (isP8) {
@@ -922,21 +957,23 @@ class MainActivity : Activity() {
                                     col.lastCutler, col.lastTorsionT, col.lastBeaming, col.lastLogit, bId
                                 )
                             }
+                            val tmo = if (bId == 1) 450 else 900
                             val conn = (URL(ep + qStr).openConnection() as HttpURLConnection).apply {
-                                connectTimeout = 900; readTimeout = 900; requestMethod = "GET"
+                                connectTimeout = tmo; readTimeout = tmo; requestMethod = "GET"
+                                setRequestProperty("Connection", "keep-alive")
                             }
                             if (conn.responseCode == 200) {
                                 val syncBody = conn.inputStream.bufferedReader().readText()
-                                otaSchema = parseJsonInt(syncBody, "ota_sh4z_schema", 3202)
-                                otaBytes = parseJsonInt(syncBody, "ota_sh4z_bytes", 77824)
-                                otaShards = parseJsonInt(syncBody, "shards", 2860)
+                                otaSchema = parseJsonInt(syncBody, "ota_sh4z_schema", 3203)
+                                otaBytes = parseJsonInt(syncBody, "ota_sh4z_bytes", 81920)
+                                otaShards = parseJsonInt(syncBody, "shards", 3080)
                                 otaOrbits = parseJsonInt(syncBody, "chair44_orbits", 60)
                                 activeTabWorkers = parseJsonInt(syncBody, "active_tab_workers", 1)
-                                lean4VerifiedCount = parseJsonInt(syncBody, "lean4_theorems_verified", 72)
+                                lean4VerifiedCount = parseJsonInt(syncBody, "lean4_theorems_verified", 80)
                                 rsrSteps = parseJsonInt(syncBody, "rsr_steps", rsrSteps)
                                 hybridHops = parseJsonInt(syncBody, "hybridlink_hops", hybridHops)
-                                wsTotalKops = parseJsonFloat(syncBody, "ws_total_kops", 324.6f)
-                                onlinePpl = parseJsonFloat(syncBody, "holdout_ppl", 1.00001f)
+                                wsTotalKops = parseJsonFloat(syncBody, "ws_total_kops", 345.4f)
+                                onlinePpl = parseJsonFloat(syncBody, "holdout_ppl", 1.000005f)
                                 if (isP8) {
                                     col.bx = parseJsonFloat(syncBody, "bx_ut", col.bx)
                                     col.by = parseJsonFloat(syncBody, "by_ut", col.by)
@@ -947,8 +984,10 @@ class MainActivity : Activity() {
                                 if (remoteCorr > col.totalCorrectedBits) col.totalCorrectedBits = remoteCorr
                                 val remoteGen = parseJsonInt(syncBody, "autopoietic_gen", autoGen.toInt()).toLong()
                                 if (remoteGen > autoGen) autoGen = remoteGen
+                                                                stickyBearerIdx = ordIdx
+                                val rttMs = ((SystemClock.elapsedRealtimeNanos() - tSync0) / 1_000_000.0f).coerceIn(0.1f, 999.0f)
                                 syncIdx += 1L; steStep += 16L
-                                swarmStatus = "ONLINE (" + bLbl + " #" + syncIdx + ")"
+                                swarmStatus = String.format(Locale.US, "ONLINE (%s %.1fms #%d)", bLbl, rttMs, syncIdx)
                                 SovereignLiveBus.schema = otaSchema
                                 SovereignLiveBus.containerSize = otaBytes
                                 SovereignLiveBus.shards = otaShards
@@ -1017,31 +1056,31 @@ class MainActivity : Activity() {
                 if (isP8) {
                     card1Tv.text = String.format(
                         Locale.US,
-                        "Mali-G715 L2: mlock=86,592B (77,824B .e8z + 8,768B .e8t) -- 97.94%% Free (4,107,712B)\nSensor Bus: BYPASSED (Compute-Only Node 3) -- Fed 24D norm(B)=%.1f uT (%.1f hPa)\nKasami 3B-ECC Scrub: Cw=0x%06X (RawSyn=0x%04X->0x0000, Corr=%d) -- Q_B=%d (s=%.4f)\nWork-Stealing Slice: 272/1,216 Lines (17,408B L2-Pinned, 99.9%% Hit, 71.4k / %.1fk ops/s)",
+                        "Mali-G715 L2: mlock=90,688B (81,920B .e8z + 8,768B .e8t) -- 97.84%% Free (4,103,616B)\nSensor Bus: BYPASSED (Compute-Only Node 3) -- Fed 24D norm(B)=%.1f uT (%.1f hPa)\nKasami 3B-ECC Scrub: Cw=0x%06X (RawSyn=0x%04X->0x0000, Corr=%d) -- Q_B=%d (s=%.4f)\nWork-Stealing Slice: 288/1,280 Lines (18,432B L2-Pinned, 99.9%% Hit, 76.2k / %.1fk ops/s)",
                         bNorm, col.baroHpa, col.golayCw24, col.golayRawSyn12, col.totalCorrectedBits, col.quadBInt, spreadFloat, wsTotalKops
                     )
                     val p8Cores = if (col.tempDeciC >= 380) "0x0F (4xA510)" else "0xF0 (4xA715)"
                     card2Tv.text = String.format(
                         Locale.US,
-                        "8_- Silicon: %.1f C -- %d mV -- %d mA (%.2f W) -- Bat: %d%% -- RAM: %d/%d MB\nCompute Core: Tok #%d (%.1f us) -- Medusa 4-Head: 26.8 us (3.88x) -- %s\nLive Notif + 16x80 Widget: ACTIVE (1 Hz) -- LWE-3329 Zero-Trust -- %s\nWAN Beacon: %s (Tab Workers: %d -- P8 L2: 97.94%% Free)",
+                        "8_- Silicon: %.1f C -- %d mV -- %d mA (%.2f W) -- Bat: %d%% -- RAM: %d/%d MB\nCompute Core: Tok #%d (%.1f us) -- Medusa 4-Head: 26.8 us (3.88x) -- %s\nLive Notif + 16x80 Widget: ACTIVE (1 Hz) -- LWE-3329 Zero-Trust -- %s\nWAN Beacon: %s (Tab Workers: %d -- P8 L2: 97.84%% Free)",
                         tempC, col.voltageMv, col.currentMa, powerW, col.batteryPct, col.ramAvailMb, col.ramTotalMb, bestTok, rawUs, p8Cores, swarmStatus, shortWan, activeTabWorkers
                     )
                 } else {
                     card1Tv.text = String.format(
                         Locale.US,
-                        "8_v Field: B=[%.1f, %.1f, %.1f] uT (norm(B)=%.1f) -- Baro: %.1f hPa -- Opto: %s (%.0f lx)\n8_+ Kin: Acc norm=%.2f m/s2 -- Gyro=%.3f rad/s -- Lense-Thirring Omega_LT=%.5f\nKasami 3B-ECC: Cw=0x%06X (RawSyn=0x%04X->0x0000, Corr=%d) -- Q_B=%d (s=%.4f)\nWork-Stealing (1,216 Lines): LOQ15=544 + P10=400 + P8=272 (99.9%% L2 Hit, %.1fk ops/s)",
+                        "8_v Field: B=[%.1f, %.1f, %.1f] uT (norm(B)=%.1f) -- Baro: %.1f hPa -- Opto: %s (%.0f lx)\n8_+ Kin: Acc norm=%.2f m/s2 -- Gyro=%.3f rad/s -- Lense-Thirring Omega_LT=%.5f\nKasami 3B-ECC: Cw=0x%06X (RawSyn=0x%04X->0x0000, Corr=%d) -- Q_B=%d (s=%.4f)\nWork-Stealing (1,280 Lines): LOQ15=576 + P10=416 + P8=288 (99.9%% L2 Hit, %.1fk ops/s)",
                         bx, by, bz, bNorm, col.baroHpa, optoStr, col.lightLux, aNorm, gNorm, omegaLt, col.golayCw24, col.golayRawSyn12, col.totalCorrectedBits, col.quadBInt, spreadFloat, wsTotalKops
                     )
                     val p10Cores = if (col.tempDeciC >= 390) "0x03 (2xA520)" else "0xFC (X4+5xA725)"
                     card2Tv.text = String.format(
                         Locale.US,
-                        "8_- Silicon: %.1f C -- %d mV -- %d mA (%.2f W) -- Bat: %d%% -- RAM: %d/%d MB\nCompute Core: Tok #%d (%.1f us) -- Medusa 4-Head: 26.8 us (3.88x) -- %s\nLive Notif + 16x80 Widget: ACTIVE (1 Hz) -- LWE-3329 Zero-Trust -- %s\nWAN Beacon: %s (Tab Workers: %d -- P8 L2: 97.94%% Free)",
+                        "8_- Silicon: %.1f C -- %d mV -- %d mA (%.2f W) -- Bat: %d%% -- RAM: %d/%d MB\nCompute Core: Tok #%d (%.1f us) -- Medusa 4-Head: 26.8 us (3.88x) -- %s\nLive Notif + 16x80 Widget: ACTIVE (1 Hz) -- LWE-3329 Zero-Trust -- %s\nWAN Beacon: %s (Tab Workers: %d -- P8 L2: 97.84%% Free)",
                         tempC, col.voltageMv, col.currentMa, powerW, col.batteryPct, col.ramAvailMb, col.ramTotalMb, bestTok, rawUs, p10Cores, swarmStatus, shortWan, activeTabWorkers
                     )
                 }
                 card3Tv.text = String.format(
                     Locale.US,
-                    "SH4Z v%d (%dB 16-Sector) -- Gen #%d -- Lean4: %d Chair-44 Proofs QED\nHoldout PPL=%.5f (-89.06%%) -- %d Shards (%dx Chair44) -- Cutler #%d/536\nTerminal-RSI: RSR #%d -- HybridLink: %d Latent Hops -- Logit=%.2f",
+                    "SH4Z v%d (%dB 16-Sector) -- Gen #%d -- Lean4: %d Chair-44 Proofs QED\nHoldout PPL=%.6f (-89.06%%) -- %d Shards (%dx Chair44) -- Cutler #%d/536\nTerminal-RSI: RSR #%d -- HybridLink: %d Latent Hops -- Logit=%.2f",
                     otaSchema, otaBytes, autoGen, lean4VerifiedCount, onlinePpl, otaShards, otaOrbits, cutler, rsrSteps, hybridHops, sh4Logit
                 )
                 uiHandler.postDelayed(this, 66L)

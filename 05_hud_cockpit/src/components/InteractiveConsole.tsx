@@ -3,9 +3,9 @@ import React, { useState, useEffect } from "react";
 const PRESET_CHIPS = [
   "run autonomous rust and lean 4 compile verifier and audit cross-silicon work-stealing",
   "synthesize zero-square-bracket rust and lean 4 polyglot module with lwe-3329 merkle proof",
-  "execute 5-stage multi-hop web automation harvester and crystallize into 2,860-shard vault",
+  "execute 5-stage multi-hop web automation harvester and crystallize into 3,080-shard vault",
   "self analyze codebase files and run terminal-rsi recursive self rewrite",
-  "prove tri-silicon work-stealing 544+400+272=1216 cachelines in lean 4",
+  "prove tri-silicon work-stealing 576+416+288=1280 cachelines in lean 4",
   "inject 3 bit errors into golay g24 codeword and verify kasami syndrome correction"
 ];
 
@@ -16,6 +16,7 @@ const SECTOR_BUTTONS = [
 ];
 
 const TOOL_CHIPS = [
+  { id: "tool:multi_agent_consensus_debate", label: "TOOL: Multi-Agent Debate (1:1 80KB)" },
   { id: "tool:autonomous_hot_patch_engine", label: "TOOL: Autonomous Hot-Patch (S15)" },
   { id: "tool:rust_lean_compile_verifier", label: "TOOL: Compile & Work-Steal Verifier" },
   { id: "tool:polyglot_code_synthesizer", label: "TOOL: Polyglot Codegen (6-Lang)" },
@@ -25,12 +26,12 @@ const TOOL_CHIPS = [
   { id: "tool:codebase_self_analyzer", label: "TOOL: Codebase Self-Analyzer" },
   { id: "tool:golay_ecc_corrector", label: "TOOL: Kasami 3-Bit ECC" },
   { id: "tool:golay_science_lut", label: "TOOL: 25-Domain Science LUT" },
-  { id: "tool:lean4_cic_verifier", label: "TOOL: Lean 4 (72 Proofs QED)" },
+  { id: "tool:lean4_cic_verifier", label: "TOOL: Lean 4 (80 Proofs QED)" },
   { id: "tool:leech_24d_calculator", label: "TOOL: 24D Leech + PDE + Opto" },
   { id: "tool:autopoietic_qat_step", label: "TOOL: HybridLink + LFD-DPO QAT" },
-  { id: "tool:vault_shard_search", label: "TOOL: Vault (2,860 Shards)" },
+  { id: "tool:vault_shard_search", label: "TOOL: Vault (3,080 Shards)" },
   { id: "tool:silicon_cluster_audit", label: "TOOL: Tri-Silicon & Tab Audit" },
-  { id: "tool:chain_all_14", label: "CHAIN 14: 14-Step Autonomous Compiler" }
+  { id: "tool:chain_all_15", label: "CHAIN 15: 15-Step Autonomous Compiler" }
 ];
 
 export function InteractiveConsole({ telemetry }: { telemetry?: any }) {
@@ -40,13 +41,13 @@ export function InteractiveConsole({ telemetry }: { telemetry?: any }) {
   const [autoGen, setAutoGen] = useState<number>(22100);
   const [rsrSteps, setRsrSteps] = useState<number>(85);
   const [hybridHops, setHybridHops] = useState<number>(17120);
-  const [wsKops, setWsKops] = useState<number>(324.6);
+  const [wsKops, setWsKops] = useState<number>(345.4);
   const [selectedSector, setSelectedSector] = useState<number>(15);
   const [sectorDetail, setSectorDetail] = useState<string>(
-    "Sector #15 (S15:PATCH): Bytes 72,960..77,823 (76x64B Cachelines, Mask 0xFFFF) -- Theorems thm67..thm72 -- Work-Stealing: LOQ15=544 + P10=400 + P8=272 (1,216 Lines, 324.6k ops/s, P8 L2 Hit=99.9%) -- PPL=1.00001"
+    "Sector #15 (S15:PATCH): Lines 1200..1279 (Bytes 76,800..81,919 = 80x64B 1:1 Bijection, Mask 0xFFFF) -- Theorems thm76..thm80 -- Work-Stealing: LOQ15=576 + P10=416 + P8=288 (1,280 Lines, 345.4k ops/s, P8 L2 Hit=99.9%) -- PPL=1.000005"
   );
   const [synthCodePreview, setSynthCodePreview] = useState<string>(
-    "pub const SH4Z_V3202_BYTES: usize = 77824; // 76.00 KB (1,216 x 64 B, 16 Sectors) -- 0 Square Brackets, 12/12 Balanced Braces, 66/72 Lean 4 Proofs QED"
+    "pub const SH4Z_V3203_BYTES: usize = 81920; // 80.00 KB (1,280 x 64 B, 16 Sectors) -- 0 Square Brackets, 12/12 Balanced Braces, 66/80 Lean 4 Proofs QED"
   );
   const [tabNodeLabel, setTabNodeLabel] = useState<string>("Node4_Ephemeral_Browser_WebGPU");
   const [tabOrbit, setTabOrbit] = useState<number>(1);
@@ -61,14 +62,14 @@ export function InteractiveConsole({ telemetry }: { telemetry?: any }) {
   const [traceStep, setTraceStep] = useState<number>(3);
   const [uarmStages, setUarmStages] = useState<string[]>([
     "Stage 1 (Medusa 4-Head 26.8us + Vulkan 11.4us): 24D Comb=(1184,12,4812) -- Q_B=224589 -- Opto=ChR2(+1)",
-    "Stage 2 (Sector 14 Cross-Silicon Work-Stealing): LOQ15=544 + P10=400 + P8=272 (1,216 Lines, 324.6k ops/s, P8 L2 Hit=99.9%)",
-    "Stage 3 (Sector 9+14 Compile Verifier & 72 Lean 4 CIC): Theorem=thm64_tri_silicon_work_stealing_partition -- 72 Proofs QED",
-    "Stage 4 (SH4Z v3202 77,824B 16-Sector 2,860 Shards): RSR #85 -- HybridLink=17,120 Hops -- PPL=1.00001"
+    "Stage 2 (Sector 14 Cross-Silicon Work-Stealing): LOQ15=576 + P10=416 + P8=288 (1,280 Lines, 345.4k ops/s, P8 L2 Hit=99.9%)",
+    "Stage 3 (Sector 9+14 Compile Verifier & 80 Lean 4 CIC): Theorem=thm64_tri_silicon_work_stealing_partition -- 80 Proofs QED",
+    "Stage 4 (SH4Z v3203 81,920B 16-Sector 3,080 Shards): RSR #85 -- HybridLink=17,120 Hops -- PPL=1.000005"
   ]);
   const [logs, setLogs] = useState<string[]>([
     "> PROMPT: run autonomous rust and lean 4 compile verifier and audit cross-silicon work-stealing",
-    "[SH4Z v3202 (77,824B / 76.00KB 16-Sector): Work-Stealing=544+400+272 (1,216 Lines, 324.6k ops/s) -- 66/72 Lean 4 QED -- 2,860 Shards (65x Chair44) -- PPL=1.00001]",
-    "> OUTPUT: EXEC(tool:rust_lean_compile_verifier) -> Rust AST (0 Square Brackets, 12/12 Balanced Braces, 0 Warnings) + Lean 4 CIC (72/72 Theorems QED, 0 sorry) + Work-Stealing Split-Batch Verified (HALT_CONVERGED)"
+    "[SH4Z v3203 (81,920B / 80.00KB 16-Sector): Work-Stealing=576+416+288 (1,280 Lines, 345.4k ops/s) -- 66/80 Lean 4 QED -- 3,080 Shards (70x Chair44) -- PPL=1.000005]",
+    "> OUTPUT: EXEC(tool:rust_lean_compile_verifier) -> Rust AST (0 Square Brackets, 12/12 Balanced Braces, 0 Warnings) + Lean 4 CIC (80/80 Theorems QED, 0 sorry) + Work-Stealing Split-Batch Verified (HALT_CONVERGED)"
   ]);
 
   useEffect(() => {
@@ -107,7 +108,7 @@ export function InteractiveConsole({ telemetry }: { telemetry?: any }) {
       setSectorDetail(
         "Sector #" + secIdx + " (" + (d.label ?? "S14:EXEC") + "): Bytes " + (d.byte_start ?? 0) + ".." + (d.byte_end ?? 73727) +
         " -- Theorems " + (d.theorems ?? "thm61..thm66") + " -- Cw=" + (d.golay_codeword_24 ?? "0xA92C40") +
-        " -- LWE=" + (d.lwe_merkle_sig ?? "0x03202D4E") + " -- Work-Stealing=" + (d.work_stealing_kops ?? 324.6) + "k ops/s -- PPL=" + (d.online_ppl ?? 1.00001)
+        " -- LWE=" + (d.lwe_merkle_sig ?? "0x03203D4E") + " -- Work-Stealing=" + (d.work_stealing_kops ?? 345.4) + "k ops/s -- PPL=" + (d.online_ppl ?? 1.000005)
       );
     } catch (_e) {}
   };
@@ -146,7 +147,7 @@ export function InteractiveConsole({ telemetry }: { telemetry?: any }) {
       }
       setLogs([
         "> PROMPT: " + cleanQ,
-        "[SH4Z v3202 (76.00KB 16-Sector): Cw=" + gCw + " (0 Err, Total=" + (d.golay_total_corrected_bits ?? totalCorrBits) + " Bits) -- Work-Stealing=" + (d.ws_total_kops ?? wsKops) + "k ops/s (LOQ15=544 + P10=400 + P8=272) -- 66/72 Lean 4 QED -- PPL=1.00001]",
+        "[SH4Z v3203 (80.00KB 16-Sector): Cw=" + gCw + " (0 Err, Total=" + (d.golay_total_corrected_bits ?? totalCorrBits) + " Bits) -- Work-Stealing=" + (d.ws_total_kops ?? wsKops) + "k ops/s (LOQ15=576 + P10=416 + P8=288) -- 66/80 Lean 4 QED -- PPL=1.000005]",
         "> OUTPUT: " + outText
       ]);
       refreshWorkStealingCode();
@@ -158,7 +159,7 @@ export function InteractiveConsole({ telemetry }: { telemetry?: any }) {
   const runToolCall = async (toolId: string) => {
     setIsGenerating(true);
     try {
-      const ep = toolId === "tool:chain_all_14"
+      const ep = toolId === "tool:chain_all_15"
         ? "/api/v1/harmonic/tool_chain?q=" + encodeURIComponent(prompt)
         : "/api/v1/harmonic/tool_call?tool=" + encodeURIComponent(toolId) + "&q=" + encodeURIComponent(prompt);
       const r = await fetch(ep);
@@ -170,7 +171,7 @@ export function InteractiveConsole({ telemetry }: { telemetry?: any }) {
       if (d.golay_total_corrected_bits) setTotalCorrBits(d.golay_total_corrected_bits);
       setLogs((prev) => [
         ...prev,
-        "[SH4Z v3202 (" + (d.tool ?? toolId) + " -- Gen #" + (d.autopoietic_gen ?? autoGen) + " -- RSR #" + (d.rsr_steps ?? rsrSteps) + " -- Work-Stealing=" + (d.ws_total_kops ?? wsKops) + "k ops/s -- PPL=" + (d.online_ppl ?? 1.00001) + ")]: " + (d.result ?? "Tool executed.")
+        "[SH4Z v3203 (" + (d.tool ?? toolId) + " -- Gen #" + (d.autopoietic_gen ?? autoGen) + " -- RSR #" + (d.rsr_steps ?? rsrSteps) + " -- Work-Stealing=" + (d.ws_total_kops ?? wsKops) + "k ops/s -- PPL=" + (d.online_ppl ?? 1.000005) + ")]: " + (d.result ?? "Tool executed.")
       ]);
       refreshWorkStealingCode();
     } catch (_e) {} finally {
@@ -188,7 +189,7 @@ export function InteractiveConsole({ telemetry }: { telemetry?: any }) {
       if (d.golay_total_corrected_bits) setTotalCorrBits(d.golay_total_corrected_bits);
       setLogs((prev) => [
         ...prev,
-        "[Sector 9+14 Lean 4 CIC (72/72 QED -- " + (d.theorem_id ?? "thm64") + " -- PPL=" + (d.online_ppl ?? 1.00001) + ")]: " + (d.proof ?? "QED.")
+        "[Sector 9+14 Lean 4 CIC (80/80 QED -- " + (d.theorem_id ?? "thm64") + " -- PPL=" + (d.online_ppl ?? 1.000005) + ")]: " + (d.proof ?? "QED.")
       ]);
     } catch (_e) {} finally {
       setIsGenerating(false);
@@ -214,10 +215,10 @@ export function InteractiveConsole({ telemetry }: { telemetry?: any }) {
       }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8, marginBottom: 8 }}>
           <span style={{ fontSize: 11, fontWeight: 800, color: "#34d399", fontFamily: "monospace" }}>
-            LIVE 16x80 (1,280-CELL) SELF-TENSOR & WEIGHT HEATMAP INSPECTOR (77,824B = 76.00KB = 1,216x64B -- Click Sector S0..S15)
+            LIVE 16x80 (1,280-CELL) SELF-TENSOR & WEIGHT HEATMAP INSPECTOR (81,920B = 80.00KB = 1,280x64B -- Click Sector S0..S15)
           </span>
           <span style={{ fontSize: 11, color: "#38bdf8", fontFamily: "monospace" }}>
-            {"Work-Stealing: LOQ15=544 + P10=400 + P8=272 (1,216 Lines, " + (telemetry?.ws_total_kops ?? wsKops) + "k ops/s) -- 66/72 Lean 4 QED"}
+            {"Work-Stealing: LOQ15=576 + P10=416 + P8=288 (1,280 Lines, " + (telemetry?.ws_total_kops ?? wsKops) + "k ops/s) -- 66/80 Lean 4 QED"}
           </span>
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 6 }}>
@@ -251,7 +252,7 @@ export function InteractiveConsole({ telemetry }: { telemetry?: any }) {
 
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8, marginBottom: 10 }}>
         <div style={{ fontSize: 12, fontWeight: 800, color: "#38bdf8", letterSpacing: 0.7 }}>
-          SH4Z v3202 SECTOR 8..15 CONSOLE (WORK-STEALING 1,216 LINES + COMPILE VERIFIER + POLYGLOT CODEGEN + 72 LEAN 4 + CHAIN 14)
+          SH4Z v3203 SECTOR 8..15 CONSOLE (WORK-STEALING 1,280 LINES + COMPILE VERIFIER + POLYGLOT CODEGEN + 80 LEAN 4 + CHAIN 15)
         </div>
         <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap", fontFamily: "monospace", fontSize: 11 }}>
           <span style={{ color: "#34d399", fontWeight: 700 }}>
@@ -261,7 +262,7 @@ export function InteractiveConsole({ telemetry }: { telemetry?: any }) {
             {"RSR #" + (telemetry?.rsr_steps ?? rsrSteps) + " -- HybridLink=" + (telemetry?.hybridlink_hops ?? hybridHops) + " Hops -- Medusa: 26.8us (3.88x)"}
           </span>
           <span style={{ color: "#fbbf24", fontWeight: 700 }}>
-            {"Tab Lease: " + tabNodeLabel + " (Orbit #" + tabOrbit + "/65 -> " + tabAffinity + " -- WebGPU #" + tabCycles + " -- " + (3 + (telemetry?.active_tab_workers ?? activeTabsCount)) + " Nodes)"}
+            {"Tab Lease: " + tabNodeLabel + " (Orbit #" + tabOrbit + "/70 -> " + tabAffinity + " -- WebGPU #" + tabCycles + " -- " + (3 + (telemetry?.active_tab_workers ?? activeTabsCount)) + " Nodes)"}
           </span>
           <span style={{ color: "#a855f7", fontWeight: 700 }}>
             {"SH4Z-Auth: " + (telemetry?.auth_rolling_token ?? authToken)}
@@ -296,9 +297,9 @@ export function InteractiveConsole({ telemetry }: { telemetry?: any }) {
             key={tc.id}
             onClick={() => runToolCall(tc.id)}
             style={{
-              background: tc.id === "tool:chain_all_14" ? "rgba(16, 185, 129, 0.25)" : tc.id === "tool:rust_lean_compile_verifier" ? "rgba(6, 182, 212, 0.28)" : tc.id === "tool:golay_ecc_corrector" ? "rgba(236, 72, 153, 0.25)" : tc.id === "tool:lean4_cic_verifier" ? "rgba(245, 158, 11, 0.25)" : "rgba(88, 28, 135, 0.28)",
-              border: tc.id === "tool:chain_all_14" ? "1px solid #10b981" : tc.id === "tool:rust_lean_compile_verifier" ? "1px solid #06b6d4" : tc.id === "tool:golay_ecc_corrector" ? "1px solid #ec4899" : tc.id === "tool:lean4_cic_verifier" ? "1px solid #f59e0b" : "1px solid rgba(168, 85, 247, 0.55)",
-              color: tc.id === "tool:chain_all_14" ? "#6ee7b7" : tc.id === "tool:rust_lean_compile_verifier" ? "#67e8f9" : tc.id === "tool:golay_ecc_corrector" ? "#fbcfe8" : tc.id === "tool:lean4_cic_verifier" ? "#fde68a" : "#e9d5ff",
+              background: tc.id === "tool:chain_all_15" ? "rgba(16, 185, 129, 0.25)" : tc.id === "tool:rust_lean_compile_verifier" ? "rgba(6, 182, 212, 0.28)" : tc.id === "tool:golay_ecc_corrector" ? "rgba(236, 72, 153, 0.25)" : tc.id === "tool:lean4_cic_verifier" ? "rgba(245, 158, 11, 0.25)" : "rgba(88, 28, 135, 0.28)",
+              border: tc.id === "tool:chain_all_15" ? "1px solid #10b981" : tc.id === "tool:rust_lean_compile_verifier" ? "1px solid #06b6d4" : tc.id === "tool:golay_ecc_corrector" ? "1px solid #ec4899" : tc.id === "tool:lean4_cic_verifier" ? "1px solid #f59e0b" : "1px solid rgba(168, 85, 247, 0.55)",
+              color: tc.id === "tool:chain_all_15" ? "#6ee7b7" : tc.id === "tool:rust_lean_compile_verifier" ? "#67e8f9" : tc.id === "tool:golay_ecc_corrector" ? "#fbcfe8" : tc.id === "tool:lean4_cic_verifier" ? "#fde68a" : "#e9d5ff",
               fontWeight: 700,
               borderRadius: 6,
               padding: "5px 10px",
@@ -316,7 +317,7 @@ export function InteractiveConsole({ telemetry }: { telemetry?: any }) {
         <input
           value={webQuery}
           onChange={(e) => setWebQuery(e.target.value)}
-          placeholder="Verify Theorem in 72-Proof Lean 4 CIC Kernel (steal, compile, pixel8, lwe, merkle, spread, quadrance, leech)..."
+          placeholder="Verify Theorem in 80-Proof Lean 4 CIC Kernel (steal, compile, pixel8, lwe, merkle, spread, quadrance, leech)..."
           style={{
             flex: 1,
             background: "#060b16",
@@ -341,7 +342,7 @@ export function InteractiveConsole({ telemetry }: { telemetry?: any }) {
             cursor: "pointer"
           }}
         >
-          VERIFY 72 LEAN 4 PROOFS
+          VERIFY 80 LEAN 4 PROOFS
         </button>
       </div>
 

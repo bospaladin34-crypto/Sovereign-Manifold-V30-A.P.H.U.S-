@@ -390,15 +390,19 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
     );
 }
 
-fn run_listener(addr: &str, state: Arc<Mutex<SwarmState>>) {
-    let listener = match TcpListener::bind(addr) {
-        Ok(l) => {
-            println!("  (v31_swarm v32.6.0) Bound HTTP listener on {}", addr);
-            l
-        }
-        Err(e) => {
-            println!("  (v31_swarm v32.6.0) Bind note on {}: {}", addr, e);
-            return;
+fn run_listener(addr: &'static str, state: Arc<Mutex<SwarmState>>) {
+    let mut attempt: u32 = 0;
+    let listener = loop {
+        match TcpListener::bind(addr) {
+            Ok(l) => {
+                println!("  (v31_swarm v32.6.0) Bound HTTP listener on {}", addr);
+                break l;
+            }
+            Err(e) => {
+                attempt += 1;
+                println!("  (v31_swarm v32.6.0) Retry #{} binding {}: {}", attempt, addr, e);
+                thread::sleep(Duration::from_millis(400));
+            }
         }
     };
     for incoming in listener.incoming() {
@@ -420,7 +424,7 @@ fn main() {
     println!("========================================================================");
 
     let state = Arc::new(Mutex::new(SwarmState {
-        gen_counter: 24700,
+        gen_counter: 24800,
         fno_solve_runs: 64,
         agent_gateway_visits: 16,
         ssd_tier2_syncs: 32,
@@ -436,5 +440,15 @@ fn main() {
             run_listener("0.0.0.0:5173", st_5173);
         });
 
-    run_listener("0.0.0.0:8097", state);
+    let st_8097 = Arc::clone(&state);
+    let _ = thread::Builder::new()
+        .name(String::from("swarm_8097"))
+        .stack_size(8 * 1024 * 1024)
+        .spawn(move || {
+            run_listener("0.0.0.0:8097", st_8097);
+        });
+
+    loop {
+        thread::sleep(Duration::from_secs(3600));
+    }
 }

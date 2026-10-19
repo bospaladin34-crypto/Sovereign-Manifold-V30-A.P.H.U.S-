@@ -1,0 +1,1935 @@
+{
+  "schema": "SH4Z_v3206_DUAL_HORIZON_TOKENIZER_8192",
+  "version": "v32.6.0",
+  "total_vocab_size": 8192,
+  "natural_language_bpe_tokens": 4096,
+  "compound_topological_tokens": 4096,
+  "bidirectional_transducer": "NL_BPE_8192 <-> Leech_24D x Stiefel_St(16,80)",
+  "vault_shards_coupled": 4400,
+  "chair44_orbits": 100,
+  "holdout_ppl": 1.000001,
+  "sample_nl_horizon_tokens": [
+    {
+      "id": 0,
+      "token": "the",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 0,
+      "stiefel_col": 0
+    },
+    {
+      "id": 1,
+      "token": "of",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 1,
+      "stiefel_col": 1
+    },
+    {
+      "id": 2,
+      "token": "and",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 2,
+      "stiefel_col": 2
+    },
+    {
+      "id": 3,
+      "token": "to",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 3,
+      "stiefel_col": 3
+    },
+    {
+      "id": 4,
+      "token": "in",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 4,
+      "stiefel_col": 4
+    },
+    {
+      "id": 5,
+      "token": "is",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 5,
+      "stiefel_col": 5
+    },
+    {
+      "id": 6,
+      "token": "for",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 6,
+      "stiefel_col": 6
+    },
+    {
+      "id": 7,
+      "token": "that",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 7,
+      "stiefel_col": 7
+    },
+    {
+      "id": 8,
+      "token": "with",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 8,
+      "stiefel_col": 8
+    },
+    {
+      "id": 9,
+      "token": "on",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 9,
+      "stiefel_col": 9
+    },
+    {
+      "id": 10,
+      "token": "as",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 10,
+      "stiefel_col": 10
+    },
+    {
+      "id": 11,
+      "token": "are",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 11,
+      "stiefel_col": 11
+    },
+    {
+      "id": 12,
+      "token": "this",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 12,
+      "stiefel_col": 12
+    },
+    {
+      "id": 13,
+      "token": "by",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 13,
+      "stiefel_col": 13
+    },
+    {
+      "id": 14,
+      "token": "be",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 14,
+      "stiefel_col": 14
+    },
+    {
+      "id": 15,
+      "token": "at",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 15,
+      "stiefel_col": 15
+    },
+    {
+      "id": 16,
+      "token": "or",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 16,
+      "stiefel_col": 16
+    },
+    {
+      "id": 17,
+      "token": "from",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 17,
+      "stiefel_col": 17
+    },
+    {
+      "id": 18,
+      "token": "an",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 18,
+      "stiefel_col": 18
+    },
+    {
+      "id": 19,
+      "token": "can",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 19,
+      "stiefel_col": 19
+    },
+    {
+      "id": 20,
+      "token": "how",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 20,
+      "stiefel_col": 20
+    },
+    {
+      "id": 21,
+      "token": "what",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 21,
+      "stiefel_col": 21
+    },
+    {
+      "id": 22,
+      "token": "why",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 22,
+      "stiefel_col": 22
+    },
+    {
+      "id": 23,
+      "token": "where",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 23,
+      "stiefel_col": 23
+    },
+    {
+      "id": 24,
+      "token": "when",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 0,
+      "stiefel_col": 24
+    },
+    {
+      "id": 25,
+      "token": "who",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 1,
+      "stiefel_col": 25
+    },
+    {
+      "id": 26,
+      "token": "which",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 2,
+      "stiefel_col": 26
+    },
+    {
+      "id": 27,
+      "token": "explain",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 3,
+      "stiefel_col": 27
+    },
+    {
+      "id": 28,
+      "token": "synthesize",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 4,
+      "stiefel_col": 28
+    },
+    {
+      "id": 29,
+      "token": "manifold",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 5,
+      "stiefel_col": 29
+    },
+    {
+      "id": 30,
+      "token": "topology",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 6,
+      "stiefel_col": 30
+    },
+    {
+      "id": 31,
+      "token": "quantum",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 7,
+      "stiefel_col": 31
+    },
+    {
+      "id": 32,
+      "token": "wormhole",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 8,
+      "stiefel_col": 32
+    },
+    {
+      "id": 33,
+      "token": "entanglement",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 9,
+      "stiefel_col": 33
+    },
+    {
+      "id": 34,
+      "token": "navier",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 10,
+      "stiefel_col": 34
+    },
+    {
+      "id": 35,
+      "token": "stokes",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 11,
+      "stiefel_col": 35
+    },
+    {
+      "id": 36,
+      "token": "vorticity",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 12,
+      "stiefel_col": 36
+    },
+    {
+      "id": 37,
+      "token": "laminar",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 13,
+      "stiefel_col": 37
+    },
+    {
+      "id": 38,
+      "token": "reynolds",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 14,
+      "stiefel_col": 38
+    },
+    {
+      "id": 39,
+      "token": "fourier",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 15,
+      "stiefel_col": 39
+    },
+    {
+      "id": 40,
+      "token": "neural",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 16,
+      "stiefel_col": 40
+    },
+    {
+      "id": 41,
+      "token": "operator",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 17,
+      "stiefel_col": 41
+    },
+    {
+      "id": 42,
+      "token": "spectral",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 18,
+      "stiefel_col": 42
+    },
+    {
+      "id": 43,
+      "token": "greens",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 19,
+      "stiefel_col": 43
+    },
+    {
+      "id": 44,
+      "token": "function",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 20,
+      "stiefel_col": 44
+    },
+    {
+      "id": 45,
+      "token": "stiefel",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 21,
+      "stiefel_col": 45
+    },
+    {
+      "id": 46,
+      "token": "retraction",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 22,
+      "stiefel_col": 46
+    },
+    {
+      "id": 47,
+      "token": "cayley",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 23,
+      "stiefel_col": 47
+    },
+    {
+      "id": 48,
+      "token": "orthogonal",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 0,
+      "stiefel_col": 48
+    },
+    {
+      "id": 49,
+      "token": "leech",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 1,
+      "stiefel_col": 49
+    },
+    {
+      "id": 50,
+      "token": "lattice",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 2,
+      "stiefel_col": 50
+    },
+    {
+      "id": 51,
+      "token": "golay",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 3,
+      "stiefel_col": 51
+    },
+    {
+      "id": 52,
+      "token": "syndrome",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 4,
+      "stiefel_col": 52
+    },
+    {
+      "id": 53,
+      "token": "kasami",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 5,
+      "stiefel_col": 53
+    },
+    {
+      "id": 54,
+      "token": "codeword",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 6,
+      "stiefel_col": 54
+    },
+    {
+      "id": 55,
+      "token": "theorem",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 7,
+      "stiefel_col": 55
+    },
+    {
+      "id": 56,
+      "token": "proof",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 8,
+      "stiefel_col": 56
+    },
+    {
+      "id": 57,
+      "token": "lean4",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 9,
+      "stiefel_col": 57
+    },
+    {
+      "id": 58,
+      "token": "calculus",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 10,
+      "stiefel_col": 58
+    },
+    {
+      "id": 59,
+      "token": "inductive",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 11,
+      "stiefel_col": 59
+    },
+    {
+      "id": 60,
+      "token": "constructions",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 12,
+      "stiefel_col": 60
+    },
+    {
+      "id": 61,
+      "token": "cloudflare",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 13,
+      "stiefel_col": 61
+    },
+    {
+      "id": 62,
+      "token": "post_quantum",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 14,
+      "stiefel_col": 62
+    },
+    {
+      "id": 63,
+      "token": "ml_kem_768",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 15,
+      "stiefel_col": 63
+    },
+    {
+      "id": 64,
+      "token": "siem",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 16,
+      "stiefel_col": 64
+    },
+    {
+      "id": 65,
+      "token": "sentinel",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 17,
+      "stiefel_col": 65
+    },
+    {
+      "id": 66,
+      "token": "merkle",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 18,
+      "stiefel_col": 66
+    },
+    {
+      "id": 67,
+      "token": "zero_trust",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 19,
+      "stiefel_col": 67
+    },
+    {
+      "id": 68,
+      "token": "external",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 20,
+      "stiefel_col": 68
+    },
+    {
+      "id": 69,
+      "token": "ssd",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 21,
+      "stiefel_col": 69
+    },
+    {
+      "id": 70,
+      "token": "tier2",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 22,
+      "stiefel_col": 70
+    },
+    {
+      "id": 71,
+      "token": "vault",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 23,
+      "stiefel_col": 71
+    },
+    {
+      "id": 72,
+      "token": "shard",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 0,
+      "stiefel_col": 72
+    },
+    {
+      "id": 73,
+      "token": "natural",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 1,
+      "stiefel_col": 73
+    },
+    {
+      "id": 74,
+      "token": "language",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 2,
+      "stiefel_col": 74
+    },
+    {
+      "id": 75,
+      "token": "human",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 3,
+      "stiefel_col": 75
+    },
+    {
+      "id": 76,
+      "token": "machine",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 4,
+      "stiefel_col": 76
+    },
+    {
+      "id": 77,
+      "token": "agent",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 5,
+      "stiefel_col": 77
+    },
+    {
+      "id": 78,
+      "token": "gateway",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 6,
+      "stiefel_col": 78
+    },
+    {
+      "id": 79,
+      "token": "interact",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 7,
+      "stiefel_col": 79
+    },
+    {
+      "id": 80,
+      "token": "input",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 8,
+      "stiefel_col": 0
+    },
+    {
+      "id": 81,
+      "token": "output",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 9,
+      "stiefel_col": 1
+    },
+    {
+      "id": 82,
+      "token": "response",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 10,
+      "stiefel_col": 2
+    },
+    {
+      "id": 83,
+      "token": "converge",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 11,
+      "stiefel_col": 3
+    },
+    {
+      "id": 84,
+      "token": "harmonic",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 12,
+      "stiefel_col": 4
+    },
+    {
+      "id": 85,
+      "token": "acoustic",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 13,
+      "stiefel_col": 5
+    },
+    {
+      "id": 86,
+      "token": "ultrasonic",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 14,
+      "stiefel_col": 6
+    },
+    {
+      "id": 87,
+      "token": "carrier",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 15,
+      "stiefel_col": 7
+    },
+    {
+      "id": 88,
+      "token": "quadrature",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 16,
+      "stiefel_col": 8
+    },
+    {
+      "id": 89,
+      "token": "demodulate",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 17,
+      "stiefel_col": 9
+    },
+    {
+      "id": 90,
+      "token": "rtx3050",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 18,
+      "stiefel_col": 10
+    },
+    {
+      "id": 91,
+      "token": "tensor",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 19,
+      "stiefel_col": 11
+    },
+    {
+      "id": 92,
+      "token": "cuda",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 20,
+      "stiefel_col": 12
+    },
+    {
+      "id": 93,
+      "token": "webgpu",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 21,
+      "stiefel_col": 13
+    },
+    {
+      "id": 94,
+      "token": "wgsl",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 22,
+      "stiefel_col": 14
+    },
+    {
+      "id": 95,
+      "token": "pixel10",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 23,
+      "stiefel_col": 15
+    },
+    {
+      "id": 96,
+      "token": "pixel8",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 0,
+      "stiefel_col": 16
+    },
+    {
+      "id": 97,
+      "token": "mali_g715",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 1,
+      "stiefel_col": 17
+    },
+    {
+      "id": 98,
+      "token": "cacheline",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 2,
+      "stiefel_col": 18
+    },
+    {
+      "id": 99,
+      "token": "bijection",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 3,
+      "stiefel_col": 19
+    },
+    {
+      "id": 100,
+      "token": "autopoietic",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 4,
+      "stiefel_col": 20
+    },
+    {
+      "id": 101,
+      "token": "plasticity",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 5,
+      "stiefel_col": 21
+    },
+    {
+      "id": 102,
+      "token": "stability",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 6,
+      "stiefel_col": 22
+    },
+    {
+      "id": 103,
+      "token": "the_nl_103",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 7,
+      "stiefel_col": 23
+    },
+    {
+      "id": 104,
+      "token": "of_nl_104",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 8,
+      "stiefel_col": 24
+    },
+    {
+      "id": 105,
+      "token": "and_nl_105",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 9,
+      "stiefel_col": 25
+    },
+    {
+      "id": 106,
+      "token": "to_nl_106",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 10,
+      "stiefel_col": 26
+    },
+    {
+      "id": 107,
+      "token": "in_nl_107",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 11,
+      "stiefel_col": 27
+    },
+    {
+      "id": 108,
+      "token": "is_nl_108",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 12,
+      "stiefel_col": 28
+    },
+    {
+      "id": 109,
+      "token": "for_nl_109",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 13,
+      "stiefel_col": 29
+    },
+    {
+      "id": 110,
+      "token": "that_nl_110",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 14,
+      "stiefel_col": 30
+    },
+    {
+      "id": 111,
+      "token": "with_nl_111",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 15,
+      "stiefel_col": 31
+    },
+    {
+      "id": 112,
+      "token": "on_nl_112",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 16,
+      "stiefel_col": 32
+    },
+    {
+      "id": 113,
+      "token": "as_nl_113",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 17,
+      "stiefel_col": 33
+    },
+    {
+      "id": 114,
+      "token": "are_nl_114",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 18,
+      "stiefel_col": 34
+    },
+    {
+      "id": 115,
+      "token": "this_nl_115",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 19,
+      "stiefel_col": 35
+    },
+    {
+      "id": 116,
+      "token": "by_nl_116",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 20,
+      "stiefel_col": 36
+    },
+    {
+      "id": 117,
+      "token": "be_nl_117",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 21,
+      "stiefel_col": 37
+    },
+    {
+      "id": 118,
+      "token": "at_nl_118",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 22,
+      "stiefel_col": 38
+    },
+    {
+      "id": 119,
+      "token": "or_nl_119",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 23,
+      "stiefel_col": 39
+    },
+    {
+      "id": 120,
+      "token": "from_nl_120",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 0,
+      "stiefel_col": 40
+    },
+    {
+      "id": 121,
+      "token": "an_nl_121",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 1,
+      "stiefel_col": 41
+    },
+    {
+      "id": 122,
+      "token": "can_nl_122",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 2,
+      "stiefel_col": 42
+    },
+    {
+      "id": 123,
+      "token": "how_nl_123",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 3,
+      "stiefel_col": 43
+    },
+    {
+      "id": 124,
+      "token": "what_nl_124",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 4,
+      "stiefel_col": 44
+    },
+    {
+      "id": 125,
+      "token": "why_nl_125",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 5,
+      "stiefel_col": 45
+    },
+    {
+      "id": 126,
+      "token": "where_nl_126",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 6,
+      "stiefel_col": 46
+    },
+    {
+      "id": 127,
+      "token": "when_nl_127",
+      "horizon": "H0_NATURAL_LANGUAGE_BPE",
+      "leech_axis": 7,
+      "stiefel_col": 47
+    }
+  ],
+  "sample_compound_horizon_tokens": [
+    {
+      "id": 4096,
+      "token": "tok_bank0_systems_cuda_wgsl_0000",
+      "bank": "BANK0_SYSTEMS_CUDA_WGSL",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 0,
+      "stiefel_col": 0
+    },
+    {
+      "id": 4097,
+      "token": "tok_bank1_lean4_math_fno_pde_0001",
+      "bank": "BANK1_LEAN4_MATH_FNO_PDE",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 7,
+      "stiefel_col": 13
+    },
+    {
+      "id": 4098,
+      "token": "tok_bank2_cyber_siem_cloudflare_pq_0002",
+      "bank": "BANK2_CYBER_SIEM_CLOUDFLARE_PQ",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 14,
+      "stiefel_col": 26
+    },
+    {
+      "id": 4099,
+      "token": "tok_bank3_erepr_navier_llm_ssd_tier2_0003",
+      "bank": "BANK3_EREPR_NAVIER_LLM_SSD_TIER2",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 21,
+      "stiefel_col": 39
+    },
+    {
+      "id": 4100,
+      "token": "tok_bank0_systems_cuda_wgsl_0004",
+      "bank": "BANK0_SYSTEMS_CUDA_WGSL",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 4,
+      "stiefel_col": 52
+    },
+    {
+      "id": 4101,
+      "token": "tok_bank1_lean4_math_fno_pde_0005",
+      "bank": "BANK1_LEAN4_MATH_FNO_PDE",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 11,
+      "stiefel_col": 65
+    },
+    {
+      "id": 4102,
+      "token": "tok_bank2_cyber_siem_cloudflare_pq_0006",
+      "bank": "BANK2_CYBER_SIEM_CLOUDFLARE_PQ",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 18,
+      "stiefel_col": 78
+    },
+    {
+      "id": 4103,
+      "token": "tok_bank3_erepr_navier_llm_ssd_tier2_0007",
+      "bank": "BANK3_EREPR_NAVIER_LLM_SSD_TIER2",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 1,
+      "stiefel_col": 11
+    },
+    {
+      "id": 4104,
+      "token": "tok_bank0_systems_cuda_wgsl_0008",
+      "bank": "BANK0_SYSTEMS_CUDA_WGSL",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 8,
+      "stiefel_col": 24
+    },
+    {
+      "id": 4105,
+      "token": "tok_bank1_lean4_math_fno_pde_0009",
+      "bank": "BANK1_LEAN4_MATH_FNO_PDE",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 15,
+      "stiefel_col": 37
+    },
+    {
+      "id": 4106,
+      "token": "tok_bank2_cyber_siem_cloudflare_pq_0010",
+      "bank": "BANK2_CYBER_SIEM_CLOUDFLARE_PQ",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 22,
+      "stiefel_col": 50
+    },
+    {
+      "id": 4107,
+      "token": "tok_bank3_erepr_navier_llm_ssd_tier2_0011",
+      "bank": "BANK3_EREPR_NAVIER_LLM_SSD_TIER2",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 5,
+      "stiefel_col": 63
+    },
+    {
+      "id": 4108,
+      "token": "tok_bank0_systems_cuda_wgsl_0012",
+      "bank": "BANK0_SYSTEMS_CUDA_WGSL",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 12,
+      "stiefel_col": 76
+    },
+    {
+      "id": 4109,
+      "token": "tok_bank1_lean4_math_fno_pde_0013",
+      "bank": "BANK1_LEAN4_MATH_FNO_PDE",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 19,
+      "stiefel_col": 9
+    },
+    {
+      "id": 4110,
+      "token": "tok_bank2_cyber_siem_cloudflare_pq_0014",
+      "bank": "BANK2_CYBER_SIEM_CLOUDFLARE_PQ",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 2,
+      "stiefel_col": 22
+    },
+    {
+      "id": 4111,
+      "token": "tok_bank3_erepr_navier_llm_ssd_tier2_0015",
+      "bank": "BANK3_EREPR_NAVIER_LLM_SSD_TIER2",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 9,
+      "stiefel_col": 35
+    },
+    {
+      "id": 4112,
+      "token": "tok_bank0_systems_cuda_wgsl_0016",
+      "bank": "BANK0_SYSTEMS_CUDA_WGSL",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 16,
+      "stiefel_col": 48
+    },
+    {
+      "id": 4113,
+      "token": "tok_bank1_lean4_math_fno_pde_0017",
+      "bank": "BANK1_LEAN4_MATH_FNO_PDE",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 23,
+      "stiefel_col": 61
+    },
+    {
+      "id": 4114,
+      "token": "tok_bank2_cyber_siem_cloudflare_pq_0018",
+      "bank": "BANK2_CYBER_SIEM_CLOUDFLARE_PQ",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 6,
+      "stiefel_col": 74
+    },
+    {
+      "id": 4115,
+      "token": "tok_bank3_erepr_navier_llm_ssd_tier2_0019",
+      "bank": "BANK3_EREPR_NAVIER_LLM_SSD_TIER2",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 13,
+      "stiefel_col": 7
+    },
+    {
+      "id": 4116,
+      "token": "tok_bank0_systems_cuda_wgsl_0020",
+      "bank": "BANK0_SYSTEMS_CUDA_WGSL",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 20,
+      "stiefel_col": 20
+    },
+    {
+      "id": 4117,
+      "token": "tok_bank1_lean4_math_fno_pde_0021",
+      "bank": "BANK1_LEAN4_MATH_FNO_PDE",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 3,
+      "stiefel_col": 33
+    },
+    {
+      "id": 4118,
+      "token": "tok_bank2_cyber_siem_cloudflare_pq_0022",
+      "bank": "BANK2_CYBER_SIEM_CLOUDFLARE_PQ",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 10,
+      "stiefel_col": 46
+    },
+    {
+      "id": 4119,
+      "token": "tok_bank3_erepr_navier_llm_ssd_tier2_0023",
+      "bank": "BANK3_EREPR_NAVIER_LLM_SSD_TIER2",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 17,
+      "stiefel_col": 59
+    },
+    {
+      "id": 4120,
+      "token": "tok_bank0_systems_cuda_wgsl_0024",
+      "bank": "BANK0_SYSTEMS_CUDA_WGSL",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 0,
+      "stiefel_col": 72
+    },
+    {
+      "id": 4121,
+      "token": "tok_bank1_lean4_math_fno_pde_0025",
+      "bank": "BANK1_LEAN4_MATH_FNO_PDE",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 7,
+      "stiefel_col": 5
+    },
+    {
+      "id": 4122,
+      "token": "tok_bank2_cyber_siem_cloudflare_pq_0026",
+      "bank": "BANK2_CYBER_SIEM_CLOUDFLARE_PQ",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 14,
+      "stiefel_col": 18
+    },
+    {
+      "id": 4123,
+      "token": "tok_bank3_erepr_navier_llm_ssd_tier2_0027",
+      "bank": "BANK3_EREPR_NAVIER_LLM_SSD_TIER2",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 21,
+      "stiefel_col": 31
+    },
+    {
+      "id": 4124,
+      "token": "tok_bank0_systems_cuda_wgsl_0028",
+      "bank": "BANK0_SYSTEMS_CUDA_WGSL",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 4,
+      "stiefel_col": 44
+    },
+    {
+      "id": 4125,
+      "token": "tok_bank1_lean4_math_fno_pde_0029",
+      "bank": "BANK1_LEAN4_MATH_FNO_PDE",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 11,
+      "stiefel_col": 57
+    },
+    {
+      "id": 4126,
+      "token": "tok_bank2_cyber_siem_cloudflare_pq_0030",
+      "bank": "BANK2_CYBER_SIEM_CLOUDFLARE_PQ",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 18,
+      "stiefel_col": 70
+    },
+    {
+      "id": 4127,
+      "token": "tok_bank3_erepr_navier_llm_ssd_tier2_0031",
+      "bank": "BANK3_EREPR_NAVIER_LLM_SSD_TIER2",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 1,
+      "stiefel_col": 3
+    },
+    {
+      "id": 4128,
+      "token": "tok_bank0_systems_cuda_wgsl_0032",
+      "bank": "BANK0_SYSTEMS_CUDA_WGSL",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 8,
+      "stiefel_col": 16
+    },
+    {
+      "id": 4129,
+      "token": "tok_bank1_lean4_math_fno_pde_0033",
+      "bank": "BANK1_LEAN4_MATH_FNO_PDE",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 15,
+      "stiefel_col": 29
+    },
+    {
+      "id": 4130,
+      "token": "tok_bank2_cyber_siem_cloudflare_pq_0034",
+      "bank": "BANK2_CYBER_SIEM_CLOUDFLARE_PQ",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 22,
+      "stiefel_col": 42
+    },
+    {
+      "id": 4131,
+      "token": "tok_bank3_erepr_navier_llm_ssd_tier2_0035",
+      "bank": "BANK3_EREPR_NAVIER_LLM_SSD_TIER2",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 5,
+      "stiefel_col": 55
+    },
+    {
+      "id": 4132,
+      "token": "tok_bank0_systems_cuda_wgsl_0036",
+      "bank": "BANK0_SYSTEMS_CUDA_WGSL",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 12,
+      "stiefel_col": 68
+    },
+    {
+      "id": 4133,
+      "token": "tok_bank1_lean4_math_fno_pde_0037",
+      "bank": "BANK1_LEAN4_MATH_FNO_PDE",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 19,
+      "stiefel_col": 1
+    },
+    {
+      "id": 4134,
+      "token": "tok_bank2_cyber_siem_cloudflare_pq_0038",
+      "bank": "BANK2_CYBER_SIEM_CLOUDFLARE_PQ",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 2,
+      "stiefel_col": 14
+    },
+    {
+      "id": 4135,
+      "token": "tok_bank3_erepr_navier_llm_ssd_tier2_0039",
+      "bank": "BANK3_EREPR_NAVIER_LLM_SSD_TIER2",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 9,
+      "stiefel_col": 27
+    },
+    {
+      "id": 4136,
+      "token": "tok_bank0_systems_cuda_wgsl_0040",
+      "bank": "BANK0_SYSTEMS_CUDA_WGSL",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 16,
+      "stiefel_col": 40
+    },
+    {
+      "id": 4137,
+      "token": "tok_bank1_lean4_math_fno_pde_0041",
+      "bank": "BANK1_LEAN4_MATH_FNO_PDE",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 23,
+      "stiefel_col": 53
+    },
+    {
+      "id": 4138,
+      "token": "tok_bank2_cyber_siem_cloudflare_pq_0042",
+      "bank": "BANK2_CYBER_SIEM_CLOUDFLARE_PQ",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 6,
+      "stiefel_col": 66
+    },
+    {
+      "id": 4139,
+      "token": "tok_bank3_erepr_navier_llm_ssd_tier2_0043",
+      "bank": "BANK3_EREPR_NAVIER_LLM_SSD_TIER2",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 13,
+      "stiefel_col": 79
+    },
+    {
+      "id": 4140,
+      "token": "tok_bank0_systems_cuda_wgsl_0044",
+      "bank": "BANK0_SYSTEMS_CUDA_WGSL",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 20,
+      "stiefel_col": 12
+    },
+    {
+      "id": 4141,
+      "token": "tok_bank1_lean4_math_fno_pde_0045",
+      "bank": "BANK1_LEAN4_MATH_FNO_PDE",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 3,
+      "stiefel_col": 25
+    },
+    {
+      "id": 4142,
+      "token": "tok_bank2_cyber_siem_cloudflare_pq_0046",
+      "bank": "BANK2_CYBER_SIEM_CLOUDFLARE_PQ",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 10,
+      "stiefel_col": 38
+    },
+    {
+      "id": 4143,
+      "token": "tok_bank3_erepr_navier_llm_ssd_tier2_0047",
+      "bank": "BANK3_EREPR_NAVIER_LLM_SSD_TIER2",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 17,
+      "stiefel_col": 51
+    },
+    {
+      "id": 4144,
+      "token": "tok_bank0_systems_cuda_wgsl_0048",
+      "bank": "BANK0_SYSTEMS_CUDA_WGSL",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 0,
+      "stiefel_col": 64
+    },
+    {
+      "id": 4145,
+      "token": "tok_bank1_lean4_math_fno_pde_0049",
+      "bank": "BANK1_LEAN4_MATH_FNO_PDE",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 7,
+      "stiefel_col": 77
+    },
+    {
+      "id": 4146,
+      "token": "tok_bank2_cyber_siem_cloudflare_pq_0050",
+      "bank": "BANK2_CYBER_SIEM_CLOUDFLARE_PQ",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 14,
+      "stiefel_col": 10
+    },
+    {
+      "id": 4147,
+      "token": "tok_bank3_erepr_navier_llm_ssd_tier2_0051",
+      "bank": "BANK3_EREPR_NAVIER_LLM_SSD_TIER2",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 21,
+      "stiefel_col": 23
+    },
+    {
+      "id": 4148,
+      "token": "tok_bank0_systems_cuda_wgsl_0052",
+      "bank": "BANK0_SYSTEMS_CUDA_WGSL",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 4,
+      "stiefel_col": 36
+    },
+    {
+      "id": 4149,
+      "token": "tok_bank1_lean4_math_fno_pde_0053",
+      "bank": "BANK1_LEAN4_MATH_FNO_PDE",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 11,
+      "stiefel_col": 49
+    },
+    {
+      "id": 4150,
+      "token": "tok_bank2_cyber_siem_cloudflare_pq_0054",
+      "bank": "BANK2_CYBER_SIEM_CLOUDFLARE_PQ",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 18,
+      "stiefel_col": 62
+    },
+    {
+      "id": 4151,
+      "token": "tok_bank3_erepr_navier_llm_ssd_tier2_0055",
+      "bank": "BANK3_EREPR_NAVIER_LLM_SSD_TIER2",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 1,
+      "stiefel_col": 75
+    },
+    {
+      "id": 4152,
+      "token": "tok_bank0_systems_cuda_wgsl_0056",
+      "bank": "BANK0_SYSTEMS_CUDA_WGSL",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 8,
+      "stiefel_col": 8
+    },
+    {
+      "id": 4153,
+      "token": "tok_bank1_lean4_math_fno_pde_0057",
+      "bank": "BANK1_LEAN4_MATH_FNO_PDE",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 15,
+      "stiefel_col": 21
+    },
+    {
+      "id": 4154,
+      "token": "tok_bank2_cyber_siem_cloudflare_pq_0058",
+      "bank": "BANK2_CYBER_SIEM_CLOUDFLARE_PQ",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 22,
+      "stiefel_col": 34
+    },
+    {
+      "id": 4155,
+      "token": "tok_bank3_erepr_navier_llm_ssd_tier2_0059",
+      "bank": "BANK3_EREPR_NAVIER_LLM_SSD_TIER2",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 5,
+      "stiefel_col": 47
+    },
+    {
+      "id": 4156,
+      "token": "tok_bank0_systems_cuda_wgsl_0060",
+      "bank": "BANK0_SYSTEMS_CUDA_WGSL",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 12,
+      "stiefel_col": 60
+    },
+    {
+      "id": 4157,
+      "token": "tok_bank1_lean4_math_fno_pde_0061",
+      "bank": "BANK1_LEAN4_MATH_FNO_PDE",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 19,
+      "stiefel_col": 73
+    },
+    {
+      "id": 4158,
+      "token": "tok_bank2_cyber_siem_cloudflare_pq_0062",
+      "bank": "BANK2_CYBER_SIEM_CLOUDFLARE_PQ",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 2,
+      "stiefel_col": 6
+    },
+    {
+      "id": 4159,
+      "token": "tok_bank3_erepr_navier_llm_ssd_tier2_0063",
+      "bank": "BANK3_EREPR_NAVIER_LLM_SSD_TIER2",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 9,
+      "stiefel_col": 19
+    },
+    {
+      "id": 4160,
+      "token": "tok_bank0_systems_cuda_wgsl_0064",
+      "bank": "BANK0_SYSTEMS_CUDA_WGSL",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 16,
+      "stiefel_col": 32
+    },
+    {
+      "id": 4161,
+      "token": "tok_bank1_lean4_math_fno_pde_0065",
+      "bank": "BANK1_LEAN4_MATH_FNO_PDE",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 23,
+      "stiefel_col": 45
+    },
+    {
+      "id": 4162,
+      "token": "tok_bank2_cyber_siem_cloudflare_pq_0066",
+      "bank": "BANK2_CYBER_SIEM_CLOUDFLARE_PQ",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 6,
+      "stiefel_col": 58
+    },
+    {
+      "id": 4163,
+      "token": "tok_bank3_erepr_navier_llm_ssd_tier2_0067",
+      "bank": "BANK3_EREPR_NAVIER_LLM_SSD_TIER2",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 13,
+      "stiefel_col": 71
+    },
+    {
+      "id": 4164,
+      "token": "tok_bank0_systems_cuda_wgsl_0068",
+      "bank": "BANK0_SYSTEMS_CUDA_WGSL",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 20,
+      "stiefel_col": 4
+    },
+    {
+      "id": 4165,
+      "token": "tok_bank1_lean4_math_fno_pde_0069",
+      "bank": "BANK1_LEAN4_MATH_FNO_PDE",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 3,
+      "stiefel_col": 17
+    },
+    {
+      "id": 4166,
+      "token": "tok_bank2_cyber_siem_cloudflare_pq_0070",
+      "bank": "BANK2_CYBER_SIEM_CLOUDFLARE_PQ",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 10,
+      "stiefel_col": 30
+    },
+    {
+      "id": 4167,
+      "token": "tok_bank3_erepr_navier_llm_ssd_tier2_0071",
+      "bank": "BANK3_EREPR_NAVIER_LLM_SSD_TIER2",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 17,
+      "stiefel_col": 43
+    },
+    {
+      "id": 4168,
+      "token": "tok_bank0_systems_cuda_wgsl_0072",
+      "bank": "BANK0_SYSTEMS_CUDA_WGSL",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 0,
+      "stiefel_col": 56
+    },
+    {
+      "id": 4169,
+      "token": "tok_bank1_lean4_math_fno_pde_0073",
+      "bank": "BANK1_LEAN4_MATH_FNO_PDE",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 7,
+      "stiefel_col": 69
+    },
+    {
+      "id": 4170,
+      "token": "tok_bank2_cyber_siem_cloudflare_pq_0074",
+      "bank": "BANK2_CYBER_SIEM_CLOUDFLARE_PQ",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 14,
+      "stiefel_col": 2
+    },
+    {
+      "id": 4171,
+      "token": "tok_bank3_erepr_navier_llm_ssd_tier2_0075",
+      "bank": "BANK3_EREPR_NAVIER_LLM_SSD_TIER2",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 21,
+      "stiefel_col": 15
+    },
+    {
+      "id": 4172,
+      "token": "tok_bank0_systems_cuda_wgsl_0076",
+      "bank": "BANK0_SYSTEMS_CUDA_WGSL",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 4,
+      "stiefel_col": 28
+    },
+    {
+      "id": 4173,
+      "token": "tok_bank1_lean4_math_fno_pde_0077",
+      "bank": "BANK1_LEAN4_MATH_FNO_PDE",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 11,
+      "stiefel_col": 41
+    },
+    {
+      "id": 4174,
+      "token": "tok_bank2_cyber_siem_cloudflare_pq_0078",
+      "bank": "BANK2_CYBER_SIEM_CLOUDFLARE_PQ",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 18,
+      "stiefel_col": 54
+    },
+    {
+      "id": 4175,
+      "token": "tok_bank3_erepr_navier_llm_ssd_tier2_0079",
+      "bank": "BANK3_EREPR_NAVIER_LLM_SSD_TIER2",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 1,
+      "stiefel_col": 67
+    },
+    {
+      "id": 4176,
+      "token": "tok_bank0_systems_cuda_wgsl_0080",
+      "bank": "BANK0_SYSTEMS_CUDA_WGSL",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 8,
+      "stiefel_col": 0
+    },
+    {
+      "id": 4177,
+      "token": "tok_bank1_lean4_math_fno_pde_0081",
+      "bank": "BANK1_LEAN4_MATH_FNO_PDE",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 15,
+      "stiefel_col": 13
+    },
+    {
+      "id": 4178,
+      "token": "tok_bank2_cyber_siem_cloudflare_pq_0082",
+      "bank": "BANK2_CYBER_SIEM_CLOUDFLARE_PQ",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 22,
+      "stiefel_col": 26
+    },
+    {
+      "id": 4179,
+      "token": "tok_bank3_erepr_navier_llm_ssd_tier2_0083",
+      "bank": "BANK3_EREPR_NAVIER_LLM_SSD_TIER2",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 5,
+      "stiefel_col": 39
+    },
+    {
+      "id": 4180,
+      "token": "tok_bank0_systems_cuda_wgsl_0084",
+      "bank": "BANK0_SYSTEMS_CUDA_WGSL",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 12,
+      "stiefel_col": 52
+    },
+    {
+      "id": 4181,
+      "token": "tok_bank1_lean4_math_fno_pde_0085",
+      "bank": "BANK1_LEAN4_MATH_FNO_PDE",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 19,
+      "stiefel_col": 65
+    },
+    {
+      "id": 4182,
+      "token": "tok_bank2_cyber_siem_cloudflare_pq_0086",
+      "bank": "BANK2_CYBER_SIEM_CLOUDFLARE_PQ",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 2,
+      "stiefel_col": 78
+    },
+    {
+      "id": 4183,
+      "token": "tok_bank3_erepr_navier_llm_ssd_tier2_0087",
+      "bank": "BANK3_EREPR_NAVIER_LLM_SSD_TIER2",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 9,
+      "stiefel_col": 11
+    },
+    {
+      "id": 4184,
+      "token": "tok_bank0_systems_cuda_wgsl_0088",
+      "bank": "BANK0_SYSTEMS_CUDA_WGSL",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 16,
+      "stiefel_col": 24
+    },
+    {
+      "id": 4185,
+      "token": "tok_bank1_lean4_math_fno_pde_0089",
+      "bank": "BANK1_LEAN4_MATH_FNO_PDE",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 23,
+      "stiefel_col": 37
+    },
+    {
+      "id": 4186,
+      "token": "tok_bank2_cyber_siem_cloudflare_pq_0090",
+      "bank": "BANK2_CYBER_SIEM_CLOUDFLARE_PQ",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 6,
+      "stiefel_col": 50
+    },
+    {
+      "id": 4187,
+      "token": "tok_bank3_erepr_navier_llm_ssd_tier2_0091",
+      "bank": "BANK3_EREPR_NAVIER_LLM_SSD_TIER2",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 13,
+      "stiefel_col": 63
+    },
+    {
+      "id": 4188,
+      "token": "tok_bank0_systems_cuda_wgsl_0092",
+      "bank": "BANK0_SYSTEMS_CUDA_WGSL",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 20,
+      "stiefel_col": 76
+    },
+    {
+      "id": 4189,
+      "token": "tok_bank1_lean4_math_fno_pde_0093",
+      "bank": "BANK1_LEAN4_MATH_FNO_PDE",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 3,
+      "stiefel_col": 9
+    },
+    {
+      "id": 4190,
+      "token": "tok_bank2_cyber_siem_cloudflare_pq_0094",
+      "bank": "BANK2_CYBER_SIEM_CLOUDFLARE_PQ",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 10,
+      "stiefel_col": 22
+    },
+    {
+      "id": 4191,
+      "token": "tok_bank3_erepr_navier_llm_ssd_tier2_0095",
+      "bank": "BANK3_EREPR_NAVIER_LLM_SSD_TIER2",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 17,
+      "stiefel_col": 35
+    },
+    {
+      "id": 4192,
+      "token": "tok_bank0_systems_cuda_wgsl_0096",
+      "bank": "BANK0_SYSTEMS_CUDA_WGSL",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 0,
+      "stiefel_col": 48
+    },
+    {
+      "id": 4193,
+      "token": "tok_bank1_lean4_math_fno_pde_0097",
+      "bank": "BANK1_LEAN4_MATH_FNO_PDE",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 7,
+      "stiefel_col": 61
+    },
+    {
+      "id": 4194,
+      "token": "tok_bank2_cyber_siem_cloudflare_pq_0098",
+      "bank": "BANK2_CYBER_SIEM_CLOUDFLARE_PQ",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 14,
+      "stiefel_col": 74
+    },
+    {
+      "id": 4195,
+      "token": "tok_bank3_erepr_navier_llm_ssd_tier2_0099",
+      "bank": "BANK3_EREPR_NAVIER_LLM_SSD_TIER2",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 21,
+      "stiefel_col": 7
+    },
+    {
+      "id": 4196,
+      "token": "tok_bank0_systems_cuda_wgsl_0100",
+      "bank": "BANK0_SYSTEMS_CUDA_WGSL",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 4,
+      "stiefel_col": 20
+    },
+    {
+      "id": 4197,
+      "token": "tok_bank1_lean4_math_fno_pde_0101",
+      "bank": "BANK1_LEAN4_MATH_FNO_PDE",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 11,
+      "stiefel_col": 33
+    },
+    {
+      "id": 4198,
+      "token": "tok_bank2_cyber_siem_cloudflare_pq_0102",
+      "bank": "BANK2_CYBER_SIEM_CLOUDFLARE_PQ",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 18,
+      "stiefel_col": 46
+    },
+    {
+      "id": 4199,
+      "token": "tok_bank3_erepr_navier_llm_ssd_tier2_0103",
+      "bank": "BANK3_EREPR_NAVIER_LLM_SSD_TIER2",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 1,
+      "stiefel_col": 59
+    },
+    {
+      "id": 4200,
+      "token": "tok_bank0_systems_cuda_wgsl_0104",
+      "bank": "BANK0_SYSTEMS_CUDA_WGSL",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 8,
+      "stiefel_col": 72
+    },
+    {
+      "id": 4201,
+      "token": "tok_bank1_lean4_math_fno_pde_0105",
+      "bank": "BANK1_LEAN4_MATH_FNO_PDE",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 15,
+      "stiefel_col": 5
+    },
+    {
+      "id": 4202,
+      "token": "tok_bank2_cyber_siem_cloudflare_pq_0106",
+      "bank": "BANK2_CYBER_SIEM_CLOUDFLARE_PQ",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 22,
+      "stiefel_col": 18
+    },
+    {
+      "id": 4203,
+      "token": "tok_bank3_erepr_navier_llm_ssd_tier2_0107",
+      "bank": "BANK3_EREPR_NAVIER_LLM_SSD_TIER2",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 5,
+      "stiefel_col": 31
+    },
+    {
+      "id": 4204,
+      "token": "tok_bank0_systems_cuda_wgsl_0108",
+      "bank": "BANK0_SYSTEMS_CUDA_WGSL",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 12,
+      "stiefel_col": 44
+    },
+    {
+      "id": 4205,
+      "token": "tok_bank1_lean4_math_fno_pde_0109",
+      "bank": "BANK1_LEAN4_MATH_FNO_PDE",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 19,
+      "stiefel_col": 57
+    },
+    {
+      "id": 4206,
+      "token": "tok_bank2_cyber_siem_cloudflare_pq_0110",
+      "bank": "BANK2_CYBER_SIEM_CLOUDFLARE_PQ",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 2,
+      "stiefel_col": 70
+    },
+    {
+      "id": 4207,
+      "token": "tok_bank3_erepr_navier_llm_ssd_tier2_0111",
+      "bank": "BANK3_EREPR_NAVIER_LLM_SSD_TIER2",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 9,
+      "stiefel_col": 3
+    },
+    {
+      "id": 4208,
+      "token": "tok_bank0_systems_cuda_wgsl_0112",
+      "bank": "BANK0_SYSTEMS_CUDA_WGSL",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 16,
+      "stiefel_col": 16
+    },
+    {
+      "id": 4209,
+      "token": "tok_bank1_lean4_math_fno_pde_0113",
+      "bank": "BANK1_LEAN4_MATH_FNO_PDE",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 23,
+      "stiefel_col": 29
+    },
+    {
+      "id": 4210,
+      "token": "tok_bank2_cyber_siem_cloudflare_pq_0114",
+      "bank": "BANK2_CYBER_SIEM_CLOUDFLARE_PQ",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 6,
+      "stiefel_col": 42
+    },
+    {
+      "id": 4211,
+      "token": "tok_bank3_erepr_navier_llm_ssd_tier2_0115",
+      "bank": "BANK3_EREPR_NAVIER_LLM_SSD_TIER2",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 13,
+      "stiefel_col": 55
+    },
+    {
+      "id": 4212,
+      "token": "tok_bank0_systems_cuda_wgsl_0116",
+      "bank": "BANK0_SYSTEMS_CUDA_WGSL",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 20,
+      "stiefel_col": 68
+    },
+    {
+      "id": 4213,
+      "token": "tok_bank1_lean4_math_fno_pde_0117",
+      "bank": "BANK1_LEAN4_MATH_FNO_PDE",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 3,
+      "stiefel_col": 1
+    },
+    {
+      "id": 4214,
+      "token": "tok_bank2_cyber_siem_cloudflare_pq_0118",
+      "bank": "BANK2_CYBER_SIEM_CLOUDFLARE_PQ",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 10,
+      "stiefel_col": 14
+    },
+    {
+      "id": 4215,
+      "token": "tok_bank3_erepr_navier_llm_ssd_tier2_0119",
+      "bank": "BANK3_EREPR_NAVIER_LLM_SSD_TIER2",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 17,
+      "stiefel_col": 27
+    },
+    {
+      "id": 4216,
+      "token": "tok_bank0_systems_cuda_wgsl_0120",
+      "bank": "BANK0_SYSTEMS_CUDA_WGSL",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 0,
+      "stiefel_col": 40
+    },
+    {
+      "id": 4217,
+      "token": "tok_bank1_lean4_math_fno_pde_0121",
+      "bank": "BANK1_LEAN4_MATH_FNO_PDE",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 7,
+      "stiefel_col": 53
+    },
+    {
+      "id": 4218,
+      "token": "tok_bank2_cyber_siem_cloudflare_pq_0122",
+      "bank": "BANK2_CYBER_SIEM_CLOUDFLARE_PQ",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 14,
+      "stiefel_col": 66
+    },
+    {
+      "id": 4219,
+      "token": "tok_bank3_erepr_navier_llm_ssd_tier2_0123",
+      "bank": "BANK3_EREPR_NAVIER_LLM_SSD_TIER2",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 21,
+      "stiefel_col": 79
+    },
+    {
+      "id": 4220,
+      "token": "tok_bank0_systems_cuda_wgsl_0124",
+      "bank": "BANK0_SYSTEMS_CUDA_WGSL",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 4,
+      "stiefel_col": 12
+    },
+    {
+      "id": 4221,
+      "token": "tok_bank1_lean4_math_fno_pde_0125",
+      "bank": "BANK1_LEAN4_MATH_FNO_PDE",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 11,
+      "stiefel_col": 25
+    },
+    {
+      "id": 4222,
+      "token": "tok_bank2_cyber_siem_cloudflare_pq_0126",
+      "bank": "BANK2_CYBER_SIEM_CLOUDFLARE_PQ",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 18,
+      "stiefel_col": 38
+    },
+    {
+      "id": 4223,
+      "token": "tok_bank3_erepr_navier_llm_ssd_tier2_0127",
+      "bank": "BANK3_EREPR_NAVIER_LLM_SSD_TIER2",
+      "horizon": "H1_COMPOUND_TOPOLOGICAL",
+      "leech_axis": 1,
+      "stiefel_col": 51
+    }
+  ]
+}

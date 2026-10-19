@@ -3,16 +3,13 @@ package com.actomega.manifold
 import android.app.Activity
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.appwidget.AppWidgetManager
 import android.content.Context
-import android.content.Intent
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Build
 import android.os.Bundle
-import android.widget.RemoteViews
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Canvas
@@ -115,10 +112,6 @@ object SovereignLiveBus : SensorEventListener {
             p.contains("shiba", ignoreCase = true)
     }
 
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-    private val _state = MutableStateFlow(buildInitialSnap())
-    val state: StateFlow<SovereignSnap> = _state.asStateFlow()
-
     @Volatile private var started = false
     @Volatile private var magX = -23.6f
     @Volatile private var magY = -42.3f
@@ -131,6 +124,10 @@ object SovereignLiveBus : SensorEventListener {
     @Volatile private var hostFnoRuns = 64
     @Volatile private var hostLlmVisits = 19
     @Volatile private var hostSsdSyncs = 32
+
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    private val _state = MutableStateFlow(buildInitialSnap())
+    val state: StateFlow<SovereignSnap> = _state.asStateFlow()
 
     private fun buildInitialSnap(): SovereignSnap {
         return composeSnap(729500L, true, "B1:USB(:8097/:5173) + B3:CF-WAN", 11.4)
@@ -181,7 +178,7 @@ object SovereignLiveBus : SensorEventListener {
                     if (sAcc != null) sm.registerListener(this, sAcc, SensorManager.SENSOR_DELAY_UI)
                     if (sGyro != null) sm.registerListener(this, sGyro, SensorManager.SENSOR_DELAY_UI)
                 }
-            } catch (_: Exception) {
+            } catch (_: Throwable) {
             }
         }
 
@@ -219,20 +216,14 @@ object SovereignLiveBus : SensorEventListener {
                             hostSsdSyncs = extractJsonInt(body, "ssd_tier2_syncs", hostSsdSyncs)
                             break
                         }
-                    } catch (_: Exception) {
+                    } catch (_: Throwable) {
                     }
                 }
 
                 val nextSnap = composeSnap(tickCount, synced, bearer, rtt)
                 _state.value = nextSnap
                 updateLiveNotification(appCtx, nextSnap)
-                try {
-                    val widgetIntent = Intent(AppWidgetManager.ACTION_APPWIDGET_UPDATE).apply {
-                        setPackage(appCtx.packageName)
-                    }
-                    appCtx.sendBroadcast(widgetIntent)
-                } catch (_: Exception) {
-                }
+
                 delay(1000L)
             }
         }
@@ -461,124 +452,8 @@ object SovereignLiveBus : SensorEventListener {
                 .setOnlyAlertOnce(true)
                 .build()
             nm.notify(3206, notif)
-        } catch (_: Exception) {
+        } catch (_: Throwable) {
         }
-        updateHomeScreenWidgets(context, snap)
-    }
-
-    private fun updateHomeScreenWidgets(context: Context, snap: SovereignSnap) {
-        try {
-            val awm = AppWidgetManager.getInstance(context) ?: return
-            val providers = awm.getInstalledProvidersForPackage(context.packageName, null)
-            if (providers.isNullOrEmpty()) return
-
-            val w = 640
-            val h = 260
-            val bmp = android.graphics.Bitmap.createBitmap(
-                w,
-                h,
-                android.graphics.Bitmap.Config.ARGB_8888
-            )
-            val canvas = android.graphics.Canvas(bmp)
-            val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG)
-
-            paint.style = android.graphics.Paint.Style.FILL
-            paint.color = 0xFF0E1116.toInt()
-            canvas.drawRect(0f, 0f, w.toFloat(), h.toFloat(), paint)
-
-            paint.style = android.graphics.Paint.Style.STROKE
-            paint.strokeWidth = 3f
-            paint.color = 0xFF2A3B4D.toInt()
-            canvas.drawRect(1.5f, 1.5f, w - 1.5f, h - 1.5f, paint)
-
-            paint.style = android.graphics.Paint.Style.FILL
-            paint.typeface = android.graphics.Typeface.MONOSPACE
-            paint.textSize = 20f
-            paint.isFakeBoldText = true
-            paint.color = 0xFFFFB454.toInt()
-            canvas.drawText(
-                "SOVEREIGN MANIFOLD v32.6 (SH4Z v3206) -- 684.4k ops/s",
-                14f,
-                28f,
-                paint
-            )
-
-            paint.textSize = 15f
-            paint.isFakeBoldText = false
-            paint.color = 0xFFFFFEFB.toInt()
-            canvas.drawText(
-                "4,400 Shards -- 8,192 NL Tok -- 128/131 Lean4 -- E:/ SSD SYNCED (#${snap.gen})",
-                14f,
-                50f,
-                paint
-            )
-
-            val gx0 = 14f
-            val gy0 = 62f
-            val gw = w - 28f
-            val gh = h - 74f
-            val cw = gw / 80f
-            val ch = gh / 16f
-            val grid = snap.lattice16x80
-            for (r in 0 until 16) {
-                for (c in 0 until 80) {
-                    val idx = r * 80 + c
-                    val v = if (idx < grid.size) grid[idx] else 0f
-                    val norm = ((v + 1f) * 0.5f).coerceIn(0f, 1f)
-                    paint.color = when {
-                        norm > 0.84f -> 0xFFE94E34.toInt()
-                        norm > 0.68f -> 0xFFFFB454.toInt()
-                        norm > 0.48f -> 0xFF3B536B.toInt()
-                        norm > 0.26f -> 0xFF1C2632.toInt()
-                        else -> 0xFF131922.toInt()
-                    }
-                    val left = gx0 + c * cw
-                    val top = gy0 + r * ch
-                    canvas.drawRect(left, top, left + cw - 0.8f, top + ch - 0.8f, paint)
-                }
-            }
-
-            val imgIds = listOf(
-                "widget_canvas",
-                "widget_image",
-                "widget_bitmap",
-                "widget_grid",
-                "iv_widget",
-                "image"
-            )
-            val txtIds = listOf(
-                "widget_title",
-                "widget_header",
-                "widget_text",
-                "widget_body",
-                "widget_status",
-                "tv_title",
-                "tv_body"
-            )
-
-            for (info in providers) {
-                val rv = RemoteViews(context.packageName, info.initialLayout)
-                for (idName in imgIds) {
-                    val resId = context.resources.getIdentifier(idName, "id", context.packageName)
-                    if (resId != 0) {
-                        rv.setImageViewBitmap(resId, bmp)
-                    }
-                }
-                for (idName in txtIds) {
-                    val resId = context.resources.getIdentifier(idName, "id", context.packageName)
-                    if (resId != 0) {
-                        rv.setTextViewText(
-                            resId,
-                            "SH4Z v3206 -- 4,400 Shards -- 8,192 NL Tok -- 684.4k ops/s (#${snap.gen})"
-                        )
-                    }
-                }
-                awm.updateAppWidget(info.provider, rv)
-            }
-        } catch (_: Exception) {
-        }
-    }
-
     override fun onSensorChanged(event: SensorEvent?) {
         if (event == null || isPixel8ComputeNode) return
         when (event.sensor.type) {
@@ -724,7 +599,7 @@ fun SovereignCockpitV326Screen() {
                             reply = conn.inputStream.bufferedReader().use { it.readText() }
                             break
                         }
-                    } catch (_: Exception) {
+                    } catch (_: Throwable) {
                     }
                 }
                 reply

@@ -135,6 +135,12 @@ object SovereignLiveBus : SensorEventListener {
     @Volatile private var hostFnoRuns = 72
     @Volatile private var hostLlmVisits = 24
     @Volatile private var hostSsdSyncs = 40
+    @Volatile private var hostNlCalls = 52
+    @Volatile private var hostRtxTemp = 48.0f
+    @Volatile private var hostRtxClock = 1477
+    @Volatile private var hostRtxVramU = 1148
+    @Volatile private var hostRtxVramT = 6144
+    @Volatile private var hostRtxPower = 14.2f
     @Volatile private var battTempC = 31.2f
     @Volatile private var battMv = 4235
     @Volatile private var battPct = 85
@@ -222,7 +228,7 @@ object SovereignLiveBus : SensorEventListener {
             val baseHosts = listOf(
                 Triple("http://127.0.0.1:8097", "B1:USB(:8097) HOST-SYNC", 350),
                 Triple("http://127.0.0.1:5173", "B1:USB(:5173) HOST-SYNC", 350),
-                Triple("http://192.168.137.1:8097", "B2:WIFI-LAN(:8097) SYNC", 600),
+                Triple("http://10.0.24.243:8097", "B2:WIFI-LAN(:8097) SYNC", 600),
                 Triple("https://api.act-omega-net.dev", "B3:CF-WAN(api.act-omega-net.dev)", 1600),
                 Triple("https://act-omega-net.dev", "B4:CF-WAN(act-omega-net.dev)", 1600)
             )
@@ -263,7 +269,7 @@ object SovereignLiveBus : SensorEventListener {
 
                 for (idx in candidateOrder) {
                     val bUrl = baseHosts[idx].first
-                    if (bUrl.contains("http://192.168.137.1:8097")) continue
+                    if (bUrl.contains("http://10.0.24.243:8097")) continue
                     val bLabel = baseHosts[idx].second
                     val tOut = baseHosts[idx].third
                     val querySuffix = if (isPixel8ComputeNode) {
@@ -300,6 +306,12 @@ object SovereignLiveBus : SensorEventListener {
                             hostFnoRuns = extractJsonInt(body, "fno_solve_runs", hostFnoRuns)
                             hostLlmVisits = extractJsonInt(body, "agent_gateway_visits", hostLlmVisits)
                             hostSsdSyncs = extractJsonInt(body, "ssd_tier2_syncs", hostSsdSyncs)
+                            hostNlCalls = extractJsonInt(body, "nl_transduce_calls", hostNlCalls)
+                            hostRtxTemp = extractJsonFloat(body, "rtx_temp_c", hostRtxTemp)
+                            hostRtxClock = extractJsonInt(body, "rtx_clock_mhz", hostRtxClock)
+                            hostRtxVramU = extractJsonInt(body, "rtx_vram_used_mb", hostRtxVramU)
+                            hostRtxVramT = extractJsonInt(body, "rtx_vram_total_mb", hostRtxVramT)
+                            hostRtxPower = extractJsonFloat(body, "rtx_power_w", hostRtxPower)
                             if (isPixel8ComputeNode) {
                                 magX = extractJsonFloat(body, "mag_x", magX)
                                 magY = extractJsonFloat(body, "mag_y", magY)
@@ -436,16 +448,16 @@ object SovereignLiveBus : SensorEventListener {
             ),
             TelemetryCardItem(
                 "12. NVIDIA RTX 3050 6GB ReBAR",
-                "46 C -- 1477 MHz -- 1124/6144 MB",
-                "RTX+FNO GEMM: 486.4k ops/s (14.2W) -- WGSL Active",
+                String.format(Locale.US, "%.0f C -- %d MHz -- %d/%d MB", hostRtxTemp, hostRtxClock, hostRtxVramU, hostRtxVramT),
+                String.format(Locale.US, "RTX+FNO GEMM: 486.4k ops/s (%.1fW) -- WGSL Active", hostRtxPower),
                 false,
                 12,
-                "/api/v1/compute/wgsl"
+                "/api/v1/card/execute?card_id=11"
             ),
             TelemetryCardItem(
                 "13. 8,192 NL+COMPOUND TOKENIZER (TRACK 32.34)",
                 "4,096 NL BPE + 4,096 COMPOUND",
-                "NL<->24D Transduce Calls: #48 -- 100x Chair-44",
+                "NL<->24D Transduce Calls: #$hostNlCalls -- 100x Chair-44",
                 true,
                 13,
                 "/api/v1/tokenizer/nl_transduce?q=sovereign+fno"
@@ -808,10 +820,10 @@ fun SovereignCockpitV326Screen() {
                 val bases = listOf(
                     "http://127.0.0.1:8097",
                     "http://127.0.0.1:5173",
-                    "http://192.168.137.1:8097",
+                    "http://10.0.24.243:8097",
                     "https://api.act-omega-net.dev",
                     "https://act-omega-net.dev"
-                ).filter { !it.contains("http://192.168.137.1:8097") }
+                ).filter { !it.contains("http://10.0.24.243:8097") }
                 var reply: String? = null
                 for (b in bases) {
                     try {
@@ -840,9 +852,33 @@ fun SovereignCockpitV326Screen() {
                 reply
             }
             if (res != null) {
-                val compact = res.replace("\n", " ").replace("\r", " ").replace("  ", " ").take(300)
-                toolOutput = "[$label OK]: $compact"
-                activeCardDiag = "[$label LIVE OK]: $compact"
+                fun pickJsonField(src: String, key: String): String? {
+                    val pat = "\"$key\":\""
+                    val i0 = src.indexOf(pat)
+                    if (i0 < 0) return null
+                    val start = i0 + pat.length
+                    val end = src.indexOf("\"", start)
+                    if (end <= start) return null
+                    return src.substring(start, end)
+                }
+                val diagField = pickJsonField(res, "diag")
+                val traceField = pickJsonField(res, "trace")
+                val detailField = pickJsonField(res, "detail")
+                val hexField = pickJsonField(res, "hex_16b")
+                val tritField = pickJsonField(res, "trit_summary")
+                if (hexField != null) SovereignLiveBus.lastInspectedHex = hexField
+                if (tritField != null) SovereignLiveBus.lastInspectedTrits = tritField
+                val cleanMsg = when {
+                    diagField != null -> diagField
+                    traceField != null -> traceField
+                    detailField != null -> detailField
+                    else -> res.replace("\n", " ").replace("\r", " ").replace("  ", " ").take(340)
+                }
+                if (traceField != null) {
+                    browserStageTrace = traceField.replace(" | ", "\n")
+                }
+                toolOutput = "[$label OK]: $cleanMsg"
+                activeCardDiag = "[$label LIVE OK]: $cleanMsg"
             } else {
                 SovereignLiveBus.triggerManualCommand(cmdPrompt)
                 val synth = "[$label LOCAL-SYNTH]: 4,400 Shards -- 8,192 NL+Compound Tokens -- 128/131 Lean4 QED -- FNO L2=0.00042 (684.4k ops/s) -- E:/ SSD Tier-2 Mirrored."
@@ -1205,10 +1241,18 @@ fun SovereignCockpitV326Screen() {
             val thmStart = selectedSector * 8 + 1
             val thmEnd = thmStart + 7
             Text(
-                text = "Sector #$selectedSector (${sectorNames[selectedSector]}+SSD_TIER2): Lines $lineStart..$lineEnd (Bytes $byteStart..$byteEnd = 80x64B 1:1 Bijection, Mask 0xFFFF) -- Theorems thm$thmStart..thm$thmEnd -- FNO L2_Err=0.00042 -- E:/ SSD Tier-2 Mirrored=4,400 Shards -- WS=684.4k ops/s -- PPL=1.000001",
+                text = "Sector #$selectedSector (${sectorNames[selectedSector]}) Line #$selectedLine: Lines $lineStart..$lineEnd (Bytes $byteStart..$byteEnd = 80x64B, Mask 0xFFFF) -- Theorems thm$thmStart..thm$thmEnd -- PPL=1.000001",
                 color = AccentAmber10,
                 fontSize = 8.2.sp,
                 lineHeight = 11.5.sp,
+                fontFamily = FontFamily.Monospace
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = "[.E8Z S$selectedSector:L$selectedLine]: ${SovereignLiveBus.lastInspectedTrits} -- HEX: ${SovereignLiveBus.lastInspectedHex}",
+                color = StatusOk,
+                fontSize = 8.0.sp,
+                lineHeight = 11.0.sp,
                 fontFamily = FontFamily.Monospace
             )
         }
@@ -1765,16 +1809,18 @@ fun ToolButton603010(
 ) {
     Box(
         modifier = modifier
-            .height(28.dp)
+            .height(34.dp)
             .background(bg, RoundedCornerShape(4.dp))
             .border(1.dp, SlateBorder30, RoundedCornerShape(4.dp))
-            .clickable { onClick() },
+            .clickable { onClick() }
+            .padding(horizontal = 4.dp, vertical = 2.dp),
         contentAlignment = Alignment.Center
     ) {
         Text(
             text = label,
             color = fg,
-            fontSize = 8.2.sp,
+            fontSize = 8.0.sp,
+            lineHeight = 10.0.sp,
             fontWeight = FontWeight.Bold,
             fontFamily = FontFamily.Monospace
         )

@@ -59,7 +59,7 @@ const SECTOR_NAMES = [
   "S12:BOT", "S13:CODE", "S14:STIEFEL", "S15:ACOUSTIC"
 ];
 
-export default function App() {
+export function App() {
   const [tel, setTel] = useState<TelemetryState>({
     generation: 729600,
     mag_x: -29.3,
@@ -363,9 +363,16 @@ export default function App() {
         const r = await fetch(b + path, { cache: "no-store" });
         if (r.ok) {
           const txt = await r.text();
-          const clean = txt.replace(/\s+/g, " ").slice(0, 320);
-          setTermOut(`[${label} OK]: ${clean}`);
-          setCardDiag(`[${label} LIVE RESPONSE]: ${clean}`);
+          let displayMsg = txt.replace(/\s+/g, " ").slice(0, 360);
+          try {
+            const j = JSON.parse(txt);
+            if (j.diag) displayMsg = j.diag;
+            else if (j.trace) displayMsg = j.trace;
+            else if (j.detail) displayMsg = `${j.status} (${j.endpoint}): ${j.detail} -- Gen #${j.generation}`;
+            else if (j.operator_equation) displayMsg = `${j.status}: ${j.operator_equation} -- Re=${j.navier_stokes_reynolds} -- L2_Err=${j.fno_l2_relative_error} -- Runs #${j.solve_runs}`;
+          } catch {}
+          setTermOut(`[${label} OK]: ${displayMsg}`);
+          setCardDiag(`[${label} LIVE OK]: ${displayMsg}`);
           return;
         }
       } catch {
@@ -799,3 +806,5 @@ export default function App() {
     </div>
   );
 }
+
+export default App;

@@ -572,7 +572,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.last_browser_url = target_url.clone();
             st.last_browser_trace = trace.clone();
             st.last_card_diag = trace.clone();
-            st.last_term_Out_helper(&trace);
+            st.last_term_out_helper(&trace);
             let json = format!(
                 "{{\"status\":\"BROWSER_3STAGE_TRANSDUCED\",\"url\":\"{}\",\"mi_bits\":{:.2},\"reynolds\":{:.1},\"shard_id\":{},\"trace\":\"{}\"}}",
                 target_url, mi_bits, re_val, shard_id, trace
@@ -847,7 +847,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
 }
 
 impl SwarmState {
-    fn last_term_Out_helper(&mut self, msg: &str) {
+    fn last_term_out_helper(&mut self, msg: &str) {
         self.last_term_out = String::from(msg);
     }
 }

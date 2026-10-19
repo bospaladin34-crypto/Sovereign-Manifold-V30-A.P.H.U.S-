@@ -9,3 +9,6 @@
 *.tmp
 00_control/cloudflared.exe
 00_control/*.log
+
+01_l0_rust/target_stage/
+00_control/gh_wiki_*/

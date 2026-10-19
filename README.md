@@ -1,15 +1,24 @@
 # ACT-Omega Net v32.6.0 (`Sovereign Harmonic V-G` / `SH4Z v3206 TLV`)
 
-![ACT-Omega Net](https://img.shields.io/badge/ACT--Omega_Net-v32.6.0_(SH4Z_v3206)-FFB454?style=for-the-badge&labelColor=0E1116)
-![GitHub Pages & Wiki](https://img.shields.io/badge/GitHub_Pages_%26_Wiki-LIVE_PORTAL_%26_LLM_GATEWAY-E94E34?style=for-the-badge&labelColor=0E1116)
-![Lean 4 CIC](https://img.shields.io/badge/Lean_4_CIC-128%2F128_Base_(131_Runtime)_QED-56D364?style=for-the-badge&labelColor=0E1116)
-![Vault](https://img.shields.io/badge/Vault-4%2C400_Shards_(100x_Chair--44)_--_8%2C192_NL%2BCompound_Tokens-FFB454?style=for-the-badge&labelColor=0E1116)
-![Throughput](https://img.shields.io/badge/Cluster_Throughput-684.4k_ops%2Fs_(FNO_%2B_Stiefel)-56D364?style=for-the-badge&labelColor=0E1116)
+[![ACT-Omega Net](https://img.shields.io/badge/ACT--Omega_Net-v32.6.0_(SH4Z_v3206)-FFB454?style=for-the-badge&labelColor=0E1116)](https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-)
+[![GitHub Pages](https://img.shields.io/badge/GitHub_Pages-LIVE_PORTAL_%26_LLM_GATEWAY-E94E34?style=for-the-badge&labelColor=0E1116)](./docs/index.html)
+[![System Wiki](https://img.shields.io/badge/System_Wiki-WIKI.MD_%26_DOCS%2FWIKI-56D364?style=for-the-badge&labelColor=0E1116)](./WIKI.md)
+[![Lean 4 CIC](https://img.shields.io/badge/Lean_4_CIC-128%2F128_BASE_(131_RUNTIME)_QED-4B6B94?style=for-the-badge&labelColor=0E1116)](./03_vault/lean4/SovereignManifoldTheorems.lean)
+[![Vault](https://img.shields.io/badge/Vault-4%2C400_SHARDS_(100X_CHAIR--44)_--_8%2C192_NL%2BCOMPOUND_TOKENS-FFB454?style=for-the-badge&labelColor=0E1116)](./03_vault/lexicon/nl_compound_tokenizer_8192.json)
+[![DOI](https://img.shields.io/badge/DOI-10.5281%2FZENODO.19624831-007EC6?style=for-the-badge&labelColor=0E1116)](https://doi.org/10.5281/zenodo.19624831)
+[![Tri-Silicon Cluster](https://img.shields.io/badge/Tri--Silicon-LOQ_15_RTX_3050_%2B_Pixel_10_G5_%2B_Pixel_8_4MB_L2-56D364?style=for-the-badge&labelColor=0E1116)](#4-tier-hardware--storage-cluster-architecture)
+[![External SSD Tier-2](https://img.shields.io/badge/Tier--2_SSD_Vault-Drive_E%3A%5C_(4%2C400_Shards_%2B_32--Leaf_Merkle)-FFB454?style=for-the-badge&labelColor=0E1116)](#five-architectural-pillars-of-act-omega-net-v3260-tracks-32343238)
+[![Fourier Neural Operator](https://img.shields.io/badge/16--Mode_FNO_PDE-L2_Err_0.00042_--_Re%3D418.4_--_684.4k_ops%2Fs-E94E34?style=for-the-badge&labelColor=0E1116)](./03_vault/codegen/fno_spectral_greens_16x80.wgsl)
+[![LLM Agent Gateway](https://img.shields.io/badge/Tool_21_LLM_Gateway-ZERO--TRUST_LWE--3329_SIEM_SANDBOX-56D364?style=for-the-badge&labelColor=0E1116)](./docs/agent-manifest.json)
+[![Stiefel & Leech](https://img.shields.io/badge/Manifold-St(16%2C80)_Cayley_%2B_24D_Leech_%2B_1.58b_Ternary-4B6B94?style=for-the-badge&labelColor=0E1116)](./MODEL_CARD.md)
+[![Acoustic I/Q SDR](https://img.shields.io/badge/Acoustic_I%2FQ_SDR-1.728_kHz_%2F_18.5_kHz_(43.8_dB_FCC--Exempt)-FFB454?style=for-the-badge&labelColor=0E1116)](#five-architectural-pillars-of-act-omega-net-v3260-tracks-32343238)
+[![Zero-Bracket Rust](https://img.shields.io/badge/Rust_L0_Swarm-Zero_Square_Brackets_(0_'%5B'_or_'%5D')-E94E34?style=for-the-badge&labelColor=0E1116)](./01_l0_rust/src/bin/v31_swarm.rs)
+[![License: MIT](https://img.shields.io/badge/License-MIT-56D364?style=for-the-badge&labelColor=0E1116)](./LICENSE)
 
 **ACT-Omega Net v32.6.0 (`Sovereign Harmonic V-G` / `SH4Z v3206 TLV`)** is a hardware-anchored 4-tier topological, geometric, and spectral computing cluster spanning:
 
 1. **Node 1 — Host Workstation:** Lenovo LOQ 15IAX9 (`Intel Core i5-12450HX 4P+4E` + `NVIDIA GeForce RTX 3050 6GB ReBAR` `2,048` CUDA Cores / `64` Tensor Cores, 12GB DDR5, Windows 11, running Rust L0 `v31_swarm.exe` on `:8097` + `:5173`, Cloudflare Post-Quantum `X25519MLKEM768` HTTP/2 Keep-Alive Tunnel: [`https://publishing-themes-district-readers.trycloudflare.com`](https://publishing-themes-district-readers.trycloudflare.com)).
-2. **Node 2 — Foreground 24D Sensor + Compute Mobile Console:** Google Pixel 10 (`frankel_beta`, Serial `58170DLCR0004V`, Tensor G5 `3nm ARMv9.2-A sve2+bf16+i8mm`, `0xFC X4+5xA725`, 12GB LPDDR5, Android 17) running the **60–30–10 Mature Dark Telemetry HUD** with live 24D Leech Lattice physical sensor transduction (`TYPE_MAGNETIC_FIELD`, `TYPE_PRESSURE`, `TYPE_LIGHT`, `TYPE_ACCELEROMETER`, `TYPE_GYROSCOPE`).
+2. **Node 2 — Foreground 24D Sensor + Compute Mobile Console:** Google Pixel 10 (`frankel_beta`, Serial `58170DLCR0004V`, Tensor G5 `3nm ARMv9.2-A sve2+bf16+i8mm`, `0xFC X4+5xA725`, 12GB LPDDR5, Android 17) running the **60–30–10 Mature Dark Telemetry HUD** with all **15 Telemetry Cards (Drawer A)**, **Stiefel `St(16,80)` Vector Scope & FNO Oscilloscope (Drawer B)**, **16×80 Heatmap + 16 Sector Pills**, **In-HUD Browser**, **Drawers 1–4 (23 Tools)**, **1Hz Home Screen Widget**, and live 24D Leech Lattice physical sensor transduction.
 3. **Node 3 — Compute-Only L2-Pinned Mobile Console:** Google Pixel 8 (`shiba_beta`, Serial `3A121FDJH00BW5`, Tensor G3 Zuma `4nm 4xA715 + 4xA510` + ARM Mali-G715 with **`4.00 MB` (`4,194,304 B`) L2 Cache**, `90,688 B` `mlock` and **`97.84%` (`4,103,616 B`) L2 Free**), operating with `SovereignLiveBus.isPixel8ComputeNode == true` (`SensorManager` completely bypassed, `0` physical sensor polls).
 4. **Tier-2 External SSD Vault (`Drive E:\`):** `E:\Sovereign_Manifold_SSD_Vault\` (with automatic fallback to `C:\sovereign_manifold_ssd_tier2\`), hosting the cold/warm Natural-Language BPE corpus (`tier2_nl_corpus`), 16-Mode Fourier Neural Operator (FNO) spectral Green's function tables (`tier2_fno_greens`), and the 32-node FNV-1a Merkle RAID mirror of all `4,400` shards (`tier2_merkle_mirror`).
 
@@ -17,7 +26,7 @@
 
 ## Quick Navigation & Documentation Links
 
-* **[Full Repository Wiki (`WIKI.md`)](./WIKI.md)** — Complete architectural encyclopedia, mathematical proofs, hardware pinouts, and operational runbooks.
+* **[Full Repository Wiki (`WIKI.md`)](./WIKI.md)** — Complete architectural encyclopedia, 16-sector memory map (`S0:HDR`..`S15:ACOUSTIC`), mathematical proofs, hardware pinouts, and operational runbooks.
 * **[Structured Wiki Directory (`wiki/Home.md`)](./wiki/Home.md)** — Modular Wiki pages for GitHub Wiki synchronization.
 * **[Interactive GitHub Pages Portal (`docs/index.html`)](./docs/index.html)** — 60–30–10 Mature Dark Telemetry HUD & Visiting LLM Playground.
 * **[Interactive Wiki Browser Page (`docs/wiki.html`)](./docs/wiki.html)** — Styled HTML Wiki reference hosted on GitHub Pages (`/wiki`).

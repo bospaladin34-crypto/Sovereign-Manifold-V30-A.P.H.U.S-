@@ -862,8 +862,12 @@ fn run_listener(addr: &'static str, state: Arc<Mutex<SwarmState>>) {
             }
             Err(e) => {
                 attempt += 1;
+                if attempt > 8 {
+                    println!("  (v31_swarm v32.7.0) Port {} already active in primary instance; exiting duplicate.", addr);
+                    std::process::exit(0);
+                }
                 println!("  (v31_swarm v32.7.0) Retry #{} binding {}: {}", attempt, addr, e);
-                thread::sleep(Duration::from_millis(400));
+                thread::sleep(Duration::from_millis(250));
             }
         }
     };

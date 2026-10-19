@@ -557,12 +557,9 @@ object SovereignLiveBus : SensorEventListener {
         val c1 = if (isPixel8ComputeNode) {
             String.format(
                 Locale.US,
-                "Mali-G715 L2: mlock=90,688B -- 97.84%% Free -- Coherence: %s (%.2fx)
-" +
-                    "Sensor Bus: BYPASSED (Node 3) -- Fed 24D norm(B)=%.1f uT (%.1f hPa, Opto=%s)
-" +
-                    "St(16,80) Ortho=%.7f -- Kasami 3B-ECC: Cw=%s (Syn=0x0000, Fixes #%d)
-" +
+                "Mali-G715 L2: mlock=90,688B -- 97.84%% Free -- Coherence: %s (%.2fx)\n" +
+                    "Sensor Bus: BYPASSED (Node 3) -- Fed 24D norm(B)=%.1f uT (%.1f hPa, Opto=%s)\n" +
+                    "St(16,80) Ortho=%.7f -- Kasami 3B-ECC: Cw=%s (Syn=0x0000, Fixes #%d)\n" +
                     "Work-Stealing (1,280): LOQ15=%d + P10=%d + P8=%d (%.1fk / %.1fk ops/s)",
                 hostCoherenceMode, hostCoherenceMult,
                 bNorm, baroHpa, hostOptoState,
@@ -572,12 +569,9 @@ object SovereignLiveBus : SensorEventListener {
         } else {
             String.format(
                 Locale.US,
-                "8_v Field: B=[%.1f, %.1f, %.1f] uT (norm(B)=%.1f) -- Baro: %.1f hPa -- Opto: %.0f lx (%s)
-" +
-                    "8_+ Kin: Acc=%.2f m/s2 -- Gyro=%.3f rad/s -- Omega_LT=%.5f -- Re=%.1f (L2=%.5f)
-" +
-                    "Kasami 3B-ECC: Cw=%s (Syn=0x0000, Fixes #%d) -- Coherence: %s (%.2fx)
-" +
+                "8_v Field: B=[%.1f, %.1f, %.1f] uT (norm(B)=%.1f) -- Baro: %.1f hPa -- Opto: %.0f lx (%s)\n" +
+                    "8_+ Kin: Acc=%.2f m/s2 -- Gyro=%.3f rad/s -- Omega_LT=%.5f -- Re=%.1f (L2=%.5f)\n" +
+                    "Kasami 3B-ECC: Cw=%s (Syn=0x0000, Fixes #%d) -- Coherence: %s (%.2fx)\n" +
                     "Work-Stealing (1,280): LOQ15=%d + P10=%d + P8=%d (99.9%% L2 Hit, %.1fk ops/s)",
                 magX, magY, magZ, bNorm, baroHpa, lightLx, hostOptoState,
                 accNorm, gyroNorm, hostOmegaLt, hostReynolds, hostFnoL2Err,
@@ -589,27 +583,21 @@ object SovereignLiveBus : SensorEventListener {
         val c2 = if (isPixel8ComputeNode) {
             String.format(
                 Locale.US,
-                "Tensor G3 Zuma: %.1f C -- %d mV -- Bat: %d%% -- RAM: %d/%d MB (Core 0xF0 L2-Pinned)
-" +
-                    "Acoustic I/Q SDR: 1.728 / 18.5 kHz (SNR %.1f dB, Cutler #%d/536) -- %s (%.1fms #%d)
-" +
-                    "Tier-2 Vault: E:/Sovereign_Manifold_SSD_Vault (4,400 Shards + Shard #%05d, Sync #%d)
-" +
-                    "WAN Beacon: api.act-omega-net.dev (P10: %.1fC #%%d / P8: %.1fC #%d)".replace("%%d", "$hostP10Broadcasts"),
+                "Tensor G3 Zuma: %.1f C -- %d mV -- Bat: %d%% -- RAM: %d/%d MB (Core 0xF0 L2-Pinned)\n" +
+                    "Acoustic I/Q SDR: 1.728 / 18.5 kHz (SNR %.1f dB, Cutler #%d/536) -- %s (%.1fms #%d)\n" +
+                    "Tier-2 Vault: E:/Sovereign_Manifold_SSD_Vault (4,400 Shards + Shard #%05d, Sync #%d)\n" +
+                    "WAN Beacon: api.act-omega-net.dev (P10: %.1fC #%d / P8: %.1fC #%d)",
                 battTempC, battMv, battPct, ramUsedMb, ramTotalMb,
                 hostAcousticSnr, hostCutlerIdx, bearer, rtt, gen,
                 hostActiveShard, hostSsdSyncs,
-                hostP10Temp, battTempC, hostP8Broadcasts
+                hostP10Temp, hostP10Broadcasts, battTempC, hostP8Broadcasts
             )
         } else {
             String.format(
                 Locale.US,
-                "8_- Silicon: %.1f C -- %d mV -- Bat: %d%% -- RAM: %d/%d MB -- %s (%.2fx)
-" +
-                    "Acoustic I/Q SDR: 1.728 / 18.5 kHz (SNR %.1f dB, Cutler #%d/536) -- %s (%.1fms #%d)
-" +
-                    "Tier-2 Vault: E:/Sovereign_Manifold_SSD_Vault (4,400 Shards + Shard #%05d, Sync #%d)
-" +
+                "8_- Silicon: %.1f C -- %d mV -- Bat: %d%% -- RAM: %d/%d MB -- %s (%.2fx)\n" +
+                    "Acoustic I/Q SDR: 1.728 / 18.5 kHz (SNR %.1f dB, Cutler #%d/536) -- %s (%.1fms #%d)\n" +
+                    "Tier-2 Vault: E:/Sovereign_Manifold_SSD_Vault (4,400 Shards + Shard #%05d, Sync #%d)\n" +
                     "WAN Beacon: api.act-omega-net.dev (P10 Sync #%d / P8 L2 %.1fC Sync #%d)",
                 battTempC, battMv, battPct, ramUsedMb, ramTotalMb, hostCoherenceMode, hostCoherenceMult,
                 hostAcousticSnr, hostCutlerIdx, bearer, rtt, gen,
@@ -620,10 +608,8 @@ object SovereignLiveBus : SensorEventListener {
 
         val c3 = String.format(
             Locale.US,
-            "SH4Z v3207 (81920B 16-Sector) -- Gen #%d -- Lean4: 128/131 Proofs QED in %.1fms
-" +
-                "Holdout PPL=1.000001 -- Kasami Cw=%s -- RSR #%d -- HybridLink Hops=%d
-" +
+            "SH4Z v3207 (81920B 16-Sector) -- Gen #%d -- Lean4: 128/131 Proofs QED in %.1fms\n" +
+                "Holdout PPL=1.000001 -- Kasami Cw=%s -- RSR #%d -- HybridLink Hops=%d\n" +
                 "LLM-Gateway (Tool 21): #%d -- FNO PDE (Tool 22): #%d (Re=%.1f) -- E:/ SSD (Tool 23): #%d",
             gen,
             hostLeanVerifyMs,

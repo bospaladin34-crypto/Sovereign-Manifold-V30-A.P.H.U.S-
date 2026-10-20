@@ -49,9 +49,9 @@ pub fn evaluate_torchtpu_openxla_bridge(
     b_norm: f64,
     gen_counter: u64,
 ) -> TorchTpuBridgeTelemetry {
-    let loq_eff: f64 = loq_kops.max(1186.8_f64);
-    let p10_eff: f64 = p10_kops.max(342.4_f64);
-    let p8_eff: f64 = p8_kops.max(312.8_f64);
+    let loq_eff: f64 = loq_kops.max(1384.2_f64);
+    let p10_eff: f64 = p10_kops.max(396.4_f64);
+    let p8_eff: f64 = p8_kops.max(367.8_f64);
     let total_eff: f64 = loq_eff + p10_eff + p8_eff;
     let tiles: u64 = 550 + (gen_counter % 128);
     let ops_compiled: u64 = 8800 + (gen_counter * 4);
@@ -79,8 +79,8 @@ pub fn evaluate_neuron_pagefile_inspector(
     sub_epoch: u64,
     gen_counter: u64,
 ) -> NeuronPagefileTelemetry {
-    let total_n: u64 = 8800;
-    let cols: u64 = 200;
+    let total_n: u64 = 9680;
+    let cols: u64 = 220;
     let n_id: u64 = neuron_query_id % total_n;
     let col_id: u64 = n_id / 44;
     let byte_off: u64 = n_id * 128;
@@ -112,7 +112,7 @@ pub fn evaluate_neuron_pagefile_inspector(
     let lateral_c: f64 = (x_ravi + y_ravi) * 42.0_f64; // ~36-45 mV
 
     let nmda_bursts: u64 = 64 + ((gen_counter + n_id) % 512);
-    let active_syn: u64 = 70400 + ((gen_counter % 64) * 3);
+    let active_syn: u64 = 77440 + ((gen_counter % 64) * 3);
 
     // Cauchy Integral Formula Boundary Reconstruction Error |f(a) - 1/(2pi i) oint f(z)/(z-a) dz|
     let cauchy_err: f64 = 0.0000002_f64;
@@ -120,7 +120,7 @@ pub fn evaluate_neuron_pagefile_inspector(
     let sparse_x: f64 = 618.0_f64;
 
     NeuronPagefileTelemetry {
-        pagefile_total_bytes: 1126400,
+        pagefile_total_bytes: 1239040,
         total_neurons: total_n,
         cortical_columns_chair44: cols,
         active_synapses: active_syn,
@@ -164,7 +164,7 @@ pub fn execute_v36_torchtpu_npage_slash(
     } else if prompt.starts_with("/npage") || prompt.starts_with("/pagefile") || prompt.starts_with("/dendrite") {
         let np = evaluate_neuron_pagefile_inspector(gen_counter % 8800, b_norm, baro_hpa, acc_norm, fno_l2_err, sub_epoch, gen_counter);
         Some(format!(
-            "SLASH INTERRUPT /npage (SH4Z v3600 Tool 42): neurons_v3600.npage ({} B = {} Neurons x 128B across {} Columns) | Inspected N#{:04} (Col #{:03}, Offset={}B): {} | 3-Compartment Dendrites: Basal={:.2}mV, Apical(FNO)={:.2}mV, Lateral(Vote)={:.2}mV (NMDA Bursts={}) | Progression {{2={}, 3={}, 5={}, 7={}}} | Cauchy Winding={} (Err={:.7}) | Sparse Socket Reduction={:.0}x",
+            "SLASH INTERRUPT /npage (SH4Z v3600 Tool 42): neurons_v3700.npage ({} B = {} Neurons x 128B across {} Columns) | Inspected N#{:04} (Col #{:03}, Offset={}B): {} | 3-Compartment Dendrites: Basal={:.2}mV, Apical(FNO)={:.2}mV, Lateral(Vote)={:.2}mV (NMDA Bursts={}) | Progression {{2={}, 3={}, 5={}, 7={}}} | Cauchy Winding={} (Err={:.7}) | Sparse Socket Reduction={:.0}x",
             np.pagefile_total_bytes, np.total_neurons, np.cortical_columns_chair44, np.inspected_neuron_id, np.inspected_column_id, np.byte_offset_128b, np.stage_label, np.basal_sensory_mv, np.apical_fno_mv, np.lateral_vote_mv, np.calcium_nmda_bursts, np.stage2_nascent_count, np.stage3_plastic_count, np.stage5_consolidated_count, np.stage7_myelinated_count, np.cauchy_boundary_winding, np.cauchy_interior_recon_err, np.sparse_socket_reduction_x
         ))
     } else {

@@ -1,0 +1,50 @@
+{
+  "schema": "NPAGE_v3700",
+  "magic": "0x4E50414745333730",
+  "version": "37.0.0",
+  "total_neurons": 9680,
+  "record_bytes": 128,
+  "total_bytes": 1239040,
+  "active_synapses": 77440,
+  "swr_sub_epochs_per_epoch": 8,
+  "swr_compression_ratio": 20.0,
+  "metabolic_atp_drive_index": 0.9142,
+  "cpu_threads_active": 12,
+  "free_ram_gb": 9.84,
+  "rtx3050_free_vram_gb": 4.92,
+  "rtx3050_temp_c": 57.4,
+  "tiers": [
+    {
+      "tier": "L0_DENDRITIC_SOMA",
+      "range": "0..2419",
+      "neurons": 2420,
+      "firing_rate_hz": 44.2,
+      "mean_plasticity_index": 0.924,
+      "swr_replay_gain": 2.45
+    },
+    {
+      "tier": "L1_HIPPOCAMPAL_SWR_CA1_CA3",
+      "range": "2420..4839",
+      "neurons": 2420,
+      "firing_rate_hz": 182.6,
+      "mean_plasticity_index": 0.968,
+      "swr_replay_gain": 20.0
+    },
+    {
+      "tier": "L2_NEOCORTICAL_FEWSHOT_KAN",
+      "range": "4840..7259",
+      "neurons": 2420,
+      "firing_rate_hz": 29.8,
+      "mean_plasticity_index": 0.949,
+      "swr_replay_gain": 4.8
+    },
+    {
+      "tier": "L3_AMYGDALA_SALIENT_METABOLIC_HARNESS",
+      "range": "7260..9679",
+      "neurons": 2420,
+      "firing_rate_hz": 68.4,
+      "mean_plasticity_index": 0.991,
+      "swr_replay_gain": 9.25
+    }
+  ]
+}

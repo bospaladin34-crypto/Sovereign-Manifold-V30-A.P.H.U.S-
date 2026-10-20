@@ -1,0 +1,17 @@
+{
+  "schema": "ACT-Omega-Neuron-Pagefile-v3600",
+  "pagefile_path": "03_vault/connectome/neurons_v3600.npage",
+  "total_bytes": 1126400,
+  "record_stride_bytes": 128,
+  "total_neurons": 8800,
+  "cortical_columns_chair44": 200,
+  "active_synapses": 70400,
+  "pickover_prime_maturity_distribution": {
+    "stage_2_nascent": 920,
+    "stage_3_plastic": 2180,
+    "stage_5_consolidated": 3340,
+    "stage_7_myelinated": 2360
+  },
+  "cauchy_boundary_winding": 1,
+  "sparse_socket_reduction_x": 618.0
+}

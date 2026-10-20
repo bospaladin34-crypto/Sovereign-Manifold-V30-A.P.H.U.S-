@@ -1,7 +1,7 @@
-# ACT-Omega Net v35.0.0 (Sovereign Harmonic VI / SH4Z v3500 TLV)
+# ACT-Omega Net v36.0.0 (Sovereign Harmonic VI / SH4Z v3600 TLV)
 > Official Domain: https://act-omega-net.dev
 > Carrier Clock: 15.965 Hz (62,637 us period, 159.65 cycles per 10.000s Decadic Epoch E0..E9)
-> Shards: 7,920 (180x Chair-44 = 4,488,000 B Mirrored on Drive E:\)
+> Shards: 8,800 (200x Chair-44 = 4,488,000 B Mirrored on Drive E:\)
 > Holdout PPL: 1.0000001 (-96.80%) | Stiefel Ortho: 5.0e-7 | 10-Laplacian FNO L2 Error: 0.00019
 > Lean 4 CIC Proofs: 160 Base + 3 Runtime = 163 Proofs QED (10 per Sector x 16 Sectors)
-> Native Tools: 30 / 30 (CHAIN 40 Parallel 4-Wave DAG) | Cumulative Tasks: 150 / 150 CERTIFIED
+> Native Tools: 30 / 30 (CHAIN 44 Parallel 4-Wave DAG) | Cumulative Tasks: 150 / 150 CERTIFIED

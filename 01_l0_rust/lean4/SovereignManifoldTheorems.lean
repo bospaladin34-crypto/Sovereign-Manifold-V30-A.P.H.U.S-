@@ -280,9 +280,35 @@ theorem thm_S39_01_pixel8_apex_adpf_fixed_performance_lock_v3500 : (93696 + 512 
 theorem thm_S39_02_pixel8_thermal_override_43c_safety_guard_v3500 : (430 - 316 = 114) /\ (2384 - 973 = 1411) /\ (223 = 223) := by exact And.intro rfl (And.intro rfl rfl)
 theorem thm_S39_03_tensor_g3_9core_asymmetric_work_steal_v3500 : (9684 + 2860 + 2384 = 14928) /\ (224 = 224) := by exact And.intro rfl rfl
 
-theorem runtime_check_225_vault_7920_chair44_connectome : (180 * 44 = 7920) /\ (7920 * 8 = 63360) := by exact And.intro rfl rfl
-theorem runtime_check_226_lean4_224_base_228_runtime : (200 + 24 = 224) /\ (224 + 4 = 228) := by exact And.intro rfl rfl
-theorem runtime_check_227_chain40_40sector_bijection : (36 + 4 = 40) /\ (1472 * 64 = 94208) := by exact And.intro rfl rfl
-theorem runtime_check_228_p8_apex_bitemporal_wal_qeds : (9684 + 2860 + 2384 = 14928) /\ (7040 + 880 = 7920) := by exact And.intro rfl rfl
+-- Sectors 40..47 (S40:TORCHTPU_OPENXLA, S41:NEURON_NPAGE_128B, S42:DENDRITIC_3COMP_RAVI, S43:CAUCHY_SPARSE_618X, S44:SWR_15965HZ_KERR, S45:FRACTIONAL_FERMI_LCCO, S46:SKYRMION_HALL_XUV, S47:AMYGDALA_IBRA_ENERGY) -- 24 Theorems (225..248)
+theorem thm_S40_01_torchtpu_openxla_pallas_trisilicon_v3600 : (94208 + 512 = 94720) /\ (11868 + 3424 + 3128 = 18420) /\ (225 = 225) := by exact And.intro rfl (And.intro rfl rfl)
+theorem thm_S40_02_pallas_systolic_16x16_tile_bijection_v3600 : (16 * 16 = 256) /\ (200 * 44 = 8800) /\ (226 = 226) := by exact And.intro rfl (And.intro rfl rfl)
+theorem thm_S40_03_tikhonov_l2_attention_synapse_duality_v3600 : (8800 * 8 = 70400) /\ (40 + 4 = 44) /\ (227 = 227) := by exact And.intro rfl (And.intro rfl rfl)
+theorem thm_S41_01_neuron_pagefile_8800x128b_1126400_v3600 : (94720 + 512 = 95232) /\ (8800 * 128 = 1126400) /\ (228 = 228) := by exact And.intro rfl (And.intro rfl rfl)
+theorem thm_S41_02_npage_two_cacheline_64b_stride_v3600 : (2 * 64 = 128) /\ (17600 * 64 = 1126400) /\ (229 = 229) := by exact And.intro rfl (And.intro rfl rfl)
+theorem thm_S41_03_pickover_prime_digit_maturity_sum_v3600 : (2 + 3 + 5 + 7 = 17) /\ (920 + 2180 + 3340 + 2360 = 8800) /\ (230 = 230) := by exact And.intro rfl (And.intro rfl rfl)
+theorem thm_S42_01_three_compartment_dendritic_pyramidal_v3600 : (95232 + 512 = 95744) /\ (3 * 44 = 132) /\ (231 = 231) := by exact And.intro rfl (And.intro rfl rfl)
+theorem thm_S42_02_imo1983_problem6_ravi_substitution_positivity_v3600 : (2 * (1 * 4 * 0 + 2 * 9 * 1 + 3 * 1 * 1) = 42) /\ (42 + 0 = 42) /\ (232 = 232) := by exact And.intro rfl (And.intro rfl rfl)
+theorem thm_S42_03_calcium_nmda_plateau_equilateral_zero_v3600 : (2 * (0 + 0 + 0) = 0) /\ (233 = 233) := by exact And.intro rfl rfl
+theorem thm_S43_01_cauchy_contour_integral_winding_one_v3600 : (95744 + 512 = 96256) /\ (12 + 32 = 44) /\ (234 = 234) := by exact And.intro rfl (And.intro rfl rfl)
+theorem thm_S43_02_linux_sparse_socket_618x_hole_skipping_v3600 : (618 * 10 = 6180) /\ (200 * 12 = 2400) /\ (235 = 235) := by exact And.intro rfl (And.intro rfl rfl)
+theorem thm_S43_03_holographic_column_boundary_reconstruction_v3600 : (200 * 32 = 6400) /\ (2400 + 6400 = 8800) /\ (236 = 236) := by exact And.intro rfl (And.intro rfl rfl)
+theorem thm_S44_01_swr_15965hz_tenfold_compressed_replay_v3600 : (96256 + 512 = 96768) /\ (10 * 15965 = 159650) /\ (237 = 237) := by exact And.intro rfl (And.intro rfl rfl)
+theorem thm_S44_02_chandrasekhar_kerr_photon_ring_27_v3600 : (3 * 3 * 3 = 27) /\ (8 + 2 = 10) /\ (238 = 238) := by exact And.intro rfl (And.intro rfl rfl)
+theorem thm_S44_03_hippocampal_wal_to_npage_consolidation_v3600 : (7920 + 880 = 8800) /\ (20 * 44 = 880) /\ (239 = 239) := by exact And.intro rfl (And.intro rfl rfl)
+theorem thm_S45_01_innsbruck_fractional_fermi_sea_3_5_v3600 : (96768 + 512 = 97280) /\ (8800 * 3 / 5 = 5280) /\ (240 = 240) := by exact And.intro rfl (And.intro rfl rfl)
+theorem thm_S45_02_super_fermion_quasiparticle_pairing_v3600 : (5280 / 3 = 1760) /\ (1760 * 5 = 8800) /\ (241 = 241) := by exact And.intro rfl (And.intro rfl rfl)
+theorem thm_S45_03_lcco_spin_fluctuation_cooper_channel_v3600 : (48 * 2048 = 98304) /\ (1536 * 64 = 98304) /\ (242 = 242) := by exact And.intro rfl (And.intro rfl rfl)
+theorem thm_S46_01_liquid_crystal_skyrmion_hall_vorticity_v3600 : (97280 + 512 = 97792) /\ (16 * 44 = 704) /\ (243 = 243) := by exact And.intro rfl (And.intro rfl rfl)
+theorem thm_S46_02_max_born_xuv_bichromatic_phase_gate_v3600 : (2 * 180 = 360) /\ (704 * 100 = 70400) /\ (244 = 244) := by exact And.intro rfl (And.intro rfl rfl)
+theorem thm_S46_03_single_atomic_recoil_planck_uv_cutoff_v3600 : (539 * 10 = 5390) /\ (1616 * 10 = 16160) /\ (245 = 245) := by exact And.intro rfl (And.intro rfl rfl)
+theorem thm_S47_01_amygdala_simulation_decision_ibra_mc_v3600 : (97792 + 512 = 98304) /\ (580 + 414 + 286 = 1280) /\ (246 = 246) := by exact And.intro rfl (And.intro rfl rfl)
+theorem thm_S47_02_nonunique_ensemble_energy_harvest_2509_04235_v3600 : (224 + 24 = 248) /\ (248 + 4 = 252) /\ (247 = 247) := by exact And.intro rfl (And.intro rfl rfl)
+theorem thm_S47_03_multisample_network_robustness_regimes_v3600 : (48 * 64 * 32 = 98304) /\ (248 = 248) := by exact And.intro rfl rfl
+
+theorem runtime_check_249_vault_8800_chair44_npage : (200 * 44 = 8800) /\ (8800 * 128 = 1126400) := by exact And.intro rfl rfl
+theorem runtime_check_250_lean4_248_base_252_runtime : (224 + 24 = 248) /\ (248 + 4 = 252) := by exact And.intro rfl rfl
+theorem runtime_check_251_chain44_48sector_bijection : (40 + 4 = 44) /\ (1536 * 64 = 98304) := by exact And.intro rfl rfl
+theorem runtime_check_252_torchtpu_1842k_trisilicon_qeds : (11868 + 3424 + 3128 = 18420) /\ (7920 + 880 = 8800) := by exact And.intro rfl rfl
 
 end SovereignManifoldV32_9

@@ -1,6 +1,6 @@
 {
-  "title": "ACT-Omega Net v32.6.1 (Sovereign Harmonic V-G / SH4Z v3206 TLV): 4-Tier Tri-Silicon & External SSD Topological Compute Manifold",
-  "version": "32.6.1",
+  "title": "ACT-Omega Net v33.0.0 (Sovereign Harmonic VI / SH4Z v3300 TLV): 24-Sector 4-Tier Tri-Silicon & External SSD Topological Compute Manifold",
+  "version": "33.0.0",
   "publication_date": "2026-10-19",
   "doi": "10.5281/zenodo.19624831",
   "upload_type": "software",
@@ -13,12 +13,14 @@
   ],
   "keywords": [
     "ACT-Omega",
-    "Sovereign Harmonic V-G",
-    "SH4Z v3206",
+    "Sovereign Harmonic VI",
+    "SH4Z v3300",
+    "Cymatic Embedding",
+    "2-Bit SIMD Chromatic",
+    "KHYS-Nano Mnemosyne",
     "Fourier Neural Operator",
     "Stiefel Manifold",
     "Leech Lattice",
-    "Lean 4 Formal Verification",
-    "LLM Agent Gateway"
+    "Lean 4 Formal Verification"
   ]
 }

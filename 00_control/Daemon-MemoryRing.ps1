@@ -1,5 +1,5 @@
 # C:\sovereign_manifold_v31\00_control\Daemon-MemoryRing.ps1
-# ACT-Omega Net v32.8.0 (SH4Z v3208) Autonomous Cluster Watchdog, USB/Wi-Fi ADB Healer & SSD Vault Sync
+# ACT-Omega Net v32.9.0 (SH4Z v3209) Always-On Cluster Watchdog, 15.965 Hz Decadic Sync & ADB Healer
 $ErrorActionPreference = "SilentlyContinue"
 $root = "C:\sovereign_manifold_v31"
 while ($true) {

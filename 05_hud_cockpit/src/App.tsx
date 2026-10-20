@@ -188,7 +188,7 @@ export function App() {
   );
 
   const [leanQuery, setLeanQuery] = useState<string>(
-    "Query 128-Theorem Lean 4 Suite (nl8192, fno, llm_gateway, ssd_tier2, stiefel, acoustic, booker)..."
+    "Query 144-Theorem Lean 4 Suite (nl8192, fno, llm_gateway, ssd_tier2, stiefel, acoustic, booker)..."
   );
   const [cmdPrompt, setCmdPrompt] = useState<string>(
     "run 16-mode fourier neural operator pde solver and llm agent gateway with 8192 natural language tokenizer"

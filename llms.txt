@@ -1,24 +1,13 @@
-# ACT-Omega Net v32.6.1 (Sovereign Harmonic V-G / SH4Z v3206 TLV)
-> Hardware-Anchored 4-Tier Topological, Geometric & Spectral Compute Cluster (LOQ 15 RTX 3050 6GB + Google Pixel 10 Tensor G5 + Google Pixel 8 Mali-G715 4.00MB L2 + Drive E:\ External SSD Tier-2 Vault)
-
-## Core Specifications (v32.6.1)
-- Release Tag: v32.6.1-sh5g-v3206-fno-llm-ssd-15cards
-- Zenodo DOI: 10.5281/zenodo.19624831 (https://doi.org/10.5281/zenodo.19624831)
-- SH4Z Container: v3206 TLV (81,920 bytes = 16 sectors x 80 cachelines x 64 bytes, 1:1 bijection)
-- Canonical Vault: 4,400 shards (100x Chair-44 orbits, Holdout PPL = 1.000001)
-- Dual-Horizon Lexicon: 8,192 tokens (4,096 NL BPE subwords + 4,096 compound topological tokens)
-- Formal Verification: 128 base Lean 4 CIC theorems + 3 runtime obligations = 131 QED (0 sorry)
-- Cluster Throughput: 686.3k ops/s (LOQ 15 RTX 3050 = 488.0k + Pixel 10 G5 = 114.7k + Pixel 8 L2 = 83.4k)
-- Live Edge Sensor Stream: 15.80 Hz hardware sensor sampling / 1.99 Hz cross-cluster broadcast sync
-
-## Safe Zero-Trust Visiting LLM & Agent Endpoints (Read/Compute-Only Sandbox)
-- GET /.well-known/llm-agent.json
-- GET /llms.txt
-- GET /api/v1/agent_gateway/manifest
-- GET /api/v1/agent_gateway/interact?agent_id=visiting_llm&q=<natural_language_or_symbolic_query>
-- GET /api/v1/tokenizer/nl_transduce?q=<text_to_tokenize_into_8192_horizon>
-- GET /api/v1/operator/fno_solve?q=<navier_stokes_or_helmholtz_spectral_query>
-- GET /api/v1/storage/ssd_tier2?q=merkle32_verify
-- GET /api/v1/card/execute?card=<1..15>&node=visiting_llm
-- GET /api/v1/beacon/domain
-- GET /api/v1/harmonic/tool_chain?q=full_23_tool_chain
+# ACT-Omega Net v32.8.0 (Sovereign Harmonic V-I / SH4Z v3208 TLV)
+> Official Domain: https://act-omega-net.dev
+> Cockpit HUD: https://hud.act-omega-net.dev
+> L0 Telemetry & 25-Tool API: https://api.act-omega-net.dev/api/v1/telemetry
+> Zero-Rebuild OTA Manifest: https://api.act-omega-net.dev/api/v1/ota/manifest
+> Safe Zero-Trust LLM Agent Gateway (Tool 21): https://agent.act-omega-net.dev/.well-known/llm-agent.json
+> 16-Mode Fourier Neural Operator (Tool 22): https://api.act-omega-net.dev/api/v1/operator/fno_solve
+> External SSD Tier-2 Vault (Tool 23): https://api.act-omega-net.dev/api/v1/storage/ssd_tier2
+> 4-Tier Cluster Drift Sync Matrix (Tool 24): https://api.act-omega-net.dev/api/v1/cluster/sync_matrix
+> Continual 1.58b QAT + FNO Trainer (Tool 25): https://api.act-omega-net.dev/api/v1/train/continual_qat
+> Full 25-Tool Cascade (CHAIN 25): https://api.act-omega-net.dev/api/v1/harmonic/tool_chain
+> Sovereign Knowledge Wiki: https://wiki.act-omega-net.dev/wiki
+> GitHub Pages Portal: https://bospaladin34-crypto.github.io

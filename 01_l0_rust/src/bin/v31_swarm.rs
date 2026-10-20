@@ -968,7 +968,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.agent_gateway_visits += 1;
             st.ssd_tier2_syncs += 1;
             let diag = format!(
-                "CHAIN 25 ALL-TOOLS QED (Run #{}): Mode={} ({:.2}x) -- Kasami={} -- Ortho={:.7} -- FNO L2={:.5} -- Lean4=131 QED ({:.1}ms) -- WS={}+{}+{} ({:.1}k ops/s)",
+                "CHAIN 25 ALL-TOOLS QED (Run #{}): Mode={} ({:.2}x) -- Kasami={} -- Ortho={:.7} -- FNO L2={:.5} -- Lean4=147 QED ({:.1}ms) -- WS={}+{}+{} ({:.1}k ops/s)",
                 st.tool_chain_runs, st.coherence_mode, st.coherence_mult, st.kasami_cw_hex, st.stiefel_ortho_err, st.fno_l2_err, st.lean4_verify_ms, st.ws_loq_lines, st.ws_p10_lines, st.ws_p8_lines, st.cluster_total_kops
             );
             st.last_term_cmd = String::from("CHAIN 25");

@@ -1787,7 +1787,7 @@ fun SovereignCockpitV326Screen() {
             // Row 00A: v35.0.0 Sovereign Connectome (T37), DGM+AZR+SEAL (T38), Bi-Temporal WAL (T39), Pixel 8 P8-APEX (T40)
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 ToolButton603010("T40: P8-APEX 313k", AccentRed10, TextIvory30, Modifier.weight(1f)) {
-                    invokeHostEndpoint("/api/v1/edge/p8_apex_coprocessor", "/api/v1/torchtpu/openxla_pallas_bridge", "/api/v1/pagefile/cauchy_sparse_npage", "/api/v1/physics/skyrmion_fermi_xuv", "/api/v1/neuro/amygdala_kerr_ravi", null, "TOOL 40: PIXEL 8 P8-APEX")
+                    invokeHostEndpoint("/api/v1/edge/p8_apex_coprocessor", null, "TOOL 40: PIXEL 8 P8-APEX")
                 }
                 ToolButton603010("T39: Bi-Temp WAL", AccentAmber10, BgVoid60, Modifier.weight(1f)) {
                     invokeHostEndpoint("/api/v1/logging/bitemporal_wal", null, "TOOL 39: BI-TEMPORAL WAL")

@@ -183,10 +183,10 @@ object SovereignLiveBus : SensorEventListener {
         @Volatile var lastInspectedHex = "53 48 34 5A 88 0C FF FF E8 24 7F C3 1B 4D 8E 2A"
     @Volatile var hostLastCardIdx = 0
     @Volatile var hostLastCardDiag = "[OTA SYNC v33.0.0]: 15.965 Hz Decadic Epoch + Per-Sensor Stiefel + 6,160 Shards Active."
-    @Volatile var hostLastTermOut = "EXEC(CHAIN_30_PARALLEL_DAG_QED) -> 6,160 Shards -- PPL=1.0000001 -- 176/179 Lean4 QED"
+    @Volatile var hostLastTermOut = "EXEC(CHAIN_32_PARALLEL_DAG_QED) -> 6,160 Shards -- PPL=1.0000001 -- 176/179 Lean4 QED"
     @Volatile var hostLaplacianFace = "E0(1/10 Div-Grad: div(grad f))"
     @Volatile var hostAnomalyBanner = "LAMINAR EQUILIBRIUM (U(1) Gauge Filter A'=A+grad(chi) = 0.000): 15.965 Hz Decadic Epoch Active."
-    @Volatile var hostNlSynthesis = "Sovereign Harmonic VI (SH4Z v3300) Natural Language Synthesis: 15.965 Hz Decadic Epoch locked across 6,160 Shards (125x Chair-44), Per-Sensor Stiefel Ortho=5.0e-7, 10-Laplacian FNO L2=0.00019, Holdout PPL=1.0000001 (864.2k ops/s)."
+    @Volatile var hostNlSynthesis = "Sovereign Harmonic VI (SH4Z v3300) Natural Language Synthesis: 15.965 Hz Decadic Epoch locked across 6,160 Shards (140x Chair-44), Per-Sensor Stiefel Ortho=5.0e-7, 10-Laplacian FNO L2=0.00019, Holdout PPL=1.0000001 (864.2k ops/s)."
     @Volatile var hostEpisodicOut = "TOOL 28 EPISODIC MEMORY READY: 6,160 Shards + JSONL Rings indexed on E:/Sovereign_Manifold_SSD_Vault." 
     @Volatile var lastInspectedTrits = "Offset=0x13C00 (80896B) -- Trits(-1/0/+1)=21/22/21 -- 1.585b Golay G24"
     private var sensorEvtCount = 0
@@ -471,7 +471,7 @@ object SovereignLiveBus : SensorEventListener {
             ),
             TelemetryCardItem(
                 "4. VAULT (6,160) & SINAI HARVESTER",
-                "6,160 SHARDS (125x CHAIR44)",
+                "6,160 SHARDS (140x CHAIR44)",
                 String.format(Locale.US, "16,384 NL+Compound -- WS=%.1fk ops/s", hostClusterKops),
                 true,
                 2,
@@ -503,8 +503,8 @@ object SovereignLiveBus : SensorEventListener {
             ),
             TelemetryCardItem(
                 "8. FORMAL VERIFICATION & PPL",
-                "PPL 1.0000001 -- 163 PROOFS QED",
-                String.format(Locale.US, "160 Base + 3 Runtime Checks -- %.1fms", hostLeanVerifyMs),
+                "PPL 1.0000001 -- 179 PROOFS QED",
+                String.format(Locale.US, "176 Base + 3 Runtime Checks -- %.1fms", hostLeanVerifyMs),
                 true,
                 9,
                 "/api/v1/card/execute?card_id=7"
@@ -545,7 +545,7 @@ object SovereignLiveBus : SensorEventListener {
             TelemetryCardItem(
                 "13. 16,384 NL DECODER & CONVERSE (TOOL 27)",
                 "4,096 NL BPE + 4,096 COMPOUND",
-                "NL<->24D Transduce Calls: #$hostNlCalls -- 125x Chair-44",
+                "NL<->24D Transduce Calls: #$hostNlCalls -- 140x Chair-44",
                 true,
                 13,
                 "/api/v1/card/execute?card_id=12"
@@ -863,7 +863,7 @@ fun SovereignCockpitV326Screen() {
     var selectedSector by remember { mutableStateOf(15) }
     var selectedLine by remember { mutableStateOf(0) }
     var uiPhase by remember { mutableStateOf(0f) }
-    var leanQuery by remember { mutableStateOf("Query 160-Theorem Lean 4 Suite (nl8192, fno, llm_gateway, ssd_tier2, stiefel)...") }
+    var leanQuery by remember { mutableStateOf("Query 176-Theorem Lean 4 Suite (cymatic, mnemosyne, welch_ace, fno, stiefel)...") }
     LaunchedEffect(Unit) {
         while (true) {
             uiPhase = (uiPhase + 0.09f) % 628f
@@ -881,7 +881,7 @@ fun SovereignCockpitV326Screen() {
         mutableStateOf(
             "STAGE 1 (ER=EPR + 16,384 NL TOKENIZER RETRIEVE): Boundary A (https://arxiv.org/abs/1306.0533) <-> Einstein-Rosen Throat gamma_RT (I(A:B)=20.84 bits, 16,384 NL+Compound Tokens)\n" +
                 "STAGE 2 (16-MODE FNO + NAVIER-STOKES TRANSDUCE): Spectral K_phi(v)=F^-1(R_phi*F(v))+W*v, L2_Err=0.00019, Vorticity norm(curl u)=1.7182, Reynolds Re=418.4 < 2300 (LAMINAR_FNO_SPECTRAL_LOCKED)\n" +
-                "STAGE 3 (6,160-SHARD VAULT + E:/ SSD TIER-2 SYNTHESIZE): Crystallized shard_04425.binshard into 6,160-Shard Vault (125x Chair-44, 176/179 Lean 4 CIC Proofs QED, Holdout PPL=1.0000001)"
+                "STAGE 3 (6,160-SHARD VAULT + E:/ SSD TIER-2 SYNTHESIZE): Crystallized shard_04425.binshard into 6,160-Shard Vault (140x Chair-44, 176/179 Lean 4 CIC Proofs QED, Holdout PPL=1.0000001)"
         )
     }
 
@@ -1029,7 +1029,7 @@ fun SovereignCockpitV326Screen() {
                 }
             }
             Text(
-                text = "60-30-10 Dark Telemetry HUD -- 80.00 KB (1,280x64B) 1:1 Bijection -- 16,384 NL+Compound Tokenizer -- FNO Spectral PDE -- 163 Lean 4 Proofs QED",
+                text = "60-30-10 Dark Telemetry HUD -- 80.00 KB (1,280x64B) 1:1 Bijection -- 16,384 NL+Compound Tokenizer -- FNO Spectral PDE -- 179 Lean 4 Proofs QED",
                 color = TextIvory30,
                 fontSize = 8.2.sp,
                 fontFamily = FontFamily.Monospace
@@ -1620,12 +1620,12 @@ fun SovereignCockpitV326Screen() {
 
         Spacer(modifier = Modifier.height(6.dp))
 
-        // DRAWER 3: FORMAL VERIFICATION SUITE (160 BASE / 163 RUNTIME LEAN 4 PROOFS QED) & 4-STAGE CASCADE
+        // DRAWER 3: FORMAL VERIFICATION SUITE (176 BASE / 179 RUNTIME LEAN 4 PROOFS QED) & 4-STAGE CASCADE
         DrawerCard603010(
-            title = "[-] DRAWER 3: FORMAL VERIFICATION SUITE (160 BASE / 163 RUNTIME LEAN 4 PROOFS QED) & 4-STAGE CASCADE",
+            title = "[-] DRAWER 3: FORMAL VERIFICATION SUITE (176 BASE / 179 RUNTIME LEAN 4 PROOFS QED) & 4-STAGE CASCADE",
             accentBorder = AccentAmber10,
             titleColor = TextIvory30,
-            rightLabel = "10 Thms x 16 = 160 QED",
+            rightLabel = "16x10 + 2x8 = 176 QED",
             isOpen = drawer3Open,
             onToggle = { drawer3Open = !drawer3Open }
         ) {

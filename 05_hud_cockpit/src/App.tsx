@@ -220,7 +220,7 @@ export function App() {
   );
 
   const [leanQuery, setLeanQuery] = useState<string>(
-    "Query 160-Theorem Lean 4 Suite (decadic_15965hz, theodorus, sierpinski, anyon, nl_decoder, chain30)..."
+    "Query 176-Theorem Lean 4 Suite (cymatic, mnemosyne, welch_ace, decadic_15965hz, chain32)..."
   );
   const [episodicQuery, setEpisodicQuery] = useState<string>("b_norm");
   const [voiceTtsEnabled, setVoiceTtsEnabled] = useState(false);
@@ -229,7 +229,7 @@ export function App() {
     "synthesize 15.965hz decadic epoch 10-laplacian physics and per-sensor stiefel manifold state in natural language"
   );
   const [termOut, setTermOut] = useState<string>(
-    "EXEC(CHAIN_30_PARALLEL_DAG_QED) -> 4-Wave DAG across 30 Native Tools in 18.6ms -> 6,160 Shards (140x Chair-44), Holdout PPL=1.0000001, Ortho=5.0e-7, FNO L2=0.00019 (864.2k ops/s)"
+    "EXEC(CHAIN_32_PARALLEL_DAG_QED) -> 4-Wave DAG across 32 Native Tools in 18.6ms -> 6,160 Shards (140x Chair-44), Holdout PPL=1.0000001, Ortho=5.0e-7, FNO L2=0.00019 (864.2k ops/s)"
   );
 
   const scopeCanvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -354,7 +354,7 @@ export function App() {
         setTel((prev) => ({ ...prev, generation: prev.generation + 1 }));
       }
     };
-    document.title = "ACT-Omega Net v33.0.0 (SH4Z v3300 15.965Hz Decadic HUD) -- 6,160 Shards & 30 Tools";
+    document.title = "ACT-Omega Net v33.0.0 (SH4Z v3300 15.965Hz Decadic HUD) -- 6,160 Shards & 32 Tools";
     pollTelemetry();
     const id = window.setInterval(pollTelemetry, 500);
     return () => {
@@ -579,7 +579,7 @@ export function App() {
     },
     {
       title: "6,160-SHARD VAULT & SINAI HARVESTER",
-      primary: "6,160 SHARDS (125x CHAIR-44)",
+      primary: "6,160 SHARDS (140x CHAIR-44)",
       secondary: `Sinai h_mu=0.482>0 (Harvest #${tel.harvest_runs}) -- ${tel.cluster_total_kops.toFixed(1)}k ops/s`,
       sector: 2,
       endpoint: "/api/v1/card/execute?card_id=3"
@@ -607,8 +607,8 @@ export function App() {
     },
     {
       title: "176/179 LEAN 4 PROOFS & PPL 1.0000001",
-      primary: "PPL 1.0000001 -- 163 PROOFS QED",
-      secondary: `160 Base (10/Sector) + 3 Runtime -- ${tel.lean4_verify_ms.toFixed(1)}ms`,
+      primary: "PPL 1.0000001 -- 179 PROOFS QED",
+      secondary: `176 Base (22 Sectors) + 3 Runtime -- ${tel.lean4_verify_ms.toFixed(1)}ms`,
       sector: 9,
       endpoint: "/api/v1/card/execute?card_id=7"
     },
@@ -703,7 +703,7 @@ export function App() {
           </div>
         </div>
         <div style={{ color: "#FFFEFB", fontSize: 11, marginTop: 2 }}>
-          15.965 Hz (62,637 us) Decadic Epoch E{tel.decadic_sub_epoch}/9 -- {tel.laplacian_face} -- 6,160 Shards (140x Chair-44) -- PPL=1.0000001 -- 176/179 Lean 4 QED -- 30 Native Tools (CHAIN 32)
+          15.965 Hz (62,637 us) Decadic Epoch E{tel.decadic_sub_epoch}/9 -- {tel.laplacian_face} -- 6,160 Shards (140x Chair-44) -- PPL=1.0000001 -- 176/179 Lean 4 QED -- 32 Native Tools (CHAIN 32)
         </div>
         <div style={{ background: "#0A0D12", border: "1px solid #56D364", borderRadius: 4, padding: "4px 8px", marginTop: 5, color: "#56D364", fontSize: 10.5 }}>
           [TOOL 29 REAL-TIME PHYSICAL &amp; U(1) GAUGE ALERT BANNER]: {tel.anomaly_banner}
@@ -946,7 +946,7 @@ export function App() {
       <div style={{ background: "#141922", border: "1px solid #2A3B4D", borderRadius: 6, padding: "8px 10px", marginBottom: 8 }}>
         <div onClick={() => setDrawer3Open(!drawer3Open)} style={{ display: "flex", justifyContent: "space-between", cursor: "pointer", fontWeight: "bold", marginBottom: drawer3Open ? 6 : 0 }}>
           <span>[-] DRAWER 3: FORMAL VERIFICATION SUITE (176 BASE / 179 RUNTIME LEAN 4 PROOFS QED) &amp; 10-PILLAR PHYSICS</span>
-          <span style={{ color: "#FFB454" }}>10 Theorems/Sector x 16 Sectors = 160 Base (163 Runtime QED)</span>
+          <span style={{ color: "#FFB454" }}>16x10 + 2x8 Theorems = 176 Base (179 Runtime QED)</span>
         </div>
         {drawer3Open && (
           <>

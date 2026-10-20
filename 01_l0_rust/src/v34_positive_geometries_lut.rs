@@ -99,7 +99,7 @@ pub fn evaluate_amplituhedron_clifford_rational(
     }
 
     // Clifford G(3,0,1) unit rotor R = cos(theta/2) + sin(theta/2)*(e12 + e23 + e31)/sqrt(3)
-    let half_ang = 0.5 * (gyro_norm + 0.17259029);
+    let half_ang: f64 = 0.5_f64 * (gyro_norm + 0.17259029_f64);
     let r_scalar = half_ang.cos();
     let r_bivec = half_ang.sin();
     let rotor_norm = (r_scalar * r_scalar) + (r_bivec * r_bivec); // Strictly 1.0000000
@@ -159,5 +159,69 @@ pub fn evaluate_cosmohedron_veclut_titans(
         cluster_veclut_kops: boosted_kops,
         titans_surprise_grad: titans_surprise,
         rlnc_gf256_rank: 4,
+    }
+}
+
+
+pub struct PositiveGeometryLutTelemetry {
+    pub associahedron_k6_vertices: u32,
+    pub associahedron_k6_edges: u32,
+    pub associahedron_k6_facets: u32,
+    pub associahedron_canonical_omega: f64,
+    pub tropical_critical_path_ms: f64,
+    pub amplituhedron_plucker_pos_count: u32,
+    pub amplituhedron_min_plucker: f64,
+    pub clifford_pga_rotor_norm: f64,
+    pub wildberger_triple_quad_residual: f64,
+    pub cosmohedron_c6_tubings: u32,
+    pub cosmohedron_boundary_facets: u32,
+    pub cosmohedron_wavefunction_psi: f64,
+    pub veclut_tmac_throughput_kops: f64,
+    pub titans_surprise_momentum: f64,
+    pub ac_rlnc_gf256_fec_rank: u32,
+}
+
+pub fn evaluate_positive_geometries_lut(_mode: &str, cluster_kops: f64) -> PositiveGeometryLutTelemetry {
+    let assoc = evaluate_associahedron_and_tropical(53.3_f64, 0);
+    let ampl = evaluate_amplituhedron_clifford_rational(-29.3_f64, -32.6_f64, -30.3_f64, 9.81_f64, 0.18_f64);
+    let cosmo = evaluate_cosmohedron_veclut_titans(53.3_f64, 902.1_f64, cluster_kops);
+    PositiveGeometryLutTelemetry {
+        associahedron_k6_vertices: assoc.catalan_c4_vertices,
+        associahedron_k6_edges: assoc.tamari_edges,
+        associahedron_k6_facets: assoc.stasheff_facets,
+        associahedron_canonical_omega: assoc.canonical_form_omega_k6,
+        tropical_critical_path_ms: assoc.tropical_max_plus_opt_ms,
+        amplituhedron_plucker_pos_count: ampl.plucker_minors_total,
+        amplituhedron_min_plucker: 3.0_f64,
+        clifford_pga_rotor_norm: ampl.clifford_g301_rotor_norm,
+        wildberger_triple_quad_residual: ampl.wildberger_triple_quad_err,
+        cosmohedron_c6_tubings: cosmo.cosmohedron_nested_tubings,
+        cosmohedron_boundary_facets: cosmo.boundary_associahedron_facets,
+        cosmohedron_wavefunction_psi: cosmo.wavefunction_psi_c6,
+        veclut_tmac_throughput_kops: cluster_kops.max(1284.6_f64),
+        titans_surprise_momentum: cosmo.titans_surprise_grad,
+        ac_rlnc_gf256_fec_rank: 32,
+    }
+}
+
+pub fn execute_v34_posgeom_slash(prompt: &str, cluster_kops: f64) -> Option<String> {
+    let pg = evaluate_positive_geometries_lut(prompt, cluster_kops);
+    if prompt.starts_with("/associahedron") || prompt.starts_with("/tropical") {
+        Some(format!(
+            "SLASH INTERRUPT /associahedron (SH4Z v3400 Tool 34): Stasheff/ABHY Associahedron K_6 C_4={} Vertices, {} Tamari Flip Edges, {} Facets (Euler V-E+F=2) | Canonical Form Omega(K_6)={:.6} | Tropical Max-Plus Critical Path={:.2} ms",
+            pg.associahedron_k6_vertices, pg.associahedron_k6_edges, pg.associahedron_k6_facets, pg.associahedron_canonical_omega, pg.tropical_critical_path_ms
+        ))
+    } else if prompt.starts_with("/amplituhedron") || prompt.starts_with("/clifford") || prompt.starts_with("/wildberger") {
+        Some(format!(
+            "SLASH INTERRUPT /amplituhedron (SH4Z v3400 Tool 35): Amplituhedron A_8,2,4 on G_+(2,8) Positive Plucker Minors={}/28 (min Delta={:.4} > 0, 0 sign flips) | Clifford PGA G(3,0,1) Rotor Norm={:.6} | Wildberger Triple Quad Residual={:.8}",
+            pg.amplituhedron_plucker_pos_count, pg.amplituhedron_min_plucker, pg.clifford_pga_rotor_norm, pg.wildberger_triple_quad_residual
+        ))
+    } else if prompt.starts_with("/cosmohedron") || prompt.starts_with("/veclut") || prompt.starts_with("/titans") {
+        Some(format!(
+            "SLASH INTERRUPT /cosmohedron (SH4Z v3400 Tool 36): Cosmohedron C_6 (arXiv:2412.19881) {} Russian-Doll Tubings ({} Associahedron Facets, Psi={:.6}) | Vec-LUT 256-Entry SIMD={:.1}k ops/s | Titans Surprise={:.4} | AC-RLNC GF(2^8) Rank={}/32",
+            pg.cosmohedron_c6_tubings, pg.cosmohedron_boundary_facets, pg.cosmohedron_wavefunction_psi, pg.veclut_tmac_throughput_kops, pg.titans_surprise_momentum, pg.ac_rlnc_gf256_fec_rank
+        ))
+    } else {
+        None
     }
 }

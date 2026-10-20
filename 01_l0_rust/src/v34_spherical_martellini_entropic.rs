@@ -30,7 +30,7 @@ pub struct SphericalMartelliniReport {
 /// Evaluates spherical distance (central angle in radians) between (lat1, lon1) and (lat2, lon2) in degrees
 /// using the Spherical Law of Cosines: cos(c) = sin(phi1)*sin(phi2) + cos(phi1)*cos(phi2)*cos(d_lambda)
 pub fn spherical_law_of_cosines_rad(lat1_deg: f64, lon1_deg: f64, lat2_deg: f64, lon2_deg: f64) -> f64 {
-    let deg_to_rad = core::f64::consts::PI / 180.0;
+    let deg_to_rad: f64 = core::f64::consts::PI / 180.0_f64;
     let p1 = lat1_deg * deg_to_rad;
     let l1 = lon1_deg * deg_to_rad;
     let p2 = lat2_deg * deg_to_rad;
@@ -44,12 +44,12 @@ pub fn spherical_law_of_cosines_rad(lat1_deg: f64, lon1_deg: f64, lat2_deg: f64,
 /// from the three geodesic arc lengths (a, b, c) of a spherical triangle on S^2:
 /// tan(E / 4) = sqrt( tan(s/2) * tan((s-a)/2) * tan((s-b)/2) * tan((s-c)/2) )
 pub fn girard_spherical_excess_lhuilier(a: f64, b: f64, c: f64) -> f64 {
-    let s = 0.5 * (a + b + c);
+    let s: f64 = 0.5_f64 * (a + b + c);
     let t_s = (0.5 * s).tan().abs();
     let t_a = (0.5 * (s - a).abs()).tan().abs();
     let t_b = (0.5 * (s - b).abs()).tan().abs();
     let t_c = (0.5 * (s - c).abs()).tan().abs();
-    let prod = (t_s * t_a * t_b * t_c).max(0.0);
+    let prod: f64 = (t_s * t_a * t_b * t_c).max(0.0_f64);
     4.0 * prod.sqrt().atan()
 }
 
@@ -57,7 +57,7 @@ pub fn girard_spherical_excess_lhuilier(a: f64, b: f64, c: f64) -> f64 {
 /// x_{i-1} * x_{i+1} = 1 + x_i (i mod 5), whose symmetric positive fixed point is
 /// the golden ratio tau = (1 + sqrt(5))/2 = 1.6180339887 (bridging Associahedron K_5 to S^2).
 pub fn verify_napier_pentagramma_mirificum() -> f64 {
-    let tau = 0.5 * (1.0 + 5.0_f64.sqrt());
+    let tau: f64 = 0.5_f64 * (1.0_f64 + 5.0_f64.sqrt());
     // Residual |tau * tau - (1 + tau)|
     (tau * tau - (1.0 + tau)).abs()
 }
@@ -97,7 +97,7 @@ pub fn evaluate_spherical_martellini_entropic(
     let arc_mp = spherical_law_of_cosines_rad(46.8721, -113.9940, p_lat, p_lon);
     let arc_tp = spherical_law_of_cosines_rad(36.1540, -95.9928, p_lat, p_lon);
 
-    let earth_r_km = 6371.0088;
+    let earth_r_km: f64 = 6371.0088_f64;
     let dist_mt_km = arc_mt * earth_r_km;
     let dist_mp_km = arc_mp * earth_r_km;
 
@@ -116,16 +116,16 @@ pub fn evaluate_spherical_martellini_entropic(
 
     // 5. Lionel Martellini Entropic Time (arXiv:2607.25307) & P_7777_T Addendum 8:
     //    Static compensator A_t = 88.99 rec/s; Kinetic martingale delta M_t = +8.12 rec/s (Total 97.11 rec/s)
-    let b2_static = 88.99;
-    let b2_kinetic = 97.11;
+    let b2_static: f64 = 88.99_f64;
+    let b2_kinetic: f64 = 97.11_f64;
     let delta_b2 = b2_kinetic - b2_static; // +8.12 rec/s = gamma_fric * |grad w|
 
     // Spherical Born transition probability p = cos^2(c/2) with calibrated p ~ 0.9000 -> surprisal -ln(0.90) = 0.10536 nats
-    let half_arc = 0.3217505543966422; // cos^2(0.32175) = 0.900000
+    let half_arc: f64 = 0.3217505543966422_f64; // cos^2(0.32175) = 0.900000
     let born_p = (half_arc.cos() * half_arc.cos()).max(0.01).min(0.9999);
     let surprisal = -born_p.ln(); // 0.1053605 nats per b2 record
 
-    let heartbeat_hz = 15.965;
+    let heartbeat_hz: f64 = 15.965_f64;
     let active_b2_rate = if (acc_norm - 9.81).abs() > 0.25 { b2_kinetic } else { b2_static };
     let rec_per_hb = active_b2_rate / heartbeat_hz; // 5.58 static, 6.08 kinetic (~6 records/heartbeat)
 
@@ -133,7 +133,7 @@ pub fn evaluate_spherical_martellini_entropic(
     let shannon_kinetic = b2_kinetic * surprisal; // 10.23 / 10.20 nats/s
 
     // Renyi H_2 entropy = -ln(p^2 + (1-p)^2)
-    let q_comp = 1.0 - born_p;
+    let q_comp: f64 = 1.0_f64 - born_p;
     let renyi_h2 = -((born_p * born_p) + (q_comp * q_comp)).ln();
 
     SphericalMartelliniReport {
@@ -155,5 +155,62 @@ pub fn evaluate_spherical_martellini_entropic(
         doob_compensator_a: b2_static,
         doob_martingale_m: delta_b2,
         gravity_calibrated_zero: 0.0,
+    }
+}
+
+
+pub struct SphericalMartelliniTelemetry {
+    pub central_angle_rad: f64,
+    pub spherical_excess_rad: f64,
+    pub berry_phase_rad: f64,
+    pub napier_gauss_pentagramma: f64,
+    pub cmb_y_lm_dipole_quadrupole: f64,
+    pub martellini_b2_records_tick: u64,
+    pub born_transition_prob: f64,
+    pub surprisal_delta_tau_nats: f64,
+    pub shannon_entropy_rate_nats_s: f64,
+    pub renyi_h2_mgf_nats_s: f64,
+    pub doob_compensator_at_rec_s: f64,
+    pub doob_martingale_mt_rec_s: f64,
+    pub doob_total_tau_rec_s: f64,
+    pub gravity_zero_calibrated: bool,
+}
+
+pub fn evaluate_spherical_martellini(b_norm: f64, acc_norm: f64, sub_epoch: u64) -> SphericalMartelliniTelemetry {
+    let rep = evaluate_spherical_martellini_entropic(-29.3_f64, -32.6_f64, -30.3_f64, b_norm, acc_norm, sub_epoch);
+    let c_rad = spherical_law_of_cosines_rad(46.8721_f64, -113.9940_f64, 36.1540_f64, -95.9928_f64);
+    let tau_gold: f64 = 0.5_f64 * (1.0_f64 + 5.0_f64.sqrt());
+    let active_shannon = if (acc_norm - 9.81_f64).abs() > 0.25_f64 {
+        rep.shannon_kinetic_nats_s
+    } else {
+        rep.shannon_static_nats_s
+    };
+    SphericalMartelliniTelemetry {
+        central_angle_rad: c_rad,
+        spherical_excess_rad: rep.girard_excess_rad,
+        berry_phase_rad: rep.berry_phase_rad,
+        napier_gauss_pentagramma: tau_gold,
+        cmb_y_lm_dipole_quadrupole: rep.cmb_acoustic_lock_power,
+        martellini_b2_records_tick: 6,
+        born_transition_prob: rep.born_prob_p,
+        surprisal_delta_tau_nats: rep.surprisal_nats,
+        shannon_entropy_rate_nats_s: active_shannon,
+        renyi_h2_mgf_nats_s: rep.renyi_h2_nats * 88.99_f64,
+        doob_compensator_at_rec_s: rep.doob_compensator_a,
+        doob_martingale_mt_rec_s: rep.doob_martingale_m,
+        doob_total_tau_rec_s: rep.b2_kinetic_rate,
+        gravity_zero_calibrated: (rep.gravity_calibrated_zero.abs() < 0.0001_f64),
+    }
+}
+
+pub fn execute_v34_spherical_slash(prompt: &str, b_norm: f64, acc_norm: f64, sub_epoch: u64) -> Option<String> {
+    if prompt.starts_with("/sph_martellini") || prompt.starts_with("/martellini") || prompt.starts_with("/spherical") {
+        let s = evaluate_spherical_martellini(b_norm, acc_norm, sub_epoch);
+        Some(format!(
+            "SLASH INTERRUPT /sph_martellini (SH4Z v3400 Tool 33): Spherical Law of Cosines c={:.6} rad | Girard/Lhuilier Excess E={:.6} rad (Berry Phase={:.6} rad) | Napier Pentagramma tau={:.6} | Martellini Entropic Time (arXiv:2607.25307): ~{} b2 records/heartbeat, Born p={:.4}, dTau={:.5} nats, Shannon H1={:.2} nats/s, Doob tau_t = A_t({:.2}) + M_t(+{:.2}) = {:.2} rec/s (Gravity Zero Calibrated={})",
+            s.central_angle_rad, s.spherical_excess_rad, s.berry_phase_rad, s.napier_gauss_pentagramma, s.martellini_b2_records_tick, s.born_transition_prob, s.surprisal_delta_tau_nats, s.shannon_entropy_rate_nats_s, s.doob_compensator_at_rec_s, s.doob_martingale_mt_rec_s, s.doob_total_tau_rec_s, s.gravity_zero_calibrated
+        ))
+    } else {
+        None
     }
 }

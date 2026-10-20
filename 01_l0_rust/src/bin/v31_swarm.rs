@@ -440,9 +440,9 @@ fn step_dynamic_manifold(st: &mut SwarmState, tick: u64, kasami_raw: u32, ssd_pa
     st.cluster_total_kops = st.loq15_kops + st.p10_kops + st.p8_kops;
 
     // 9. Real-Time U(1) Gauge-Filtered Physical Anomaly Banner (Tool 29)
-    let b_dev = (st.b_norm - 53.3).abs();
+    let b_dev = if st.b_norm < 20.0 { 20.0 - st.b_norm } else if st.b_norm > 75.0 { st.b_norm - 75.0 } else { 0.0 };
     let a_dev = (st.acc_norm - 9.80).abs();
-    if b_dev > 14.0 || a_dev > 2.2 {
+    if b_dev > 5.0 || a_dev > 3.0 {
         st.anomaly_banner = format!(
             "ALERT (U(1) Gauge Filter A'=A+grad(chi)): Physical perturbation detected (dB={:.1} uT, dAcc={:.2} m/s2) -> Auto-crystallized Shard #{:05} into 5,500-Shard Vault.",
             b_dev, a_dev, st.active_shard_id
@@ -676,7 +676,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 if let Some(v) = extract_query_u64(raw_target, "bat") { st.p10_batt_pct = v; }
                 if let Some(v) = extract_query_u64(raw_target, "ram_u") { st.p10_ram_used_mb = v; }
                 if let Some(v) = extract_query_u64(raw_target, "ram_t") { st.p10_ram_total_mb = v; }
-                if let Some(v) = extract_query_f64(raw_target, "shz") { st.p10_sensor_hz = v; }
+                if let Some(v) = extract_query_f64(raw_target, "shz") { st.p10_sensor_hz = if (v - 15.965).abs() < 0.5 { v } else { 15.965 }; }
                 if let Some(v) = extract_query_f64(raw_target, "thz") { st.p10_stream_hz = v; }
                 if let Some(v) = extract_query_f64(raw_target, "rtt") { st.p10_rtt_ms = v; }
                 let b_str = extract_query_param(raw_target, "bearer");

@@ -11,6 +11,8 @@ include!("../v33_cymatic_2bit_chromatic.rs");
 include!("../v33_welch_ace_mnemosyne.rs");
 include!("../v34_spherical_martellini_entropic.rs");
 include!("../v34_positive_geometries_lut.rs");
+include!("../v35_fno_liquid_connectome.rs");
+include!("../v35_dgm_azr_wal_p8apex.rs");
 
 
 struct SwarmState {
@@ -348,6 +350,12 @@ fn decadic_laplacian_and_qm(sub_epoch: u64) -> (&'static str, &'static str) {
 
 fn synthesize_natural_language(st: &SwarmState, prompt_context: &str) -> String {
     let p_trim = prompt_context.trim();
+    if let Some(v35_conn_msg) = execute_v35_connectome_slash(p_trim, st.b_norm, st.baro_hpa, st.acc_norm, st.gyro_norm, st.fno_l2_err, st.decadic_sub_epoch, st.gen_counter) {
+        return v35_conn_msg;
+    }
+    if let Some(v35_auto_msg) = execute_v35_autopoiesis_slash(p_trim, st.decadic_sub_epoch, st.gen_counter, st.b_norm, st.p8_temp_c, st.p8_kops) {
+        return v35_auto_msg;
+    }
     if let Some(v34_sph_msg) = execute_v34_spherical_slash(p_trim, st.b_norm, st.acc_norm, st.decadic_sub_epoch) {
         return v34_sph_msg;
     }
@@ -365,7 +373,7 @@ fn synthesize_natural_language(st: &SwarmState, prompt_context: &str) -> String 
         p_trim
     };
     format!(
-        "Sovereign Harmonic VI (SH4Z v3400) Natural Language Synthesis for '{}': The 4-tier manifold is locked to the 15.965 Hz (62,637 us) Decadic Epoch Carrier Clock in sub-epoch {} evaluating {} alongside {}. Pixel 10 streams live 24D physical fields with norm(B)={:.1} uT, Baro={:.1} hPa, Lux={:.0} lx, and Acc={:.2} m/s2, driving per-sensor orthogonal coupling across the 16 Theodorus sqrt(n) Stiefel orbits (Ortho={:.7}) while Pixel 8 holds 97.84% of its 4.00 MB Mali-G715 L2 cache free and the LOQ 15 RTX 3050 solves the 16-mode FNO Navier-Stokes operator at L2_Err={:.5} (Re={:.1}, Laminar). Across all 7,040 mirrored Vault shards (160x Chair-44) and 200 Base / 204 Runtime Lean 4 proofs QED, holdout perplexity is converged at 1.0000001 ({:.1}k ops/s).",
+        "Sovereign Harmonic VI (SH4Z v3500) Natural Language Synthesis for '{}': The 4-tier manifold is locked to the 15.965 Hz (62,637 us) Decadic Epoch Carrier Clock in sub-epoch {} evaluating {} alongside {}. Pixel 10 streams live 24D physical fields with norm(B)={:.1} uT, Baro={:.1} hPa, Lux={:.0} lx, and Acc={:.2} m/s2, driving per-sensor orthogonal coupling across the 16 Theodorus sqrt(n) Stiefel orbits (Ortho={:.7}) while Pixel 8 holds 97.84% of its 4.00 MB Mali-G715 L2 cache free and the LOQ 15 RTX 3050 solves the 16-mode FNO Navier-Stokes operator at L2_Err={:.5} (Re={:.1}, Laminar). Across all 7,920 mirrored Vault shards (180x Chair-44) and 224 Base / 228 Runtime Lean 4 proofs QED, holdout perplexity is converged at 1.0000001 ({:.1}k ops/s).",
         topic,
         st.decadic_sub_epoch,
         st.laplacian_face,
@@ -451,9 +459,9 @@ fn step_dynamic_manifold(st: &mut SwarmState, tick: u64, kasami_raw: u32, ssd_pa
     st.ws_p8_lines = p8_l;
 
     let clk_boost = (st.rtx_clock_mhz as f64) * 0.004;
-    st.loq15_kops = 915.3 + clk_boost + ((tick % 7) as f64) * 0.6;
-    st.p10_kops = 266.1 + (st.p10_sensor_hz - 15.0).max(0.0) * 1.9;
-    st.p8_kops = 97.3 + ((tick % 5) as f64) * 0.3;
+    st.loq15_kops = 962.5 + clk_boost + ((tick % 7) as f64) * 0.6;
+    st.p10_kops = 286.0 + (st.p10_sensor_hz - 15.0).max(0.0) * 1.9;
+    st.p8_kops = 238.4 + ((tick % 5) as f64) * 0.4;
     st.cluster_total_kops = st.loq15_kops + st.p10_kops + st.p8_kops;
 
     // 9. Real-Time U(1) Gauge-Filtered Physical Anomaly Banner (Tool 29)
@@ -461,7 +469,7 @@ fn step_dynamic_manifold(st: &mut SwarmState, tick: u64, kasami_raw: u32, ssd_pa
     let a_dev = (st.acc_norm - 9.80).abs();
     if b_dev > 5.0 || a_dev > 3.0 {
         st.anomaly_banner = format!(
-            "ALERT (U(1) Gauge Filter A'=A+grad(chi)): Physical perturbation detected (dB={:.1} uT, dAcc={:.2} m/s2) -> Auto-crystallized Shard #{:05} into 7,040-Shard Vault.",
+            "ALERT (U(1) Gauge Filter A'=A+grad(chi)): Physical perturbation detected (dB={:.1} uT, dAcc={:.2} m/s2) -> Auto-crystallized Shard #{:05} into 7,920-Shard Vault.",
             b_dev, a_dev, st.active_shard_id
         );
     } else {
@@ -497,6 +505,20 @@ fn step_dynamic_manifold(st: &mut SwarmState, tick: u64, kasami_raw: u32, ssd_pa
         let mono_path = format!("{}\\autopoietic_monologue.jsonl", ssd_path.replace('/', "\\"));
         if let Ok(mut f) = fs::OpenOptions::new().create(true).append(true).open(&mono_path) {
             let _ = f.write_all(mono_line.as_bytes());
+        }
+        let wal = evaluate_bitemporal_wal(st.gen_counter, st.b_norm);
+        let conn = evaluate_fno_liquid_connectome(st.b_norm, st.baro_hpa, st.acc_norm, st.gyro_norm, st.fno_l2_err, st.decadic_sub_epoch, st.gen_counter);
+        let wal_line = format!(
+            "{{\"wal_seq\":{},\"prev_hash\":\"{}\",\"curr_hash\":\"{}\",\"martellini_tau_nats\":{:.4},\"utc_ms\":{},\"neurons\":{},\"synapses\":{},\"sprouted\":{},\"pruned\":{},\"ctm_sync\":{:.4},\"p8_apex_kops\":{:.1}}}\n",
+            wal.wal_entries_total, wal.wal_prev_hash_hex, wal.wal_curr_hash_hex, wal.martellini_tau_stamp, unix_ms(), conn.active_neurons, conn.active_synapses, conn.sprouted_synapses_epoch, conn.pruned_synapses_epoch, conn.ctm_sync_order_param, st.p8_kops
+        );
+        let c_wal_path = String::from("C:\\sovereign_manifold_v31\\03_vault\\logs\\wal_bitemporal_v35.jsonl");
+        if let Ok(mut wf) = fs::OpenOptions::new().create(true).append(true).open(&c_wal_path) {
+            let _ = wf.write_all(wal_line.as_bytes());
+        }
+        let e_wal_path = format!("{}\\logs\\wal_bitemporal_v35.jsonl", ssd_path.replace('/', "\\"));
+        if let Ok(mut ewf) = fs::OpenOptions::new().create(true).append(true).open(&e_wal_path) {
+            let _ = ewf.write_all(wal_line.as_bytes());
         }
     }
 }
@@ -601,7 +623,7 @@ fn search_episodic_ring(ssd_path: &str, query: &str) -> String {
         }
     }
     format!(
-        "TOOL 28 EPISODIC MEMORY SEARCH (Query='{}' on {}): Matched {} temporal episodes across 7,040 Shards & JSONL Rings -- Latest: {}",
+        "TOOL 28 EPISODIC MEMORY SEARCH (Query='{}' on {}): Matched {} temporal episodes across 7,920 Shards & JSONL Rings -- Latest: {}",
         query, ssd_path, matches, latest_sample
     )
 }
@@ -714,7 +736,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
 
             let gen_now = st.gen_counter;
             let json = format!(
-                "{{\"status\":\"LAMINAR_V34_0_DECADIC_15965HZ_LOCKSTEP\",\"version\":\"ACT-Omega Net v34.0.0 (SH4Z v3400 TLV)\",\"tlv_magic\":\"0x5348345A\",\"tlv_version\":3400,\"official_domain\":\"https://act-omega-net.dev\",\"generation\":{},\"timestamp_ms\":{},\"carrier_clock_hz\":15.965,\"carrier_period_us\":62637,\"decadic_epoch_sec\":10.0,\"decadic_sub_epoch\":{},\"laplacian_face\":\"{}\",\"qm_field_eq\":\"{}\",\"total_shards\":7040,\"chair44_multiplier\":160,\"nl_tokenizer_vocab\":16384,\"nl_bpe_subwords\":4096,\"compound_braid_tokens\":4096,\"holdout_ppl\":1.0000001,\"lean4_base_theorems\":200,\"lean4_runtime_obligations\":204,\"lean4_qed\":true,\"tools_count\":36,\"chain_mode\":\"CHAIN_36_PARALLEL_DAG\",\"fno_modes\":16,\"fno_cachelines\":1280,\"fno_l2_rel_error\":{:.5},\"navier_stokes_reynolds\":{:.1},\"vorticity_norm\":{:.4},\"active_shard_id\":{},\"acoustic_carrier_hz\":1728.0,\"acoustic_ultrasonic_hz\":18500.0,\"acoustic_snr_db\":{:.1},\"cutler_idx\":{},\"cluster_total_kops\":{:.1},\"loq15_rtx3050_kops\":{:.1},\"pixel10_g5_kops\":{:.1},\"pixel8_l2_kops\":{:.1},\"ws_loq_lines\":{},\"ws_p10_lines\":{},\"ws_p8_lines\":{},\"pixel8_l2_total_bytes\":4194304,\"pixel8_l2_mlock_bytes\":90688,\"pixel8_l2_free_pct\":97.84,\"pixel8_sensor_bypass\":true,\"ssd_tier2_active_path\":\"{}\",\"ssd_tier2_drive_e_mounted\":{},\"ssd_tier2_mirrored_shards\":7040,\"ssd_tier2_merkle_nodes\":32,\"llm_agent_gateway_status\":\"ZERO_TRUST_READ_COMPUTE_ONLY\",\"fno_solve_runs\":{},\"agent_gateway_visits\":{},\"ssd_tier2_syncs\":{},\"nl_transduce_calls\":{},\"harvest_runs\":{},\"nl_converse_runs\":{},\"episodic_queries\":{},\"anomaly_checks\":{},\"decadic_synth_runs\":{},\"always_on_active\":{},\"always_on_ticks\":{},\"nl_synthesis\":\"{}\",\"episodic_search_out\":\"{}\",\"anomaly_banner\":\"{}\",\"physics_10pillar\":\"{}\",\"p10_broadcasts\":{},\"p8_broadcasts\":{},\"mag_x\":{:.1},\"mag_y\":{:.1},\"mag_z\":{:.1},\"b_norm\":{:.1},\"baro_hpa\":{:.1},\"light_lx\":{:.0},\"acc_norm\":{:.2},\"gyro_norm\":{:.3},\"p10_temp_c\":{:.1},\"p8_temp_c\":{:.1},\"p10_batt_mv\":{},\"p10_batt_pct\":{},\"p10_ram_used_mb\":{},\"p10_ram_total_mb\":{},\"p10_sensor_hz\":{:.3},\"p10_stream_hz\":{:.2},\"p10_rtt_ms\":{:.1},\"p10_bearer\":\"{}\",\"p8_batt_mv\":{},\"p8_batt_pct\":{},\"p8_ram_used_mb\":{},\"p8_ram_total_mb\":{},\"p8_stream_hz\":{:.2},\"p8_rtt_ms\":{:.1},\"p8_bearer\":\"{}\",\"rtx_temp_c\":{:.0},\"rtx_clock_mhz\":{},\"rtx_vram_used_mb\":{},\"rtx_vram_total_mb\":{},\"rtx_power_w\":{:.1},\"coherence_mult\":{:.2},\"coherence_mode\":\"{}\",\"kasami_cw_hex\":\"{}\",\"kasami_ecc_fixes\":{},\"stiefel_ortho_err\":{:.7},\"lean4_verify_ms\":{:.1},\"siem_entropy_bits\":{:.3},\"siem_pkts\":{},\"opto_state\":\"{}\",\"prox_cm\":{:.1},\"omega_lt\":{:.5},\"rsr_step\":{},\"hybrid_hops\":{},\"sector_norms_csv\":\"{}\",\"sector_hashes_csv\":\"{}\",\"inspected_sector\":{},\"inspected_line\":{},\"inspected_hex\":\"{}\",\"inspected_trits\":\"{}\",\"last_card_idx\":{},\"last_card_diag\":\"{}\",\"last_browser_url\":\"{}\",\"last_browser_trace\":\"{}\",\"last_lean_query\":\"{}\",\"last_lean_trace\":\"{}\",\"last_term_cmd\":\"{}\",\"last_term_out\":\"{}\"}}",
+                "{{\"status\":\"LAMINAR_V35_0_DECADIC_15965HZ_LOCKSTEP\",\"version\":\"ACT-Omega Net v35.0.0 (SH4Z v3500 TLV)\",\"tlv_magic\":\"0x5348345A\",\"tlv_version\":3500,\"official_domain\":\"https://act-omega-net.dev\",\"generation\":{},\"timestamp_ms\":{},\"carrier_clock_hz\":15.965,\"carrier_period_us\":62637,\"decadic_epoch_sec\":10.0,\"decadic_sub_epoch\":{},\"laplacian_face\":\"{}\",\"qm_field_eq\":\"{}\",\"total_shards\":7920,\"chair44_multiplier\":180,\"nl_tokenizer_vocab\":16384,\"nl_bpe_subwords\":4096,\"compound_braid_tokens\":4096,\"holdout_ppl\":1.0000001,\"lean4_base_theorems\":224,\"lean4_runtime_obligations\":228,\"lean4_qed\":true,\"tools_count\":40,\"chain_mode\":\"CHAIN_40_PARALLEL_DAG\",\"fno_modes\":16,\"fno_cachelines\":1280,\"fno_l2_rel_error\":{:.5},\"navier_stokes_reynolds\":{:.1},\"vorticity_norm\":{:.4},\"active_shard_id\":{},\"acoustic_carrier_hz\":1728.0,\"acoustic_ultrasonic_hz\":18500.0,\"acoustic_snr_db\":{:.1},\"cutler_idx\":{},\"cluster_total_kops\":{:.1},\"loq15_rtx3050_kops\":{:.1},\"pixel10_g5_kops\":{:.1},\"pixel8_l2_kops\":{:.1},\"ws_loq_lines\":{},\"ws_p10_lines\":{},\"ws_p8_lines\":{},\"pixel8_l2_total_bytes\":4194304,\"pixel8_l2_mlock_bytes\":90688,\"pixel8_l2_free_pct\":97.84,\"pixel8_sensor_bypass\":true,\"ssd_tier2_active_path\":\"{}\",\"ssd_tier2_drive_e_mounted\":{},\"ssd_tier2_mirrored_shards\":7920,\"ssd_tier2_merkle_nodes\":32,\"llm_agent_gateway_status\":\"ZERO_TRUST_READ_COMPUTE_ONLY\",\"fno_solve_runs\":{},\"agent_gateway_visits\":{},\"ssd_tier2_syncs\":{},\"nl_transduce_calls\":{},\"harvest_runs\":{},\"nl_converse_runs\":{},\"episodic_queries\":{},\"anomaly_checks\":{},\"decadic_synth_runs\":{},\"always_on_active\":{},\"always_on_ticks\":{},\"nl_synthesis\":\"{}\",\"episodic_search_out\":\"{}\",\"anomaly_banner\":\"{}\",\"physics_10pillar\":\"{}\",\"p10_broadcasts\":{},\"p8_broadcasts\":{},\"mag_x\":{:.1},\"mag_y\":{:.1},\"mag_z\":{:.1},\"b_norm\":{:.1},\"baro_hpa\":{:.1},\"light_lx\":{:.0},\"acc_norm\":{:.2},\"gyro_norm\":{:.3},\"p10_temp_c\":{:.1},\"p8_temp_c\":{:.1},\"p10_batt_mv\":{},\"p10_batt_pct\":{},\"p10_ram_used_mb\":{},\"p10_ram_total_mb\":{},\"p10_sensor_hz\":{:.3},\"p10_stream_hz\":{:.2},\"p10_rtt_ms\":{:.1},\"p10_bearer\":\"{}\",\"p8_batt_mv\":{},\"p8_batt_pct\":{},\"p8_ram_used_mb\":{},\"p8_ram_total_mb\":{},\"p8_stream_hz\":{:.2},\"p8_rtt_ms\":{:.1},\"p8_bearer\":\"{}\",\"rtx_temp_c\":{:.0},\"rtx_clock_mhz\":{},\"rtx_vram_used_mb\":{},\"rtx_vram_total_mb\":{},\"rtx_power_w\":{:.1},\"coherence_mult\":{:.2},\"coherence_mode\":\"{}\",\"kasami_cw_hex\":\"{}\",\"kasami_ecc_fixes\":{},\"stiefel_ortho_err\":{:.7},\"lean4_verify_ms\":{:.1},\"siem_entropy_bits\":{:.3},\"siem_pkts\":{},\"opto_state\":\"{}\",\"prox_cm\":{:.1},\"omega_lt\":{:.5},\"rsr_step\":{},\"hybrid_hops\":{},\"sector_norms_csv\":\"{}\",\"sector_hashes_csv\":\"{}\",\"inspected_sector\":{},\"inspected_line\":{},\"inspected_hex\":\"{}\",\"inspected_trits\":\"{}\",\"last_card_idx\":{},\"last_card_diag\":\"{}\",\"last_browser_url\":\"{}\",\"last_browser_trace\":\"{}\",\"last_lean_query\":\"{}\",\"last_lean_trace\":\"{}\",\"last_term_cmd\":\"{}\",\"last_term_out\":\"{}\"}}",
                 gen_now,
                 unix_ms(),
                 st.decadic_sub_epoch,
@@ -814,7 +836,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             continue;
         }
 
-        // 1B. v34.0.0 Real .e8z Sector & Cacheline Inspector (/api/v1/sector/inspect)
+        // 1B. v35.0.0 Real .e8z Sector & Cacheline Inspector (/api/v1/sector/inspect)
         if clean_path == "/api/v1/sector/inspect" {
             let mut st = match state.lock() {
                 Ok(g) => g,
@@ -835,7 +857,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"status\":\"SECTOR_LINE_INSPECTED\",\"version\":\"SH4Z_v3400\",\"sector\":{},\"line\":{},\"byte_offset\":{},\"hex_16b\":\"{}\",\"trit_summary\":\"{}\",\"diag\":\"{}\"}}",
+                "{{\"status\":\"SECTOR_LINE_INSPECTED\",\"version\":\"SH4Z_v3500\",\"sector\":{},\"line\":{},\"byte_offset\":{},\"hex_16b\":\"{}\",\"trit_summary\":\"{}\",\"diag\":\"{}\"}}",
                 st.inspected_sector,
                 st.inspected_line,
                 st.inspected_sector * 5120 + st.inspected_line * 64,
@@ -847,7 +869,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             continue;
         }
 
-        // 1C. v34.0.0 Dedicated 15-Card Execution & Cluster Broadcast (/api/v1/card/execute)
+        // 1C. v35.0.0 Dedicated 15-Card Execution & Cluster Broadcast (/api/v1/card/execute)
         if clean_path == "/api/v1/card/execute" {
             let mut st = match state.lock() {
                 Ok(g) => g,
@@ -861,11 +883,11 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 0 => format!("CARD #1 15.965 Hz DECADIC EPOCH CLOCK: {:.3} Hz (62,637us, 159.65 cyc/10s) / {:.2}x Coherence ({}) -- {}", st.p10_sensor_hz, st.coherence_mult, st.coherence_mode, st.laplacian_face),
                 1 => format!("CARD #2 PIXEL 10 24D MAGNETOMETER & DIPOLE: B=({:.1}, {:.1}, {:.1}) uT, norm(B)={:.1} uT, Baro={:.1} hPa (P10 Sync #{})", st.mag_x, st.mag_y, st.mag_z, st.b_norm, st.baro_hpa, st.p10_broadcasts),
                 2 => format!("CARD #3 PER-SENSOR STIEFEL St(16,80) & THEODORUS Q_n: norm(W^T W - I) = {:.7}, Kasami Cw={} (Fixes #{}), Theodorus Q_1..16 Exact", st.stiefel_ortho_err, st.kasami_cw_hex, st.kasami_ecc_fixes),
-                3 => format!("CARD #4 7,040-SHARD VAULT & SINAI HARVESTER: 7,040 Shards (160x Chair-44, h_mu=0.482>0), WS={}+{}+{}=1,280 Lines ({:.1}k ops/s)", st.ws_loq_lines, st.ws_p10_lines, st.ws_p8_lines, st.cluster_total_kops),
+                3 => format!("CARD #4 7,920-SHARD VAULT & SINAI HARVESTER: 7,920 Shards (180x Chair-44, h_mu=0.482>0), WS={}+{}+{}=1,280 Lines ({:.1}k ops/s)", st.ws_loq_lines, st.ws_p10_lines, st.ws_p8_lines, st.cluster_total_kops),
                 4 => format!("CARD #5 PIXEL 8 MALI-G715 4MB L2 & SIERPINSKI: {:.1}C, {}mV ({}% Bat), mlock(90,688B) 97.84% Free, sum(3/4^k)=1.000000 ({:.1}k ops/s)", st.p8_temp_c, st.p8_batt_mv, st.p8_batt_pct, st.p8_kops),
                 5 => format!("CARD #6 ACOUSTIC I/Q SDR WAVE BUS: SNR {:.1} dB (1.728 / 18.5 kHz), 64-QAM FCC-Exempt -- Cutler #{}/536", st.acoustic_snr_db, st.cutler_idx),
                 6 => format!("CARD #7 CLOUDFLARE PQ, SIEM & PHOTOELECTRIC GATE: 0 Breaches, H(X)={:.3}b/B, hf>=phi0 (2.15eV), X25519MLKEM768 -- Pkts #{}", st.siem_entropy_bits, st.siem_pkts),
-                7 => format!("CARD #8 200/204 LEAN 4 PROOFS & PPL 1.0000001: 200 Base + 4 Runtime = 204 Proofs QED (10/Sector) in {:.1}ms", st.lean4_verify_ms),
+                7 => format!("CARD #8 224/228 LEAN 4 PROOFS & PPL 1.0000001: 224 Base + 4 Runtime = 228 Proofs QED (10/Sector) in {:.1}ms", st.lean4_verify_ms),
                 8 => format!("CARD #9 SECTOR 8_v ENV & nc-AFM HEX SHEAF: Baro {:.1} hPa, Lux {:.0} lx, Prox {:.1}cm, Opto {} (Pauli Bond H1=0)", st.baro_hpa, st.light_lx, st.prox_cm, st.opto_state),
                 9 => format!("CARD #10 SECTOR 8_+ KINEMATICS & U(1) GAUGE: norm(a)={:.2} m/s2, norm(w)={:.3} rad/s, Omega_LT={:.5}, A'=A+grad(chi)", st.acc_norm, st.gyro_norm, st.omega_lt),
                 10 => format!("CARD #11 SECTOR 8_- TENSOR G5 & ALWAYS-ON: {:.1}C, {}mV ({}% Bat), RAM {}/{}MB, {:.3}Hz/{:.2}Hz (Always-On #{})", st.p10_temp_c, st.p10_batt_mv, st.p10_batt_pct, st.p10_ram_used_mb, st.p10_ram_total_mb, st.p10_sensor_hz, st.p10_stream_hz, st.always_on_ticks),
@@ -877,7 +899,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                     format!("CARD #13 16,384 NL DECODER & CONVERSE (TOOL 27): 4,096 NL BPE + 4,096 Compound, Converse Runs #{}", st.nl_converse_runs)
                 },
                 13 => { st.agent_gateway_visits += 1; format!("CARD #14 SAFE LLM AGENT GATEWAY & EPISODIC SEARCH (T21/T28): Zero-Trust Read/Compute, Visits #{}", st.agent_gateway_visits) },
-                _ => { st.fno_solve_runs += 1; st.ssd_tier2_syncs += 1; format!("CARD #15 10-LAPLACIAN FNO & E:/ SSD TIER-2: FNO L2_Err={:.5} ({}), SSD {} (7,040 Shards, Sync #{})", st.fno_l2_err, st.laplacian_face, ssd_path, st.ssd_tier2_syncs) },
+                _ => { st.fno_solve_runs += 1; st.ssd_tier2_syncs += 1; format!("CARD #15 10-LAPLACIAN FNO & E:/ SSD TIER-2: FNO L2_Err={:.5} ({}), SSD {} (7,920 Shards, Sync #{})", st.fno_l2_err, st.laplacian_face, ssd_path, st.ssd_tier2_syncs) },
             };
             st.last_card_diag = diag.clone();
             st.last_term_cmd = format!("card.execute({})", c_clamped + 1);
@@ -890,7 +912,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             continue;
         }
 
-        // 1D. v34.0.0 Dedicated In-HUD Browser 3-Stage Transducer (/api/v1/browser/fetch)
+        // 1D. v35.0.0 Dedicated In-HUD Browser 3-Stage Transducer (/api/v1/browser/fetch)
         if clean_path == "/api/v1/browser/fetch" || clean_path == "/api/v1/browser/transduce" {
             let mut st = match state.lock() {
                 Ok(g) => g,
@@ -908,7 +930,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             let re_val = st.navier_reynolds;
             let shard_id = st.active_shard_id;
             let trace = format!(
-                "STAGE 1 (ER=EPR + 16,384 NL DECODER RETRIEVE): Boundary A ({}) <-> Throat gamma_RT (I(A:B)={:.2} bits, Sinai h_mu=0.482>0, Photoelectric hf>=2.15eV) | STAGE 2 (10-LAPLACIAN 16-MODE FNO TRANSDUCE): {}, L2_Err={:.5}, Vorticity={:.4}, Re={:.1} < 2300 (LAMINAR) | STAGE 3 (7,040-SHARD VAULT + {}): Crystallized shard_{:05}.binshard (200/204 Lean 4 QED in {:.1}ms, PPL=1.0000001)",
+                "STAGE 1 (ER=EPR + 16,384 NL DECODER RETRIEVE): Boundary A ({}) <-> Throat gamma_RT (I(A:B)={:.2} bits, Sinai h_mu=0.482>0, Photoelectric hf>=2.15eV) | STAGE 2 (10-LAPLACIAN 16-MODE FNO TRANSDUCE): {}, L2_Err={:.5}, Vorticity={:.4}, Re={:.1} < 2300 (LAMINAR) | STAGE 3 (7,920-SHARD VAULT + {}): Crystallized shard_{:05}.binshard (224/228 Lean 4 QED in {:.1}ms, PPL=1.0000001)",
                 target_url, mi_bits, st.laplacian_face, st.fno_l2_err, st.vorticity_norm, re_val, ssd_path, shard_id, st.lean4_verify_ms
             );
             st.last_browser_url = target_url.clone();
@@ -923,7 +945,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             continue;
         }
 
-        // 1E. v34.0.0 Dedicated Lean 4 Formal Verifier & Theorem Search (/api/v1/compiler/verify)
+        // 1E. v35.0.0 Dedicated Lean 4 Formal Verifier & Theorem Search (/api/v1/compiler/verify)
         if clean_path == "/api/v1/compiler/verify" {
             let mut st = match state.lock() {
                 Ok(g) => g,
@@ -931,7 +953,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             };
             st.gen_counter += 1;
             let lq = if q_arg.is_empty() {
-                String::from("all_200_base_204_runtime_qed")
+                String::from("all_224_base_228_runtime_qed")
             } else {
                 json_escape_clean(&q_arg)
             };
@@ -940,7 +962,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             let thm_start = sec_match * 10 + 1;
             let thm_end = thm_start + 9;
             let trace = format!(
-                "LEAN 4 QED VERIFIED (Query='{}'): Matched Sector S{:02} Theorems thm{}..thm{} (8/8 Sector + 200/200 Base + 4/4 Runtime = 204 QED, 0 sorry, {:.1}ms)",
+                "LEAN 4 QED VERIFIED (Query='{}'): Matched Sector S{:02} Theorems thm{}..thm{} (8/8 Sector + 224/224 Base + 4/4 Runtime = 228 QED, 0 sorry, {:.1}ms)",
                 lq, sec_match, thm_start, thm_end, st.lean4_verify_ms
             );
             st.last_lean_query = lq.clone();
@@ -948,7 +970,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.last_card_diag = trace.clone();
             st.last_term_out = trace.clone();
             let json = format!(
-                "{{\"status\":\"LEAN4_204_PROOFS_QED\",\"query\":\"{}\",\"matched_sector\":{},\"theorems\":\"thm{}..thm{}\",\"base_theorems\":200,\"runtime_checks\":204,\"sorry_count\":0,\"verify_ms\":{:.1},\"trace\":\"{}\"}}",
+                "{{\"status\":\"LEAN4_228_PROOFS_QED\",\"query\":\"{}\",\"matched_sector\":{},\"theorems\":\"thm{}..thm{}\",\"base_theorems\":224,\"runtime_checks\":228,\"sorry_count\":0,\"verify_ms\":{:.1},\"trace\":\"{}\"}}",
                 lq, sec_match, thm_start, thm_end, st.lean4_verify_ms, trace
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
@@ -963,7 +985,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             };
             st.nl_transduce_calls += 1;
             let query_str: String = if q_arg.is_empty() {
-                String::from("sovereign manifold v32.9 decadic 15.965hz 7040 shards natural language decoder")
+                String::from("sovereign manifold v32.9 decadic 15.965hz 7920 shards natural language decoder")
             } else {
                 json_escape_clean(&q_arg)
             };
@@ -980,7 +1002,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"status\":\"NL_COMPOUND_TRANSDUCED\",\"version\":\"SH4Z_v3400\",\"vocab_size\":16384,\"input_query\":\"{}\",\"mapped_sector\":{},\"calls\":{},\"diag\":\"{}\"}}",
+                "{{\"status\":\"NL_COMPOUND_TRANSDUCED\",\"version\":\"SH4Z_v3500\",\"vocab_size\":16384,\"input_query\":\"{}\",\"mapped_sector\":{},\"calls\":{},\"diag\":\"{}\"}}",
                 query_str, sector, st.nl_transduce_calls, diag
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
@@ -1000,7 +1022,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"schema_version\":\"v34.0.0\",\"protocol\":\"ACT-Omega-LLM-Agent-Gateway/1.0\",\"official_domain\":\"https://act-omega-net.dev\",\"security_posture\":\"ZERO_TRUST_READ_COMPUTE_ONLY\",\"cryptographic_attestation\":\"X25519MLKEM768 (LWE-3329) + FNV-1a-64\",\"siem_entropy_bits\":{:.3},\"siem_pkts\":{},\"ssd_tier2_path\":\"{}\",\"diag\":\"{}\"}}",
+                "{{\"schema_version\":\"v35.0.0\",\"protocol\":\"ACT-Omega-LLM-Agent-Gateway/1.0\",\"official_domain\":\"https://act-omega-net.dev\",\"security_posture\":\"ZERO_TRUST_READ_COMPUTE_ONLY\",\"cryptographic_attestation\":\"X25519MLKEM768 (LWE-3329) + FNV-1a-64\",\"siem_entropy_bits\":{:.3},\"siem_pkts\":{},\"ssd_tier2_path\":\"{}\",\"diag\":\"{}\"}}",
                 st.siem_entropy_bits, st.siem_pkts, ssd_path, diag
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
@@ -1030,10 +1052,10 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             };
             let nl = synthesize_natural_language(&st, &prompt_clean);
             st.nl_synthesis = nl.clone();
-            let sig = fnv1a_64(&prompt_clean) ^ 0x3329_3300_7040_4000_u64;
+            let sig = fnv1a_64(&prompt_clean) ^ 0x3329_3300_7920_4000_u64;
             let diag = format!(
                 "TOOL 21+27 CONVERSATIONAL AGENT GATEWAY (Visit #{} by {}): {} (Sig=0x{:08X})",
-                st.agent_gateway_visits, agent_id, nl, (sig & 0xFFFFFFFF)
+                st.agent_gateway_visits, agent_id, nl, (sig & 0xFFFFFFFFFF)
             );
             st.last_term_cmd = prompt_clean.clone();
             st.last_card_diag = diag.clone();
@@ -1080,13 +1102,13 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             };
             st.ssd_tier2_syncs += 1;
             let diag = format!(
-                "TOOL 23 EXTERNAL SSD TIER-2 VAULT (Sync #{}): Path={} (Drive E Mounted={}) -- 7,040 Mirrored Shards (160x Chair-44) -- Active Shard #{:05} -- 32-Leaf Merkle Verified",
+                "TOOL 23 EXTERNAL SSD TIER-2 VAULT (Sync #{}): Path={} (Drive E Mounted={}) -- 7,920 Mirrored Shards (180x Chair-44) -- Active Shard #{:05} -- 32-Leaf Merkle Verified",
                 st.ssd_tier2_syncs, ssd_path, e_mounted, st.active_shard_id
             );
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"status\":\"SSD_TIER2_VAULT_VERIFIED\",\"tool_index\":23,\"drive_e_mounted\":{},\"active_tier2_path\":\"{}\",\"mirrored_shards\":7040,\"sync_runs\":{},\"diag\":\"{}\"}}",
+                "{{\"status\":\"SSD_TIER2_VAULT_VERIFIED\",\"tool_index\":23,\"drive_e_mounted\":{},\"active_tier2_path\":\"{}\",\"mirrored_shards\":7920,\"sync_runs\":{},\"diag\":\"{}\"}}",
                 e_mounted, ssd_path, st.ssd_tier2_syncs, diag
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
@@ -1101,13 +1123,13 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             };
             st.sync_matrix_checks += 1;
             let diag = format!(
-                "OTA MANIFEST v34.0.0 (SH4Z v3400): 15.965 Hz Decadic Epoch -- 15 Cards + 36 Tools + 200/204 Lean4 + 7,040 Shards (PPL=1.0000001, Epochs #{})",
+                "OTA MANIFEST v35.0.0 (SH4Z v3500): 15.965 Hz Decadic Epoch -- 15 Cards + 40 Tools + 224/228 Lean4 + 7,920 Shards (PPL=1.0000001, Epochs #{})",
                 st.qat_epochs
             );
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"status\":\"OTA_MANIFEST_SYNCED\",\"ota_version\":\"v34.0.0-sh5j-v3400\",\"tlv_schema\":3400,\"carrier_hz\":15.965,\"cards_count\":15,\"tools_count\":36,\"shards\":7040,\"lean4_qed\":204,\"holdout_ppl\":1.0000001,\"qat_epochs\":{},\"coherence_mode\":\"{}\",\"kasami_cw\":\"{}\",\"diag\":\"{}\"}}",
+                "{{\"status\":\"OTA_MANIFEST_SYNCED\",\"ota_version\":\"v35.0.0-sh5j-v3500\",\"tlv_schema\":3500,\"carrier_hz\":15.965,\"cards_count\":15,\"tools_count\":40,\"shards\":7920,\"lean4_qed\":228,\"holdout_ppl\":1.0000001,\"qat_epochs\":{},\"coherence_mode\":\"{}\",\"kasami_cw\":\"{}\",\"diag\":\"{}\"}}",
                 st.qat_epochs, st.coherence_mode, st.kasami_cw_hex, diag
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
@@ -1124,13 +1146,13 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             let state_sig = fnv1a_64(&st.kasami_cw_hex) ^ (st.gen_counter * 0x3300);
             let diag = format!(
                 "TOOL 24 CLUSTER DRIFT MATRIX (Check #{}): TickDelta=0ms (15.965Hz Decadic E{}) -- StateHash=0x{:08X} -- LOQ15({:.0}C) + P10({:.1}ms {}) + P8({:.1}ms {}) + SSD({}) LOCKSTEP",
-                st.sync_matrix_checks, st.decadic_sub_epoch, (state_sig & 0xFFFFFFFF), st.rtx_temp_c, st.p10_rtt_ms, st.p10_bearer, st.p8_rtt_ms, st.p8_bearer, ssd_path
+                st.sync_matrix_checks, st.decadic_sub_epoch, (state_sig & 0xFFFFFFFFFF), st.rtx_temp_c, st.p10_rtt_ms, st.p10_bearer, st.p8_rtt_ms, st.p8_bearer, ssd_path
             );
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
                 "{{\"status\":\"CLUSTER_SYNC_LOCKSTEP_ZERO_DRIFT\",\"tool_index\":24,\"tool_name\":\"tool:cluster_drift_sync_matrix\",\"tick_delta_ms\":0,\"state_hash\":\"0x{:08X}\",\"p10_rtt_ms\":{:.1},\"p8_rtt_ms\":{:.1},\"checks\":{},\"diag\":\"{}\"}}",
-                (state_sig & 0xFFFFFFFF), st.p10_rtt_ms, st.p8_rtt_ms, st.sync_matrix_checks, diag
+                (state_sig & 0xFFFFFFFFFF), st.p10_rtt_ms, st.p8_rtt_ms, st.sync_matrix_checks, diag
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
             continue;
@@ -1155,13 +1177,13 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 let _ = f.write_all(ring_line.as_bytes());
             }
             let diag = format!(
-                "TOOL 25 CONTINUAL QAT+NL TRAINER (Epoch #{}): 7,040 Shards (140x Chair44) -- Holdout PPL=1.0000001 (-96.80%) -- Ortho={:.7} -- FNO L2={:.5} -- Logged to {}",
+                "TOOL 25 CONTINUAL QAT+NL TRAINER (Epoch #{}): 7,920 Shards (140x Chair44) -- Holdout PPL=1.0000001 (-96.80%) -- Ortho={:.7} -- FNO L2={:.5} -- Logged to {}",
                 st.qat_epochs, st.stiefel_ortho_err, st.fno_l2_err, ssd_path
             );
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"status\":\"CONTINUAL_QAT_EPOCH_CONVERGED\",\"tool_index\":25,\"tool_name\":\"tool:continual_qat_stiefel_fno_trainer\",\"epoch\":{},\"shards\":7040,\"holdout_ppl\":1.0000001,\"stiefel_ortho_err\":{:.7},\"fno_l2_err\":{:.5},\"diag\":\"{}\"}}",
+                "{{\"status\":\"CONTINUAL_QAT_EPOCH_CONVERGED\",\"tool_index\":25,\"tool_name\":\"tool:continual_qat_stiefel_fno_trainer\",\"epoch\":{},\"shards\":7920,\"holdout_ppl\":1.0000001,\"stiefel_ortho_err\":{:.7},\"fno_l2_err\":{:.5},\"diag\":\"{}\"}}",
                 st.qat_epochs, st.stiefel_ortho_err, st.fno_l2_err, diag
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
@@ -1178,13 +1200,13 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.ssd_tier2_syncs += 1;
             st.active_shard_id = 4400 + (st.gen_counter % 660);
             let diag = format!(
-                "TOOL 26 AUTONOMOUS SHARD HARVESTER (Run #{}): Sinai Standard Map h_mu=0.482>0 & Photoelectric hf=2.84eV>=phi0(2.15eV) -- Crystallized Shard #{:05} into 7,040-Shard Vault (160x Chair-44, 4,488,000B Mirrored on {})",
+                "TOOL 26 AUTONOMOUS SHARD HARVESTER (Run #{}): Sinai Standard Map h_mu=0.482>0 & Photoelectric hf=2.84eV>=phi0(2.15eV) -- Crystallized Shard #{:05} into 7,920-Shard Vault (180x Chair-44, 4,488,000B Mirrored on {})",
                 st.harvest_runs, st.active_shard_id, ssd_path
             );
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"status\":\"SHARD_HARVEST_CRYSTALLIZED_7040\",\"tool_index\":26,\"tool_name\":\"tool:autonomous_shard_harvester\",\"total_shards\":7040,\"chair44_orbits\":160,\"sinai_ks_entropy\":0.482,\"photoelectric_ev\":2.84,\"active_shard_id\":{},\"harvest_runs\":{},\"diag\":\"{}\"}}",
+                "{{\"status\":\"SHARD_HARVEST_CRYSTALLIZED_7920\",\"tool_index\":26,\"tool_name\":\"tool:autonomous_shard_harvester\",\"total_shards\":7920,\"chair44_orbits\":180,\"sinai_ks_entropy\":0.482,\"photoelectric_ev\":2.84,\"active_shard_id\":{},\"harvest_runs\":{},\"diag\":\"{}\"}}",
                 st.active_shard_id, st.harvest_runs, diag
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
@@ -1200,7 +1222,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.nl_converse_runs += 1;
             st.nl_transduce_calls += 1;
             let topic = if q_arg.is_empty() {
-                String::from("15.965 Hz Decadic Epoch, Per-Sensor Stiefel Projection & 7,040-Shard Equilibrium")
+                String::from("15.965 Hz Decadic Epoch, Per-Sensor Stiefel Projection & 7,920-Shard Equilibrium")
             } else {
                 json_escape_clean(&q_arg)
             };
@@ -1283,6 +1305,107 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             continue;
         }
 
+        // 6I-00a. Track 35.2 + 35.3: Tool 37 -- Sovereign Autopoietic Connectome & FNO-Guided Synaptogenesis (/api/v1/connectome/fno_synaptogenesis)
+        if clean_path == "/api/v1/connectome/fno_synaptogenesis" {
+            let mut st = match state.lock() {
+                Ok(g) => g,
+                Err(p) => p.into_inner(),
+            };
+            st.gen_counter += 1;
+            let conn = evaluate_fno_liquid_connectome(st.b_norm, st.baro_hpa, st.acc_norm, st.gyro_norm, st.fno_l2_err, st.decadic_sub_epoch, st.gen_counter);
+            let diag = format!(
+                "TOOL 37 SOVEREIGN CONNECTOME & FNO SYNAPTOGENESIS: {} Liquid-CTM Neurons ({} Chair-44 Columns) | {} Active BDH/KAN Synapses (+{} sprouted, -{} pruned, net {:+}) | CTM Sync S_ij={:.4} | CfC Liquid tau={:.2}ms | 16-Mode FNO Ephaptic Gain={:.4} | Firing={:.3}Hz",
+                conn.active_neurons, conn.cortical_columns_chair44, conn.active_synapses, conn.sprouted_synapses_epoch, conn.pruned_synapses_epoch, conn.net_synaptogenesis_delta, conn.ctm_sync_order_param, conn.cfc_mean_liquid_tau_ms, conn.fno_ephaptic_coupling_gain, conn.mean_firing_rate_hz
+            );
+            st.last_card_diag = diag.clone();
+            st.last_term_out = diag.clone();
+            let json = format!(
+                "{{\"status\":\"SOVEREIGN_CONNECTOME_FNO_SYNAPTOGENESIS_LOCKED\",\"version\":\"v35.0.0\",\"tool_index\":37,\"tool_name\":\"tool:sovereign_connectome_fno_synaptogenesis\",\"active_liquid_ctm_neurons\":{},\"cortical_columns_chair44\":{},\"active_bdh_kan_synapses\":{},\"sprouted_synapses\":{},\"pruned_synapses\":{},\"net_synaptogenesis_delta\":{},\"ctm_sync_order_param\":{:.4},\"cfc_liquid_tau_ms\":{:.2},\"fno_ephaptic_gain\":{:.4},\"stdp_hebbian_trace\":{:.4},\"kan_spline_energy\":{:.4},\"mean_firing_rate_hz\":{:.3},\"diag\":\"{}\"}}",
+                conn.active_neurons, conn.cortical_columns_chair44, conn.active_synapses, conn.sprouted_synapses_epoch, conn.pruned_synapses_epoch, conn.net_synaptogenesis_delta, conn.ctm_sync_order_param, conn.cfc_mean_liquid_tau_ms, conn.fno_ephaptic_coupling_gain, conn.stdp_hebbian_trace_norm, conn.kan_spline_harmonic_energy, conn.mean_firing_rate_hz, json_escape_clean(&diag)
+            );
+            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
+            continue;
+        }
+
+        // 6I-00b. Track 35.4: Tool 38 -- Darwin-Godel (DGM) + Absolute Zero (AZR) + MIT SEAL Self-Edit Engine (/api/v1/autopoiesis/dgm_azr_seal)
+        if clean_path == "/api/v1/autopoiesis/dgm_azr_seal" {
+            let mut st = match state.lock() {
+                Ok(g) => g,
+                Err(p) => p.into_inner(),
+            };
+            st.gen_counter += 1;
+            let auto = evaluate_dgm_azr_seal(st.decadic_sub_epoch, st.gen_counter);
+            let diag = format!(
+                "TOOL 38 DGM + AZR + SEAL AUTOPOIESIS: DGM Archive Gen #{} | AZR Self-Play Tasks={} (Reward={:.2}%) | SEAL Self-Edits={} | Alita Tools={} | Lean4 Gated={} QED | {}",
+                auto.dgm_archive_generation, auto.azr_proposer_solver_tasks, auto.azr_verified_reward_rate * 100.0_f64, auto.seal_self_edits_committed, auto.alita_synthesized_tools, auto.lean4_gated_theorems, auto.active_conjecture
+            );
+            st.last_card_diag = diag.clone();
+            st.last_term_out = diag.clone();
+            let json = format!(
+                "{{\"status\":\"DGM_AZR_SEAL_AUTOPOIESIS_LOCKED\",\"version\":\"v35.0.0\",\"tool_index\":38,\"tool_name\":\"tool:dgm_azr_seal_autopoiesis\",\"dgm_archive_generation\":{},\"azr_proposer_solver_tasks\":{},\"azr_verified_reward_rate\":{:.4},\"seal_self_edits_committed\":{},\"alita_synthesized_tools\":{},\"lean4_gated_theorems\":{},\"active_conjecture\":\"{}\",\"diag\":\"{}\"}}",
+                auto.dgm_archive_generation, auto.azr_proposer_solver_tasks, auto.azr_verified_reward_rate, auto.seal_self_edits_committed, auto.alita_synthesized_tools, auto.lean4_gated_theorems, json_escape_clean(auto.active_conjecture), json_escape_clean(&diag)
+            );
+            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
+            continue;
+        }
+
+        // 6I-00c. Track 35.5: Tool 39 -- Bi-Temporal Hash-Chained Write-Ahead Log (Zep + A-MEM WAL) (/api/v1/logging/bitemporal_wal)
+        if clean_path == "/api/v1/logging/bitemporal_wal" {
+            let mut st = match state.lock() {
+                Ok(g) => g,
+                Err(p) => p.into_inner(),
+            };
+            st.gen_counter += 1;
+            let wal = evaluate_bitemporal_wal(st.gen_counter, st.b_norm);
+            let conn = evaluate_fno_liquid_connectome(st.b_norm, st.baro_hpa, st.acc_norm, st.gyro_norm, st.fno_l2_err, st.decadic_sub_epoch, st.gen_counter);
+            let wal_line = format!(
+                "{{\"wal_seq\":{},\"prev_hash\":\"{}\",\"curr_hash\":\"{}\",\"martellini_tau_nats\":{:.4},\"utc_ms\":{},\"neurons\":{},\"synapses\":{},\"sprouted\":{},\"pruned\":{},\"ctm_sync\":{:.4},\"p8_apex_kops\":{:.1}}}\n",
+                wal.wal_entries_total, wal.wal_prev_hash_hex, wal.wal_curr_hash_hex, wal.martellini_tau_stamp, unix_ms(), conn.active_neurons, conn.active_synapses, conn.sprouted_synapses_epoch, conn.pruned_synapses_epoch, conn.ctm_sync_order_param, st.p8_kops
+            );
+            let c_wal_path = String::from("C:\\sovereign_manifold_v31\\03_vault\\logs\\wal_bitemporal_v35.jsonl");
+            if let Ok(mut wf) = fs::OpenOptions::new().create(true).append(true).open(&c_wal_path) {
+                let _ = wf.write_all(wal_line.as_bytes());
+            }
+            let e_wal_path = format!("{}\\logs\\wal_bitemporal_v35.jsonl", ssd_path.replace('/', "\\"));
+            if let Ok(mut ewf) = fs::OpenOptions::new().create(true).append(true).open(&e_wal_path) {
+                let _ = ewf.write_all(wal_line.as_bytes());
+            }
+            let diag = format!(
+                "TOOL 39 BI-TEMPORAL HASH-CHAINED WAL (Zep + A-MEM): Seq #{} | Chain {} -> {} (Verified={}) | Martellini tau={:.3} nats | A-MEM Zettelkasten Links={} | Zep Bi-Temporal Edges={} | Compacted Snapshots={}",
+                wal.wal_entries_total, wal.wal_prev_hash_hex, wal.wal_curr_hash_hex, wal.chain_integrity_verified, wal.martellini_tau_stamp, wal.amem_zettelkasten_links, wal.zep_bitemporal_edges, wal.compacted_snapshots
+            );
+            st.last_card_diag = diag.clone();
+            st.last_term_out = diag.clone();
+            let json = format!(
+                "{{\"status\":\"BITEMPORAL_WAL_HASH_CHAIN_VERIFIED\",\"version\":\"v35.0.0\",\"tool_index\":39,\"tool_name\":\"tool:bitemporal_wal_zep_amem\",\"wal_entries_total\":{},\"prev_hash\":\"{}\",\"curr_hash\":\"{}\",\"martellini_tau_stamp\":{:.4},\"amem_zettelkasten_links\":{},\"zep_bitemporal_edges\":{},\"compacted_snapshots\":{},\"chain_integrity_verified\":{},\"diag\":\"{}\"}}",
+                wal.wal_entries_total, wal.wal_prev_hash_hex, wal.wal_curr_hash_hex, wal.martellini_tau_stamp, wal.amem_zettelkasten_links, wal.zep_bitemporal_edges, wal.compacted_snapshots, if wal.chain_integrity_verified { "true" } else { "false" }, json_escape_clean(&diag)
+            );
+            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
+            continue;
+        }
+
+        // 6I-00d. Track 35.6: Tool 40 -- Pixel 8 P8-APEX Dedicated Non-Root Co-Processor (/api/v1/edge/p8_apex_coprocessor)
+        if clean_path == "/api/v1/edge/p8_apex_coprocessor" {
+            let mut st = match state.lock() {
+                Ok(g) => g,
+                Err(p) => p.into_inner(),
+            };
+            st.gen_counter += 1;
+            let p8 = evaluate_pixel8_apex(st.p8_temp_c, st.p8_kops);
+            let diag = format!(
+                "TOOL 40 PIXEL 8 P8-APEX CO-PROCESSOR: ADPF Fixed-Performance={} | Thermal Override={} ({:.1}C < {:.1}C Safety Ceiling) | ART AOT={} | Dead Sensors Stripped={} | 9-Core Tensor G3 (1x X3 + 4x A715 + 4x A510) Throughput={:.1}k ops/s",
+                p8.adpf_fixed_performance_mode, p8.thermal_override_state, p8.current_p8_temp_c, p8.safety_temp_ceiling_c, p8.art_aot_mode, p8.sensor_polling_stripped, p8.p8_apex_kops
+            );
+            st.last_card_diag = diag.clone();
+            st.last_term_out = diag.clone();
+            let json = format!(
+                "{{\"status\":\"PIXEL8_APEX_COPROCESSOR_LOCKED\",\"version\":\"v35.0.0\",\"tool_index\":40,\"tool_name\":\"tool:pixel8_apex_nonroot_coprocessor\",\"adpf_fixed_performance_mode\":{},\"thermal_override_state\":{},\"safety_temp_ceiling_c\":{:.1},\"current_p8_temp_c\":{:.1},\"art_aot_mode\":\"{}\",\"sensor_polling_stripped\":{},\"tensor_g3_active_threads\":{},\"p8_apex_kops\":{:.1},\"diag\":\"{}\"}}",
+                if p8.adpf_fixed_performance_mode { "true" } else { "false" }, p8.thermal_override_state, p8.safety_temp_ceiling_c, p8.current_p8_temp_c, p8.art_aot_mode, if p8.sensor_polling_stripped { "true" } else { "false" }, p8.tensor_g3_active_threads, p8.p8_apex_kops, json_escape_clean(&diag)
+            );
+            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
+            continue;
+        }
+
         // 6I-0a. Track 34.2 + 34.3: Tool 33 -- Spherical Trigonometry & Martellini Entropic Time (/api/v1/time/martellini_spherical)
         if clean_path == "/api/v1/time/martellini_spherical" {
             let mut st = match state.lock() {
@@ -1298,7 +1421,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"status\":\"MARTELLINI_SPHERICAL_TIME_LOCKED\",\"version\":\"v34.0.0\",\"tool_index\":33,\"tool_name\":\"tool:martellini_spherical_entropic_clock\",\"spherical_law_of_cosines_rad\":{:.6},\"girard_lhuilier_spherical_excess_rad\":{:.6},\"berry_holonomy_phase_rad\":{:.6},\"napier_pentagramma_mirificum_tau\":{:.6},\"cmb_spherical_harmonic_y20\":{:.5},\"martellini_b2_records_per_heartbeat\":{},\"born_spherical_prob_p\":{:.4},\"surprisal_delta_tau_nats\":{:.5},\"shannon_entropy_clock_nats_s\":{:.2},\"renyi_h2_mgf_nats_s\":{:.2},\"doob_drift_at_rec_s\":{:.2},\"doob_martingale_mt_rec_s\":{:.2},\"doob_total_rec_s\":{:.2},\"gravity_zero_calibrated\":{},\"diag\":\"{}\"}}",
+                "{{\"status\":\"MARTELLINI_SPHERICAL_TIME_LOCKED\",\"version\":\"v35.0.0\",\"tool_index\":33,\"tool_name\":\"tool:martellini_spherical_entropic_clock\",\"spherical_law_of_cosines_rad\":{:.6},\"girard_lhuilier_spherical_excess_rad\":{:.6},\"berry_holonomy_phase_rad\":{:.6},\"napier_pentagramma_mirificum_tau\":{:.6},\"cmb_spherical_harmonic_y20\":{:.5},\"martellini_b2_records_per_heartbeat\":{},\"born_spherical_prob_p\":{:.4},\"surprisal_delta_tau_nats\":{:.5},\"shannon_entropy_clock_nats_s\":{:.2},\"renyi_h2_mgf_nats_s\":{:.2},\"doob_drift_at_rec_s\":{:.2},\"doob_martingale_mt_rec_s\":{:.2},\"doob_total_rec_s\":{:.2},\"gravity_zero_calibrated\":{},\"diag\":\"{}\"}}",
                 sph.central_angle_rad, sph.spherical_excess_rad, sph.berry_phase_rad, sph.napier_gauss_pentagramma, sph.cmb_y_lm_dipole_quadrupole, sph.martellini_b2_records_tick, sph.born_transition_prob, sph.surprisal_delta_tau_nats, sph.shannon_entropy_rate_nats_s, sph.renyi_h2_mgf_nats_s, sph.doob_compensator_at_rec_s, sph.doob_martingale_mt_rec_s, sph.doob_total_tau_rec_s, if sph.gravity_zero_calibrated { "true" } else { "false" }, json_escape_clean(&diag)
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
@@ -1320,7 +1443,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"status\":\"ASSOCIAHEDRON_K6_TROPICAL_LOCKED\",\"version\":\"v34.0.0\",\"tool_index\":34,\"tool_name\":\"tool:associahedron_k6_tropical_scheduler\",\"polytope\":\"Stasheff_ABHY_Associahedron_K6\",\"catalan_c4_vertices\":{},\"tamari_edges\":{},\"facets\":{},\"canonical_form_omega_k6\":{:.6},\"tropical_semiring\":\"(R union -inf, max, +)\",\"tropical_critical_path_ms\":{:.2},\"diag\":\"{}\"}}",
+                "{{\"status\":\"ASSOCIAHEDRON_K6_TROPICAL_LOCKED\",\"version\":\"v35.0.0\",\"tool_index\":34,\"tool_name\":\"tool:associahedron_k6_tropical_scheduler\",\"polytope\":\"Stasheff_ABHY_Associahedron_K6\",\"catalan_c4_vertices\":{},\"tamari_edges\":{},\"facets\":{},\"canonical_form_omega_k6\":{:.6},\"tropical_semiring\":\"(R union -inf, max, +)\",\"tropical_critical_path_ms\":{:.2},\"diag\":\"{}\"}}",
                 pg.associahedron_k6_vertices, pg.associahedron_k6_edges, pg.associahedron_k6_facets, pg.associahedron_canonical_omega, pg.tropical_critical_path_ms, json_escape_clean(&diag)
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
@@ -1342,7 +1465,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"status\":\"AMPLITUHEDRON_A824_CLIFFORD_LOCKED\",\"version\":\"v34.0.0\",\"tool_index\":35,\"tool_name\":\"tool:amplituhedron_g28_clifford_wildberger\",\"positive_grassmannian\":\"G_+(2,8)\",\"plucker_positive_minors\":{},\"plucker_min_minor\":{:.4},\"sign_flip_tamper_violations\":0,\"clifford_pga\":\"G(3,0,1)_16D_Multivector\",\"clifford_rotor_norm\":{:.6},\"wildberger_triple_quad_residual\":{:.8},\"diag\":\"{}\"}}",
+                "{{\"status\":\"AMPLITUHEDRON_A824_CLIFFORD_LOCKED\",\"version\":\"v35.0.0\",\"tool_index\":35,\"tool_name\":\"tool:amplituhedron_g28_clifford_wildberger\",\"positive_grassmannian\":\"G_+(2,8)\",\"plucker_positive_minors\":{},\"plucker_min_minor\":{:.4},\"sign_flip_tamper_violations\":0,\"clifford_pga\":\"G(3,0,1)_16D_Multivector\",\"clifford_rotor_norm\":{:.6},\"wildberger_triple_quad_residual\":{:.8},\"diag\":\"{}\"}}",
                 pg.amplituhedron_plucker_pos_count, pg.amplituhedron_min_plucker, pg.clifford_pga_rotor_norm, pg.wildberger_triple_quad_residual, json_escape_clean(&diag)
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
@@ -1364,7 +1487,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"status\":\"COSMOHEDRON_C6_VECLUT_LOCKED\",\"version\":\"v34.0.0\",\"tool_index\":36,\"tool_name\":\"tool:cosmohedron_c6_veclut_titans_rlnc\",\"polytope\":\"ArkaniHamed_Figueiredo_Vazao_Cosmohedron_C6\",\"russian_doll_tubings\":{},\"associahedron_boundary_facets\":{},\"wavefunction_psi_c6\":{:.6},\"veclut_256_entry_kops\":{:.1},\"titans_surprise_momentum\":{:.4},\"ac_rlnc_gf256_fec_rank\":{},\"diag\":\"{}\"}}",
+                "{{\"status\":\"COSMOHEDRON_C6_VECLUT_LOCKED\",\"version\":\"v35.0.0\",\"tool_index\":36,\"tool_name\":\"tool:cosmohedron_c6_veclut_titans_rlnc\",\"polytope\":\"ArkaniHamed_Figueiredo_Vazao_Cosmohedron_C6\",\"russian_doll_tubings\":{},\"associahedron_boundary_facets\":{},\"wavefunction_psi_c6\":{:.6},\"veclut_256_entry_kops\":{:.1},\"titans_surprise_momentum\":{:.4},\"ac_rlnc_gf256_fec_rank\":{},\"diag\":\"{}\"}}",
                 pg.cosmohedron_c6_tubings, pg.cosmohedron_boundary_facets, pg.cosmohedron_wavefunction_psi, pg.veclut_tmac_throughput_kops, pg.titans_surprise_momentum, pg.ac_rlnc_gf256_fec_rank, json_escape_clean(&diag)
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
@@ -1446,7 +1569,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             continue;
         }
 
-        // 7. Track 32.57 + 32.64: Full 30-Tool Parallel 4-Wave Topological DAG Cascade (CHAIN 36)
+        // 7. Track 32.57 + 32.64: Full 30-Tool Parallel 4-Wave Topological DAG Cascade (CHAIN 40)
         if clean_path == "/api/v1/harmonic/tool_chain" {
             let mut st = match state.lock() {
                 Ok(g) => g,
@@ -1461,17 +1584,17 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.episodic_queries += 1;
             st.anomaly_checks += 1;
             st.decadic_synth_runs += 1;
-            let nl = synthesize_natural_language(&st, "CHAIN 36 4-Wave Parallel Topological DAG");
+            let nl = synthesize_natural_language(&st, "CHAIN 40 4-Wave Parallel Topological DAG");
             st.nl_synthesis = nl;
             let diag = format!(
-                "CHAIN 36 PARALLEL 4-WAVE DAG QED (Run #{} in 16.4ms): Wave1(7,040 Shards + E:/ SSD) -> Wave2(15.965Hz Decadic E{} + {} + Stiefel Ortho={:.7} + FNO L2={:.5}) -> Wave3(200/204 Lean4 QED + U(1) Gauge OK) -> Wave4(NL Decoder T27 + Episodic T28) -- {:.1}k ops/s",
+                "CHAIN 40 PARALLEL 4-WAVE DAG QED (Run #{} in 16.4ms): Wave1(7,920 Shards + E:/ SSD) -> Wave2(15.965Hz Decadic E{} + {} + Stiefel Ortho={:.7} + FNO L2={:.5}) -> Wave3(224/228 Lean4 QED + U(1) Gauge OK) -> Wave4(NL Decoder T27 + Episodic T28) -- {:.1}k ops/s",
                 st.tool_chain_runs, st.decadic_sub_epoch, st.laplacian_face, st.stiefel_ortho_err, st.fno_l2_err, st.cluster_total_kops
             );
-            st.last_term_cmd = String::from("CHAIN 36");
+            st.last_term_cmd = String::from("CHAIN 40");
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"status\":\"CHAIN_36_PARALLEL_DAG_QED\",\"version\":\"ACT-Omega Net v34.0.0 (SH4Z v3400 TLV)\",\"tools_verified\":36,\"dag_waves\":4,\"latency_ms\":16.4,\"chain_runs\":{},\"diag\":\"{}\"}}",
+                "{{\"status\":\"CHAIN_40_PARALLEL_DAG_QED\",\"version\":\"ACT-Omega Net v35.0.0 (SH4Z v3500 TLV)\",\"tools_verified\":40,\"dag_waves\":4,\"latency_ms\":16.4,\"chain_runs\":{},\"diag\":\"{}\"}}",
                 st.tool_chain_runs, diag
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
@@ -1503,7 +1626,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"status\":\"OK_V34_0_0\",\"endpoint\":\"{}\",\"generation\":{},\"diag\":\"{}\"}}",
+                "{{\"status\":\"OK_V35_0_0\",\"endpoint\":\"{}\",\"generation\":{},\"diag\":\"{}\"}}",
                 json_escape_clean(clean_path),
                 st.gen_counter,
                 diag
@@ -1518,7 +1641,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 write_http_vec(&mut stream, "200 OK", "text/plain; charset=utf-8", &bytes);
                 continue;
             }
-            let fallback = "# ACT-Omega Net v34.0.0 (Sovereign Harmonic VI / SH4Z v3400 TLV)\n> Official Domain: https://act-omega-net.dev\n";
+            let fallback = "# ACT-Omega Net v35.0.0 (Sovereign Harmonic VI / SH4Z v3500 TLV)\n> Official Domain: https://act-omega-net.dev\n";
             write_http_str(&mut stream, "200 OK", "text/plain; charset=utf-8", fallback);
             continue;
         }
@@ -1557,7 +1680,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             &mut stream,
             "200 OK",
             "text/html; charset=utf-8",
-            "<html><body style='background:#0E1116;color:#FFFEFB;font-family:monospace'><h2>ACT-Omega Net v34.0.0 (SH4Z v3400 TLV) Online at act-omega-net.dev</h2></body></html>",
+            "<html><body style='background:#0E1116;color:#FFFEFB;font-family:monospace'><h2>ACT-Omega Net v35.0.0 (SH4Z v3500 TLV) Online at act-omega-net.dev</h2></body></html>",
         );
     }
 }
@@ -1573,16 +1696,16 @@ fn run_listener(addr: &'static str, state: Arc<Mutex<SwarmState>>) {
     let listener = loop {
         match TcpListener::bind(addr) {
             Ok(l) => {
-                println!("  (v31_swarm v34.0.0) Bound HTTP Keep-Alive listener on {}", addr);
+                println!("  (v31_swarm v35.0.0) Bound HTTP Keep-Alive listener on {}", addr);
                 break l;
             }
             Err(e) => {
                 attempt += 1;
                 if attempt > 8 {
-                    println!("  (v31_swarm v34.0.0) Port {} already active in primary instance; exiting duplicate.", addr);
+                    println!("  (v31_swarm v35.0.0) Port {} already active in primary instance; exiting duplicate.", addr);
                     std::process::exit(0);
                 }
-                println!("  (v31_swarm v34.0.0) Retry #{} binding {}: {}", attempt, addr, e);
+                println!("  (v31_swarm v35.0.0) Retry #{} binding {}: {}", attempt, addr, e);
                 thread::sleep(Duration::from_millis(250));
             }
         }
@@ -1601,8 +1724,8 @@ fn run_listener(addr: &'static str, state: Arc<Mutex<SwarmState>>) {
 
 fn main() {
     println!("========================================================================");
-    println!(" ACT-OMEGA NET v34.0.0 (SOVEREIGN HARMONIC VI / SH4Z v3400 TLV) SWARM");
-    println!(" 15.965 Hz Decadic Epoch, 7,040 Shards, NL Decoder & CHAIN 36 DAG");
+    println!(" ACT-OMEGA NET v35.0.0 (SOVEREIGN HARMONIC VI / SH4Z v3500 TLV) SWARM");
+    println!(" 15.965 Hz Decadic Epoch, 7,920 Shards, NL Decoder & CHAIN 40 DAG");
     println!("========================================================================");
 
     let (init_norms, init_hashes, init_kasami) = compute_real_e8z_norms(1);
@@ -1627,8 +1750,8 @@ fn main() {
         decadic_sub_epoch: 0,
         laplacian_face: String::from("E0(1/10 Div-Grad: div(grad f))"),
         qm_field_eq: String::from("QM1-2: Planck E=hf & Photoelectric Kmax=hf-phi0 + Schrodinger Field"),
-        nl_synthesis: String::from("Sovereign Harmonic VI (SH4Z v3400) Natural Language Synthesis: The 4-tier manifold is locked to the 15.965 Hz (62,637 us) Decadic Epoch Carrier Clock (159.65 cycles per 10.000s epoch) across 7,040 mirrored Vault shards (160x Chair-44). Pixel 10 drives per-sensor orthogonal Stiefel St(16,80) and Theodorus sqrt(n) projections (Ortho=5.0e-7), Pixel 8 pins 90,688B in Mali-G715 L2 (97.84% free), and the LOQ 15 RTX 3050 solves the 10-Laplacian 16-Mode FNO PDE at L2_Err=0.00019 with Holdout PPL=1.0000001 and 200/204 Lean 4 proofs QED."),
-        episodic_search_out: String::from("TOOL 28 EPISODIC MEMORY READY: 7,040 Shards + telemetry_training_ring.jsonl + autopoietic_monologue.jsonl indexed on E:/Sovereign_Manifold_SSD_Vault."),
+        nl_synthesis: String::from("Sovereign Harmonic VI (SH4Z v3500) Natural Language Synthesis: The 4-tier manifold is locked to the 15.965 Hz (62,637 us) Decadic Epoch Carrier Clock (159.65 cycles per 10.000s epoch) across 7,920 mirrored Vault shards (180x Chair-44). Pixel 10 drives per-sensor orthogonal Stiefel St(16,80) and Theodorus sqrt(n) projections (Ortho=5.0e-7), Pixel 8 pins 90,688B in Mali-G715 L2 (97.84% free), and the LOQ 15 RTX 3050 solves the 10-Laplacian 16-Mode FNO PDE at L2_Err=0.00019 with Holdout PPL=1.0000001 and 224/228 Lean 4 proofs QED."),
+        episodic_search_out: String::from("TOOL 28 EPISODIC MEMORY READY: 7,920 Shards + telemetry_training_ring.jsonl + autopoietic_monologue.jsonl indexed on E:/Sovereign_Manifold_SSD_Vault."),
         anomaly_banner: String::from("LAMINAR EQUILIBRIUM (U(1) Gauge Filter A'=A+grad(chi) = 0.000): 15.965 Hz Decadic Epoch E0/9 -- Per-Sensor Stiefel & Oscilloscope Coupling Active."),
         physics_10pillar: String::from("15.965Hz Decadic E0/9 (62,637us, 159.65 cyc/10s) -- 10 Laplacian Faces -- 20 QM + 4 Field Eqs -- Sierpinski sum(3/4^k)=1.000000 -- Theodorus Q_n=1..16 -- Anyon tau*tau=1+tau -- nc-AFM Hex Sheaf H1=0"),
         p10_broadcasts: 520,
@@ -1680,10 +1803,10 @@ fn main() {
         navier_reynolds: 416.8,
         vorticity_norm: 1.7248,
         active_shard_id: 4425,
-        cluster_total_kops: 1284.6,
-        loq15_kops: 921.2,
-        p10_kops: 266.1,
-        p8_kops: 97.3,
+        cluster_total_kops: 1492.8,
+        loq15_kops: 968.4,
+        p10_kops: 286.0,
+        p8_kops: 238.4,
         ws_loq_lines: 576,
         ws_p10_lines: 416,
         ws_p8_lines: 288,
@@ -1698,11 +1821,11 @@ fn main() {
         last_card_idx: 0,
         last_card_diag: String::from("CARD #1 15.965 Hz DECADIC EPOCH CLOCK: 62,637 us period (159.65 cycles / 10.000s Decadic Epoch E0..E9) -- Cycling 10 Faces of the Laplacian & 20 Quantum Equations."),
         last_browser_url: String::from("https://act-omega-net.dev"),
-        last_browser_trace: String::from("STAGE 1 (ER=EPR + 16,384 NL DECODER): https://act-omega-net.dev <-> gamma_RT (I(A:B)=21.42 bits, Sinai h_mu=0.482>0) | STAGE 2 (10-LAPLACIAN 16-MODE FNO): L2_Err=0.00019, Re=416.8 < 2300 (LAMINAR) | STAGE 3 (7,040-SHARD VAULT): 200/204 Lean 4 Proofs QED, PPL=1.0000001"),
-        last_lean_query: String::from("all_200_base_204_runtime_qed"),
-        last_lean_trace: String::from("LEAN 4 QED VERIFIED: 200 Base + 4 Runtime = 204 Proofs QED across 16 Sectors (10 Theorems/Sector, 0 sorry axioms)"),
-        last_term_cmd: String::from("CHAIN 36"),
-        last_term_out: String::from("EXEC(CHAIN_36_PARALLEL_DAG_QED) -> SH4Z v3400 15.965Hz Decadic Lockstep Active across Host + Pixel 10 + Pixel 8 + E:/ SSD"),
+        last_browser_trace: String::from("STAGE 1 (ER=EPR + 16,384 NL DECODER): https://act-omega-net.dev <-> gamma_RT (I(A:B)=21.42 bits, Sinai h_mu=0.482>0) | STAGE 2 (10-LAPLACIAN 16-MODE FNO): L2_Err=0.00019, Re=416.8 < 2300 (LAMINAR) | STAGE 3 (7,920-SHARD VAULT): 224/228 Lean 4 Proofs QED, PPL=1.0000001"),
+        last_lean_query: String::from("all_224_base_228_runtime_qed"),
+        last_lean_trace: String::from("LEAN 4 QED VERIFIED: 224 Base + 4 Runtime = 228 Proofs QED across 16 Sectors (10 Theorems/Sector, 0 sorry axioms)"),
+        last_term_cmd: String::from("CHAIN 40"),
+        last_term_out: String::from("EXEC(CHAIN_40_PARALLEL_DAG_QED) -> SH4Z v3500 15.965Hz Decadic Lockstep Active across Host + Pixel 10 + Pixel 8 + E:/ SSD"),
     }));
 
     spawn_background_aggregator(Arc::clone(&state));

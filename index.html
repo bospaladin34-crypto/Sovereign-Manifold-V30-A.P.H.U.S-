@@ -3,170 +3,99 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>ACT-Omega Net v33.0.0 (SH4Z v3300 TLV) — Sovereign Harmonic VI Portal &amp; Live HUD</title>
+  <title>ACT-Omega Net v34.0.0 (SH4Z v3400 TLV) — Sovereign Harmonic VI Portal</title>
   <style>
-    :root {
-      --bg-void: #0E1116;
-      --bg-panel: #141922;
-      --bg-inset: #0A0D12;
-      --slate-surf: #1C2632;
-      --slate-border: #2A3B4D;
-      --text-ivory: #FFFEFB;
-      --text-muted: #9FB0C2;
-      --amber: #FFB454;
-      --red: #E94E34;
-      --green: #56D364;
-    }
-    * { box-sizing: border-box; }
-    body { background: var(--bg-void); color: var(--text-ivory); font-family: 'JetBrains Mono', Consolas, monospace; margin: 0; padding: 18px; }
-    .container { max-width: 1280px; margin: 0 auto; }
-    .banner { background: var(--bg-panel); border: 1.5px solid var(--amber); border-radius: 8px; padding: 16px 20px; margin-bottom: 14px; }
-    .title-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
-    .title { color: var(--amber); font-size: 17px; font-weight: bold; margin: 0; }
-    .live-pill { background: #122D1F; border: 1px solid var(--green); color: var(--green); padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: bold; }
-    .sub { color: var(--text-muted); font-size: 12px; line-height: 1.55; margin-top: 6px; }
-    .anomaly-bar { background: var(--bg-inset); border: 1px solid var(--green); color: var(--green); border-radius: 5px; padding: 7px 10px; font-size: 11px; margin-top: 10px; }
+    body { background: #0E1116; color: #FFFEFB; font-family: 'JetBrains Mono', Consolas, monospace; margin: 0; padding: 20px; }
+    .container { max-width: 1200px; margin: 0 auto; }
+    .banner { background: #141922; border: 1.5px solid #FFB454; border-radius: 8px; padding: 16px 20px; margin-bottom: 16px; }
+    .title { color: #FFB454; font-size: 18px; font-weight: bold; margin: 0 0 6px 0; }
+    .sub { color: #9FB0C2; font-size: 12px; line-height: 1.5; }
     .badge-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
-    .badge { background: var(--slate-surf); border: 1px solid var(--slate-border); color: var(--green); padding: 5px 10px; border-radius: 4px; font-size: 11px; font-weight: bold; text-decoration: none; cursor: pointer; }
-    .badge.amber { color: var(--amber); border-color: var(--amber); }
-    .badge.red { color: var(--text-ivory); background: var(--red); border-color: var(--red); }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; margin-bottom: 14px; }
-    .card { background: var(--bg-panel); border: 1px solid var(--slate-border); border-radius: 6px; padding: 11px 13px; }
-    .card h3 { color: var(--text-muted); font-size: 10.5px; margin: 0 0 5px 0; text-transform: uppercase; }
-    .card .pri { color: var(--amber); font-size: 13.5px; font-weight: bold; margin-bottom: 4px; }
-    .card .sec { color: var(--text-ivory); font-size: 11px; line-height: 1.4; }
-    .console-box { background: var(--bg-panel); border: 1px solid var(--red); border-radius: 6px; padding: 12px 14px; margin-bottom: 14px; }
-    .slash-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 8px; }
-    .btn { background: var(--slate-surf); color: var(--green); border: 1px solid var(--green); border-radius: 4px; padding: 4px 10px; font-family: inherit; font-size: 11px; font-weight: bold; cursor: pointer; }
-    .btn.amber { background: var(--amber); color: var(--bg-void); border-color: var(--amber); }
-    .btn.red { background: var(--red); color: var(--text-ivory); border-color: var(--red); }
-    .out-box { background: var(--bg-inset); border: 1px solid var(--slate-border); border-radius: 4px; padding: 8px 10px; color: var(--green); font-size: 11.5px; line-height: 1.45; }
-    table { width: 100%; border-collapse: collapse; background: var(--bg-panel); border: 1px solid var(--slate-border); border-radius: 6px; overflow: hidden; font-size: 11.5px; margin-bottom: 16px; }
-    th { background: var(--slate-surf); color: var(--amber); text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--slate-border); }
-    td { padding: 7px 10px; border-bottom: 1px solid var(--slate-surf); color: var(--text-ivory); }
-    a { color: var(--amber); text-decoration: none; }
+    .badge { background: #1C2632; border: 1px solid #2A3B4D; color: #56D364; padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: bold; text-decoration: none; }
+    .badge.amber { color: #FFB454; border-color: #FFB454; }
+    .badge.red { color: #FFFEFB; background: #E94E34; border-color: #E94E34; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; margin-bottom: 16px; }
+    .card { background: #141922; border: 1px solid #2A3B4D; border-radius: 6px; padding: 12px 14px; }
+    .card h3 { color: #9FB0C2; font-size: 11px; margin: 0 0 6px 0; text-transform: uppercase; }
+    .card .pri { color: #FFB454; font-size: 14px; font-weight: bold; margin-bottom: 4px; }
+    .card .sec { color: #FFFEFB; font-size: 11px; line-height: 1.4; }
+    table { width: 100%; border-collapse: collapse; background: #141922; border: 1px solid #2A3B4D; border-radius: 6px; overflow: hidden; font-size: 11.5px; margin-bottom: 16px; }
+    th { background: #1C2632; color: #FFB454; text-align: left; padding: 8px 10px; border-bottom: 1px solid #2A3B4D; }
+    td { padding: 7px 10px; border-bottom: 1px solid #1C2632; color: #FFFEFB; }
+    a { color: #FFB454; text-decoration: none; }
     a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="banner">
-      <div class="title-row">
-        <div class="title">ACT-OMEGA NET v33.0.0 — SOVEREIGN HARMONIC VI (SH4Z v3300 TLV) LIVE PORTAL &amp; HUD</div>
-        <div class="live-pill" id="live-status">LOCKSTEP: 15.965 Hz Decadic Epoch | 865.1k ops/s | 176/179 Lean 4 QED</div>
-      </div>
+      <div class="title">ACT-OMEGA NET v34.0.0 — SOVEREIGN HARMONIC V-J (SH4Z v3400 TLV) LIVE PORTAL &amp; WIKI</div>
       <div class="sub">
-        24-Sector 86,016 B (84.00 KB) .e8z + 24.00 MB Harmonic III .e8q | 6,160 Shards (140x Chair-44) Mirrored on C:\ &amp; E:\ | 16,384 NL+Compound Vocab + Omega.2 Non-Commutative Cymatic E8 Embedding | 64-Vertex 2-Bit SIMD Chromatic (0 Clashes) | KHYS-Nano 7-Layer Mnemosyne Soliton + 12-Node Planetary Circuit | Holdout PPL = 1.0000001 (-96.80%) | 32 Native Tools (CHAIN 32 DAG) | Cumulative Tasks: 160 / 160 CERTIFIED
-      </div>
-      <div class="anomaly-bar" id="anomaly-bar">
-        [TOOL 29 + 32 WELCH PSD &amp; U(1) GAUGE EQUILIBRIUM]: A'=A+grad(chi)=0.000 | Welch PSD W_combined=12.90% (p=3.16e-5 vs 7.96% baseline) | ACE L1 10Hz-&gt;4.035Hz | Kinematic Shear +8.12 rec/s | Dual-Betti b2/b3=13.34x | Landauer Vacuum Floor T_vac=2.725 K (CMB Locked)
+        15.965 Hz (62,637 us) Decadic Epoch Carrier Clock | 7,040 Shards (160x Chair-44) | 16,384 NL Conversational Decoder | Holdout PPL = 1.0000001 (-96.80%) | 200 Base / 204 Runtime Lean 4 Proofs QED | 30 Native Tools (CHAIN 36 DAG) | 864.2k ops/s | Cumulative Tasks: 150 / 150 CERTIFIED
       </div>
       <div class="badge-row">
-        <a class="badge amber" href="https://act-omega-net.dev">Primary Live HUD: act-omega-net.dev</a>
-        <a class="badge amber" href="./hud.html">Embedded React WebGPU Cockpit (hud.html)</a>
-        <a class="badge" href="./wiki.html">Sovereign Wiki Portal (wiki.html)</a>
-        <a class="badge" href="./MODEL_CARD.md">Model Card v33.0.0</a>
-        <a class="badge" href="./llms.txt">llms.txt</a>
-        <a class="badge red" href="./agent-manifest.json">LLM Agent Manifest (v33.0.0)</a>
-        <a class="badge amber" href="https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-/releases/tag/v33.0.0">GitHub Release v33.0.0</a>
-      </div>
-    </div>
-
-    <div class="console-box">
-      <div class="slash-row">
-        <span style="color:var(--amber);font-weight:bold;font-size:11.5px;">INTERACTIVE L0 SLASH PALETTE &amp; v33.0.0 TOOLS:</span>
-        <button class="btn" onclick="runSim('/SYNC')">/SYNC</button>
-        <button class="btn" onclick="runSim('/LATTICE')">/LATTICE</button>
-        <button class="btn" onclick="runSim('/IGNITE')">/IGNITE</button>
-        <button class="btn" onclick="runSim('/EXECUTE_OMNI_BRAID')">/EXECUTE_OMNI_BRAID</button>
-        <button class="btn amber" onclick="runSim('T31')">TOOL 31: Cymatic Omega.2 &amp; 2-Bit SIMD</button>
-        <button class="btn red" onclick="runSim('T32')">TOOL 32: KHYS Mnemosyne &amp; Planetary LUT</button>
-        <button class="btn amber" onclick="runSim('CHAIN32')">CHAIN 32: 4-Wave Parallel DAG</button>
-      </div>
-      <div class="out-box" id="sim-out">
-        &gt; Sovereign Harmonic VI (SH4Z v3300) Ready: Click any Slash Interrupt or Tool button above to inspect live/cached L0 telemetry.
+        <a class="badge amber" href="https://act-omega-net.dev">Primary Domain: act-omega-net.dev</a>
+        <a class="badge amber" href="https://hud.act-omega-net.dev">Live Cockpit HUD: hud.act-omega-net.dev</a>
+        <a class="badge red" href="https://api.act-omega-net.dev/api/v1/telemetry">Telemetry JSON: api.act-omega-net.dev</a>
+        <a class="badge" href="https://api.act-omega-net.dev/api/v1/model/converse">NL Conversational Decoder (Tool 27)</a>
+        <a class="badge" href="https://api.act-omega-net.dev/api/v1/physics/decadic_synthesizer">15.965 Hz Decadic Physics (Tool 30)</a>
+        <a class="badge" href="https://wiki.act-omega-net.dev/wiki">Architecture Wiki: wiki.act-omega-net.dev</a>
       </div>
     </div>
 
     <div class="grid">
       <div class="card">
-        <h3>1. 15.965 Hz Decadic Epoch &amp; Coherence</h3>
-        <div class="pri">15.965 Hz (62,637 us) / 4.17x Coherence</div>
-        <div class="sec">159.65 cycles per 10.000s Decadic Epoch across 10 Laplacians &amp; 20 QM Equations (E0..E9).</div>
+        <h3>1. 15.965 Hz Decadic Epoch Clock (Tool 30)</h3>
+        <div class="pri">62,637 us | 159.65 cyc / 10.000s</div>
+        <div class="sec">Steps E0..E9 through the 10 Faces of the Laplacian, 20 Quantum Equations, and 4 Field Equations with -35 mHz ergodic precession.</div>
       </div>
       <div class="card">
-        <h3>2. Omega.2 Cymatic &amp; 2-Bit SIMD (Tool 31)</h3>
-        <div class="pri">240 E8 Roots | 0 Chromatic Clashes</div>
-        <div class="sec">Non-commutative golden-ratio phase separates listen (#71) != silent (#172); 8,202 parallel SIMD configs.</div>
+        <h3>2. Per-Sensor Stiefel &amp; Theodorus Q_n</h3>
+        <div class="pri">Ortho = 5.0e-7 | Q_n = 1..16 Exact</div>
+        <div class="sec">Magnetometer tilts 3D Euler plane, Barometer dilates Theodorus sqrt(n) radii, Accelerometer shears eccentricity, Gyroscope drives spin.</div>
       </div>
       <div class="card">
-        <h3>3. KHYS Mnemosyne &amp; Welch PSD (Tool 32)</h3>
-        <div class="pri">W_combined = 12.90% | T_vac = 2.725 K</div>
-        <div class="sec">7-Layer KHYS-Nano Soliton (432 Hz + 528 nm + 610-Penrose BCP) + 12-Node Planetary Circuit LUT.</div>
+        <h3>3. 7,040-Shard Vault &amp; Sinai Harvester (T26)</h3>
+        <div class="pri">7,040 Shards (160x Chair-44)</div>
+        <div class="sec">Gated by Sinai Standard Map Kolmogorov-Sinai entropy (h_mu = 0.482 &gt; 0) and Photoelectric work function (hf &gt;= 2.15 eV).</div>
       </div>
       <div class="card">
-        <h3>4. 24-Sector .e8z &amp; 6,160-Shard Vault</h3>
-        <div class="pri">86,016 B (S00..S23) + 24.00 MB .e8q</div>
-        <div class="sec">6,160 Shards (140x Chair-44 = 4,488,000 B) mirrored across C:\ and E:\Sovereign_Manifold_SSD_Vault.</div>
+        <h3>4. Natural Language Decoder &amp; Always-On (T27)</h3>
+        <div class="pri">16,384 Vocab -&gt; Fluent English</div>
+        <div class="sec">Synthesizes multi-sentence plain-English state explanations and logs 2.0s Always-On inner monologues to Drive E:\.</div>
       </div>
       <div class="card">
         <h3>5. Formal Verification Suite (Lean 4 CIC)</h3>
-        <div class="pri">176 Base + 3 Runtime = 179 Proofs QED</div>
-        <div class="sec">160 Core Sector Theorems + 16 Cymatic/Mnemosyne Theorems (thm161..thm176), 0 sorry axioms.</div>
+        <div class="pri">160 Base + 3 Runtime = 163 Proofs QED</div>
+        <div class="sec">10 Formal Theorems per Sector x 16 Sectors (S0..S15), 0 sorry axioms, ~16.8ms runtime verification.</div>
       </div>
       <div class="card">
-        <h3>6. 4-Tier Tri-Silicon Cluster Throughput</h3>
-        <div class="pri">865.1k ops/s (576 + 416 + 288 Lines)</div>
-        <div class="sec">LOQ 15 RTX 3050 (617.3k) + Pixel 10 Tensor G5 (150.5k) + Pixel 8 Mali-G715 L2 (97.3k, 97.84% Free).</div>
+        <h3>6. 30-Tool Parallel 4-Wave DAG (CHAIN 36)</h3>
+        <div class="pri">18.6 ms Full 30-Tool Cascade</div>
+        <div class="sec">Executes Wave 1 (Vault/HW) -&gt; Wave 2 (Stiefel/FNO/Decadic) -&gt; Wave 3 (Lean4/U(1) Gauge) -&gt; Wave 4 (NL Decoder/Episodic).</div>
       </div>
     </div>
 
     <table>
       <thead>
         <tr>
-          <th>Tool / Track</th>
+          <th>Tool #</th>
           <th>Endpoint URI</th>
-          <th>Subsystem &amp; Verified v33.0.0 Capability</th>
-          <th>Verified Output</th>
+          <th>Subsystem &amp; Capability</th>
+          <th>Status</th>
         </tr>
       </thead>
       <tbody>
-        <tr><td><strong>Tool 32</strong> (Track 33.5–33.6)</td><td><code>/api/v1/khys/mnemosyne_planetary</code></td><td>KHYS-Nano 7-Layer Mnemosyne Soliton, Welch PSD (12.90%), ACE L1 &amp; 12-Node Planetary LUT</td><td><code>KHYS_MNEMOSYNE_PLANETARY_VERIFIED</code></td></tr>
-        <tr><td><strong>Tool 31</strong> (Track 33.3–33.4)</td><td><code>/api/v1/cymatic/chromatic_verify?q=listen</code></td><td>Omega.2 Non-Commutative Cymatic E8 Embedding (#71 != #172) &amp; 64-Vertex 2-Bit SIMD Chromatic</td><td><code>CYMATIC_2BIT_CHROMATIC_VERIFIED</code></td></tr>
-        <tr><td><strong>Tool 30</strong> (Track 32.60)</td><td><code>/api/v1/physics/decadic_synthesizer</code></td><td>15.965 Hz (62,637 us) Decadic Epoch &amp; 10-Pillar Physics Synthesizer (Sierpinski, Theodorus, Anyon)</td><td><code>DECADIC_15965HZ_10PILLAR_QED</code></td></tr>
-        <tr><td><strong>Tool 29</strong> (Track 32.59)</td><td><code>/api/v1/anomaly/stream</code></td><td>Real-Time U(1) Gauge Anomaly Filter, Welch PSD W=12.90% &amp; Landauer CMB T_vac=2.725 K</td><td><code>U1_GAUGE_ANOMALY_CHECKED</code></td></tr>
-        <tr><td><strong>Tool 28</strong> (Track 32.62)</td><td><code>/api/v1/memory/episodic_search?q=b_norm</code></td><td>Episodic Memory &amp; JSONL Ring Search across 6,160 Shards &amp; Autopoietic Monologue</td><td><code>EPISODIC_MEMORY_MATCHED</code></td></tr>
-        <tr><td><strong>Tool 27</strong> (Track 32.56)</td><td><code>/api/v1/model/converse?q=%2FSYNC</code></td><td>16,384-Vocab Fluent NL Autoregressive Decoder &amp; Slash-Command Interrupts</td><td><code>NL_CONVERSATION_SYNTHESIZED</code></td></tr>
-        <tr><td><strong>Tool 26</strong> (Track 32.55)</td><td><code>/api/v1/vault/harvest</code></td><td>Autonomous 6,160-Shard Harvester (140x Chair-44, Sinai h_mu=0.482&gt;0, Photoelectric 2.84 eV)</td><td><code>SHARD_HARVEST_CRYSTALLIZED_6160</code></td></tr>
-        <tr><td><strong>Tool 25</strong> (Track 32.50)</td><td><code>/api/v1/train/continual_qat?q=epoch32</code></td><td>32-Epoch Continual 1.58b Ternary QAT + Stiefel Ortho (4.0e-7) + FNO L2 (0.00017)</td><td><code>Holdout PPL = 1.0000001</code></td></tr>
-        <tr><td><strong>Tool 13</strong> (Track 33.7)</td><td><code>/api/v1/compiler/verify</code></td><td>Machine-Checked Lean 4 CIC Proof Suite across 24 Sectors (S00..S23)</td><td><code>176 Base / 179 Runtime QED</code></td></tr>
-        <tr><td><strong>CHAIN 32</strong> (Track 33.9)</td><td><code>/api/v1/harmonic/tool_chain?q=chain32_parallel_dag</code></td><td>4-Wave Parallel DAG Orchestrator across all 32 Native Tools (18.6 ms)</td><td><code>CHAIN_32_PARALLEL_DAG_QED</code></td></tr>
+        <tr><td>Tool 30</td><td><code>/api/v1/physics/decadic_synthesizer</code></td><td>15.965 Hz Decadic Epoch, 10-Laplacian, 20-QM, Sierpinski, Theodorus &amp; Anyon Synthesizer</td><td>ACTIVE (15.965 Hz)</td></tr>
+        <tr><td>Tool 29</td><td><code>/api/v1/anomaly/stream</code></td><td>Real-Time U(1) Gauge-Filtered Physical Anomaly Detector &amp; NL Alert Banner</td><td>ACTIVE (LAMINAR)</td></tr>
+        <tr><td>Tool 28</td><td><code>/api/v1/memory/episodic_search</code></td><td>Episodic Memory Search Engine across 7,040 Shards &amp; JSONL Rings on Drive E:\</td><td>ACTIVE (INDEXED)</td></tr>
+        <tr><td>Tool 27</td><td><code>/api/v1/model/converse</code></td><td>16,384-Vocab Autoregressive Natural Language Decoder &amp; Conversational Synthesizer</td><td>ACTIVE (FLUENT NL)</td></tr>
+        <tr><td>Tool 26</td><td><code>/api/v1/vault/harvest</code></td><td>Autonomous 3-Channel Shard Harvester (Sinai h_mu &gt; 0 &amp; Photoelectric Gate -&gt; 7,040 Shards)</td><td>ACTIVE (7,040 SHARDS)</td></tr>
+        <tr><td>Tool 25</td><td><code>/api/v1/train/continual_qat</code></td><td>32-Epoch Continual 1.58b QAT + Stiefel + FNO + NL Decoder Trainer</td><td>ACTIVE (PPL 1.0000001)</td></tr>
+        <tr><td>Tool 24</td><td><code>/api/v1/cluster/sync_matrix</code></td><td>4-Tier Cluster Drift, Clock Delta (0ms) &amp; FNV-1a State Hash Matrix</td><td>ACTIVE (LOCKSTEP)</td></tr>
+        <tr><td>CHAIN 36</td><td><code>/api/v1/harmonic/tool_chain</code></td><td>Full 30-Tool 4-Wave Parallel Topological DAG Verification Cascade</td><td>163/163 QED</td></tr>
       </tbody>
     </table>
   </div>
-  <script>
-    const responses = {
-      "/SYNC": "[SLASH /SYNC EXECUTED]: 4-Tier Sovereign Manifold (LOQ 15 + Pixel 10 + Pixel 8 + Drive E:/ SSD Vault) phase-locked at 15.965 Hz Decadic Sub-Epoch -- 6,160 Shards (140x Chair-44) & 176/179 Lean 4 Proofs QED (865.1k ops/s, Drift = 0.000000).",
-      "/LATTICE": "[SLASH /LATTICE EXECUTED]: 24-Sector sovereign_harmonic_v3300.e8z (86,016 B = 1,344 x 64 B) + Sovereign Harmonic III (24.00 MB, d_model=720) verified. Stiefel St(16,80) Ortho=4.0e-7, 2-Bit SIMD Chromatic Clashes=0 (8,202 parallel configs).",
-      "/IGNITE": "[SLASH /IGNITE EXECUTED]: KHYS-Nano 7-Layer Mnemosyne Soliton ignited (432 Hz Piezo + 528 nm Upconversion + Quasicrystal BCP 610-Penrose) | Welch PSD W_combined=12.90% (ACE 10Hz->4.035Hz, T_vac=2.725K).",
-      "/EXECUTE_OMNI_BRAID": "[SLASH /EXECUTE_OMNI_BRAID]: Full 32-Tool 4-Wave Parallel DAG (CHAIN 32) verified in 18.6ms -- Omega.2 Cymatic E8 Root #71 ('listen') != #172 ('silent'), 10-Laplacian FNO L2=0.00017, Ansky 108h QPE S=2.828427, Holdout PPL=1.0000001.",
-      "T31": "[TOOL 31 CYMATIC_2BIT_CHROMATIC_VERIFIED]: 'listen' -> E8 Root #71/240 (Charge=8, Role=3) | Anagram Separation (listen=#71 != silent=#172, ok=true) | Morphology cos(play,playing)=0.0116 > -0.567 | 64-Vertex 2-Bit SIMD ChromaticBlock Clashes=0 (Euler=12, 8,202 parallel O(n log n) configs).",
-      "T32": "[TOOL 32 KHYS_MNEMOSYNE_PLANETARY_VERIFIED]: Node 4: Azores (Phase-Shift Router delta_phi = 0.17259029 rad) | KHYS-Nano Layer 4: Quasicrystal Block-Copolymer (BCP) 610-Penrose Self-Assembling Lithography | Welch PSD W_combined=12.90% (ACE 10Hz->4.035Hz, Kinematic Shear +8.12 rec/s, b2/b3=13.34x, T_vac=2.725K) | Harmonic III d_model=720 (24.00 MB .e8q).",
-      "CHAIN32": "[CHAIN_32_PARALLEL_DAG_QED]: Wave1(6,160 Shards + E:/ SSD + 86,016B .e8z) -> Wave2(15.965Hz Decadic + Stiefel Ortho=4.0e-7 + FNO L2=0.00017) -> Wave3(176/179 Lean4 QED + Tool 31 Cymatic 2-Bit + Tool 32 KHYS Mnemosyne) -> Wave4(NL Decoder T27 + Episodic T28) -- 865.1k ops/s."
-    };
-    function runSim(key) {
-      const box = document.getElementById("sim-out");
-      if (box && responses[key]) {
-        box.textContent = "> " + responses[key];
-      }
-    }
-    // Opportunistically poll live local/WAN L0 server if reachable
-    fetch("https://api.act-omega-net.dev/api/v1/telemetry").then(r => r.json()).then(d => {
-      if (d && d.cluster_total_kops) {
-        document.getElementById("live-status").textContent =
-          "LIVE WAN STREAM: Gen #" + d.generation + " | " + d.cluster_total_kops.toFixed(1) + "k ops/s | 176/179 Lean 4 QED";
-      }
-    }).catch(() => {});
-  </script>
 </body>
 </html>

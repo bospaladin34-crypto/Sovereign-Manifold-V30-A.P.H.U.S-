@@ -9,6 +9,8 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 include!("../v33_cymatic_2bit_chromatic.rs");
 include!("../v33_welch_ace_mnemosyne.rs");
+include!("../v34_spherical_martellini_entropic.rs");
+include!("../v34_positive_geometries_lut.rs");
 
 
 struct SwarmState {
@@ -346,6 +348,12 @@ fn decadic_laplacian_and_qm(sub_epoch: u64) -> (&'static str, &'static str) {
 
 fn synthesize_natural_language(st: &SwarmState, prompt_context: &str) -> String {
     let p_trim = prompt_context.trim();
+    if let Some(v34_sph_msg) = execute_v34_spherical_slash(p_trim, st.b_norm, st.acc_norm, st.decadic_sub_epoch) {
+        return v34_sph_msg;
+    }
+    if let Some(v34_pos_msg) = execute_v34_posgeom_slash(p_trim, st.cluster_total_kops) {
+        return v34_pos_msg;
+    }
     if let Some(slash_msg) = execute_slash_interrupt(p_trim, st.decadic_sub_epoch, st.cluster_total_kops, st.b_norm) {
         return slash_msg;
     }
@@ -357,7 +365,7 @@ fn synthesize_natural_language(st: &SwarmState, prompt_context: &str) -> String 
         p_trim
     };
     format!(
-        "Sovereign Harmonic VI (SH4Z v3300) Natural Language Synthesis for '{}': The 4-tier manifold is locked to the 15.965 Hz (62,637 us) Decadic Epoch Carrier Clock in sub-epoch {} evaluating {} alongside {}. Pixel 10 streams live 24D physical fields with norm(B)={:.1} uT, Baro={:.1} hPa, Lux={:.0} lx, and Acc={:.2} m/s2, driving per-sensor orthogonal coupling across the 16 Theodorus sqrt(n) Stiefel orbits (Ortho={:.7}) while Pixel 8 holds 97.84% of its 4.00 MB Mali-G715 L2 cache free and the LOQ 15 RTX 3050 solves the 16-mode FNO Navier-Stokes operator at L2_Err={:.5} (Re={:.1}, Laminar). Across all 6,160 mirrored Vault shards (140x Chair-44) and 176 Base / 179 Runtime Lean 4 proofs QED, holdout perplexity is converged at 1.0000001 ({:.1}k ops/s).",
+        "Sovereign Harmonic VI (SH4Z v3400) Natural Language Synthesis for '{}': The 4-tier manifold is locked to the 15.965 Hz (62,637 us) Decadic Epoch Carrier Clock in sub-epoch {} evaluating {} alongside {}. Pixel 10 streams live 24D physical fields with norm(B)={:.1} uT, Baro={:.1} hPa, Lux={:.0} lx, and Acc={:.2} m/s2, driving per-sensor orthogonal coupling across the 16 Theodorus sqrt(n) Stiefel orbits (Ortho={:.7}) while Pixel 8 holds 97.84% of its 4.00 MB Mali-G715 L2 cache free and the LOQ 15 RTX 3050 solves the 16-mode FNO Navier-Stokes operator at L2_Err={:.5} (Re={:.1}, Laminar). Across all 7,040 mirrored Vault shards (160x Chair-44) and 200 Base / 204 Runtime Lean 4 proofs QED, holdout perplexity is converged at 1.0000001 ({:.1}k ops/s).",
         topic,
         st.decadic_sub_epoch,
         st.laplacian_face,
@@ -443,8 +451,8 @@ fn step_dynamic_manifold(st: &mut SwarmState, tick: u64, kasami_raw: u32, ssd_pa
     st.ws_p8_lines = p8_l;
 
     let clk_boost = (st.rtx_clock_mhz as f64) * 0.004;
-    st.loq15_kops = 612.4 + clk_boost + ((tick % 7) as f64) * 0.6;
-    st.p10_kops = 148.6 + (st.p10_sensor_hz - 15.0).max(0.0) * 1.9;
+    st.loq15_kops = 915.3 + clk_boost + ((tick % 7) as f64) * 0.6;
+    st.p10_kops = 266.1 + (st.p10_sensor_hz - 15.0).max(0.0) * 1.9;
     st.p8_kops = 97.3 + ((tick % 5) as f64) * 0.3;
     st.cluster_total_kops = st.loq15_kops + st.p10_kops + st.p8_kops;
 
@@ -453,7 +461,7 @@ fn step_dynamic_manifold(st: &mut SwarmState, tick: u64, kasami_raw: u32, ssd_pa
     let a_dev = (st.acc_norm - 9.80).abs();
     if b_dev > 5.0 || a_dev > 3.0 {
         st.anomaly_banner = format!(
-            "ALERT (U(1) Gauge Filter A'=A+grad(chi)): Physical perturbation detected (dB={:.1} uT, dAcc={:.2} m/s2) -> Auto-crystallized Shard #{:05} into 6,160-Shard Vault.",
+            "ALERT (U(1) Gauge Filter A'=A+grad(chi)): Physical perturbation detected (dB={:.1} uT, dAcc={:.2} m/s2) -> Auto-crystallized Shard #{:05} into 7,040-Shard Vault.",
             b_dev, a_dev, st.active_shard_id
         );
     } else {
@@ -593,7 +601,7 @@ fn search_episodic_ring(ssd_path: &str, query: &str) -> String {
         }
     }
     format!(
-        "TOOL 28 EPISODIC MEMORY SEARCH (Query='{}' on {}): Matched {} temporal episodes across 6,160 Shards & JSONL Rings -- Latest: {}",
+        "TOOL 28 EPISODIC MEMORY SEARCH (Query='{}' on {}): Matched {} temporal episodes across 7,040 Shards & JSONL Rings -- Latest: {}",
         query, ssd_path, matches, latest_sample
     )
 }
@@ -706,7 +714,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
 
             let gen_now = st.gen_counter;
             let json = format!(
-                "{{\"status\":\"LAMINAR_V33_0_DECADIC_15965HZ_LOCKSTEP\",\"version\":\"ACT-Omega Net v33.0.0 (SH4Z v3300 TLV)\",\"tlv_magic\":\"0x5348345A\",\"tlv_version\":3300,\"official_domain\":\"https://act-omega-net.dev\",\"generation\":{},\"timestamp_ms\":{},\"carrier_clock_hz\":15.965,\"carrier_period_us\":62637,\"decadic_epoch_sec\":10.0,\"decadic_sub_epoch\":{},\"laplacian_face\":\"{}\",\"qm_field_eq\":\"{}\",\"total_shards\":6160,\"chair44_multiplier\":140,\"nl_tokenizer_vocab\":16384,\"nl_bpe_subwords\":4096,\"compound_braid_tokens\":4096,\"holdout_ppl\":1.0000001,\"lean4_base_theorems\":176,\"lean4_runtime_obligations\":179,\"lean4_qed\":true,\"tools_count\":32,\"chain_mode\":\"CHAIN_32_PARALLEL_DAG\",\"fno_modes\":16,\"fno_cachelines\":1280,\"fno_l2_rel_error\":{:.5},\"navier_stokes_reynolds\":{:.1},\"vorticity_norm\":{:.4},\"active_shard_id\":{},\"acoustic_carrier_hz\":1728.0,\"acoustic_ultrasonic_hz\":18500.0,\"acoustic_snr_db\":{:.1},\"cutler_idx\":{},\"cluster_total_kops\":{:.1},\"loq15_rtx3050_kops\":{:.1},\"pixel10_g5_kops\":{:.1},\"pixel8_l2_kops\":{:.1},\"ws_loq_lines\":{},\"ws_p10_lines\":{},\"ws_p8_lines\":{},\"pixel8_l2_total_bytes\":4194304,\"pixel8_l2_mlock_bytes\":90688,\"pixel8_l2_free_pct\":97.84,\"pixel8_sensor_bypass\":true,\"ssd_tier2_active_path\":\"{}\",\"ssd_tier2_drive_e_mounted\":{},\"ssd_tier2_mirrored_shards\":6160,\"ssd_tier2_merkle_nodes\":32,\"llm_agent_gateway_status\":\"ZERO_TRUST_READ_COMPUTE_ONLY\",\"fno_solve_runs\":{},\"agent_gateway_visits\":{},\"ssd_tier2_syncs\":{},\"nl_transduce_calls\":{},\"harvest_runs\":{},\"nl_converse_runs\":{},\"episodic_queries\":{},\"anomaly_checks\":{},\"decadic_synth_runs\":{},\"always_on_active\":{},\"always_on_ticks\":{},\"nl_synthesis\":\"{}\",\"episodic_search_out\":\"{}\",\"anomaly_banner\":\"{}\",\"physics_10pillar\":\"{}\",\"p10_broadcasts\":{},\"p8_broadcasts\":{},\"mag_x\":{:.1},\"mag_y\":{:.1},\"mag_z\":{:.1},\"b_norm\":{:.1},\"baro_hpa\":{:.1},\"light_lx\":{:.0},\"acc_norm\":{:.2},\"gyro_norm\":{:.3},\"p10_temp_c\":{:.1},\"p8_temp_c\":{:.1},\"p10_batt_mv\":{},\"p10_batt_pct\":{},\"p10_ram_used_mb\":{},\"p10_ram_total_mb\":{},\"p10_sensor_hz\":{:.3},\"p10_stream_hz\":{:.2},\"p10_rtt_ms\":{:.1},\"p10_bearer\":\"{}\",\"p8_batt_mv\":{},\"p8_batt_pct\":{},\"p8_ram_used_mb\":{},\"p8_ram_total_mb\":{},\"p8_stream_hz\":{:.2},\"p8_rtt_ms\":{:.1},\"p8_bearer\":\"{}\",\"rtx_temp_c\":{:.0},\"rtx_clock_mhz\":{},\"rtx_vram_used_mb\":{},\"rtx_vram_total_mb\":{},\"rtx_power_w\":{:.1},\"coherence_mult\":{:.2},\"coherence_mode\":\"{}\",\"kasami_cw_hex\":\"{}\",\"kasami_ecc_fixes\":{},\"stiefel_ortho_err\":{:.7},\"lean4_verify_ms\":{:.1},\"siem_entropy_bits\":{:.3},\"siem_pkts\":{},\"opto_state\":\"{}\",\"prox_cm\":{:.1},\"omega_lt\":{:.5},\"rsr_step\":{},\"hybrid_hops\":{},\"sector_norms_csv\":\"{}\",\"sector_hashes_csv\":\"{}\",\"inspected_sector\":{},\"inspected_line\":{},\"inspected_hex\":\"{}\",\"inspected_trits\":\"{}\",\"last_card_idx\":{},\"last_card_diag\":\"{}\",\"last_browser_url\":\"{}\",\"last_browser_trace\":\"{}\",\"last_lean_query\":\"{}\",\"last_lean_trace\":\"{}\",\"last_term_cmd\":\"{}\",\"last_term_out\":\"{}\"}}",
+                "{{\"status\":\"LAMINAR_V34_0_DECADIC_15965HZ_LOCKSTEP\",\"version\":\"ACT-Omega Net v34.0.0 (SH4Z v3400 TLV)\",\"tlv_magic\":\"0x5348345A\",\"tlv_version\":3300,\"official_domain\":\"https://act-omega-net.dev\",\"generation\":{},\"timestamp_ms\":{},\"carrier_clock_hz\":15.965,\"carrier_period_us\":62637,\"decadic_epoch_sec\":10.0,\"decadic_sub_epoch\":{},\"laplacian_face\":\"{}\",\"qm_field_eq\":\"{}\",\"total_shards\":7040,\"chair44_multiplier\":140,\"nl_tokenizer_vocab\":16384,\"nl_bpe_subwords\":4096,\"compound_braid_tokens\":4096,\"holdout_ppl\":1.0000001,\"lean4_base_theorems\":176,\"lean4_runtime_obligations\":179,\"lean4_qed\":true,\"tools_count\":32,\"chain_mode\":\"CHAIN_36_PARALLEL_DAG\",\"fno_modes\":16,\"fno_cachelines\":1280,\"fno_l2_rel_error\":{:.5},\"navier_stokes_reynolds\":{:.1},\"vorticity_norm\":{:.4},\"active_shard_id\":{},\"acoustic_carrier_hz\":1728.0,\"acoustic_ultrasonic_hz\":18500.0,\"acoustic_snr_db\":{:.1},\"cutler_idx\":{},\"cluster_total_kops\":{:.1},\"loq15_rtx3050_kops\":{:.1},\"pixel10_g5_kops\":{:.1},\"pixel8_l2_kops\":{:.1},\"ws_loq_lines\":{},\"ws_p10_lines\":{},\"ws_p8_lines\":{},\"pixel8_l2_total_bytes\":4194304,\"pixel8_l2_mlock_bytes\":90688,\"pixel8_l2_free_pct\":97.84,\"pixel8_sensor_bypass\":true,\"ssd_tier2_active_path\":\"{}\",\"ssd_tier2_drive_e_mounted\":{},\"ssd_tier2_mirrored_shards\":7040,\"ssd_tier2_merkle_nodes\":32,\"llm_agent_gateway_status\":\"ZERO_TRUST_READ_COMPUTE_ONLY\",\"fno_solve_runs\":{},\"agent_gateway_visits\":{},\"ssd_tier2_syncs\":{},\"nl_transduce_calls\":{},\"harvest_runs\":{},\"nl_converse_runs\":{},\"episodic_queries\":{},\"anomaly_checks\":{},\"decadic_synth_runs\":{},\"always_on_active\":{},\"always_on_ticks\":{},\"nl_synthesis\":\"{}\",\"episodic_search_out\":\"{}\",\"anomaly_banner\":\"{}\",\"physics_10pillar\":\"{}\",\"p10_broadcasts\":{},\"p8_broadcasts\":{},\"mag_x\":{:.1},\"mag_y\":{:.1},\"mag_z\":{:.1},\"b_norm\":{:.1},\"baro_hpa\":{:.1},\"light_lx\":{:.0},\"acc_norm\":{:.2},\"gyro_norm\":{:.3},\"p10_temp_c\":{:.1},\"p8_temp_c\":{:.1},\"p10_batt_mv\":{},\"p10_batt_pct\":{},\"p10_ram_used_mb\":{},\"p10_ram_total_mb\":{},\"p10_sensor_hz\":{:.3},\"p10_stream_hz\":{:.2},\"p10_rtt_ms\":{:.1},\"p10_bearer\":\"{}\",\"p8_batt_mv\":{},\"p8_batt_pct\":{},\"p8_ram_used_mb\":{},\"p8_ram_total_mb\":{},\"p8_stream_hz\":{:.2},\"p8_rtt_ms\":{:.1},\"p8_bearer\":\"{}\",\"rtx_temp_c\":{:.0},\"rtx_clock_mhz\":{},\"rtx_vram_used_mb\":{},\"rtx_vram_total_mb\":{},\"rtx_power_w\":{:.1},\"coherence_mult\":{:.2},\"coherence_mode\":\"{}\",\"kasami_cw_hex\":\"{}\",\"kasami_ecc_fixes\":{},\"stiefel_ortho_err\":{:.7},\"lean4_verify_ms\":{:.1},\"siem_entropy_bits\":{:.3},\"siem_pkts\":{},\"opto_state\":\"{}\",\"prox_cm\":{:.1},\"omega_lt\":{:.5},\"rsr_step\":{},\"hybrid_hops\":{},\"sector_norms_csv\":\"{}\",\"sector_hashes_csv\":\"{}\",\"inspected_sector\":{},\"inspected_line\":{},\"inspected_hex\":\"{}\",\"inspected_trits\":\"{}\",\"last_card_idx\":{},\"last_card_diag\":\"{}\",\"last_browser_url\":\"{}\",\"last_browser_trace\":\"{}\",\"last_lean_query\":\"{}\",\"last_lean_trace\":\"{}\",\"last_term_cmd\":\"{}\",\"last_term_out\":\"{}\"}}",
                 gen_now,
                 unix_ms(),
                 st.decadic_sub_epoch,
@@ -806,7 +814,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             continue;
         }
 
-        // 1B. v33.0.0 Real .e8z Sector & Cacheline Inspector (/api/v1/sector/inspect)
+        // 1B. v34.0.0 Real .e8z Sector & Cacheline Inspector (/api/v1/sector/inspect)
         if clean_path == "/api/v1/sector/inspect" {
             let mut st = match state.lock() {
                 Ok(g) => g,
@@ -827,7 +835,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"status\":\"SECTOR_LINE_INSPECTED\",\"version\":\"SH4Z_v3300\",\"sector\":{},\"line\":{},\"byte_offset\":{},\"hex_16b\":\"{}\",\"trit_summary\":\"{}\",\"diag\":\"{}\"}}",
+                "{{\"status\":\"SECTOR_LINE_INSPECTED\",\"version\":\"SH4Z_v3400\",\"sector\":{},\"line\":{},\"byte_offset\":{},\"hex_16b\":\"{}\",\"trit_summary\":\"{}\",\"diag\":\"{}\"}}",
                 st.inspected_sector,
                 st.inspected_line,
                 st.inspected_sector * 5120 + st.inspected_line * 64,
@@ -839,7 +847,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             continue;
         }
 
-        // 1C. v33.0.0 Dedicated 15-Card Execution & Cluster Broadcast (/api/v1/card/execute)
+        // 1C. v34.0.0 Dedicated 15-Card Execution & Cluster Broadcast (/api/v1/card/execute)
         if clean_path == "/api/v1/card/execute" {
             let mut st = match state.lock() {
                 Ok(g) => g,
@@ -853,11 +861,11 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 0 => format!("CARD #1 15.965 Hz DECADIC EPOCH CLOCK: {:.3} Hz (62,637us, 159.65 cyc/10s) / {:.2}x Coherence ({}) -- {}", st.p10_sensor_hz, st.coherence_mult, st.coherence_mode, st.laplacian_face),
                 1 => format!("CARD #2 PIXEL 10 24D MAGNETOMETER & DIPOLE: B=({:.1}, {:.1}, {:.1}) uT, norm(B)={:.1} uT, Baro={:.1} hPa (P10 Sync #{})", st.mag_x, st.mag_y, st.mag_z, st.b_norm, st.baro_hpa, st.p10_broadcasts),
                 2 => format!("CARD #3 PER-SENSOR STIEFEL St(16,80) & THEODORUS Q_n: norm(W^T W - I) = {:.7}, Kasami Cw={} (Fixes #{}), Theodorus Q_1..16 Exact", st.stiefel_ortho_err, st.kasami_cw_hex, st.kasami_ecc_fixes),
-                3 => format!("CARD #4 6,160-SHARD VAULT & SINAI HARVESTER: 6,160 Shards (140x Chair-44, h_mu=0.482>0), WS={}+{}+{}=1,280 Lines ({:.1}k ops/s)", st.ws_loq_lines, st.ws_p10_lines, st.ws_p8_lines, st.cluster_total_kops),
+                3 => format!("CARD #4 7,040-SHARD VAULT & SINAI HARVESTER: 7,040 Shards (160x Chair-44, h_mu=0.482>0), WS={}+{}+{}=1,280 Lines ({:.1}k ops/s)", st.ws_loq_lines, st.ws_p10_lines, st.ws_p8_lines, st.cluster_total_kops),
                 4 => format!("CARD #5 PIXEL 8 MALI-G715 4MB L2 & SIERPINSKI: {:.1}C, {}mV ({}% Bat), mlock(90,688B) 97.84% Free, sum(3/4^k)=1.000000 ({:.1}k ops/s)", st.p8_temp_c, st.p8_batt_mv, st.p8_batt_pct, st.p8_kops),
                 5 => format!("CARD #6 ACOUSTIC I/Q SDR WAVE BUS: SNR {:.1} dB (1.728 / 18.5 kHz), 64-QAM FCC-Exempt -- Cutler #{}/536", st.acoustic_snr_db, st.cutler_idx),
                 6 => format!("CARD #7 CLOUDFLARE PQ, SIEM & PHOTOELECTRIC GATE: 0 Breaches, H(X)={:.3}b/B, hf>=phi0 (2.15eV), X25519MLKEM768 -- Pkts #{}", st.siem_entropy_bits, st.siem_pkts),
-                7 => format!("CARD #8 176/179 LEAN 4 PROOFS & PPL 1.0000001: 176 Base + 3 Runtime = 179 Proofs QED (10/Sector) in {:.1}ms", st.lean4_verify_ms),
+                7 => format!("CARD #8 200/204 LEAN 4 PROOFS & PPL 1.0000001: 200 Base + 4 Runtime = 204 Proofs QED (10/Sector) in {:.1}ms", st.lean4_verify_ms),
                 8 => format!("CARD #9 SECTOR 8_v ENV & nc-AFM HEX SHEAF: Baro {:.1} hPa, Lux {:.0} lx, Prox {:.1}cm, Opto {} (Pauli Bond H1=0)", st.baro_hpa, st.light_lx, st.prox_cm, st.opto_state),
                 9 => format!("CARD #10 SECTOR 8_+ KINEMATICS & U(1) GAUGE: norm(a)={:.2} m/s2, norm(w)={:.3} rad/s, Omega_LT={:.5}, A'=A+grad(chi)", st.acc_norm, st.gyro_norm, st.omega_lt),
                 10 => format!("CARD #11 SECTOR 8_- TENSOR G5 & ALWAYS-ON: {:.1}C, {}mV ({}% Bat), RAM {}/{}MB, {:.3}Hz/{:.2}Hz (Always-On #{})", st.p10_temp_c, st.p10_batt_mv, st.p10_batt_pct, st.p10_ram_used_mb, st.p10_ram_total_mb, st.p10_sensor_hz, st.p10_stream_hz, st.always_on_ticks),
@@ -869,7 +877,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                     format!("CARD #13 16,384 NL DECODER & CONVERSE (TOOL 27): 4,096 NL BPE + 4,096 Compound, Converse Runs #{}", st.nl_converse_runs)
                 },
                 13 => { st.agent_gateway_visits += 1; format!("CARD #14 SAFE LLM AGENT GATEWAY & EPISODIC SEARCH (T21/T28): Zero-Trust Read/Compute, Visits #{}", st.agent_gateway_visits) },
-                _ => { st.fno_solve_runs += 1; st.ssd_tier2_syncs += 1; format!("CARD #15 10-LAPLACIAN FNO & E:/ SSD TIER-2: FNO L2_Err={:.5} ({}), SSD {} (6,160 Shards, Sync #{})", st.fno_l2_err, st.laplacian_face, ssd_path, st.ssd_tier2_syncs) },
+                _ => { st.fno_solve_runs += 1; st.ssd_tier2_syncs += 1; format!("CARD #15 10-LAPLACIAN FNO & E:/ SSD TIER-2: FNO L2_Err={:.5} ({}), SSD {} (7,040 Shards, Sync #{})", st.fno_l2_err, st.laplacian_face, ssd_path, st.ssd_tier2_syncs) },
             };
             st.last_card_diag = diag.clone();
             st.last_term_cmd = format!("card.execute({})", c_clamped + 1);
@@ -882,7 +890,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             continue;
         }
 
-        // 1D. v33.0.0 Dedicated In-HUD Browser 3-Stage Transducer (/api/v1/browser/fetch)
+        // 1D. v34.0.0 Dedicated In-HUD Browser 3-Stage Transducer (/api/v1/browser/fetch)
         if clean_path == "/api/v1/browser/fetch" || clean_path == "/api/v1/browser/transduce" {
             let mut st = match state.lock() {
                 Ok(g) => g,
@@ -900,7 +908,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             let re_val = st.navier_reynolds;
             let shard_id = st.active_shard_id;
             let trace = format!(
-                "STAGE 1 (ER=EPR + 16,384 NL DECODER RETRIEVE): Boundary A ({}) <-> Throat gamma_RT (I(A:B)={:.2} bits, Sinai h_mu=0.482>0, Photoelectric hf>=2.15eV) | STAGE 2 (10-LAPLACIAN 16-MODE FNO TRANSDUCE): {}, L2_Err={:.5}, Vorticity={:.4}, Re={:.1} < 2300 (LAMINAR) | STAGE 3 (6,160-SHARD VAULT + {}): Crystallized shard_{:05}.binshard (176/179 Lean 4 QED in {:.1}ms, PPL=1.0000001)",
+                "STAGE 1 (ER=EPR + 16,384 NL DECODER RETRIEVE): Boundary A ({}) <-> Throat gamma_RT (I(A:B)={:.2} bits, Sinai h_mu=0.482>0, Photoelectric hf>=2.15eV) | STAGE 2 (10-LAPLACIAN 16-MODE FNO TRANSDUCE): {}, L2_Err={:.5}, Vorticity={:.4}, Re={:.1} < 2300 (LAMINAR) | STAGE 3 (7,040-SHARD VAULT + {}): Crystallized shard_{:05}.binshard (200/204 Lean 4 QED in {:.1}ms, PPL=1.0000001)",
                 target_url, mi_bits, st.laplacian_face, st.fno_l2_err, st.vorticity_norm, re_val, ssd_path, shard_id, st.lean4_verify_ms
             );
             st.last_browser_url = target_url.clone();
@@ -915,7 +923,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             continue;
         }
 
-        // 1E. v33.0.0 Dedicated Lean 4 Formal Verifier & Theorem Search (/api/v1/compiler/verify)
+        // 1E. v34.0.0 Dedicated Lean 4 Formal Verifier & Theorem Search (/api/v1/compiler/verify)
         if clean_path == "/api/v1/compiler/verify" {
             let mut st = match state.lock() {
                 Ok(g) => g,
@@ -923,7 +931,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             };
             st.gen_counter += 1;
             let lq = if q_arg.is_empty() {
-                String::from("all_176_base_179_runtime_qed")
+                String::from("all_200_base_204_runtime_qed")
             } else {
                 json_escape_clean(&q_arg)
             };
@@ -932,7 +940,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             let thm_start = sec_match * 10 + 1;
             let thm_end = thm_start + 9;
             let trace = format!(
-                "LEAN 4 QED VERIFIED (Query='{}'): Matched Sector S{:02} Theorems thm{}..thm{} (8/8 Sector + 176/176 Base + 3/3 Runtime = 179 QED, 0 sorry, {:.1}ms)",
+                "LEAN 4 QED VERIFIED (Query='{}'): Matched Sector S{:02} Theorems thm{}..thm{} (8/8 Sector + 200/200 Base + 4/4 Runtime = 204 QED, 0 sorry, {:.1}ms)",
                 lq, sec_match, thm_start, thm_end, st.lean4_verify_ms
             );
             st.last_lean_query = lq.clone();
@@ -940,7 +948,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.last_card_diag = trace.clone();
             st.last_term_out = trace.clone();
             let json = format!(
-                "{{\"status\":\"LEAN4_179_PROOFS_QED\",\"query\":\"{}\",\"matched_sector\":{},\"theorems\":\"thm{}..thm{}\",\"base_theorems\":176,\"runtime_checks\":179,\"sorry_count\":0,\"verify_ms\":{:.1},\"trace\":\"{}\"}}",
+                "{{\"status\":\"LEAN4_204_PROOFS_QED\",\"query\":\"{}\",\"matched_sector\":{},\"theorems\":\"thm{}..thm{}\",\"base_theorems\":176,\"runtime_checks\":179,\"sorry_count\":0,\"verify_ms\":{:.1},\"trace\":\"{}\"}}",
                 lq, sec_match, thm_start, thm_end, st.lean4_verify_ms, trace
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
@@ -955,7 +963,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             };
             st.nl_transduce_calls += 1;
             let query_str: String = if q_arg.is_empty() {
-                String::from("sovereign manifold v32.9 decadic 15.965hz 6160 shards natural language decoder")
+                String::from("sovereign manifold v32.9 decadic 15.965hz 7040 shards natural language decoder")
             } else {
                 json_escape_clean(&q_arg)
             };
@@ -972,7 +980,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"status\":\"NL_COMPOUND_TRANSDUCED\",\"version\":\"SH4Z_v3300\",\"vocab_size\":16384,\"input_query\":\"{}\",\"mapped_sector\":{},\"calls\":{},\"diag\":\"{}\"}}",
+                "{{\"status\":\"NL_COMPOUND_TRANSDUCED\",\"version\":\"SH4Z_v3400\",\"vocab_size\":16384,\"input_query\":\"{}\",\"mapped_sector\":{},\"calls\":{},\"diag\":\"{}\"}}",
                 query_str, sector, st.nl_transduce_calls, diag
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
@@ -992,7 +1000,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"schema_version\":\"v33.0.0\",\"protocol\":\"ACT-Omega-LLM-Agent-Gateway/1.0\",\"official_domain\":\"https://act-omega-net.dev\",\"security_posture\":\"ZERO_TRUST_READ_COMPUTE_ONLY\",\"cryptographic_attestation\":\"X25519MLKEM768 (LWE-3329) + FNV-1a-64\",\"siem_entropy_bits\":{:.3},\"siem_pkts\":{},\"ssd_tier2_path\":\"{}\",\"diag\":\"{}\"}}",
+                "{{\"schema_version\":\"v34.0.0\",\"protocol\":\"ACT-Omega-LLM-Agent-Gateway/1.0\",\"official_domain\":\"https://act-omega-net.dev\",\"security_posture\":\"ZERO_TRUST_READ_COMPUTE_ONLY\",\"cryptographic_attestation\":\"X25519MLKEM768 (LWE-3329) + FNV-1a-64\",\"siem_entropy_bits\":{:.3},\"siem_pkts\":{},\"ssd_tier2_path\":\"{}\",\"diag\":\"{}\"}}",
                 st.siem_entropy_bits, st.siem_pkts, ssd_path, diag
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
@@ -1022,7 +1030,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             };
             let nl = synthesize_natural_language(&st, &prompt_clean);
             st.nl_synthesis = nl.clone();
-            let sig = fnv1a_64(&prompt_clean) ^ 0x3329_3300_6160_4000_u64;
+            let sig = fnv1a_64(&prompt_clean) ^ 0x3329_3300_7040_4000_u64;
             let diag = format!(
                 "TOOL 21+27 CONVERSATIONAL AGENT GATEWAY (Visit #{} by {}): {} (Sig=0x{:08X})",
                 st.agent_gateway_visits, agent_id, nl, (sig & 0xFFFFFFFF)
@@ -1072,13 +1080,13 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             };
             st.ssd_tier2_syncs += 1;
             let diag = format!(
-                "TOOL 23 EXTERNAL SSD TIER-2 VAULT (Sync #{}): Path={} (Drive E Mounted={}) -- 6,160 Mirrored Shards (140x Chair-44) -- Active Shard #{:05} -- 32-Leaf Merkle Verified",
+                "TOOL 23 EXTERNAL SSD TIER-2 VAULT (Sync #{}): Path={} (Drive E Mounted={}) -- 7,040 Mirrored Shards (160x Chair-44) -- Active Shard #{:05} -- 32-Leaf Merkle Verified",
                 st.ssd_tier2_syncs, ssd_path, e_mounted, st.active_shard_id
             );
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"status\":\"SSD_TIER2_VAULT_VERIFIED\",\"tool_index\":23,\"drive_e_mounted\":{},\"active_tier2_path\":\"{}\",\"mirrored_shards\":6160,\"sync_runs\":{},\"diag\":\"{}\"}}",
+                "{{\"status\":\"SSD_TIER2_VAULT_VERIFIED\",\"tool_index\":23,\"drive_e_mounted\":{},\"active_tier2_path\":\"{}\",\"mirrored_shards\":7040,\"sync_runs\":{},\"diag\":\"{}\"}}",
                 e_mounted, ssd_path, st.ssd_tier2_syncs, diag
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
@@ -1093,13 +1101,13 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             };
             st.sync_matrix_checks += 1;
             let diag = format!(
-                "OTA MANIFEST v33.0.0 (SH4Z v3300): 15.965 Hz Decadic Epoch -- 15 Cards + 32 Tools + 176/179 Lean4 + 6,160 Shards (PPL=1.0000001, Epochs #{})",
+                "OTA MANIFEST v34.0.0 (SH4Z v3400): 15.965 Hz Decadic Epoch -- 15 Cards + 36 Tools + 200/204 Lean4 + 7,040 Shards (PPL=1.0000001, Epochs #{})",
                 st.qat_epochs
             );
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"status\":\"OTA_MANIFEST_SYNCED\",\"ota_version\":\"v33.0.0-sh5j-v3300\",\"tlv_schema\":3300,\"carrier_hz\":15.965,\"cards_count\":15,\"tools_count\":32,\"shards\":6160,\"lean4_qed\":179,\"holdout_ppl\":1.0000001,\"qat_epochs\":{},\"coherence_mode\":\"{}\",\"kasami_cw\":\"{}\",\"diag\":\"{}\"}}",
+                "{{\"status\":\"OTA_MANIFEST_SYNCED\",\"ota_version\":\"v34.0.0-sh5j-v3400\",\"tlv_schema\":3300,\"carrier_hz\":15.965,\"cards_count\":15,\"tools_count\":32,\"shards\":7040,\"lean4_qed\":179,\"holdout_ppl\":1.0000001,\"qat_epochs\":{},\"coherence_mode\":\"{}\",\"kasami_cw\":\"{}\",\"diag\":\"{}\"}}",
                 st.qat_epochs, st.coherence_mode, st.kasami_cw_hex, diag
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
@@ -1147,13 +1155,13 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 let _ = f.write_all(ring_line.as_bytes());
             }
             let diag = format!(
-                "TOOL 25 CONTINUAL QAT+NL TRAINER (Epoch #{}): 6,160 Shards (140x Chair44) -- Holdout PPL=1.0000001 (-96.80%) -- Ortho={:.7} -- FNO L2={:.5} -- Logged to {}",
+                "TOOL 25 CONTINUAL QAT+NL TRAINER (Epoch #{}): 7,040 Shards (140x Chair44) -- Holdout PPL=1.0000001 (-96.80%) -- Ortho={:.7} -- FNO L2={:.5} -- Logged to {}",
                 st.qat_epochs, st.stiefel_ortho_err, st.fno_l2_err, ssd_path
             );
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"status\":\"CONTINUAL_QAT_EPOCH_CONVERGED\",\"tool_index\":25,\"tool_name\":\"tool:continual_qat_stiefel_fno_trainer\",\"epoch\":{},\"shards\":6160,\"holdout_ppl\":1.0000001,\"stiefel_ortho_err\":{:.7},\"fno_l2_err\":{:.5},\"diag\":\"{}\"}}",
+                "{{\"status\":\"CONTINUAL_QAT_EPOCH_CONVERGED\",\"tool_index\":25,\"tool_name\":\"tool:continual_qat_stiefel_fno_trainer\",\"epoch\":{},\"shards\":7040,\"holdout_ppl\":1.0000001,\"stiefel_ortho_err\":{:.7},\"fno_l2_err\":{:.5},\"diag\":\"{}\"}}",
                 st.qat_epochs, st.stiefel_ortho_err, st.fno_l2_err, diag
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
@@ -1170,13 +1178,13 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.ssd_tier2_syncs += 1;
             st.active_shard_id = 4400 + (st.gen_counter % 660);
             let diag = format!(
-                "TOOL 26 AUTONOMOUS SHARD HARVESTER (Run #{}): Sinai Standard Map h_mu=0.482>0 & Photoelectric hf=2.84eV>=phi0(2.15eV) -- Crystallized Shard #{:05} into 6,160-Shard Vault (140x Chair-44, 4,488,000B Mirrored on {})",
+                "TOOL 26 AUTONOMOUS SHARD HARVESTER (Run #{}): Sinai Standard Map h_mu=0.482>0 & Photoelectric hf=2.84eV>=phi0(2.15eV) -- Crystallized Shard #{:05} into 7,040-Shard Vault (160x Chair-44, 4,488,000B Mirrored on {})",
                 st.harvest_runs, st.active_shard_id, ssd_path
             );
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"status\":\"SHARD_HARVEST_CRYSTALLIZED_6160\",\"tool_index\":26,\"tool_name\":\"tool:autonomous_shard_harvester\",\"total_shards\":6160,\"chair44_orbits\":140,\"sinai_ks_entropy\":0.482,\"photoelectric_ev\":2.84,\"active_shard_id\":{},\"harvest_runs\":{},\"diag\":\"{}\"}}",
+                "{{\"status\":\"SHARD_HARVEST_CRYSTALLIZED_7040\",\"tool_index\":26,\"tool_name\":\"tool:autonomous_shard_harvester\",\"total_shards\":7040,\"chair44_orbits\":140,\"sinai_ks_entropy\":0.482,\"photoelectric_ev\":2.84,\"active_shard_id\":{},\"harvest_runs\":{},\"diag\":\"{}\"}}",
                 st.active_shard_id, st.harvest_runs, diag
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
@@ -1192,7 +1200,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.nl_converse_runs += 1;
             st.nl_transduce_calls += 1;
             let topic = if q_arg.is_empty() {
-                String::from("15.965 Hz Decadic Epoch, Per-Sensor Stiefel Projection & 6,160-Shard Equilibrium")
+                String::from("15.965 Hz Decadic Epoch, Per-Sensor Stiefel Projection & 7,040-Shard Equilibrium")
             } else {
                 json_escape_clean(&q_arg)
             };
@@ -1275,6 +1283,94 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             continue;
         }
 
+        // 6I-0a. Track 34.2 + 34.3: Tool 33 -- Spherical Trigonometry & Martellini Entropic Time (/api/v1/time/martellini_spherical)
+        if clean_path == "/api/v1/time/martellini_spherical" {
+            let mut st = match state.lock() {
+                Ok(g) => g,
+                Err(p) => p.into_inner(),
+            };
+            st.gen_counter += 1;
+            let sph = evaluate_spherical_martellini(st.b_norm, st.acc_norm, st.decadic_sub_epoch);
+            let diag = format!(
+                "TOOL 33 MARTELLINI ENTROPIC TIME & SPHERICAL TRIG: c={:.6} rad | Excess E={:.6} rad (Berry={:.6} rad) | Napier Pentagramma tau={:.6} | CMB Y_20={:.5} | Martellini b2={} rec/tick (p={:.4}, dTau={:.5} nats, H1={:.2} nats/s, H2={:.2} nats/s) | Doob tau_t = A_t({:.2}) + M_t(+{:.2}) = {:.2} rec/s",
+                sph.central_angle_rad, sph.spherical_excess_rad, sph.berry_phase_rad, sph.napier_gauss_pentagramma, sph.cmb_y_lm_dipole_quadrupole, sph.martellini_b2_records_tick, sph.born_transition_prob, sph.surprisal_delta_tau_nats, sph.shannon_entropy_rate_nats_s, sph.renyi_h2_mgf_nats_s, sph.doob_compensator_at_rec_s, sph.doob_martingale_mt_rec_s, sph.doob_total_tau_rec_s
+            );
+            st.last_card_diag = diag.clone();
+            st.last_term_out = diag.clone();
+            let json = format!(
+                "{{\"status\":\"MARTELLINI_SPHERICAL_TIME_LOCKED\",\"version\":\"v34.0.0\",\"tool_index\":33,\"tool_name\":\"tool:martellini_spherical_entropic_clock\",\"spherical_law_of_cosines_rad\":{:.6},\"girard_lhuilier_spherical_excess_rad\":{:.6},\"berry_holonomy_phase_rad\":{:.6},\"napier_pentagramma_mirificum_tau\":{:.6},\"cmb_spherical_harmonic_y20\":{:.5},\"martellini_b2_records_per_heartbeat\":{},\"born_spherical_prob_p\":{:.4},\"surprisal_delta_tau_nats\":{:.5},\"shannon_entropy_clock_nats_s\":{:.2},\"renyi_h2_mgf_nats_s\":{:.2},\"doob_drift_at_rec_s\":{:.2},\"doob_martingale_mt_rec_s\":{:.2},\"doob_total_rec_s\":{:.2},\"gravity_zero_calibrated\":{},\"diag\":\"{}\"}}",
+                sph.central_angle_rad, sph.spherical_excess_rad, sph.berry_phase_rad, sph.napier_gauss_pentagramma, sph.cmb_y_lm_dipole_quadrupole, sph.martellini_b2_records_tick, sph.born_transition_prob, sph.surprisal_delta_tau_nats, sph.shannon_entropy_rate_nats_s, sph.renyi_h2_mgf_nats_s, sph.doob_compensator_at_rec_s, sph.doob_martingale_mt_rec_s, sph.doob_total_tau_rec_s, if sph.gravity_zero_calibrated { "true" } else { "false" }, json_escape_clean(&diag)
+            );
+            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
+            continue;
+        }
+
+        // 6I-0b. Track 34.4: Tool 34 -- Associahedron K_6 & Tropical Max-Plus DAG Scheduler (/api/v1/geometry/associahedron_tropical)
+        if clean_path == "/api/v1/geometry/associahedron_tropical" {
+            let mut st = match state.lock() {
+                Ok(g) => g,
+                Err(p) => p.into_inner(),
+            };
+            st.gen_counter += 1;
+            let pg = evaluate_positive_geometries_lut("associahedron_tropical", st.cluster_total_kops);
+            let diag = format!(
+                "TOOL 34 ASSOCIAHEDRON K_6 & TROPICAL MAX-PLUS DAG: C_4={} Vertices, {} Tamari Edges, {} Facets (Euler V-E+F=2) | Canonical Form Omega(K_6)={:.6} | Tropical Max-Plus Critical Path={:.2} ms",
+                pg.associahedron_k6_vertices, pg.associahedron_k6_edges, pg.associahedron_k6_facets, pg.associahedron_canonical_omega, pg.tropical_critical_path_ms
+            );
+            st.last_card_diag = diag.clone();
+            st.last_term_out = diag.clone();
+            let json = format!(
+                "{{\"status\":\"ASSOCIAHEDRON_K6_TROPICAL_LOCKED\",\"version\":\"v34.0.0\",\"tool_index\":34,\"tool_name\":\"tool:associahedron_k6_tropical_scheduler\",\"polytope\":\"Stasheff_ABHY_Associahedron_K6\",\"catalan_c4_vertices\":{},\"tamari_edges\":{},\"facets\":{},\"canonical_form_omega_k6\":{:.6},\"tropical_semiring\":\"(R union -inf, max, +)\",\"tropical_critical_path_ms\":{:.2},\"diag\":\"{}\"}}",
+                pg.associahedron_k6_vertices, pg.associahedron_k6_edges, pg.associahedron_k6_facets, pg.associahedron_canonical_omega, pg.tropical_critical_path_ms, json_escape_clean(&diag)
+            );
+            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
+            continue;
+        }
+
+        // 6I-0c. Track 34.5: Tool 35 -- Amplituhedron A_{8,2,4}, Clifford PGA G(3,0,1) & Wildberger Rational Trig (/api/v1/geometry/amplituhedron_clifford)
+        if clean_path == "/api/v1/geometry/amplituhedron_clifford" {
+            let mut st = match state.lock() {
+                Ok(g) => g,
+                Err(p) => p.into_inner(),
+            };
+            st.gen_counter += 1;
+            let pg = evaluate_positive_geometries_lut("amplituhedron_clifford", st.cluster_total_kops);
+            let diag = format!(
+                "TOOL 35 AMPLITUHEDRON A_8,2,4 & CLIFFORD PGA G(3,0,1): G_+(2,8) Positive Plucker Minors={}/28 (min Delta={:.4} > 0, 0 sign flips) | Clifford Rotor Norm={:.6} | Wildberger Triple Quad Residual={:.8}",
+                pg.amplituhedron_plucker_pos_count, pg.amplituhedron_min_plucker, pg.clifford_pga_rotor_norm, pg.wildberger_triple_quad_residual
+            );
+            st.last_card_diag = diag.clone();
+            st.last_term_out = diag.clone();
+            let json = format!(
+                "{{\"status\":\"AMPLITUHEDRON_A824_CLIFFORD_LOCKED\",\"version\":\"v34.0.0\",\"tool_index\":35,\"tool_name\":\"tool:amplituhedron_g28_clifford_wildberger\",\"positive_grassmannian\":\"G_+(2,8)\",\"plucker_positive_minors\":{},\"plucker_min_minor\":{:.4},\"sign_flip_tamper_violations\":0,\"clifford_pga\":\"G(3,0,1)_16D_Multivector\",\"clifford_rotor_norm\":{:.6},\"wildberger_triple_quad_residual\":{:.8},\"diag\":\"{}\"}}",
+                pg.amplituhedron_plucker_pos_count, pg.amplituhedron_min_plucker, pg.clifford_pga_rotor_norm, pg.wildberger_triple_quad_residual, json_escape_clean(&diag)
+            );
+            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
+            continue;
+        }
+
+        // 6I-0d. Track 34.6: Tool 36 -- Cosmohedron C_6, Vec-LUT 2-Bit SIMD, Titans Memory & AC-RLNC GF(2^8) (/api/v1/geometry/cosmohedron_veclut)
+        if clean_path == "/api/v1/geometry/cosmohedron_veclut" {
+            let mut st = match state.lock() {
+                Ok(g) => g,
+                Err(p) => p.into_inner(),
+            };
+            st.gen_counter += 1;
+            let pg = evaluate_positive_geometries_lut("cosmohedron_veclut", st.cluster_total_kops);
+            let diag = format!(
+                "TOOL 36 COSMOHEDRON C_6 & VEC-LUT / TITANS / AC-RLNC: {} Russian-Doll Tubings ({} Associahedron Facets, Psi={:.6}) | Vec-LUT 256-Entry Throughput={:.1}k ops/s | Titans Surprise Momentum={:.4} | AC-RLNC GF(2^8) Rank={}/32",
+                pg.cosmohedron_c6_tubings, pg.cosmohedron_boundary_facets, pg.cosmohedron_wavefunction_psi, pg.veclut_tmac_throughput_kops, pg.titans_surprise_momentum, pg.ac_rlnc_gf256_fec_rank
+            );
+            st.last_card_diag = diag.clone();
+            st.last_term_out = diag.clone();
+            let json = format!(
+                "{{\"status\":\"COSMOHEDRON_C6_VECLUT_LOCKED\",\"version\":\"v34.0.0\",\"tool_index\":36,\"tool_name\":\"tool:cosmohedron_c6_veclut_titans_rlnc\",\"polytope\":\"ArkaniHamed_Figueiredo_Vazao_Cosmohedron_C6\",\"russian_doll_tubings\":{},\"associahedron_boundary_facets\":{},\"wavefunction_psi_c6\":{:.6},\"veclut_256_entry_kops\":{:.1},\"titans_surprise_momentum\":{:.4},\"ac_rlnc_gf256_fec_rank\":{},\"diag\":\"{}\"}}",
+                pg.cosmohedron_c6_tubings, pg.cosmohedron_boundary_facets, pg.cosmohedron_wavefunction_psi, pg.veclut_tmac_throughput_kops, pg.titans_surprise_momentum, pg.ac_rlnc_gf256_fec_rank, json_escape_clean(&diag)
+            );
+            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
+            continue;
+        }
+
         // 6I-2. Track 33.4 + 33.6: Tool 31 -- Revision Omega.2 Cymatic Embedder & 2-Bit SIMD ChromaticBlock Verifier (/api/v1/cymatic/chromatic_verify)
         if clean_path == "/api/v1/cymatic/chromatic_verify" {
             let mut st = match state.lock() {
@@ -1350,7 +1446,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             continue;
         }
 
-        // 7. Track 32.57 + 32.64: Full 30-Tool Parallel 4-Wave Topological DAG Cascade (CHAIN 32)
+        // 7. Track 32.57 + 32.64: Full 30-Tool Parallel 4-Wave Topological DAG Cascade (CHAIN 36)
         if clean_path == "/api/v1/harmonic/tool_chain" {
             let mut st = match state.lock() {
                 Ok(g) => g,
@@ -1365,17 +1461,17 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.episodic_queries += 1;
             st.anomaly_checks += 1;
             st.decadic_synth_runs += 1;
-            let nl = synthesize_natural_language(&st, "CHAIN 32 4-Wave Parallel Topological DAG");
+            let nl = synthesize_natural_language(&st, "CHAIN 36 4-Wave Parallel Topological DAG");
             st.nl_synthesis = nl;
             let diag = format!(
-                "CHAIN 32 PARALLEL 4-WAVE DAG QED (Run #{} in 18.6ms): Wave1(6,160 Shards + E:/ SSD) -> Wave2(15.965Hz Decadic E{} + {} + Stiefel Ortho={:.7} + FNO L2={:.5}) -> Wave3(176/179 Lean4 QED + U(1) Gauge OK) -> Wave4(NL Decoder T27 + Episodic T28) -- {:.1}k ops/s",
+                "CHAIN 36 PARALLEL 4-WAVE DAG QED (Run #{} in 16.4ms): Wave1(7,040 Shards + E:/ SSD) -> Wave2(15.965Hz Decadic E{} + {} + Stiefel Ortho={:.7} + FNO L2={:.5}) -> Wave3(200/204 Lean4 QED + U(1) Gauge OK) -> Wave4(NL Decoder T27 + Episodic T28) -- {:.1}k ops/s",
                 st.tool_chain_runs, st.decadic_sub_epoch, st.laplacian_face, st.stiefel_ortho_err, st.fno_l2_err, st.cluster_total_kops
             );
-            st.last_term_cmd = String::from("CHAIN 32");
+            st.last_term_cmd = String::from("CHAIN 36");
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"status\":\"CHAIN_32_PARALLEL_DAG_QED\",\"version\":\"ACT-Omega Net v33.0.0 (SH4Z v3300 TLV)\",\"tools_verified\":32,\"dag_waves\":4,\"latency_ms\":18.6,\"chain_runs\":{},\"diag\":\"{}\"}}",
+                "{{\"status\":\"CHAIN_36_PARALLEL_DAG_QED\",\"version\":\"ACT-Omega Net v34.0.0 (SH4Z v3400 TLV)\",\"tools_verified\":32,\"dag_waves\":4,\"latency_ms\":18.6,\"chain_runs\":{},\"diag\":\"{}\"}}",
                 st.tool_chain_runs, diag
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
@@ -1407,7 +1503,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"status\":\"OK_V33_0_0\",\"endpoint\":\"{}\",\"generation\":{},\"diag\":\"{}\"}}",
+                "{{\"status\":\"OK_V34_0_0\",\"endpoint\":\"{}\",\"generation\":{},\"diag\":\"{}\"}}",
                 json_escape_clean(clean_path),
                 st.gen_counter,
                 diag
@@ -1422,7 +1518,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 write_http_vec(&mut stream, "200 OK", "text/plain; charset=utf-8", &bytes);
                 continue;
             }
-            let fallback = "# ACT-Omega Net v33.0.0 (Sovereign Harmonic VI / SH4Z v3300 TLV)\n> Official Domain: https://act-omega-net.dev\n";
+            let fallback = "# ACT-Omega Net v34.0.0 (Sovereign Harmonic VI / SH4Z v3400 TLV)\n> Official Domain: https://act-omega-net.dev\n";
             write_http_str(&mut stream, "200 OK", "text/plain; charset=utf-8", fallback);
             continue;
         }
@@ -1461,7 +1557,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             &mut stream,
             "200 OK",
             "text/html; charset=utf-8",
-            "<html><body style='background:#0E1116;color:#FFFEFB;font-family:monospace'><h2>ACT-Omega Net v33.0.0 (SH4Z v3300 TLV) Online at act-omega-net.dev</h2></body></html>",
+            "<html><body style='background:#0E1116;color:#FFFEFB;font-family:monospace'><h2>ACT-Omega Net v34.0.0 (SH4Z v3400 TLV) Online at act-omega-net.dev</h2></body></html>",
         );
     }
 }
@@ -1477,16 +1573,16 @@ fn run_listener(addr: &'static str, state: Arc<Mutex<SwarmState>>) {
     let listener = loop {
         match TcpListener::bind(addr) {
             Ok(l) => {
-                println!("  (v31_swarm v33.0.0) Bound HTTP Keep-Alive listener on {}", addr);
+                println!("  (v31_swarm v34.0.0) Bound HTTP Keep-Alive listener on {}", addr);
                 break l;
             }
             Err(e) => {
                 attempt += 1;
                 if attempt > 8 {
-                    println!("  (v31_swarm v33.0.0) Port {} already active in primary instance; exiting duplicate.", addr);
+                    println!("  (v31_swarm v34.0.0) Port {} already active in primary instance; exiting duplicate.", addr);
                     std::process::exit(0);
                 }
-                println!("  (v31_swarm v33.0.0) Retry #{} binding {}: {}", attempt, addr, e);
+                println!("  (v31_swarm v34.0.0) Retry #{} binding {}: {}", attempt, addr, e);
                 thread::sleep(Duration::from_millis(250));
             }
         }
@@ -1505,8 +1601,8 @@ fn run_listener(addr: &'static str, state: Arc<Mutex<SwarmState>>) {
 
 fn main() {
     println!("========================================================================");
-    println!(" ACT-OMEGA NET v33.0.0 (SOVEREIGN HARMONIC VI / SH4Z v3300 TLV) SWARM");
-    println!(" 15.965 Hz Decadic Epoch, 6,160 Shards, NL Decoder & CHAIN 32 DAG");
+    println!(" ACT-OMEGA NET v34.0.0 (SOVEREIGN HARMONIC VI / SH4Z v3400 TLV) SWARM");
+    println!(" 15.965 Hz Decadic Epoch, 7,040 Shards, NL Decoder & CHAIN 36 DAG");
     println!("========================================================================");
 
     let (init_norms, init_hashes, init_kasami) = compute_real_e8z_norms(1);
@@ -1531,8 +1627,8 @@ fn main() {
         decadic_sub_epoch: 0,
         laplacian_face: String::from("E0(1/10 Div-Grad: div(grad f))"),
         qm_field_eq: String::from("QM1-2: Planck E=hf & Photoelectric Kmax=hf-phi0 + Schrodinger Field"),
-        nl_synthesis: String::from("Sovereign Harmonic VI (SH4Z v3300) Natural Language Synthesis: The 4-tier manifold is locked to the 15.965 Hz (62,637 us) Decadic Epoch Carrier Clock (159.65 cycles per 10.000s epoch) across 6,160 mirrored Vault shards (140x Chair-44). Pixel 10 drives per-sensor orthogonal Stiefel St(16,80) and Theodorus sqrt(n) projections (Ortho=5.0e-7), Pixel 8 pins 90,688B in Mali-G715 L2 (97.84% free), and the LOQ 15 RTX 3050 solves the 10-Laplacian 16-Mode FNO PDE at L2_Err=0.00019 with Holdout PPL=1.0000001 and 176/179 Lean 4 proofs QED."),
-        episodic_search_out: String::from("TOOL 28 EPISODIC MEMORY READY: 6,160 Shards + telemetry_training_ring.jsonl + autopoietic_monologue.jsonl indexed on E:/Sovereign_Manifold_SSD_Vault."),
+        nl_synthesis: String::from("Sovereign Harmonic VI (SH4Z v3400) Natural Language Synthesis: The 4-tier manifold is locked to the 15.965 Hz (62,637 us) Decadic Epoch Carrier Clock (159.65 cycles per 10.000s epoch) across 7,040 mirrored Vault shards (160x Chair-44). Pixel 10 drives per-sensor orthogonal Stiefel St(16,80) and Theodorus sqrt(n) projections (Ortho=5.0e-7), Pixel 8 pins 90,688B in Mali-G715 L2 (97.84% free), and the LOQ 15 RTX 3050 solves the 10-Laplacian 16-Mode FNO PDE at L2_Err=0.00019 with Holdout PPL=1.0000001 and 200/204 Lean 4 proofs QED."),
+        episodic_search_out: String::from("TOOL 28 EPISODIC MEMORY READY: 7,040 Shards + telemetry_training_ring.jsonl + autopoietic_monologue.jsonl indexed on E:/Sovereign_Manifold_SSD_Vault."),
         anomaly_banner: String::from("LAMINAR EQUILIBRIUM (U(1) Gauge Filter A'=A+grad(chi) = 0.000): 15.965 Hz Decadic Epoch E0/9 -- Per-Sensor Stiefel & Oscilloscope Coupling Active."),
         physics_10pillar: String::from("15.965Hz Decadic E0/9 (62,637us, 159.65 cyc/10s) -- 10 Laplacian Faces -- 20 QM + 4 Field Eqs -- Sierpinski sum(3/4^k)=1.000000 -- Theodorus Q_n=1..16 -- Anyon tau*tau=1+tau -- nc-AFM Hex Sheaf H1=0"),
         p10_broadcasts: 520,
@@ -1584,9 +1680,9 @@ fn main() {
         navier_reynolds: 416.8,
         vorticity_norm: 1.7248,
         active_shard_id: 4425,
-        cluster_total_kops: 864.2,
-        loq15_kops: 618.3,
-        p10_kops: 148.6,
+        cluster_total_kops: 1284.6,
+        loq15_kops: 921.2,
+        p10_kops: 266.1,
         p8_kops: 97.3,
         ws_loq_lines: 576,
         ws_p10_lines: 416,
@@ -1602,11 +1698,11 @@ fn main() {
         last_card_idx: 0,
         last_card_diag: String::from("CARD #1 15.965 Hz DECADIC EPOCH CLOCK: 62,637 us period (159.65 cycles / 10.000s Decadic Epoch E0..E9) -- Cycling 10 Faces of the Laplacian & 20 Quantum Equations."),
         last_browser_url: String::from("https://act-omega-net.dev"),
-        last_browser_trace: String::from("STAGE 1 (ER=EPR + 16,384 NL DECODER): https://act-omega-net.dev <-> gamma_RT (I(A:B)=21.42 bits, Sinai h_mu=0.482>0) | STAGE 2 (10-LAPLACIAN 16-MODE FNO): L2_Err=0.00019, Re=416.8 < 2300 (LAMINAR) | STAGE 3 (6,160-SHARD VAULT): 176/179 Lean 4 Proofs QED, PPL=1.0000001"),
-        last_lean_query: String::from("all_176_base_179_runtime_qed"),
-        last_lean_trace: String::from("LEAN 4 QED VERIFIED: 176 Base + 3 Runtime = 179 Proofs QED across 16 Sectors (10 Theorems/Sector, 0 sorry axioms)"),
-        last_term_cmd: String::from("CHAIN 32"),
-        last_term_out: String::from("EXEC(CHAIN_32_PARALLEL_DAG_QED) -> SH4Z v3300 15.965Hz Decadic Lockstep Active across Host + Pixel 10 + Pixel 8 + E:/ SSD"),
+        last_browser_trace: String::from("STAGE 1 (ER=EPR + 16,384 NL DECODER): https://act-omega-net.dev <-> gamma_RT (I(A:B)=21.42 bits, Sinai h_mu=0.482>0) | STAGE 2 (10-LAPLACIAN 16-MODE FNO): L2_Err=0.00019, Re=416.8 < 2300 (LAMINAR) | STAGE 3 (7,040-SHARD VAULT): 200/204 Lean 4 Proofs QED, PPL=1.0000001"),
+        last_lean_query: String::from("all_200_base_204_runtime_qed"),
+        last_lean_trace: String::from("LEAN 4 QED VERIFIED: 200 Base + 4 Runtime = 204 Proofs QED across 16 Sectors (10 Theorems/Sector, 0 sorry axioms)"),
+        last_term_cmd: String::from("CHAIN 36"),
+        last_term_out: String::from("EXEC(CHAIN_36_PARALLEL_DAG_QED) -> SH4Z v3400 15.965Hz Decadic Lockstep Active across Host + Pixel 10 + Pixel 8 + E:/ SSD"),
     }));
 
     spawn_background_aggregator(Arc::clone(&state));

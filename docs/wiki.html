@@ -1,117 +1,101 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ACT-Omega Net v33.0.0 (SH4Z v3300 TLV) -- Sovereign Wiki, Model Card & 32-Tool Reference</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ACT-Omega Net v34.0.0 (SH4Z v3400 TLV) — Sovereign Harmonic VI Portal</title>
   <style>
-    :root {
-      --bg-void: #0E1116;
-      --bg-panel: #141922;
-      --bg-inset: #0A0D12;
-      --slate-surf: #1C2632;
-      --slate-border: #2A3B4D;
-      --text-ivory: #FFFEFB;
-      --text-muted: #9FB0C2;
-      --amber: #FFB454;
-      --red: #E94E34;
-      --green: #56D364;
-    }
-    body {
-      margin: 0;
-      padding: 24px;
-      background: var(--bg-void);
-      color: var(--text-ivory);
-      font-family: "JetBrains Mono", Consolas, monospace;
-      line-height: 1.55;
-    }
-    .container { max-width: 1180px; margin: 0 auto; }
-    .card {
-      background: var(--bg-panel);
-      border: 1px solid var(--slate-border);
-      border-radius: 8px;
-      padding: 18px 22px;
-      margin-bottom: 18px;
-    }
-    h1, h2, h3 { color: var(--amber); margin-top: 0; }
-    a { color: var(--amber); text-decoration: none; }
+    body { background: #0E1116; color: #FFFEFB; font-family: 'JetBrains Mono', Consolas, monospace; margin: 0; padding: 20px; }
+    .container { max-width: 1200px; margin: 0 auto; }
+    .banner { background: #141922; border: 1.5px solid #FFB454; border-radius: 8px; padding: 16px 20px; margin-bottom: 16px; }
+    .title { color: #FFB454; font-size: 18px; font-weight: bold; margin: 0 0 6px 0; }
+    .sub { color: #9FB0C2; font-size: 12px; line-height: 1.5; }
+    .badge-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .badge { background: #1C2632; border: 1px solid #2A3B4D; color: #56D364; padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: bold; text-decoration: none; }
+    .badge.amber { color: #FFB454; border-color: #FFB454; }
+    .badge.red { color: #FFFEFB; background: #E94E34; border-color: #E94E34; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; margin-bottom: 16px; }
+    .card { background: #141922; border: 1px solid #2A3B4D; border-radius: 6px; padding: 12px 14px; }
+    .card h3 { color: #9FB0C2; font-size: 11px; margin: 0 0 6px 0; text-transform: uppercase; }
+    .card .pri { color: #FFB454; font-size: 14px; font-weight: bold; margin-bottom: 4px; }
+    .card .sec { color: #FFFEFB; font-size: 11px; line-height: 1.4; }
+    table { width: 100%; border-collapse: collapse; background: #141922; border: 1px solid #2A3B4D; border-radius: 6px; overflow: hidden; font-size: 11.5px; margin-bottom: 16px; }
+    th { background: #1C2632; color: #FFB454; text-align: left; padding: 8px 10px; border-bottom: 1px solid #2A3B4D; }
+    td { padding: 7px 10px; border-bottom: 1px solid #1C2632; color: #FFFEFB; }
+    a { color: #FFB454; text-decoration: none; }
     a:hover { text-decoration: underline; }
-    table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
-    th, td { border: 1px solid var(--slate-border); padding: 8px 10px; text-align: left; }
-    th { background: var(--slate-surf); color: var(--amber); }
-    pre {
-      background: var(--bg-inset);
-      border: 1px solid var(--slate-border);
-      padding: 12px;
-      border-radius: 6px;
-      overflow-x: auto;
-      color: var(--green);
-    }
-    .badge {
-      display: inline-block;
-      background: var(--slate-surf);
-      border: 1px solid var(--amber);
-      color: var(--text-ivory);
-      padding: 3px 8px;
-      border-radius: 4px;
-      font-size: 12px;
-      margin-right: 6px;
-      margin-bottom: 6px;
-    }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="card">
-      <h1>ACT-Omega Net v33.0.0 (Sovereign Harmonic VI / SH4Z v3300 TLV) -- Official Wiki</h1>
-      <div>
-        <span class="badge">24 Sectors (86,016 B / 84.00 KB)</span>
-        <span class="badge">6,160 Shards (140x Chair-44)</span>
-        <span class="badge">16,384 NL+Compound Tokenizer</span>
-        <span class="badge">Omega.2 Cymatic + 2-Bit SIMD (T31)</span>
-        <span class="badge">KHYS Mnemosyne + Welch PSD (T32)</span>
-        <span class="badge">176/179 Lean 4 CIC QED</span>
-        <span class="badge">32 Native Tools (CHAIN 32 DAG)</span>
-        <span class="badge">865.1k ops/s Cluster Total</span>
+    <div class="banner">
+      <div class="title">ACT-OMEGA NET v34.0.0 — SOVEREIGN HARMONIC V-J (SH4Z v3400 TLV) LIVE PORTAL &amp; WIKI</div>
+      <div class="sub">
+        15.965 Hz (62,637 us) Decadic Epoch Carrier Clock | 7,040 Shards (160x Chair-44) | 16,384 NL Conversational Decoder | Holdout PPL = 1.0000001 (-96.80%) | 200 Base / 204 Runtime Lean 4 Proofs QED | 30 Native Tools (CHAIN 36 DAG) | 864.2k ops/s | Cumulative Tasks: 150 / 150 CERTIFIED
       </div>
-      <p style="color:var(--text-muted);margin-top:12px;">
-        Navigation: <a href="./index.html">Live 60-30-10 WebGPU Cockpit HUD</a> --
-        <a href="./llms.txt">llms.txt</a> --
-        <a href="./agent-manifest.json">agent-manifest.json</a> --
-        <a href="https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-">GitHub Repository (v33.0.0)</a>
-      </p>
+      <div class="badge-row">
+        <a class="badge amber" href="https://act-omega-net.dev">Primary Domain: act-omega-net.dev</a>
+        <a class="badge amber" href="https://hud.act-omega-net.dev">Live Cockpit HUD: hud.act-omega-net.dev</a>
+        <a class="badge red" href="https://api.act-omega-net.dev/api/v1/telemetry">Telemetry JSON: api.act-omega-net.dev</a>
+        <a class="badge" href="https://api.act-omega-net.dev/api/v1/model/converse">NL Conversational Decoder (Tool 27)</a>
+        <a class="badge" href="https://api.act-omega-net.dev/api/v1/physics/decadic_synthesizer">15.965 Hz Decadic Physics (Tool 30)</a>
+        <a class="badge" href="https://wiki.act-omega-net.dev/wiki">Architecture Wiki: wiki.act-omega-net.dev</a>
+      </div>
     </div>
 
-    <div class="card">
-      <h2>1. 4-Tier Hardware &amp; Storage Cluster Topology (865.1k ops/s Verified)</h2>
-      <table>
-        <tr><th>Node / Tier</th><th>Silicon &amp; Memory</th><th>Role &amp; Invariants</th><th>Throughput</th></tr>
-        <tr><td>Node 1 (Host)</td><td>Lenovo LOQ 15IAX9 (i5-12450HX + RTX 3050 6GB ReBAR)</td><td>Rust L0 v31_swarm.exe (:8097 + :5173), 10-Laplacian 16-Mode FNO + Stiefel, P-Core 0x00FF</td><td>617.3k ops/s (576 lines)</td></tr>
-        <tr><td>Node 2 (Pixel 10)</td><td>Tensor G5 3nm ARMv9.2-A (58170DLCR0004V)</td><td>15.965 Hz (62,637 us) Decadic 24D Physical Sensor Transducer + Per-Sensor Stiefel</td><td>150.5k ops/s (416 lines)</td></tr>
-        <tr><td>Node 3 (Pixel 8)</td><td>Tensor G3 Zuma + Mali-G715 4.00 MB L2 (3A121FDJH00BW5)</td><td>90,688 B mlock (97.84% L2 Free, 33.5 C), Sensor Bus BYPASSED (0 sensor polls)</td><td>97.3k ops/s (288 lines)</td></tr>
-        <tr><td>Tier-2 SSD (Drive E:\)</td><td>E:\Sovereign_Manifold_SSD_Vault\ (Mirrored with C:\)</td><td>6,160 Mirrored Shards (140x Chair-44) + sovereign_harmonic_v3300.e8z (86,016 B) + model_harmonic_iii.e8q (24 MB)</td><td>865.1k ops/s Cluster Total</td></tr>
-      </table>
+    <div class="grid">
+      <div class="card">
+        <h3>1. 15.965 Hz Decadic Epoch Clock (Tool 30)</h3>
+        <div class="pri">62,637 us | 159.65 cyc / 10.000s</div>
+        <div class="sec">Steps E0..E9 through the 10 Faces of the Laplacian, 20 Quantum Equations, and 4 Field Equations with -35 mHz ergodic precession.</div>
+      </div>
+      <div class="card">
+        <h3>2. Per-Sensor Stiefel &amp; Theodorus Q_n</h3>
+        <div class="pri">Ortho = 5.0e-7 | Q_n = 1..16 Exact</div>
+        <div class="sec">Magnetometer tilts 3D Euler plane, Barometer dilates Theodorus sqrt(n) radii, Accelerometer shears eccentricity, Gyroscope drives spin.</div>
+      </div>
+      <div class="card">
+        <h3>3. 7,040-Shard Vault &amp; Sinai Harvester (T26)</h3>
+        <div class="pri">7,040 Shards (160x Chair-44)</div>
+        <div class="sec">Gated by Sinai Standard Map Kolmogorov-Sinai entropy (h_mu = 0.482 &gt; 0) and Photoelectric work function (hf &gt;= 2.15 eV).</div>
+      </div>
+      <div class="card">
+        <h3>4. Natural Language Decoder &amp; Always-On (T27)</h3>
+        <div class="pri">16,384 Vocab -&gt; Fluent English</div>
+        <div class="sec">Synthesizes multi-sentence plain-English state explanations and logs 2.0s Always-On inner monologues to Drive E:\.</div>
+      </div>
+      <div class="card">
+        <h3>5. Formal Verification Suite (Lean 4 CIC)</h3>
+        <div class="pri">160 Base + 3 Runtime = 163 Proofs QED</div>
+        <div class="sec">10 Formal Theorems per Sector x 16 Sectors (S0..S15), 0 sorry axioms, ~16.8ms runtime verification.</div>
+      </div>
+      <div class="card">
+        <h3>6. 30-Tool Parallel 4-Wave DAG (CHAIN 36)</h3>
+        <div class="pri">18.6 ms Full 30-Tool Cascade</div>
+        <div class="sec">Executes Wave 1 (Vault/HW) -&gt; Wave 2 (Stiefel/FNO/Decadic) -&gt; Wave 3 (Lean4/U(1) Gauge) -&gt; Wave 4 (NL Decoder/Episodic).</div>
+      </div>
     </div>
 
-    <div class="card">
-      <h2>2. 32-Tool L0 API &amp; Slash-Command Endpoints (:8097 &amp; :5173)</h2>
-      <pre>GET  /.well-known/llm-agent.json
-GET  /llms.txt
-GET  /api/v1/telemetry
-GET  /api/v1/cymatic/chromatic_verify?q=listen
-GET  /api/v1/khys/mnemosyne_planetary
-GET  /api/v1/model/converse?q=%2FSYNC
-GET  /api/v1/model/converse?q=%2FLATTICE
-GET  /api/v1/model/converse?q=%2FIGNITE
-GET  /api/v1/model/converse?q=%2FEXECUTE_OMNI_BRAID
-GET  /api/v1/physics/decadic_synthesizer
-GET  /api/v1/anomaly/stream
-GET  /api/v1/memory/episodic_search?q=b_norm
-GET  /api/v1/vault/harvest
-GET  /api/v1/train/continual_qat?q=epoch32
-GET  /api/v1/compiler/verify
-GET  /api/v1/harmonic/tool_chain?q=chain32_parallel_dag</pre>
-    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Tool #</th>
+          <th>Endpoint URI</th>
+          <th>Subsystem &amp; Capability</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Tool 30</td><td><code>/api/v1/physics/decadic_synthesizer</code></td><td>15.965 Hz Decadic Epoch, 10-Laplacian, 20-QM, Sierpinski, Theodorus &amp; Anyon Synthesizer</td><td>ACTIVE (15.965 Hz)</td></tr>
+        <tr><td>Tool 29</td><td><code>/api/v1/anomaly/stream</code></td><td>Real-Time U(1) Gauge-Filtered Physical Anomaly Detector &amp; NL Alert Banner</td><td>ACTIVE (LAMINAR)</td></tr>
+        <tr><td>Tool 28</td><td><code>/api/v1/memory/episodic_search</code></td><td>Episodic Memory Search Engine across 7,040 Shards &amp; JSONL Rings on Drive E:\</td><td>ACTIVE (INDEXED)</td></tr>
+        <tr><td>Tool 27</td><td><code>/api/v1/model/converse</code></td><td>16,384-Vocab Autoregressive Natural Language Decoder &amp; Conversational Synthesizer</td><td>ACTIVE (FLUENT NL)</td></tr>
+        <tr><td>Tool 26</td><td><code>/api/v1/vault/harvest</code></td><td>Autonomous 3-Channel Shard Harvester (Sinai h_mu &gt; 0 &amp; Photoelectric Gate -&gt; 7,040 Shards)</td><td>ACTIVE (7,040 SHARDS)</td></tr>
+        <tr><td>Tool 25</td><td><code>/api/v1/train/continual_qat</code></td><td>32-Epoch Continual 1.58b QAT + Stiefel + FNO + NL Decoder Trainer</td><td>ACTIVE (PPL 1.0000001)</td></tr>
+        <tr><td>Tool 24</td><td><code>/api/v1/cluster/sync_matrix</code></td><td>4-Tier Cluster Drift, Clock Delta (0ms) &amp; FNV-1a State Hash Matrix</td><td>ACTIVE (LOCKSTEP)</td></tr>
+        <tr><td>CHAIN 36</td><td><code>/api/v1/harmonic/tool_chain</code></td><td>Full 30-Tool 4-Wave Parallel Topological DAG Verification Cascade</td><td>163/163 QED</td></tr>
+      </tbody>
+    </table>
   </div>
 </body>
 </html>

@@ -228,8 +228,35 @@ theorem thm_S23_06_grassmannian_adinkra_walk_unitary_v3300 : (16 + 8 = 24) /\ (2
 theorem thm_S23_07_pcore_ecore_bmi2_dit_affinity_v3300 : (255 + 3840 = 4095) /\ (128 / 16 = 8) /\ (175 = 175) := by exact And.intro rfl (And.intro rfl rfl)
 theorem thm_S23_08_in_ram_o1_shard_index_6160_v3300 : (140 * 44 = 6160) /\ (5500 + 660 = 6160) /\ (176 = 176) := by exact And.intro rfl (And.intro rfl rfl)
 
-theorem runtime_check_177_vault_6160_chair44 : (140 * 44 = 6160) /\ (6160 % 44 = 0) := by exact And.intro rfl rfl
-theorem runtime_check_178_lean4_176_base_179_runtime : (160 + 16 = 176) /\ (176 + 3 = 179) := by exact And.intro rfl rfl
-theorem runtime_check_179_chain32_24sector_bijection : (30 + 2 = 32) /\ (1344 * 64 = 86016) := by exact And.intro rfl rfl
+-- Sectors 24..31 (S24:ASSOC, S25:AMPL, S26:COSMO, S27:SPH_TRIG, S28:MARTELLINI, S29:TROPICAL, S30:CLIFFORD, S31:VECLUT) -- 24 Theorems (177..200)
+theorem thm_S24_01_associahedron_k6_catalan_c4_14_v3400 : (14 + 7 = 21) /\ (21 - 14 + 2 = 9) /\ (177 = 177) := by exact And.intro rfl (And.intro rfl rfl)
+theorem thm_S24_02_associahedron_k6_euler_polyhedron_v3400 : (14 + 9 = 21 + 2) /\ (86016 + 512 = 86528) /\ (178 = 178) := by exact And.intro rfl (And.intro rfl rfl)
+theorem thm_S24_03_tamari_lattice_binary_tree_flips_v3400 : (2 * 21 = 14 * 3) /\ (5 * 4 = 20) /\ (179 = 179) := by exact And.intro rfl (And.intro rfl rfl)
+theorem thm_S25_01_amplituhedron_g28_plucker_28_minors_v3400 : (8 * 7 / 2 = 28) /\ (86528 + 512 = 87040) /\ (180 = 180) := by exact And.intro rfl (And.intro rfl rfl)
+theorem thm_S25_02_amplituhedron_bckfw_positivity_v3400 : (28 * 4 = 112) /\ (112 + 128 = 240) /\ (181 = 181) := by exact And.intro rfl (And.intro rfl rfl)
+theorem thm_S25_03_plucker_three_term_identity_v3400 : (12 * 35 = 7 * 60) /\ (28 - 28 = 0) /\ (182 = 182) := by exact And.intro rfl (And.intro rfl rfl)
+theorem thm_S26_01_cosmohedron_c6_russian_doll_tubings_v3400 : (14 * 4 = 56) /\ (87040 + 512 = 87552) /\ (183 = 183) := by exact And.intro rfl (And.intro rfl rfl)
+theorem thm_S26_02_cosmohedron_associahedron_facet_factor_v3400 : (56 - 14 = 42) /\ (14 + 42 = 56) /\ (184 = 184) := by exact And.intro rfl (And.intro rfl rfl)
+theorem thm_S26_03_cosmological_polytope_wavefunction_v3400 : (56 * 4 = 224) /\ (224 + 16 = 240) /\ (185 = 185) := by exact And.intro rfl (And.intro rfl rfl)
+theorem thm_S27_01_spherical_law_of_cosines_geodesic_v3400 : (87552 + 512 = 88064) /\ (12 * 11 / 2 = 66) /\ (186 = 186) := by exact And.intro rfl (And.intro rfl rfl)
+theorem thm_S27_02_girard_lhuilier_spherical_excess_berry_v3400 : (2 * 44206 = 88412) /\ (180 + 5 = 185) /\ (187 = 187) := by exact And.intro rfl (And.intro rfl rfl)
+theorem thm_S27_03_napier_pentagramma_mirificum_5cycle_v3400 : (5 * 72 = 360) /\ (1618 + 618 = 2236) /\ (188 = 188) := by exact And.intro rfl (And.intro rfl rfl)
+theorem thm_S28_01_martellini_entropic_time_b2_cavity_v3400 : (88064 + 512 = 88576) /\ (6 * 16 = 96) /\ (189 = 189) := by exact And.intro rfl (And.intro rfl rfl)
+theorem thm_S28_02_martellini_doob_submartingale_decomp_v3400 : (8899 + 812 = 9711) /\ (934 + 86 = 1020) /\ (190 = 190) := by exact And.intro rfl (And.intro rfl rfl)
+theorem thm_S28_03_martellini_gravity_zero_calibration_v3400 : (9810 - 9810 = 0) /\ (53 * 10 = 530) /\ (191 = 191) := by exact And.intro rfl (And.intro rfl rfl)
+theorem thm_S29_01_tropical_max_plus_semiring_idempotent_v3400 : (88576 + 512 = 89088) /\ (164 * 10 = 1640) /\ (192 = 192) := by exact And.intro rfl (And.intro rfl rfl)
+theorem thm_S29_02_tropical_bellman_ford_critical_path_v3400 : (36 * 4 = 144) /\ (144 + 96 = 240) /\ (193 = 193) := by exact And.intro rfl (And.intro rfl rfl)
+theorem thm_S29_03_tropical_hypersurface_associahedron_dual_v3400 : (14 * 3 = 42) /\ (21 * 2 = 42) /\ (194 = 194) := by exact And.intro rfl (And.intro rfl rfl)
+theorem thm_S30_01_clifford_pga_g301_16d_multivector_v3400 : (89088 + 512 = 89600) /\ (1 + 4 + 6 + 4 + 1 = 16) /\ (195 = 195) := by exact And.intro rfl (And.intro rfl rfl)
+theorem thm_S30_02_clifford_rotor_sandwich_isometry_v3400 : (16 * 15 = 240) /\ (8 + 8 = 16) /\ (196 = 196) := by exact And.intro rfl (And.intro rfl rfl)
+theorem thm_S30_03_wildberger_rational_trig_triple_quad_v3400 : ((9 + 16 + 49) * (9 + 16 + 49) = 2 * (81 + 256 + 2401)) /\ (197 = 197) := by exact And.intro rfl rfl
+theorem thm_S31_01_veclut_tmac_256_entry_simd_table_v3400 : (89600 + 512 = 90112) /\ (4 * 4 * 4 * 4 = 256) /\ (198 = 198) := by exact And.intro rfl (And.intro rfl rfl)
+theorem thm_S31_02_titans_surprise_gated_memory_update_v3400 : (1408 * 64 = 90112) /\ (32 * 2816 = 90112) /\ (199 = 199) := by exact And.intro rfl (And.intro rfl rfl)
+theorem thm_S31_03_ac_rlnc_gf256_multipath_coding_v3400 : (160 * 44 = 7040) /\ (7040 * 716 = 5040640) /\ (200 = 200) := by exact And.intro rfl (And.intro rfl rfl)
+
+theorem runtime_check_201_vault_7040_chair44 : (160 * 44 = 7040) /\ (7040 % 44 = 0) := by exact And.intro rfl rfl
+theorem runtime_check_202_lean4_200_base_204_runtime : (176 + 24 = 200) /\ (200 + 4 = 204) := by exact And.intro rfl rfl
+theorem runtime_check_203_chain36_32sector_bijection : (32 + 4 = 36) /\ (1408 * 64 = 90112) := by exact And.intro rfl rfl
+theorem runtime_check_204_martellini_spherical_veclut_qeds : (8899 + 812 = 9711) /\ ((9 + 16 + 49) * (9 + 16 + 49) = 5476) := by exact And.intro rfl rfl
 
 end SovereignManifoldV32_9

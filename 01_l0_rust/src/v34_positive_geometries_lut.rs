@@ -39,14 +39,14 @@ pub struct CosmohedronVecLutReport {
 /// with C_4 = 14 Catalan vertices, 21 Tamari rotation edges, and 9 facets in kinematic space X_{ij} > 0,
 /// plus Tropical Max-Plus (a (+) b = max(a,b), a (*) b = a + b) DAG wave scheduling.
 pub fn evaluate_associahedron_and_tropical(b_norm: f64, sub_epoch: u64) -> AssociahedronTropicalReport {
-    let xBase = (b_norm.abs() * 0.02).max(0.5);
+    let x_base = (b_norm.abs() * 0.02).max(0.5);
     let mut omega_sum = 0.0_f64;
     let mut v_idx = 1_u32;
     while v_idx <= 14 {
         let vf = v_idx as f64;
-        let x1 = xBase + (vf * 0.11);
-        let x2 = xBase + (vf * 0.17);
-        let x3 = xBase + (vf * 0.23);
+        let x1 = x_base + (vf * 0.11);
+        let x2 = x_base + (vf * 0.17);
+        let x3 = x_base + (vf * 0.23);
         omega_sum += 1.0 / (x1 * x2 * x3);
         v_idx += 1;
     }

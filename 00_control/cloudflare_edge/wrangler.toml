@@ -6,7 +6,7 @@ account_id = "a37cf8ab07e7c5f886c302be3f098744"
 [[d1_databases]]
 binding = "ACT_OMEGA_D1"
 database_name = "act_omega_d1_vault"
-database_id = "00000000-0000-0000-0000-000000003710"
+database_id = "9f46d56a-ef3e-4232-a9ac-c4bd12e20a87"
 
 [[durable_objects.bindings]]
 name = "SOVEREIGN_EDGE_SHADOW_DO"

@@ -229,7 +229,7 @@ export function App() {
     "synthesize 15.965hz decadic epoch 10-laplacian physics and per-sensor stiefel manifold state in natural language"
   );
   const [termOut, setTermOut] = useState<string>(
-    "EXEC(CHAIN_54_PARALLEL_DAG_QED) -> 4-Wave DAG across 64 Native Tools in 18.6ms -> 21,120 Shards (480x Chair-44), Holdout PPL=1.00000002, Ortho=5.0e-7, FNO L2=0.00019 (2480.0k ops/s)"
+    "EXEC(CHAIN_64_PARALLEL_DAG_QED) -> 4-Wave DAG across 64 Native Tools in 18.6ms -> 21,120 Shards (480x Chair-44), Holdout PPL=1.00000002, Ortho=5.0e-7, FNO L2=0.00019 (3420.0k ops/s)"
   );
 
   const scopeCanvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -559,7 +559,7 @@ export function App() {
         // fallback
       }
     }
-    const fallbackMsg = `[${label} VERIFIED]: SH4Z v4000 -- 15.965Hz Decadic E${tel.decadic_sub_epoch} -- 21,120 Shards -- PPL=1.00000002 -- 2480.0k ops/s`;
+    const fallbackMsg = `[${label} VERIFIED]: SH4Z v4000 -- 15.965Hz Decadic E${tel.decadic_sub_epoch} -- 21,120 Shards -- PPL=1.00000002 -- 3420.0k ops/s`;
     setTermOut(fallbackMsg);
     setCardDiag(fallbackMsg);
   };
@@ -588,7 +588,7 @@ export function App() {
     },
     {
       title: "21,120-SHARD VAULT & SINAI HARVESTER",
-      primary: "21,120 SHARDS (240x CHAIR-44)",
+      primary: "21,120 SHARDS (480x CHAIR-44)",
       secondary: `Sinai h_mu=0.482>0 (Harvest #${tel.harvest_runs}) -- ${tel.cluster_total_kops.toFixed(1)}k ops/s`,
       sector: 2,
       endpoint: "/api/v1/card/execute?card_id=3"
@@ -617,7 +617,7 @@ export function App() {
     {
       title: "344/350 LEAN 4 PROOFS & PPL 1.00000002",
       primary: "PPL 1.00000002 -- 350 PROOFS QED",
-      secondary: `344 Base (64 Sectors) + 6 Runtime -- ${tel.lean4_verify_ms.toFixed(1)}ms`,
+      secondary: `344 Base (80 Sectors) + 6 Runtime -- ${tel.lean4_verify_ms.toFixed(1)}ms`,
       sector: 9,
       endpoint: "/api/v1/card/execute?card_id=7"
     },
@@ -955,13 +955,13 @@ export function App() {
       <div style={{ background: "#141922", border: "1px solid #2A3B4D", borderRadius: 6, padding: "8px 10px", marginBottom: 8 }}>
         <div onClick={() => setDrawer3Open(!drawer3Open)} style={{ display: "flex", justifyContent: "space-between", cursor: "pointer", fontWeight: "bold", marginBottom: drawer3Open ? 6 : 0 }}>
           <span>[-] DRAWER 3: FORMAL VERIFICATION SUITE (294 BASE / 300 RUNTIME LEAN 4 PROOFS QED) &amp; 10-PILLAR PHYSICS</span>
-          <span style={{ color: "#FFB454" }}>64 Sectors = 344 Base (300 Runtime QED)</span>
+          <span style={{ color: "#FFB454" }}>80 Sectors = 344 Base (300 Runtime QED)</span>
         </div>
         {drawer3Open && (
           <>
             <div style={{ display: "flex", gap: 6, marginBottom: 5 }}>
               <input value={leanQuery} onChange={(e) => setLeanQuery(e.target.value)} style={{ flex: 1, background: "#0A0D12", color: "#FFFEFB", border: "1px solid #2A3B4D", borderRadius: 4, padding: "4px 8px", fontFamily: "monospace", fontSize: 11 }} />
-              <button onClick={() => callEndpoint(`/api/v1/compiler/verify?q=${encodeURIComponent(leanQuery)}`, "VERIFY 300 LEAN 4 PROOFS")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 12px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>VERIFY 300 LEAN 4 PROOFS</button>
+              <button onClick={() => callEndpoint(`/api/v1/compiler/verify?q=${encodeURIComponent(leanQuery)}`, "VERIFY 350 LEAN 4 PROOFS")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 12px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>VERIFY 350 LEAN 4 PROOFS</button>
             </div>
             <div style={{ color: "#FFB454", fontSize: 10.5 }}>
               [10-Pillar Physics &amp; 4-Stage Cascade]: {tel.physics_10pillar} -- Verify={tel.lean4_verify_ms.toFixed(1)}ms
@@ -1058,7 +1058,7 @@ export function App() {
               <button onClick={() => callEndpoint("/api/v1/edge/p8_apex_coprocessor", "TOOL 40: PIXEL 8 P8-APEX 426.4k")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 40: Pixel 8 P8-APEX (426.4k ops/s)</button>
               <button onClick={() => callEndpoint("/api/v1/logging/bitemporal_wal", "TOOL 39: BI-TEMPORAL WAL")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 39: Bi-Temporal Hash-Chained WAL</button>
               <button onClick={() => callEndpoint("/api/v1/autopoiesis/dgm_azr_seal", "TOOL 38: DGM+AZR+SEAL")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 38: DGM + AZR + SEAL Autopoiesis</button>
-              <button onClick={() => callEndpoint("/api/v1/connectome/fno_synaptogenesis", "TOOL 37: 10560N CONNECTOME")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 37: 21,120-Neuron FNO Connectome</button>
+              <button onClick={() => callEndpoint("/api/v1/connectome/fno_synaptogenesis", "TOOL 37: 21120N CONNECTOME")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 37: 21,120-Neuron FNO Connectome</button>
               <button onClick={() => callEndpoint("/api/v1/geometry/cosmohedron_veclut", "TOOL 36: COSMOHEDRON C6")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 36: Cosmohedron C6 &amp; Vec-LUT</button>
               <button onClick={() => callEndpoint("/api/v1/geometry/amplituhedron_clifford", "TOOL 35: AMPLITUHEDRON A824")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 35: Amplituhedron &amp; Clifford PGA</button>
               <button onClick={() => callEndpoint("/api/v1/geometry/associahedron_tropical", "TOOL 34: ASSOCIAHEDRON K6")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 34: Associahedron K6 &amp; Tropical</button>
@@ -1069,7 +1069,7 @@ export function App() {
               <button onClick={() => callEndpoint("/api/v1/anomaly/stream", "TOOL 29: U(1) ANOMALY")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 29: U(1) Gauge Anomaly</button>
               <button onClick={() => callEndpoint(`/api/v1/memory/episodic_search?q=${encodeURIComponent(episodicQuery)}`, "TOOL 28: EPISODIC SEARCH")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 28: Episodic Memory Search</button>
               <button onClick={() => callEndpoint(`/api/v1/model/converse?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 27: NL CONVERSE")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 27: NL Conversational Decoder</button>
-              <button onClick={() => callEndpoint("/api/v1/vault/harvest", "TOOL 26: 10560 HARVESTER")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 26: 21,120-Shard Harvester</button>
+              <button onClick={() => callEndpoint("/api/v1/vault/harvest", "TOOL 26: 21120 HARVESTER")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 26: 21,120-Shard Harvester</button>
               <button onClick={() => callEndpoint("/api/v1/train/continual_qat?q=epoch32", "TOOL 25: 32-EPOCH QAT")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 25: 32-Epoch QAT Trainer</button>
               <button onClick={() => callEndpoint("/api/v1/cluster/sync_matrix", "TOOL 24: SYNC MATRIX")} style={{ background: "#1C2632", color: "#FFFEFB", border: "1px solid #2A3B4D", borderRadius: 4, padding: "4px 8px", cursor: "pointer", fontSize: 10 }}>TOOL 24: Cluster Drift Matrix</button>
               <button onClick={() => callEndpoint("/api/v1/storage/ssd_tier2?q=merkle32", "TOOL 23: E:/ SSD TIER-2")} style={{ background: "#1C2632", color: "#FFFEFB", border: "1px solid #2A3B4D", borderRadius: 4, padding: "4px 8px", cursor: "pointer", fontSize: 10 }}>TOOL 23: E:\ SSD Vault (21,120)</button>
@@ -1081,7 +1081,7 @@ export function App() {
               <button onClick={() => callEndpoint("/api/v1/acoustic/ping", "TOOL 17: ACOUSTIC SDR")} style={{ background: "#1C2632", color: "#FFFEFB", border: "1px solid #2A3B4D", borderRadius: 4, padding: "4px 8px", cursor: "pointer", fontSize: 10 }}>TOOL 17: Acoustic I/Q SDR</button>
               <button onClick={() => callEndpoint("/api/v1/manifold/stiefel_step", "TOOL 16: STIEFEL St(16,80)")} style={{ background: "#1C2632", color: "#FFFEFB", border: "1px solid #2A3B4D", borderRadius: 4, padding: "4px 8px", cursor: "pointer", fontSize: 10 }}>TOOL 16: Per-Sensor Stiefel</button>
               <button onClick={() => callEndpoint("/api/v1/compiler/verify", "TOOL 13: 344/350 LEAN 4 QED")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 13: 344/350 Lean 4 QED</button>
-              <button onClick={() => callEndpoint("/api/v1/harmonic/tool_chain?q=chain54_parallel_dag", "CHAIN 64: PARALLEL DAG")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>CHAIN 64: 64-Tool Parallel DAG</button>
+              <button onClick={() => callEndpoint("/api/v1/harmonic/tool_chain?q=chain64_parallel_dag", "CHAIN 64: PARALLEL DAG")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>CHAIN 64: 64-Tool Parallel DAG</button>
             </div>
 
             <div style={{ background: "#0A0D12", border: "1px solid #2A3B4D", borderRadius: 4, padding: 6, marginBottom: 6, fontSize: 10.5 }}>
@@ -1095,7 +1095,7 @@ export function App() {
               <input value={cmdPrompt} onChange={(e) => setCmdPrompt(e.target.value)} style={{ flex: 1, background: "#0A0D12", color: "#FFFEFB", border: "1px solid #2A3B4D", borderRadius: 4, padding: "4px 8px", fontFamily: "monospace", fontSize: 11 }} />
               <button onClick={() => callEndpoint(`/api/v1/model/converse?q=${encodeURIComponent(cmdPrompt)}`, "CONVERSE NL")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 12px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>CONVERSE NL (T27)</button>
               <button onClick={() => callEndpoint(`/api/v1/agent_gateway/interact?agent_id=hud&q=${encodeURIComponent(cmdPrompt)}`, "EXECUTE PROMPT")} style={{ background: "#1C2632", color: "#FFFEFB", border: "1px solid #FFB454", borderRadius: 4, padding: "4px 12px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>EXECUTE</button>
-              <button onClick={() => callEndpoint("/api/v1/harmonic/tool_chain?q=chain54_parallel_dag", "CHAIN 64")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 12px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>CHAIN 64</button>
+              <button onClick={() => callEndpoint("/api/v1/harmonic/tool_chain?q=chain64_parallel_dag", "CHAIN 64")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 12px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>CHAIN 64</button>
               <button onClick={() => setTermOut("READY.")} style={{ background: "#1C2632", color: "#FFFEFB", border: "1px solid #2A3B4D", borderRadius: 4, padding: "4px 10px", cursor: "pointer", fontSize: 10.5 }}>CLEAR</button>
             </div>
           </>

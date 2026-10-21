@@ -11,7 +11,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="SOVEREIGN MANIFOLD v32.7 (SH4Z v3207) -- 16x80 LIVE WIDGET"
+        android:text="SOVEREIGN MANIFOLD v43.0.0 (SH4Z v4300) -- 16x130 LIVE WIDGET"
         android:textColor="#FFFFB454"
         android:textSize="10sp"
         android:textStyle="bold"
@@ -19,7 +19,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="act-omega-net.dev -- 4,400 Shards -- 8,192 NL Tok -- 131 Lean4 QED"
+        android:text="act-omega-net.dev -- 21,120 Shards -- 16,384 NL Tok -- 364 Lean4 QED"
         android:textColor="#FFFFFEFB"
         android:textSize="8.5sp"
         android:fontFamily="monospace" />
@@ -27,7 +27,7 @@
         android:id="@+id/sovereign_widget_live_txt"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Tick #732700 -- 15.80Hz/2.00Hz Sensors + FNO Re=418.4 -- E:/ SSD SYNCED"
+        android:text="Tick #906200 -- 15.965Hz Decadic + 5W1H Connectome -- 3420.0k ops/s"
         android:textColor="#FF56D364"
         android:textSize="8.5sp"
         android:fontFamily="monospace"

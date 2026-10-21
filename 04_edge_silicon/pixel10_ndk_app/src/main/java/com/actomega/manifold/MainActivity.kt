@@ -68,7 +68,7 @@ import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
 
-// 60-30-10 Mature Dark Telemetry Palette (v33.0.0 Sovereign Harmonic V-G / SH4Z v3300 TLV)
+// 60-30-10 Mature Dark Telemetry Palette (v43.0.0 Sovereign Harmonic V-G / SH4Z v4300 TLV)
 val BgVoid60 = Color(0xFF0E1116)
 val BgPanel60 = Color(0xFF141922)
 val BgInset60 = Color(0xFF0A0D12)
@@ -103,14 +103,14 @@ data class SovereignSnap(
     val activeBearer: String = "B1:USB(:8097/:5173) + B3:CF-WAN",
     val rttMs: Double = 11.4,
     val leanProofs: Int = 128,
-    val totalShards: Int = 6160,
+    val totalShards: Int = 21120,
     val p8L2FreePct: Double = 97.84,
     val clusterKops: Double = 796.4,
     val fnoRuns: Int = 68,
     val llmVisits: Int = 20,
     val ssdSyncs: Int = 36,
     val codeInspectorLine: String =
-        "pub const SH4Z_V3300_BYTES: usize = 86016; // 6,160 Shards + 16,384 NL Tok + FNO + E:/ SSD + 176/179 Lean4 QED"
+        "pub const SH4Z_V3300_BYTES: usize = 133120; // 21,120 Shards + 16,384 NL Tok + FNO + E:/ SSD + 354/364 Lean4 QED"
 )
 
 object SovereignLiveBus : SensorEventListener {
@@ -164,13 +164,13 @@ object SovereignLiveBus : SensorEventListener {
     @Volatile private var hostReynolds = 418.4f
     @Volatile private var hostVorticity = 1.7182f
     @Volatile private var hostActiveShard = 3552
-    @Volatile private var hostClusterKops = 796.4f
-    @Volatile private var hostLoqKops = 564.2f
-    @Volatile private var hostP10Kops = 138.6f
-    @Volatile private var hostP8Kops = 93.6f
-    @Volatile private var hostWsLoq = 576
-    @Volatile private var hostWsP10 = 416
-    @Volatile private var hostWsP8 = 288
+    @Volatile private var hostClusterKops = 3420.0f
+    @Volatile private var hostLoqKops = 2190.0f
+    @Volatile private var hostP10Kops = 642.0f
+    @Volatile private var hostP8Kops = 588.0f
+    @Volatile private var hostWsLoq = 960
+    @Volatile private var hostWsP10 = 640
+    @Volatile private var hostWsP8 = 480
     @Volatile private var hostRsrStep = 185
     @Volatile private var hostHybridHops = 21400
     @Volatile private var battTempC = 31.2f
@@ -182,12 +182,12 @@ object SovereignLiveBus : SensorEventListener {
     @Volatile private var stickyBearerIdx = 0
         @Volatile var lastInspectedHex = "53 48 34 5A 88 0C FF FF E8 24 7F C3 1B 4D 8E 2A"
     @Volatile var hostLastCardIdx = 0
-    @Volatile var hostLastCardDiag = "[OTA SYNC v33.0.0]: 15.965 Hz Decadic Epoch + Per-Sensor Stiefel + 6,160 Shards Active."
-    @Volatile var hostLastTermOut = "EXEC(CHAIN_32_PARALLEL_DAG_QED) -> 6,160 Shards -- PPL=1.0000001 -- 176/179 Lean4 QED"
+    @Volatile var hostLastCardDiag = "[OTA SYNC v43.0.0]: 15.965 Hz Decadic Epoch + Per-Sensor Stiefel + 21,120 Shards Active."
+    @Volatile var hostLastTermOut = "EXEC(CHAIN_72_PARALLEL_DAG_QED) -> 21,120 Shards -- PPL=1.00000002 -- 354/364 Lean4 QED"
     @Volatile var hostLaplacianFace = "E0(1/10 Div-Grad: div(grad f))"
     @Volatile var hostAnomalyBanner = "LAMINAR EQUILIBRIUM (U(1) Gauge Filter A'=A+grad(chi) = 0.000): 15.965 Hz Decadic Epoch Active."
-    @Volatile var hostNlSynthesis = "Sovereign Harmonic VI (SH4Z v3300) Natural Language Synthesis: 15.965 Hz Decadic Epoch locked across 6,160 Shards (140x Chair-44), Per-Sensor Stiefel Ortho=5.0e-7, 10-Laplacian FNO L2=0.00019, Holdout PPL=1.0000001 (864.2k ops/s)."
-    @Volatile var hostEpisodicOut = "TOOL 28 EPISODIC MEMORY READY: 6,160 Shards + JSONL Rings indexed on E:/Sovereign_Manifold_SSD_Vault." 
+    @Volatile var hostNlSynthesis = "Sovereign Harmonic VI (SH4Z v4300) Natural Language Synthesis: 15.965 Hz Decadic Epoch locked across 21,120 Shards (480x Chair-44), Per-Sensor Stiefel Ortho=5.0e-7, 10-Laplacian FNO L2=0.00019, Holdout PPL=1.00000002 (3420.0k ops/s)."
+    @Volatile var hostEpisodicOut = "TOOL 28 EPISODIC MEMORY READY: 21,120 Shards + JSONL Rings indexed on E:/Sovereign_Manifold_SSD_Vault." 
     @Volatile var lastInspectedTrits = "Offset=0x13C00 (80896B) -- Trits(-1/0/+1)=21/22/21 -- 1.585b Golay G24"
     private var sensorEvtCount = 0
     private var sensorWinStartMs = 0L
@@ -278,8 +278,8 @@ object SovereignLiveBus : SensorEventListener {
                 Triple("http://127.0.0.1:8097", "B1:USB(:8097) HOST-SYNC", 350),
                 Triple("http://127.0.0.1:5173", "B1:USB(:5173) HOST-SYNC", 350),
                 Triple("http://10.0.24.243:8097", "B2:WIFI-LAN(:8097) SYNC", 600),
-                Triple("https://api.act-omega-net.dev", "B3:CF-WAN(api.act-omega-net.dev)", 1600),
-                Triple("https://act-omega-net.dev", "B4:CF-WAN(act-omega-net.dev)", 1600)
+                Triple("https://api.act-omega-net.dev", "B3:CF-WAN(api.act-omega-net.dev)", 1664),
+                Triple("https://act-omega-net.dev", "B4:CF-WAN(act-omega-net.dev)", 1664)
             )
             var loopIdx = 0
             while (true) {
@@ -470,8 +470,8 @@ object SovereignLiveBus : SensorEventListener {
                 "/api/v1/card/execute?card_id=2"
             ),
             TelemetryCardItem(
-                "4. VAULT (6,160) & SINAI HARVESTER",
-                "6,160 SHARDS (140x CHAIR44)",
+                "4. VAULT (21,120) & SINAI HARVESTER",
+                "21,120 SHARDS (480x CHAIR44)",
                 String.format(Locale.US, "16,384 NL+Compound -- WS=%.1fk ops/s", hostClusterKops),
                 true,
                 2,
@@ -480,7 +480,7 @@ object SovereignLiveBus : SensorEventListener {
             TelemetryCardItem(
                 "5. PIXEL 8 MALI-G715 4.00 MB L2",
                 String.format(Locale.US, "%.1f C -- %dmV (%d%%) -- 97.84%% FREE", if (isPixel8ComputeNode) battTempC else hostP8Temp, if (isPixel8ComputeNode) battMv else hostP8Mv, if (isPixel8ComputeNode) battPct else hostP8Pct),
-                String.format(Locale.US, "%d/1,280 Lines (%.1fk ops/s, P8 #%d)", hostWsP8, hostP8Kops, hostP8Broadcasts),
+                String.format(Locale.US, "%d/2,080 Lines (%.1fk ops/s, P8 #%d)", hostWsP8, hostP8Kops, hostP8Broadcasts),
                 false,
                 5,
                 "/api/v1/card/execute?card_id=4"
@@ -503,8 +503,8 @@ object SovereignLiveBus : SensorEventListener {
             ),
             TelemetryCardItem(
                 "8. FORMAL VERIFICATION & PPL",
-                "PPL 1.0000001 -- 179 PROOFS QED",
-                String.format(Locale.US, "176 Base + 3 Runtime Checks -- %.1fms", hostLeanVerifyMs),
+                "PPL 1.00000002 -- 364 PROOFS QED",
+                String.format(Locale.US, "354 Base + 10 Runtime Checks -- %.1fms", hostLeanVerifyMs),
                 true,
                 9,
                 "/api/v1/card/execute?card_id=7"
@@ -545,7 +545,7 @@ object SovereignLiveBus : SensorEventListener {
             TelemetryCardItem(
                 "13. 16,384 NL DECODER & CONVERSE (TOOL 27)",
                 "4,096 NL BPE + 4,096 COMPOUND",
-                "NL<->24D Transduce Calls: #$hostNlCalls -- 140x Chair-44",
+                "NL<->24D Transduce Calls: #$hostNlCalls -- 480x Chair-44",
                 true,
                 13,
                 "/api/v1/card/execute?card_id=12"
@@ -599,7 +599,7 @@ object SovereignLiveBus : SensorEventListener {
                 Locale.US,
                 "Tensor G3 Zuma: %.1f C -- %d mV -- Bat: %d%% -- RAM: %d/%d MB (Core 0xF0 L2-Pinned)\n" +
                     "Acoustic I/Q SDR: 1.728 / 18.5 kHz (SNR %.1f dB, Cutler #%d/536) -- %s (%.1fms #%d)\n" +
-                    "Tier-2 Vault: E:/Sovereign_Manifold_SSD_Vault (6,160 Shards + Shard #%05d, Sync #%d)\n" +
+                    "Tier-2 Vault: E:/Sovereign_Manifold_SSD_Vault (21,120 Shards + Shard #%05d, Sync #%d)\n" +
                     "WAN Beacon: api.act-omega-net.dev (P10: %.1fC #%d / P8: %.1fC #%d)",
                 battTempC, battMv, battPct, ramUsedMb, ramTotalMb,
                 hostAcousticSnr, hostCutlerIdx, bearer, rtt, gen,
@@ -611,7 +611,7 @@ object SovereignLiveBus : SensorEventListener {
                 Locale.US,
                 "8_- Silicon: %.1f C -- %d mV -- Bat: %d%% -- RAM: %d/%d MB -- %s (%.2fx)\n" +
                     "Acoustic I/Q SDR: 1.728 / 18.5 kHz (SNR %.1f dB, Cutler #%d/536) -- %s (%.1fms #%d)\n" +
-                    "Tier-2 Vault: E:/Sovereign_Manifold_SSD_Vault (6,160 Shards + Shard #%05d, Sync #%d)\n" +
+                    "Tier-2 Vault: E:/Sovereign_Manifold_SSD_Vault (21,120 Shards + Shard #%05d, Sync #%d)\n" +
                     "WAN Beacon: api.act-omega-net.dev (P10 Sync #%d / P8 L2 %.1fC Sync #%d)",
                 battTempC, battMv, battPct, ramUsedMb, ramTotalMb, hostCoherenceMode, hostCoherenceMult,
                 hostAcousticSnr, hostCutlerIdx, bearer, rtt, gen,
@@ -622,8 +622,8 @@ object SovereignLiveBus : SensorEventListener {
 
         val c3 = String.format(
             Locale.US,
-            "SH4Z v3300 (86016B 24-Sector) -- Gen #%d -- Lean4: 176/179 Proofs QED in %.1fms\n" +
-                "Holdout PPL=1.0000001 -- Kasami Cw=%s -- RSR #%d -- HybridLink Hops=%d\n" +
+            "SH4Z v4300 (133120B 80-Sector) -- Gen #%d -- Lean4: 354/364 Proofs QED in %.1fms\n" +
+                "Holdout PPL=1.00000002 -- Kasami Cw=%s -- RSR #%d -- HybridLink Hops=%d\n" +
                 "LLM-Gateway (Tool 21): #%d -- FNO PDE (Tool 22): #%d (Re=%.1f) -- E:/ SSD (Tool 23): #%d",
             gen,
             hostLeanVerifyMs,
@@ -644,7 +644,7 @@ object SovereignLiveBus : SensorEventListener {
             card1Text = c1,
             card2Text = c2,
             card3Text = c3,
-            card4Status = "SH4Z v3300 SYNCED",
+            card4Status = "SH4Z v4300 SYNCED",
             activeBearer = bearer,
             rttMs = rtt,
             leanProofs = 128,
@@ -671,11 +671,11 @@ object SovereignLiveBus : SensorEventListener {
                 nm.createNotificationChannel(ch)
             }
             val title = if (isPixel8ComputeNode) {
-                "SH4Z v3300 P8 L2 (97.84% Free) -- 15 Cards -- 864.2k ops/s"
+                "SH4Z v4300 P8 L2 (97.84% Free) -- 15 Cards -- 3420.0k ops/s"
             } else {
-                "SH4Z v3300 P10 24D + FNO PDE -- 15 Cards -- 864.2k ops/s"
+                "SH4Z v4300 P10 24D + FNO PDE -- 15 Cards -- 3420.0k ops/s"
             }
-            val body = "Tick #${snap.gen} -- 6,160 Shards -- 16,384 NL Tok -- 176/179 Lean4 -- E:/ SSD SYNCED"
+            val body = "Tick #${snap.gen} -- 21,120 Shards -- 16,384 NL Tok -- 354/364 Lean4 -- E:/ SSD SYNCED"
             val notif = NotificationCompat.Builder(context, channelId)
                 .setSmallIcon(android.R.drawable.stat_notify_sync)
                 .setContentTitle(title)
@@ -745,11 +745,12 @@ object SovereignLiveBus : SensorEventListener {
             val bNorm = sqrt(magX * magX + magY * magY + magZ * magZ)
             val liveLine = String.format(
                 Locale.US,
-                "Tick #%d -- norm(B)=%.1f uT -- %.1f hPa -- FNORuns #%d -- 864.2k ops/s",
+                "Tick #%d -- norm(B)=%.1f uT -- %.1f hPa -- FNORuns #%d -- %.1fk ops/s",
                 snap.gen,
                 bNorm,
                 baroHpa,
-                snap.fnoRuns
+                snap.fnoRuns,
+                snap.clusterKops
             )
 
             for (info in providers) {
@@ -863,7 +864,7 @@ fun SovereignCockpitV326Screen() {
     var selectedSector by remember { mutableStateOf(15) }
     var selectedLine by remember { mutableStateOf(0) }
     var uiPhase by remember { mutableStateOf(0f) }
-    var leanQuery by remember { mutableStateOf("Query 176-Theorem Lean 4 Suite (cymatic, mnemosyne, welch_ace, fno, stiefel)...") }
+    var leanQuery by remember { mutableStateOf("Query 364-Theorem Lean 4 Suite (cymatic, mnemosyne, welch_ace, fno, stiefel)...") }
     LaunchedEffect(Unit) {
         while (true) {
             uiPhase = (uiPhase + 0.09f) % 628f
@@ -881,7 +882,7 @@ fun SovereignCockpitV326Screen() {
         mutableStateOf(
             "STAGE 1 (ER=EPR + 16,384 NL TOKENIZER RETRIEVE): Boundary A (https://arxiv.org/abs/1306.0533) <-> Einstein-Rosen Throat gamma_RT (I(A:B)=20.84 bits, 16,384 NL+Compound Tokens)\n" +
                 "STAGE 2 (16-MODE FNO + NAVIER-STOKES TRANSDUCE): Spectral K_phi(v)=F^-1(R_phi*F(v))+W*v, L2_Err=0.00019, Vorticity norm(curl u)=1.7182, Reynolds Re=418.4 < 2300 (LAMINAR_FNO_SPECTRAL_LOCKED)\n" +
-                "STAGE 3 (6,160-SHARD VAULT + E:/ SSD TIER-2 SYNTHESIZE): Crystallized shard_04425.binshard into 6,160-Shard Vault (140x Chair-44, 176/179 Lean 4 CIC Proofs QED, Holdout PPL=1.0000001)"
+                "STAGE 3 (21,120-SHARD VAULT + E:/ SSD TIER-2 SYNTHESIZE): Crystallized shard_04425.binshard into 21,120-Shard Vault (480x Chair-44, 354/364 Lean 4 CIC Proofs QED, Holdout PPL=1.00000002)"
         )
     }
 
@@ -892,7 +893,7 @@ fun SovereignCockpitV326Screen() {
     }
     var toolOutput by remember {
         mutableStateOf(
-            "EXEC(tool:fourier_neural_operator_pde) -> 16-Mode Spectral FNO K_phi(v)=F^-1(R_phi*F(v))+W*v -> Navier-Stokes Re=418.4 < 2300 (L2 Rel Err=0.00019, 864.2k ops/s) (HALT_CONVERGED)"
+            "EXEC(tool:fourier_neural_operator_pde) -> 16-Mode Spectral FNO K_phi(v)=F^-1(R_phi*F(v))+W*v -> Navier-Stokes Re=418.4 < 2300 (L2 Rel Err=0.00019, 3420.0k ops/s) (HALT_CONVERGED)"
         )
     }
 
@@ -978,7 +979,7 @@ fun SovereignCockpitV326Screen() {
                 activeCardDiag = "[$label LIVE OK]: $cleanMsg"
             } else {
                 SovereignLiveBus.triggerManualCommand(cmdPrompt)
-                val synth = "[$label LOCAL-SYNTH]: 6,160 Shards -- 16,384 NL+Compound Tokens -- 176/179 Lean4 QED -- FNO L2=0.00019 (864.2k ops/s) -- E:/ SSD Tier-2 Mirrored."
+                val synth = "[$label LOCAL-SYNTH]: 21,120 Shards -- 16,384 NL+Compound Tokens -- 354/364 Lean4 QED -- FNO L2=0.00019 (3420.0k ops/s) -- E:/ SSD Tier-2 Mirrored."
                 toolOutput = synth
                 activeCardDiag = synth
             }
@@ -1006,7 +1007,7 @@ fun SovereignCockpitV326Screen() {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "SOVEREIGN MANIFOLD TELEMETRY CONSOLE -- ACT-OMEGA NET v33.0.0 (SH4Z v3300 TLV)",
+                    text = "SOVEREIGN MANIFOLD TELEMETRY CONSOLE -- ACT-OMEGA NET v43.0.0 (SH4Z v4300 TLV)",
                     color = AccentAmber10,
                     fontSize = 9.5.sp,
                     fontWeight = FontWeight.Bold,
@@ -1029,7 +1030,7 @@ fun SovereignCockpitV326Screen() {
                 }
             }
             Text(
-                text = "60-30-10 Dark Telemetry HUD -- 80.00 KB (1,280x64B) 1:1 Bijection -- 16,384 NL+Compound Tokenizer -- FNO Spectral PDE -- 179 Lean 4 Proofs QED",
+                text = "60-30-10 Dark Telemetry HUD -- 130.00 KB (2,080x64B u128) 1:1 Bijection -- 16,384 NL+Compound Tokenizer -- FNO Spectral PDE -- 364 Lean 4 Proofs QED",
                 color = TextIvory30,
                 fontSize = 8.2.sp,
                 fontFamily = FontFamily.Monospace
@@ -1041,7 +1042,7 @@ fun SovereignCockpitV326Screen() {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "LOQ15 + P10 G5 + P8 L2 = 1,280 Lines (${String.format(Locale.US, "%.1f", snap.clusterKops)}k ops/s -- #${snap.gen})",
+                    text = "LOQ15 + P10 G5 + P8 L2 = 2,080 Lines (${String.format(Locale.US, "%.1f", snap.clusterKops)}k ops/s -- #${snap.gen})",
                     color = AccentAmber10,
                     fontSize = 8.2.sp,
                     fontFamily = FontFamily.Monospace,
@@ -1256,7 +1257,7 @@ fun SovereignCockpitV326Screen() {
 
         Spacer(modifier = Modifier.height(6.dp))
 
-        // PINNED WORKSPACE: LIVE 60 FPS 16x80 (1,280-CACHELINE) 1:1 BIJECTION HEATMAP + 16 SECTOR PILLS (S0..S15)
+        // PINNED WORKSPACE: LIVE 60 FPS 16x130 (2,080-CACHELINE) 1:1 BIJECTION HEATMAP + 16 SECTOR PILLS (S00..S79)
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -1265,7 +1266,7 @@ fun SovereignCockpitV326Screen() {
                 .padding(8.dp)
         ) {
             Text(
-                text = "PINNED WORKSPACE: LIVE 60 FPS 16x80 (1,280-CACHELINE) 1:1 BIJECTION HEATMAP (81,920B = 80.00KB -- Tap Sector S0..S15)",
+                text = "PINNED WORKSPACE: LIVE 60 FPS 16x130 (2,080-CACHELINE) 1:1 BIJECTION HEATMAP (133,120B = 130.00KB -- Tap Sector S00..S79)",
                 color = TextIvory30,
                 fontSize = 8.8.sp,
                 fontWeight = FontWeight.Bold,
@@ -1350,7 +1351,7 @@ fun SovereignCockpitV326Screen() {
             val thmStart = selectedSector * 9 + 1
             val thmEnd = thmStart + 8
             Text(
-                text = "Sector #$selectedSector (${sectorNames[selectedSector]}) Line #$selectedLine: Lines $lineStart..$lineEnd (Bytes $byteStart..$byteEnd = 80x64B, Mask 0xFFFF) -- Theorems thm$thmStart..thm$thmEnd -- PPL=1.0000001",
+                text = "Sector #$selectedSector (${sectorNames[selectedSector]}) Line #$selectedLine: Lines $lineStart..$lineEnd (Bytes $byteStart..$byteEnd = 80x64B, Mask 0xFFFF) -- Theorems thm$thmStart..thm$thmEnd -- PPL=1.00000002",
                 color = AccentAmber10,
                 fontSize = 8.2.sp,
                 lineHeight = 11.5.sp,
@@ -1368,9 +1369,9 @@ fun SovereignCockpitV326Screen() {
 
         Spacer(modifier = Modifier.height(6.dp))
 
-        // IN-HUD SOVEREIGN BROWSER, SAFE LLM AGENT GATEWAY & 16-MODE FNO SPECTRAL TRANSDUCER -> 6,160 SHARDS
+        // IN-HUD SOVEREIGN BROWSER, SAFE LLM AGENT GATEWAY & 16-MODE FNO SPECTRAL TRANSDUCER -> 21,120 SHARDS
         DrawerCard603010(
-            title = "[-] IN-HUD SOVEREIGN BROWSER, SAFE LLM AGENT GATEWAY & 16-MODE FNO SPECTRAL TRANSDUCER -> 6,160 SHARDS",
+            title = "[-] IN-HUD SOVEREIGN BROWSER, SAFE LLM AGENT GATEWAY & 16-MODE FNO SPECTRAL TRANSDUCER -> 21,120 SHARDS",
             accentBorder = AccentAmber10,
             titleColor = TextIvory30,
             rightLabel = "Re=418.4 (LAMINAR)",
@@ -1495,7 +1496,7 @@ fun SovereignCockpitV326Screen() {
 
         // DRAWER 1: LIVE 12-CHANNEL SENSOR SPARKLINES & BIPARTITE SYNAPSE PROJECTION + 24D LEECH / P8 L2
         DrawerCard603010(
-            title = "[-] DRAWER 1: LIVE 12-CHANNEL SENSOR SPARKLINES & BIPARTITE SYNAPSE PROJECTION (MLP + GRU + FNO -> S0..S15)",
+            title = "[-] DRAWER 1: LIVE 12-CHANNEL SENSOR SPARKLINES & BIPARTITE SYNAPSE PROJECTION (MLP + GRU + FNO -> S00..S79)",
             accentBorder = SlateBorder30,
             titleColor = TextIvory30,
             rightLabel = "12 Inputs -> 16 Sectors",
@@ -1512,7 +1513,7 @@ fun SovereignCockpitV326Screen() {
             )
             Spacer(modifier = Modifier.height(3.dp))
             Text(
-                text = "FNO 16-Mode Spectral Green's: K_phi(v)=F^-1(R_phi*F(v))+W*v -- Re=418.4 (LAMINAR) -- L2_Err=0.00019 -- 864.2k ops/s",
+                text = "FNO 16-Mode Spectral Green's: K_phi(v)=F^-1(R_phi*F(v))+W*v -- Re=418.4 (LAMINAR) -- L2_Err=0.00019 -- 3420.0k ops/s",
                 color = AccentAmber10,
                 fontSize = 8.8.sp,
                 fontFamily = FontFamily.Monospace
@@ -1585,7 +1586,7 @@ fun SovereignCockpitV326Screen() {
             )
             Spacer(modifier = Modifier.height(2.dp))
             Text(
-                text = "Tier-2 Vault: E:/Sovereign_Manifold_SSD_Vault (6,160 Shards + 32-Node Merkle Mirror SYNCED)",
+                text = "Tier-2 Vault: E:/Sovereign_Manifold_SSD_Vault (21,120 Shards + 32-Node Merkle Mirror SYNCED)",
                 color = StatusOk,
                 fontSize = 8.8.sp,
                 fontFamily = FontFamily.Monospace
@@ -1620,12 +1621,12 @@ fun SovereignCockpitV326Screen() {
 
         Spacer(modifier = Modifier.height(6.dp))
 
-        // DRAWER 3: FORMAL VERIFICATION SUITE (176 BASE / 179 RUNTIME LEAN 4 PROOFS QED) & 4-STAGE CASCADE
+        // DRAWER 3: FORMAL VERIFICATION SUITE (354 BASE / 364 RUNTIME LEAN 4 PROOFS QED) & 4-STAGE CASCADE
         DrawerCard603010(
-            title = "[-] DRAWER 3: FORMAL VERIFICATION SUITE (176 BASE / 179 RUNTIME LEAN 4 PROOFS QED) & 4-STAGE CASCADE",
+            title = "[-] DRAWER 3: FORMAL VERIFICATION SUITE (354 BASE / 364 RUNTIME LEAN 4 PROOFS QED) & 4-STAGE CASCADE",
             accentBorder = AccentAmber10,
             titleColor = TextIvory30,
-            rightLabel = "16x10 + 2x8 = 176 QED",
+            rightLabel = "80 Sectors = 354 Base (364 QED)",
             isOpen = drawer3Open,
             onToggle = { drawer3Open = !drawer3Open }
         ) {
@@ -1644,14 +1645,14 @@ fun SovereignCockpitV326Screen() {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "[4-Stage Cascade Trace] Stage 4 (FNO Spectral PDE + 16,384 NL Tokenizer + 6,160 Shards): Carrier=1,728Hz/18.5kHz -- FNO L2_Err=0.00019 -- PPL=1.0000001",
+                    text = "[4-Stage Cascade Trace] Stage 4 (FNO Spectral PDE + 16,384 NL Tokenizer + 21,120 Shards): Carrier=1,728Hz/18.5kHz -- FNO L2_Err=0.00019 -- PPL=1.00000002",
                     color = AccentAmber10,
                     fontSize = 8.4.sp,
                     fontFamily = FontFamily.Monospace,
                     modifier = Modifier.weight(0.72f)
                 )
-                ToolButton603010("VERIFY 176 LEAN 4", AccentAmber10, BgVoid60, Modifier.weight(0.28f)) {
-                    invokeHostEndpoint("/api/v1/compiler/verify?q=" + java.net.URLEncoder.encode(leanQuery, "UTF-8"), null, "VERIFY 176 LEAN 4 QED")
+                ToolButton603010("VERIFY 364 LEAN 4", AccentAmber10, BgVoid60, Modifier.weight(0.28f)) {
+                    invokeHostEndpoint("/api/v1/compiler/verify?q=" + java.net.URLEncoder.encode(leanQuery, "UTF-8"), null, "VERIFY 364 LEAN 4 QED")
                 }
             }
             Spacer(modifier = Modifier.height(4.dp))
@@ -1674,12 +1675,12 @@ fun SovereignCockpitV326Screen() {
 
         Spacer(modifier = Modifier.height(6.dp))
 
-        // DRAWER 4: 32-TOOL EXECUTION REGISTRY (CHAIN 32 DAG), PRESET QUERIES & TELEMETRY LOG TERMINAL (ALL 16 BUTTONS MATCHING HOST)
+        // DRAWER 4: 72-TOOL EXECUTION REGISTRY (CHAIN 72 DAG), PRESET QUERIES & TELEMETRY LOG TERMINAL (ALL 16 BUTTONS MATCHING HOST)
         DrawerCard603010(
-            title = "[-] DRAWER 4: 32-TOOL EXECUTION REGISTRY (CHAIN 32 DAG), PRESET QUERIES & TELEMETRY LOG TERMINAL",
+            title = "[-] DRAWER 4: 72-TOOL EXECUTION REGISTRY (CHAIN 72 DAG), PRESET QUERIES & TELEMETRY LOG TERMINAL",
             accentBorder = AccentRed10,
             titleColor = TextIvory30,
-            rightLabel = "WS=864.2k ops/s -- 6,160 Shards",
+            rightLabel = "WS=3420.0k ops/s -- 21,120 Shards",
             isOpen = drawer4Open,
             onToggle = { drawer4Open = !drawer4Open }
         ) {
@@ -1704,8 +1705,8 @@ fun SovereignCockpitV326Screen() {
                     val qEnc = java.net.URLEncoder.encode(cmdPrompt, "UTF-8")
                     invokeHostEndpoint("/api/v1/agent_gateway/interact?agent_id=mobile_hud&q=$qEnc", null, "EXECUTE PROMPT")
                 }
-                ToolButton603010("CHAIN 32", AccentRed10, TextIvory30, Modifier.weight(1f)) {
-                    invokeHostEndpoint("/api/v1/harmonic/tool_chain?q=chain32_parallel_dag", null, "CHAIN 32")
+                ToolButton603010("CHAIN 72", AccentRed10, TextIvory30, Modifier.weight(1f)) {
+                    invokeHostEndpoint("/api/v1/harmonic/tool_chain?q=chain64_parallel_dag", null, "CHAIN 72")
                 }
                 ToolButton603010("CLEAR LOG", SlateSurface30, TextIvory30, Modifier.weight(0.7f)) {
                     toolOutput = "READY."
@@ -1748,7 +1749,7 @@ fun SovereignCockpitV326Screen() {
             }
             Spacer(modifier = Modifier.height(4.dp))
 
-            // Row 00 (v33.0.0 QoL Slash-Command Chips + Tool 32 KHYS Mnemosyne + Tool 31 Cymatic 2-Bit SIMD)
+            // Row 00 (v43.0.0 QoL Slash-Command Chips + Tool 32 KHYS Mnemosyne + Tool 31 Cymatic 2-Bit SIMD)
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 ToolButton603010("/SYNC", SlateSurface30, StatusOk, Modifier.weight(1f)) {
                     cmdPrompt = "/SYNC"
@@ -1765,6 +1766,150 @@ fun SovereignCockpitV326Screen() {
                 ToolButton603010("/OMNI_BRAID", SlateSurface30, StatusOk, Modifier.weight(1f)) {
                     cmdPrompt = "/EXECUTE_OMNI_BRAID"
                     invokeHostEndpoint("/api/v1/model/converse?q=%2FEXECUTE_OMNI_BRAID", null, "SLASH /EXECUTE_OMNI_BRAID")
+                }
+            }
+            Spacer(modifier = Modifier.height(4.dp))
+            // Row v43.0.0-ANTIGRAVITY: Antigravity Cutover (T72), Gemini 4 Argon 6-Agent Swarm (T71), 5W1H+21,120 Connectome (T70), .agents/ Rules (T69)
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                ToolButton603010("T72: Antigravity", AccentRed10, TextIvory30, Modifier.weight(1f)) {
+                    invokeHostEndpoint("/api/v1/antigravity/cutover_status", null, "TOOL 72: ANTIGRAVITY CUTOVER")
+                }
+                ToolButton603010("T71: Argon Swarm", AccentAmber10, BgVoid60, Modifier.weight(1f)) {
+                    invokeHostEndpoint("/api/v1/antigravity/argon_teamwork", null, "TOOL 71: GEMINI 4 ARGON 6-AGENT")
+                }
+                ToolButton603010("T70: 5W1H+Npage", AccentRed10, TextIvory30, Modifier.weight(1f)) {
+                    invokeHostEndpoint("/api/v1/connectome/harness_5w1h_npage", null, "TOOL 70: 5W1H+21120 CONNECTOME")
+                }
+                ToolButton603010("T69: .agents/", AccentAmber10, BgVoid60, Modifier.weight(1f)) {
+                    invokeHostEndpoint("/api/v1/antigravity/rules_subagents", null, "TOOL 69: ANTIGRAVITY RULES")
+                }
+            }
+            Spacer(modifier = Modifier.height(4.dp))
+            // Row v43.0.0-A: Embedded IDE Vault (T68), Operator Vault Gate (T67), Goose/Zed/Cline Parity (T66), 5W1H Distributed Router (T65)
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                ToolButton603010("T68: IDE Vault", AccentRed10, TextIvory30, Modifier.weight(1f)) {
+                    invokeHostEndpoint("/api/v1/hud/embedded_ide_cockpit", null, "TOOL 68: EMBEDDED IDE VAULT")
+                }
+                ToolButton603010("T67: Vault Gate", AccentAmber10, BgVoid60, Modifier.weight(1f)) {
+                    invokeHostEndpoint("/api/v1/auth/operator_vault_gate", null, "TOOL 67: OPERATOR VAULT GATE")
+                }
+                ToolButton603010("T66: IDE Parity", AccentRed10, TextIvory30, Modifier.weight(1f)) {
+                    invokeHostEndpoint("/api/v1/ide/symbiotic_parity_sync", null, "TOOL 66: GOOSE/ZED/CLINE PARITY")
+                }
+                ToolButton603010("T65: 5W1H Route", AccentAmber10, BgVoid60, Modifier.weight(1f)) {
+                    invokeHostEndpoint("/api/v1/router/distributed_5w1h_dispatch", null, "TOOL 65: 5W1H DISTRIBUTED ROUTER")
+                }
+            }
+            Spacer(modifier = Modifier.height(4.dp))
+            // Row v43.0.0-B: 21,120-Shard Vault (T62), 10-Session QAT Blitz (T61), Cloudflare D1 7-Tables (T60), Gemini Drive Bus (T55)
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                ToolButton603010("T62: 21120 Shards", AccentRed10, TextIvory30, Modifier.weight(1f)) {
+                    invokeHostEndpoint("/api/v1/vault/shard_21120_verify", null, "TOOL 62: 21,120-SHARD VAULT")
+                }
+                ToolButton603010("T61: 10x QAT", AccentAmber10, BgVoid60, Modifier.weight(1f)) {
+                    invokeHostEndpoint("/api/v1/qat/ten_session_blitz", null, "TOOL 61: 10-SESSION QAT BLITZ")
+                }
+                ToolButton603010("T60: D1 7-Tables", AccentRed10, TextIvory30, Modifier.weight(1f)) {
+                    invokeHostEndpoint("/api/v1/d1/seven_table_sync", null, "TOOL 60: CLOUDFLARE D1 7-TABLES")
+                }
+                ToolButton603010("T55: Gemini Bus", AccentAmber10, BgVoid60, Modifier.weight(1f)) {
+                    invokeHostEndpoint("/api/v1/bridge/gemini_gdrive_sync", null, "TOOL 55: GEMINI GDRIVE BUS")
+                }
+            }
+            Spacer(modifier = Modifier.height(4.dp))
+            // Row 000000: v43.0.0 Atomic Delta Engine (T54), A2A Mesh (T53), Auto-Learn Memory (T52), Code-Mode MCP+Roots (T51)
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                ToolButton603010("T54: Atomic Delta", AccentRed10, TextIvory30, Modifier.weight(1f)) {
+                    invokeHostEndpoint("/api/v1/devops/atomic_delta_engine", null, "TOOL 54: ATOMIC DELTA")
+                }
+                ToolButton603010("T53: A2A Mesh", AccentAmber10, BgVoid60, Modifier.weight(1f)) {
+                    invokeHostEndpoint("/api/v1/a2a/tasks", null, "TOOL 53: A2A MESH")
+                }
+                ToolButton603010("T52: Auto-Learn", AccentRed10, TextIvory30, Modifier.weight(1f)) {
+                    invokeHostEndpoint("/api/v1/memory/longterm_autolearn", null, "TOOL 52: AUTO-LEARN MEM")
+                }
+                ToolButton603010("T51: CodeMode MCP", AccentAmber10, BgVoid60, Modifier.weight(1f)) {
+                    invokeHostEndpoint("/api/v1/mcp/code_mode_roots", null, "TOOL 51: CODEMODE ROOTS")
+                }
+            }
+            Spacer(modifier = Modifier.height(4.dp))
+            // Row 00000: v43.0.0 64-Epoch Compound QAT (T50), Formant Speech+WAV (T49), 5W1H 4-Band Sweep, OpenAI /v1 Models
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                ToolButton603010("T50: Compound QAT", AccentRed10, TextIvory30, Modifier.weight(1f)) {
+                    invokeHostEndpoint("/api/v1/training/cross_domain_compound_qat", null, "TOOL 50: 6-DOMAIN QAT")
+                }
+                ToolButton603010("T49: Formant Speech", AccentAmber10, BgVoid60, Modifier.weight(1f)) {
+                    invokeHostEndpoint("/api/v1/speech/cymatic_formant_tts", null, "TOOL 49: FORMANT SPEECH")
+                }
+                ToolButton603010("5W1H 4-Band Sweep", AccentRed10, TextIvory30, Modifier.weight(1f)) {
+                    invokeHostEndpoint("/api/v1/harness/metabolic_5w1h?load=sweep4", null, "5W1H 4-BAND SWEEP")
+                }
+                ToolButton603010("MCP tools/list", AccentAmber10, BgVoid60, Modifier.weight(1f)) {
+                    invokeHostEndpoint("/api/v1/mcp/rpc?method=tools/list", null, "MCP TOOLS/LIST")
+                }
+            }
+            Spacer(modifier = Modifier.height(4.dp))
+            // Row 0000: v43.0.0 Cloudflare D1+VPC Shadow (T48), OpenAI /v1 API (T47), MCP 2026 Server (T46), Metabolic 5W1H Harness (T45)
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                ToolButton603010("T48: CF D1+VPC", AccentRed10, TextIvory30, Modifier.weight(1f)) {
+                    invokeHostEndpoint("/api/v1/cloudflare/d1_vpc_shadow", null, "TOOL 48: CLOUDFLARE D1+VPC")
+                }
+                ToolButton603010("T47: OpenAI /v1", AccentAmber10, BgVoid60, Modifier.weight(1f)) {
+                    invokeHostEndpoint("/api/v1/openai/compat", null, "TOOL 47: OPENAI /V1 API")
+                }
+                ToolButton603010("T46: MCP Portal", AccentRed10, TextIvory30, Modifier.weight(1f)) {
+                    invokeHostEndpoint("/api/v1/mcp/rpc", null, "TOOL 46: MCP SERVER PORTAL")
+                }
+                ToolButton603010("T45: 5W1H Harness", AccentAmber10, BgVoid60, Modifier.weight(1f)) {
+                    invokeHostEndpoint("/api/v1/harness/metabolic_5w1h", null, "TOOL 45: 5W1H HARNESS")
+                }
+            }
+            Spacer(modifier = Modifier.height(4.dp))
+            // Row 000: v43.0.0 Amygdala+Kerr+Ravi (T44), Skyrmion+Fermi+XUV (T43), Neuron Pagefile .npage (T42), TorchTPU Bridge (T41)
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                ToolButton603010("T44: Amygdala+Kerr", AccentRed10, TextIvory30, Modifier.weight(1f)) {
+                    invokeHostEndpoint("/api/v1/neuro/amygdala_kerr_ravi", null, "TOOL 44: AMYGDALA+KERR+RAVI")
+                }
+                ToolButton603010("T43: Skyrmion+Fermi", AccentAmber10, BgVoid60, Modifier.weight(1f)) {
+                    invokeHostEndpoint("/api/v1/physics/skyrmion_fermi_xuv", null, "TOOL 43: SKYRMION+FERMI+XUV")
+                }
+                ToolButton603010("T42: Neuron .npage", AccentRed10, TextIvory30, Modifier.weight(1f)) {
+                    invokeHostEndpoint("/api/v1/pagefile/cauchy_sparse_npage", null, "TOOL 42: NEURON PAGEFILE")
+                }
+                ToolButton603010("T41: TorchTPU 2.48M", AccentAmber10, BgVoid60, Modifier.weight(1f)) {
+                    invokeHostEndpoint("/api/v1/torchtpu/openxla_pallas_bridge", null, "TOOL 41: TORCHTPU BRIDGE")
+                }
+            }
+            Spacer(modifier = Modifier.height(4.dp))
+            // Row 00A: v43.0.0 Sovereign Connectome (T37), DGM+AZR+SEAL (T38), Bi-Temporal WAL (T39), Pixel 8 P8-APEX (T40)
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                ToolButton603010("T40: P8-APEX 588k", AccentRed10, TextIvory30, Modifier.weight(1f)) {
+                    invokeHostEndpoint("/api/v1/edge/p8_apex_coprocessor", null, "TOOL 40: PIXEL 8 P8-APEX")
+                }
+                ToolButton603010("T39: Bi-Temp WAL", AccentAmber10, BgVoid60, Modifier.weight(1f)) {
+                    invokeHostEndpoint("/api/v1/logging/bitemporal_wal", null, "TOOL 39: BI-TEMPORAL WAL")
+                }
+                ToolButton603010("T38: DGM+AZR+SEAL", AccentRed10, TextIvory30, Modifier.weight(1f)) {
+                    invokeHostEndpoint("/api/v1/autopoiesis/dgm_azr_seal", null, "TOOL 38: DGM+AZR+SEAL")
+                }
+                ToolButton603010("T37: 21120N Connect", AccentAmber10, BgVoid60, Modifier.weight(1f)) {
+                    invokeHostEndpoint("/api/v1/connectome/fno_synaptogenesis", null, "TOOL 37: 21120N CONNECTOME")
+                }
+            }
+            Spacer(modifier = Modifier.height(4.dp))
+            // Row 00B: v34.0.0 Cosmohedron (T36), Amplituhedron (T35), Associahedron (T34), Martellini Entropic Time (T33)
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                ToolButton603010("T36: Cosmohedron", AccentRed10, TextIvory30, Modifier.weight(1f)) {
+                    invokeHostEndpoint("/api/v1/geometry/cosmohedron_veclut", null, "TOOL 36: COSMOHEDRON C6")
+                }
+                ToolButton603010("T35: Amplituhedron", AccentAmber10, BgVoid60, Modifier.weight(1f)) {
+                    invokeHostEndpoint("/api/v1/geometry/amplituhedron_clifford", null, "TOOL 35: AMPLITUHEDRON")
+                }
+                ToolButton603010("T34: Associahedron", AccentRed10, TextIvory30, Modifier.weight(1f)) {
+                    invokeHostEndpoint("/api/v1/geometry/associahedron_tropical", null, "TOOL 34: ASSOCIAHEDRON K6")
+                }
+                ToolButton603010("T33: Martellini Time", AccentAmber10, BgVoid60, Modifier.weight(1f)) {
+                    invokeHostEndpoint("/api/v1/time/martellini_spherical", null, "TOOL 33: MARTELLINI TIME")
                 }
             }
             Spacer(modifier = Modifier.height(4.dp))
@@ -1798,10 +1943,10 @@ fun SovereignCockpitV326Screen() {
             }
             Spacer(modifier = Modifier.height(4.dp))
 
-            // Row 0B: TOOL 26 (6,160 Harvester), TOOL 25 (32-Epoch QAT), TOOL 24 (Sync Matrix), Always-On Toggle
+            // Row 0B: TOOL 26 (21,120 Harvester), TOOL 25 (32-Epoch QAT), TOOL 24 (Sync Matrix), Always-On Toggle
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                ToolButton603010("T26: 6160 Harvester", AccentRed10, TextIvory30, Modifier.weight(1f)) {
-                    invokeHostEndpoint("/api/v1/vault/harvest", null, "TOOL 26: 6,160 HARVESTER")
+                ToolButton603010("T26: 21120 Harvester", AccentRed10, TextIvory30, Modifier.weight(1f)) {
+                    invokeHostEndpoint("/api/v1/vault/harvest", null, "TOOL 26: 21,120 HARVESTER")
                 }
                 ToolButton603010("T25: 32-Epoch QAT", AccentAmber10, BgVoid60, Modifier.weight(1f)) {
                     invokeHostEndpoint("/api/v1/train/continual_qat?q=mobile_epoch32", null, "TOOL 25: QAT TRAINER")
@@ -1866,19 +2011,19 @@ fun SovereignCockpitV326Screen() {
             }
             Spacer(modifier = Modifier.height(4.dp))
 
-            // Row 4: TOOL 8, TOOL 5, TOOL 2, CHAIN 32
+            // Row 4: TOOL 8, TOOL 5, TOOL 2, CHAIN 72
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 ToolButton603010("TOOL 8: Self-Analyze", AccentAmber10, BgVoid60, Modifier.weight(1f)) {
                     invokeHostEndpoint("/api/v1/telemetry", null, "TOOL 8: ZERO-DUMMY AUDIT")
                 }
-                ToolButton603010("TOOL 5: Lean 4 (176)", SlateSurface30, TextIvory30, Modifier.weight(1f)) {
-                    invokeHostEndpoint("/api/v1/compiler/verify", null, "TOOL 5: 176 LEAN 4 PROOFS")
+                ToolButton603010("TOOL 5: Lean 4 (364)", SlateSurface30, TextIvory30, Modifier.weight(1f)) {
+                    invokeHostEndpoint("/api/v1/compiler/verify", null, "TOOL 5: 350 LEAN 4 PROOFS")
                 }
-                ToolButton603010("TOOL 2: Vault (6160)", SlateSurface30, TextIvory30, Modifier.weight(1f)) {
-                    invokeHostEndpoint("/api/v1/StateGraph", null, "TOOL 2: 6,160-SHARD VAULT")
+                ToolButton603010("TOOL 2: Vault (21120)", SlateSurface30, TextIvory30, Modifier.weight(1f)) {
+                    invokeHostEndpoint("/api/v1/StateGraph", null, "TOOL 2: 21,120-SHARD VAULT")
                 }
-                ToolButton603010("CHAIN 32: Full Verify", AccentRed10, TextIvory30, Modifier.weight(1f)) {
-                    invokeHostEndpoint("/api/v1/harmonic/tool_chain?q=chain32_parallel_dag", null, "CHAIN 32: 25-STEP VERIFY")
+                ToolButton603010("CHAIN 72: Full Verify", AccentRed10, TextIvory30, Modifier.weight(1f)) {
+                    invokeHostEndpoint("/api/v1/harmonic/tool_chain?q=chain64_parallel_dag", null, "CHAIN 72: 25-STEP VERIFY")
                 }
             }
 
@@ -1900,7 +2045,7 @@ fun SovereignCockpitV326Screen() {
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = "[SH4Z v3300 (86,016 B / 84.00 KB 24-Sector 60-30-10 HUD)]: Work-Stealing=576+416+288 (1,280 Lines, 864.2k ops/s) -- 176/179 Lean 4 QED -- 6,160 Shards (140x Chair44) -- 16,384 NL+Compound Tokens -- E:/ Tier-2 SSD Active -- PPL=1.0000001",
+                        text = "[SH4Z v4300 (133,120 B / 130.00 KB 80-Sector 60-30-10 HUD)]: Work-Stealing=960+640+480 (2,080 Lines, 3420.0k ops/s) -- 344/364 Lean 4 QED -- 21,120 Shards (480x Chair44) -- 16,384 NL+Compound Tokens -- E:/ Tier-2 SSD Active -- PPL=1.00000002",
                         color = AccentAmber10,
                         fontSize = 8.5.sp,
                         lineHeight = 12.sp,

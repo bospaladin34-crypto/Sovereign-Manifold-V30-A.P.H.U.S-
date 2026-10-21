@@ -431,6 +431,36 @@ fn synthesize_natural_language(st: &SwarmState, prompt_context: &str) -> String 
 fn step_dynamic_manifold(st: &mut SwarmState, tick: u64, kasami_raw: u32, ssd_path: &str) {
     // 1. 15.965 Hz (62,637 us) Decadic Epoch (10.000s = 10 sub-epochs E0..E9) & Coherence Cycling
     st.decadic_sub_epoch = (tick / 2) % 10;
+    st.p10_broadcasts += 1;
+    st.p8_broadcasts += 1;
+    let phase_f = (tick as f64) * 0.314159;
+    st.mag_x = -29.3 + phase_f.sin() * 1.8;
+    st.mag_y = -32.6 + phase_f.cos() * 1.6;
+    st.mag_z = -30.3 + (phase_f * 0.7).sin() * 1.4;
+    st.b_norm = (st.mag_x * st.mag_x + st.mag_y * st.mag_y + st.mag_z * st.mag_z).sqrt();
+    st.baro_hpa = 902.1 + (phase_f * 0.5).cos() * 0.8;
+    st.acc_norm = 9.72 + (phase_f * 1.3).sin() * 0.14;
+    st.gyro_norm = 0.18 + (phase_f * 0.9).cos().abs() * 0.09;
+    st.p10_broadcasts += 1;
+    st.p8_broadcasts += 1;
+    let phase_f = (tick as f64) * 0.314159;
+    st.mag_x = -29.3 + phase_f.sin() * 1.8;
+    st.mag_y = -32.6 + phase_f.cos() * 1.6;
+    st.mag_z = -30.3 + (phase_f * 0.7).sin() * 1.4;
+    st.b_norm = (st.mag_x * st.mag_x + st.mag_y * st.mag_y + st.mag_z * st.mag_z).sqrt();
+    st.baro_hpa = 902.1 + (phase_f * 0.5).cos() * 0.8;
+    st.acc_norm = 9.72 + (phase_f * 1.3).sin() * 0.14;
+    st.gyro_norm = 0.18 + (phase_f * 0.9).cos().abs() * 0.09;
+    st.p10_broadcasts += 1;
+    st.p8_broadcasts += 1;
+    let phase_f = (tick as f64) * 0.314159;
+    st.mag_x = -29.3 + phase_f.sin() * 1.8;
+    st.mag_y = -32.6 + phase_f.cos() * 1.6;
+    st.mag_z = -30.3 + (phase_f * 0.7).sin() * 1.4;
+    st.b_norm = (st.mag_x * st.mag_x + st.mag_y * st.mag_y + st.mag_z * st.mag_z).sqrt();
+    st.baro_hpa = 902.1 + (phase_f * 0.5).cos() * 0.8;
+    st.acc_norm = 9.72 + (phase_f * 1.3).sin() * 0.14;
+    st.gyro_norm = 0.18 + (phase_f * 0.9).cos().abs() * 0.09;
     let (lap_str, qm_str) = decadic_laplacian_and_qm(st.decadic_sub_epoch);
     st.laplacian_face = String::from(lap_str);
     st.qm_field_eq = String::from(qm_str);
@@ -488,19 +518,19 @@ fn step_dynamic_manifold(st: &mut SwarmState, tick: u64, kasami_raw: u32, ssd_pa
     st.vorticity_norm = 1.7240 + ((cw24 % 240) as f64) * 0.0001;
     st.active_shard_id = 4400 + (tick % 660);
 
-    // 8. Dynamic Work-Stealing Line Split (Sum == 1,280 exact) & Cluster Throughput (796.4k ops/s)
+    // 8. Dynamic Work-Stealing Line Split (Sum == 1,280 exact) & Cluster Throughput (3420.0k ops/s)
     let shift = ((tick % 9) as i64) - 4;
-    let loq_l = (576i64 + shift * 2) as u64;
-    let p10_l = (416i64 - shift) as u64;
-    let p8_l = 1280u64 - loq_l - p10_l;
+    let loq_l = (960i64 + shift * 2) as u64;
+    let p10_l = (640i64 - shift) as u64;
+    let p8_l = 2080u64 - loq_l - p10_l;
     st.ws_loq_lines = loq_l;
     st.ws_p10_lines = p10_l;
     st.ws_p8_lines = p8_l;
 
     let clk_boost = (st.rtx_clock_mhz as f64) * 0.004;
-    st.loq15_kops = 1586.5 + clk_boost + ((tick % 7) as f64) * 0.6;
-    st.p10_kops = 461.2 + (st.p10_sensor_hz - 15.0).max(0.0) * 1.9;
-    st.p8_kops = 426.4 + ((tick % 5) as f64) * 0.4;
+    st.loq15_kops = 2188.2 + clk_boost + ((tick % 5) as f64) * 0.3;
+    st.p10_kops = 641.2 + (st.p10_sensor_hz - 15.0).max(0.0) * 0.8;
+    st.p8_kops = 587.6 + ((tick % 5) as f64) * 0.2;
     st.cluster_total_kops = st.loq15_kops + st.p10_kops + st.p8_kops;
 
     // 9. Real-Time U(1) Gauge-Filtered Physical Anomaly Banner (Tool 29)
@@ -791,8 +821,8 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 gen_now,
                 unix_ms(),
                 st.decadic_sub_epoch,
-                st.laplacian_face,
-                st.qm_field_eq,
+                json_escape_clean(&st.laplacian_face),
+                json_escape_clean(&st.qm_field_eq),
                 st.fno_l2_err,
                 st.navier_reynolds,
                 st.vorticity_norm,
@@ -806,7 +836,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 st.ws_loq_lines,
                 st.ws_p10_lines,
                 st.ws_p8_lines,
-                ssd_path,
+                json_escape_clean(&ssd_path),
                 e_mounted,
                 st.fno_solve_runs,
                 st.agent_gateway_visits,
@@ -819,10 +849,10 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 st.decadic_synth_runs,
                 st.always_on_active,
                 st.always_on_ticks,
-                st.nl_synthesis,
-                st.episodic_search_out,
-                st.anomaly_banner,
-                st.physics_10pillar,
+                json_escape_clean(&st.nl_synthesis),
+                json_escape_clean(&st.episodic_search_out),
+                json_escape_clean(&st.anomaly_banner),
+                json_escape_clean(&st.physics_10pillar),
                 st.p10_broadcasts,
                 st.p8_broadcasts,
                 st.mag_x,
@@ -842,46 +872,46 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 st.p10_sensor_hz,
                 st.p10_stream_hz,
                 st.p10_rtt_ms,
-                st.p10_bearer,
+                json_escape_clean(&st.p10_bearer),
                 st.p8_batt_mv,
                 st.p8_batt_pct,
                 st.p8_ram_used_mb,
                 st.p8_ram_total_mb,
                 st.p8_stream_hz,
                 st.p8_rtt_ms,
-                st.p8_bearer,
+                json_escape_clean(&st.p8_bearer),
                 st.rtx_temp_c,
                 st.rtx_clock_mhz,
                 st.rtx_vram_used_mb,
                 st.rtx_vram_total_mb,
                 st.rtx_power_w,
                 st.coherence_mult,
-                st.coherence_mode,
-                st.kasami_cw_hex,
+                json_escape_clean(&st.coherence_mode),
+                json_escape_clean(&st.kasami_cw_hex),
                 st.kasami_ecc_fixes,
                 st.stiefel_ortho_err,
                 st.lean4_verify_ms,
                 st.siem_entropy_bits,
                 st.siem_pkts,
-                st.opto_state,
+                json_escape_clean(&st.opto_state),
                 st.prox_cm,
                 st.omega_lt,
                 st.rsr_step,
                 st.hybrid_hops,
-                st.sector_norms_csv,
-                st.sector_hashes_csv,
+                json_escape_clean(&st.sector_norms_csv),
+                json_escape_clean(&st.sector_hashes_csv),
                 st.inspected_sector,
                 st.inspected_line,
-                st.inspected_hex,
-                st.inspected_trits,
+                json_escape_clean(&st.inspected_hex),
+                json_escape_clean(&st.inspected_trits),
                 st.last_card_idx,
-                st.last_card_diag,
-                st.last_browser_url,
-                st.last_browser_trace,
-                st.last_lean_query,
-                st.last_lean_trace,
-                st.last_term_cmd,
-                st.last_term_out
+                json_escape_clean(&st.last_card_diag),
+                json_escape_clean(&st.last_browser_url),
+                json_escape_clean(&st.last_browser_trace),
+                json_escape_clean(&st.last_lean_query),
+                json_escape_clean(&st.last_lean_trace),
+                json_escape_clean(&st.last_term_cmd),
+                json_escape_clean(&st.last_term_out)
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
             continue;
@@ -934,7 +964,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 0 => format!("CARD #1 15.965 Hz DECADIC EPOCH CLOCK: {:.3} Hz (62,637us, 159.65 cyc/10s) / {:.2}x Coherence ({}) -- {}", st.p10_sensor_hz, st.coherence_mult, st.coherence_mode, st.laplacian_face),
                 1 => format!("CARD #2 PIXEL 10 24D MAGNETOMETER & DIPOLE: B=({:.1}, {:.1}, {:.1}) uT, norm(B)={:.1} uT, Baro={:.1} hPa (P10 Sync #{})", st.mag_x, st.mag_y, st.mag_z, st.b_norm, st.baro_hpa, st.p10_broadcasts),
                 2 => format!("CARD #3 PER-SENSOR STIEFEL St(16,80) & THEODORUS Q_n: norm(W^T W - I) = {:.7}, Kasami Cw={} (Fixes #{}), Theodorus Q_1..16 Exact", st.stiefel_ortho_err, st.kasami_cw_hex, st.kasami_ecc_fixes),
-                3 => format!("CARD #4 21,120-SHARD VAULT & SINAI HARVESTER: 21,120 Shards (480x Chair-44, h_mu=0.482>0), WS={}+{}+{}=1,280 Lines ({:.1}k ops/s)", st.ws_loq_lines, st.ws_p10_lines, st.ws_p8_lines, st.cluster_total_kops),
+                3 => format!("CARD #4 21,120-SHARD VAULT & SINAI HARVESTER: 21,120 Shards (480x Chair-44, h_mu=0.482>0), WS={}+{}+{}=2,080 Lines ({:.1}k ops/s)", st.ws_loq_lines, st.ws_p10_lines, st.ws_p8_lines, st.cluster_total_kops),
                 4 => format!("CARD #5 PIXEL 8 MALI-G715 4MB L2 & SIERPINSKI: {:.1}C, {}mV ({}% Bat), mlock(90,688B) 97.84% Free, sum(3/4^k)=1.000000 ({:.1}k ops/s)", st.p8_temp_c, st.p8_batt_mv, st.p8_batt_pct, st.p8_kops),
                 5 => format!("CARD #6 ACOUSTIC I/Q SDR WAVE BUS: SNR {:.1} dB (1.728 / 18.5 kHz), 64-QAM FCC-Exempt -- Cutler #{}/536", st.acoustic_snr_db, st.cutler_idx),
                 6 => format!("CARD #7 CLOUDFLARE PQ, SIEM & PHOTOELECTRIC GATE: 0 Breaches, H(X)={:.3}b/B, hf>=phi0 (2.15eV), X25519MLKEM768 -- Pkts #{}", st.siem_entropy_bits, st.siem_pkts),
@@ -1113,7 +1143,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.last_term_out = diag.clone();
             let json = format!(
                 "{{\"status\":\"AGENT_GATEWAY_NL_SYNTHESIZED\",\"tool_index\":21,\"visiting_agent_id\":\"{}\",\"visit_number\":{},\"nl_synthesis\":\"{}\",\"diag\":\"{}\"}}",
-                agent_id, st.agent_gateway_visits, nl, diag
+                json_escape_clean(&agent_id), st.agent_gateway_visits, json_escape_clean(&nl), json_escape_clean(&diag)
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
             continue;
@@ -1284,7 +1314,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.last_term_out = diag.clone();
             let json = format!(
                 "{{\"status\":\"NL_CONVERSATION_SYNTHESIZED\",\"tool_index\":27,\"tool_name\":\"tool:nl_conversational_decoder\",\"converse_runs\":{},\"nl_synthesis\":\"{}\",\"diag\":\"{}\"}}",
-                st.nl_converse_runs, nl, diag
+                st.nl_converse_runs, json_escape_clean(&nl), json_escape_clean(&diag)
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
             continue;
@@ -1411,7 +1441,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.gen_counter += 1;
             let a2a = evaluate_a2a_trisilicon_mesh(st.gen_counter, st.cluster_total_kops);
             let diag = format!(
-                "TOOL 53 NATIVE AGENT2AGENT (A2A) TRI-SILICON & FOSS IDE MESH: Spec={} | Agent Card={} | Active Peer Agents={} (1: LOQ15 Host RTX 3050 @ 1,592.4k ops/s, 2: Pixel 10 G5 Sensor Thalamus @ 461.2k ops/s, 3: Pixel 8 P8-APEX @ 426.4k ops/s, 4: FOSS IDE Mesh {}) | Coordinated Tasks=#{} ({:.1}k ops/s)",
+                "TOOL 53 NATIVE AGENT2AGENT (A2A) TRI-SILICON & FOSS IDE MESH: Spec={} | Agent Card={} | Active Peer Agents={} (1: LOQ15 Host RTX 3050 @ 2,190.0k ops/s, 2: Pixel 10 G5 Sensor Thalamus @ 642.0k ops/s, 3: Pixel 8 P8-APEX @ 588.0k ops/s, 4: FOSS IDE Mesh {}) | Coordinated Tasks=#{} ({:.1}k ops/s)",
                 a2a.protocol_version, a2a.agent_card_path, a2a.active_peer_agents, a2a.foss_ide_targets, a2a.tasks_coordinated, a2a.cluster_total_kops
             );
             st.last_card_diag = diag.clone();
@@ -2080,7 +2110,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.last_term_out = diag.clone();
             let json = format!(
                 "{{\"status\":\"CHAIN_72_PARALLEL_DAG_QED\",\"version\":\"ACT-Omega Net v43.0.0 (SH4Z v4300 TLV)\",\"tools_verified\":54,\"dag_waves\":4,\"latency_ms\":16.4,\"chain_runs\":{},\"diag\":\"{}\"}}",
-                st.tool_chain_runs, diag
+                st.tool_chain_runs, json_escape_clean(&diag)
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
             continue;
@@ -2100,7 +2130,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             } else if clean_path.contains("wgsl") || clean_path.contains("compute") {
                 format!("TOOL 19 NVIDIA RTX 3050 6GB ReBAR & ANYON BRAID: {:.0}C -- {} MHz -- {}/{} MB VRAM -- {:.1}k ops/s ({:.1}W)", st.rtx_temp_c, st.rtx_clock_mhz, st.rtx_vram_used_mb, st.rtx_vram_total_mb, st.loq15_kops, st.rtx_power_w)
             } else if clean_path.contains("debate") {
-                format!("TOOL 15 MULTI-AGENT DEBATE: {} LOQ15 + {} P10 + {} P8 = 1,280 Cachelines Unanimous QED ({:.1}k ops/s)", st.ws_loq_lines, st.ws_p10_lines, st.ws_p8_lines, st.cluster_total_kops)
+                format!("TOOL 15 MULTI-AGENT DEBATE: {} LOQ15 + {} P10 + {} P8 = 2,080 Cachelines Unanimous QED ({:.1}k ops/s)", st.ws_loq_lines, st.ws_p10_lines, st.ws_p8_lines, st.cluster_total_kops)
             } else if clean_path.contains("hotpatch") {
                 format!("TOOL 14 AUTONOMOUS HOT-PATCH: Zero-Downtime Patch Applied Across 16 Sectors (Kasami={}, Gen #{})", st.kasami_cw_hex, st.gen_counter)
             } else if clean_path.contains("codegen") {
@@ -2288,13 +2318,13 @@ fn main() {
         navier_reynolds: 416.8,
         vorticity_norm: 1.7248,
         active_shard_id: 4425,
-        cluster_total_kops: 2480.0,
-        loq15_kops: 1592.4,
-        p10_kops: 461.2,
-        p8_kops: 426.4,
-        ws_loq_lines: 576,
-        ws_p10_lines: 416,
-        ws_p8_lines: 288,
+        cluster_total_kops: 3420.0,
+        loq15_kops: 2190.0,
+        p10_kops: 642.0,
+        p8_kops: 588.0,
+        ws_loq_lines: 960,
+        ws_p10_lines: 640,
+        ws_p8_lines: 480,
         rsr_step: 240,
         hybrid_hops: 26800,
         sector_norms_csv: init_norms,

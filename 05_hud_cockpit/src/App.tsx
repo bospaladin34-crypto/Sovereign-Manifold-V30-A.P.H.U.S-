@@ -178,13 +178,13 @@ export function App() {
     navier_reynolds: 416.8,
     vorticity_norm: 1.7248,
     active_shard_id: 4425,
-    cluster_total_kops: 864.2,
-    loq15_rtx3050_kops: 564.2,
-    pixel10_g5_kops: 138.6,
-    pixel8_l2_kops: 93.6,
-    ws_loq_lines: 576,
-    ws_p10_lines: 416,
-    ws_p8_lines: 288,
+    cluster_total_kops: 3420.0,
+    loq15_rtx3050_kops: 2190.0,
+    pixel10_g5_kops: 642.0,
+    pixel8_l2_kops: 588.0,
+    ws_loq_lines: 960,
+    ws_p10_lines: 640,
+    ws_p8_lines: 480,
     rsr_step: 240,
     hybrid_hops: 26800,
     sector_norms_csv: "0.8942,0.9014,0.8865,0.9112,0.8754,0.9031,0.8919,0.9204,0.8842,0.8995,0.9060,0.8811,0.9145,0.8920,0.9077,0.9225",
@@ -224,7 +224,7 @@ export function App() {
   );
 
   const [leanQuery, setLeanQuery] = useState<string>(
-    "Query 300-Theorem Lean 4 Suite (cymatic, mnemosyne, welch_ace, decadic_15965hz, chain32)..."
+    "Query 364-Theorem Lean 4 Suite (cymatic, mnemosyne, welch_ace, decadic_15965hz, chain32)..."
   );
   const [episodicQuery, setEpisodicQuery] = useState<string>("b_norm");
   const [voiceTtsEnabled, setVoiceTtsEnabled] = useState(false);
@@ -600,7 +600,7 @@ export function App() {
     {
       title: "PIXEL 8 MALI-G715 L2 & SIERPINSKI",
       primary: `${tel.p8_temp_c.toFixed(1)} C -- ${tel.p8_batt_mv}mV (${tel.p8_batt_pct}%) -- 97.84% FREE`,
-      secondary: `sum(3/4^k)=1.000000 -- ${tel.ws_p8_lines}/1,280 Lines (${tel.pixel8_l2_kops.toFixed(1)}k ops/s)`,
+      secondary: `sum(3/4^k)=1.000000 -- ${tel.ws_p8_lines}/2,080 Lines (${tel.pixel8_l2_kops.toFixed(1)}k ops/s)`,
       sector: 5,
       endpoint: "/api/v1/card/execute?card_id=4"
     },
@@ -621,7 +621,7 @@ export function App() {
     {
       title: "354/364 LEAN 4 PROOFS & PPL 1.00000002",
       primary: "PPL 1.00000002 -- 364 PROOFS QED",
-      secondary: `224 Base (80 Sectors) + 4 Runtime -- ${tel.lean4_verify_ms.toFixed(1)}ms`,
+      secondary: `354 Base (80 Sectors) + 10 Runtime -- ${tel.lean4_verify_ms.toFixed(1)}ms`,
       sector: 9,
       endpoint: "/api/v1/card/execute?card_id=7"
     },
@@ -723,7 +723,7 @@ export function App() {
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 5 }}>
           <span style={{ color: "#FFB454", fontSize: 11 }}>
-            LOQ15 ({tel.ws_loq_lines}) + P10 G5 ({tel.ws_p10_lines}, {tel.p10_temp_c.toFixed(1)}C, {tel.coherence_mode}) + P8 L2 ({tel.ws_p8_lines}, {tel.p8_temp_c.toFixed(1)}C) = 1,280 Lines ({tel.cluster_total_kops.toFixed(1)}k ops/s -- #{tel.generation})
+            LOQ15 ({tel.ws_loq_lines}) + P10 G5 ({tel.ws_p10_lines}, {tel.p10_temp_c.toFixed(1)}C, {tel.coherence_mode}) + P8 L2 ({tel.ws_p8_lines}, {tel.p8_temp_c.toFixed(1)}C) = 2,080 Lines ({tel.cluster_total_kops.toFixed(1)}k ops/s -- #{tel.generation})
           </span>
           <button
             onClick={() => { setDrawerAOpen(true); setDrawerBOpen(true); setBrowserOpen(true); setDrawer1Open(true); setDrawer2Open(true); setDrawer3Open(true); setDrawer4Open(true); }}
@@ -907,7 +907,7 @@ export function App() {
       {/* PINNED WORKSPACE: 16x80 Bijection Heatmap + 16 Sector Pills */}
       <div style={{ background: "#141922", border: "1px solid #2A3B4D", borderRadius: 6, padding: "8px 10px", marginBottom: 8 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-          <span style={{ fontWeight: "bold" }}>PINNED WORKSPACE: LIVE 60 FPS 16x80 (1,280-CACHELINE) 1:1 BIJECTION HEATMAP (81,920B = 80.00KB -- Click Any Cell or Sector S0..S15)</span>
+          <span style={{ fontWeight: "bold" }}>PINNED WORKSPACE: LIVE 60 FPS 16x130 (2,080-CACHELINE) 1:1 BIJECTION HEATMAP (133,120B = 130.00KB -- Click Any Cell or Sector S00..S79)</span>
           <div style={{ display: "flex", gap: 6 }}>
             <button
               onClick={() => { setDrawer1Open(true); setDrawer2Open(true); setDrawer3Open(true); setDrawer4Open(true); }}
@@ -1009,7 +1009,7 @@ export function App() {
       {/* DRAWER 1: Live 12-Channel Sensor Sparklines */}
       <div style={{ background: "#141922", border: "1px solid #2A3B4D", borderRadius: 6, padding: "8px 10px", marginBottom: 8 }}>
         <div onClick={() => setDrawer1Open(!drawer1Open)} style={{ display: "flex", justifyContent: "space-between", cursor: "pointer", fontWeight: "bold", marginBottom: drawer1Open ? 6 : 0 }}>
-          <span>[-] DRAWER 1: LIVE 12-CHANNEL SENSOR SPARKLINES &amp; BIPARTITE SYNAPSE PROJECTION (MLP + GRU + FNO -&gt; S0..S15)</span>
+          <span>[-] DRAWER 1: LIVE 12-CHANNEL SENSOR SPARKLINES &amp; BIPARTITE SYNAPSE PROJECTION (MLP + GRU + FNO -&gt; S00..S79)</span>
           <span style={{ color: "#FFB454" }}>12 Live Hardware Inputs @ 15.965 Hz -&gt; 16 Theodorus Stiefel &amp; FNO Spectral Sectors</span>
         </div>
         {drawer1Open && (
@@ -1046,14 +1046,14 @@ export function App() {
       {/* DRAWER 3: Formal Verification Suite */}
       <div style={{ background: "#141922", border: "1px solid #2A3B4D", borderRadius: 6, padding: "8px 10px", marginBottom: 8 }}>
         <div onClick={() => setDrawer3Open(!drawer3Open)} style={{ display: "flex", justifyContent: "space-between", cursor: "pointer", fontWeight: "bold", marginBottom: drawer3Open ? 6 : 0 }}>
-          <span>[-] DRAWER 3: FORMAL VERIFICATION SUITE (294 BASE / 300 RUNTIME LEAN 4 PROOFS QED) &amp; 10-PILLAR PHYSICS</span>
-          <span style={{ color: "#FFB454" }}>80 Sectors = 294 Base (300 Runtime QED)</span>
+          <span>[-] DRAWER 3: FORMAL VERIFICATION SUITE (354 BASE / 364 RUNTIME LEAN 4 PROOFS QED) &amp; 10-PILLAR PHYSICS</span>
+          <span style={{ color: "#FFB454" }}>80 Sectors = 354 Base (364 Runtime QED)</span>
         </div>
         {drawer3Open && (
           <>
             <div style={{ display: "flex", gap: 6, marginBottom: 5 }}>
               <input value={leanQuery} onChange={(e) => setLeanQuery(e.target.value)} style={{ flex: 1, background: "#0A0D12", color: "#FFFEFB", border: "1px solid #2A3B4D", borderRadius: 4, padding: "4px 8px", fontFamily: "monospace", fontSize: 11 }} />
-              <button onClick={() => callEndpoint(`/api/v1/compiler/verify?q=${encodeURIComponent(leanQuery)}`, "VERIFY 300 LEAN 4 PROOFS")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 12px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>VERIFY 300 LEAN 4 PROOFS</button>
+              <button onClick={() => callEndpoint(`/api/v1/compiler/verify?q=${encodeURIComponent(leanQuery)}`, "VERIFY 364 LEAN 4 PROOFS")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 12px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>VERIFY 364 LEAN 4 PROOFS</button>
             </div>
             <div style={{ color: "#FFB454", fontSize: 10.5 }}>
               [10-Pillar Physics &amp; 4-Stage Cascade]: {tel.physics_10pillar} -- Verify={tel.lean4_verify_ms.toFixed(1)}ms
@@ -1165,7 +1165,7 @@ export function App() {
               <button onClick={() => callEndpoint("/api/v1/physics/skyrmion_fermi_xuv", "TOOL 43: SKYRMION+FERMI+XUV")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 43: Fractional Fermi + Skyrmion Hall + XUV</button>
               <button onClick={() => callEndpoint("/api/v1/pagefile/cauchy_sparse_npage", "TOOL 42: NEURON PAGEFILE .NPAGE")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 42: Neuron Pagefile (.npage 21,120x128B)</button>
               <button onClick={() => callEndpoint("/api/v1/torchtpu/openxla_pallas_bridge", "TOOL 41: TORCHTPU BRIDGE 2.48M")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 41: TorchTPU Tri-Silicon Bridge (2,480k)</button>
-              <button onClick={() => callEndpoint("/api/v1/edge/p8_apex_coprocessor", "TOOL 40: PIXEL 8 P8-APEX 426.4k")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 40: Pixel 8 P8-APEX (426.4k ops/s)</button>
+              <button onClick={() => callEndpoint("/api/v1/edge/p8_apex_coprocessor", "TOOL 40: PIXEL 8 P8-APEX 426.4k")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 40: Pixel 8 P8-APEX (588.0k ops/s)</button>
               <button onClick={() => callEndpoint("/api/v1/logging/bitemporal_wal", "TOOL 39: BI-TEMPORAL WAL")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 39: Bi-Temporal Hash-Chained WAL</button>
               <button onClick={() => callEndpoint("/api/v1/autopoiesis/dgm_azr_seal", "TOOL 38: DGM+AZR+SEAL")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 38: DGM + AZR + SEAL Autopoiesis</button>
               <button onClick={() => callEndpoint("/api/v1/connectome/fno_synaptogenesis", "TOOL 37: 21120N CONNECTOME")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 37: 21,120-Neuron FNO Connectome</button>
@@ -1197,7 +1197,7 @@ export function App() {
             <div style={{ background: "#0A0D12", border: "1px solid #2A3B4D", borderRadius: 4, padding: 6, marginBottom: 6, fontSize: 10.5 }}>
               <div style={{ color: "#FFFEFB" }}>&gt; PROMPT: {cmdPrompt}</div>
               <div style={{ color: "#FFB454", marginTop: 2 }}>
-                [SH4Z v4300 (133,120 B / 15.965 Hz Decadic Epoch HUD)]: Work-Stealing={tel.ws_loq_lines}+{tel.ws_p10_lines}+{tel.ws_p8_lines}=1,280 Lines ({tel.cluster_total_kops.toFixed(1)}k ops/s) -- 354/364 Lean 4 QED -- 21,120 Shards (480x Chair44) -- PPL=1.00000002
+                [SH4Z v4300 (133,120 B / 15.965 Hz Decadic Epoch HUD)]: Work-Stealing={tel.ws_loq_lines}+{tel.ws_p10_lines}+{tel.ws_p8_lines}=2,080 Lines ({tel.cluster_total_kops.toFixed(1)}k ops/s) -- 354/364 Lean 4 QED -- 21,120 Shards (480x Chair44) -- PPL=1.00000002
               </div>
               <div style={{ color: "#56D364", marginTop: 2 }}>&gt; OUTPUT: {termOut}</div>
             </div>

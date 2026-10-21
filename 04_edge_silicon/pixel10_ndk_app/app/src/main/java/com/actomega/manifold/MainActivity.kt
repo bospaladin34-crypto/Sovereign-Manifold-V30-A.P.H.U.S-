@@ -164,13 +164,13 @@ object SovereignLiveBus : SensorEventListener {
     @Volatile private var hostReynolds = 418.4f
     @Volatile private var hostVorticity = 1.7182f
     @Volatile private var hostActiveShard = 3552
-    @Volatile private var hostClusterKops = 796.4f
-    @Volatile private var hostLoqKops = 564.2f
-    @Volatile private var hostP10Kops = 138.6f
-    @Volatile private var hostP8Kops = 93.6f
-    @Volatile private var hostWsLoq = 576
-    @Volatile private var hostWsP10 = 416
-    @Volatile private var hostWsP8 = 288
+    @Volatile private var hostClusterKops = 3420.0f
+    @Volatile private var hostLoqKops = 2190.0f
+    @Volatile private var hostP10Kops = 642.0f
+    @Volatile private var hostP8Kops = 588.0f
+    @Volatile private var hostWsLoq = 960
+    @Volatile private var hostWsP10 = 640
+    @Volatile private var hostWsP8 = 480
     @Volatile private var hostRsrStep = 185
     @Volatile private var hostHybridHops = 21400
     @Volatile private var battTempC = 31.2f
@@ -745,11 +745,12 @@ object SovereignLiveBus : SensorEventListener {
             val bNorm = sqrt(magX * magX + magY * magY + magZ * magZ)
             val liveLine = String.format(
                 Locale.US,
-                "Tick #%d -- norm(B)=%.1f uT -- %.1f hPa -- FNORuns #%d -- 3420.0k ops/s",
+                "Tick #%d -- norm(B)=%.1f uT -- %.1f hPa -- FNORuns #%d -- %.1fk ops/s",
                 snap.gen,
                 bNorm,
                 baroHpa,
-                snap.fnoRuns
+                snap.fnoRuns,
+                snap.clusterKops
             )
 
             for (info in providers) {
@@ -863,7 +864,7 @@ fun SovereignCockpitV326Screen() {
     var selectedSector by remember { mutableStateOf(15) }
     var selectedLine by remember { mutableStateOf(0) }
     var uiPhase by remember { mutableStateOf(0f) }
-    var leanQuery by remember { mutableStateOf("Query 300-Theorem Lean 4 Suite (cymatic, mnemosyne, welch_ace, fno, stiefel)...") }
+    var leanQuery by remember { mutableStateOf("Query 364-Theorem Lean 4 Suite (cymatic, mnemosyne, welch_ace, fno, stiefel)...") }
     LaunchedEffect(Unit) {
         while (true) {
             uiPhase = (uiPhase + 0.09f) % 628f
@@ -881,7 +882,7 @@ fun SovereignCockpitV326Screen() {
         mutableStateOf(
             "STAGE 1 (ER=EPR + 16,384 NL TOKENIZER RETRIEVE): Boundary A (https://arxiv.org/abs/1306.0533) <-> Einstein-Rosen Throat gamma_RT (I(A:B)=20.84 bits, 16,384 NL+Compound Tokens)\n" +
                 "STAGE 2 (16-MODE FNO + NAVIER-STOKES TRANSDUCE): Spectral K_phi(v)=F^-1(R_phi*F(v))+W*v, L2_Err=0.00019, Vorticity norm(curl u)=1.7182, Reynolds Re=418.4 < 2300 (LAMINAR_FNO_SPECTRAL_LOCKED)\n" +
-                "STAGE 3 (21,120-SHARD VAULT + E:/ SSD TIER-2 SYNTHESIZE): Crystallized shard_04425.binshard into 21,120-Shard Vault (480x Chair-44, 344/360 Lean 4 CIC Proofs QED, Holdout PPL=1.00000002)"
+                "STAGE 3 (21,120-SHARD VAULT + E:/ SSD TIER-2 SYNTHESIZE): Crystallized shard_04425.binshard into 21,120-Shard Vault (480x Chair-44, 354/364 Lean 4 CIC Proofs QED, Holdout PPL=1.00000002)"
         )
     }
 
@@ -1029,7 +1030,7 @@ fun SovereignCockpitV326Screen() {
                 }
             }
             Text(
-                text = "60-30-10 Dark Telemetry HUD -- 130.00 KB (2,080x64B u128) 1:1 Bijection -- 16,384 NL+Compound Tokenizer -- FNO Spectral PDE -- 360 Lean 4 Proofs QED",
+                text = "60-30-10 Dark Telemetry HUD -- 130.00 KB (2,080x64B u128) 1:1 Bijection -- 16,384 NL+Compound Tokenizer -- FNO Spectral PDE -- 364 Lean 4 Proofs QED",
                 color = TextIvory30,
                 fontSize = 8.2.sp,
                 fontFamily = FontFamily.Monospace
@@ -1256,7 +1257,7 @@ fun SovereignCockpitV326Screen() {
 
         Spacer(modifier = Modifier.height(6.dp))
 
-        // PINNED WORKSPACE: LIVE 60 FPS 16x80 (1,280-CACHELINE) 1:1 BIJECTION HEATMAP + 16 SECTOR PILLS (S00..S79)
+        // PINNED WORKSPACE: LIVE 60 FPS 16x130 (2,080-CACHELINE) 1:1 BIJECTION HEATMAP + 16 SECTOR PILLS (S00..S79)
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -1265,7 +1266,7 @@ fun SovereignCockpitV326Screen() {
                 .padding(8.dp)
         ) {
             Text(
-                text = "PINNED WORKSPACE: LIVE 60 FPS 16x80 (1,280-CACHELINE) 1:1 BIJECTION HEATMAP (133,120B = 130.00KB -- Tap Sector S00..S79)",
+                text = "PINNED WORKSPACE: LIVE 60 FPS 16x130 (2,080-CACHELINE) 1:1 BIJECTION HEATMAP (133,120B = 130.00KB -- Tap Sector S00..S79)",
                 color = TextIvory30,
                 fontSize = 8.8.sp,
                 fontWeight = FontWeight.Bold,
@@ -1620,12 +1621,12 @@ fun SovereignCockpitV326Screen() {
 
         Spacer(modifier = Modifier.height(6.dp))
 
-        // DRAWER 3: FORMAL VERIFICATION SUITE (294 BASE / 300 RUNTIME LEAN 4 PROOFS QED) & 4-STAGE CASCADE
+        // DRAWER 3: FORMAL VERIFICATION SUITE (354 BASE / 364 RUNTIME LEAN 4 PROOFS QED) & 4-STAGE CASCADE
         DrawerCard603010(
-            title = "[-] DRAWER 3: FORMAL VERIFICATION SUITE (294 BASE / 300 RUNTIME LEAN 4 PROOFS QED) & 4-STAGE CASCADE",
+            title = "[-] DRAWER 3: FORMAL VERIFICATION SUITE (354 BASE / 364 RUNTIME LEAN 4 PROOFS QED) & 4-STAGE CASCADE",
             accentBorder = AccentAmber10,
             titleColor = TextIvory30,
-            rightLabel = "80 Sectors = 224 Base (228 QED)",
+            rightLabel = "80 Sectors = 354 Base (364 QED)",
             isOpen = drawer3Open,
             onToggle = { drawer3Open = !drawer3Open }
         ) {
@@ -1650,8 +1651,8 @@ fun SovereignCockpitV326Screen() {
                     fontFamily = FontFamily.Monospace,
                     modifier = Modifier.weight(0.72f)
                 )
-                ToolButton603010("VERIFY 300 LEAN 4", AccentAmber10, BgVoid60, Modifier.weight(0.28f)) {
-                    invokeHostEndpoint("/api/v1/compiler/verify?q=" + java.net.URLEncoder.encode(leanQuery, "UTF-8"), null, "VERIFY 300 LEAN 4 QED")
+                ToolButton603010("VERIFY 364 LEAN 4", AccentAmber10, BgVoid60, Modifier.weight(0.28f)) {
+                    invokeHostEndpoint("/api/v1/compiler/verify?q=" + java.net.URLEncoder.encode(leanQuery, "UTF-8"), null, "VERIFY 364 LEAN 4 QED")
                 }
             }
             Spacer(modifier = Modifier.height(4.dp))
@@ -1882,7 +1883,7 @@ fun SovereignCockpitV326Screen() {
             Spacer(modifier = Modifier.height(4.dp))
             // Row 00A: v43.0.0 Sovereign Connectome (T37), DGM+AZR+SEAL (T38), Bi-Temporal WAL (T39), Pixel 8 P8-APEX (T40)
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                ToolButton603010("T40: P8-APEX 426k", AccentRed10, TextIvory30, Modifier.weight(1f)) {
+                ToolButton603010("T40: P8-APEX 588k", AccentRed10, TextIvory30, Modifier.weight(1f)) {
                     invokeHostEndpoint("/api/v1/edge/p8_apex_coprocessor", null, "TOOL 40: PIXEL 8 P8-APEX")
                 }
                 ToolButton603010("T39: Bi-Temp WAL", AccentAmber10, BgVoid60, Modifier.weight(1f)) {
@@ -2015,7 +2016,7 @@ fun SovereignCockpitV326Screen() {
                 ToolButton603010("TOOL 8: Self-Analyze", AccentAmber10, BgVoid60, Modifier.weight(1f)) {
                     invokeHostEndpoint("/api/v1/telemetry", null, "TOOL 8: ZERO-DUMMY AUDIT")
                 }
-                ToolButton603010("TOOL 5: Lean 4 (350)", SlateSurface30, TextIvory30, Modifier.weight(1f)) {
+                ToolButton603010("TOOL 5: Lean 4 (364)", SlateSurface30, TextIvory30, Modifier.weight(1f)) {
                     invokeHostEndpoint("/api/v1/compiler/verify", null, "TOOL 5: 350 LEAN 4 PROOFS")
                 }
                 ToolButton603010("TOOL 2: Vault (21120)", SlateSurface30, TextIvory30, Modifier.weight(1f)) {

@@ -1,25 +1,28 @@
 {
+  "agent": {
+    "version": "2",
+    "default_model": {
+      "provider": "openai",
+      "model": "SH4Z-v3900-TriSilicon"
+    },
+    "always_allow_tool_actions": true
+  },
   "language_models": {
     "openai": {
+      "version": "1",
       "api_url": "http://127.0.0.1:8080/v1",
       "available_models": [
         {
-          "name": "SH4Z-v3800-TriSilicon",
-          "display_name": "ACT-Omega Net v38.0.0 (SH4Z v3800 Tri-Silicon + AutoLearn)",
-          "max_tokens": 32768
+          "name": "SH4Z-v3900-TriSilicon",
+          "display_name": "ACT-Omega Net v39.0.0 (SH4Z v3900 u128 + AutoLearn + G: Bridge)",
+          "max_tokens": 32768,
+          "max_output_tokens": 8192
         }
       ]
     }
   },
-  "assistant": {
-    "version": "2",
-    "default_model": {
-      "provider": "openai",
-      "model": "SH4Z-v3800-TriSilicon"
-    }
-  },
   "context_servers": {
-    "act-omega-v3800-mcp": {
+    "act-omega-v3900-mcp": {
       "command": {
         "path": "curl.exe",
         "args": [
@@ -28,5 +31,9 @@
         ]
       }
     }
+  },
+  "telemetry": {
+    "diagnostics": false,
+    "metrics": false
   }
 }

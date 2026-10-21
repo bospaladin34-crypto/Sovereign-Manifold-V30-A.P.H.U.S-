@@ -1,27 +1,32 @@
 {
   "language_models": {
     "openai": {
-      "api_url": "http://127.0.0.1:8097/v1",
+      "api_url": "http://127.0.0.1:8080/v1",
       "available_models": [
         {
-          "name": "sovereign-harmonic-v3800",
-          "display_name": "ACT-Omega Sovereign Harmonic v38.0.0 (10,560N + Auto-Learn Memory)",
-          "max_tokens": 16384
+          "name": "SH4Z-v3800-TriSilicon",
+          "display_name": "ACT-Omega Net v38.0.0 (SH4Z v3800 Tri-Silicon + AutoLearn)",
+          "max_tokens": 32768
         }
       ]
     }
   },
-  "agent": {
+  "assistant": {
+    "version": "2",
     "default_model": {
       "provider": "openai",
-      "model": "sovereign-harmonic-v3800"
-    },
-    "always_allow_tool_actions": true
+      "model": "SH4Z-v3800-TriSilicon"
+    }
   },
   "context_servers": {
-    "act-omega-sovereign-manifold": {
-      "url": "http://127.0.0.1:8097/mcp",
-      "remote_url": "https://mcp.act-omega-net.dev/mcp"
+    "act-omega-v3800-mcp": {
+      "command": {
+        "path": "curl.exe",
+        "args": [
+          "-s",
+          "http://127.0.0.1:8080/mcp"
+        ]
+      }
     }
   }
 }

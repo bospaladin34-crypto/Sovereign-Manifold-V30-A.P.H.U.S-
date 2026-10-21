@@ -1,17 +1,13 @@
-# ACT-Omega Net v38.0.0 (SH4Z v3800 TLV) — Sovereign Manifold Agent & IDE Constitution
+# AGENTS.md — ACT-Omega Net v38.0.0 (SH4Z v3800 TLV) Symbiotic IDE & Agent Harness Rules
 
-## 1. Canonical Workspace Roots (Zero-Path-Drift Mandate)
-- **Root Directory:** `C:\sovereign_manifold_v31` (Mirrored to `E:\Sovereign_Manifold_SSD_Vault`)
-- **L0 Rust Swarm Binary Source:** `01_l0_rust\src\bin\v31_swarm.rs` (Compiled via `cargo build --release --bin v31_swarm`)
-- **L0 Rust Submodules:** `01_l0_rust\src\v33_*.rs` through `01_l0_rust\src\v38_symbiotic_ide_memory_a2a_delta.rs` (Zero square brackets `[` or `]` in `.rs` source!)
-- **Android 17 NDK Mobile Source:** `04_edge_silicon\pixel10_ndk_app\app\src\main\java\com\actomega\manifold\MainActivity.kt` (Package `com.actomega.manifold` ONLY)
-- **Host WebGPU HUD Source:** `05_hud_cockpit\src\App.tsx`
-- **Formal Verification Suite:** `03_vault\lean4\SovereignManifoldTheorems.lean` (`294 Base + 6 Runtime = 300 Proofs QED`, `0 sorry`)
-- **Neuron Connectome Pagefile:** `03_vault\connectome\neurons_v3800.npage` (`1,351,680 B = 10,560 Neurons × 128 B`, `240 × Chair-44`)
-- **Permanent Auto-Learning Memory Bank:** `03_vault\connectome\episodic_longterm_memory_v3800.jsonl`
+## 1. Architecture & Invariants
+- **Binary Weight File**: `00_control/weights/sovereign_harmonic_iv_v3800.e8z` (`106,496 B` = `104.00 KB = 1,664 x 64 B`, Full 64-Sector Mask `0xFFFFFFFFFFFFFFFF`, `S00..S63`).
+- **Neuron Pagefile**: `00_control/weights/neurons_v3800.npage` (`1,351,680 B` = `10,560` neurons = `240 x Chair-44` columns, `84,480` synapses).
+- **Tool Lattice**: `54 / 54` Tools (`CHAIN 54` DAG), exposed via CodeMode Meta-Tool (`Tool 51`: `act_omega_codemode_search` + `act_omega_codemode_execute`).
+- **Symbiotic AutoLearn Memory (`Tool 52`)**: Every prompt and response is automatically embedded into 256D E8/Leech coordinates, stored in `.npage` neurons `9,900..10,559`, appended to `03_vault/connectome/episodic_longterm_memory_v3800.jsonl`, and synced to Remote 5 GB Cloudflare D1 (`act_omega_d1_vault`, UUID `9f46d56a-ef3e-4232-a9ac-c4bd12e20a87`).
+- **PowerShell Script Hygiene (`Tool 54`)**: Zero backticks (`0` `` ` ``), zero pipes (`0` `|`), and even quote parity on every line.
 
-## 2. Live Local & Edge Endpoints
-- **OpenAI-Compatible `/v1` API (`Tool 47`):** `http://127.0.0.1:8097/v1` (or `https://api.act-omega-net.dev/v1`), Model ID: `sovereign-harmonic-v3800`
-- **Native MCP 2026-07-28 Server (`Tool 46` & `Tool 51` Code-Mode):** `http://127.0.0.1:8097/mcp` (or `https://mcp.act-omega-net.dev/mcp`)
-- **Native A2A Agent Card (`Tool 53`):** `http://127.0.0.1:8097/.well-known/agent.json`
-- **Remote 5GB Cloudflare D1 Database (`Tool 48`):** `act_omega_d1_vault` (`UUID: 9f46d56a-ef3e-4232-a9ac-c4bd12e20a87`)
+## 2. Local & Cloud Endpoints
+- **OpenAI `/v1` Compatible API**: `http://127.0.0.1:8080/v1` (Cloud: `https://mcp.act-omega-net.dev/v1`)
+- **Streamable HTTP MCP Server**: `http://127.0.0.1:8080/mcp` (Cloud: `https://mcp.act-omega-net.dev/mcp`)
+- **A2A v1.0 Agent Card**: `http://127.0.0.1:8080/.well-known/agent.json` (Cloud: `https://act-omega-net.dev/.well-known/agent.json`)

@@ -12,3 +12,10 @@
 
 01_l0_rust/target_stage/
 00_control/gh_wiki_*/
+00_control/goose/*.zip
+00_control/goose/*.exe
+00_control/goose/resources/
+00_control/goose/locales/
+01_l0_rust/target_*/
+02_weights/
+03_vault/shards/*.binshard

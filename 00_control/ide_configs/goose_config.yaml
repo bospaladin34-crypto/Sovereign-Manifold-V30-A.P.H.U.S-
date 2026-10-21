@@ -1,12 +1,10 @@
-# Block / AAIF Goose (100% Rust MCP Agent) Configuration for ACT-Omega Net v38.0.0
-GOOSE_PROVIDER: "openai"
-GOOSE_MODEL: "sovereign-harmonic-v3800"
-OPENAI_HOST: "http://127.0.0.1:8097"
-OPENAI_BASE_PATH: "v1/chat/completions"
+GOOSE_PROVIDER: openai
+GOOSE_MODEL: SH4Z-v3800-TriSilicon
+OPENAI_HOST: http://127.0.0.1:8080
+OPENAI_BASE_PATH: v1/chat/completions
 extensions:
-  act-omega-sovereign-mcp:
-    name: "ACT-Omega Sovereign Manifold MCP (54 Tools + 10 Resources)"
-    type: "streamable_http"
-    uri: "http://127.0.0.1:8097/mcp"
-    remote_uri: "https://mcp.act-omega-net.dev/mcp"
+  act_omega_v3800_mcp:
+    name: act-omega-v3800-mcp
+    type: sse
+    uri: http://127.0.0.1:8080/mcp
     enabled: true

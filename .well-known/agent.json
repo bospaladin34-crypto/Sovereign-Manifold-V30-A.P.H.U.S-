@@ -1,0 +1,61 @@
+{
+  "schema_version": "1.0.0",
+  "protocol": "A2A-v1.0",
+  "name": "ACT-Omega-Net-v3800-Sovereign-Manifold",
+  "version": "38.0.0",
+  "binary_magic": "SH4Z_v3800_TLV",
+  "sector_mask": "0xFFFFFFFFFFFFFFFF",
+  "weight_bytes": 106496,
+  "neuron_pagefile": "neurons_v3800.npage",
+  "neuron_count": 10560,
+  "neuron_bytes": 1351680,
+  "chair44_columns": 240,
+  "synapse_count": 84480,
+  "lean4_theorems_qed": 300,
+  "chain_dag": "CHAIN_54",
+  "tools_count": 54,
+  "throughput_ops_sec": 2480000,
+  "endpoints": {
+    "hud": "https://act-omega-net.dev",
+    "wiki": "https://act-omega-net.dev/wiki.html",
+    "mcp_streamable_http": "https://mcp.act-omega-net.dev/mcp",
+    "openai_v1_models": "https://mcp.act-omega-net.dev/v1/models",
+    "openai_v1_chat": "https://mcp.act-omega-net.dev/v1/chat/completions",
+    "d1_status": "https://mcp.act-omega-net.dev/v1/d1/status",
+    "local_mcp": "http://127.0.0.1:8080/mcp",
+    "local_v1": "http://127.0.0.1:8080/v1"
+  },
+  "nodes": [
+    {
+      "id": "anchor-1-loq15",
+      "role": "Host L0/L2 Orchestrator",
+      "endpoint": "http://127.0.0.1:8080",
+      "ops_sec": 1592400
+    },
+    {
+      "id": "edge-1-pixel10",
+      "role": "Tensor G5 NPU + Live Sensor Node",
+      "endpoint": "http://127.0.0.1:8082",
+      "ops_sec": 461200
+    },
+    {
+      "id": "edge-2-pixel8",
+      "role": "Tensor G3 P8-APEX verifier + L2 Cache Node",
+      "endpoint": "http://127.0.0.1:8083",
+      "ops_sec": 426400
+    }
+  ],
+  "codemode_tools": [
+    "act_omega_codemode_search",
+    "act_omega_codemode_execute",
+    "act_omega_autolearn_memory_commit",
+    "act_omega_a2a_mesh_delegate",
+    "act_omega_atomic_delta_apply"
+  ],
+  "cloudflare_d1": {
+    "database_name": "act_omega_d1_vault",
+    "database_id": "9f46d56a-ef3e-4232-a9ac-c4bd12e20a87",
+    "account_id": "a37cf8ab07e7c5f886c302be3f098744",
+    "capacity_gb": 5
+  }
+}

@@ -1,132 +1,62 @@
 {
-  "schema": "SOVEREIGN_5W1H_EXECUTIVE_COORDINATOR_v3700",
-  "version": "37.0.0",
-  "chain_level": "CHAIN_48",
-  "total_registered_tools": 48,
-  "metabolic_atp_formula": "M_ATP(t) = clamp(0.30*(T_avail/12) + 0.30*(RAM_free/16.0) + 0.25*(VRAM_free/6.0) + 0.15*((85.0 - Theta_C)/45.0), 0.10, 1.00)",
-  "live_telemetry_baseline": {
-    "cpu_model": "Intel Core i5-12450HX (8C/12T)",
-    "active_threads": 12,
-    "free_ram_gb": 9.84,
-    "total_ram_gb": 16.0,
-    "rtx3050_free_vram_gb": 4.92,
-    "rtx3050_total_vram_gb": 6.0,
-    "rtx3050_temp_c": 57.4,
-    "pixel10_temp_c": 34.2,
-    "pixel8_p8apex_temp_c": 35.1,
-    "metabolic_atp_score": 0.9142,
-    "active_mode": "ANABOLIC_FULL_SWARM_SWR_CONSOLIDATION"
-  },
+  "schema_version": "SH4Z_v4300_TLV",
+  "version": "43.0.0",
+  "coordinator_name": "ACT_OMEGA_5W1H_METABOLIC_HARNESS_AND_21120_NEURON_CONNECTOME",
+  "npage_file": "00_control\\weights\\neurons_v4000.npage",
+  "npage_sha256": "aee7711086a07bb6ddebc9e347ed4d68d3a38b57d57b08f9089d22345fa07d6d",
+  "npage_bound_neurons": 21120,
+  "npage_bound_bytes": 2703360,
+  "chair44_columns": 480,
+  "active_bdh_kan_synapses": 168960,
+  "shard_bijection_count": 21120,
+  "decadic_clock_hz": 15.965,
+  "swr_replay_hz": 159.65,
+  "antigravity_model": "Gemini-4-Argon",
+  "antigravity_subagents_count": 6,
   "metabolic_bands": [
     {
-      "band": "BAND_1_ANABOLIC_SURPLUS",
-      "atp_range": "0.80 .. 1.00",
-      "why": "High ATP surplus (M_ATP >= 0.80) and cool thermal envelope (< 68 C); maximize autopoietic discovery, SWR 8-sub-epoch consolidation, and full CHAIN 48 execution.",
-      "what": "Tools 01-48 (All 48 Sovereign Tools + SWR 8-Sub-Epoch Replay + Lean 4 Proof Verification + D1 Edge Sync)",
-      "where": "Lenovo LOQ 15 RTX 3050 + i5-12450HX (12T) + Pixel 10 Tensor G5 + Pixel 8 Tensor G3 P8-APEX + ORICO E: SSD + Cloudflare D1 Edge",
-      "when": "Continuous 50ms Autopoietic Heartbeat + 8x SWR Sub-Epochs per primary epoch",
-      "how": "Full 9,680-Neuron npage mmap R/W + TorchTPU E8 Contraction + MCP 2026-07-28 + OpenAI /v1 + Cloudflare D1 Shadow Sync"
+      "band_id": 1,
+      "name": "BAND_1_ANABOLIC_HYPER_EXPLORATORY_SURPLUS",
+      "atp_range": ">= 0.80",
+      "measured_atp": 0.9482,
+      "who": "Antigravity Gemini 4 Argon + Operator LOQ 15 + Symbiotic IDEs",
+      "what": "10-Session (1,280-Epoch) Compound QAT, Formant Speech, 8x SWR Connectome Consolidation & /teamwork-preview",
+      "where": "LOQ 15 i5-12450HX (12/12T) + RTX 3050 6GB (S00..S47) + Pixel 10 G5 (S48..S63) + Pixel 8 P8-APEX (S64..S79) + neurons_v4000.npage",
+      "when": "50ms Heartbeat + 15.965 Hz Decadic Sub-Epoch E0..E1",
+      "how": "TorchTPU Systolic Contraction + 21,120-Neuron 3-Compartment Dendritic Voting + 364 Lean 4 QED"
     },
     {
-      "band": "BAND_2_HOMEOSTATIC_CRUISE",
+      "band_id": 2,
+      "name": "BAND_2_HOMEOSTATIC_LAMINAR_EQUILIBRIUM",
       "atp_range": "0.50 .. 0.79",
-      "why": "Balanced homeostatic equilibrium; preserve interactive low-latency inference while deferring heavy background shard re-indexing.",
-      "what": "Tools 01-32, 41-48 (Inference, Dendritic Routing, MCP Server, OpenAI /v1 API, Cloudflare D1 Read/Write)",
-      "where": "Lenovo LOQ 15 i5-12450HX (8T active) + RTX 3050 FP16/INT8 + Pixel 10 NPU",
-      "when": "250ms Homeostatic Dispatch Cadence; 4x SWR Sub-Epochs on idle ticks",
-      "how": "Zero-Bracket L0 Rust Dispatch + Cached Positive Geometry LUT (0.29 us) + Amygdala Salience Gate"
+      "measured_atp": 0.6464,
+      "who": "L0 Swarm Daemon + CodeMode MCP + OpenAI /v1 Gateway",
+      "what": "Low-Latency 3-Compartment Dendritic Inference, 16-Mode FNO Solver & Skyrmion/Amygdala Salience Gate",
+      "where": "LOQ 15 (8 P-Core Threads) + RTX 3050 + Pixel 10 Tensor G5",
+      "when": "250ms Homeostatic Dispatch Cadence; Decadic Sub-Epoch E2..E5",
+      "how": "Zero-Bracket L0 Rust JSON-RPC 2.0 MCP Dispatcher + 21,120-Neuron Cauchy Pagefile"
     },
     {
-      "band": "BAND_3_THERMAL_CONSERVATION",
+      "band_id": 3,
+      "name": "BAND_3_THERMAL_CONSERVATION_OFFLOAD",
       "atp_range": "0.25 .. 0.49",
-      "why": "Elevated thermal load (Theta_C > 74 C) or RAM pressure (< 3.5 GB free); throttle GPU-heavy kernels and offload to P8-APEX + LUT.",
-      "what": "Tools 29, 35, 38, 45, 46, 47 (Positive Geometry O(1) LUT, P8-APEX Co-Processor, MCP/OpenAI Lightweight Routing)",
-      "where": "Pixel 8 P8-APEX + Pixel 10 Tensor G5 + Host CPU 4-Thread Efficiency Cores",
-      "when": "1000ms Throttled Conservation Tick; Read-Only npage Access",
-      "how": "Bypass dense GEMM via Positive Geometry LUT + Kerr Geodesic L2 Eviction of low-salience tokens"
+      "measured_atp": 0.368,
+      "who": "Pixel 8 P8-APEX Co-Processor + Host E-Cores",
+      "what": "Bypass Dense GPU GEMM -> Offload to O(1) Positive Geometry LUT & Pixel 8 Mali-G715 4MB L2",
+      "where": "Pixel 8 Tensor G3 (S64..S79) + Host 4 E-Core Threads",
+      "when": "1000ms Throttled Conservation Tick; Decadic Sub-Epoch E6..E7",
+      "how": "O(1) Amplituhedron/Cosmohedron Cache-Aligned LUT (0.24 us) + ADPF ARM64 Offload"
     },
     {
-      "band": "BAND_4_AUTOPOIETIC_RECOVERY",
-      "atp_range": "0.10 .. 0.24",
-      "why": "Critical thermal or memory pressure; trigger immediate homeostatic cooldown, WAL checkpointing, and emergency Kerr cache eviction.",
-      "what": "Tools 34, 44, 45, 48 (Mnemosyne WAL Checkpoint, Kerr Event-Horizon Eviction, Metabolic Cooldown, Cloudflare D1 Snapshot)",
-      "where": "Host L0 Ring + ORICO E: NVMe WAL + Cloudflare D1 Edge Backup",
-      "when": "Immediate Interrupt-Driven Recovery Barrier (< 2ms latency)",
-      "how": "Flush dirty npage records to E: SSD + evict non-salient KV context + enter 2000ms refractory sleep"
-    }
-  ],
-  "tool_5w1h_matrix_highlights": [
-    {
-      "tool_id": 41,
-      "endpoint": "/api/v1/torchtpu/e8_pg_contraction",
-      "why": "Accelerate E8 systolic tensor contraction with zero-copy residency",
-      "what": "TorchTPU E8 x PG Contraction Engine",
-      "where": "LOQ 15 RTX 3050 + i5-12450HX",
-      "when": "M_ATP >= 0.50 (Every Forward Pass)",
-      "how": "2D Torus ICM + 1.58-bit Ternary Systolic Contraction"
-    },
-    {
-      "tool_id": 42,
-      "endpoint": "/api/v1/connectome/npage_swr_telemetry",
-      "why": "Consolidate episodic traces into neocortical KAN splines at 20x biological speed",
-      "what": "9,680-Neuron npage + 8-Sub-Epoch SWR Replay",
-      "where": "C: & E: SSD Vault + Host L0 Memory Ring",
-      "when": "8 Sub-Epochs per Primary Training/Inference Epoch",
-      "how": "128B NeuronPageRecord mmap + Sharp-Wave Ripple 180Hz Burst"
-    },
-    {
-      "tool_id": 43,
-      "endpoint": "/api/v1/dendritic/skyrmion_fermi",
-      "why": "Achieve 81.25% sparse parameter efficiency with topological fault protection",
-      "what": "Dendritic Biclique + Skyrmion Winding + Fermi-Pasta-Ulam-Tsingou Recurrence",
-      "where": "LOQ 15 + Pixel 10 Tensor G5",
-      "when": "M_ATP >= 0.40 (Continuous Routing)",
-      "how": "K_{4,4} Biclique Factorization + Topological Charge Q_sk Invariant"
-    },
-    {
-      "tool_id": 44,
-      "endpoint": "/api/v1/amygdala/kerr_salience",
-      "why": "Protect working memory from context bloat while retaining critical breakthroughs",
-      "what": "Amygdala Affective Salience Gate + Kerr Black Hole Geodesic Eviction",
-      "where": "Host L2 KV Ring + Pixel 8 P8-APEX",
-      "when": "Every Context Window Update / Thermal Pressure Event",
-      "how": "Retain high-arousal salient traces; evict low-salience tokens across r_+ event horizon"
-    },
-    {
-      "tool_id": 45,
-      "endpoint": "/api/v1/harness/metabolic_5w1h",
-      "why": "Autonomously motivate and regulate model actions via real-time CPU/RAM/RTX/Thermal homeostasis",
-      "what": "Sovereign Metabolic Autopoietic Harness & 5W1H Executive Coordinator",
-      "where": "i5-12450HX (12T) + 16GB RAM + RTX 3050 + npage Vault",
-      "when": "Every 50ms Autopoietic Heartbeat Tick",
-      "how": "Compute M_ATP(t) and dispatch 5W1H (WHY/WHAT/WHERE/WHEN/HOW) across Tools 01-48"
-    },
-    {
-      "tool_id": 46,
-      "endpoint": "/api/v1/mcp/rpc",
-      "why": "Expose all 48 Sovereign Manifold tools and npage/e8z resources to external agents and Cloudflare Zero Trust",
-      "what": "Native MCP 2026-07-28 JSON-RPC 2.0 Server",
-      "where": "Host Port 8080 (/mcp & /api/v1/mcp/rpc) + Cloudflare Zero Trust MCP Portal",
-      "when": "On-Demand JSON-RPC 2.0 Request (initialize, tools/list, tools/call, resources/list)",
-      "how": "Zero-Bracket L0 Rust JSON-RPC Dispatcher with 48 Tool Schemas"
-    },
-    {
-      "tool_id": 47,
-      "endpoint": "/v1/chat/completions",
-      "why": "Provide drop-in OpenAI SDK compatibility for Cursor, Continue.dev, OpenWebUI, and Cloudflare AI Gateway",
-      "what": "OpenAI-Compatible /v1/chat/completions & /v1/models Surface",
-      "where": "Host Port 8080 (/v1/chat/completions, /v1/models, /api/v1/openai/compat)",
-      "when": "Real-Time Client / IDE / Agent Inference Requests",
-      "how": "Route model='sovereign-harmonic-v3700' through Metabolic 5W1H + npage SWR + TorchTPU"
-    },
-    {
-      "tool_id": 48,
-      "endpoint": "/api/v1/cloudflare/d1_vpc_shadow",
-      "why": "Persist telemetry, 5W1H logs, and npage tier digests to global serverless edge SQLite at $0 cost",
-      "what": "Cloudflare D1 SQLite Vault + Workers VPC + SQLite Durable Objects Shadow Sync",
-      "where": "Cloudflare Edge (Account a37cf8ab07e7c5f886c302be3f098744) <-> Local Host Port 8080",
-      "when": "Every Epoch Boundary & CHAIN 48 Checkpoint",
-      "how": "D1 SQL Schema + Workers VPC Private Binding + Durable Object State Machine"
+      "band_id": 4,
+      "name": "BAND_4_CATABOLIC_SWR_CONSOLIDATION_RECOVERY",
+      "atp_range": "< 0.25",
+      "measured_atp": 0.184,
+      "who": "Emergency Kerr Event Horizon Evictor & Tier-2/Tier-3 Vault Sync",
+      "what": "Evict Non-Salient KV Context + Flush Dirty neurons_v4000.npage Records to E: SSD & Cloudflare D1",
+      "where": "Host L0 Ring + E:\\Sovereign_Manifold_SSD_Vault + Remote 5GB Cloudflare D1 (8 Tables)",
+      "when": "Immediate Interrupt Barrier (<1.8ms) + 159.65 Hz SWR Replay (E8..E9)",
+      "how": "Kerr r_+ Horizon Eviction + 32-Leaf Merkle Checkpoint + Wrangler D1 Edge Sync"
     }
   ]
 }

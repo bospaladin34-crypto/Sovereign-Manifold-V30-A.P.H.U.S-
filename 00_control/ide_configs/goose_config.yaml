@@ -1,11 +1,11 @@
 GOOSE_PROVIDER: openai
-GOOSE_MODEL: SH4Z-v4200-TriSilicon
+GOOSE_MODEL: SH4Z-v4300-TriSilicon
 OPENAI_HOST: http://127.0.0.1:8080
 OPENAI_BASE_PATH: v1/chat/completions
 GOOSE_WORKING_DIR: C:\sovereign_manifold_v31
 extensions:
-  act_omega_v4200_mcp:
-    name: act-omega-v4200-mcp
+  act_omega_v4300_mcp:
+    name: act-omega-v4300-mcp
     type: sse
     uri: http://127.0.0.1:8080/mcp
     enabled: true

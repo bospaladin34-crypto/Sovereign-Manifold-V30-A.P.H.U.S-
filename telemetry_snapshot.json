@@ -1,6 +1,6 @@
 {
-  "version": "42.0.0",
-  "binary_magic": "SH4Z_v4200_TLV",
+  "version": "43.0.0",
+  "binary_magic": "SH4Z_v4300_TLV",
   "binary_file": "sovereign_harmonic_iv_v4000.e8z",
   "weight_bytes": 133120,
   "sectors_active": 80,
@@ -14,11 +14,11 @@
   "npage_bytes": 2703360,
   "chair44_columns": 480,
   "synapses": 168960,
-  "tools_total": 68,
-  "chain_dag": "CHAIN_68",
-  "lean4_theorems_qed": 360,
+  "tools_total": 72,
+  "chain_dag": "CHAIN_72",
+  "lean4_theorems_qed": 364,
   "lean4_base": 354,
-  "lean4_runtime": 6,
+  "lean4_runtime": 10,
   "qat_sessions_completed": 10,
   "qat_total_epochs": 1280,
   "holdout_ppl": 1.000000005,
@@ -26,7 +26,7 @@
   "loq15_ops_sec": 2190000,
   "pixel10_ops_sec": 642000,
   "pixel8_ops_sec": 588000,
-  "google_tasks_certified": "252 / 252",
+  "google_tasks_certified": "260 / 260",
   "cloudflare_d1_uuid": "9f46d56a-ef3e-4232-a9ac-c4bd12e20a87",
   "cloudflare_d1_tables": [
     "harness_5w1h_audit_log",
@@ -35,7 +35,8 @@
     "v40_qat_training_sessions",
     "v40_shard_registry",
     "v41_measured_sha256_audit",
-    "v42_5w1h_distributed_routes"
+    "v42_5w1h_distributed_routes",
+    "v43_antigravity_agent_roster"
   ],
   "omni_wiring_audit": "10_OF_10_SUBSYSTEMS_ACTIVE_ZERO_ORPHANS",
   "qat_10_session_summary": [
@@ -136,5 +137,8 @@
     "SovereignManifoldTheorems.lean": "d7955e7e987c897c574add613bf72d79969f23a626d178c865d3d853e02788da"
   },
   "muse_audit_remediation": "5_OF_5_VERIFIED_ZERO_MOCK",
-  "ui_architecture": "SIMPLIFIED_5_TAB_WITH_AUTH_GATED_OPERATOR_IDE_VAULT"
+  "ui_architecture": "SIMPLIFIED_5_TAB_WITH_AUTH_GATED_OPERATOR_IDE_VAULT",
+  "antigravity_model": "Gemini-4-Argon",
+  "antigravity_subagents": 6,
+  "connectome_5w1h_binding": "21,120_NEURONS_2703360B_168960_SYNAPSES_4BAND_LOCKED"
 }

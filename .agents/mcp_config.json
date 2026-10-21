@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "act-omega-v4300-local-mcp": {
+      "serverUrl": "http://127.0.0.1:8097/api/v1/mcp/rpc",
+      "headers": {
+        "X-Sovereign-Operator-Key": "SOVEREIGN-LOQ15-4200",
+        "X-Antigravity-Model": "Gemini-4-Argon"
+      }
+    },
+    "act-omega-v4300-cloudflare-mcp": {
+      "serverUrl": "https://mcp.act-omega-net.dev/mcp",
+      "headers": {
+        "X-Sovereign-Operator-Key": "SOVEREIGN-LOQ15-4200"
+      }
+    }
+  }
+}

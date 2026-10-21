@@ -1,5 +1,5 @@
 // =============================================================================
-// ACT-OMEGA NET v37.1.0 (SOVEREIGN RECURSIVE OPTIMIZER & 5W1H LOAD-SHIFT / SH4Z v3710)
+// ACT-OMEGA NET v43.0.0 (SOVEREIGN RECURSIVE OPTIMIZER & 5W1H LOAD-SHIFT / SH4Z v4300)
 // MODULE 3: KLATT/ROSENBERG GLOTTAL-FORMANT SPEECH SYNTHESIS + 16kHz PCM WAV
 //           ENGINE (TOOL 49) & 64-EPOCH 6-DOMAIN COMPOUND CURRICULUM QAT +
 //           RECURSIVE ARCHITECTURE OPTIMIZER (TOOL 50)
@@ -58,7 +58,7 @@ pub fn evaluate_cymatic_formant_speech(
         prompt.trim()
     };
     let narrative = format!(
-        "Sovereign Harmonic 37.1 speech synthesis active for {}. Metabolic ATP drive is {:.2}, operating at {:.1} thousand operations per second across 10,560 three-compartment dendritic neurons. Glottal fundamental pitch is locked at {:.1} Hertz with four-formant vocal tract resonances at {:.0}, {:.0}, {:.0}, and {:.0} Hertz. All 300 Lean 4 proofs and Cloudflare D1 edge vaults are verified.",
+        "Sovereign Harmonic 37.1 speech synthesis active for {}. Metabolic ATP drive is {:.2}, operating at {:.1} thousand operations per second across 21,120 three-compartment dendritic neurons. Glottal fundamental pitch is locked at {:.1} Hertz with four-formant vocal tract resonances at {:.0}, {:.0}, {:.0}, and {:.0} Hertz. All 300 Lean 4 proofs and Cloudflare D1 edge vaults are verified.",
         clean_topic, m_atp, cluster_kops, f0, f1, f2, f3, f4
     );
     FormantSpeechTelemetry {
@@ -158,13 +158,13 @@ pub fn execute_v37_1_speech_compound_slash(
     if prompt.starts_with("/speech") || prompt.starts_with("/tts") || prompt.starts_with("/formant") {
         let sp = evaluate_cymatic_formant_speech(prompt, m_atp, b_norm, sub_epoch, cluster_kops);
         Some(format!(
-            "SLASH INTERRUPT /speech (SH4Z v3710 Tool 49 Klatt/Rosenberg Formant Speech + 16kHz WAV Engine): Glottal f0={:.2}Hz | Formants F1={:.0}Hz, F2={:.0}Hz, F3={:.0}Hz, F4={:.0}Hz | Contour={} | Rate={:.2}x | Stream=/api/v1/speech/wav ({}B RIFF/WAVE) | Spoken Narrative: \"{}\"",
+            "SLASH INTERRUPT /speech (SH4Z v4300 Tool 49 Klatt/Rosenberg Formant Speech + 16kHz WAV Engine): Glottal f0={:.2}Hz | Formants F1={:.0}Hz, F2={:.0}Hz, F3={:.0}Hz, F4={:.0}Hz | Contour={} | Rate={:.2}x | Stream=/api/v1/speech/wav ({}B RIFF/WAVE) | Spoken Narrative: \"{}\"",
             sp.glottal_f0_hz, sp.formant_f1_hz, sp.formant_f2_hz, sp.formant_f3_hz, sp.formant_f4_hz, sp.prosodic_pitch_contour, sp.prosodic_rate, sp.wav_bytes_size, sp.speech_narrative
         ))
     } else if prompt.starts_with("/compound_train") || prompt.starts_with("/qat_v37") || prompt.starts_with("/recursive_opt") {
         let cq = evaluate_cross_domain_compound_qat(qat_epochs, fno_l2, ortho_err, m_atp, cluster_kops);
         Some(format!(
-            "SLASH INTERRUPT /compound_train (SH4Z v3710 Tool 50 64-Epoch 6-Domain Compound QAT & Recursive Optimizer): Epochs={} | Domains Bridged={} ({}) | Holdout PPL={:.8} | Cross-Domain Transfer={:.2}% | Recursive Cache-Line Speedup=+{:.2}% ({:.1}k ops/s, DAG Latency={:.1}ms)",
+            "SLASH INTERRUPT /compound_train (SH4Z v4300 Tool 50 64-Epoch 6-Domain Compound QAT & Recursive Optimizer): Epochs={} | Domains Bridged={} ({}) | Holdout PPL={:.8} | Cross-Domain Transfer={:.2}% | Recursive Cache-Line Speedup=+{:.2}% ({:.1}k ops/s, DAG Latency={:.1}ms)",
             cq.qat_total_epochs, cq.active_domains_bridged, cq.domain_matrix_summary, cq.holdout_ppl, cq.compound_transfer_pct, cq.recursive_cacheline_speedup_pct, cq.cluster_kops, cq.dag_latency_ms
         ))
     } else {

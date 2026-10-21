@@ -1,5 +1,5 @@
 // =============================================================================
-// ACT-OMEGA NET v37.1.0 (SOVEREIGN RECURSIVE OPTIMIZER & 5W1H LOAD-SHIFT / SH4Z v3710)
+// ACT-OMEGA NET v43.0.0 (SOVEREIGN RECURSIVE OPTIMIZER & 5W1H LOAD-SHIFT / SH4Z v4300)
 // MODULE 1: HARDWARE-METABOLIC AUTOPOIETIC DRIVE ENGINE & 4-BAND DYNAMIC 5W1H
 //           LOAD-SHIFT STRESS SIMULATOR (TOOL 45)
 // ZERO SQUARE BRACKETS ENFORCED (ZERO SQUARE BRACKETS IN SOURCE)
@@ -84,9 +84,9 @@ pub fn evaluate_metabolic_harness_5w1h_with_load(
         0 => (
             "WHY: Band 1 Anabolic ATP Surplus (M_ATP >= 0.80, Thermal Headroom > 35C) -> Execute Full 6-Domain Compound QAT, Formant Speech Synthesis & 8x SWR Consolidation",
             "WHAT: Execute Tool 50 (/api/v1/training/cross_domain_compound_qat) -> Tool 49 (/api/v1/speech/cymatic_formant_tts) -> Tool 42 (/api/v1/pagefile/cauchy_sparse_npage) -> Tool 41 (/api/v1/torchtpu/openxla_pallas_bridge)",
-            "WHERE: LOQ15 i5-12450HX (12/12 Threads) + RTX 3050 6GB WGSL + Pixel 10 G5 TPU + Pixel 8 P8-APEX + neurons_v3800.npage (C: & E:)",
+            "WHERE: LOQ15 i5-12450HX (12/12 Threads) + RTX 3050 6GB WGSL + Pixel 10 G5 TPU + Pixel 8 P8-APEX + neurons_v4000.npage (C: & E:)",
             "WHEN: Continuous 50ms Autopoietic Heartbeat + Decadic Sub-Epoch E0..E1 (14.8ms 4-Wave Parallel DAG)",
-            "HOW: 64B Cache-Line Aligned TorchTPU Systolic Contraction + 64-Epoch Compound QAT + Klatt Formant WAV + 300 Lean 4 QED"
+            "HOW: 64B Cache-Line Aligned TorchTPU Systolic Contraction + 64-Epoch Compound QAT + Klatt Formant WAV + 364 Lean 4 QED"
         ),
         1 => (
             "WHY: Band 2 Homeostatic Laminar Cruise (0.50 <= M_ATP < 0.80) -> Maintain Low-Latency 3-Compartment Dendritic Inference, MCP Portal & OpenAI /v1 Serving",
@@ -112,7 +112,7 @@ pub fn evaluate_metabolic_harness_5w1h_with_load(
         _ => (
             "WHY: Band 4 Catabolic SWR Recovery (M_ATP < 0.25, Critical Thermal/Memory Pressure) -> Trigger Emergency Kerr KV Eviction & 159.65Hz SWR Pagefile Compaction",
             "WHAT: Execute Tool 44 (/api/v1/neuro/amygdala_kerr_ravi) -> Tool 39 (/api/v1/logging/bitemporal_wal) -> Tool 48 (/api/v1/cloudflare/d1_vpc_shadow)",
-            "WHERE: Host L0 Ring + ORICO (E:) NVMe SSD Vault (neurons_v3800.npage 1,239,040B) + Cloudflare D1 Edge Snapshot",
+            "WHERE: Host L0 Ring + ORICO (E:) NVMe SSD Vault (neurons_v4000.npage 2,703,360B) + Cloudflare D1 Edge Snapshot",
             "WHEN: Immediate Interrupt-Driven Recovery Barrier (< 1.8ms) + Sub-Epoch E8..E9 159.65Hz SWR Replay",
             "HOW: Evict Non-Salient KV Context Across Kerr r_+ Event Horizon + Flush Dirty .npage Records to E: SSD + 2000ms Cooldown"
         ),
@@ -131,8 +131,8 @@ pub fn evaluate_metabolic_harness_5w1h_with_load(
         rtx3050_vram_total_mb: vram_tot,
         rtx3050_temp_c: sim_temp_c,
         thermal_headroom_c: therm_headroom_c,
-        npage_bound_neurons: 10560,
-        npage_bound_bytes: 1351680,
+        npage_bound_neurons: 21120,
+        npage_bound_bytes: 2703360,
         coord_rule_id: rule_override + 1,
         coord_why: w_why,
         coord_what: w_what,
@@ -192,7 +192,7 @@ pub fn execute_v37_harness_slash(
     } else if prompt.starts_with("/harness") || prompt.starts_with("/5w1h") || prompt.starts_with("/metabolic") || prompt.starts_with("/coordinator") {
         let h = evaluate_metabolic_harness_5w1h(rtx_temp_c, rtx_vram_used_mb, rtx_vram_total_mb, p10_temp_c, p8_temp_c, p10_ram_used_mb, p10_ram_total_mb, sub_epoch, gen_counter);
         Some(format!(
-            "SLASH INTERRUPT /5w1h (SH4Z v3710 Tool 45 Metabolic Harness): M_ATP={:.4} (Band #{}: {}) | CPU Threads={}/{} | Free RAM={}/{}MB | RTX 3050 Free VRAM={}/{}MB (Thermal Headroom={:.1}C) | Bound to neurons_v3800.npage ({} Neurons, {}B) | Active 5W1H Rule #{}: {} | {} | {} | {} | {}",
+            "SLASH INTERRUPT /5w1h (SH4Z v4300 Tool 45 Metabolic Harness): M_ATP={:.4} (Band #{}: {}) | CPU Threads={}/{} | Free RAM={}/{}MB | RTX 3050 Free VRAM={}/{}MB (Thermal Headroom={:.1}C) | Bound to neurons_v4000.npage ({} Neurons, {}B) | Active 5W1H Rule #{}: {} | {} | {} | {} | {}",
             h.metabolic_atp_drive, h.metabolic_band_id, h.metabolic_regime, h.host_cpu_active_threads, h.host_cpu_total_threads, h.host_ram_free_mb, h.host_ram_total_mb, h.rtx3050_vram_free_mb, h.rtx3050_vram_total_mb, h.thermal_headroom_c, h.npage_bound_neurons, h.npage_bound_bytes, h.coord_rule_id, h.coord_why, h.coord_what, h.coord_where, h.coord_when, h.coord_how
         ))
     } else {

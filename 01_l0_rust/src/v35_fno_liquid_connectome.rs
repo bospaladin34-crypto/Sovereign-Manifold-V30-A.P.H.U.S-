@@ -33,9 +33,9 @@ pub fn evaluate_fno_liquid_connectome(
     sub_epoch: u64,
     gen_counter: u64,
 ) -> ConnectomeSynaptogenesisTelemetry {
-    let base_neurons: u64 = 10560;
+    let base_neurons: u64 = 21120;
     let columns: u64 = 240;
-    let base_synapses: u64 = 84480;
+    let base_synapses: u64 = 168960;
 
     // Martellini entropic step dTau = 0.1053605 nats drives the CfC closed-form membrane gate:
     // v(tau + dTau) = sigma(-f(I, theta) * dTau) * v(tau) + (1 - sigma(-f(I, theta) * dTau)) * A

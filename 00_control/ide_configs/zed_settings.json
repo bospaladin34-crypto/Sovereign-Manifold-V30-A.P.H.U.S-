@@ -3,7 +3,7 @@
     "version": "2",
     "default_model": {
       "provider": "openai",
-      "model": "SH4Z-v4200-TriSilicon"
+      "model": "SH4Z-v4300-TriSilicon"
     },
     "always_allow_tool_actions": true
   },
@@ -13,8 +13,8 @@
       "api_url": "http://127.0.0.1:8080/v1",
       "available_models": [
         {
-          "name": "SH4Z-v4200-TriSilicon",
-          "display_name": "ACT-Omega Net v42.0.0 (SH4Z v4200 5W1H Router + Operator IDE Vault)",
+          "name": "SH4Z-v4300-TriSilicon",
+          "display_name": "ACT-Omega Net v43.0.0 (SH4Z v4300 5W1H Router + Operator IDE Vault)",
           "max_tokens": 32768,
           "max_output_tokens": 8192
         }
@@ -22,7 +22,7 @@
     }
   },
   "context_servers": {
-    "act-omega-v4200-mcp": {
+    "act-omega-v4300-mcp": {
       "command": {
         "path": "curl.exe",
         "args": [

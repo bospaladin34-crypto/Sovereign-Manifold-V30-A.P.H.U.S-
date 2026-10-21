@@ -1,7 +1,7 @@
 // =============================================================================
-// ACT-OMEGA NET v42.0.0 (SH4Z v4200 TLV) - DEEP 5W1H DISTRIBUTED ROUTER,
+// ACT-OMEGA NET v43.0.0 (SH4Z v4300 TLV) - DEEP 5W1H DISTRIBUTED ROUTER,
 // GOOSE/ZED/CLINE PROJECT PARITY, SIMPLIFIED 5-TAB HUD & AUTH-GATED IDE VAULT
-// Zero-Mock Measured Implementation - Tools 65..68 - CHAIN 68 DAG - 360 QED
+// Zero-Mock Measured Implementation - Tools 65..68 - CHAIN 72 DAG - 360 QED
 // =============================================================================
 
 use std::fs;
@@ -110,7 +110,7 @@ pub fn tool_66_symbiotic_ide_parity_json() -> String {
     let cline_ok = Path::new("00_control/ide_configs/cline_mcp_settings.json").exists();
     let queue_ok = Path::new("03_vault/connectome/tasks_queue.json").exists();
     format!(
-        "{{"tool":66,"endpoint":"/api/v1/ide/symbiotic_parity_sync","model_id":"SH4Z-v4200-TriSilicon","zed_v2_synced":{},"goose_workspace_locked":{},"cline_mcp_synced":{},"shared_tasks_queue_ready":{}}}",
+        "{{"tool":66,"endpoint":"/api/v1/ide/symbiotic_parity_sync","model_id":"SH4Z-v4300-TriSilicon","zed_v2_synced":{},"goose_workspace_locked":{},"cline_mcp_synced":{},"shared_tasks_queue_ready":{}}}",
         zed_ok, goose_ok, cline_ok, queue_ok
     )
 }

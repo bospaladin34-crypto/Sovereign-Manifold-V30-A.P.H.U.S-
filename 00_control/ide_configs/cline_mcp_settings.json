@@ -1,6 +1,6 @@
 {
   "mcpServers": {
-    "act-omega-v4200-mcp": {
+    "act-omega-v4300-mcp": {
       "url": "http://127.0.0.1:8080/mcp",
       "disabled": false,
       "autoApprove": [

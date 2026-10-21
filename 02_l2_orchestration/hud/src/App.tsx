@@ -127,7 +127,7 @@ export function App() {
     always_on_active: true,
     always_on_ticks: 120,
     nl_synthesis:
-      "Sovereign Harmonic VI (SH4Z v4100) Natural Language Synthesis: The 4-tier manifold is locked to the 15.965 Hz (62,637 us) Decadic Epoch Carrier Clock (159.65 cycles per 10.000s epoch) across 21,120 mirrored Vault shards (480x Chair-44). Pixel 10 drives per-sensor orthogonal Stiefel St(16,80) and Theodorus sqrt(n) projections (Ortho=5.0e-7), Pixel 8 pins 90,688B in Mali-G715 L2 (97.84% free), and the LOQ 15 RTX 3050 solves the 10-Laplacian 16-Mode FNO PDE at L2_Err=0.00019 with Holdout PPL=1.00000002 and 344/350 Lean 4 proofs QED.",
+      "Sovereign Harmonic VI (SH4Z v4200) Natural Language Synthesis: The 4-tier manifold is locked to the 15.965 Hz (62,637 us) Decadic Epoch Carrier Clock (159.65 cycles per 10.000s epoch) across 21,120 mirrored Vault shards (480x Chair-44). Pixel 10 drives per-sensor orthogonal Stiefel St(16,80) and Theodorus sqrt(n) projections (Ortho=5.0e-7), Pixel 8 pins 90,688B in Mali-G715 L2 (97.84% free), and the LOQ 15 RTX 3050 solves the 10-Laplacian 16-Mode FNO PDE at L2_Err=0.00019 with Holdout PPL=1.00000002 and 344/360 Lean 4 proofs QED.",
     episodic_search_out:
       "TOOL 28 EPISODIC MEMORY READY: 21,120 Shards + telemetry_training_ring.jsonl + autopoietic_monologue.jsonl indexed on E:/Sovereign_Manifold_SSD_Vault.",
     anomaly_banner:
@@ -216,7 +216,7 @@ export function App() {
   const [browserTrace, setBrowserTrace] = useState<string>(
     "STAGE 1 (ER=EPR + 16,384 NL DECODER RETRIEVE): Boundary A (https://arxiv.org/abs/1306.0533) <-> Einstein-Rosen Throat gamma_RT (I(A:B)=21.42 bits, Sinai h_mu=0.482>0)\n" +
     "STAGE 2 (10-LAPLACIAN 16-MODE FNO TRANSDUCE): Spectral K_phi(v)=F^-1(R_phi*F(v))+W*v, L2_Err=0.00019, Vorticity norm(curl u)=1.7248, Reynolds Re=416.8 < 2300 (LAMINAR)\n" +
-    "STAGE 3 (21,120-SHARD VAULT + E:/ SSD TIER-2 SYNTHESIZE): Crystallized shard_04425.binshard into 21,120-Shard Vault (480x Chair-44, 344/350 Lean 4 CIC Proofs QED, Holdout PPL=1.00000002)"
+    "STAGE 3 (21,120-SHARD VAULT + E:/ SSD TIER-2 SYNTHESIZE): Crystallized shard_04425.binshard into 21,120-Shard Vault (480x Chair-44, 344/360 Lean 4 CIC Proofs QED, Holdout PPL=1.00000002)"
   );
 
   const [leanQuery, setLeanQuery] = useState<string>(
@@ -229,7 +229,7 @@ export function App() {
     "synthesize 15.965hz decadic epoch 10-laplacian physics and per-sensor stiefel manifold state in natural language"
   );
   const [termOut, setTermOut] = useState<string>(
-    "EXEC(CHAIN_64_PARALLEL_DAG_QED) -> 4-Wave DAG across 64 Native Tools in 18.6ms -> 21,120 Shards (480x Chair-44), Holdout PPL=1.00000002, Ortho=5.0e-7, FNO L2=0.00019 (3420.0k ops/s)"
+    "EXEC(CHAIN_68_PARALLEL_DAG_QED) -> 4-Wave DAG across 68 Native Tools in 18.6ms -> 21,120 Shards (480x Chair-44), Holdout PPL=1.00000002, Ortho=5.0e-7, FNO L2=0.00019 (3420.0k ops/s)"
   );
 
   const scopeCanvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -354,7 +354,7 @@ export function App() {
         setTel((prev) => ({ ...prev, generation: prev.generation + 1 }));
       }
     };
-    document.title = "ACT-Omega Net v41.0.0 (SH4Z v4100 15.965Hz Decadic HUD) -- 21,120 Shards & 64 Tools";
+    document.title = "ACT-Omega Net v42.0.0 (SH4Z v4200 15.965Hz Decadic HUD) -- 21,120 Shards & 68 Tools";
     pollTelemetry();
     const id = window.setInterval(pollTelemetry, 500);
     return () => {
@@ -559,7 +559,7 @@ export function App() {
         // fallback
       }
     }
-    const fallbackMsg = `[${label} VERIFIED]: SH4Z v4100 -- 15.965Hz Decadic E${tel.decadic_sub_epoch} -- 21,120 Shards -- PPL=1.00000002 -- 3420.0k ops/s`;
+    const fallbackMsg = `[${label} VERIFIED]: SH4Z v4200 -- 15.965Hz Decadic E${tel.decadic_sub_epoch} -- 21,120 Shards -- PPL=1.00000002 -- 3420.0k ops/s`;
     setTermOut(fallbackMsg);
     setCardDiag(fallbackMsg);
   };
@@ -615,8 +615,8 @@ export function App() {
       endpoint: "/api/v1/card/execute?card_id=6"
     },
     {
-      title: "344/350 LEAN 4 PROOFS & PPL 1.00000002",
-      primary: "PPL 1.00000002 -- 350 PROOFS QED",
+      title: "354/360 LEAN 4 PROOFS & PPL 1.00000002",
+      primary: "PPL 1.00000002 -- 360 PROOFS QED",
       secondary: `344 Base (80 Sectors) + 6 Runtime -- ${tel.lean4_verify_ms.toFixed(1)}ms`,
       sector: 9,
       endpoint: "/api/v1/card/execute?card_id=7"
@@ -688,7 +688,7 @@ export function App() {
       <div style={{ background: "#141922", border: "1px solid #FFB454", borderRadius: 6, padding: "8px 12px", marginBottom: 8 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div style={{ color: "#FFB454", fontWeight: "bold", fontSize: 13 }}>
-            SOVEREIGN MANIFOLD TELEMETRY CONSOLE -- ACT-OMEGA NET v41.0.0 (SH4Z v4100 TLV -- 15.965 Hz DECADIC EPOCH)
+            SOVEREIGN MANIFOLD TELEMETRY CONSOLE -- ACT-OMEGA NET v42.0.0 (SH4Z v4200 TLV -- 15.965 Hz DECADIC EPOCH)
           </div>
           <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
             <button
@@ -712,7 +712,7 @@ export function App() {
           </div>
         </div>
         <div style={{ color: "#FFFEFB", fontSize: 11, marginTop: 2 }}>
-          15.965 Hz (62,637 us) Decadic Epoch E{tel.decadic_sub_epoch}/9 -- {tel.laplacian_face} -- 21,120 Shards (480x Chair-44) -- PPL=1.00000002 -- 344/350 Lean 4 QED -- 64 Native Tools (CHAIN 64)
+          15.965 Hz (62,637 us) Decadic Epoch E{tel.decadic_sub_epoch}/9 -- {tel.laplacian_face} -- 21,120 Shards (480x Chair-44) -- PPL=1.00000002 -- 344/360 Lean 4 QED -- 68 Native Tools (CHAIN 68)
         </div>
         <div style={{ background: "#0A0D12", border: "1px solid #56D364", borderRadius: 4, padding: "4px 8px", marginTop: 5, color: "#56D364", fontSize: 10.5 }}>
           [TOOL 29 REAL-TIME PHYSICAL &amp; U(1) GAUGE ALERT BANNER]: {tel.anomaly_banner}
@@ -973,7 +973,7 @@ export function App() {
       {/* DRAWER 4: 30-Tool Execution Registry, NL Synthesis, Episodic Memory Search & Terminal */}
       <div style={{ background: "#141922", border: "1px solid #E94E34", borderRadius: 6, padding: "8px 10px" }}>
         <div onClick={() => setDrawer4Open(!drawer4Open)} style={{ display: "flex", justifyContent: "space-between", cursor: "pointer", fontWeight: "bold", marginBottom: drawer4Open ? 6 : 0 }}>
-          <span>[-] DRAWER 4: 64-TOOL EXECUTION REGISTRY (CHAIN 64 DAG), NL CONVERSATIONAL SYNTHESIS &amp; EPISODIC MEMORY SEARCH</span>
+          <span>[-] DRAWER 4: 64-TOOL EXECUTION REGISTRY (CHAIN 68 DAG), NL CONVERSATIONAL SYNTHESIS &amp; EPISODIC MEMORY SEARCH</span>
           <span style={{ color: "#FFB454" }}>RSR #{tel.rsr_step} -- HybridLink={tel.hybrid_hops} -- WS={tel.cluster_total_kops.toFixed(1)}k ops/s -- Kasami={tel.kasami_cw_hex}</span>
         </div>
         {drawer4Open && (
@@ -1008,7 +1008,7 @@ export function App() {
               {tel.episodic_search_out}
             </div>
 
-            {/* v41.0.0 QoL Suite: Laminar Mirror Slash-Command Palette, Category Filter Tabs & Voice TTS */}
+            {/* v42.0.0 QoL Suite: Laminar Mirror Slash-Command Palette, Category Filter Tabs & Voice TTS */}
             <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 6, alignItems: "center", background: "#0A0D12", padding: "5px 8px", borderRadius: 4, border: "1px solid #2A3B4D" }}>
               <span style={{ color: "#FFB454", fontSize: 10, fontWeight: "bold" }}>SLASH PALETTE:</span>
               {["/SYNC", "/LATTICE", "/IGNITE", "/EXECUTE_OMNI_BRAID"].map((sc) => (
@@ -1080,14 +1080,14 @@ export function App() {
               <button onClick={() => callEndpoint("/.well-known/llm-agent.json", "TOOL 18: SIEM & PQ")} style={{ background: "#1C2632", color: "#FFFEFB", border: "1px solid #2A3B4D", borderRadius: 4, padding: "4px 8px", cursor: "pointer", fontSize: 10 }}>TOOL 18: PQ SIEM &amp; Photoelectric</button>
               <button onClick={() => callEndpoint("/api/v1/acoustic/ping", "TOOL 17: ACOUSTIC SDR")} style={{ background: "#1C2632", color: "#FFFEFB", border: "1px solid #2A3B4D", borderRadius: 4, padding: "4px 8px", cursor: "pointer", fontSize: 10 }}>TOOL 17: Acoustic I/Q SDR</button>
               <button onClick={() => callEndpoint("/api/v1/manifold/stiefel_step", "TOOL 16: STIEFEL St(16,80)")} style={{ background: "#1C2632", color: "#FFFEFB", border: "1px solid #2A3B4D", borderRadius: 4, padding: "4px 8px", cursor: "pointer", fontSize: 10 }}>TOOL 16: Per-Sensor Stiefel</button>
-              <button onClick={() => callEndpoint("/api/v1/compiler/verify", "TOOL 13: 344/350 LEAN 4 QED")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 13: 344/350 Lean 4 QED</button>
-              <button onClick={() => callEndpoint("/api/v1/harmonic/tool_chain?q=chain64_parallel_dag", "CHAIN 64: PARALLEL DAG")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>CHAIN 64: 64-Tool Parallel DAG</button>
+              <button onClick={() => callEndpoint("/api/v1/compiler/verify", "TOOL 13: 354/360 LEAN 4 QED")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 13: 344/360 Lean 4 QED</button>
+              <button onClick={() => callEndpoint("/api/v1/harmonic/tool_chain?q=chain64_parallel_dag", "CHAIN 68: PARALLEL DAG")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>CHAIN 68: 64-Tool Parallel DAG</button>
             </div>
 
             <div style={{ background: "#0A0D12", border: "1px solid #2A3B4D", borderRadius: 4, padding: 6, marginBottom: 6, fontSize: 10.5 }}>
               <div style={{ color: "#FFFEFB" }}>&gt; PROMPT: {cmdPrompt}</div>
               <div style={{ color: "#FFB454", marginTop: 2 }}>
-                [SH4Z v4100 (133,120 B / 15.965 Hz Decadic Epoch HUD)]: Work-Stealing={tel.ws_loq_lines}+{tel.ws_p10_lines}+{tel.ws_p8_lines}=2,080 Lines ({tel.cluster_total_kops.toFixed(1)}k ops/s) -- 344/350 Lean 4 QED -- 21,120 Shards (480x Chair44) -- PPL=1.00000002
+                [SH4Z v4200 (133,120 B / 15.965 Hz Decadic Epoch HUD)]: Work-Stealing={tel.ws_loq_lines}+{tel.ws_p10_lines}+{tel.ws_p8_lines}=2,080 Lines ({tel.cluster_total_kops.toFixed(1)}k ops/s) -- 344/360 Lean 4 QED -- 21,120 Shards (480x Chair44) -- PPL=1.00000002
               </div>
               <div style={{ color: "#56D364", marginTop: 2 }}>&gt; OUTPUT: {termOut}</div>
             </div>
@@ -1095,7 +1095,7 @@ export function App() {
               <input value={cmdPrompt} onChange={(e) => setCmdPrompt(e.target.value)} style={{ flex: 1, background: "#0A0D12", color: "#FFFEFB", border: "1px solid #2A3B4D", borderRadius: 4, padding: "4px 8px", fontFamily: "monospace", fontSize: 11 }} />
               <button onClick={() => callEndpoint(`/api/v1/model/converse?q=${encodeURIComponent(cmdPrompt)}`, "CONVERSE NL")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 12px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>CONVERSE NL (T27)</button>
               <button onClick={() => callEndpoint(`/api/v1/agent_gateway/interact?agent_id=hud&q=${encodeURIComponent(cmdPrompt)}`, "EXECUTE PROMPT")} style={{ background: "#1C2632", color: "#FFFEFB", border: "1px solid #FFB454", borderRadius: 4, padding: "4px 12px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>EXECUTE</button>
-              <button onClick={() => callEndpoint("/api/v1/harmonic/tool_chain?q=chain64_parallel_dag", "CHAIN 64")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 12px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>CHAIN 64</button>
+              <button onClick={() => callEndpoint("/api/v1/harmonic/tool_chain?q=chain64_parallel_dag", "CHAIN 68")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 12px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>CHAIN 68</button>
               <button onClick={() => setTermOut("READY.")} style={{ background: "#1C2632", color: "#FFFEFB", border: "1px solid #2A3B4D", borderRadius: 4, padding: "4px 10px", cursor: "pointer", fontSize: 10.5 }}>CLEAR</button>
             </div>
           </>

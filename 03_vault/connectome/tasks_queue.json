@@ -1,0 +1,66 @@
+{
+  "schema_version": "42.0.0",
+  "queue_name": "ACT_OMEGA_SYMBIOTIC_IDE_AND_GEMINI_QUEUE",
+  "workspace_root": "C:\\sovereign_manifold_v31",
+  "model_id": "SH4Z-v4200-TriSilicon",
+  "operator_vault_gate": "CLOSED_TO_PUBLIC_OPEN_TO_OPERATOR_KEY",
+  "connected_agents": [
+    {
+      "agent": "Gemini_Task_Mode",
+      "bridge": "G:\\My Drive\\ACT_OMEGA_GEMINI_BRIDGE\\tasks_queue.json",
+      "status": "ACTIVE"
+    },
+    {
+      "agent": "Goose_v1.55.0",
+      "config": "%APPDATA%\\Block\\goose\\config\\config.yaml",
+      "working_dir": "C:\\sovereign_manifold_v31",
+      "status": "PARITY_LOCKED"
+    },
+    {
+      "agent": "Zed_v1.24.4",
+      "config": "%APPDATA%\\Zed\\settings.json",
+      "uri_scheme": "zed://file/C:/sovereign_manifold_v31",
+      "status": "PARITY_LOCKED"
+    },
+    {
+      "agent": "VSCodium_Cline_v1.140",
+      "config": "%APPDATA%\\VSCodium\\User\\globalStorage\\saoudrizwan.claude-dev\\settings\\cline_mcp_settings.json",
+      "uri_scheme": "vscodium://file/C:/sovereign_manifold_v31",
+      "status": "PARITY_LOCKED"
+    }
+  ],
+  "active_5w1h_routes": [
+    {
+      "route_id": 1,
+      "who": "Host_LOQ15",
+      "what": "L0_Tensor_FNO",
+      "where": "LOQ15_RTX3050_S00_S47",
+      "why_atp": 0.9482,
+      "how": "ZeroCopy_Mmap"
+    },
+    {
+      "route_id": 2,
+      "who": "Pixel10_G5",
+      "what": "Edge_Sensor_24D_MicroQAT",
+      "where": "Pixel10_TensorG5_S48_S63",
+      "why_atp": 0.949,
+      "how": "ADB_Reverse_8097"
+    },
+    {
+      "route_id": 3,
+      "who": "Pixel8_P8APEX",
+      "what": "Speculative_Drafter_L2",
+      "where": "Pixel8_MaliG715_S64_S79",
+      "why_atp": 0.951,
+      "how": "ADB_Reverse_8097"
+    },
+    {
+      "route_id": 4,
+      "who": "Symbiotic_IDEs",
+      "what": "CodeMode_AST_And_Proof_Check",
+      "where": "Operator_Vault_Localhost_8080",
+      "why_atp": 0.9485,
+      "how": "Streamable_HTTP_MCP"
+    }
+  ]
+}

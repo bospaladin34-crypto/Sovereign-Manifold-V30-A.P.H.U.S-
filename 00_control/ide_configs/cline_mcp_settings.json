@@ -1,6 +1,6 @@
 {
   "mcpServers": {
-    "act-omega-v3800-mcp": {
+    "act-omega-v4200-mcp": {
       "url": "http://127.0.0.1:8080/mcp",
       "disabled": false,
       "autoApprove": [
@@ -8,7 +8,8 @@
         "act_omega_codemode_execute",
         "act_omega_autolearn_memory_commit",
         "act_omega_a2a_mesh_delegate",
-        "act_omega_atomic_delta_apply"
+        "act_omega_atomic_delta_apply",
+        "act_omega_5w1h_distributed_route"
       ]
     }
   }

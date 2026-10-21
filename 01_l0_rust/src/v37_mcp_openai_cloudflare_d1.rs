@@ -73,7 +73,7 @@ pub fn evaluate_openai_compat_surface(gen_counter: u64) -> OpenAiCompatTelemetry
 
 pub fn evaluate_cloudflare_d1_vpc_shadow(gen_counter: u64) -> CloudflareD1ShadowTelemetry {
     CloudflareD1ShadowTelemetry {
-        account_id: "a37cf8ab07e7c5f886c302be3f098746",
+        account_id: "a37cf8ab07e7c5f886c302be3f098744",
         d1_database_name: "act_omega_d1_vault",
         d1_free_storage_gb: 5.0_f64,
         d1_synced_wal_rows: 54200 + (gen_counter % 8192),

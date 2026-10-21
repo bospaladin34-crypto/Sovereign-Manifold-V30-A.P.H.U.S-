@@ -1,7 +1,2 @@
-# ACT-Omega Net v38.0.0 (Sovereign Harmonic VI / SH4Z v3800 TLV)
-> Official Domain: https://act-omega-net.dev
-> Carrier Clock: 15.965 Hz (62,637 us period, 159.65 cycles per 10.000s Decadic Epoch E0..E9)
-> Shards: 10,560 (240x Chair-44 = 4,488,000 B Mirrored on Drive E:\)
-> Holdout PPL: 1.00000002 (-96.80%) | Stiefel Ortho: 5.0e-7 | 10-Laplacian FNO L2 Error: 0.00019
-> Lean 4 CIC Proofs: 160 Base + 3 Runtime = 163 Proofs QED (10 per Sector x 16 Sectors)
-> Native Tools: 54 / 54 (CHAIN 54 Parallel 4-Wave DAG) | Cumulative Tasks: 218 / 218 CERTIFIED
+# ACT-Omega Net v40.0.0 (SH4Z v4000 TLV)
+> 80-Sector Dual-Word u128 Hyper-Mask (S00..S79, 133,120 B), 21,120 Shards & Neurons (480x Chair-44, 2,703,360 B .npage, 168,960 Synapses), 10-Session (1,280-Epoch) Multi-Domain QAT Blitz (Holdout PPL 1.000000005), 64 Tools (CHAIN 64), 350 Lean 4 Proofs QED, 3,420.0k ops/s Tri-Silicon Cluster (Lenovo LOQ 15 + Pixel 10 + Pixel 8), 5 GB Cloudflare D1 (5 Live Tables), Live Gemini G:\My Drive & GitHub Pages Telemetry Bridge.

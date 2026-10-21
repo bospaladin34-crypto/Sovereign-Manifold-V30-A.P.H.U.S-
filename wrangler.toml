@@ -1,0 +1,8 @@
+name = "act-omega-mcp-portal"
+main = "00_control/cloudflare_worker_mcp.js"
+compatibility_date = "2025-02-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "act_omega_d1_vault"
+database_id = "9f46d56a-ef3e-4232-a9ac-c4bd12e20a87"

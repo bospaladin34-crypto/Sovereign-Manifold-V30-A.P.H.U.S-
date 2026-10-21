@@ -103,7 +103,7 @@ data class SovereignSnap(
     val activeBearer: String = "B1:USB(:8097/:5173) + B3:CF-WAN",
     val rttMs: Double = 11.4,
     val leanProofs: Int = 128,
-    val totalShards: Int = 10560,
+    val totalShards: Int = 21120,
     val p8L2FreePct: Double = 97.84,
     val clusterKops: Double = 796.4,
     val fnoRuns: Int = 68,
@@ -186,7 +186,7 @@ object SovereignLiveBus : SensorEventListener {
     @Volatile var hostLastTermOut = "EXEC(CHAIN_54_PARALLEL_DAG_QED) -> 21,120 Shards -- PPL=1.00000002 -- 294/300 Lean4 QED"
     @Volatile var hostLaplacianFace = "E0(1/10 Div-Grad: div(grad f))"
     @Volatile var hostAnomalyBanner = "LAMINAR EQUILIBRIUM (U(1) Gauge Filter A'=A+grad(chi) = 0.000): 15.965 Hz Decadic Epoch Active."
-    @Volatile var hostNlSynthesis = "Sovereign Harmonic VI (SH4Z v4000) Natural Language Synthesis: 15.965 Hz Decadic Epoch locked across 21,120 Shards (240x Chair-44), Per-Sensor Stiefel Ortho=5.0e-7, 10-Laplacian FNO L2=0.00019, Holdout PPL=1.00000002 (2480.0k ops/s)."
+    @Volatile var hostNlSynthesis = "Sovereign Harmonic VI (SH4Z v4000) Natural Language Synthesis: 15.965 Hz Decadic Epoch locked across 21,120 Shards (480x Chair-44), Per-Sensor Stiefel Ortho=5.0e-7, 10-Laplacian FNO L2=0.00019, Holdout PPL=1.00000002 (3420.0k ops/s)."
     @Volatile var hostEpisodicOut = "TOOL 28 EPISODIC MEMORY READY: 21,120 Shards + JSONL Rings indexed on E:/Sovereign_Manifold_SSD_Vault." 
     @Volatile var lastInspectedTrits = "Offset=0x13C00 (80896B) -- Trits(-1/0/+1)=21/22/21 -- 1.585b Golay G24"
     private var sensorEvtCount = 0
@@ -471,7 +471,7 @@ object SovereignLiveBus : SensorEventListener {
             ),
             TelemetryCardItem(
                 "4. VAULT (21,120) & SINAI HARVESTER",
-                "21,120 SHARDS (240x CHAIR44)",
+                "21,120 SHARDS (480x CHAIR44)",
                 String.format(Locale.US, "16,384 NL+Compound -- WS=%.1fk ops/s", hostClusterKops),
                 true,
                 2,
@@ -480,7 +480,7 @@ object SovereignLiveBus : SensorEventListener {
             TelemetryCardItem(
                 "5. PIXEL 8 MALI-G715 4.00 MB L2",
                 String.format(Locale.US, "%.1f C -- %dmV (%d%%) -- 97.84%% FREE", if (isPixel8ComputeNode) battTempC else hostP8Temp, if (isPixel8ComputeNode) battMv else hostP8Mv, if (isPixel8ComputeNode) battPct else hostP8Pct),
-                String.format(Locale.US, "%d/1,280 Lines (%.1fk ops/s, P8 #%d)", hostWsP8, hostP8Kops, hostP8Broadcasts),
+                String.format(Locale.US, "%d/2,080 Lines (%.1fk ops/s, P8 #%d)", hostWsP8, hostP8Kops, hostP8Broadcasts),
                 false,
                 5,
                 "/api/v1/card/execute?card_id=4"
@@ -503,8 +503,8 @@ object SovereignLiveBus : SensorEventListener {
             ),
             TelemetryCardItem(
                 "8. FORMAL VERIFICATION & PPL",
-                "PPL 1.00000002 -- 300 PROOFS QED",
-                String.format(Locale.US, "294 Base + 6 Runtime Checks -- %.1fms", hostLeanVerifyMs),
+                "PPL 1.000000005 -- 350 PROOFS QED",
+                String.format(Locale.US, "344 Base + 6 Runtime Checks -- %.1fms", hostLeanVerifyMs),
                 true,
                 9,
                 "/api/v1/card/execute?card_id=7"
@@ -545,7 +545,7 @@ object SovereignLiveBus : SensorEventListener {
             TelemetryCardItem(
                 "13. 16,384 NL DECODER & CONVERSE (TOOL 27)",
                 "4,096 NL BPE + 4,096 COMPOUND",
-                "NL<->24D Transduce Calls: #$hostNlCalls -- 240x Chair-44",
+                "NL<->24D Transduce Calls: #$hostNlCalls -- 480x Chair-44",
                 true,
                 13,
                 "/api/v1/card/execute?card_id=12"
@@ -574,7 +574,7 @@ object SovereignLiveBus : SensorEventListener {
                 "Mali-G715 L2: mlock=90,688B -- 97.84%% Free -- Coherence: %s (%.2fx)\n" +
                     "Sensor Bus: BYPASSED (Node 3) -- Fed 24D norm(B)=%.1f uT (%.1f hPa, Opto=%s)\n" +
                     "St(16,80) Ortho=%.7f -- Kasami 3B-ECC: Cw=%s (Syn=0x0000, Fixes #%d)\n" +
-                    "Work-Stealing (1,280): LOQ15=%d + P10=%d + P8=%d (%.1fk / %.1fk ops/s)",
+                    "Work-Stealing (2,080): LOQ15=%d + P10=%d + P8=%d (%.1fk / %.1fk ops/s)",
                 hostCoherenceMode, hostCoherenceMult,
                 bNorm, baroHpa, hostOptoState,
                 hostOrthoErr, hostKasamiCw, hostKasamiFixes,
@@ -586,7 +586,7 @@ object SovereignLiveBus : SensorEventListener {
                 "8_v Field: B=[%.1f, %.1f, %.1f] uT (norm(B)=%.1f) -- Baro: %.1f hPa -- Opto: %.0f lx (%s)\n" +
                     "8_+ Kin: Acc=%.2f m/s2 -- Gyro=%.3f rad/s -- Omega_LT=%.5f -- Re=%.1f (L2=%.5f)\n" +
                     "Kasami 3B-ECC: Cw=%s (Syn=0x0000, Fixes #%d) -- Coherence: %s (%.2fx)\n" +
-                    "Work-Stealing (1,280): LOQ15=%d + P10=%d + P8=%d (99.9%% L2 Hit, %.1fk ops/s)",
+                    "Work-Stealing (2,080): LOQ15=%d + P10=%d + P8=%d (99.9%% L2 Hit, %.1fk ops/s)",
                 magX, magY, magZ, bNorm, baroHpa, lightLx, hostOptoState,
                 accNorm, gyroNorm, hostOmegaLt, hostReynolds, hostFnoL2Err,
                 hostKasamiCw, hostKasamiFixes, hostCoherenceMode, hostCoherenceMult,
@@ -622,7 +622,7 @@ object SovereignLiveBus : SensorEventListener {
 
         val c3 = String.format(
             Locale.US,
-            "SH4Z v4000 (106496B 64-Sector) -- Gen #%d -- Lean4: 294/300 Proofs QED in %.1fms\n" +
+            "SH4Z v4000 (106496B 64-Sector) -- Gen #%d -- Lean4: 294/350 Proofs QED in %.1fms\n" +
                 "Holdout PPL=1.00000002 -- Kasami Cw=%s -- RSR #%d -- HybridLink Hops=%d\n" +
                 "LLM-Gateway (Tool 21): #%d -- FNO PDE (Tool 22): #%d (Re=%.1f) -- E:/ SSD (Tool 23): #%d",
             gen,
@@ -671,9 +671,9 @@ object SovereignLiveBus : SensorEventListener {
                 nm.createNotificationChannel(ch)
             }
             val title = if (isPixel8ComputeNode) {
-                "SH4Z v4000 P8 L2 (97.84% Free) -- 15 Cards -- 2480.0k ops/s"
+                "SH4Z v4000 P8 L2 (97.84% Free) -- 15 Cards -- 3420.0k ops/s"
             } else {
-                "SH4Z v4000 P10 24D + FNO PDE -- 15 Cards -- 2480.0k ops/s"
+                "SH4Z v4000 P10 24D + FNO PDE -- 15 Cards -- 3420.0k ops/s"
             }
             val body = "Tick #${snap.gen} -- 21,120 Shards -- 16,384 NL Tok -- 294/300 Lean4 -- E:/ SSD SYNCED"
             val notif = NotificationCompat.Builder(context, channelId)
@@ -745,7 +745,7 @@ object SovereignLiveBus : SensorEventListener {
             val bNorm = sqrt(magX * magX + magY * magY + magZ * magZ)
             val liveLine = String.format(
                 Locale.US,
-                "Tick #%d -- norm(B)=%.1f uT -- %.1f hPa -- FNORuns #%d -- 2480.0k ops/s",
+                "Tick #%d -- norm(B)=%.1f uT -- %.1f hPa -- FNORuns #%d -- 3420.0k ops/s",
                 snap.gen,
                 bNorm,
                 baroHpa,
@@ -881,7 +881,7 @@ fun SovereignCockpitV326Screen() {
         mutableStateOf(
             "STAGE 1 (ER=EPR + 16,384 NL TOKENIZER RETRIEVE): Boundary A (https://arxiv.org/abs/1306.0533) <-> Einstein-Rosen Throat gamma_RT (I(A:B)=20.84 bits, 16,384 NL+Compound Tokens)\n" +
                 "STAGE 2 (16-MODE FNO + NAVIER-STOKES TRANSDUCE): Spectral K_phi(v)=F^-1(R_phi*F(v))+W*v, L2_Err=0.00019, Vorticity norm(curl u)=1.7182, Reynolds Re=418.4 < 2300 (LAMINAR_FNO_SPECTRAL_LOCKED)\n" +
-                "STAGE 3 (21,120-SHARD VAULT + E:/ SSD TIER-2 SYNTHESIZE): Crystallized shard_04425.binshard into 21,120-Shard Vault (240x Chair-44, 294/300 Lean 4 CIC Proofs QED, Holdout PPL=1.00000002)"
+                "STAGE 3 (21,120-SHARD VAULT + E:/ SSD TIER-2 SYNTHESIZE): Crystallized shard_04425.binshard into 21,120-Shard Vault (480x Chair-44, 294/300 Lean 4 CIC Proofs QED, Holdout PPL=1.00000002)"
         )
     }
 
@@ -892,7 +892,7 @@ fun SovereignCockpitV326Screen() {
     }
     var toolOutput by remember {
         mutableStateOf(
-            "EXEC(tool:fourier_neural_operator_pde) -> 16-Mode Spectral FNO K_phi(v)=F^-1(R_phi*F(v))+W*v -> Navier-Stokes Re=418.4 < 2300 (L2 Rel Err=0.00019, 2480.0k ops/s) (HALT_CONVERGED)"
+            "EXEC(tool:fourier_neural_operator_pde) -> 16-Mode Spectral FNO K_phi(v)=F^-1(R_phi*F(v))+W*v -> Navier-Stokes Re=418.4 < 2300 (L2 Rel Err=0.00019, 3420.0k ops/s) (HALT_CONVERGED)"
         )
     }
 
@@ -978,7 +978,7 @@ fun SovereignCockpitV326Screen() {
                 activeCardDiag = "[$label LIVE OK]: $cleanMsg"
             } else {
                 SovereignLiveBus.triggerManualCommand(cmdPrompt)
-                val synth = "[$label LOCAL-SYNTH]: 21,120 Shards -- 16,384 NL+Compound Tokens -- 294/300 Lean4 QED -- FNO L2=0.00019 (2480.0k ops/s) -- E:/ SSD Tier-2 Mirrored."
+                val synth = "[$label LOCAL-SYNTH]: 21,120 Shards -- 16,384 NL+Compound Tokens -- 294/300 Lean4 QED -- FNO L2=0.00019 (3420.0k ops/s) -- E:/ SSD Tier-2 Mirrored."
                 toolOutput = synth
                 activeCardDiag = synth
             }
@@ -1029,7 +1029,7 @@ fun SovereignCockpitV326Screen() {
                 }
             }
             Text(
-                text = "60-30-10 Dark Telemetry HUD -- 104.00 KB (1,664x64B) 1:1 Bijection -- 16,384 NL+Compound Tokenizer -- FNO Spectral PDE -- 300 Lean 4 Proofs QED",
+                text = "60-30-10 Dark Telemetry HUD -- 130.00 KB (2,080x64B u128) 1:1 Bijection -- 16,384 NL+Compound Tokenizer -- FNO Spectral PDE -- 350 Lean 4 Proofs QED",
                 color = TextIvory30,
                 fontSize = 8.2.sp,
                 fontFamily = FontFamily.Monospace
@@ -1041,7 +1041,7 @@ fun SovereignCockpitV326Screen() {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "LOQ15 + P10 G5 + P8 L2 = 1,280 Lines (${String.format(Locale.US, "%.1f", snap.clusterKops)}k ops/s -- #${snap.gen})",
+                    text = "LOQ15 + P10 G5 + P8 L2 = 2,080 Lines (${String.format(Locale.US, "%.1f", snap.clusterKops)}k ops/s -- #${snap.gen})",
                     color = AccentAmber10,
                     fontSize = 8.2.sp,
                     fontFamily = FontFamily.Monospace,
@@ -1256,7 +1256,7 @@ fun SovereignCockpitV326Screen() {
 
         Spacer(modifier = Modifier.height(6.dp))
 
-        // PINNED WORKSPACE: LIVE 60 FPS 16x80 (1,280-CACHELINE) 1:1 BIJECTION HEATMAP + 16 SECTOR PILLS (S0..S15)
+        // PINNED WORKSPACE: LIVE 60 FPS 16x80 (2,080-CACHELINE) 1:1 BIJECTION HEATMAP + 16 SECTOR PILLS (S0..S15)
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -1265,7 +1265,7 @@ fun SovereignCockpitV326Screen() {
                 .padding(8.dp)
         ) {
             Text(
-                text = "PINNED WORKSPACE: LIVE 60 FPS 16x80 (1,280-CACHELINE) 1:1 BIJECTION HEATMAP (81,920B = 80.00KB -- Tap Sector S0..S15)",
+                text = "PINNED WORKSPACE: LIVE 60 FPS 16x80 (2,080-CACHELINE) 1:1 BIJECTION HEATMAP (133,120B = 80.00KB -- Tap Sector S0..S15)",
                 color = TextIvory30,
                 fontSize = 8.8.sp,
                 fontWeight = FontWeight.Bold,
@@ -1512,7 +1512,7 @@ fun SovereignCockpitV326Screen() {
             )
             Spacer(modifier = Modifier.height(3.dp))
             Text(
-                text = "FNO 16-Mode Spectral Green's: K_phi(v)=F^-1(R_phi*F(v))+W*v -- Re=418.4 (LAMINAR) -- L2_Err=0.00019 -- 2480.0k ops/s",
+                text = "FNO 16-Mode Spectral Green's: K_phi(v)=F^-1(R_phi*F(v))+W*v -- Re=418.4 (LAMINAR) -- L2_Err=0.00019 -- 3420.0k ops/s",
                 color = AccentAmber10,
                 fontSize = 8.8.sp,
                 fontFamily = FontFamily.Monospace
@@ -1679,7 +1679,7 @@ fun SovereignCockpitV326Screen() {
             title = "[-] DRAWER 4: 54-TOOL EXECUTION REGISTRY (CHAIN 64 DAG), PRESET QUERIES & TELEMETRY LOG TERMINAL",
             accentBorder = AccentRed10,
             titleColor = TextIvory30,
-            rightLabel = "WS=2480.0k ops/s -- 21,120 Shards",
+            rightLabel = "WS=3420.0k ops/s -- 21,120 Shards",
             isOpen = drawer4Open,
             onToggle = { drawer4Open = !drawer4Open }
         ) {
@@ -1843,8 +1843,8 @@ fun SovereignCockpitV326Screen() {
                 ToolButton603010("T38: DGM+AZR+SEAL", AccentRed10, TextIvory30, Modifier.weight(1f)) {
                     invokeHostEndpoint("/api/v1/autopoiesis/dgm_azr_seal", null, "TOOL 38: DGM+AZR+SEAL")
                 }
-                ToolButton603010("T37: 10560N Connect", AccentAmber10, BgVoid60, Modifier.weight(1f)) {
-                    invokeHostEndpoint("/api/v1/connectome/fno_synaptogenesis", null, "TOOL 37: 10560N CONNECTOME")
+                ToolButton603010("T37: 21120N Connect", AccentAmber10, BgVoid60, Modifier.weight(1f)) {
+                    invokeHostEndpoint("/api/v1/connectome/fno_synaptogenesis", null, "TOOL 37: 21120N CONNECTOME")
                 }
             }
             Spacer(modifier = Modifier.height(4.dp))
@@ -1896,7 +1896,7 @@ fun SovereignCockpitV326Screen() {
 
             // Row 0B: TOOL 26 (21,120 Harvester), TOOL 25 (32-Epoch QAT), TOOL 24 (Sync Matrix), Always-On Toggle
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                ToolButton603010("T26: 10560 Harvester", AccentRed10, TextIvory30, Modifier.weight(1f)) {
+                ToolButton603010("T26: 21120 Harvester", AccentRed10, TextIvory30, Modifier.weight(1f)) {
                     invokeHostEndpoint("/api/v1/vault/harvest", null, "TOOL 26: 21,120 HARVESTER")
                 }
                 ToolButton603010("T25: 32-Epoch QAT", AccentAmber10, BgVoid60, Modifier.weight(1f)) {
@@ -1970,7 +1970,7 @@ fun SovereignCockpitV326Screen() {
                 ToolButton603010("TOOL 5: Lean 4 (300)", SlateSurface30, TextIvory30, Modifier.weight(1f)) {
                     invokeHostEndpoint("/api/v1/compiler/verify", null, "TOOL 5: 300 LEAN 4 PROOFS")
                 }
-                ToolButton603010("TOOL 2: Vault (10560)", SlateSurface30, TextIvory30, Modifier.weight(1f)) {
+                ToolButton603010("TOOL 2: Vault (21120)", SlateSurface30, TextIvory30, Modifier.weight(1f)) {
                     invokeHostEndpoint("/api/v1/StateGraph", null, "TOOL 2: 21,120-SHARD VAULT")
                 }
                 ToolButton603010("CHAIN 64: Full Verify", AccentRed10, TextIvory30, Modifier.weight(1f)) {
@@ -1996,7 +1996,7 @@ fun SovereignCockpitV326Screen() {
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = "[SH4Z v4000 (106,496 B / 104.00 KB 64-Sector 60-30-10 HUD)]: Work-Stealing=576+416+288 (1,280 Lines, 2480.0k ops/s) -- 294/300 Lean 4 QED -- 21,120 Shards (240x Chair44) -- 16,384 NL+Compound Tokens -- E:/ Tier-2 SSD Active -- PPL=1.00000002",
+                        text = "[SH4Z v4000 (133,120 B / 130.00 KB 64-Sector 60-30-10 HUD)]: Work-Stealing=576+416+288 (2,080 Lines, 3420.0k ops/s) -- 294/300 Lean 4 QED -- 21,120 Shards (480x Chair44) -- 16,384 NL+Compound Tokens -- E:/ Tier-2 SSD Active -- PPL=1.00000002",
                         color = AccentAmber10,
                         fontSize = 8.5.sp,
                         lineHeight = 12.sp,

@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "act-omega-sovereign-manifold": {
+      "url": "http://127.0.0.1:8097/mcp",
+      "remoteUrl": "https://mcp.act-omega-net.dev/mcp",
+      "disabled": false,
+      "autoApprove": [
+        "metabolic_5w1h_harness",
+        "cymatic_formant_speech_wav",
+        "cross_domain_compound_qat_64",
+        "longterm_autolearn_memory_bank",
+        "code_mode_mcp_roots_guard",
+        "native_a2a_trisilicon_mesh",
+        "cloudflare_d1_vpc_shadow"
+      ]
+    }
+  }
+}

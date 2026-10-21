@@ -1,5 +1,5 @@
 # C:\sovereign_manifold_v31\00_control\Daemon-MemoryRing.ps1
-# ACT-Omega Net v37.1.0 (SH4Z v3710) Watchdog, Pixel 8 P8-APEX Non-Root Booster & Bi-Temporal WAL Healer
+# ACT-Omega Net v38.0.0 (SH4Z v3800) Watchdog, Pixel 8 P8-APEX Non-Root Booster & Bi-Temporal WAL Healer
 $ErrorActionPreference = "SilentlyContinue"
 $root = "C:\sovereign_manifold_v31"
 $p8Serial = "3A121FDJH00BW5"

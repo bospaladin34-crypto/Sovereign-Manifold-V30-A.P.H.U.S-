@@ -1,0 +1,14 @@
+{
+  "schema": "NPAGE_v3800",
+  "magic": "0x4E50414745333830",
+  "version": "38.0.0",
+  "total_neurons": 10560,
+  "chair44_columns": 240,
+  "record_bytes": 128,
+  "total_bytes": 1351680,
+  "active_synapses": 84480,
+  "swr_sub_epochs_per_epoch": 8,
+  "swr_compression_ratio": 20.0,
+  "longterm_memory_file": "03_vault/connectome/episodic_longterm_memory_v3800.jsonl",
+  "remote_d1_uuid": "9f46d56a-ef3e-4232-a9ac-c4bd12e20a87"
+}

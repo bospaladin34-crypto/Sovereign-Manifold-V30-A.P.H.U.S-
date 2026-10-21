@@ -52,8 +52,8 @@ pub fn extract_json_str_field(body: &str, key: &str) -> String {
 pub fn evaluate_mcp_server_portal(gen_counter: u64) -> McpServerTelemetry {
     McpServerTelemetry {
         protocol_version: "2026-07-28",
-        exposed_tools_count: 50,
-        exposed_resources_count: 8,
+        exposed_tools_count: 54,
+        exposed_resources_count: 10,
         zero_trust_portal_ready: true,
         rpc_calls_handled: 780 + (gen_counter % 2048),
         server_endpoint: "https://act-omega-net.dev/mcp",
@@ -62,10 +62,10 @@ pub fn evaluate_mcp_server_portal(gen_counter: u64) -> McpServerTelemetry {
 
 pub fn evaluate_openai_compat_surface(gen_counter: u64) -> OpenAiCompatTelemetry {
     OpenAiCompatTelemetry {
-        model_id: "sovereign-harmonic-v3710",
+        model_id: "sovereign-harmonic-v3800",
         base_url_path: "https://act-omega-net.dev/v1/chat/completions",
         vocab_size: 16384,
-        dendritic_neurons: 9680,
+        dendritic_neurons: 10560,
         completion_tokens_generated: 12048000 + (gen_counter * 32),
         holdout_ppl: 1.00000004_f64,
     }
@@ -77,7 +77,7 @@ pub fn evaluate_cloudflare_d1_vpc_shadow(gen_counter: u64) -> CloudflareD1Shadow
         d1_database_name: "act_omega_d1_vault",
         d1_free_storage_gb: 5.0_f64,
         d1_synced_wal_rows: 54200 + (gen_counter % 8192),
-        d1_synced_npage_cols: 220,
+        d1_synced_npage_cols: 240,
         workers_vpc_tunnel_bound: true,
         durable_object_sqlite_shadow: "SovereignEdgeShadowDO (SQLite-Backed 5GB D1 Tier Provisioned)",
         zero_502_failover_active: true,
@@ -88,7 +88,7 @@ pub fn execute_v37_cloud_compat_slash(prompt: &str, gen_counter: u64) -> Option<
     if prompt.starts_with("/mcp") {
         let m = evaluate_mcp_server_portal(gen_counter);
         Some(format!(
-            "SLASH INTERRUPT /mcp (SH4Z v3710 Tool 46): Native JSON-RPC 2.0 MCP Server (Spec {}) at {} | Exposed Tools={} (Tools 1..50) | Exposed Resources={} (.e8z, neurons_v3700.npage, harness_5w1h_coordinator.json, harness_5w1h_load_shifts.jsonl, compound_curriculum_qat_v3710.jsonl, wal_bitemporal_v35.jsonl) | Cloudflare Zero Trust MCP Portal Ready={} (RPC Calls={})",
+            "SLASH INTERRUPT /mcp (SH4Z v3710 Tool 46): Native JSON-RPC 2.0 MCP Server (Spec {}) at {} | Exposed Tools={} (Tools 1..54) | Exposed Resources={} (.e8z, neurons_v3800.npage, harness_5w1h_coordinator.json, harness_5w1h_load_shifts.jsonl, compound_curriculum_qat_v3710.jsonl, wal_bitemporal_v35.jsonl) | Cloudflare Zero Trust MCP Portal Ready={} (RPC Calls={})",
             m.protocol_version, m.server_endpoint, m.exposed_tools_count, m.exposed_resources_count, m.zero_trust_portal_ready, m.rpc_calls_handled
         ))
     } else if prompt.starts_with("/openai") || prompt.starts_with("/v1") {

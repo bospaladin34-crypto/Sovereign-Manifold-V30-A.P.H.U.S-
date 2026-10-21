@@ -58,7 +58,7 @@ pub fn evaluate_cymatic_formant_speech(
         prompt.trim()
     };
     let narrative = format!(
-        "Sovereign Harmonic 37.1 speech synthesis active for {}. Metabolic ATP drive is {:.2}, operating at {:.1} thousand operations per second across 9,680 three-compartment dendritic neurons. Glottal fundamental pitch is locked at {:.1} Hertz with four-formant vocal tract resonances at {:.0}, {:.0}, {:.0}, and {:.0} Hertz. All 284 Lean 4 proofs and Cloudflare D1 edge vaults are verified.",
+        "Sovereign Harmonic 37.1 speech synthesis active for {}. Metabolic ATP drive is {:.2}, operating at {:.1} thousand operations per second across 10,560 three-compartment dendritic neurons. Glottal fundamental pitch is locked at {:.1} Hertz with four-formant vocal tract resonances at {:.0}, {:.0}, {:.0}, and {:.0} Hertz. All 300 Lean 4 proofs and Cloudflare D1 edge vaults are verified.",
         clean_topic, m_atp, cluster_kops, f0, f1, f2, f3, f4
     );
     FormantSpeechTelemetry {

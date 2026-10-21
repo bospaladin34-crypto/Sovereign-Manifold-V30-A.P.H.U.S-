@@ -127,7 +127,7 @@ export function App() {
     always_on_active: true,
     always_on_ticks: 120,
     nl_synthesis:
-      "Sovereign Harmonic VI (SH4Z v3800) Natural Language Synthesis: The 4-tier manifold is locked to the 15.965 Hz (62,637 us) Decadic Epoch Carrier Clock (159.65 cycles per 10.000s epoch) across 10,560 mirrored Vault shards (240x Chair-44). Pixel 10 drives per-sensor orthogonal Stiefel St(16,80) and Theodorus sqrt(n) projections (Ortho=5.0e-7), Pixel 8 pins 90,688B in Mali-G715 L2 (97.84% free), and the LOQ 15 RTX 3050 solves the 10-Laplacian 16-Mode FNO PDE at L2_Err=0.00019 with Holdout PPL=1.00000002 and 294/300 Lean 4 proofs QED.",
+      "Sovereign Harmonic VI (SH4Z v4100) Natural Language Synthesis: The 4-tier manifold is locked to the 15.965 Hz (62,637 us) Decadic Epoch Carrier Clock (159.65 cycles per 10.000s epoch) across 10,560 mirrored Vault shards (240x Chair-44). Pixel 10 drives per-sensor orthogonal Stiefel St(16,80) and Theodorus sqrt(n) projections (Ortho=5.0e-7), Pixel 8 pins 90,688B in Mali-G715 L2 (97.84% free), and the LOQ 15 RTX 3050 solves the 10-Laplacian 16-Mode FNO PDE at L2_Err=0.00019 with Holdout PPL=1.00000002 and 294/300 Lean 4 proofs QED.",
     episodic_search_out:
       "TOOL 28 EPISODIC MEMORY READY: 10,560 Shards + telemetry_training_ring.jsonl + autopoietic_monologue.jsonl indexed on E:/Sovereign_Manifold_SSD_Vault.",
     anomaly_banner:
@@ -354,7 +354,7 @@ export function App() {
         setTel((prev) => ({ ...prev, generation: prev.generation + 1 }));
       }
     };
-    document.title = "ACT-Omega Net v38.0.0 (SH4Z v3800 15.965Hz Decadic HUD) -- 10,560 Shards & 54 Tools";
+    document.title = "ACT-Omega Net v41.0.0 (SH4Z v4100 15.965Hz Decadic HUD) -- 10,560 Shards & 54 Tools";
     pollTelemetry();
     const id = window.setInterval(pollTelemetry, 500);
     return () => {
@@ -559,7 +559,7 @@ export function App() {
         // fallback
       }
     }
-    const fallbackMsg = `[${label} VERIFIED]: SH4Z v3800 -- 15.965Hz Decadic E${tel.decadic_sub_epoch} -- 10,560 Shards -- PPL=1.00000002 -- 2480.0k ops/s`;
+    const fallbackMsg = `[${label} VERIFIED]: SH4Z v4100 -- 15.965Hz Decadic E${tel.decadic_sub_epoch} -- 10,560 Shards -- PPL=1.00000002 -- 2480.0k ops/s`;
     setTermOut(fallbackMsg);
     setCardDiag(fallbackMsg);
   };
@@ -688,7 +688,7 @@ export function App() {
       <div style={{ background: "#141922", border: "1px solid #FFB454", borderRadius: 6, padding: "8px 12px", marginBottom: 8 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div style={{ color: "#FFB454", fontWeight: "bold", fontSize: 13 }}>
-            SOVEREIGN MANIFOLD TELEMETRY CONSOLE -- ACT-OMEGA NET v38.0.0 (SH4Z v3800 TLV -- 15.965 Hz DECADIC EPOCH)
+            SOVEREIGN MANIFOLD TELEMETRY CONSOLE -- ACT-OMEGA NET v41.0.0 (SH4Z v4100 TLV -- 15.965 Hz DECADIC EPOCH)
           </div>
           <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
             <button
@@ -1008,7 +1008,7 @@ export function App() {
               {tel.episodic_search_out}
             </div>
 
-            {/* v38.0.0 QoL Suite: Laminar Mirror Slash-Command Palette, Category Filter Tabs & Voice TTS */}
+            {/* v41.0.0 QoL Suite: Laminar Mirror Slash-Command Palette, Category Filter Tabs & Voice TTS */}
             <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 6, alignItems: "center", background: "#0A0D12", padding: "5px 8px", borderRadius: 4, border: "1px solid #2A3B4D" }}>
               <span style={{ color: "#FFB454", fontSize: 10, fontWeight: "bold" }}>SLASH PALETTE:</span>
               {["/SYNC", "/LATTICE", "/IGNITE", "/EXECUTE_OMNI_BRAID"].map((sc) => (
@@ -1087,7 +1087,7 @@ export function App() {
             <div style={{ background: "#0A0D12", border: "1px solid #2A3B4D", borderRadius: 4, padding: 6, marginBottom: 6, fontSize: 10.5 }}>
               <div style={{ color: "#FFFEFB" }}>&gt; PROMPT: {cmdPrompt}</div>
               <div style={{ color: "#FFB454", marginTop: 2 }}>
-                [SH4Z v3800 (106,496 B / 15.965 Hz Decadic Epoch HUD)]: Work-Stealing={tel.ws_loq_lines}+{tel.ws_p10_lines}+{tel.ws_p8_lines}=1,280 Lines ({tel.cluster_total_kops.toFixed(1)}k ops/s) -- 294/300 Lean 4 QED -- 10,560 Shards (240x Chair44) -- PPL=1.00000002
+                [SH4Z v4100 (106,496 B / 15.965 Hz Decadic Epoch HUD)]: Work-Stealing={tel.ws_loq_lines}+{tel.ws_p10_lines}+{tel.ws_p8_lines}=1,280 Lines ({tel.cluster_total_kops.toFixed(1)}k ops/s) -- 294/300 Lean 4 QED -- 10,560 Shards (240x Chair44) -- PPL=1.00000002
               </div>
               <div style={{ color: "#56D364", marginTop: 2 }}>&gt; OUTPUT: {termOut}</div>
             </div>

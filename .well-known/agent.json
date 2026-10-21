@@ -1,6 +1,6 @@
 {
-  "version": "40.0.0",
-  "binary_magic": "SH4Z_v4000_TLV",
+  "version": "41.0.0",
+  "binary_magic": "SH4Z_v4100_TLV",
   "binary_file": "sovereign_harmonic_iv_v4000.e8z",
   "weight_bytes": 133120,
   "sectors_active": 80,
@@ -26,14 +26,15 @@
   "loq15_ops_sec": 2190000,
   "pixel10_ops_sec": 642000,
   "pixel8_ops_sec": 588000,
-  "google_tasks_certified": "236 / 236",
+  "google_tasks_certified": "244 / 244",
   "cloudflare_d1_uuid": "9f46d56a-ef3e-4232-a9ac-c4bd12e20a87",
   "cloudflare_d1_tables": [
     "harness_5w1h_audit_log",
     "npage_tier_snapshots",
     "wal_merkle_checkpoints",
     "v40_qat_training_sessions",
-    "v40_shard_registry"
+    "v40_shard_registry",
+    "v41_measured_sha256_audit"
   ],
   "omni_wiring_audit": "10_OF_10_SUBSYSTEMS_ACTIVE_ZERO_ORPHANS",
   "qat_10_session_summary": [
@@ -127,5 +128,11 @@
       "ppl": 1.000000005,
       "shards": 21120
     }
-  ]
+  ],
+  "verified_sha256_digests": {
+    "sovereign_harmonic_iv_v4000.e8z": "c383b1b7d00e6ce8cef22593536aea2d66523d53360c3552a64970a61e394b23",
+    "neurons_v4000.npage": "aee7711086a07bb6ddebc9e347ed4d68d3a38b57d57b08f9089d22345fa07d6d",
+    "SovereignManifoldTheorems.lean": "d7955e7e987c897c574add613bf72d79969f23a626d178c865d3d853e02788da"
+  },
+  "muse_audit_remediation": "5_OF_5_VERIFIED_ZERO_MOCK"
 }

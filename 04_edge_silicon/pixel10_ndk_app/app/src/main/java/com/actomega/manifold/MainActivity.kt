@@ -68,7 +68,7 @@ import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
 
-// 60-30-10 Mature Dark Telemetry Palette (v40.0.0 Sovereign Harmonic V-G / SH4Z v4000 TLV)
+// 60-30-10 Mature Dark Telemetry Palette (v41.0.0 Sovereign Harmonic V-G / SH4Z v4100 TLV)
 val BgVoid60 = Color(0xFF0E1116)
 val BgPanel60 = Color(0xFF141922)
 val BgInset60 = Color(0xFF0A0D12)
@@ -182,11 +182,11 @@ object SovereignLiveBus : SensorEventListener {
     @Volatile private var stickyBearerIdx = 0
         @Volatile var lastInspectedHex = "53 48 34 5A 88 0C FF FF E8 24 7F C3 1B 4D 8E 2A"
     @Volatile var hostLastCardIdx = 0
-    @Volatile var hostLastCardDiag = "[OTA SYNC v40.0.0]: 15.965 Hz Decadic Epoch + Per-Sensor Stiefel + 21,120 Shards Active."
+    @Volatile var hostLastCardDiag = "[OTA SYNC v41.0.0]: 15.965 Hz Decadic Epoch + Per-Sensor Stiefel + 21,120 Shards Active."
     @Volatile var hostLastTermOut = "EXEC(CHAIN_64_PARALLEL_DAG_QED) -> 21,120 Shards -- PPL=1.00000002 -- 344/350 Lean4 QED"
     @Volatile var hostLaplacianFace = "E0(1/10 Div-Grad: div(grad f))"
     @Volatile var hostAnomalyBanner = "LAMINAR EQUILIBRIUM (U(1) Gauge Filter A'=A+grad(chi) = 0.000): 15.965 Hz Decadic Epoch Active."
-    @Volatile var hostNlSynthesis = "Sovereign Harmonic VI (SH4Z v4000) Natural Language Synthesis: 15.965 Hz Decadic Epoch locked across 21,120 Shards (480x Chair-44), Per-Sensor Stiefel Ortho=5.0e-7, 10-Laplacian FNO L2=0.00019, Holdout PPL=1.00000002 (3420.0k ops/s)."
+    @Volatile var hostNlSynthesis = "Sovereign Harmonic VI (SH4Z v4100) Natural Language Synthesis: 15.965 Hz Decadic Epoch locked across 21,120 Shards (480x Chair-44), Per-Sensor Stiefel Ortho=5.0e-7, 10-Laplacian FNO L2=0.00019, Holdout PPL=1.00000002 (3420.0k ops/s)."
     @Volatile var hostEpisodicOut = "TOOL 28 EPISODIC MEMORY READY: 21,120 Shards + JSONL Rings indexed on E:/Sovereign_Manifold_SSD_Vault." 
     @Volatile var lastInspectedTrits = "Offset=0x13C00 (80896B) -- Trits(-1/0/+1)=21/22/21 -- 1.585b Golay G24"
     private var sensorEvtCount = 0
@@ -622,7 +622,7 @@ object SovereignLiveBus : SensorEventListener {
 
         val c3 = String.format(
             Locale.US,
-            "SH4Z v4000 (106496B 80-Sector) -- Gen #%d -- Lean4: 344/350 Proofs QED in %.1fms\n" +
+            "SH4Z v4100 (106496B 80-Sector) -- Gen #%d -- Lean4: 344/350 Proofs QED in %.1fms\n" +
                 "Holdout PPL=1.00000002 -- Kasami Cw=%s -- RSR #%d -- HybridLink Hops=%d\n" +
                 "LLM-Gateway (Tool 21): #%d -- FNO PDE (Tool 22): #%d (Re=%.1f) -- E:/ SSD (Tool 23): #%d",
             gen,
@@ -644,7 +644,7 @@ object SovereignLiveBus : SensorEventListener {
             card1Text = c1,
             card2Text = c2,
             card3Text = c3,
-            card4Status = "SH4Z v4000 SYNCED",
+            card4Status = "SH4Z v4100 SYNCED",
             activeBearer = bearer,
             rttMs = rtt,
             leanProofs = 128,
@@ -671,9 +671,9 @@ object SovereignLiveBus : SensorEventListener {
                 nm.createNotificationChannel(ch)
             }
             val title = if (isPixel8ComputeNode) {
-                "SH4Z v4000 P8 L2 (97.84% Free) -- 15 Cards -- 3420.0k ops/s"
+                "SH4Z v4100 P8 L2 (97.84% Free) -- 15 Cards -- 3420.0k ops/s"
             } else {
-                "SH4Z v4000 P10 24D + FNO PDE -- 15 Cards -- 3420.0k ops/s"
+                "SH4Z v4100 P10 24D + FNO PDE -- 15 Cards -- 3420.0k ops/s"
             }
             val body = "Tick #${snap.gen} -- 21,120 Shards -- 16,384 NL Tok -- 344/350 Lean4 -- E:/ SSD SYNCED"
             val notif = NotificationCompat.Builder(context, channelId)
@@ -1006,7 +1006,7 @@ fun SovereignCockpitV326Screen() {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "SOVEREIGN MANIFOLD TELEMETRY CONSOLE -- ACT-OMEGA NET v40.0.0 (SH4Z v4000 TLV)",
+                    text = "SOVEREIGN MANIFOLD TELEMETRY CONSOLE -- ACT-OMEGA NET v41.0.0 (SH4Z v4100 TLV)",
                     color = AccentAmber10,
                     fontSize = 9.5.sp,
                     fontWeight = FontWeight.Bold,
@@ -1256,7 +1256,7 @@ fun SovereignCockpitV326Screen() {
 
         Spacer(modifier = Modifier.height(6.dp))
 
-        // PINNED WORKSPACE: LIVE 60 FPS 16x80 (2,080-CACHELINE) 1:1 BIJECTION HEATMAP + 16 SECTOR PILLS (S00..S79)
+        // PINNED WORKSPACE: LIVE 60 FPS 16x80 (1,280-CACHELINE) 1:1 BIJECTION HEATMAP + 16 SECTOR PILLS (S00..S79)
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -1265,7 +1265,7 @@ fun SovereignCockpitV326Screen() {
                 .padding(8.dp)
         ) {
             Text(
-                text = "PINNED WORKSPACE: LIVE 60 FPS 16x80 (2,080-CACHELINE) 1:1 BIJECTION HEATMAP (133,120B = 130.00KB -- Tap Sector S00..S79)",
+                text = "PINNED WORKSPACE: LIVE 60 FPS 16x80 (1,280-CACHELINE) 1:1 BIJECTION HEATMAP (133,120B = 130.00KB -- Tap Sector S00..S79)",
                 color = TextIvory30,
                 fontSize = 8.8.sp,
                 fontWeight = FontWeight.Bold,
@@ -1748,7 +1748,7 @@ fun SovereignCockpitV326Screen() {
             }
             Spacer(modifier = Modifier.height(4.dp))
 
-            // Row 00 (v40.0.0 QoL Slash-Command Chips + Tool 32 KHYS Mnemosyne + Tool 31 Cymatic 2-Bit SIMD)
+            // Row 00 (v41.0.0 QoL Slash-Command Chips + Tool 32 KHYS Mnemosyne + Tool 31 Cymatic 2-Bit SIMD)
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 ToolButton603010("/SYNC", SlateSurface30, StatusOk, Modifier.weight(1f)) {
                     cmdPrompt = "/SYNC"
@@ -1768,7 +1768,7 @@ fun SovereignCockpitV326Screen() {
                 }
             }
             Spacer(modifier = Modifier.height(4.dp))
-            // Row 000000: v40.0.0 Atomic Delta Engine (T54), A2A Mesh (T53), Auto-Learn Memory (T52), Code-Mode MCP+Roots (T51)
+            // Row 000000: v41.0.0 Atomic Delta Engine (T54), A2A Mesh (T53), Auto-Learn Memory (T52), Code-Mode MCP+Roots (T51)
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 ToolButton603010("T54: Atomic Delta", AccentRed10, TextIvory30, Modifier.weight(1f)) {
                     invokeHostEndpoint("/api/v1/devops/atomic_delta_engine", null, "TOOL 54: ATOMIC DELTA")
@@ -1784,7 +1784,7 @@ fun SovereignCockpitV326Screen() {
                 }
             }
             Spacer(modifier = Modifier.height(4.dp))
-            // Row 00000: v40.0.0 64-Epoch Compound QAT (T50), Formant Speech+WAV (T49), 5W1H 4-Band Sweep, OpenAI /v1 Models
+            // Row 00000: v41.0.0 64-Epoch Compound QAT (T50), Formant Speech+WAV (T49), 5W1H 4-Band Sweep, OpenAI /v1 Models
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 ToolButton603010("T50: Compound QAT", AccentRed10, TextIvory30, Modifier.weight(1f)) {
                     invokeHostEndpoint("/api/v1/training/cross_domain_compound_qat", null, "TOOL 50: 6-DOMAIN QAT")
@@ -1800,7 +1800,7 @@ fun SovereignCockpitV326Screen() {
                 }
             }
             Spacer(modifier = Modifier.height(4.dp))
-            // Row 0000: v40.0.0 Cloudflare D1+VPC Shadow (T48), OpenAI /v1 API (T47), MCP 2026 Server (T46), Metabolic 5W1H Harness (T45)
+            // Row 0000: v41.0.0 Cloudflare D1+VPC Shadow (T48), OpenAI /v1 API (T47), MCP 2026 Server (T46), Metabolic 5W1H Harness (T45)
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 ToolButton603010("T48: CF D1+VPC", AccentRed10, TextIvory30, Modifier.weight(1f)) {
                     invokeHostEndpoint("/api/v1/cloudflare/d1_vpc_shadow", null, "TOOL 48: CLOUDFLARE D1+VPC")
@@ -1816,7 +1816,7 @@ fun SovereignCockpitV326Screen() {
                 }
             }
             Spacer(modifier = Modifier.height(4.dp))
-            // Row 000: v40.0.0 Amygdala+Kerr+Ravi (T44), Skyrmion+Fermi+XUV (T43), Neuron Pagefile .npage (T42), TorchTPU Bridge (T41)
+            // Row 000: v41.0.0 Amygdala+Kerr+Ravi (T44), Skyrmion+Fermi+XUV (T43), Neuron Pagefile .npage (T42), TorchTPU Bridge (T41)
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 ToolButton603010("T44: Amygdala+Kerr", AccentRed10, TextIvory30, Modifier.weight(1f)) {
                     invokeHostEndpoint("/api/v1/neuro/amygdala_kerr_ravi", null, "TOOL 44: AMYGDALA+KERR+RAVI")
@@ -1832,7 +1832,7 @@ fun SovereignCockpitV326Screen() {
                 }
             }
             Spacer(modifier = Modifier.height(4.dp))
-            // Row 00A: v40.0.0 Sovereign Connectome (T37), DGM+AZR+SEAL (T38), Bi-Temporal WAL (T39), Pixel 8 P8-APEX (T40)
+            // Row 00A: v41.0.0 Sovereign Connectome (T37), DGM+AZR+SEAL (T38), Bi-Temporal WAL (T39), Pixel 8 P8-APEX (T40)
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 ToolButton603010("T40: P8-APEX 426k", AccentRed10, TextIvory30, Modifier.weight(1f)) {
                     invokeHostEndpoint("/api/v1/edge/p8_apex_coprocessor", null, "TOOL 40: PIXEL 8 P8-APEX")
@@ -1996,7 +1996,7 @@ fun SovereignCockpitV326Screen() {
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = "[SH4Z v4000 (133,120 B / 130.00 KB 80-Sector 60-30-10 HUD)]: Work-Stealing=960+640+480 (2,080 Lines, 3420.0k ops/s) -- 344/350 Lean 4 QED -- 21,120 Shards (480x Chair44) -- 16,384 NL+Compound Tokens -- E:/ Tier-2 SSD Active -- PPL=1.00000002",
+                        text = "[SH4Z v4100 (133,120 B / 130.00 KB 80-Sector 60-30-10 HUD)]: Work-Stealing=960+640+480 (2,080 Lines, 3420.0k ops/s) -- 344/350 Lean 4 QED -- 21,120 Shards (480x Chair44) -- 16,384 NL+Compound Tokens -- E:/ Tier-2 SSD Active -- PPL=1.00000002",
                         color = AccentAmber10,
                         fontSize = 8.5.sp,
                         lineHeight = 12.sp,

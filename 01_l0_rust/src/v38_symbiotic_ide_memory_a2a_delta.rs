@@ -63,7 +63,7 @@ pub fn evaluate_code_mode_mcp_roots(gen_counter: u64) -> CodeModeMcpRootsTelemet
 pub fn append_and_recall_longterm_memory(
     prompt: &str,
     synthesis_preview: &str,
-    e8_root_id: usize,
+    e8_root_id: u16,
     m_atp: f64,
     band_id: u32,
     sub_epoch: u64,

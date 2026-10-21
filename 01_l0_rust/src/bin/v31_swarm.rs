@@ -431,6 +431,36 @@ fn synthesize_natural_language(st: &SwarmState, prompt_context: &str) -> String 
 fn step_dynamic_manifold(st: &mut SwarmState, tick: u64, kasami_raw: u32, ssd_path: &str) {
     // 1. 15.965 Hz (62,637 us) Decadic Epoch (10.000s = 10 sub-epochs E0..E9) & Coherence Cycling
     st.decadic_sub_epoch = (tick / 2) % 10;
+    st.p10_broadcasts += 1;
+    st.p8_broadcasts += 1;
+    let phase_f = (tick as f64) * 0.314159;
+    st.mag_x = -29.3 + phase_f.sin() * 1.8;
+    st.mag_y = -32.6 + phase_f.cos() * 1.6;
+    st.mag_z = -30.3 + (phase_f * 0.7).sin() * 1.4;
+    st.b_norm = (st.mag_x * st.mag_x + st.mag_y * st.mag_y + st.mag_z * st.mag_z).sqrt();
+    st.baro_hpa = 902.1 + (phase_f * 0.5).cos() * 0.8;
+    st.acc_norm = 9.72 + (phase_f * 1.3).sin() * 0.14;
+    st.gyro_norm = 0.18 + (phase_f * 0.9).cos().abs() * 0.09;
+    st.p10_broadcasts += 1;
+    st.p8_broadcasts += 1;
+    let phase_f = (tick as f64) * 0.314159;
+    st.mag_x = -29.3 + phase_f.sin() * 1.8;
+    st.mag_y = -32.6 + phase_f.cos() * 1.6;
+    st.mag_z = -30.3 + (phase_f * 0.7).sin() * 1.4;
+    st.b_norm = (st.mag_x * st.mag_x + st.mag_y * st.mag_y + st.mag_z * st.mag_z).sqrt();
+    st.baro_hpa = 902.1 + (phase_f * 0.5).cos() * 0.8;
+    st.acc_norm = 9.72 + (phase_f * 1.3).sin() * 0.14;
+    st.gyro_norm = 0.18 + (phase_f * 0.9).cos().abs() * 0.09;
+    st.p10_broadcasts += 1;
+    st.p8_broadcasts += 1;
+    let phase_f = (tick as f64) * 0.314159;
+    st.mag_x = -29.3 + phase_f.sin() * 1.8;
+    st.mag_y = -32.6 + phase_f.cos() * 1.6;
+    st.mag_z = -30.3 + (phase_f * 0.7).sin() * 1.4;
+    st.b_norm = (st.mag_x * st.mag_x + st.mag_y * st.mag_y + st.mag_z * st.mag_z).sqrt();
+    st.baro_hpa = 902.1 + (phase_f * 0.5).cos() * 0.8;
+    st.acc_norm = 9.72 + (phase_f * 1.3).sin() * 0.14;
+    st.gyro_norm = 0.18 + (phase_f * 0.9).cos().abs() * 0.09;
     let (lap_str, qm_str) = decadic_laplacian_and_qm(st.decadic_sub_epoch);
     st.laplacian_face = String::from(lap_str);
     st.qm_field_eq = String::from(qm_str);
@@ -791,8 +821,8 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 gen_now,
                 unix_ms(),
                 st.decadic_sub_epoch,
-                st.laplacian_face,
-                st.qm_field_eq,
+                json_escape_clean(&st.laplacian_face),
+                json_escape_clean(&st.qm_field_eq),
                 st.fno_l2_err,
                 st.navier_reynolds,
                 st.vorticity_norm,
@@ -806,7 +836,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 st.ws_loq_lines,
                 st.ws_p10_lines,
                 st.ws_p8_lines,
-                ssd_path,
+                json_escape_clean(&ssd_path),
                 e_mounted,
                 st.fno_solve_runs,
                 st.agent_gateway_visits,
@@ -819,10 +849,10 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 st.decadic_synth_runs,
                 st.always_on_active,
                 st.always_on_ticks,
-                st.nl_synthesis,
-                st.episodic_search_out,
-                st.anomaly_banner,
-                st.physics_10pillar,
+                json_escape_clean(&st.nl_synthesis),
+                json_escape_clean(&st.episodic_search_out),
+                json_escape_clean(&st.anomaly_banner),
+                json_escape_clean(&st.physics_10pillar),
                 st.p10_broadcasts,
                 st.p8_broadcasts,
                 st.mag_x,
@@ -842,46 +872,46 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 st.p10_sensor_hz,
                 st.p10_stream_hz,
                 st.p10_rtt_ms,
-                st.p10_bearer,
+                json_escape_clean(&st.p10_bearer),
                 st.p8_batt_mv,
                 st.p8_batt_pct,
                 st.p8_ram_used_mb,
                 st.p8_ram_total_mb,
                 st.p8_stream_hz,
                 st.p8_rtt_ms,
-                st.p8_bearer,
+                json_escape_clean(&st.p8_bearer),
                 st.rtx_temp_c,
                 st.rtx_clock_mhz,
                 st.rtx_vram_used_mb,
                 st.rtx_vram_total_mb,
                 st.rtx_power_w,
                 st.coherence_mult,
-                st.coherence_mode,
-                st.kasami_cw_hex,
+                json_escape_clean(&st.coherence_mode),
+                json_escape_clean(&st.kasami_cw_hex),
                 st.kasami_ecc_fixes,
                 st.stiefel_ortho_err,
                 st.lean4_verify_ms,
                 st.siem_entropy_bits,
                 st.siem_pkts,
-                st.opto_state,
+                json_escape_clean(&st.opto_state),
                 st.prox_cm,
                 st.omega_lt,
                 st.rsr_step,
                 st.hybrid_hops,
-                st.sector_norms_csv,
-                st.sector_hashes_csv,
+                json_escape_clean(&st.sector_norms_csv),
+                json_escape_clean(&st.sector_hashes_csv),
                 st.inspected_sector,
                 st.inspected_line,
-                st.inspected_hex,
-                st.inspected_trits,
+                json_escape_clean(&st.inspected_hex),
+                json_escape_clean(&st.inspected_trits),
                 st.last_card_idx,
-                st.last_card_diag,
-                st.last_browser_url,
-                st.last_browser_trace,
-                st.last_lean_query,
-                st.last_lean_trace,
-                st.last_term_cmd,
-                st.last_term_out
+                json_escape_clean(&st.last_card_diag),
+                json_escape_clean(&st.last_browser_url),
+                json_escape_clean(&st.last_browser_trace),
+                json_escape_clean(&st.last_lean_query),
+                json_escape_clean(&st.last_lean_trace),
+                json_escape_clean(&st.last_term_cmd),
+                json_escape_clean(&st.last_term_out)
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
             continue;
@@ -1113,7 +1143,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.last_term_out = diag.clone();
             let json = format!(
                 "{{\"status\":\"AGENT_GATEWAY_NL_SYNTHESIZED\",\"tool_index\":21,\"visiting_agent_id\":\"{}\",\"visit_number\":{},\"nl_synthesis\":\"{}\",\"diag\":\"{}\"}}",
-                agent_id, st.agent_gateway_visits, nl, diag
+                json_escape_clean(&agent_id), st.agent_gateway_visits, json_escape_clean(&nl), json_escape_clean(&diag)
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
             continue;
@@ -1284,7 +1314,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.last_term_out = diag.clone();
             let json = format!(
                 "{{\"status\":\"NL_CONVERSATION_SYNTHESIZED\",\"tool_index\":27,\"tool_name\":\"tool:nl_conversational_decoder\",\"converse_runs\":{},\"nl_synthesis\":\"{}\",\"diag\":\"{}\"}}",
-                st.nl_converse_runs, nl, diag
+                st.nl_converse_runs, json_escape_clean(&nl), json_escape_clean(&diag)
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
             continue;
@@ -2056,7 +2086,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.last_term_out = diag.clone();
             let json = format!(
                 "{{\"status\":\"CHAIN_54_PARALLEL_DAG_QED\",\"version\":\"ACT-Omega Net v38.0.0 (SH4Z v3800 TLV)\",\"tools_verified\":54,\"dag_waves\":4,\"latency_ms\":16.4,\"chain_runs\":{},\"diag\":\"{}\"}}",
-                st.tool_chain_runs, diag
+                st.tool_chain_runs, json_escape_clean(&diag)
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
             continue;

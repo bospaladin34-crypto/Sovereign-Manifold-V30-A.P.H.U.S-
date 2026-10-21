@@ -93,7 +93,7 @@ pub fn append_and_recall_longterm_memory(
             if !ln.trim().is_empty() {
                 total_count += 1;
                 if !search_word.is_empty() && ln.to_ascii_lowercase().contains(&search_word.to_ascii_lowercase()) {
-                    let snippet: String = ln.chars().take(185).collect();
+                    let snippet: String = ln.chars().filter(|c| *c != '"' && *c != '\\' && *c != '{' && *c != '}').take(185).collect();
                     best_recall = format!("Recalled Long-Term Memory #{}: {}", total_count, snippet);
                 }
             }

@@ -1103,7 +1103,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             };
             let nl = synthesize_natural_language(&st, &prompt_clean);
             st.nl_synthesis = nl.clone();
-            let sig = fnv1a_64(&prompt_clean) ^ 0x3329_3300_21120_4000_u64;
+            let sig = fnv1a_64(&prompt_clean) ^ 0x3329_3800_A560_4000_u64;
             let diag = format!(
                 "TOOL 21+27 CONVERSATIONAL AGENT GATEWAY (Visit #{} by {}): {} (Sig=0x{:08X})",
                 st.agent_gateway_visits, agent_id, nl, (sig & 0xFFFFFFFFFFFFFFFF)

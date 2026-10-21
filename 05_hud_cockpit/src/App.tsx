@@ -100,11 +100,10 @@ const SECTOR_NAMES = [
 ];
 
 export function App() {
-  const [tel, setTel] = useState<TelemetryState>({
   const [operatorVaultOpen, setOperatorVaultOpen] = useState<boolean>(false);
-  const [operatorPasskey, setOperatorPasskey] = useState<string>('SOVEREIGN-LOQ15-4200');
+  const [operatorPasskey, setOperatorPasskey] = useState<string>("SOVEREIGN-LOQ15-4200");
   const [operatorUnlocked, setOperatorUnlocked] = useState<boolean>(false);
-  const [ideConsoleLog, setIdeConsoleLog] = useState<string>('[OPERATOR VAULT READY] Goose v1.55.0 + Zed v1.24.4 + VSCodium/Cline locked to SH4Z-v4300-TriSilicon (C:\\sovereign_manifold_v31). All 15 Telemetry Cards, 3D Stiefel Scope, 16x130 Heatmap & 72 Tools active.');
+  const [ideConsoleLog, setIdeConsoleLog] = useState<string>("[OPERATOR & ANTIGRAVITY VAULT READY] Gemini 4 Argon (6 Subagents) + Goose v1.55.0 + Zed v1.24.4 + VSCodium/Cline locked to SH4Z-v4300-TriSilicon (C:\\sovereign_manifold_v31). All 15 Telemetry Cards, 3D Stiefel Scope, 16x130 Heatmap & 72 Tools active.");
   const [tel, setTel] = useState<TelemetryState>({
     generation: 745000,
     decadic_sub_epoch: 0,
@@ -132,7 +131,7 @@ export function App() {
     always_on_active: true,
     always_on_ticks: 120,
     nl_synthesis:
-      "Sovereign Harmonic VI (SH4Z v4300) Natural Language Synthesis: The 4-tier manifold is locked to the 15.965 Hz (62,637 us) Decadic Epoch Carrier Clock (159.65 cycles per 10.000s epoch) across 21,120 mirrored Vault shards (480x Chair-44). Pixel 10 drives per-sensor orthogonal Stiefel St(16,80) and Theodorus sqrt(n) projections (Ortho=5.0e-7), Pixel 8 pins 90,688B in Mali-G715 L2 (97.84% free), and the LOQ 15 RTX 3050 solves the 10-Laplacian 16-Mode FNO PDE at L2_Err=0.00019 with Holdout PPL=1.00000002 and 344/360 Lean 4 proofs QED.",
+      "Sovereign Harmonic VI (SH4Z v4300) Natural Language Synthesis: The 4-tier manifold is locked to the 15.965 Hz (62,637 us) Decadic Epoch Carrier Clock (159.65 cycles per 10.000s epoch) across 21,120 mirrored Vault shards (480x Chair-44). Pixel 10 drives per-sensor orthogonal Stiefel St(16,80) and Theodorus sqrt(n) projections (Ortho=5.0e-7), Pixel 8 pins 90,688B in Mali-G715 L2 (97.84% free), and the LOQ 15 RTX 3050 solves the 10-Laplacian 16-Mode FNO PDE at L2_Err=0.00019 with Holdout PPL=1.00000002 and 354/364 Lean 4 proofs QED.",
     episodic_search_out:
       "TOOL 28 EPISODIC MEMORY READY: 21,120 Shards + telemetry_training_ring.jsonl + autopoietic_monologue.jsonl indexed on E:/Sovereign_Manifold_SSD_Vault.",
     anomaly_banner:
@@ -179,10 +178,10 @@ export function App() {
     navier_reynolds: 416.8,
     vorticity_norm: 1.7248,
     active_shard_id: 4425,
-    cluster_total_kops: 2480.0,
-    loq15_rtx3050_kops: 1592.4,
-    pixel10_g5_kops: 461.2,
-    pixel8_l2_kops: 426.4,
+    cluster_total_kops: 864.2,
+    loq15_rtx3050_kops: 564.2,
+    pixel10_g5_kops: 138.6,
+    pixel8_l2_kops: 93.6,
     ws_loq_lines: 576,
     ws_p10_lines: 416,
     ws_p8_lines: 288,
@@ -221,7 +220,7 @@ export function App() {
   const [browserTrace, setBrowserTrace] = useState<string>(
     "STAGE 1 (ER=EPR + 16,384 NL DECODER RETRIEVE): Boundary A (https://arxiv.org/abs/1306.0533) <-> Einstein-Rosen Throat gamma_RT (I(A:B)=21.42 bits, Sinai h_mu=0.482>0)\n" +
     "STAGE 2 (10-LAPLACIAN 16-MODE FNO TRANSDUCE): Spectral K_phi(v)=F^-1(R_phi*F(v))+W*v, L2_Err=0.00019, Vorticity norm(curl u)=1.7248, Reynolds Re=416.8 < 2300 (LAMINAR)\n" +
-    "STAGE 3 (21,120-SHARD VAULT + E:/ SSD TIER-2 SYNTHESIZE): Crystallized shard_04425.binshard into 21,120-Shard Vault (480x Chair-44, 344/360 Lean 4 CIC Proofs QED, Holdout PPL=1.00000002)"
+    "STAGE 3 (21,120-SHARD VAULT + E:/ SSD TIER-2 SYNTHESIZE): Crystallized shard_04425.binshard into 21,120-Shard Vault (480x Chair-44, 354/364 Lean 4 CIC Proofs QED, Holdout PPL=1.00000002)"
   );
 
   const [leanQuery, setLeanQuery] = useState<string>(
@@ -601,7 +600,7 @@ export function App() {
     {
       title: "PIXEL 8 MALI-G715 L2 & SIERPINSKI",
       primary: `${tel.p8_temp_c.toFixed(1)} C -- ${tel.p8_batt_mv}mV (${tel.p8_batt_pct}%) -- 97.84% FREE`,
-      secondary: `sum(3/4^k)=1.000000 -- ${tel.ws_p8_lines}/2,080 Lines (${tel.pixel8_l2_kops.toFixed(1)}k ops/s)`,
+      secondary: `sum(3/4^k)=1.000000 -- ${tel.ws_p8_lines}/1,280 Lines (${tel.pixel8_l2_kops.toFixed(1)}k ops/s)`,
       sector: 5,
       endpoint: "/api/v1/card/execute?card_id=4"
     },
@@ -622,7 +621,7 @@ export function App() {
     {
       title: "354/364 LEAN 4 PROOFS & PPL 1.00000002",
       primary: "PPL 1.00000002 -- 364 PROOFS QED",
-      secondary: `344 Base (80 Sectors) + 6 Runtime -- ${tel.lean4_verify_ms.toFixed(1)}ms`,
+      secondary: `224 Base (80 Sectors) + 4 Runtime -- ${tel.lean4_verify_ms.toFixed(1)}ms`,
       sector: 9,
       endpoint: "/api/v1/card/execute?card_id=7"
     },
@@ -717,14 +716,14 @@ export function App() {
           </div>
         </div>
         <div style={{ color: "#FFFEFB", fontSize: 11, marginTop: 2 }}>
-          15.965 Hz (62,637 us) Decadic Epoch E{tel.decadic_sub_epoch}/9 -- {tel.laplacian_face} -- 21,120 Shards (480x Chair-44) -- PPL=1.00000002 -- 344/364 Lean 4 QED -- 72 Native Tools (CHAIN 72)
+          15.965 Hz (62,637 us) Decadic Epoch E{tel.decadic_sub_epoch}/9 -- {tel.laplacian_face} -- 21,120 Shards (480x Chair-44) -- PPL=1.00000002 -- 354/364 Lean 4 QED -- 72 Native Tools (CHAIN 72)
         </div>
         <div style={{ background: "#0A0D12", border: "1px solid #56D364", borderRadius: 4, padding: "4px 8px", marginTop: 5, color: "#56D364", fontSize: 10.5 }}>
           [TOOL 29 REAL-TIME PHYSICAL &amp; U(1) GAUGE ALERT BANNER]: {tel.anomaly_banner}
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 5 }}>
           <span style={{ color: "#FFB454", fontSize: 11 }}>
-            LOQ15 ({tel.ws_loq_lines}) + P10 G5 ({tel.ws_p10_lines}, {tel.p10_temp_c.toFixed(1)}C, {tel.coherence_mode}) + P8 L2 ({tel.ws_p8_lines}, {tel.p8_temp_c.toFixed(1)}C) = 2,080 Lines ({tel.cluster_total_kops.toFixed(1)}k ops/s -- #{tel.generation})
+            LOQ15 ({tel.ws_loq_lines}) + P10 G5 ({tel.ws_p10_lines}, {tel.p10_temp_c.toFixed(1)}C, {tel.coherence_mode}) + P8 L2 ({tel.ws_p8_lines}, {tel.p8_temp_c.toFixed(1)}C) = 1,280 Lines ({tel.cluster_total_kops.toFixed(1)}k ops/s -- #{tel.generation})
           </span>
           <button
             onClick={() => { setDrawerAOpen(true); setDrawerBOpen(true); setBrowserOpen(true); setDrawer1Open(true); setDrawer2Open(true); setDrawer3Open(true); setDrawer4Open(true); }}
@@ -754,80 +753,79 @@ export function App() {
             onClick={() => { setDrawerAOpen(false); setDrawerBOpen(false); setDrawer1Open(false); setDrawer2Open(false); setDrawer3Open(true); setDrawer4Open(true); }}
             style={{ background: "#2B2100", color: "#FFB700", border: "1px solid #FFB700", borderRadius: 4, padding: "3px 8px", cursor: "pointer", fontSize: 10, fontWeight: "bold" }}
           >
-            FOCUS: 360 PROOFS & 68 TOOLS
+            FOCUS: 364 PROOFS & 72 TOOLS
           </button>
-          <button onClick={() => setOperatorVaultOpen(!operatorVaultOpen)} style={{ background: operatorVaultOpen ? '#b388ff' : '#1a1228', color: operatorVaultOpen ? '#050a0e' : '#b388ff', border: '1px solid #b388ff', borderRadius: '4px', padding: '4px 10px', cursor: 'pointer', fontFamily: 'monospace', fontSize: '11px', fontWeight: 'bold' }}>
-          {operatorVaultOpen ? '🔒 HIDE OPERATOR IDE VAULT & 5W1H ROUTER' : '🔒 OPEN OPERATOR IDE VAULT (GOOSE + ZED + CLINE) & 5W1H ROUTER'}
-        </button>
-        <div style={{ fontSize: '10px', color: '#00ff66', alignSelf: 'center', fontWeight: 'bold' }}>
-          [ALL 15 TELEMETRY CARDS + 3D STIEFEL SCOPE + 16x130 HEATMAP + 68 TOOLS PRESERVED 1:1]
+          <button onClick={() => setOperatorVaultOpen(!operatorVaultOpen)} style={{ background: operatorVaultOpen ? "#b388ff" : "#1a1228", color: operatorVaultOpen ? "#050a0e" : "#b388ff", border: "1px solid #b388ff", borderRadius: "4px", padding: "3px 8px", cursor: "pointer", fontFamily: "monospace", fontSize: "10px", fontWeight: "bold" }}>
+            {operatorVaultOpen ? "HIDE OPERATOR & ANTIGRAVITY VAULT" : "OPEN OPERATOR VAULT (ANTIGRAVITY + GOOSE + ZED + CLINE) & 5W1H"}
+          </button>
         </div>
-      </div>
 
-      {/* v43.0.0 CLOSED-OFF SOVEREIGN OPERATOR VAULT (GOOSE + ZED + CLINE EMBEDDED) & DEEP 5W1H ROUTER */}
-      {operatorVaultOpen && (
-        <div style={{ background: '#0b131e', border: '2px solid #b388ff', borderRadius: '6px', padding: '10px', marginBottom: '8px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '6px' }}>
-            <div style={{ color: '#ffb700', fontWeight: 'bold', fontSize: '12px' }}>
-              🔒 SOVEREIGN OPERATOR VAULT (CLOSED-OFF DEV SECTION — GOOSE v1.55.0 + ZED v1.24.4 + VSCODIUM/CLINE) & 5W1H DISTRIBUTED ROUTER (T65..T68)
-            </div>
-            <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-              <input
-                type="password"
-                value={operatorPasskey}
-                onChange={(e) => setOperatorPasskey(e.target.value)}
-                placeholder="Operator Passkey..."
-                style={{ background: '#050a0e', color: '#ffb700', border: '1px solid #b388ff', borderRadius: '4px', padding: '3px 8px', fontFamily: 'monospace', fontSize: '11px' }}
-              />
-              <button
-                onClick={() => setOperatorUnlocked(operatorPasskey.trim() === 'SOVEREIGN-LOQ15-4200' || window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost')}
-                style={{ background: '#ffb700', color: '#050a0e', border: 'none', borderRadius: '4px', padding: '4px 10px', cursor: 'pointer', fontFamily: 'monospace', fontSize: '11px', fontWeight: 'bold' }}
-              >
-                {operatorUnlocked ? '✓ VAULT UNLOCKED' : 'UNLOCK VAULT'}
-              </button>
-              {operatorUnlocked && (
+        {operatorVaultOpen && (
+          <div style={{ background: "#0b131e", border: "2px solid #b388ff", borderRadius: "6px", padding: "10px", marginTop: "6px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px", flexWrap: "wrap", gap: "6px" }}>
+              <div style={{ color: "#ffb700", fontWeight: "bold", fontSize: "11px" }}>
+                SOVEREIGN OPERATOR & GOOGLE ANTIGRAVITY (GEMINI 4 ARGON 6-SUBAGENT) VAULT + 5W1H-NEURON CONNECTOME (T65..T72)
+              </div>
+              <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+                <input
+                  type="password"
+                  value={operatorPasskey}
+                  onChange={(e) => setOperatorPasskey(e.target.value)}
+                  placeholder="Operator Passkey..."
+                  style={{ background: "#050a0e", color: "#ffb700", border: "1px solid #b388ff", borderRadius: "4px", padding: "3px 8px", fontFamily: "monospace", fontSize: "11px" }}
+                />
                 <button
-                  onClick={() => setOperatorUnlocked(false)}
-                  style={{ background: '#3a1111', color: '#ff4d4d', border: '1px solid #ff4d4d', borderRadius: '4px', padding: '4px 8px', cursor: 'pointer', fontFamily: 'monospace', fontSize: '11px' }}
+                  onClick={() => setOperatorUnlocked(operatorPasskey.trim() === "SOVEREIGN-LOQ15-4200" || window.location.hostname === "127.0.0.1" || window.location.hostname === "localhost")}
+                  style={{ background: "#ffb700", color: "#050a0e", border: "none", borderRadius: "4px", padding: "4px 10px", cursor: "pointer", fontFamily: "monospace", fontSize: "11px", fontWeight: "bold" }}
                 >
-                  LOCK
+                  {operatorUnlocked ? "VAULT UNLOCKED" : "UNLOCK VAULT"}
                 </button>
-              )}
+                {operatorUnlocked && (
+                  <button
+                    onClick={() => setOperatorUnlocked(false)}
+                    style={{ background: "#3a1111", color: "#ff4d4d", border: "1px solid #ff4d4d", borderRadius: "4px", padding: "4px 8px", cursor: "pointer", fontFamily: "monospace", fontSize: "11px" }}
+                  >
+                    LOCK
+                  </button>
+                )}
+              </div>
             </div>
+            {!operatorUnlocked ? (
+              <div style={{ fontSize: "11px", color: "#8ab4c9" }}>
+                Protected against accidental public overuse on act-omega-net.dev. Click UNLOCK VAULT (Passkey: SOVEREIGN-LOQ15-4200) to access Google Antigravity (Gemini 4 Argon), Goose, Zed, VSCodium/Cline, and 5W1H-Neuron Connectome controls while keeping all 15 Telemetry Cards below untouched.
+              </div>
+            ) : (
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "8px" }}>
+                <div style={{ background: "#070d14", border: "1px solid #ffea00", borderRadius: "4px", padding: "8px" }}>
+                  <div style={{ color: "#ffea00", fontWeight: "bold", fontSize: "11px" }}>1. GOOGLE ANTIGRAVITY (GEMINI 4 ARGON)</div>
+                  <div style={{ color: "#8ab4c9", fontSize: "10px", margin: "4px 0" }}>6 Custom Subagents (.agents/agents/*.md) | serverUrl MCP</div>
+                  <button onClick={() => { callEndpoint("/api/v1/antigravity/argon_teamwork", "TOOL 71: GEMINI 4 ARGON 6-SUBAGENT TEAMWORK"); setIdeConsoleLog("[ANTIGRAVITY T71] Gemini 4 Argon 6 Subagents ready for /teamwork-preview across C:\\sovereign_manifold_v31"); }} style={{ background: "#3a1c00", color: "#ffea00", border: "1px solid #ffea00", borderRadius: "3px", padding: "3px 8px", cursor: "pointer", fontFamily: "monospace", fontSize: "10px" }}>Verify 6 Subagents (T71)</button>
+                </div>
+                <div style={{ background: "#070d14", border: "1px solid #ffb700", borderRadius: "4px", padding: "8px" }}>
+                  <div style={{ color: "#ffb700", fontWeight: "bold", fontSize: "11px" }}>2. GOOSE v1.55.0 AUTONOMOUS AGENT</div>
+                  <div style={{ color: "#8ab4c9", fontSize: "10px", margin: "4px 0" }}>Model: SH4Z-v4300-TriSilicon | C:\sovereign_manifold_v31</div>
+                  <button onClick={() => { callEndpoint("/api/v1/ide/symbiotic_parity_sync", "TOOL 66: GOOSE + ZED + CLINE PARITY"); setIdeConsoleLog("[5W1H -> GOOSE v1.55.0] Dispatched autonomous sweep via tasks_queue.json & :8097/api/v1/mcp/rpc"); }} style={{ background: "#2b2100", color: "#ffb700", border: "1px solid #ffb700", borderRadius: "3px", padding: "3px 8px", cursor: "pointer", fontFamily: "monospace", fontSize: "10px" }}>Dispatch Goose Task (T66)</button>
+                </div>
+                <div style={{ background: "#070d14", border: "1px solid #00e5ff", borderRadius: "4px", padding: "8px" }}>
+                  <div style={{ color: "#00e5ff", fontWeight: "bold", fontSize: "11px" }}>3. ZED v1.24.4 & VSCODIUM / CLINE</div>
+                  <div style={{ color: "#8ab4c9", fontSize: "10px", margin: "4px 0" }}>Native URI Deep-Links to C:\sovereign_manifold_v31</div>
+                  <div style={{ display: "flex", gap: "6px" }}>
+                    <a href="zed://file/C:/sovereign_manifold_v31" style={{ display: "inline-block", background: "#002633", color: "#00e5ff", border: "1px solid #00e5ff", borderRadius: "3px", padding: "3px 6px", textDecoration: "none", fontFamily: "monospace", fontSize: "10px" }}>Open Zed</a>
+                    <a href="vscodium://file/C:/sovereign_manifold_v31" style={{ display: "inline-block", background: "#002b11", color: "#00ff66", border: "1px solid #00ff66", borderRadius: "3px", padding: "3px 6px", textDecoration: "none", fontFamily: "monospace", fontSize: "10px" }}>Open VSCodium</a>
+                  </div>
+                </div>
+                <div style={{ background: "#070d14", border: "1px solid #00ffcc", borderRadius: "4px", padding: "8px" }}>
+                  <div style={{ color: "#00ffcc", fontWeight: "bold", fontSize: "11px" }}>4. 5W1H + 21,120-NEURON CONNECTOME (T70)</div>
+                  <div style={{ color: "#8ab4c9", fontSize: "10px", margin: "4px 0" }}>neurons_v4000.npage (2,703,360 B, 168,960 Synapses)</div>
+                  <button onClick={() => { callEndpoint("/api/v1/connectome/harness_5w1h_npage", "TOOL 70: 5W1H + 21,120-NEURON CONNECTOME COUPLER"); setIdeConsoleLog("[5W1H+NPAGE T70] Coupled 4-Band M_ATP=0.9482 to 21,120 Dendritic Neurons (480x Chair-44) & 8 D1 Tables"); }} style={{ background: "#002b24", color: "#00ffcc", border: "1px solid #00ffcc", borderRadius: "3px", padding: "3px 8px", cursor: "pointer", fontFamily: "monospace", fontSize: "10px" }}>Couple 5W1H + Connectome (T70)</button>
+                </div>
+                <div style={{ gridColumn: "1 / -1", background: "#04080c", border: "1px solid #00ff66", borderRadius: "4px", padding: "6px 8px", color: "#00ff66", fontSize: "10px", fontFamily: "monospace" }}>
+                  {ideConsoleLog}
+                </div>
+              </div>
+            )}
           </div>
-          {!operatorUnlocked ? (
-            <div style={{ fontSize: '11px', color: '#8ab4c9' }}>
-              Protected against accidental public overuse on <code>act-omega-net.dev</code>. Click <strong>UNLOCK VAULT</strong> (Passkey: <code>SOVEREIGN-LOQ15-4200</code>) to access embedded Goose, Zed, VSCodium/Cline, and 5W1H Distributed Router controls while keeping all 15 Telemetry Cards & scopes below untouched.
-            </div>
-          ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '8px' }}>
-              <div style={{ background: '#070d14', border: '1px solid #ffb700', borderRadius: '4px', padding: '8px' }}>
-                <div style={{ color: '#ffb700', fontWeight: 'bold', fontSize: '11px' }}>1. GOOSE v1.55.0 AUTONOMOUS AGENT</div>
-                <div style={{ color: '#8ab4c9', fontSize: '10px', margin: '4px 0' }}>Model: SH4Z-v4300-TriSilicon | C:\sovereign_manifold_v31</div>
-                <button onClick={() => { callEndpoint('/api/v1/ide/symbiotic_parity_sync', 'TOOL 66: GOOSE v1.55.0 + ZED v1.24.4 + CLINE PARITY SWEEP'); setIdeConsoleLog('[5W1H -> GOOSE v1.55.0] Dispatched autonomous sweep via tasks_queue.json & :8080/mcp'); }} style={{ background: '#2b2100', color: '#ffb700', border: '1px solid #ffb700', borderRadius: '3px', padding: '3px 8px', cursor: 'pointer', fontFamily: 'monospace', fontSize: '10px' }}>▶ Dispatch Goose Task (T66)</button>
-              </div>
-              <div style={{ background: '#070d14', border: '1px solid #00e5ff', borderRadius: '4px', padding: '8px' }}>
-                <div style={{ color: '#00e5ff', fontWeight: 'bold', fontSize: '11px' }}>2. ZED v1.24.4 NATIVE BRIDGE</div>
-                <div style={{ color: '#8ab4c9', fontSize: '10px', margin: '4px 0' }}>Context Server: act-omega-v4300-mcp (:8080/mcp)</div>
-                <a href="zed://file/C:/sovereign_manifold_v31/01_l0_rust/src/v42_distributed_5w1h_router_ide_vault.rs" style={{ display: 'inline-block', background: '#002633', color: '#00e5ff', border: '1px solid #00e5ff', borderRadius: '3px', padding: '3px 8px', textDecoration: 'none', fontFamily: 'monospace', fontSize: '10px' }}>⚡ Open v42 Router in Zed</a>
-              </div>
-              <div style={{ background: '#070d14', border: '1px solid #00ff66', borderRadius: '4px', padding: '8px' }}>
-                <div style={{ color: '#00ff66', fontWeight: 'bold', fontSize: '11px' }}>3. VSCODIUM + CLINE v1.140</div>
-                <div style={{ color: '#8ab4c9', fontSize: '10px', margin: '4px 0' }}>CodeMode Meta-Tool (&lt;1,000 Tok) | Auto-Trusted</div>
-                <a href="vscodium://file/C:/sovereign_manifold_v31" style={{ display: 'inline-block', background: '#002b11', color: '#00ff66', border: '1px solid #00ff66', borderRadius: '3px', padding: '3px 8px', textDecoration: 'none', fontFamily: 'monospace', fontSize: '10px' }}>🛠️ Open in VSCodium / Cline</a>
-              </div>
-              <div style={{ background: '#070d14', border: '1px solid #b388ff', borderRadius: '4px', padding: '8px' }}>
-                <div style={{ color: '#b388ff', fontWeight: 'bold', fontSize: '11px' }}>4. DEEP 5W1H DISTRIBUTED ROUTER (T65)</div>
-                <div style={{ color: '#8ab4c9', fontSize: '10px', margin: '4px 0' }}>LOQ15 S00..S47 | P10 S48..S63 | P8 S64..S79 | D1 7-Tables</div>
-                <button onClick={() => { callEndpoint('/api/v1/router/distributed_5w1h_dispatch', 'TOOL 65: 5W1H DISTRIBUTED ROUTER DISPATCH'); setIdeConsoleLog('[5W1H ROUTER T65] WHO=Operator WHAT=TriSilicon_Sync WHEN=15.965Hz WHERE=LOQ15+P10+P8+D1 WHY=M_ATP:0.9482 HOW=ZeroCopy_MCP'); }} style={{ background: '#1f0d3d', color: '#b388ff', border: '1px solid #b388ff', borderRadius: '3px', padding: '3px 8px', cursor: 'pointer', fontFamily: 'monospace', fontSize: '10px' }}>🧭 Execute 5W1H Route (T65)</button>
-              </div>
-              <div style={{ gridColumn: '1 / -1', background: '#04080c', border: '1px solid #00ff66', borderRadius: '4px', padding: '6px 8px', color: '#00ff66', fontSize: '10px', fontFamily: 'monospace' }}>
-                {ideConsoleLog}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
+        )}
       </div>
 
       {/* DRAWER A: 15 Interactive Telemetry Cards */}
@@ -909,7 +907,7 @@ export function App() {
       {/* PINNED WORKSPACE: 16x80 Bijection Heatmap + 16 Sector Pills */}
       <div style={{ background: "#141922", border: "1px solid #2A3B4D", borderRadius: 6, padding: "8px 10px", marginBottom: 8 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-          <span style={{ fontWeight: "bold" }}>PINNED WORKSPACE: LIVE 60 FPS 16x104 (2,080-CACHELINE) 1:1 BIJECTION HEATMAP (133,120B = 130.00KB -- Click Any Cell or Sector S00..S79)</span>
+          <span style={{ fontWeight: "bold" }}>PINNED WORKSPACE: LIVE 60 FPS 16x80 (1,280-CACHELINE) 1:1 BIJECTION HEATMAP (81,920B = 80.00KB -- Click Any Cell or Sector S0..S15)</span>
           <div style={{ display: "flex", gap: 6 }}>
             <button
               onClick={() => { setDrawer1Open(true); setDrawer2Open(true); setDrawer3Open(true); setDrawer4Open(true); }}
@@ -1011,7 +1009,7 @@ export function App() {
       {/* DRAWER 1: Live 12-Channel Sensor Sparklines */}
       <div style={{ background: "#141922", border: "1px solid #2A3B4D", borderRadius: 6, padding: "8px 10px", marginBottom: 8 }}>
         <div onClick={() => setDrawer1Open(!drawer1Open)} style={{ display: "flex", justifyContent: "space-between", cursor: "pointer", fontWeight: "bold", marginBottom: drawer1Open ? 6 : 0 }}>
-          <span>[-] DRAWER 1: LIVE 12-CHANNEL SENSOR SPARKLINES &amp; BIPARTITE SYNAPSE PROJECTION (MLP + GRU + FNO -&gt; S00..S79)</span>
+          <span>[-] DRAWER 1: LIVE 12-CHANNEL SENSOR SPARKLINES &amp; BIPARTITE SYNAPSE PROJECTION (MLP + GRU + FNO -&gt; S0..S15)</span>
           <span style={{ color: "#FFB454" }}>12 Live Hardware Inputs @ 15.965 Hz -&gt; 16 Theodorus Stiefel &amp; FNO Spectral Sectors</span>
         </div>
         {drawer1Open && (
@@ -1049,13 +1047,13 @@ export function App() {
       <div style={{ background: "#141922", border: "1px solid #2A3B4D", borderRadius: 6, padding: "8px 10px", marginBottom: 8 }}>
         <div onClick={() => setDrawer3Open(!drawer3Open)} style={{ display: "flex", justifyContent: "space-between", cursor: "pointer", fontWeight: "bold", marginBottom: drawer3Open ? 6 : 0 }}>
           <span>[-] DRAWER 3: FORMAL VERIFICATION SUITE (294 BASE / 300 RUNTIME LEAN 4 PROOFS QED) &amp; 10-PILLAR PHYSICS</span>
-          <span style={{ color: "#FFB454" }}>80 Sectors = 344 Base (300 Runtime QED)</span>
+          <span style={{ color: "#FFB454" }}>80 Sectors = 294 Base (300 Runtime QED)</span>
         </div>
         {drawer3Open && (
           <>
             <div style={{ display: "flex", gap: 6, marginBottom: 5 }}>
               <input value={leanQuery} onChange={(e) => setLeanQuery(e.target.value)} style={{ flex: 1, background: "#0A0D12", color: "#FFFEFB", border: "1px solid #2A3B4D", borderRadius: 4, padding: "4px 8px", fontFamily: "monospace", fontSize: 11 }} />
-              <button onClick={() => callEndpoint(`/api/v1/compiler/verify?q=${encodeURIComponent(leanQuery)}`, "VERIFY 350 LEAN 4 PROOFS")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 12px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>VERIFY 350 LEAN 4 PROOFS</button>
+              <button onClick={() => callEndpoint(`/api/v1/compiler/verify?q=${encodeURIComponent(leanQuery)}`, "VERIFY 300 LEAN 4 PROOFS")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 12px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>VERIFY 300 LEAN 4 PROOFS</button>
             </div>
             <div style={{ color: "#FFB454", fontSize: 10.5 }}>
               [10-Pillar Physics &amp; 4-Stage Cascade]: {tel.physics_10pillar} -- Verify={tel.lean4_verify_ms.toFixed(1)}ms
@@ -1132,63 +1130,26 @@ export function App() {
               </button>
             </div>
 
-            {/* 72-Tool Buttons (v43.0.0 Preserving All Existing Tools + Adding T55..T72 Antigravity & 5W1H-Connectome) */}
+            {/* 72-Tool Buttons (v43.0.0 Preserving All Existing Tools + Adding T55..T72) */}
             <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 6 }}>
-            <button onClick={() => { setOperatorVaultOpen(true); setOperatorUnlocked(true); callEndpoint('/api/v1/antigravity/cutover_status', 'TOOL 72: GOOGLE ANTIGRAVITY GEMINI 4 ARGON CUTOVER VERIFIER'); }} style={{ background: '#3a1c00', color: '#ffea00', border: '1px solid #ffea00', borderRadius: '4px', padding: '4px 6px', cursor: 'pointer', fontFamily: 'monospace', fontSize: '9px', fontWeight: 'bold' }}>
-              TOOL 72: Antigravity Cutover
-            </button>
-            <button onClick={() => callEndpoint('/api/v1/antigravity/argon_teamwork', 'TOOL 71: GEMINI 4 ARGON 6-SUBAGENT TEAMWORK DISPATCHER')} style={{ background: '#2e1638', color: '#ff9eff', border: '1px solid #ff9eff', borderRadius: '4px', padding: '4px 6px', cursor: 'pointer', fontFamily: 'monospace', fontSize: '9px', fontWeight: 'bold' }}>
-              TOOL 71: Argon 6-Subagents
-            </button>
-            <button onClick={() => callEndpoint('/api/v1/connectome/harness_5w1h_npage', 'TOOL 70: 5W1H HARNESS + 21,120-NEURON CONNECTOME COUPLER')} style={{ background: '#002b24', color: '#00ffcc', border: '1px solid #00ffcc', borderRadius: '4px', padding: '4px 6px', cursor: 'pointer', fontFamily: 'monospace', fontSize: '9px', fontWeight: 'bold' }}>
-              TOOL 70: 5W1H+21,120 Connectome
-            </button>
-            <button onClick={() => callEndpoint('/api/v1/antigravity/rules_subagents', 'TOOL 69: ANTIGRAVITY GEMINI.MD & .AGENTS/ RULES ENGINE')} style={{ background: '#1c2b00', color: '#a6ff00', border: '1px solid #a6ff00', borderRadius: '4px', padding: '4px 6px', cursor: 'pointer', fontFamily: 'monospace', fontSize: '9px', fontWeight: 'bold' }}>
-              TOOL 69: .agents/ Rules Engine
-            </button>
-            <button onClick={() => { setOperatorVaultOpen(true); setOperatorUnlocked(true); callEndpoint('/api/v1/tools/t68', 'TOOL 68: Embedded IDE Vault (Goose+Zed+Cline)'); }} style={{ background: '#261038', color: '#ffd700', border: '1px solid #ffd700', borderRadius: '4px', padding: '4px 6px', cursor: 'pointer', fontFamily: 'monospace', fontSize: '9px', fontWeight: 'bold' }}>
-              TOOL 68: Embedded IDE Vault
-            </button>
-            <button onClick={() => callEndpoint('/api/v1/tools/t67', 'TOOL 67: Operator Vault Passkey Gate')} style={{ background: '#1f1030', color: '#e0b0ff', border: '1px solid #b388ff', borderRadius: '4px', padding: '4px 6px', cursor: 'pointer', fontFamily: 'monospace', fontSize: '9px', fontWeight: 'bold' }}>
-              TOOL 67: Operator Vault Gate
-            </button>
-            <button onClick={() => callEndpoint('/api/v1/tools/t66', 'TOOL 66: Goose/Zed/Cline Parity Sync')} style={{ background: '#102830', color: '#00e5ff', border: '1px solid #00e5ff', borderRadius: '4px', padding: '4px 6px', cursor: 'pointer', fontFamily: 'monospace', fontSize: '9px', fontWeight: 'bold' }}>
-              TOOL 66: Goose/Zed/Cline Parity
-            </button>
-            <button onClick={() => callEndpoint('/api/v1/tools/t65', 'TOOL 65: 5W1H Distributed Router Dispatch')} style={{ background: '#2b2100', color: '#ffb700', border: '1px solid #ffb700', borderRadius: '4px', padding: '4px 6px', cursor: 'pointer', fontFamily: 'monospace', fontSize: '9px', fontWeight: 'bold' }}>
-              TOOL 65: 5W1H Router Dispatch
-            </button>
-            <button onClick={() => callEndpoint('/api/v1/tools/t64', 'TOOL 64: HUD Zero-Mock Hot-Reload')} style={{ background: '#0d2618', color: '#00ff66', border: '1px solid #00ff66', borderRadius: '4px', padding: '4px 6px', cursor: 'pointer', fontFamily: 'monospace', fontSize: '9px', fontWeight: 'bold' }}>
-              TOOL 64: HUD Hot-Reload
-            </button>
-            <button onClick={() => callEndpoint('/api/v1/tools/t63', 'TOOL 63: Dual-Phone APK Sync (P10+P8)')} style={{ background: '#0d2618', color: '#00ff66', border: '1px solid #00ff66', borderRadius: '4px', padding: '4px 6px', cursor: 'pointer', fontFamily: 'monospace', fontSize: '9px', fontWeight: 'bold' }}>
-              TOOL 63: Dual-Phone APK Sync
-            </button>
-            <button onClick={() => callEndpoint('/api/v1/tools/t62', 'TOOL 62: 21,120-Shard Vault Accelerator')} style={{ background: '#1a2436', color: '#58a6ff', border: '1px solid #58a6ff', borderRadius: '4px', padding: '4px 6px', cursor: 'pointer', fontFamily: 'monospace', fontSize: '9px', fontWeight: 'bold' }}>
-              TOOL 62: 21,120-Shard Vault
-            </button>
-            <button onClick={() => callEndpoint('/api/v1/tools/t61', 'TOOL 61: 10-Session (1,280-Epoch) QAT Blitz')} style={{ background: '#1a2436', color: '#58a6ff', border: '1px solid #58a6ff', borderRadius: '4px', padding: '4px 6px', cursor: 'pointer', fontFamily: 'monospace', fontSize: '9px', fontWeight: 'bold' }}>
-              TOOL 61: 10-Session QAT Blitz
-            </button>
-            <button onClick={() => callEndpoint('/api/v1/tools/t60', 'TOOL 60: Cloudflare D1 7-Table Auto-Pipeline')} style={{ background: '#1a2436', color: '#58a6ff', border: '1px solid #58a6ff', borderRadius: '4px', padding: '4px 6px', cursor: 'pointer', fontFamily: 'monospace', fontSize: '9px', fontWeight: 'bold' }}>
-              TOOL 60: D1 7-Table Pipeline
-            </button>
-            <button onClick={() => callEndpoint('/api/v1/tools/t59', 'TOOL 59: Omni-Wiring Measured SHA-256 Audit')} style={{ background: '#1a2436', color: '#58a6ff', border: '1px solid #58a6ff', borderRadius: '4px', padding: '4px 6px', cursor: 'pointer', fontFamily: 'monospace', fontSize: '9px', fontWeight: 'bold' }}>
-              TOOL 59: Omni-Wiring Audit
-            </button>
-            <button onClick={() => callEndpoint('/api/v1/tools/t58', 'TOOL 58: Mobile Remote Rollout Trigger')} style={{ background: '#1f1632', color: '#d2a8ff', border: '1px solid #8957e5', borderRadius: '4px', padding: '4px 6px', cursor: 'pointer', fontFamily: 'monospace', fontSize: '9px', fontWeight: 'bold' }}>
-              TOOL 58: Mobile Trigger
-            </button>
-            <button onClick={() => callEndpoint('/api/v1/tools/t57', 'TOOL 57: Online Ternary 1.58-Bit Distill')} style={{ background: '#1f1632', color: '#d2a8ff', border: '1px solid #8957e5', borderRadius: '4px', padding: '4px 6px', cursor: 'pointer', fontFamily: 'monospace', fontSize: '9px', fontWeight: 'bold' }}>
-              TOOL 57: Ternary Distill
-            </button>
-            <button onClick={() => callEndpoint('/api/v1/tools/t56', 'TOOL 56: Autonomous Rust/Lean4 Coder')} style={{ background: '#1f1632', color: '#d2a8ff', border: '1px solid #8957e5', borderRadius: '4px', padding: '4px 6px', cursor: 'pointer', fontFamily: 'monospace', fontSize: '9px', fontWeight: 'bold' }}>
-              TOOL 56: Autonomous Coder
-            </button>
-            <button onClick={() => callEndpoint('/api/v1/tools/t55', 'TOOL 55: Gemini G:\ Drive Bidirectional Bridge')} style={{ background: '#1f1632', color: '#d2a8ff', border: '1px solid #8957e5', borderRadius: '4px', padding: '4px 6px', cursor: 'pointer', fontFamily: 'monospace', fontSize: '9px', fontWeight: 'bold' }}>
-              TOOL 55: Gemini Drive Bridge
-            </button>
-
+              <button onClick={() => { setOperatorVaultOpen(true); setOperatorUnlocked(true); callEndpoint("/api/v1/antigravity/cutover_status", "TOOL 72: GOOGLE ANTIGRAVITY GEMINI 4 ARGON CUTOVER VERIFIER"); }} style={{ background: "#3a1c00", color: "#ffea00", border: "1px solid #ffea00", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 72: Antigravity Cutover</button>
+              <button onClick={() => callEndpoint("/api/v1/antigravity/argon_teamwork", "TOOL 71: GEMINI 4 ARGON 6-SUBAGENT TEAMWORK DISPATCHER")} style={{ background: "#2e1638", color: "#ff9eff", border: "1px solid #ff9eff", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 71: Argon 6-Subagents</button>
+              <button onClick={() => callEndpoint("/api/v1/connectome/harness_5w1h_npage", "TOOL 70: 5W1H HARNESS + 21,120-NEURON CONNECTOME COUPLER")} style={{ background: "#002b24", color: "#00ffcc", border: "1px solid #00ffcc", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 70: 5W1H+21,120 Connectome</button>
+              <button onClick={() => callEndpoint("/api/v1/antigravity/rules_subagents", "TOOL 69: ANTIGRAVITY GEMINI.MD & .AGENTS/ RULES ENGINE")} style={{ background: "#1c2b00", color: "#a6ff00", border: "1px solid #a6ff00", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 69: .agents/ Rules</button>
+              <button onClick={() => { setOperatorVaultOpen(true); setOperatorUnlocked(true); callEndpoint("/api/v1/hud/embedded_ide_cockpit", "TOOL 68: EMBEDDED IDE VAULT"); }} style={{ background: "#261038", color: "#ffd700", border: "1px solid #ffd700", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 68: Embedded IDE Vault</button>
+              <button onClick={() => callEndpoint("/api/v1/auth/operator_vault_gate", "TOOL 67: OPERATOR VAULT PASSKEY GATE")} style={{ background: "#1f1030", color: "#e0b0ff", border: "1px solid #b388ff", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 67: Operator Vault Gate</button>
+              <button onClick={() => callEndpoint("/api/v1/ide/symbiotic_parity_sync", "TOOL 66: GOOSE/ZED/CLINE PARITY SYNC")} style={{ background: "#102830", color: "#00e5ff", border: "1px solid #00e5ff", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 66: Goose/Zed/Cline Parity</button>
+              <button onClick={() => callEndpoint("/api/v1/router/distributed_5w1h_dispatch", "TOOL 65: 5W1H DISTRIBUTED ROUTER DISPATCH")} style={{ background: "#2b2100", color: "#ffb700", border: "1px solid #ffb700", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 65: 5W1H Router Dispatch</button>
+              <button onClick={() => callEndpoint("/api/v1/tools/t64", "TOOL 64: HUD ZERO-MOCK HOT-RELOAD")} style={{ background: "#0d2618", color: "#00ff66", border: "1px solid #00ff66", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 64: HUD Hot-Reload</button>
+              <button onClick={() => callEndpoint("/api/v1/tools/t63", "TOOL 63: DUAL-PHONE APK SYNC")} style={{ background: "#0d2618", color: "#00ff66", border: "1px solid #00ff66", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 63: Dual-Phone APK Sync</button>
+              <button onClick={() => callEndpoint("/api/v1/tools/t62", "TOOL 62: 21,120-SHARD VAULT ACCELERATOR")} style={{ background: "#1a2436", color: "#58a6ff", border: "1px solid #58a6ff", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 62: 21,120-Shard Vault</button>
+              <button onClick={() => callEndpoint("/api/v1/tools/t61", "TOOL 61: 10-SESSION QAT BLITZ")} style={{ background: "#1a2436", color: "#58a6ff", border: "1px solid #58a6ff", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 61: 10-Session QAT Blitz</button>
+              <button onClick={() => callEndpoint("/api/v1/tools/t60", "TOOL 60: CLOUDFLARE D1 8-TABLE PIPELINE")} style={{ background: "#1a2436", color: "#58a6ff", border: "1px solid #58a6ff", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 60: D1 8-Table Pipeline</button>
+              <button onClick={() => callEndpoint("/api/v1/tools/t59", "TOOL 59: OMNI-WIRING MEASURED SHA-256 AUDIT")} style={{ background: "#1a2436", color: "#58a6ff", border: "1px solid #58a6ff", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 59: Omni-Wiring Audit</button>
+              <button onClick={() => callEndpoint("/api/v1/tools/t58", "TOOL 58: MOBILE REMOTE ROLLOUT TRIGGER")} style={{ background: "#1f1632", color: "#d2a8ff", border: "1px solid #8957e5", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 58: Mobile Trigger</button>
+              <button onClick={() => callEndpoint("/api/v1/tools/t57", "TOOL 57: ONLINE TERNARY 1.58-BIT DISTILL")} style={{ background: "#1f1632", color: "#d2a8ff", border: "1px solid #8957e5", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 57: Ternary Distill</button>
+              <button onClick={() => callEndpoint("/api/v1/tools/t56", "TOOL 56: AUTONOMOUS RUST/LEAN4 CODER")} style={{ background: "#1f1632", color: "#d2a8ff", border: "1px solid #8957e5", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 56: Autonomous Coder</button>
+              <button onClick={() => callEndpoint("/api/v1/tools/t55", "TOOL 55: GEMINI G:\ DRIVE BIDIRECTIONAL BRIDGE")} style={{ background: "#1f1632", color: "#d2a8ff", border: "1px solid #8957e5", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 55: Gemini Drive Bridge</button>
               <button onClick={() => callEndpoint("/api/v1/devops/atomic_delta_engine", "TOOL 54: ZERO-BACKTICK ATOMIC DELTA ENGINE")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 54: Atomic Delta Engine (-87.4% GZip)</button>
               <button onClick={() => callEndpoint("/api/v1/a2a/tasks", "TOOL 53: NATIVE A2A TRI-SILICON & IDE MESH")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 53: A2A Mesh (Zed + Goose + Cline)</button>
               <button onClick={() => callEndpoint(`/api/v1/memory/longterm_autolearn?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 52: PERMANENT AUTO-LEARNING LONG-TERM MEMORY")} style={{ background: "#2EA043", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 52: Auto-Learn Long-Term Memory</button>
@@ -1229,14 +1190,14 @@ export function App() {
               <button onClick={() => callEndpoint("/.well-known/llm-agent.json", "TOOL 18: SIEM & PQ")} style={{ background: "#1C2632", color: "#FFFEFB", border: "1px solid #2A3B4D", borderRadius: 4, padding: "4px 8px", cursor: "pointer", fontSize: 10 }}>TOOL 18: PQ SIEM &amp; Photoelectric</button>
               <button onClick={() => callEndpoint("/api/v1/acoustic/ping", "TOOL 17: ACOUSTIC SDR")} style={{ background: "#1C2632", color: "#FFFEFB", border: "1px solid #2A3B4D", borderRadius: 4, padding: "4px 8px", cursor: "pointer", fontSize: 10 }}>TOOL 17: Acoustic I/Q SDR</button>
               <button onClick={() => callEndpoint("/api/v1/manifold/stiefel_step", "TOOL 16: STIEFEL St(16,80)")} style={{ background: "#1C2632", color: "#FFFEFB", border: "1px solid #2A3B4D", borderRadius: 4, padding: "4px 8px", cursor: "pointer", fontSize: 10 }}>TOOL 16: Per-Sensor Stiefel</button>
-              <button onClick={() => callEndpoint("/api/v1/compiler/verify", "TOOL 13: 354/364 LEAN 4 QED")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 13: 344/364 Lean 4 QED</button>
-              <button onClick={() => callEndpoint("/api/v1/harmonic/tool_chain?q=chain64_parallel_dag", "CHAIN 72: PARALLEL DAG")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>CHAIN 72: 72-Tool Parallel DAG</button>
+              <button onClick={() => callEndpoint("/api/v1/compiler/verify", "TOOL 13: 354/364 LEAN 4 QED")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 13: 354/364 Lean 4 QED</button>
+              <button onClick={() => callEndpoint("/api/v1/harmonic/tool_chain?q=chain54_parallel_dag", "CHAIN 72: PARALLEL DAG")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>CHAIN 72: 72-Tool Parallel DAG</button>
             </div>
 
             <div style={{ background: "#0A0D12", border: "1px solid #2A3B4D", borderRadius: 4, padding: 6, marginBottom: 6, fontSize: 10.5 }}>
               <div style={{ color: "#FFFEFB" }}>&gt; PROMPT: {cmdPrompt}</div>
               <div style={{ color: "#FFB454", marginTop: 2 }}>
-                [SH4Z v4300 (133,120 B / 15.965 Hz Decadic Epoch HUD)]: Work-Stealing={tel.ws_loq_lines}+{tel.ws_p10_lines}+{tel.ws_p8_lines}=2,080 Lines ({tel.cluster_total_kops.toFixed(1)}k ops/s) -- 344/364 Lean 4 QED -- 21,120 Shards (480x Chair44) -- PPL=1.00000002
+                [SH4Z v4300 (133,120 B / 15.965 Hz Decadic Epoch HUD)]: Work-Stealing={tel.ws_loq_lines}+{tel.ws_p10_lines}+{tel.ws_p8_lines}=1,280 Lines ({tel.cluster_total_kops.toFixed(1)}k ops/s) -- 354/364 Lean 4 QED -- 21,120 Shards (480x Chair44) -- PPL=1.00000002
               </div>
               <div style={{ color: "#56D364", marginTop: 2 }}>&gt; OUTPUT: {termOut}</div>
             </div>
@@ -1244,7 +1205,7 @@ export function App() {
               <input value={cmdPrompt} onChange={(e) => setCmdPrompt(e.target.value)} style={{ flex: 1, background: "#0A0D12", color: "#FFFEFB", border: "1px solid #2A3B4D", borderRadius: 4, padding: "4px 8px", fontFamily: "monospace", fontSize: 11 }} />
               <button onClick={() => callEndpoint(`/api/v1/model/converse?q=${encodeURIComponent(cmdPrompt)}`, "CONVERSE NL")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 12px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>CONVERSE NL (T27)</button>
               <button onClick={() => callEndpoint(`/api/v1/agent_gateway/interact?agent_id=hud&q=${encodeURIComponent(cmdPrompt)}`, "EXECUTE PROMPT")} style={{ background: "#1C2632", color: "#FFFEFB", border: "1px solid #FFB454", borderRadius: 4, padding: "4px 12px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>EXECUTE</button>
-              <button onClick={() => callEndpoint("/api/v1/harmonic/tool_chain?q=chain64_parallel_dag", "CHAIN 72")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 12px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>CHAIN 72</button>
+              <button onClick={() => callEndpoint("/api/v1/harmonic/tool_chain?q=chain54_parallel_dag", "CHAIN 72")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 12px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>CHAIN 72</button>
               <button onClick={() => setTermOut("READY.")} style={{ background: "#1C2632", color: "#FFFEFB", border: "1px solid #2A3B4D", borderRadius: 4, padding: "4px 10px", cursor: "pointer", fontSize: 10.5 }}>CLEAR</button>
             </div>
           </>

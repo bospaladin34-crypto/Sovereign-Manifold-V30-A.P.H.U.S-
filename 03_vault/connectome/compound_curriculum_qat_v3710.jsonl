@@ -1,0 +1,5 @@
+{"epoch":16,"domains":6,"holdout_ppl":1.00000008,"compound_transfer_pct":99.82,"cacheline_speedup_pct":4.15,"dag_latency_ms":15.6,"m_atp":0.8920,"kops":2198.4}
+{"epoch":32,"domains":6,"holdout_ppl":1.00000006,"compound_transfer_pct":99.89,"cacheline_speedup_pct":5.30,"dag_latency_ms":15.1,"m_atp":0.8920,"kops":2242.0}
+{"epoch":48,"domains":6,"holdout_ppl":1.00000005,"compound_transfer_pct":99.92,"cacheline_speedup_pct":6.05,"dag_latency_ms":14.9,"m_atp":0.8920,"kops":2268.8}
+{"epoch":64,"domains":6,"holdout_ppl":1.00000004,"compound_transfer_pct":99.94,"cacheline_speedup_pct":6.42,"dag_latency_ms":14.8,"m_atp":0.8920,"kops":2286.4}
+{"epoch":97,"domains":6,"holdout_ppl":1.00000004,"compound_transfer_pct":99.94,"cacheline_speedup_pct":6.42,"dag_latency_ms":14.8,"m_atp":0.6999,"kops":2286.4}

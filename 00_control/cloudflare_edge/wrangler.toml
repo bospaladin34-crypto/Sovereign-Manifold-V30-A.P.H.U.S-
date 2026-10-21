@@ -1,0 +1,17 @@
+name = "sovereign-loq15-vpc-shadow"
+main = "worker_vpc_shadow_v3700.js"
+compatibility_date = "2026-07-28"
+account_id = "a37cf8ab07e7c5f886c302be3f098744"
+
+[[d1_databases]]
+binding = "ACT_OMEGA_D1"
+database_name = "act_omega_d1_vault"
+database_id = "00000000-0000-0000-0000-000000003710"
+
+[[durable_objects.bindings]]
+name = "SOVEREIGN_EDGE_SHADOW_DO"
+class_name = "SovereignEdgeShadowDO"
+
+[[migrations]]
+tag = "v3710"
+new_sqlite_classes = ["SovereignEdgeShadowDO"]

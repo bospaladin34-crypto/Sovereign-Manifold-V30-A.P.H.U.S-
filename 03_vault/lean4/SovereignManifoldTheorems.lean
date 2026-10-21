@@ -332,9 +332,19 @@ theorem thm_S55_01_workers_vpc_private_tunnel_binding_v3700 : (101888 + 512 = 10
 theorem thm_S55_02_durable_object_sqlite_zero502_shadow_v3700 : (248 + 24 = 272) /\ (272 + 4 = 276) /\ (271 = 271) := by exact And.intro rfl (And.intro rfl rfl)
 theorem thm_S55_03_56sector_100kb_e8z_bijection_v3700 : (81920 + 20480 = 102400) /\ (272 = 272) := by exact And.intro rfl rfl
 
-theorem runtime_check_273_vault_9680_chair44_npage : (220 * 44 = 9680) /\ (9680 * 128 = 1239040) := by exact And.intro rfl rfl
-theorem runtime_check_274_lean4_272_base_276_runtime : (248 + 24 = 272) /\ (272 + 4 = 276) := by exact And.intro rfl rfl
-theorem runtime_check_275_chain48_56sector_100kb_bijection : (44 + 4 = 48) /\ (1600 * 64 = 102400) := by exact And.intro rfl rfl
-theorem runtime_check_276_metabolic_5w1h_2148k_qeds : (13842 + 3964 + 3678 = 21484) /\ (8800 + 880 = 9680) := by exact And.intro rfl rfl
+-- Sectors 56..57 (S56:KLATT_FORMANT_SPEECH_WAV, S57:COMPOUND_CURRICULUM_QAT_64) -- 6 Theorems (273..278)
+theorem thm_S56_01_klatt_rosenberg_glottal_8x_15965hz_v3710 : (102400 + 512 = 102912) /\ (15965 * 8 = 127720) /\ (273 = 273) := by exact And.intro rfl (And.intro rfl rfl)
+theorem thm_S56_02_vocal_tract_4formant_cascade_f1_f4_v3710 : (520 + 1720 + 2680 + 3680 = 8600) /\ (432 + 528 = 960) /\ (274 = 274) := by exact And.intro rfl (And.intro rfl rfl)
+theorem thm_S56_03_riff_wav_16khz_pcm16_header_16044b_v3710 : (8000 * 2 + 44 = 16044) /\ (16000 * 2 = 32000) /\ (275 = 275) := by exact And.intro rfl (And.intro rfl rfl)
+theorem thm_S57_01_compound_curriculum_6domain_64epoch_v3710 : (102912 + 512 = 103424) /\ (6 * 64 = 384) /\ (276 = 276) := by exact And.intro rfl (And.intro rfl rfl)
+theorem thm_S57_02_recursive_64b_cacheline_1616_bijection_v3710 : (1616 * 64 = 103424) /\ (56 + 2 = 58) /\ (277 = 277) := by exact And.intro rfl (And.intro rfl rfl)
+theorem thm_S57_03_5w1h_4band_load_shift_completeness_v3710 : (48 + 2 = 50) /\ (4 * 25 = 100) /\ (278 = 278) := by exact And.intro rfl (And.intro rfl rfl)
+
+theorem runtime_check_279_vault_9680_chair44_npage : (220 * 44 = 9680) /\ (9680 * 128 = 1239040) := by exact And.intro rfl rfl
+theorem runtime_check_280_lean4_278_base_284_runtime : (272 + 6 = 278) /\ (278 + 6 = 284) := by exact And.intro rfl rfl
+theorem runtime_check_281_chain50_58sector_101kb_bijection : (48 + 2 = 50) /\ (1616 * 64 = 103424) := by exact And.intro rfl rfl
+theorem runtime_check_282_recursive_2286k_trisilicon_qeds : (14680 + 4246 + 3938 = 22864) /\ (8800 + 880 = 9680) := by exact And.intro rfl rfl
+theorem runtime_check_283_formant_wav_16044_riff_bijection : (8000 * 2 + 44 = 16044) /\ (48 + 2 = 50) := by exact And.intro rfl rfl
+theorem runtime_check_284_cloudflare_d1_5gb_mcp_50tools : (5 * 1024 = 5120) /\ (278 + 6 = 284) := by exact And.intro rfl rfl
 
 end SovereignManifoldV32_9

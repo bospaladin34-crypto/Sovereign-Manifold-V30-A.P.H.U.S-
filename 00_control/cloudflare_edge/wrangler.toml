@@ -15,3 +15,6 @@ class_name = "SovereignEdgeShadowDO"
 [[migrations]]
 tag = "v3800"
 new_sqlite_classes = ["SovereignEdgeShadowDO"]
+
+[triggers]
+crons = ["*/15 * * * *"]

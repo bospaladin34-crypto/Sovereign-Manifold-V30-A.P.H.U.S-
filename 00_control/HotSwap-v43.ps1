@@ -16,6 +16,7 @@ $cleanSysProfile = @'
 Set-Content -Path $sysProfile -Value $cleanSysProfile -Encoding UTF8 -Force
 
 # 2. Stop elevated v31_swarm.exe, copy staged v43.0.0 binary, and restart via non-elevated Scheduled Task
+$stageExe65k = "C:\sovereign_manifold_v31\01_l0_rust\target_v43_65k\release\v31_swarm.exe"
 $stageExe = "C:\sovereign_manifold_v31\01_l0_rust\target_stage\release\v31_swarm.exe"
 $prodExe  = "C:\sovereign_manifold_v31\01_l0_rust\target\release\v31_swarm.exe"
 
@@ -23,7 +24,9 @@ cmd.exe /c "taskkill /F /IM v31_swarm.exe /T >nul 2>&1"
 Stop-Process -Name "v31_swarm" -Force -ErrorAction SilentlyContinue
 Start-Sleep -Milliseconds 600
 
-if (Test-Path $stageExe) {
+if (Test-Path $stageExe65k) {
+    Copy-Item -Path $stageExe65k -Destination $prodExe -Force
+} elseif (Test-Path $stageExe) {
     Copy-Item -Path $stageExe -Destination $prodExe -Force
 }
 Remove-Item -Path "C:\sovereign_manifold_v31\01_l0_rust\target\release\v31_swarm.old.exe" -Force -ErrorAction SilentlyContinue

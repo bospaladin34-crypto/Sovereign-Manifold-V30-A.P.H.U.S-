@@ -90,5 +90,12 @@ while ($true) {
             Start-Process -FilePath "cloudflared.exe" -ArgumentList @("tunnel", "--config", $cfg, "run", "sovereign-manifold") -WindowStyle Minimized
         }
     }
+    $script:loopTick = ($script:loopTick + 1)
+    if (($script:loopTick % 30) -eq 1) {
+        try {
+            $null = Invoke-RestMethod -Uri "https://sovereign-loq15-vpc-shadow.bospaladin34.workers.dev/api/v1/cloudflare/cron_sync" -TimeoutSec 5
+            $null = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/training/cross_domain_compound_qat" -TimeoutSec 3
+        } catch {}
+    }
     Start-Sleep -Seconds 10
 }

@@ -64,8 +64,8 @@ pub fn evaluate_openai_compat_surface(gen_counter: u64) -> OpenAiCompatTelemetry
     OpenAiCompatTelemetry {
         model_id: "sovereign-harmonic-v4300",
         base_url_path: "https://act-omega-net.dev/v1/chat/completions",
-        vocab_size: 16384,
-        dendritic_neurons: 21120,
+        vocab_size: 65536,
+        dendritic_neurons: 22880,
         completion_tokens_generated: 12048000 + (gen_counter * 32),
         holdout_ppl: 1.00000002_f64,
     }

@@ -37,11 +37,13 @@ function Invoke-SovereignHotSwap {
     }
     if ($needSwap -and (Test-Path $stageExe)) {
         cmd.exe /c "taskkill /F /IM v31_swarm.exe /T >nul 2>&1"
-        Stop-Process -Name "v31_swarm" -Force -ErrorAction SilentlyContinue
+        cmd.exe /c "taskkill /F /IM v31_swarm_prev.exe /T >nul 2>&1"
+        Get-Process -Name "*v31_swarm*" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
         Start-Sleep -Milliseconds 500
         Copy-Item -Path $stageExe -Destination $prodExe -Force
         Remove-Item -Path $trigFile -Force -ErrorAction SilentlyContinue
         Remove-Item -Path "C:\sovereign_manifold_v31\01_l0_rust\target\release\v31_swarm.old.exe" -Force -ErrorAction SilentlyContinue
+        Remove-Item -Path "C:\sovereign_manifold_v31\01_l0_rust\target\release\v31_swarm_prev.exe" -Force -ErrorAction SilentlyContinue
         Start-Process -FilePath $prodExe -WorkingDirectory $root -WindowStyle Minimized
     }
 }

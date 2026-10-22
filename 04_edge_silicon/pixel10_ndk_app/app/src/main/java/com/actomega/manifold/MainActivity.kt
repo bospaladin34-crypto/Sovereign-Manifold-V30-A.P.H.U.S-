@@ -1822,6 +1822,22 @@ fun SovereignCockpitV326Screen() {
                 }
             }
             Spacer(modifier = Modifier.height(4.dp))
+            // Row v44.1.0: Perf Blitz Benchmark (T80), Elastic Work-Stealing Scheduler (T79), Browser WebGPU Lease (T78), Pixel 8 .npage SHM Ring (T77)
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                ToolButton603010("T80: Perf Blitz", Color(0xFF261038), Color(0xFFFFD700), Modifier.weight(1f)) {
+                    invokeHostEndpoint("/api/v1/diagnostics/v44_perf_blitz", null, "TOOL 80: v44.1.0 PERF BLITZ")
+                }
+                ToolButton603010("T79: Elastic Sched", Color(0xFF0D2618), Color(0xFF56D364), Modifier.weight(1f)) {
+                    invokeHostEndpoint("/api/v1/worksteal/elastic_scheduler", null, "TOOL 79: ELASTIC SCHEDULER")
+                }
+                ToolButton603010("T78: WebGPU Lease", Color(0xFF091F2C), Color(0xFF00E5FF), Modifier.weight(1f)) {
+                    invokeHostEndpoint("/api/v1/worksteal/webgpu_lease?action=status", null, "TOOL 78: WEBGPU LEASE STATUS")
+                }
+                ToolButton603010("T77: P8 .npage SHM", Color(0xFF2B2100), Color(0xFFFFB454), Modifier.weight(1f)) {
+                    invokeHostEndpoint("/api/v1/shm/p8_npage_bridge", null, "TOOL 77: PIXEL 8 .NPAGE SHM")
+                }
+            }
+            Spacer(modifier = Modifier.height(4.dp))
             // Row v44.0.0: Omni-Snapshot (T76), Whole-Architecture Self-Profiler (T75), 16-Domain Socratic Debate (T74), Multi-Turn Working Memory (T73)
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 ToolButton603010("T76: v44 Snapshot", AccentRed10, TextIvory30, Modifier.weight(1f)) {

@@ -21,15 +21,18 @@ $stageExe = "C:\sovereign_manifold_v31\01_l0_rust\target_stage\release\v31_swarm
 $prodExe  = "C:\sovereign_manifold_v31\01_l0_rust\target\release\v31_swarm.exe"
 
 cmd.exe /c "taskkill /F /IM v31_swarm.exe /T >nul 2>&1"
-Stop-Process -Name "v31_swarm" -Force -ErrorAction SilentlyContinue
+cmd.exe /c "taskkill /F /IM v31_swarm_prev.exe /T >nul 2>&1"
+Get-Process -Name "*v31_swarm*" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
 Start-Sleep -Milliseconds 600
 
-if (Test-Path $stageExe65k) {
-    Copy-Item -Path $stageExe65k -Destination $prodExe -Force
-} elseif (Test-Path $stageExe) {
+if (Test-Path $stageExe) {
     Copy-Item -Path $stageExe -Destination $prodExe -Force
+    Copy-Item -Path $stageExe -Destination $stageExe65k -Force -ErrorAction SilentlyContinue
+} elseif (Test-Path $stageExe65k) {
+    Copy-Item -Path $stageExe65k -Destination $prodExe -Force
 }
 Remove-Item -Path "C:\sovereign_manifold_v31\01_l0_rust\target\release\v31_swarm.old.exe" -Force -ErrorAction SilentlyContinue
+Remove-Item -Path "C:\sovereign_manifold_v31\01_l0_rust\target\release\v31_swarm_prev.exe" -Force -ErrorAction SilentlyContinue
 
 # Update SovereignManifold_AlwaysOn_v32_9 so it can run even on laptop battery power, then start it non-elevated
 $ts = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit (New-TimeSpan -Hours 72)
@@ -37,10 +40,7 @@ Set-ScheduledTask -TaskName "SovereignManifold_AlwaysOn_v32_9" -Settings $ts -Er
 schtasks /End /TN "SovereignManifold_AlwaysOn_v32_9" >$null 2>&1
 Start-Sleep -Milliseconds 300
 schtasks /Run /TN "SovereignManifold_AlwaysOn_v32_9" >$null 2>&1
-Start-Sleep -Seconds 2
-if (-not (Get-Process -Name "v31_swarm" -ErrorAction SilentlyContinue)) {
-    Start-Process -FilePath $prodExe -WorkingDirectory $root -WindowStyle Minimized
-}
+Start-Sleep -Seconds 3
 
 # 3. Re-bind ADB reverse tunnels on Pixel 10 & Pixel 8
 foreach ($ser in @("58170DLCR0004V", "3A121FDJH00BW5")) {

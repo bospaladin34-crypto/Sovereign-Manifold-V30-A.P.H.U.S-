@@ -35,7 +35,21 @@ static size_t g_mmap_size = 0;
 static std::vector<uint8_t> g_sh4z_weights;
 static std::vector<uint8_t> g_e8t_stalk;
 static std::vector<uint8_t> g_e8t_ctx;
+static uint8_t* g_npage_shm_ptr = nullptr;
+static size_t g_npage_shm_size = 0;
 static uint16_t g_sh4z_schema = 4400;
+static void ensure_npage_shm_mapped() {
+    if (g_npage_shm_ptr != nullptr) return;
+    int fd = open("/data/local/tmp/neurons_v4400_p8_shm.npage", O_RDONLY);
+    if (fd >= 0) {
+        struct stat sb;
+        if (fstat(fd, &sb) == 0 && sb.st_size >= 3604480) {
+            void* m = mmap(nullptr, static_cast<size_t>(sb.st_size), PROT_READ, MAP_SHARED, fd, 0);
+            if (m != MAP_FAILED) { g_npage_shm_ptr = static_cast<uint8_t*>(m); g_npage_shm_size = static_cast<size_t>(sb.st_size); }
+        }
+        close(fd);
+    }
+}
 static uint64_t g_ste_qat_steps = 0;
 
 static void load_binary_file(const char* path, std::vector<uint8_t>& out_buf, size_t fallback_len) {
@@ -239,6 +253,11 @@ Java_com_actomega_manifold_HarmonicInferenceEngine_evaluateUarmCascadeV31(
     if (g_sh4z_weights.size() >= 128) {
         sh4_logit += act_omega_v31::evaluate_sh4_leech_triality_reflex(g_sh4z_weights.data() + 64, sensor24, 0.17259f);
     }
+    ensure_npage_shm_mapped();
+    if (g_npage_shm_ptr != nullptr && g_npage_shm_size >= 3604480) {
+        size_t c_idx = static_cast<size_t>(seq_id) % 640u;
+        sh4_logit += static_cast<float>(g_npage_shm_ptr[c_idx * 44u * 128u + 8u]) * 0.0001f;
+    }
     ++g_ste_qat_steps;
     auto t1 = std::chrono::high_resolution_clock::now();
     float total_us = std::chrono::duration<float, std::micro>(t1 - t0).count();
@@ -301,6 +320,11 @@ Java_com_actomega_manifold_HarmonicInferenceEngine_evaluateLeech24DCascade(
     uint32_t cutler_cfg = act_omega_v30::select_cutler_stomachion_config(
         static_cast<uint64_t>(seq_id), norm_ut + a_norm + g_norm * 10.0f
     );
+    ensure_npage_shm_mapped();
+    if (g_npage_shm_ptr != nullptr && g_npage_shm_size >= 3604480) {
+        size_t c_idx = static_cast<size_t>(seq_id) % 640u;
+        sh4_logit += static_cast<float>(g_npage_shm_ptr[c_idx * 44u * 128u + 8u]) * 0.0001f;
+    }
     ++g_ste_qat_steps;
 
     auto t1 = std::chrono::high_resolution_clock::now();

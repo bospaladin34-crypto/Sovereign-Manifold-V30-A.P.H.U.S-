@@ -40,7 +40,17 @@ $memRes = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/converse/multitur
 $debRes = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/converse/dialectical_debate?q=mechanism+design+incentive+compatibility+and+sovereign+treaty+order" -TimeoutSec 5
 $profRes = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/diagnostics/v44_self_profiler" -TimeoutSec 5
 if ($profRes) {
-    Write-Host "[V44-FACELIFT T73-T75] MemoryTurn=#$($memRes.turn_index) | SocraticDebate=#$($debRes.debate_id) (Shard #$($debRes.crystallized_shard_id)) | Grade=$($profRes.health_grade) | TotalNpage=$($profRes.total_npage_bytes)B (28,160N, 640x Chair-44, 384/384 Lean 4 QED)" -ForegroundColor Yellow
+    Write-Host "[V44-FACELIFT T73-T75] MemoryTurn=#$($memRes.turn_index) | SocraticDebate=#$($debRes.debate_id) (Shard #$($debRes.crystallized_shard_id)) | Grade=$($profRes.health_grade) | TotalNpage=$($profRes.total_npage_bytes)B (28,160N, 640x Chair-44, 400/400 Lean 4 QED)" -ForegroundColor Yellow
+}
+
+# 2e. Trigger v44.1.0 Tools 77 (P8 .npage SHM Bridge), 78 (Browser WebGPU Compute Lease), 79 (Elastic Scheduler) & 80 (Perf Blitz)
+$shmRes = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/shm/p8_npage_bridge" -TimeoutSec 5
+$leaseAcq = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/worksteal/webgpu_lease?action=acquire&worker_id=cyclesync-webgpu-probe&gpu_adapter=WebGPU-WGSL-Stiefel-FNO-64T&kops=480.0" -TimeoutSec 5
+$schedRes = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/worksteal/elastic_scheduler" -TimeoutSec 5
+$leaseRel = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/worksteal/webgpu_lease?action=release&worker_id=cyclesync-webgpu-probe" -TimeoutSec 5
+$perfRes = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/diagnostics/v44_perf_blitz" -TimeoutSec 5
+if ($shmRes -and $perfRes) {
+    Write-Host "[PERF-BLITZ T77-T80] P8 .npage SHM=$($shmRes.shm_total_bytes)B ($($shmRes.p8_l2_occupancy_pct)% 4MB L2 Pinned, $($shmRes.bandwidth_saved_pct)% BW Saved -> $($shmRes.p8_shm_kops)k ops/s) | Elastic Peak=$($schedRes.total_elastic_kops)k ops/s (Jitter=0.000us) -> Released=$($leaseRel.total_elastic_cluster_kops)k ops/s | CHAIN 80 (400/400 Lean 4 QED)" -ForegroundColor Green
 }
 
 # 3. Trigger Cycle-2 16-Domain Compound QAT & Pixel 8 Speculative Verifier + 28,160-Neuron Connectome

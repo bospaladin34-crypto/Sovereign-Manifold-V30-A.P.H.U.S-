@@ -1370,12 +1370,12 @@ fun SovereignCockpitV326Screen() {
 
         Spacer(modifier = Modifier.height(6.dp))
 
-        // IN-HUD SOVEREIGN BROWSER, SAFE LLM AGENT GATEWAY & 16-MODE FNO SPECTRAL TRANSDUCER -> 21,120 SHARDS
+        // IN-HUD SOVEREIGN BROWSER, SAFE LLM AGENT GATEWAY, 65K VOCAB EXEGESIS & 16-MODE FNO RESEARCH-TO-CODE / 24,640-SHARD TRANSDUCER
         DrawerCard603010(
-            title = "[-] IN-HUD SOVEREIGN BROWSER, SAFE LLM AGENT GATEWAY & 16-MODE FNO SPECTRAL TRANSDUCER -> 21,120 SHARDS",
+            title = "[-] IN-HUD SOVEREIGN BROWSER, 65K EXEGESIS & FNO RESEARCH-TO-CODE / 24,640-SHARD TRANSDUCER",
             accentBorder = AccentAmber10,
             titleColor = TextIvory30,
-            rightLabel = "Re=418.4 (LAMINAR)",
+            rightLabel = "13D + Code + Shard",
             isOpen = browserOpen,
             onToggle = { browserOpen = !browserOpen }
         ) {
@@ -1384,8 +1384,8 @@ fun SovereignCockpitV326Screen() {
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 ToolButton603010("ER=EPR (1306.0533)", AccentAmber10, BgVoid60, Modifier.weight(1f)) {
-                    browserUrl = "https://arxiv.org/abs/1306.0533"
-                    invokeHostEndpoint("/api/v1/browser/fetch?url=https://arxiv.org/abs/1306.0533", null, "ER=EPR TRANSDUCE")
+                    browserUrl = "https://arxiv.org/abs/1306.0533 er=epr sovereign manifold"
+                    invokeHostEndpoint("/api/v1/browser/fetch?url=https%3A%2F%2Farxiv.org%2Fabs%2F1306.0533+er%3Depr+sovereign+manifold", null, "ER=EPR ARTICLE OP")
                 }
                 ToolButton603010("Safe LLM Gateway (T21)", AccentRed10, TextIvory30, Modifier.weight(1f)) {
                     browserUrl = "http://127.0.0.1:8097/.well-known/llm-agent.json"
@@ -1405,13 +1405,39 @@ fun SovereignCockpitV326Screen() {
                     browserUrl = "http://127.0.0.1:8097/api/v1/storage/ssd_tier2?q=merkle32"
                     invokeHostEndpoint("/api/v1/storage/ssd_tier2?q=merkle32", null, "E:/ SSD VAULT T23")
                 }
-                ToolButton603010("16,384 NL Tokenizer", SlateSurface30, TextIvory30, Modifier.weight(1f)) {
-                    browserUrl = "http://127.0.0.1:8097/api/v1/tokenizer/nl_transduce?q=fno+stiefel"
-                    invokeHostEndpoint("/api/v1/tokenizer/nl_transduce?q=fno+stiefel", null, "16,384 NL TOKENIZER")
+                ToolButton603010("65,536 13D Tokenizer", SlateSurface30, TextIvory30, Modifier.weight(1f)) {
+                    browserUrl = "sovereign manifold moral ethics first principles cognitive appraisal close reading"
+                    invokeHostEndpoint("/api/v1/tokenizer/bpe_65k?q=sovereign+manifold+moral+ethics+first+principles+cognitive+appraisal+close+reading", null, "65,536 13D TOKENIZER")
                 }
                 ToolButton603010("GitHub Pages (/wiki)", SlateSurface30, TextIvory30, Modifier.weight(1f)) {
                     browserUrl = "http://127.0.0.1:5173/wiki"
                     invokeHostEndpoint("/api/v1/agent_gateway/manifest", null, "GITHUB PAGES & WIKI")
+                }
+            }
+            Spacer(modifier = Modifier.height(4.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                ToolButton603010("D9: Psych", Color(0xFF14222E), Color(0xFF00FFCC), Modifier.weight(1f)) {
+                    browserUrl = "cognitive appraisal emotional regulation working memory jungian individuation shadow integration"
+                    val qEnc = java.net.URLEncoder.encode(browserUrl, "UTF-8")
+                    invokeHostEndpoint("/api/v1/browser/fetch?url=$qEnc&mode=D9_PSYCHOLOGY", null, "D9 PSYCHOLOGY EXEGESIS")
+                }
+                ToolButton603010("D10: Phil", Color(0xFF1A1228), Color(0xFFB388FF), Modifier.weight(1f)) {
+                    browserUrl = "first principles dialectic synthesis epistemological grounding stoic equanimity socratic elenchus"
+                    val qEnc = java.net.URLEncoder.encode(browserUrl, "UTF-8")
+                    invokeHostEndpoint("/api/v1/browser/fetch?url=$qEnc&mode=D10_PHILOSOPHY", null, "D10 PHILOSOPHY EXEGESIS")
+                }
+                ToolButton603010("D11/12: Read/Write", Color(0xFF0D2618), Color(0xFF56D364), Modifier.weight(1f)) {
+                    browserUrl = "close reading textual exegesis rhetorical composition narrative architecture metaphor construction"
+                    val qEnc = java.net.URLEncoder.encode(browserUrl, "UTF-8")
+                    invokeHostEndpoint("/api/v1/browser/fetch?url=$qEnc&mode=D11_12_HERMENEUTICS", null, "D11/12 READ & WRITE")
+                }
+                ToolButton603010("D13: Ethics", Color(0xFF3A1C00), Color(0xFFFFEA00), Modifier.weight(1f)) {
+                    browserUrl = "moral ethics virtue ethics eudaimonia deontological duty practical wisdom human flourishing"
+                    val qEnc = java.net.URLEncoder.encode(browserUrl, "UTF-8")
+                    invokeHostEndpoint("/api/v1/browser/fetch?url=$qEnc&mode=D13_MORAL_ETHICS", null, "D13 MORAL ETHICS")
                 }
             }
             Spacer(modifier = Modifier.height(5.dp))
@@ -1422,7 +1448,7 @@ fun SovereignCockpitV326Screen() {
             ) {
                 Box(
                     modifier = Modifier
-                        .weight(0.62f)
+                        .weight(0.58f)
                         .background(BgInset60, RoundedCornerShape(4.dp))
                         .border(1.dp, SlateBorder30, RoundedCornerShape(4.dp))
                         .padding(5.dp)
@@ -1435,8 +1461,9 @@ fun SovereignCockpitV326Screen() {
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
-                ToolButton603010("RETRIEVE + FNO + SYNTH", AccentAmber10, BgVoid60, Modifier.weight(0.38f)) {
-                    invokeHostEndpoint("/api/v1/operator/fno_solve?q=transduce_4840_shards", null, "3-STAGE FNO SYNTH")
+                ToolButton603010("OP CODE + SHARD (65K)", AccentAmber10, BgVoid60, Modifier.weight(0.42f)) {
+                    val qEnc = java.net.URLEncoder.encode(browserUrl, "UTF-8")
+                    invokeHostEndpoint("/api/v1/browser/fetch?url=$qEnc&mode=FULL_4STAGE_CODE_AND_SHARD", null, "4-STAGE CODE & SHARD OP")
                 }
             }
             Spacer(modifier = Modifier.height(4.dp))

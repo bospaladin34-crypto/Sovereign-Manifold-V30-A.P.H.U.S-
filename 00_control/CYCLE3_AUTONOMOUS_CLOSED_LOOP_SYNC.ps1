@@ -17,10 +17,16 @@ foreach ($line in $adbDevices) {
     }
 }
 
-# 2. Trigger 65,536-Token Bidirectional BPE + 8-Domain Compound (128 Phrases) Tokenizer & Detokenizer
-$tokRes = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/tokenizer/nl_transduce?q=sovereign%20manifold%20v43.0.0%20antigravity%20gemini%204%20argon%2015.965hz%2024640%20dendritic%20neurons%20n24639%20cloudflare%20d1" -TimeoutSec 5
+# 2. Trigger 65,536-Token Bidirectional BPE + 13-Domain Compound (208 Phrases) Tokenizer & Detokenizer
+$tokRes = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/tokenizer/nl_transduce?q=cognitive%20dissonance%20epistemic%20humility%20hermeneutic%20circle%20rhetorical%20exigence%20categorical%20imperative%20n24639" -TimeoutSec 5
 if ($tokRes) {
     Write-Host "[CYCLE-1 TOKENIZER] Vocab=$($tokRes.vocab_size) | Tokens=$($tokRes.total_tokens) ($($tokRes.token_tiers_csv)) | Roundtrip=$($tokRes.roundtrip_exact) | Ratio=$($tokRes.compression_ratio)x | IPA=$($tokRes.detokenized_ipa)" -ForegroundColor Yellow
+}
+
+# 2b. Trigger In-HUD Browser 4-Stage Research-to-Code & Shard/Neuron Operationalizer
+$browRes = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/browser/fetch?url=https%3A%2F%2Farxiv.org%2Fabs%2F2410.15965-cognitive-dissonance-epistemic-humility-hermeneutic-circle-categorical-imperative" -TimeoutSec 5
+if ($browRes) {
+    Write-Host "[BROWSER-TRANSDUCE] Domain=$($browRes.primary_domain) | Shard=#$($browRes.crystallized_shard_id) ($($browRes.crystallized_shard_bytes)B) <-> Neuron=N$($browRes.crystallized_neuron_id) ($($browRes.crystallized_chair44_column))" -ForegroundColor Green
 }
 
 # 3. Trigger Cycle-2 8-Domain Compound QAT & Pixel 8 Speculative Verifier + 24,640-Neuron Connectome

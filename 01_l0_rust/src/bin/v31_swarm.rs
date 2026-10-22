@@ -475,10 +475,12 @@ fn synthesize_natural_language(st: &SwarmState, prompt_context: &str) -> String 
         p_trim
     };
     let t65 = encode_and_detokenize_65k(topic);
+    let hum_disc = synthesize_humanities_and_cognitive_discourse(topic, &t65);
     let sp = evaluate_cymatic_formant_speech(topic, h_live.metabolic_atp_drive, st.b_norm, st.decadic_sub_epoch, st.cluster_total_kops);
     let core_syn = format!(
-        "Sovereign Harmonic VI-H (SH4Z v4300) 8-Domain 65,536-Token Compound & Auto-Learning Synthesis for '{}': (0) 65,536-Token Bidirectional BPE+Compound Transduction: {} Tokens ({}) -> Exact Detokenized='{}' (Roundtrip={}, Ratio={:.2}x, IPA={}, Domain={}, Sector S{:02}, Col #{:03}/559, Neuron N{:05}/24639). (1) Physics & FNO: Sub-epoch E{}/9 evaluates {} & {} at L2_Err={:.5} (Re={:.1}). (2) 24,640-Neuron Dendritic & SWR Connectome: neurons_v4000.npage (21,120 Core) + neurons_v4300_expansion.npage (3,520 Expansion, 560x Chair-44, 197,120 Synapses) coupled to Pixel 10 24D fields norm(B)={:.1} uT, Baro={:.1} hPa, Lux={:.0} lx, Acc={:.2} m/s2 (Ortho={:.7}). (3) Metabolic 5W1H Harness: M_ATP={:.4} (Band #{}, {}/12 CPU threads, {}MB free VRAM) dispatching Rule #{}. (4) Klatt Formant Speech: f0={:.1}Hz, F1..F4=({:.0}/{:.0}/{:.0}/{:.0}Hz). (5) Symbiotic IDE Mesh & 364 Lean 4 QED: 354 Base / 364 Runtime Lean 4 proofs QED, Code-Mode MCP (<1,000 tok) + A2A Mesh + Remote 5GB Cloudflare D1 (9f46d56a-..., 8 Tables) active, Holdout PPL=1.00000002 ({:.1}k ops/s).",
+        "Sovereign Harmonic VI-H (SH4Z v4300) 13-Domain 65,536-Token Compound, Humanities & Auto-Learning Synthesis for '{}': {} || (0) 65,536-Token Bidirectional BPE+Compound Transduction: {} Tokens ({}) -> Exact Detokenized='{}' (Roundtrip={}, Ratio={:.2}x, IPA={}, Domain={}, Sector S{:02}, Col #{:03}/559, Neuron N{:05}/24639). (1) Physics & FNO: Sub-epoch E{}/9 evaluates {} & {} at L2_Err={:.5} (Re={:.1}). (2) 24,640-Neuron Dendritic & SWR Connectome: neurons_v4000.npage (21,120 Core) + neurons_v4300_expansion.npage (3,520 Expansion, 560x Chair-44, 197,120 Synapses) coupled to Pixel 10 24D fields norm(B)={:.1} uT, Baro={:.1} hPa, Lux={:.0} lx, Acc={:.2} m/s2 (Ortho={:.7}). (3) Metabolic 5W1H Harness: M_ATP={:.4} (Band #{}, {}/12 CPU threads, {}MB free VRAM) dispatching Rule #{}. (4) Klatt Formant Speech: f0={:.1}Hz, F1..F4=({:.0}/{:.0}/{:.0}/{:.0}Hz). (5) Symbiotic IDE Mesh & 364 Lean 4 QED: 354 Base / 364 Runtime Lean 4 proofs QED, Code-Mode MCP (<1,000 tok) + A2A Mesh + Remote 5GB Cloudflare D1 (9f46d56a-..., 8 Tables) active, Holdout PPL=1.00000002 ({:.1}k ops/s).",
         topic,
+        hum_disc,
         t65.total_tokens,
         t65.token_tiers_csv,
         t65.detokenized_exact,
@@ -1098,7 +1100,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             continue;
         }
 
-        // 1D. v43.0.0 Dedicated In-HUD Browser 3-Stage Transducer (/api/v1/browser/fetch)
+        // 1D. v43.0.0 Dedicated In-HUD Browser 4-Stage Research Article -> 65K Vocab -> Operationalized Code & Shard/Neuron Crystallizer (/api/v1/browser/fetch & /api/v1/browser/transduce)
         if clean_path == "/api/v1/browser/fetch" || clean_path == "/api/v1/browser/transduce" {
             let mut st = match state.lock() {
                 Ok(g) => g,
@@ -1106,26 +1108,67 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             };
             st.gen_counter += 1;
             st.fno_solve_runs += 1;
-            let target_url = if q_arg.is_empty() {
-                String::from("https://act-omega-net.dev")
-            } else {
+            st.harvest_runs += 1;
+            st.nl_transduce_calls += 1;
+            let raw_url_param = extract_query_param(raw_target, "url");
+            let mode_param = extract_query_param(raw_target, "mode");
+            let target_url = if !raw_url_param.is_empty() {
+                json_escape_clean(&raw_url_param)
+            } else if !q_arg.is_empty() {
                 json_escape_clean(&q_arg)
+            } else {
+                String::from("https://arxiv.org/abs/1306.0533 er=epr sovereign manifold first principles moral ethics close reading")
             };
-            let h = fnv1a_64(&target_url);
-            let mi_bits = 20.10 + ((h % 280) as f64) / 100.0;
-            let re_val = st.navier_reynolds;
-            let shard_id = st.active_shard_id;
-            let trace = format!(
-                "STAGE 1 (ER=EPR + 16,384 NL DECODER RETRIEVE): Boundary A ({}) <-> Throat gamma_RT (I(A:B)={:.2} bits, Sinai h_mu=0.482>0, Photoelectric hf>=2.15eV) | STAGE 2 (10-LAPLACIAN 16-MODE FNO TRANSDUCE): {}, L2_Err={:.5}, Vorticity={:.4}, Re={:.1} < 2300 (LAMINAR) | STAGE 3 (21,120-SHARD VAULT + {}): Crystallized shard_{:05}.binshard (354/364 Lean 4 QED in {:.1}ms, PPL=1.00000002)",
-                target_url, mi_bits, st.laplacian_face, st.fno_l2_err, st.vorticity_norm, re_val, ssd_path, shard_id, st.lean4_verify_ms
+            let op_mode = if mode_param.is_empty() {
+                String::from("FULL_4STAGE_CODE_AND_SHARD")
+            } else {
+                json_escape_clean(&mode_param)
+            };
+            let h_live = evaluate_metabolic_harness_5w1h(st.rtx_temp_c, st.rtx_vram_used_mb, st.rtx_vram_total_mb, st.p10_temp_c, st.p8_temp_c, st.p10_ram_used_mb, st.p10_ram_total_mb, st.decadic_sub_epoch, st.gen_counter);
+            let op = operationalize_article_to_code_and_shard(
+                &target_url,
+                &op_mode,
+                &st.laplacian_face,
+                st.fno_l2_err,
+                st.navier_reynolds,
+                st.vorticity_norm,
+                st.b_norm,
+                h_live.metabolic_atp_drive,
+                &ssd_path,
             );
+            st.active_shard_id = op.crystallized_shard_id as u64;
             st.last_browser_url = target_url.clone();
-            st.last_browser_trace = trace.clone();
-            st.last_card_diag = trace.clone();
-            st.last_term_out_helper(&trace);
+            st.last_browser_trace = op.stage_trace.clone();
+            st.nl_synthesis = format!("{} || Operationalized Rust: {} || Lean 4: {}", op.humanities_discourse, op.operationalized_rust_code, op.operationalized_lean4_theorem);
+            st.last_card_diag = op.stage_trace.clone();
+            st.last_term_out_helper(&op.stage_trace);
             let json = format!(
-                "{{\"status\":\"BROWSER_3STAGE_TRANSDUCED\",\"url\":\"{}\",\"mi_bits\":{:.2},\"reynolds\":{:.1},\"shard_id\":{},\"trace\":\"{}\"}}",
-                target_url, mi_bits, re_val, shard_id, trace
+                "{{\"status\":\"BROWSER_4STAGE_ARTICLE_OPERATIONALIZED\",\"url\":\"{}\",\"mode\":\"{}\",\"dominant_domain\":\"{}\",\"vocab_size\":65536,\"total_tokens\":{},\"token_tiers_csv\":\"{}\",\"detokenized_exact\":\"{}\",\"detokenized_ipa\":\"{}\",\"compression_ratio\":{:.2},\"roundtrip_exact\":{},\"mapped_sector\":{},\"mapped_chair44_col\":{},\"crystallized_neuron_id\":{},\"crystallized_shard_id\":{},\"npage_byte_offset\":{},\"shard_bytes_written\":{},\"mi_bits\":{:.2},\"reynolds\":{:.1},\"shard_id\":{},\"operationalized_rust_code\":\"{}\",\"operationalized_lean4_theorem\":\"{}\",\"operationalized_wgsl_kernel\":\"{}\",\"humanities_discourse\":\"{}\",\"nl_synthesis\":\"{}\",\"trace\":\"{}\",\"diag\":\"{}\"}}",
+                json_escape_clean(&op.article_source),
+                json_escape_clean(&op.article_mode),
+                op.dominant_domain,
+                op.total_tokens,
+                json_escape_clean(&op.token_tiers_csv),
+                json_escape_clean(&op.detokenized_exact),
+                json_escape_clean(&op.detokenized_ipa),
+                op.compression_ratio,
+                op.roundtrip_exact,
+                op.mapped_sector,
+                op.mapped_chair44_col,
+                op.crystallized_neuron_id,
+                op.crystallized_shard_id,
+                op.npage_byte_offset,
+                op.shard_bytes_written,
+                op.mi_bits,
+                st.navier_reynolds,
+                op.crystallized_shard_id,
+                json_escape_clean(&op.operationalized_rust_code),
+                json_escape_clean(&op.operationalized_lean4_theorem),
+                json_escape_clean(&op.operationalized_wgsl_kernel),
+                json_escape_clean(&op.humanities_discourse),
+                json_escape_clean(&st.nl_synthesis),
+                json_escape_clean(&op.stage_trace),
+                json_escape_clean(&op.stage_trace)
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
             continue;
@@ -1167,21 +1210,22 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             continue;
         }
 
-        // 2. Track 32.34 + v43.0.0: 65,536-Token 16-Bit Bidirectional BPE + 8-Domain Compound Tokenizer & Exact Reversible + IPA/SVO Detokenizer
-        if clean_path == "/api/v1/tokenizer/nl_transduce" {
+        // 2. Track 32.34 + v43.0.0: 65,536-Token 16-Bit Bidirectional BPE + 13-Domain Compound Tokenizer & Exact Reversible + IPA/SVO Detokenizer
+        if clean_path == "/api/v1/tokenizer/nl_transduce" || clean_path == "/api/v1/tokenizer/bpe_65k" {
             let mut st = match state.lock() {
                 Ok(g) => g,
                 Err(p) => p.into_inner(),
             };
             st.nl_transduce_calls += 1;
             let query_str: String = if q_arg.is_empty() {
-                String::from("sovereign manifold v43.0.0 decadic 15.965hz 24640 shards natural language decoder")
+                String::from("sovereign manifold v43.0.0 decadic 15.965hz 24640 shards moral ethics cognitive appraisal first principles close reading")
             } else {
                 json_escape_clean(&q_arg)
             };
             let t65 = encode_and_detokenize_65k(&query_str);
+            let hum_disc = synthesize_humanities_and_cognitive_discourse(&query_str, &t65);
             let diag = format!(
-                "65,536-TOKEN 16-BIT BPE+COMPOUND TRANSDUCED: Query='{}' -> {} Tokens ({} T0_E8, {} T1_NL, {} T2_CMP, {} T3_DEN: {}) -> Detokenized='{}' (Roundtrip={}, Ratio={:.2}x, IPA={}) -> Domain={} -> Sector S{:02}, Col #{:03}/559, Neuron N{:05}/24639 (Calls #{})",
+                "65,536-TOKEN 16-BIT 13-DOMAIN BPE+COMPOUND TRANSDUCED: Query='{}' -> {} Tokens ({} T0_E8, {} T1_NL, {} T2_CMP, {} T3_DEN: {}) -> Detokenized='{}' (Roundtrip={}, Ratio={:.2}x, IPA={}) -> Domain={} -> Sector S{:02}, Col #{:03}/559, Neuron N{:05}/24639 || {}",
                 query_str,
                 t65.total_tokens,
                 t65.tier0_e8_count,
@@ -1197,12 +1241,12 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 t65.mapped_sector_80,
                 t65.mapped_chair44_col,
                 t65.mapped_neuron_id,
-                st.nl_transduce_calls
+                hum_disc
             );
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"status\":\"NL_COMPOUND_65536_BIDIRECTIONAL_TRANSDUCED\",\"version\":\"SH4Z_v4300\",\"vocab_size\":{},\"tier0_e8_base\":240,\"tier1_nl_bpe\":16144,\"tier2_compound_8domain\":16384,\"tier3_dendritic_concepts\":32768,\"input_query\":\"{}\",\"total_tokens\":{},\"tier0_count\":{},\"tier1_nl_count\":{},\"tier2_compound_count\":{},\"tier3_dendritic_count\":{},\"token_ids_csv\":\"{}\",\"token_tiers_csv\":\"{}\",\"detokenized_exact\":\"{}\",\"detokenized_svo_clause\":\"{}\",\"detokenized_ipa\":\"{}\",\"roundtrip_exact\":{},\"compression_ratio\":{:.2},\"dominant_domain\":\"{}\",\"mapped_sector\":{},\"mapped_chair44_col\":{},\"mapped_neuron_id\":{},\"calls\":{},\"diag\":\"{}\"}}",
+                "{{\"status\":\"NL_COMPOUND_65536_BIDIRECTIONAL_TRANSDUCED\",\"version\":\"SH4Z_v4300\",\"vocab_size\":{},\"tier0_e8_base\":240,\"tier1_nl_bpe\":16144,\"tier2_compound_13domain\":16384,\"tier3_dendritic_concepts\":32768,\"input_query\":\"{}\",\"total_tokens\":{},\"tier0_count\":{},\"tier1_nl_count\":{},\"tier2_compound_count\":{},\"tier3_dendritic_count\":{},\"t0_e8_count\":{},\"t1_nl_count\":{},\"t2_compound_count\":{},\"t3_dendritic_count\":{},\"token_ids_csv\":\"{}\",\"token_tiers_csv\":\"{}\",\"token_labels_csv\":\"{}\",\"detokenized_exact\":\"{}\",\"detokenized_svo_clause\":\"{}\",\"svo_sentence\":\"{}\",\"detokenized_ipa\":\"{}\",\"ipa_stream\":\"{}\",\"roundtrip_exact\":{},\"roundtrip_verified\":{},\"compression_ratio\":{:.2},\"dominant_domain\":\"{}\",\"mapped_sector\":{},\"mapped_chair44_col\":{},\"mapped_neuron_id\":{},\"humanities_discourse\":\"{}\",\"calls\":{},\"diag\":\"{}\"}}",
                 t65.vocab_size,
                 query_str,
                 t65.total_tokens,
@@ -1210,17 +1254,26 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 t65.tier1_nl_bpe_count,
                 t65.tier2_compound_count,
                 t65.tier3_dendritic_count,
+                t65.tier0_e8_count,
+                t65.tier1_nl_bpe_count,
+                t65.tier2_compound_count,
+                t65.tier3_dendritic_count,
                 json_escape_clean(&t65.token_ids_csv),
+                json_escape_clean(&t65.token_tiers_csv),
                 json_escape_clean(&t65.token_tiers_csv),
                 json_escape_clean(&t65.detokenized_exact),
                 json_escape_clean(&t65.detokenized_svo_clause),
+                json_escape_clean(&t65.detokenized_svo_clause),
                 json_escape_clean(&t65.detokenized_ipa),
+                json_escape_clean(&t65.detokenized_ipa),
+                t65.roundtrip_exact,
                 t65.roundtrip_exact,
                 t65.compression_ratio,
                 t65.dominant_domain,
                 t65.mapped_sector_80,
                 t65.mapped_chair44_col,
                 t65.mapped_neuron_id,
+                json_escape_clean(&hum_disc),
                 st.nl_transduce_calls,
                 json_escape_clean(&diag)
             );

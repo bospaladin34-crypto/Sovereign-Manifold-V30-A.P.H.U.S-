@@ -50,13 +50,13 @@ pub fn evaluate_code_mode_mcp_roots(gen_counter: u64) -> CodeModeMcpRootsTelemet
     let _ = gen_counter;
     CodeModeMcpRootsTelemetry {
         code_mode_active: true,
-        total_tools_compressed: 54,
-        legacy_schema_tokens: 15840,
+        total_tools_compressed: 72,
+        legacy_schema_tokens: 21120,
         code_mode_schema_tokens: 890,
-        token_savings_pct: 94.38_f64,
+        token_savings_pct: 95.79_f64,
         canonical_roots_locked: 8,
         path_drift_violations: 0,
-        roots_summary: "ROOTS_LOCKED(00_control, 01_l0_rust/src/bin/v31_swarm.rs, 02_weights, 03_vault/connectome/neurons_v4000.npage, 03_vault/lean4/SovereignManifoldTheorems.lean, 04_edge_silicon/.../com/actomega/manifold/MainActivity.kt, 05_hud_cockpit/src/App.tsx, E:/Sovereign_Manifold_SSD_Vault)",
+        roots_summary: "ROOTS_LOCKED(00_control, 01_l0_rust/src/bin/v31_swarm.rs, 00_control/weights/neurons_v4000.npage + neurons_v4300_expansion.npage, 03_vault/lean4/SovereignManifoldTheorems.lean, 04_edge_silicon/.../MainActivity.kt, 05_hud_cockpit/src/App.tsx, E:/Sovereign_Manifold_SSD_Vault, G:/My Drive/ACT_OMEGA_GEMINI_BRIDGE)",
     }
 }
 

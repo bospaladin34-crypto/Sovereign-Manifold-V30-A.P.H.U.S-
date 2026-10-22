@@ -1,6 +1,6 @@
 // C:\sovereign_manifold_v31\00_control\cloudflare_free_edge_worker.js
-// ACT-Omega Net v32.6.0 (SH4Z v3206 TLV) — Cloudflare Free-Tier Edge Worker (100,000 req/day)
-// + Post-Quantum X25519MLKEM768 Inspection + Safe External LLM Agent Gateway Router
+// ACT-Omega Net v43.0.0 (SH4Z v4300 TLV) — Cloudflare Free-Tier Edge Worker (100,000 req/day)
+// + Post-Quantum X25519MLKEM768 Inspection + Safe External LLM Agent Gateway & CodeMode MCP Router
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
@@ -11,9 +11,12 @@ export default {
     }
     const resp = await fetch(request);
     const outHeaders = new Headers(resp.headers);
-    outHeaders.set("X-Sovereign-Manifold-Version", "ACT-Omega-Net-v32.6.0-SH4Z-v3206");
+    outHeaders.set("X-Sovereign-Manifold-Version", "ACT-Omega-Net-v43.0.0-SH4Z-v4300");
     outHeaders.set("X-Post-Quantum-KEX", pqKex);
     outHeaders.set("X-LLM-Agent-Gateway", "/.well-known/llm-agent.json");
+    outHeaders.set("X-A2A-Agent-Card", "/.well-known/agent.json");
+    outHeaders.set("X-MCP-Endpoint", "https://mcp.act-omega-net.dev/mcp");
+    outHeaders.set("X-Connectome-Bijection", "21120_Core_Plus_1760_Expansion_22880_Total");
     outHeaders.set("X-Visitor-Agent", ua.slice(0, 64));
     return new Response(resp.body, { status: resp.status, headers: outHeaders });
   }

@@ -591,9 +591,9 @@ export function App() {
       endpoint: "/api/v1/card/execute?card_id=2"
     },
     {
-      title: "21,120-SHARD VAULT & SINAI HARVESTER",
-      primary: "21,120 SHARDS (480x CHAIR-44)",
-      secondary: `Sinai h_mu=0.482>0 (Harvest #${tel.harvest_runs}) -- ${tel.cluster_total_kops.toFixed(1)}k ops/s`,
+      title: "21,120+1,760 SHARD VAULT & HARVESTER",
+      primary: "21,120 CORE + 1,760 EXP (520x CHAIR-44)",
+      secondary: `22,880 Shards/Neurons (Harvest #${tel.harvest_runs}) -- ${tel.cluster_total_kops.toFixed(1)}k ops/s`,
       sector: 2,
       endpoint: "/api/v1/card/execute?card_id=3"
     },
@@ -925,8 +925,8 @@ export function App() {
         </div>
         <div style={{ display: "grid", gridTemplateRows: "repeat(16, 6px)", gap: 1, background: "#0A0D12", padding: 4, borderRadius: 4, border: "1px solid #2A3B4D" }}>
           {Array.from({ length: 16 }).map((_, r) => (
-            <div key={r} style={{ display: "grid", gridTemplateColumns: "repeat(80, 1fr)", gap: 1 }}>
-              {Array.from({ length: 80 }).map((__, c) => (
+            <div key={r} style={{ display: "grid", gridTemplateColumns: "repeat(130, 1fr)", gap: 1 }}>
+              {Array.from({ length: 130 }).map((__, c) => (
                 <div
                   key={c}
                   onClick={() => {
@@ -963,11 +963,27 @@ export function App() {
             </button>
           ))}
         </div>
-        <div style={{ color: "#FFB454", fontSize: 10.5, marginTop: 5 }}>
-          Sector #{selectedSector} ({SECTOR_NAMES[selectedSector]}+SSD_TIER2): Line #{selectedLine} (Offset {selectedSector * 5120 + selectedLine * 64}B) -- Norm={(tel.sector_norms_csv.split(",")[selectedSector] || "0.8942")} -- Hash={(tel.sector_hashes_csv.split(",")[selectedSector] || "0x811C9DC5")} -- Theorems thm{selectedSector * 10 + 1}..thm{selectedSector * 10 + 10} -- PPL=1.00000002
+        <div style={{ color: "#FFB454", fontSize: 10.5, marginTop: 5, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 6 }}>
+          <span>
+            Sector #{selectedSector} ({SECTOR_NAMES[selectedSector]}+SSD_TIER2): Line #{selectedLine}/129 (Global #{selectedSector * 130 + selectedLine}/2079, Offset {(selectedSector * 130 + selectedLine) * 64}B) -- Norm={(tel.sector_norms_csv.split(",")[selectedSector] || "0.8942")} -- Hash={(tel.sector_hashes_csv.split(",")[selectedSector] || "0x811C9DC5")} -- Chair-44 Col #{((selectedSector * 130 + selectedLine) * 480 / 2080) | 0}/519 (21,120 Core + 1,760 Exp = 22,880 Neurons) -- Theorems thm{selectedSector * 10 + 1}..thm{selectedSector * 10 + 10} (364/364 QED)
+          </span>
+          <div style={{ display: "flex", gap: 6 }}>
+            <button
+              onClick={() => callEndpoint(`/api/v1/pagefile/cauchy_sparse_npage?neuron_id=${(((selectedSector * 130 + selectedLine) * 480 / 2080) | 0) * 44}`, `NPAGE COL #${((selectedSector * 130 + selectedLine) * 480 / 2080) | 0}`)}
+              style={{ background: "#0D2618", color: "#56D364", border: "1px solid #56D364", borderRadius: 4, padding: "2px 8px", fontSize: 10, fontWeight: "bold", cursor: "pointer" }}
+            >
+              INSPECT CORE N{((((selectedSector * 130 + selectedLine) * 480 / 2080) | 0) * 44)} (T42)
+            </button>
+            <button
+              onClick={() => callEndpoint(`/api/v1/pagefile/cauchy_sparse_npage?neuron_id=${21120 + (((selectedSector * 130 + selectedLine) * 40 / 2080) | 0) * 44}`, `EXP NPAGE COL #${480 + (((selectedSector * 130 + selectedLine) * 40 / 2080) | 0)}`)}
+              style={{ background: "#1A1228", color: "#B388FF", border: "1px solid #B388FF", borderRadius: 4, padding: "2px 8px", fontSize: 10, fontWeight: "bold", cursor: "pointer" }}
+            >
+              INSPECT EXPANSION N{21120 + (((selectedSector * 130 + selectedLine) * 40 / 2080) | 0) * 44} (COL #{480 + (((selectedSector * 130 + selectedLine) * 40 / 2080) | 0)})
+            </button>
+          </div>
         </div>
         <div style={{ color: "#56D364", fontSize: 10, marginTop: 2 }}>
-          [REAL .E8Z INSPECTOR S{tel.inspected_sector}:L{tel.inspected_line}]: {tel.inspected_trits} -- HEX: {tel.inspected_hex}
+          [REAL .E8Z + .NPAGE INSPECTOR S{tel.inspected_sector}:L{tel.inspected_line}]: {tel.inspected_trits} -- HEX: {tel.inspected_hex}
         </div>
       </div>
 

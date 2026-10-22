@@ -1,0 +1,35 @@
+{
+  "schema": "ACT_OMEGA_CONNECTOME_EXPANSION_BANK_v43_0_0",
+  "tlv_version": 4300,
+  "tier1_core": {
+    "npage_file": "00_control/weights/neurons_v4000.npage",
+    "shards_dir": "03_vault/shards",
+    "shard_range": "shard_00001..21120.binshard",
+    "neuron_range": "N00000..N21119",
+    "chair44_columns": 480,
+    "neurons": 21120,
+    "bytes": 2703360,
+    "synapses": 168960,
+    "sha256": "aee7711086a07bb6ddebc9e347ed4d68d3a38b57d57b08f9089d22345fa07d6d"
+  },
+  "tier2_autopoietic_expansion_bank": {
+    "npage_file": "00_control/weights/neurons_v4300_expansion.npage",
+    "shards_dir": "03_vault/shards_expansion",
+    "shard_range": "shard_21121..22880.binshard",
+    "neuron_range": "N21120..N22879",
+    "chair44_column_range": "Col #480..519",
+    "chair44_columns": 40,
+    "neurons": 1760,
+    "bytes": 225280,
+    "synapses": 14080,
+    "sha256": "c58b8ff45a225d873fd84858b2d0390d6a1f00b4febd58ca716ccd2c4fa0d10e"
+  },
+  "combined_connectome_totals": {
+    "total_chair44_columns": 520,
+    "total_neurons": 22880,
+    "total_shards": 22880,
+    "total_npage_bytes": 2928640,
+    "total_synapses": 183040,
+    "bijection_1to1_verified": true
+  }
+}

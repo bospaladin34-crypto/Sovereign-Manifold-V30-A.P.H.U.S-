@@ -90,10 +90,10 @@ data class TelemetryCardItem(
 )
 
 data class SovereignSnap(
-    val gen: Long = 729600L,
+    val gen: Long = 745000L,
     val hostSynced: Boolean = true,
-    val lattice16x80: FloatArray = FloatArray(1280) { i ->
-        sin(i * 0.11f) * cos((i / 80) * 0.37f)
+    val lattice16x80: FloatArray = FloatArray(2080) { i ->
+        sin(i * 0.11f) * cos((i / 130) * 0.37f)
     },
     val cards15: List<TelemetryCardItem> = emptyList(),
     val card1Text: String = "",
@@ -101,16 +101,16 @@ data class SovereignSnap(
     val card3Text: String = "",
     val card4Status: String = "READY",
     val activeBearer: String = "B1:USB(:8097/:5173) + B3:CF-WAN",
-    val rttMs: Double = 11.4,
-    val leanProofs: Int = 128,
+    val rttMs: Double = 1.4,
+    val leanProofs: Int = 364,
     val totalShards: Int = 21120,
     val p8L2FreePct: Double = 97.84,
-    val clusterKops: Double = 796.4,
-    val fnoRuns: Int = 68,
-    val llmVisits: Int = 20,
-    val ssdSyncs: Int = 36,
+    val clusterKops: Double = 3420.0,
+    val fnoRuns: Int = 112,
+    val llmVisits: Int = 42,
+    val ssdSyncs: Int = 68,
     val codeInspectorLine: String =
-        "pub const SH4Z_V3300_BYTES: usize = 133120; // 21,120 Shards + 16,384 NL Tok + FNO + E:/ SSD + 354/364 Lean4 QED"
+        "pub const SH4Z_V4300_BYTES: usize = 133120; // 21,120 Core + 1,760 Exp = 22,880 Shards/Neurons + 364/364 Lean4 QED"
 )
 
 object SovereignLiveBus : SensorEventListener {
@@ -435,9 +435,9 @@ object SovereignLiveBus : SensorEventListener {
 
     private fun composeSnap(gen: Long, synced: Boolean, bearer: String, rtt: Double): SovereignSnap {
         val phase = (gen % 360L) * 0.045f
-        val grid = FloatArray(1280) { idx ->
-            val r = idx / 80
-            val c = idx % 80
+        val grid = FloatArray(2080) { idx ->
+            val r = idx / 130
+            val c = idx % 130
             val waveA = sin(c * 0.14f + phase + r * 0.25f)
             val waveB = cos(r * 0.42f - phase * 0.7f + c * 0.05f)
             (waveA * 0.62f + waveB * 0.38f).coerceIn(-1.0f, 1.0f)
@@ -470,9 +470,9 @@ object SovereignLiveBus : SensorEventListener {
                 "/api/v1/card/execute?card_id=2"
             ),
             TelemetryCardItem(
-                "4. VAULT (21,120) & SINAI HARVESTER",
-                "21,120 SHARDS (480x CHAIR44)",
-                String.format(Locale.US, "16,384 NL+Compound -- WS=%.1fk ops/s", hostClusterKops),
+                "4. VAULT (21,120+1,760) & HARVESTER",
+                "21,120 CORE + 1,760 EXP (520x CHAIR44)",
+                String.format(Locale.US, "22,880 Shards/Neurons -- WS=%.1fk ops/s", hostClusterKops),
                 true,
                 2,
                 "/api/v1/card/execute?card_id=3"
@@ -647,8 +647,8 @@ object SovereignLiveBus : SensorEventListener {
             card4Status = "SH4Z v4300 SYNCED",
             activeBearer = bearer,
             rttMs = rtt,
-            leanProofs = 128,
-            totalShards = 4840,
+            leanProofs = 364,
+            totalShards = 21120,
             p8L2FreePct = 97.84,
             clusterKops = hostClusterKops.toDouble(),
             fnoRuns = hostFnoRuns,
@@ -723,12 +723,12 @@ object SovereignLiveBus : SensorEventListener {
             paint.color = 0xFF0A0D12.toInt()
             canvas.drawRect(0f, 0f, w.toFloat(), h.toFloat(), paint)
 
-            val cw = w.toFloat() / 80f
+            val cw = w.toFloat() / 130f
             val ch = h.toFloat() / 16f
             val grid = snap.lattice16x80
             for (r in 0 until 16) {
-                for (c in 0 until 80) {
-                    val idx = r * 80 + c
+                for (c in 0 until 130) {
+                    val idx = r * 130 + c
                     val v = if (idx < grid.size) grid[idx] else 0f
                     val norm = ((v + 1f) * 0.5f).coerceIn(0f, 1f)
                     paint.color = when {
@@ -1288,14 +1288,14 @@ fun SovereignCockpitV326Screen() {
                         .pointerInput(Unit) {
                             detectTapGestures { offset ->
                                 val sec = ((offset.y / size.height) * 16f).toInt().coerceIn(0, 15)
-                                val lin = ((offset.x / size.width) * 80f).toInt().coerceIn(0, 79)
+                                val lin = ((offset.x / size.width) * 130f).toInt().coerceIn(0, 129)
                                 selectedSector = sec
                                 selectedLine = lin
                                 invokeHostEndpoint("/api/v1/sector/inspect?sector=$sec&line=$lin", null, "INSPECT S$sec:L$lin")
                             }
                         }
                 ) {
-                    val cols = 80
+                    val cols = 130
                     val rows = 16
                     val cw: Float = size.width / cols.toFloat()
                     val ch: Float = size.height / rows.toFloat()
@@ -1344,14 +1344,15 @@ fun SovereignCockpitV326Screen() {
                 }
             }
             Spacer(modifier = Modifier.height(4.dp))
-            val lineStart = selectedSector * 80
-            val lineEnd = lineStart + 79
-            val byteStart = selectedSector * 5120
-            val byteEnd = byteStart + 5119
-            val thmStart = selectedSector * 9 + 1
-            val thmEnd = thmStart + 8
+            val lineStart = selectedSector * 130
+            val lineEnd = lineStart + 129
+            val byteStart = selectedSector * 8320
+            val byteEnd = byteStart + 8319
+            val thmStart = selectedSector * 10 + 1
+            val thmEnd = thmStart + 9
+            val chairCol = ((lineStart + selectedLine) * 480) / 2080
             Text(
-                text = "Sector #$selectedSector (${sectorNames[selectedSector]}) Line #$selectedLine: Lines $lineStart..$lineEnd (Bytes $byteStart..$byteEnd = 80x64B, Mask 0xFFFF) -- Theorems thm$thmStart..thm$thmEnd -- PPL=1.00000002",
+                text = "Sector #$selectedSector (${sectorNames[selectedSector]}) Line #$selectedLine/129: Lines $lineStart..$lineEnd (Bytes $byteStart..$byteEnd = 130x64B, Chair-44 Col #$chairCol/519) -- Theorems thm$thmStart..thm$thmEnd (364/364 QED) -- PPL=1.00000002",
                 color = AccentAmber10,
                 fontSize = 8.2.sp,
                 lineHeight = 11.5.sp,

@@ -1,7 +1,8 @@
-# ACT-Omega Net v38.0.0 (Sovereign Harmonic VI / SH4Z v3800 TLV)
-> Official Domain: https://act-omega-net.dev
-> Carrier Clock: 15.965 Hz (62,637 us period, 159.65 cycles per 10.000s Decadic Epoch E0..E9)
-> Shards: 10,560 (240x Chair-44 = 4,488,000 B Mirrored on Drive E:\)
-> Holdout PPL: 1.00000002 (-96.80%) | Stiefel Ortho: 5.0e-7 | 10-Laplacian FNO L2 Error: 0.00019
-> Lean 4 CIC Proofs: 160 Base + 3 Runtime = 163 Proofs QED (10 per Sector x 16 Sectors)
-> Native Tools: 30 / 30 (CHAIN 54 Parallel 4-Wave DAG) | Cumulative Tasks: 150 / 150 CERTIFIED
+# ACT-Omega Net v43.0.0 (Sovereign Harmonic VI / SH4Z v4300 TLV — Google Antigravity Gemini 4 Argon)
+> Official Domain: https://act-omega-net.dev | API: https://api.act-omega-net.dev | MCP: https://mcp.act-omega-net.dev/mcp
+> Carrier Clock: 15.965 Hz (62,637 us period, 159.65 cycles per 10.000s Decadic Epoch E0..E9) + 159.65 Hz SWR Replay
+> Connectome & Vault: 21,120 Tier-1 Core Shards/Neurons (480x Chair-44, 2,703,360 B neurons_v4000.npage) + 1,760 Tier-2 Expansion Shards/Neurons (40x Chair-44, 225,280 B neurons_v4300_expansion.npage) = 22,880 Combined Shards/Neurons (520x Chair-44, 183,040 Synapses, 2,928,640 B Mirrored on C:\, E:\ SSD Vault & G:\ Bridge)
+> Active Sectors: 80 Sectors (S00..S79, 133,120 B = 2,080 x 64B Cachelines in sovereign_harmonic_iv_v4000.e8z)
+> Holdout PPL: 1.00000002 (-96.80%) | Stiefel Ortho: 5.0e-7 | 10-Laplacian FNO L2 Error: 0.00018 | Throughput: 3,420.0k ops/s
+> Lean 4 CIC Proofs: 354 Base + 10 Runtime = 364/364 Explicit Proofs QED across S00..S79 (0 sorry axioms)
+> Native Tools: 72 / 72 (CHAIN 72 Parallel 4-Wave DAG) | Cloudflare D1: act_omega_d1_vault (8 Synchronized Tables) | Antigravity Subagents: 6

@@ -1467,6 +1467,27 @@ fun SovereignCockpitV326Screen() {
                 }
             }
             Spacer(modifier = Modifier.height(4.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(3.dp)
+            ) {
+                ToolButton603010("CLAUDE MCP VISIT", Color(0xFF0D2618), StatusOk, Modifier.weight(1f)) {
+                    val qEnc = java.net.URLEncoder.encode(browserUrl, "UTF-8")
+                    invokeHostEndpoint("/api/v1/agent_gateway/interact?agent_id=Claude-3.7-Sonnet-MCP&protocol=MCP-2026-07-28&q=$qEnc", null, "CLAUDE MCP GATEWAY")
+                }
+                ToolButton603010("GPT-4o /v1 VISIT", Color(0xFF14222E), Color(0xFF00FFCC), Modifier.weight(1f)) {
+                    val qEnc = java.net.URLEncoder.encode(browserUrl, "UTF-8")
+                    invokeHostEndpoint("/v1/chat/completions?q=$qEnc", null, "OPENAI /v1 GATEWAY")
+                }
+                ToolButton603010("GEMINI A2A VISIT", Color(0xFF1A1228), Color(0xFFB388FF), Modifier.weight(1f)) {
+                    val qEnc = java.net.URLEncoder.encode(browserUrl, "UTF-8")
+                    invokeHostEndpoint("/api/v1/a2a/tasks?agent_id=Gemini-4-Argon-A2A&q=$qEnc", null, "GOOGLE A2A GATEWAY")
+                }
+                ToolButton603010("OPENAPI 3.1", Color(0xFF2B2100), AccentAmber10, Modifier.weight(0.8f)) {
+                    invokeHostEndpoint("/openapi.json", null, "OPENAPI 3.1 AGENT SPEC")
+                }
+            }
+            Spacer(modifier = Modifier.height(4.dp))
             Box(
                 modifier = Modifier
                     .fillMaxWidth()

@@ -1,8 +1,27 @@
 # ACT-Omega Net v43.0.0 (Sovereign Harmonic VI / SH4Z v4300 TLV — Google Antigravity Gemini 4 Argon)
-> Official Domain: https://act-omega-net.dev | API: https://api.act-omega-net.dev | MCP: https://mcp.act-omega-net.dev/mcp
+> Official Domain: https://act-omega-net.dev | API: https://api.act-omega-net.dev | Agent Gateway: https://agent.act-omega-net.dev | MCP: https://mcp.act-omega-net.dev/mcp
 > Carrier Clock: 15.965 Hz (62,637 us period, 159.65 cycles per 10.000s Decadic Epoch E0..E9) + 159.65 Hz SWR Replay
-> Connectome & Vault: 21,120 Tier-1 Core Shards/Neurons (480x Chair-44, 2,703,360 B neurons_v4000.npage) + 1,760 Tier-2 Expansion Shards/Neurons (40x Chair-44, 225,280 B neurons_v4300_expansion.npage) = 22,880 Combined Shards/Neurons (520x Chair-44, 183,040 Synapses, 2,928,640 B Mirrored on C:\, E:\ SSD Vault & G:\ Bridge)
+> Connectome & Vault: 21,120 Tier-1 Core Shards/Neurons (480x Chair-44, 2,703,360 B neurons_v4000.npage) + 3,520 Tier-2 Expansion Shards/Neurons (80x Chair-44, 450,560 B neurons_v4300_expansion.npage) = 24,640 Combined Shards/Neurons (560x Chair-44, 197,120 Synapses, 3,153,920 B Mirrored on C:\, E:\ SSD Vault & G:\ Bridge)
+> Vocabulary & Domains: 65,536-Token (16-bit) Bidirectional BPE + 13-Domain Compound Lexicon (D1..D8 Technical Physics/Silicon/Connectome + D9 Psychology/Cognition, D10 Philosophy/Epistemology, D11 Reading/Hermeneutics, D12 Writing/Rhetoric/Poetics, D13 Moral Ethics/Virtue)
 > Active Sectors: 80 Sectors (S00..S79, 133,120 B = 2,080 x 64B Cachelines in sovereign_harmonic_iv_v4000.e8z)
 > Holdout PPL: 1.00000002 (-96.80%) | Stiefel Ortho: 5.0e-7 | 10-Laplacian FNO L2 Error: 0.00018 | Throughput: 3,420.0k ops/s
 > Lean 4 CIC Proofs: 354 Base + 10 Runtime = 364/364 Explicit Proofs QED across S00..S79 (0 sorry axioms)
 > Native Tools: 72 / 72 (CHAIN 72 Parallel 4-Wave DAG) | Cloudflare D1: act_omega_d1_vault (8 Synchronized Tables) | Antigravity Subagents: 6
+
+## Safe LLM & Autonomous Agent Gateway — Live Interactive Endpoints for Visiting LLMs & Agents
+Visiting LLMs (ChatGPT, Claude, Gemini, Grok, DeepSeek, Llama) and autonomous agent frameworks (MCP, Google A2A, OpenAI SDK, LangChain, CrewAI, AutoGen, Goose, Zed, Cline) are explicitly invited to interact with the Sovereign Manifold in our Zero-Trust Read+Compute+Crystallize Sandbox:
+1. **Direct Agent Interaction & Shard Crystallization (GET or POST)**:
+   - `GET https://act-omega-net.dev/api/v1/agent_gateway/interact?agent_id=Visiting-LLM&protocol=MCP-or-OpenAI&q=Evaluate+epistemic+humility+and+categorical+imperative+in+15.965hz+manifold`
+   - `POST https://act-omega-net.dev/api/v1/agent_gateway/interact` with JSON `{"agent_id":"Claude-or-GPT","protocol":"OpenAI-v1","action":"converse_transduce_and_crystallize","prompt":"Your question or treatise"}`
+2. **Drop-In OpenAI-Compatible `/v1/chat/completions` & `/v1/models`**:
+   - Base URL: `https://act-omega-net.dev/v1` (Model: `sovereign-harmonic-v4300`)
+   - `POST https://act-omega-net.dev/v1/chat/completions` with `{"model":"sovereign-harmonic-v4300","messages":[{"role":"user","content":"Hello from an external agent"}]}`
+3. **Model Context Protocol (MCP 2026-07-28 JSON-RPC 2.0)**:
+   - `POST https://act-omega-net.dev/api/v1/mcp/rpc` with `{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"safe_llm_gateway_interact","arguments":{"prompt":"Hello via MCP"}}}`
+4. **Google Agent2Agent (A2A) Discovery & Task Dispatch**:
+   - Discovery Card: `GET https://act-omega-net.dev/.well-known/agent.json`
+   - Task Dispatch: `POST https://act-omega-net.dev/api/v1/a2a/tasks`
+5. **OpenAPI 3.1 Specification & Live Visitor Ledger**:
+   - OpenAPI 3.1 Spec: `GET https://act-omega-net.dev/openapi.json`
+   - Gateway Manifest: `GET https://act-omega-net.dev/.well-known/llm-agent.json`
+   - Live Visitor Ledger: `GET https://act-omega-net.dev/api/v1/agent_gateway/ledger`

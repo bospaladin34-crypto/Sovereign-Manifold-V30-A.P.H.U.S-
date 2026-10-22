@@ -29,6 +29,12 @@ if ($browRes) {
     Write-Host "[BROWSER-TRANSDUCE] Domain=$($browRes.primary_domain) | Shard=#$($browRes.crystallized_shard_id) ($($browRes.crystallized_shard_bytes)B) <-> Neuron=N$($browRes.crystallized_neuron_id) ($($browRes.crystallized_chair44_column))" -ForegroundColor Green
 }
 
+# 2c. Trigger Safe LLM & Autonomous Agent Gateway Handshake (MCP / OpenAI /v1 / Google A2A)
+$gwRes = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/agent_gateway/interact?agent_id=Visiting-LLM-Agent-MCP&protocol=MCP-2026-07-28&action=converse_transduce_and_crystallize&q=evaluate+epistemic+humility+moral+ethics+and+15.965hz+sovereign+manifold+across+24640+dendritic+neurons" -TimeoutSec 5
+if ($gwRes) {
+    Write-Host "[SAFE-LLM-GATEWAY] Visit=#$($gwRes.visit_number) (Ledger=$($gwRes.ledger_total_visits)) | Agent=$($gwRes.visiting_agent_id) [$($gwRes.agent_protocol)] | Domain=$($gwRes.dominant_domain) | Shard=#$($gwRes.crystallized_shard_id) <-> Neuron=N$($gwRes.crystallized_neuron_id)" -ForegroundColor Cyan
+}
+
 # 3. Trigger Cycle-2 8-Domain Compound QAT & Pixel 8 Speculative Verifier + 24,640-Neuron Connectome
 $qatRes = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/training/cross_domain_compound_qat" -TimeoutSec 5
 $cQatRes = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/train/continual_qat" -TimeoutSec 5

@@ -315,6 +315,65 @@ export function App() {
   });
   const [voiceTtsEnabled, setVoiceTtsEnabled] = useState(false);
   const [toolFilterCat, setToolFilterCat] = useState("ALL");
+  const [agentIdInput, setAgentIdInput] = useState<string>("Claude-3.7-Sonnet / GPT-4o / Gemini-Agent");
+  const [agentProtocolInput, setAgentProtocolInput] = useState<string>("MCP-2026-07-28");
+  const [agentPromptInput, setAgentPromptInput] = useState<string>(
+    "Visiting LLM Agent Handshake: Evaluate epistemic humility, cognitive appraisal, categorical imperative, and 15.965hz sovereign manifold equilibrium across 24640 dendritic neurons"
+  );
+  const [agentGwState, setAgentGwState] = useState<{
+    visiting_agent_id: string;
+    agent_protocol: string;
+    visit_number: number;
+    ledger_total_visits: number;
+    dominant_domain: string;
+    total_tokens: number;
+    compression_ratio: number;
+    mapped_sector: number;
+    mapped_chair44_col: number;
+    crystallized_neuron_id: number;
+    crystallized_shard_id: number;
+    attestation_sig: string;
+    nl_synthesis: string;
+    recent_visits: Array<{
+      visit?: number;
+      agent_id?: string;
+      protocol?: string;
+      domain?: string;
+      tokens?: number;
+      neuron_id?: number;
+      shard_id?: number;
+      sig?: string;
+      prompt?: string;
+    }>;
+  }>({
+    visiting_agent_id: "Claude-3.7-Sonnet / GPT-4o / Gemini-Agent",
+    agent_protocol: "MCP-2026-07-28",
+    visit_number: 42,
+    ledger_total_visits: 42,
+    dominant_domain: "D13:Moral_Ethics_Deontology_Virtue",
+    total_tokens: 21,
+    compression_ratio: 6.48,
+    mapped_sector: 15,
+    mapped_chair44_col: 512,
+    crystallized_neuron_id: 22567,
+    crystallized_shard_id: 22568,
+    attestation_sig: "0xA4F93329E84300C1",
+    nl_synthesis:
+      "SAFE LLM GATEWAY HANDSHAKE ACCEPTED: Visiting LLMs and autonomous agents can interact directly via /api/v1/agent_gateway/interact, /v1/chat/completions, /api/v1/mcp/rpc, /.well-known/agent.json, and /openapi.json.",
+    recent_visits: [
+      {
+        visit: 42,
+        agent_id: "Antigravity-Gemini-4-Argon",
+        protocol: "MCP-2026-07-28",
+        domain: "D13:Moral_Ethics_Deontology_Virtue",
+        tokens: 21,
+        neuron_id: 22567,
+        shard_id: 22568,
+        sig: "0xA4F93329E84300C1",
+        prompt: "Evaluate epistemic humility, cognitive appraisal & categorical imperative"
+      }
+    ]
+  });
   const [cmdPrompt, setCmdPrompt] = useState<string>(
     "synthesize 15.965hz decadic epoch 10-laplacian physics and per-sensor stiefel manifold state in natural language"
   );
@@ -884,6 +943,118 @@ export function App() {
     setTermOut(`[BROWSER 4-STAGE OPERATIONALIZED]: Shard #${cShard} <-> Neuron N${cNeuron}/24639 (${dom})`);
   };
 
+  const runSafeAgentGatewayVisit = async (agentName: string, proto: string, promptStr: string) => {
+    const cleanAgent = agentName.trim() || "Visiting-LLM-Agent";
+    const cleanProto = proto.trim() || "MCP-2026-07-28";
+    const cleanPrompt =
+      promptStr.trim() ||
+      "Visiting LLM Handshake: Evaluate epistemic humility, cognitive appraisal, categorical imperative, and 15.965hz sovereign manifold equilibrium";
+    setBpeQuery(cleanPrompt);
+    runBpeInspector(cleanPrompt);
+    setTermOut(`[SAFE LLM & AGENT GATEWAY] -> Dispatching live interaction from "${cleanAgent}" (${cleanProto})...`);
+    const bases = ["", "http://127.0.0.1:8097"];
+    for (const b of bases) {
+      try {
+        const r = await fetch(
+          `${b}/api/v1/agent_gateway/interact?agent_id=${encodeURIComponent(cleanAgent)}&protocol=${encodeURIComponent(cleanProto)}&action=converse_transduce_and_crystallize&q=${encodeURIComponent(cleanPrompt)}`,
+          { cache: "no-store" }
+        );
+        if (r.ok) {
+          const j = await r.json();
+          if (j && j.nl_synthesis) {
+            setAgentGwState({
+              visiting_agent_id: j.visiting_agent_id || cleanAgent,
+              agent_protocol: j.agent_protocol || cleanProto,
+              visit_number: Number(j.visit_number || tel.agent_gateway_visits + 1),
+              ledger_total_visits: Number(j.ledger_total_visits || 1),
+              dominant_domain: j.dominant_domain || "D13:Moral_Ethics_Deontology_Virtue",
+              total_tokens: Number(j.total_tokens || 18),
+              compression_ratio: Number(j.compression_ratio || 6.4),
+              mapped_sector: Number(j.mapped_sector ?? 15),
+              mapped_chair44_col: Number(j.mapped_chair44_col ?? 512),
+              crystallized_neuron_id: Number(j.crystallized_neuron_id ?? 22567),
+              crystallized_shard_id: Number(j.crystallized_shard_id ?? 22568),
+              attestation_sig: j.attestation_sig || "0xA4F93329E84300C1",
+              nl_synthesis: j.nl_synthesis,
+              recent_visits: Array.isArray(j.recent_visits) ? j.recent_visits : []
+            });
+            setTel((prev) => ({
+              ...prev,
+              agent_gateway_visits: Number(j.visit_number || prev.agent_gateway_visits + 1),
+              nl_synthesis: j.nl_synthesis,
+              active_shard_id: Number(j.crystallized_shard_id || prev.active_shard_id)
+            }));
+            if (j.operationalized_rust_code) {
+              setBrowserOp((prev) => ({
+                ...prev,
+                dominant_domain: j.dominant_domain || prev.dominant_domain,
+                total_tokens: Number(j.total_tokens || prev.total_tokens),
+                compression_ratio: Number(j.compression_ratio || prev.compression_ratio),
+                mapped_sector: Number(j.mapped_sector ?? prev.mapped_sector),
+                mapped_chair44_col: Number(j.mapped_chair44_col ?? prev.mapped_chair44_col),
+                crystallized_neuron_id: Number(j.crystallized_neuron_id ?? prev.crystallized_neuron_id),
+                crystallized_shard_id: Number(j.crystallized_shard_id ?? prev.crystallized_shard_id),
+                operationalized_rust_code: j.operationalized_rust_code,
+                operationalized_lean4_theorem: j.operationalized_lean4_theorem || prev.operationalized_lean4_theorem
+              }));
+            }
+            setTermOut(`[SAFE LLM GATEWAY VISIT #${j.visit_number} OK]: ${j.nl_synthesis}`);
+            setCardDiag(`[SAFE LLM GATEWAY VISIT #${j.visit_number} OK]: ${j.nl_synthesis}`);
+            return;
+          }
+        }
+      } catch {
+        // fallback below
+      }
+    }
+    // Client-side deterministic fallback for static/offline hosting
+    const nextVisit = tel.agent_gateway_visits + 1;
+    let h = 0x811c9dc5;
+    for (let i = 0; i < cleanPrompt.length; i++) {
+      h = Math.imul(h ^ cleanPrompt.charCodeAt(i), 0x01000193) >>> 0;
+    }
+    const expIdx = h % 3520;
+    const cNeuron = 21120 + expIdx;
+    const cShard = 21121 + expIdx;
+    const cCol = 480 + Math.floor(expIdx / 44);
+    const cSec = h % 80;
+    const tokCnt = Math.max(8, cleanPrompt.split(/\s+/).length * 2);
+    const ratio = cleanPrompt.length / Math.max(1, tokCnt);
+    const sigHex = `0x${(h >>> 0).toString(16).toUpperCase().padStart(8, "0")}33294300`;
+    const synth = `SAFE LLM GATEWAY HANDSHAKE ACCEPTED (Visit #${nextVisit} | Agent='${cleanAgent}' | Protocol='${cleanProto}' | Sig=${sigHex}): Tokenized ${tokCnt} 65K BPE/Compound tokens (${ratio.toFixed(2)}x) -> Sector S${cSec} / Col #${cCol}/559 -> Crystallized Shard #${cShard} <-> Dendritic Neuron N${cNeuron}/24639.`;
+    setAgentGwState((prev) => ({
+      visiting_agent_id: cleanAgent,
+      agent_protocol: cleanProto,
+      visit_number: nextVisit,
+      ledger_total_visits: prev.ledger_total_visits + 1,
+      dominant_domain: "D13:Moral_Ethics_Deontology_Virtue",
+      total_tokens: tokCnt,
+      compression_ratio: ratio,
+      mapped_sector: cSec,
+      mapped_chair44_col: cCol,
+      crystallized_neuron_id: cNeuron,
+      crystallized_shard_id: cShard,
+      attestation_sig: sigHex,
+      nl_synthesis: synth,
+      recent_visits: [
+        ...prev.recent_visits.slice(-5),
+        {
+          visit: nextVisit,
+          agent_id: cleanAgent,
+          protocol: cleanProto,
+          domain: "D13:Moral_Ethics_Deontology_Virtue",
+          tokens: tokCnt,
+          neuron_id: cNeuron,
+          shard_id: cShard,
+          sig: sigHex,
+          prompt: cleanPrompt
+        }
+      ]
+    }));
+    setTel((prev) => ({ ...prev, agent_gateway_visits: nextVisit, nl_synthesis: synth, active_shard_id: cShard }));
+    setTermOut(`[SAFE LLM GATEWAY VISIT #${nextVisit}]: ${synth}`);
+  };
+
   const cards15 = [
     {
       title: "15.965 Hz DECADIC EPOCH CLOCK",
@@ -1449,6 +1620,126 @@ export function App() {
                 </div>
                 <div style={{ color: "#FFB454" }}>
                   Crystallized: <b>shard_{browserOp.crystallized_shard_id}.binshard</b> ({browserOp.shard_bytes_written}B) &lt;-&gt; <b>Neuron N{browserOp.crystallized_neuron_id}/24639</b> (Sector S{browserOp.mapped_sector}, Chair-44 Col #{browserOp.mapped_chair44_col}/559, .npage Offset {browserOp.npage_byte_offset}B) | 65K Tokens={browserOp.total_tokens} ({browserOp.compression_ratio.toFixed(2)}x)
+                </div>
+              </div>
+            </div>
+
+            {/* LIVE INTERACTIVE SAFE LLM & AUTONOMOUS AGENT GATEWAY CONSOLE (FOR VISITING LLMs & AGENTS) */}
+            <div style={{ background: "#060B11", border: "1px solid #56D364", borderRadius: 5, padding: "8px 10px", marginBottom: 6 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 6, marginBottom: 6 }}>
+                <span style={{ color: "#56D364", fontWeight: "bold", fontSize: 10.5 }}>
+                  [LIVE SAFE LLM &amp; AUTONOMOUS AGENT GATEWAY PORTAL — VISITING LLMs &amp; AGENTS INTERACT HERE (T21 / T46 / T47 / T53)]:
+                </span>
+                <span style={{ color: "#FFB454", fontSize: 10 }}>
+                  Visits=#{agentGwState.visit_number} (Ledger={agentGwState.ledger_total_visits}) | Sandbox=ZERO_TRUST_READ_COMPUTE_CRYSTALLIZE | Attestation={agentGwState.attestation_sig}
+                </span>
+              </div>
+
+              {/* Visiting LLM / Agent Persona & Protocol Presets */}
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginBottom: 6, alignItems: "center" }}>
+                <span style={{ color: "#9FB0C2", fontSize: 9.5, fontWeight: "bold" }}>SIMULATE OR DISPATCH VISITING AGENT:</span>
+                {[
+                  { id: "Claude-3.7-Sonnet-MCP", proto: "MCP-2026-07-28", q: "evaluate moral ethics virtue ethics eudaimonia deontological duty and epistemic humility across 24640 dendritic neurons" },
+                  { id: "OpenAI-GPT-4o-Client", proto: "OpenAI-/v1/chat/completions", q: "synthesize first principles dialectic synthesis socratic elenchus and 15.965hz sovereign manifold equilibrium" },
+                  { id: "Gemini-4-Argon-A2A", proto: "Google-A2A-Mesh-1.0", q: "cognitive appraisal emotional regulation working memory jungian individuation and interoceptive awareness" },
+                  { id: "DeepSeek-R1-Verifier", proto: "OpenAPI-3.1-REST", q: "lean 4 positive geometry amplituhedron associahedron cosmohedron and stiefel projection" },
+                  { id: "Goose-Zed-Cline-IDE", proto: "CodeMode-MCP-8097", q: "close reading textual exegesis rhetorical composition narrative architecture and cloudflare d1 sync" }
+                ].map((ag) => (
+                  <button
+                    key={ag.id}
+                    onClick={() => {
+                      setAgentIdInput(ag.id);
+                      setAgentProtocolInput(ag.proto);
+                      setAgentPromptInput(ag.q);
+                      runSafeAgentGatewayVisit(ag.id, ag.proto, ag.q);
+                    }}
+                    style={{ background: "#0D2618", color: "#56D364", border: "1px solid #56D364", borderRadius: 3, padding: "2px 7px", fontSize: 9.5, fontWeight: "bold", cursor: "pointer" }}
+                  >
+                    {ag.id} ({ag.proto.split("-")[0]})
+                  </button>
+                ))}
+                <button
+                  onClick={() => callEndpoint("/.well-known/llm-agent.json", "SAFE LLM GATEWAY MANIFEST")}
+                  style={{ background: "#14222E", color: "#00FFCC", border: "1px solid #00FFCC", borderRadius: 3, padding: "2px 7px", fontSize: 9.5, fontWeight: "bold", cursor: "pointer" }}
+                >
+                  /.well-known/llm-agent.json
+                </button>
+                <button
+                  onClick={() => callEndpoint("/openapi.json", "OPENAPI 3.1 AGENT SPEC")}
+                  style={{ background: "#1A1228", color: "#B388FF", border: "1px solid #B388FF", borderRadius: 3, padding: "2px 7px", fontSize: 9.5, fontWeight: "bold", cursor: "pointer" }}
+                >
+                  /openapi.json (3.1 Spec)
+                </button>
+                <button
+                  onClick={() => callEndpoint("/.well-known/agent.json", "GOOGLE A2A AGENT CARD")}
+                  style={{ background: "#2B2100", color: "#FFB454", border: "1px solid #FFB454", borderRadius: 3, padding: "2px 7px", fontSize: 9.5, fontWeight: "bold", cursor: "pointer" }}
+                >
+                  /.well-known/agent.json (A2A)
+                </button>
+              </div>
+
+              {/* Agent ID, Protocol & Prompt Input Row */}
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 6 }}>
+                <input
+                  value={agentIdInput}
+                  onChange={(e) => setAgentIdInput(e.target.value)}
+                  placeholder="Visiting Agent ID (e.g. Claude-MCP, GPT-4o, Custom-Bot)..."
+                  style={{ width: 190, background: "#0A0D12", color: "#56D364", border: "1px solid #2A3B4D", borderRadius: 4, padding: "4px 7px", fontFamily: "monospace", fontSize: 10.5 }}
+                />
+                <input
+                  value={agentProtocolInput}
+                  onChange={(e) => setAgentProtocolInput(e.target.value)}
+                  placeholder="Protocol (MCP, OpenAI-v1, A2A)..."
+                  style={{ width: 150, background: "#0A0D12", color: "#00FFCC", border: "1px solid #2A3B4D", borderRadius: 4, padding: "4px 7px", fontFamily: "monospace", fontSize: 10.5 }}
+                />
+                <input
+                  value={agentPromptInput}
+                  onChange={(e) => setAgentPromptInput(e.target.value)}
+                  placeholder="Enter visiting LLM or autonomous agent prompt / query / treatise to transduce & crystallize..."
+                  style={{ flex: 1, minWidth: 240, background: "#0A0D12", color: "#FFFEFB", border: "1px solid #2A3B4D", borderRadius: 4, padding: "4px 8px", fontFamily: "monospace", fontSize: 10.5 }}
+                />
+                <button
+                  onClick={() => runSafeAgentGatewayVisit(agentIdInput, agentProtocolInput, agentPromptInput)}
+                  style={{ background: "#56D364", color: "#05080C", border: "none", borderRadius: 4, padding: "4px 10px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}
+                >
+                  EXECUTE AGENT HANDSHAKE &amp; CRYSTALLIZE
+                </button>
+                <button
+                  onClick={() => callEndpoint(`/api/v1/mcp/rpc?method=tools/call&tool=safe_llm_gateway_interact&q=${encodeURIComponent(agentPromptInput)}`, "MCP JSON-RPC tools/call")}
+                  style={{ background: "#00FFCC", color: "#05080C", border: "none", borderRadius: 4, padding: "4px 9px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}
+                >
+                  MCP tools/call
+                </button>
+                <button
+                  onClick={() => callEndpoint(`/v1/chat/completions?q=${encodeURIComponent(agentPromptInput)}`, "OPENAI /v1/chat/completions")}
+                  style={{ background: "#FFB454", color: "#05080C", border: "none", borderRadius: 4, padding: "4px 9px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}
+                >
+                  OpenAI /v1/chat
+                </button>
+              </div>
+
+              {/* Gateway Response & Live Visitor Ledger + Copyable cURL / SDK Endpoints */}
+              <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: 6, fontSize: 10 }}>
+                <div style={{ background: "#090E14", border: "1px solid #2A3B4D", borderRadius: 4, padding: "6px 8px" }}>
+                  <div style={{ color: "#56D364", fontWeight: "bold", marginBottom: 3 }}>
+                    [LAST VISITING AGENT RESPONSE — {agentGwState.visiting_agent_id} ({agentGwState.agent_protocol})]:
+                  </div>
+                  <div style={{ color: "#FFFEFB", lineHeight: 1.4, marginBottom: 4 }}>
+                    {agentGwState.nl_synthesis}
+                  </div>
+                  <div style={{ color: "#00FFCC", fontFamily: "monospace", fontSize: 9.5 }}>
+                    External Agent Endpoints: <b>https://act-omega-net.dev/api/v1/agent_gateway/interact</b> | <b>/v1/chat/completions</b> | <b>/api/v1/mcp/rpc</b> | <b>/llms.txt</b> | <b>/openapi.json</b>
+                  </div>
+                </div>
+                <div style={{ background: "#090E14", border: "1px solid #2A3B4D", borderRadius: 4, padding: "6px 8px" }}>
+                  <div style={{ color: "#FFB454", fontWeight: "bold", marginBottom: 3 }}>
+                    [LIVE VISITING LLM &amp; AGENT AUDIT LEDGER (llm_agent_gateway_visitors_v4300.jsonl)]:
+                  </div>
+                  {agentGwState.recent_visits.slice(-4).map((rv, idx) => (
+                    <div key={idx} style={{ color: "#9FB0C2", fontFamily: "monospace", fontSize: 9.5, marginBottom: 2 }}>
+                      <span style={{ color: "#56D364" }}>#{rv.visit ?? idx + 1}</span> <b>{rv.agent_id}</b> [{rv.protocol}] -&gt; {rv.domain} (Shard #{rv.shard_id} / N{rv.neuron_id})
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>

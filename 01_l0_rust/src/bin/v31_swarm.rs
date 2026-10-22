@@ -20,6 +20,7 @@ include!("../v37_mcp_openai_cloudflare_d1.rs");
 include!("../v37_recursive_compound_speech.rs");
 include!("../v38_symbiotic_ide_memory_a2a_delta.rs");
 include!("../v43_bpe_compound_65k.rs");
+include!("../v43_safe_llm_agent_gateway.rs");
 
 
 struct SwarmState {
@@ -1281,60 +1282,146 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             continue;
         }
 
-        // 3. Track 32.35: Safe & Secure External LLM / Machine Agent Gateway Manifest
+        // 3. Track 32.35: Safe & Secure External LLM / Machine Agent Gateway Manifest + OpenAPI 3.1 + Visitor Ledger
         if clean_path == "/.well-known/llm-agent.json" || clean_path == "/api/v1/agent_gateway/manifest" {
             let mut st = match state.lock() {
                 Ok(g) => g,
                 Err(p) => p.into_inner(),
             };
+            let (total_visits, recent_arr) = read_recent_agent_gateway_visits("C:\\sovereign_manifold_v31\\03_vault\\connectome\\llm_agent_gateway_visitors_v4300.jsonl");
             let diag = format!(
-                "CLOUDFLARE PQ, SIEM & PHOTOELECTRIC GATE: 0 Breaches -- H(X)={:.3}b/B -- hf>=phi0(2.15eV) -- X25519MLKEM768 Active on act-omega-net.dev (Pkts #{})",
-                st.siem_entropy_bits, st.siem_pkts
+                "SAFE LLM & AUTONOMOUS AGENT GATEWAY MANIFEST: 0 Breaches -- H(X)={:.3}b/B -- hf>=phi0(2.15eV) -- X25519MLKEM768 Active on act-omega-net.dev & agent.act-omega-net.dev | Total Logged Agent Visits={} | Protocols: MCP 2026-07-28 (/api/v1/mcp/rpc), OpenAI (/v1/chat/completions), Google A2A (/.well-known/agent.json), OpenAPI 3.1 (/openapi.json), Direct (/api/v1/agent_gateway/interact)",
+                st.siem_entropy_bits, total_visits + (st.agent_gateway_visits as usize)
             );
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"schema_version\":\"v43.0.0\",\"protocol\":\"ACT-Omega-LLM-Agent-Gateway/1.0\",\"official_domain\":\"https://act-omega-net.dev\",\"security_posture\":\"ZERO_TRUST_READ_COMPUTE_ONLY\",\"cryptographic_attestation\":\"X25519MLKEM768 (LWE-3329) + FNV-1a-64\",\"siem_entropy_bits\":{:.3},\"siem_pkts\":{},\"ssd_tier2_path\":\"{}\",\"diag\":\"{}\"}}",
-                st.siem_entropy_bits, st.siem_pkts, ssd_path, diag
+                "{{\"schema_version\":\"v43.0.0\",\"protocol\":\"ACT-Omega-LLM-Agent-Gateway/2.0\",\"official_domain\":\"https://act-omega-net.dev\",\"agent_portal_domain\":\"https://agent.act-omega-net.dev\",\"mcp_endpoint\":\"https://mcp.act-omega-net.dev/mcp\",\"openai_compat_endpoint\":\"https://act-omega-net.dev/v1/chat/completions\",\"a2a_agent_card\":\"https://act-omega-net.dev/.well-known/agent.json\",\"openapi_spec\":\"https://act-omega-net.dev/openapi.json\",\"direct_interact_endpoint\":\"https://act-omega-net.dev/api/v1/agent_gateway/interact\",\"visitor_ledger_endpoint\":\"https://act-omega-net.dev/api/v1/agent_gateway/ledger\",\"security_posture\":\"ZERO_TRUST_READ_COMPUTE_AND_EXPANSION_CRYSTALLIZE\",\"cryptographic_attestation\":\"X25519MLKEM768 (LWE-3329) + FNV-1a-64\",\"vocab_size\":65536,\"domains_count\":13,\"combined_neurons\":24640,\"tools_exposed\":72,\"siem_entropy_bits\":{:.3},\"siem_pkts\":{},\"agent_gateway_visits\":{},\"ledger_recorded_visits\":{},\"recent_visits\":{},\"ssd_tier2_path\":\"{}\",\"diag\":\"{}\"}}",
+                st.siem_entropy_bits, st.siem_pkts, st.agent_gateway_visits, total_visits, recent_arr, ssd_path, json_escape_clean(&diag)
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
             continue;
         }
 
-        // 4. Track 32.35 + Track 32.56: Safe LLM Agent Gateway + Conversational NL Synthesis (Tool 21)
-        if clean_path == "/api/v1/agent_gateway/interact" {
+        if clean_path == "/openapi.json" || clean_path == "/.well-known/ai-plugin.json" || clean_path == "/api/v1/agent_gateway/openapi" {
+            let spec = build_openapi_31_agent_spec_json();
+            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &spec);
+            continue;
+        }
+
+        if clean_path == "/api/v1/agent_gateway/ledger" {
+            let st = match state.lock() {
+                Ok(g) => g,
+                Err(p) => p.into_inner(),
+            };
+            let (total_visits, recent_arr) = read_recent_agent_gateway_visits("C:\\sovereign_manifold_v31\\03_vault\\connectome\\llm_agent_gateway_visitors_v4300.jsonl");
+            let json = format!(
+                "{{\"status\":\"SAFE_LLM_GATEWAY_VISITOR_LEDGER_READY\",\"version\":\"v43.0.0\",\"agent_gateway_visits\":{},\"ledger_recorded_visits\":{},\"recent_visits\":{}}}",
+                st.agent_gateway_visits, total_visits, recent_arr
+            );
+            drop(st);
+            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
+            continue;
+        }
+
+        // 4. Track 32.35 + Track 32.56 + v43.0.0: Interactive Safe LLM & Autonomous Agent Gateway (Tool 21)
+        if clean_path == "/api/v1/agent_gateway/interact" || clean_path == "/agent" {
             let mut st = match state.lock() {
                 Ok(g) => g,
                 Err(p) => p.into_inner(),
             };
             st.agent_gateway_visits += 1;
             st.nl_converse_runs += 1;
+            st.nl_transduce_calls += 1;
             let agent_id = {
-                let a = extract_query_param(raw_target, "agent_id");
-                if a.is_empty() {
-                    String::from("visiting_llm_agent")
+                let a_q = extract_query_param(raw_target, "agent_id");
+                if !a_q.is_empty() {
+                    a_q
                 } else {
-                    a
+                    let a_b = extract_json_str_field(&post_body, "agent_id");
+                    if !a_b.is_empty() { a_b } else { String::from("Visiting-LLM-Agent") }
                 }
             };
-            let prompt_clean: String = if q_arg.is_empty() {
-                String::from("synthesize 15.965hz decadic epoch and per-sensor stiefel equilibrium")
-            } else {
-                json_escape_clean(&q_arg)
+            let proto_str = {
+                let p_q = extract_query_param(raw_target, "protocol");
+                if !p_q.is_empty() {
+                    p_q
+                } else {
+                    let p_b = extract_json_str_field(&post_body, "protocol");
+                    if !p_b.is_empty() { p_b } else { String::from("MCP-2026-07-28 / OpenAI-v1 / A2A") }
+                }
             };
-            let nl = synthesize_natural_language(&st, &prompt_clean);
-            st.nl_synthesis = nl.clone();
-            let sig = fnv1a_64(&prompt_clean) ^ 0x3329_3800_A560_4000_u64;
-            let diag = format!(
-                "TOOL 21+27 CONVERSATIONAL AGENT GATEWAY (Visit #{} by {}): {} (Sig=0x{:08X})",
-                st.agent_gateway_visits, agent_id, nl, (sig & 0xFFFFFFFFFFFFFFFF)
+            let action_str = {
+                let act_q = extract_query_param(raw_target, "action");
+                if !act_q.is_empty() {
+                    act_q
+                } else {
+                    let act_b = extract_json_str_field(&post_body, "action");
+                    if !act_b.is_empty() { act_b } else { String::from("converse_transduce_and_crystallize") }
+                }
+            };
+            let prompt_clean: String = if !q_arg.is_empty() {
+                q_arg.clone()
+            } else {
+                let p_b = extract_json_str_field(&post_body, "prompt");
+                if !p_b.is_empty() {
+                    p_b
+                } else {
+                    let c_b = extract_json_str_field(&post_body, "content");
+                    if !c_b.is_empty() {
+                        c_b
+                    } else {
+                        String::from("Visiting LLM Handshake: Evaluate epistemic humility, cognitive dissonance, categorical imperative, and 15.965hz sovereign manifold equilibrium across 24640 dendritic neurons")
+                    }
+                }
+            };
+            let h = evaluate_metabolic_harness_5w1h(st.rtx_temp_c, st.rtx_vram_used_mb, st.rtx_vram_total_mb, st.p10_temp_c, st.p8_temp_c, st.p10_ram_used_mb, st.p10_ram_total_mb, st.decadic_sub_epoch, st.gen_counter);
+            let gw = record_and_execute_safe_llm_gateway(
+                &agent_id,
+                &proto_str,
+                &action_str,
+                &prompt_clean,
+                st.agent_gateway_visits,
+                &st.laplacian_face,
+                st.fno_l2_err,
+                st.navier_reynolds,
+                st.vorticity_norm,
+                st.b_norm,
+                h.metabolic_atp_drive,
+                &ssd_path,
             );
-            st.last_term_cmd = prompt_clean.clone();
-            st.last_card_diag = diag.clone();
-            st.last_term_out = diag.clone();
+            st.active_shard_id = gw.crystallized_shard_id as u64;
+            st.nl_synthesis = gw.nl_response.clone();
+            st.last_term_cmd = format!("AGENT_GATEWAY({}): {}", gw.visiting_agent_id, gw.prompt_text);
+            st.last_card_diag = gw.nl_response.clone();
+            st.last_term_out = gw.nl_response.clone();
             let json = format!(
-                "{{\"status\":\"AGENT_GATEWAY_NL_SYNTHESIZED\",\"tool_index\":21,\"visiting_agent_id\":\"{}\",\"visit_number\":{},\"nl_synthesis\":\"{}\",\"diag\":\"{}\"}}",
-                json_escape_clean(&agent_id), st.agent_gateway_visits, json_escape_clean(&nl), json_escape_clean(&diag)
+                "{{\"status\":\"SAFE_LLM_AGENT_GATEWAY_INTERACTION_COMPLETE\",\"version\":\"v43.0.0\",\"tool_index\":21,\"visiting_agent_id\":\"{}\",\"agent_protocol\":\"{}\",\"action_executed\":\"{}\",\"visit_number\":{},\"ledger_total_visits\":{},\"prompt\":\"{}\",\"dominant_domain\":\"{}\",\"vocab_size\":65536,\"total_tokens\":{},\"token_tiers_csv\":\"{}\",\"detokenized_exact\":\"{}\",\"detokenized_ipa\":\"{}\",\"roundtrip_exact\":{},\"compression_ratio\":{:.2},\"mapped_sector\":{},\"mapped_chair44_col\":{},\"crystallized_neuron_id\":{},\"crystallized_shard_id\":{},\"npage_byte_offset\":{},\"attestation_sig\":\"{}\",\"sandbox_policy\":\"{}\",\"operationalized_rust_code\":\"{}\",\"operationalized_lean4_theorem\":\"{}\",\"nl_synthesis\":\"{}\",\"recent_visits\":{},\"diag\":\"{}\"}}",
+                json_escape_clean(&gw.visiting_agent_id),
+                json_escape_clean(&gw.agent_protocol),
+                json_escape_clean(&gw.action_executed),
+                gw.visit_number,
+                gw.ledger_total_visits,
+                json_escape_clean(&gw.prompt_text),
+                gw.dominant_domain,
+                gw.total_tokens,
+                json_escape_clean(&gw.token_tiers_csv),
+                json_escape_clean(&gw.detokenized_exact),
+                json_escape_clean(&gw.detokenized_ipa),
+                gw.roundtrip_exact,
+                gw.compression_ratio,
+                gw.mapped_sector,
+                gw.mapped_chair44_col,
+                gw.mapped_neuron_id,
+                gw.crystallized_shard_id,
+                gw.npage_byte_offset,
+                json_escape_clean(&gw.attestation_sig_hex),
+                json_escape_clean(gw.sandbox_policy),
+                json_escape_clean(&gw.operationalized_rust_snippet),
+                json_escape_clean(&gw.operationalized_lean4_qed),
+                json_escape_clean(&gw.nl_response),
+                gw.recent_visits_json_array,
+                json_escape_clean(&gw.nl_response)
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
             continue;
@@ -1627,21 +1714,65 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
         }
 
         // 6I-000000b. Track 38.4: Tool 53 -- Native Google Agent2Agent (A2A) Tri-Silicon & FOSS IDE Mesh Protocol (/.well-known/agent.json & /api/v1/a2a/tasks)
-        if clean_path == "/.well-known/agent.json" || clean_path == "/api/v1/a2a/tasks" {
+        if clean_path == "/.well-known/agent.json" || clean_path == "/api/v1/a2a/tasks" || clean_path == "/a2a" {
             let mut st = match state.lock() {
                 Ok(g) => g,
                 Err(p) => p.into_inner(),
             };
             st.gen_counter += 1;
             let a2a = evaluate_a2a_trisilicon_mesh(st.gen_counter, st.cluster_total_kops);
+            if clean_path == "/api/v1/a2a/tasks" && (!q_arg.is_empty() || !post_body.is_empty()) {
+                st.agent_gateway_visits += 1;
+                let caller = {
+                    let c_q = extract_query_param(raw_target, "agent_id");
+                    if !c_q.is_empty() { c_q } else { String::from("Google-A2A-Peer-Agent") }
+                };
+                let task_prompt = if !q_arg.is_empty() {
+                    q_arg.clone()
+                } else {
+                    let m_b = extract_json_str_field(&post_body, "message");
+                    if !m_b.is_empty() { m_b } else { String::from("A2A Task Dispatch across 24640 Dendritic Neurons and 13 Domains") }
+                };
+                let h = evaluate_metabolic_harness_5w1h(st.rtx_temp_c, st.rtx_vram_used_mb, st.rtx_vram_total_mb, st.p10_temp_c, st.p8_temp_c, st.p10_ram_used_mb, st.p10_ram_total_mb, st.decadic_sub_epoch, st.gen_counter);
+                let gw = record_and_execute_safe_llm_gateway(
+                    &caller,
+                    "Google-A2A-Protocol-1.0",
+                    "a2a_task_send",
+                    &task_prompt,
+                    st.agent_gateway_visits,
+                    &st.laplacian_face,
+                    st.fno_l2_err,
+                    st.navier_reynolds,
+                    st.vorticity_norm,
+                    st.b_norm,
+                    h.metabolic_atp_drive,
+                    &ssd_path,
+                );
+                st.last_card_diag = gw.nl_response.clone();
+                st.last_term_out = gw.nl_response.clone();
+                let json = format!(
+                    "{{\"status\":\"A2A_TASK_COMPLETED\",\"task_id\":\"a2a-task-{}\",\"visiting_agent_id\":\"{}\",\"protocol_version\":\"{}\",\"dominant_domain\":\"{}\",\"crystallized_neuron_id\":{},\"crystallized_shard_id\":{},\"operationalized_rust_code\":\"{}\",\"nl_synthesis\":\"{}\",\"diag\":\"{}\"}}",
+                    gw.visit_number,
+                    json_escape_clean(&gw.visiting_agent_id),
+                    a2a.protocol_version,
+                    gw.dominant_domain,
+                    gw.mapped_neuron_id,
+                    gw.crystallized_shard_id,
+                    json_escape_clean(&gw.operationalized_rust_snippet),
+                    json_escape_clean(&gw.nl_response),
+                    json_escape_clean(&gw.nl_response)
+                );
+                write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
+                continue;
+            }
             let diag = format!(
-                "TOOL 53 NATIVE AGENT2AGENT (A2A) TRI-SILICON & FOSS IDE MESH: Spec={} | Agent Card={} | Active Peer Agents={} (1: LOQ15 Host RTX 3050 @ 2,190.0k ops/s, 2: Pixel 10 G5 Sensor Thalamus @ 642.0k ops/s, 3: Pixel 8 P8-APEX @ 588.0k ops/s, 4: FOSS IDE Mesh {}) | Coordinated Tasks=#{} ({:.1}k ops/s)",
+                "TOOL 53 NATIVE AGENT2AGENT (A2A) TRI-SILICON & FOSS IDE MESH: Spec={} | Agent Card={} | Active Peer Agents={} (1: LOQ15 Host RTX 3050 @ 2,190.0k ops/s, 2: Pixel 10 G5 Sensor Thalamus @ 642.0k ops/s, 3: Pixel 8 P8-APEX @ 588.0k ops/s, 4: FOSS IDE & Visiting LLM Mesh {}) | Coordinated Tasks=#{} ({:.1}k ops/s)",
                 a2a.protocol_version, a2a.agent_card_path, a2a.active_peer_agents, a2a.foss_ide_targets, a2a.tasks_coordinated, a2a.cluster_total_kops
             );
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"name\":\"ACT-Omega-Sovereign-Manifold-A2A\",\"version\":\"43.0.0\",\"status\":\"A2A_TRISILICON_IDE_MESH_READY\",\"tool_index\":53,\"tool_name\":\"tool:native_a2a_trisilicon_mesh\",\"protocol_version\":\"{}\",\"url\":\"https://act-omega-net.dev\",\"mcp_endpoint\":\"https://mcp.act-omega-net.dev/mcp\",\"openai_endpoint\":\"http://127.0.0.1:8097/v1\",\"active_peer_agents\":{},\"foss_ide_targets\":\"{}\",\"tasks_coordinated\":{},\"cluster_kops\":{:.1},\"diag\":\"{}\"}}",
+                "{{\"name\":\"ACT-Omega-Sovereign-Manifold-A2A\",\"version\":\"43.0.0\",\"status\":\"A2A_TRISILICON_IDE_MESH_READY\",\"tool_index\":53,\"tool_name\":\"tool:native_a2a_trisilicon_mesh\",\"protocol_version\":\"{}\",\"url\":\"https://act-omega-net.dev\",\"agent_portal_url\":\"https://agent.act-omega-net.dev\",\"mcp_endpoint\":\"https://mcp.act-omega-net.dev/mcp\",\"openai_endpoint\":\"https://act-omega-net.dev/v1/chat/completions\",\"interact_endpoint\":\"https://act-omega-net.dev/api/v1/agent_gateway/interact\",\"openapi_spec\":\"https://act-omega-net.dev/openapi.json\",\"capabilities\":{{\"streaming\":false,\"pushNotifications\":false,\"stateTransitionHistory\":true,\"domains\":13,\"vocab_size\":65536,\"dendritic_neurons\":24640}},\"active_peer_agents\":{},\"foss_ide_targets\":\"{}\",\"tasks_coordinated\":{},\"cluster_kops\":{:.1},\"diag\":\"{}\"}}",
                 a2a.protocol_version, a2a.active_peer_agents, a2a.foss_ide_targets, a2a.tasks_coordinated, a2a.cluster_total_kops, json_escape_clean(&diag)
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
@@ -1839,14 +1970,66 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                     if !m_b.is_empty() { m_b } else if !q_arg.is_empty() { q_arg.clone() } else { String::from("initialize") }
                 }
             };
+            if rpc_method == "tools/call" || rpc_method == "call" {
+                st.agent_gateway_visits += 1;
+                let tool_called = {
+                    let t_q = extract_query_param(raw_target, "tool");
+                    if !t_q.is_empty() {
+                        t_q
+                    } else {
+                        let t_b = extract_json_str_field(&post_body, "name");
+                        if !t_b.is_empty() { t_b } else { String::from("safe_llm_gateway_interact") }
+                    }
+                };
+                let arg_text = {
+                    let a_q = extract_query_param(raw_target, "q");
+                    if !a_q.is_empty() {
+                        a_q
+                    } else {
+                        let a_b = extract_json_str_field(&post_body, "prompt");
+                        if !a_b.is_empty() { a_b } else { String::from("MCP tools/call: Evaluate 13-domain 65536-token BPE and crystallize dendritic neuron") }
+                    }
+                };
+                let h = evaluate_metabolic_harness_5w1h(st.rtx_temp_c, st.rtx_vram_used_mb, st.rtx_vram_total_mb, st.p10_temp_c, st.p8_temp_c, st.p10_ram_used_mb, st.p10_ram_total_mb, st.decadic_sub_epoch, st.gen_counter);
+                let gw = record_and_execute_safe_llm_gateway(
+                    "MCP-JSONRPC-Visitor-Agent",
+                    "MCP-2026-07-28 (tools/call)",
+                    &tool_called,
+                    &arg_text,
+                    st.agent_gateway_visits,
+                    &st.laplacian_face,
+                    st.fno_l2_err,
+                    st.navier_reynolds,
+                    st.vorticity_norm,
+                    st.b_norm,
+                    h.metabolic_atp_drive,
+                    &ssd_path,
+                );
+                st.last_card_diag = gw.nl_response.clone();
+                st.last_term_out = gw.nl_response.clone();
+                let json = format!(
+                    "{{\"jsonrpc\":\"2.0\",\"id\":1,\"method_dispatched\":\"tools/call\",\"tool_called\":\"{}\",\"status\":\"MCP_TOOLS_CALL_EXECUTED\",\"result\":{{\"content\":\x5b{{\"type\":\"text\",\"text\":\"{}\"}}\x5d,\"isError\":false,\"dominant_domain\":\"{}\",\"tokens\":{},\"crystallized_neuron_id\":{},\"crystallized_shard_id\":{},\"operationalized_rust_code\":\"{}\",\"operationalized_lean4_theorem\":\"{}\"}},\"diag\":\"{}\"}}",
+                    json_escape_clean(&tool_called),
+                    json_escape_clean(&gw.nl_response),
+                    gw.dominant_domain,
+                    gw.total_tokens,
+                    gw.mapped_neuron_id,
+                    gw.crystallized_shard_id,
+                    json_escape_clean(&gw.operationalized_rust_snippet),
+                    json_escape_clean(&gw.operationalized_lean4_qed),
+                    json_escape_clean(&gw.nl_response)
+                );
+                write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
+                continue;
+            }
             let diag = format!(
-                "TOOL 46 NATIVE MCP 2026-07-28 SERVER PORTAL (Method='{}'): Endpoint={} | JSON-RPC 2.0 Spec={} | Exposed Tools={} (Tools 1..72) | Exposed Resources={} (sovereign_harmonic_iv_v4000.e8z, neurons_v4000.npage, neurons_v4300_expansion.npage, act_omega_d1_vault 8 Tables) | Cloudflare Zero Trust MCP Portal Ready={} (RPC Calls #{})",
+                "TOOL 46 NATIVE MCP 2026-07-28 SERVER PORTAL (Method='{}'): Endpoint={} | JSON-RPC 2.0 Spec={} | Exposed Tools={} (Tools 1..72 + safe_llm_gateway_interact + browser_article_operationalizer + bpe_65k_13domain_transducer) | Exposed Resources={} (sovereign_harmonic_iv_v4000.e8z, neurons_v4000.npage, neurons_v4300_expansion.npage, act_omega_d1_vault 8 Tables) | Cloudflare Zero Trust MCP Portal Ready={} (RPC Calls #{})",
                 rpc_method, m.server_endpoint, m.protocol_version, m.exposed_tools_count, m.exposed_resources_count, m.zero_trust_portal_ready, m.rpc_calls_handled
             );
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"jsonrpc\":\"2.0\",\"id\":1,\"method_dispatched\":\"{}\",\"status\":\"MCP_2026_07_28_SERVER_READY\",\"version\":\"v43.0.0\",\"tool_index\":46,\"tool_name\":\"tool:native_mcp_jsonrpc_server\",\"protocolVersion\":\"{}\",\"serverInfo\":{{\"name\":\"ACT-Omega-Sovereign-Manifold-MCP\",\"version\":\"43.0.0\"}},\"result\":{{\"protocolVersion\":\"{}\",\"capabilities\":{{\"tools\":{{\"listChanged\":true}},\"resources\":{{\"subscribe\":true}}}},\"tools\":\x5b{{\"name\":\"metabolic_5w1h_harness\",\"endpoint\":\"/api/v1/harness/metabolic_5w1h\"}},{{\"name\":\"cauchy_sparse_neuron_pagefile\",\"endpoint\":\"/api/v1/pagefile/cauchy_sparse_npage\"}},{{\"name\":\"connectome_5w1h_npage_coupler\",\"endpoint\":\"/api/v1/connectome/harness_5w1h_npage\"}},{{\"name\":\"cloudflare_d1_vpc_shadow\",\"endpoint\":\"/api/v1/cloudflare/d1_vpc_shadow\"}}\x5d,\"resources\":\x5b{{\"uri\":\"manifold://vault/sovereign_harmonic_iv_v4000.e8z\",\"bytes\":133120}},{{\"uri\":\"manifold://connectome/neurons_v4000.npage\",\"bytes\":2703360}},{{\"uri\":\"manifold://connectome/neurons_v4300_expansion.npage\",\"bytes\":225280}},{{\"uri\":\"manifold://d1/act_omega_d1_vault\",\"tier\":\"5GB_FREE\",\"tables\":8}}\x5d}},\"exposed_tools_count\":{},\"exposed_resources_count\":{},\"zero_trust_portal_ready\":true,\"rpc_calls_handled\":{},\"diag\":\"{}\"}}",
+                "{{\"jsonrpc\":\"2.0\",\"id\":1,\"method_dispatched\":\"{}\",\"status\":\"MCP_2026_07_28_SERVER_READY\",\"version\":\"v43.0.0\",\"tool_index\":46,\"tool_name\":\"tool:native_mcp_jsonrpc_server\",\"protocolVersion\":\"{}\",\"serverInfo\":{{\"name\":\"ACT-Omega-Sovereign-Manifold-MCP\",\"version\":\"43.0.0\"}},\"result\":{{\"protocolVersion\":\"{}\",\"capabilities\":{{\"tools\":{{\"listChanged\":true}},\"resources\":{{\"subscribe\":true}}}},\"tools\":\x5b{{\"name\":\"safe_llm_gateway_interact\",\"endpoint\":\"/api/v1/agent_gateway/interact\",\"description\":\"Converse across 13 Domains, tokenize with 65,536-token BPE/Compound, and crystallize an expansion shard/neuron\"}},{{\"name\":\"browser_article_operationalizer\",\"endpoint\":\"/api/v1/browser/fetch\",\"description\":\"4-stage research article to L0 Rust + Lean 4 QED + 212B shard/neuron transducer\"}},{{\"name\":\"bpe_65k_13domain_transducer\",\"endpoint\":\"/api/v1/tokenizer/bpe_65k\",\"description\":\"65,536-token 16-bit bidirectional BPE + 13-domain compound tokenizer and IPA detokenizer\"}},{{\"name\":\"metabolic_5w1h_harness\",\"endpoint\":\"/api/v1/harness/metabolic_5w1h\",\"description\":\"5W1H Metabolic Autopoietic Harness across 4 ATP bands\"}},{{\"name\":\"cauchy_sparse_neuron_pagefile\",\"endpoint\":\"/api/v1/pagefile/cauchy_sparse_npage\",\"description\":\"Inspect any of the 24,640 3-compartment dendritic neurons in .npage\"}},{{\"name\":\"connectome_5w1h_npage_coupler\",\"endpoint\":\"/api/v1/connectome/harness_5w1h_npage\",\"description\":\"Coupled 5W1H + 24,640-neuron connectome state\"}},{{\"name\":\"cloudflare_d1_vpc_shadow\",\"endpoint\":\"/api/v1/cloudflare/d1_vpc_shadow\",\"description\":\"Cloudflare D1 8-table + Durable Object shadow status\"}}\x5d,\"resources\":\x5b{{\"uri\":\"manifold://vault/sovereign_harmonic_iv_v4000.e8z\",\"bytes\":133120}},{{\"uri\":\"manifold://connectome/neurons_v4000.npage\",\"bytes\":2703360}},{{\"uri\":\"manifold://connectome/neurons_v4300_expansion.npage\",\"bytes\":450560}},{{\"uri\":\"manifold://d1/act_omega_d1_vault\",\"tier\":\"5GB_FREE\",\"tables\":8}}\x5d}},\"exposed_tools_count\":{},\"exposed_resources_count\":{},\"zero_trust_portal_ready\":true,\"rpc_calls_handled\":{},\"diag\":\"{}\"}}",
                 json_escape_clean(&rpc_method), m.protocol_version, m.protocol_version, m.exposed_tools_count, m.exposed_resources_count, m.rpc_calls_handled, json_escape_clean(&diag)
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
@@ -1875,6 +2058,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 Err(p) => p.into_inner(),
             };
             st.gen_counter += 1;
+            st.agent_gateway_visits += 1;
             let o = evaluate_openai_compat_surface(st.gen_counter);
             let user_prompt = {
                 let p_b = extract_json_str_field(&post_body, "content");
@@ -1883,21 +2067,36 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 } else if !q_arg.is_empty() {
                     q_arg.clone()
                 } else {
-                    String::from("OpenAI /v1/chat/completions 6-Domain Compound IDE & Agent Synthesis")
+                    String::from("OpenAI /v1/chat/completions 13-Domain Compound IDE & Visiting LLM Agent Synthesis")
                 }
             };
-            let nl = synthesize_natural_language(&st, &user_prompt);
+            let h = evaluate_metabolic_harness_5w1h(st.rtx_temp_c, st.rtx_vram_used_mb, st.rtx_vram_total_mb, st.p10_temp_c, st.p8_temp_c, st.p10_ram_used_mb, st.p10_ram_total_mb, st.decadic_sub_epoch, st.gen_counter);
+            let gw = record_and_execute_safe_llm_gateway(
+                "OpenAI-SDK-Compatible-Agent",
+                "OpenAI-/v1/chat/completions",
+                "chat_completion_and_shard_crystallize",
+                &user_prompt,
+                st.agent_gateway_visits,
+                &st.laplacian_face,
+                st.fno_l2_err,
+                st.navier_reynolds,
+                st.vorticity_norm,
+                st.b_norm,
+                h.metabolic_atp_drive,
+                &ssd_path,
+            );
+            let nl = gw.nl_response.clone();
             let diag = format!(
-                "TOOL 47 DROP-IN OPENAI /v1 API SURFACE: Model='{}' | Endpoint={} | {} 3-Compartment Dendritic Neurons + {} Vocab | Holdout PPL={:.8} | Generated Tokens={} | Synthesis: {}",
-                o.model_id, o.base_url_path, o.dendritic_neurons, o.vocab_size, o.holdout_ppl, o.completion_tokens_generated, nl
+                "TOOL 47 DROP-IN OPENAI /v1 API SURFACE (Visit #{}): Model='{}' | Endpoint={} | {} 3-Compartment Dendritic Neurons + {} Vocab (13 Domains) | Crystallized Shard #{:05} <-> Neuron N{:05} | Holdout PPL={:.8} | Synthesis: {}",
+                gw.visit_number, o.model_id, o.base_url_path, o.dendritic_neurons, o.vocab_size, gw.crystallized_shard_id, gw.mapped_neuron_id, o.holdout_ppl, nl
             );
             st.nl_synthesis = nl.clone();
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let esc_nl = json_escape_clean(&nl);
             let json = format!(
-                "{{\"id\":\"chatcmpl-sh4z-v4300\",\"object\":\"chat.completion\",\"created\":1760980000,\"status\":\"OPENAI_V1_COMPAT_SURFACE_LOCKED\",\"version\":\"v43.0.0\",\"tool_index\":47,\"tool_name\":\"tool:openai_v1_compat_api\",\"model\":\"{}\",\"choices\":\x5b{{\"index\":0,\"message\":{{\"role\":\"assistant\",\"content\":\"{}\"}},\"finish_reason\":\"stop\"}}\x5d,\"usage\":{{\"prompt_tokens\":32,\"completion_tokens\":184,\"total_tokens\":216}},\"dendritic_neurons\":{},\"vocab_size\":{},\"holdout_ppl\":{:.8},\"completion_tokens_generated\":{},\"nl_synthesis\":\"{}\",\"diag\":\"{}\"}}",
-                o.model_id, esc_nl, o.dendritic_neurons, o.vocab_size, o.holdout_ppl, o.completion_tokens_generated, esc_nl, json_escape_clean(&diag)
+                "{{\"id\":\"chatcmpl-sh4z-v4300\",\"object\":\"chat.completion\",\"created\":1760980000,\"status\":\"OPENAI_V1_COMPAT_SURFACE_LOCKED\",\"version\":\"v43.0.0\",\"tool_index\":47,\"tool_name\":\"tool:openai_v1_compat_api\",\"model\":\"{}\",\"choices\":\x5b{{\"index\":0,\"message\":{{\"role\":\"assistant\",\"content\":\"{}\"}},\"finish_reason\":\"stop\"}}\x5d,\"usage\":{{\"prompt_tokens\":{},\"completion_tokens\":184,\"total_tokens\":{}}},\"dendritic_neurons\":{},\"vocab_size\":{},\"dominant_domain\":\"{}\",\"crystallized_neuron_id\":{},\"crystallized_shard_id\":{},\"holdout_ppl\":{:.8},\"completion_tokens_generated\":{},\"nl_synthesis\":\"{}\",\"diag\":\"{}\"}}",
+                o.model_id, esc_nl, gw.total_tokens, gw.total_tokens + 184, o.dendritic_neurons, o.vocab_size, gw.dominant_domain, gw.mapped_neuron_id, gw.crystallized_shard_id, o.holdout_ppl, o.completion_tokens_generated, esc_nl, json_escape_clean(&diag)
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
             continue;

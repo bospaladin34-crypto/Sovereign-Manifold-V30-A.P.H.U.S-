@@ -1,5 +1,5 @@
 // =============================================================================
-// ACT-OMEGA NET v43.0.0 (SOVEREIGN RECURSIVE OPTIMIZER & 5W1H LOAD-SHIFT / SH4Z v4300)
+// ACT-OMEGA NET v44.0.0 (SOVEREIGN RECURSIVE OPTIMIZER & 5W1H LOAD-SHIFT / SH4Z v4400)
 // MODULE 1: HARDWARE-METABOLIC AUTOPOIETIC DRIVE ENGINE & 4-BAND DYNAMIC 5W1H
 //           LOAD-SHIFT STRESS SIMULATOR (TOOL 45)
 // ZERO SQUARE BRACKETS ENFORCED (ZERO SQUARE BRACKETS IN SOURCE)
@@ -192,7 +192,7 @@ pub fn execute_v37_harness_slash(
     } else if prompt.starts_with("/harness") || prompt.starts_with("/5w1h") || prompt.starts_with("/metabolic") || prompt.starts_with("/coordinator") {
         let h = evaluate_metabolic_harness_5w1h(rtx_temp_c, rtx_vram_used_mb, rtx_vram_total_mb, p10_temp_c, p8_temp_c, p10_ram_used_mb, p10_ram_total_mb, sub_epoch, gen_counter);
         Some(format!(
-            "SLASH INTERRUPT /5w1h (SH4Z v4300 Tool 45 Metabolic Harness): M_ATP={:.4} (Band #{}: {}) | CPU Threads={}/{} | Free RAM={}/{}MB | RTX 3050 Free VRAM={}/{}MB (Thermal Headroom={:.1}C) | Bound to neurons_v4000.npage ({} Neurons, {}B) | Active 5W1H Rule #{}: {} | {} | {} | {} | {}",
+            "SLASH INTERRUPT /5w1h (SH4Z v4400 Tool 45 Metabolic Harness): M_ATP={:.4} (Band #{}: {}) | CPU Threads={}/{} | Free RAM={}/{}MB | RTX 3050 Free VRAM={}/{}MB (Thermal Headroom={:.1}C) | Bound to neurons_v4000.npage ({} Neurons, {}B) | Active 5W1H Rule #{}: {} | {} | {} | {} | {}",
             h.metabolic_atp_drive, h.metabolic_band_id, h.metabolic_regime, h.host_cpu_active_threads, h.host_cpu_total_threads, h.host_ram_free_mb, h.host_ram_total_mb, h.rtx3050_vram_free_mb, h.rtx3050_vram_total_mb, h.thermal_headroom_c, h.npage_bound_neurons, h.npage_bound_bytes, h.coord_rule_id, h.coord_why, h.coord_what, h.coord_where, h.coord_when, h.coord_how
         ))
     } else {

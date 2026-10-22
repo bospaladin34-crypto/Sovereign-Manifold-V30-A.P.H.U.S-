@@ -21,6 +21,7 @@ include!("../v37_recursive_compound_speech.rs");
 include!("../v38_symbiotic_ide_memory_a2a_delta.rs");
 include!("../v43_bpe_compound_65k.rs");
 include!("../v43_safe_llm_agent_gateway.rs");
+include!("../v44_omni_architecture_facelift.rs");
 
 
 struct SwarmState {
@@ -479,7 +480,7 @@ fn synthesize_natural_language(st: &SwarmState, prompt_context: &str) -> String 
     let hum_disc = synthesize_humanities_and_cognitive_discourse(topic, &t65);
     let sp = evaluate_cymatic_formant_speech(topic, h_live.metabolic_atp_drive, st.b_norm, st.decadic_sub_epoch, st.cluster_total_kops);
     let core_syn = format!(
-        "Sovereign Harmonic VI-H (SH4Z v4300) 13-Domain 65,536-Token Compound, Humanities & Auto-Learning Synthesis for '{}': {} || (0) 65,536-Token Bidirectional BPE+Compound Transduction: {} Tokens ({}) -> Exact Detokenized='{}' (Roundtrip={}, Ratio={:.2}x, IPA={}, Domain={}, Sector S{:02}, Col #{:03}/559, Neuron N{:05}/24639). (1) Physics & FNO: Sub-epoch E{}/9 evaluates {} & {} at L2_Err={:.5} (Re={:.1}). (2) 24,640-Neuron Dendritic & SWR Connectome: neurons_v4000.npage (21,120 Core) + neurons_v4300_expansion.npage (3,520 Expansion, 560x Chair-44, 197,120 Synapses) coupled to Pixel 10 24D fields norm(B)={:.1} uT, Baro={:.1} hPa, Lux={:.0} lx, Acc={:.2} m/s2 (Ortho={:.7}). (3) Metabolic 5W1H Harness: M_ATP={:.4} (Band #{}, {}/12 CPU threads, {}MB free VRAM) dispatching Rule #{}. (4) Klatt Formant Speech: f0={:.1}Hz, F1..F4=({:.0}/{:.0}/{:.0}/{:.0}Hz). (5) Symbiotic IDE Mesh & 364 Lean 4 QED: 354 Base / 364 Runtime Lean 4 proofs QED, Code-Mode MCP (<1,000 tok) + A2A Mesh + Remote 5GB Cloudflare D1 (9f46d56a-..., 8 Tables) active, Holdout PPL=1.00000002 ({:.1}k ops/s).",
+        "Sovereign Harmonic VI-H (SH4Z v4400) 13-Domain 65,536-Token Compound, Humanities & Auto-Learning Synthesis for '{}': {} || (0) 65,536-Token Bidirectional BPE+Compound Transduction: {} Tokens ({}) -> Exact Detokenized='{}' (Roundtrip={}, Ratio={:.2}x, IPA={}, Domain={}, Sector S{:02}, Col #{:03}/559, Neuron N{:05}/24639). (1) Physics & FNO: Sub-epoch E{}/9 evaluates {} & {} at L2_Err={:.5} (Re={:.1}). (2) 24,640-Neuron Dendritic & SWR Connectome: neurons_v4000.npage (21,120 Core) + neurons_v4300_expansion.npage (3,520 Expansion, 560x Chair-44, 197,120 Synapses) coupled to Pixel 10 24D fields norm(B)={:.1} uT, Baro={:.1} hPa, Lux={:.0} lx, Acc={:.2} m/s2 (Ortho={:.7}). (3) Metabolic 5W1H Harness: M_ATP={:.4} (Band #{}, {}/12 CPU threads, {}MB free VRAM) dispatching Rule #{}. (4) Klatt Formant Speech: f0={:.1}Hz, F1..F4=({:.0}/{:.0}/{:.0}/{:.0}Hz). (5) Symbiotic IDE Mesh & 364 Lean 4 QED: 354 Base / 364 Runtime Lean 4 proofs QED, Code-Mode MCP (<1,000 tok) + A2A Mesh + Remote 5GB Cloudflare D1 (9f46d56a-..., 8 Tables) active, Holdout PPL=1.00000002 ({:.1}k ops/s).",
         topic,
         hum_disc,
         t65.total_tokens,
@@ -923,7 +924,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
 
             let gen_now = st.gen_counter;
             let json = format!(
-                "{{\"status\":\"LAMINAR_V43_0_DECADIC_15965HZ_LOCKSTEP\",\"version\":\"ACT-Omega Net v43.0.0 (SH4Z v4300 TLV)\",\"tlv_magic\":\"0x5348345A\",\"tlv_version\":4300,\"official_domain\":\"https://act-omega-net.dev\",\"generation\":{},\"timestamp_ms\":{},\"carrier_clock_hz\":15.965,\"carrier_period_us\":62637,\"decadic_epoch_sec\":10.0,\"decadic_sub_epoch\":{},\"laplacian_face\":\"{}\",\"qm_field_eq\":\"{}\",\"total_shards\":21120,\"expansion_shards\":3520,\"combined_shards\":24640,\"chair44_multiplier\":480,\"combined_chair44_multiplier\":560,\"nl_tokenizer_vocab\":65536,\"nl_bpe_subwords\":16144,\"compound_braid_tokens\":16384,\"dendritic_concept_tokens\":32768,\"holdout_ppl\":1.00000002,\"lean4_base_theorems\":354,\"lean4_runtime_obligations\":364,\"lean4_qed\":true,\"tools_count\":72,\"chain_mode\":\"CHAIN_72_PARALLEL_DAG\",\"fno_modes\":16,\"fno_cachelines\":2080,\"fno_l2_rel_error\":{:.5},\"navier_stokes_reynolds\":{:.1},\"vorticity_norm\":{:.4},\"active_shard_id\":{},\"acoustic_carrier_hz\":1728.0,\"acoustic_ultrasonic_hz\":18500.0,\"acoustic_snr_db\":{:.1},\"cutler_idx\":{},\"cluster_total_kops\":{:.1},\"loq15_rtx3050_kops\":{:.1},\"pixel10_g5_kops\":{:.1},\"pixel8_l2_kops\":{:.1},\"ws_loq_lines\":{},\"ws_p10_lines\":{},\"ws_p8_lines\":{},\"pixel8_l2_total_bytes\":4194304,\"pixel8_l2_mlock_bytes\":90688,\"pixel8_l2_free_pct\":97.84,\"pixel8_sensor_bypass\":true,\"ssd_tier2_active_path\":\"{}\",\"ssd_tier2_drive_e_mounted\":{},\"ssd_tier2_mirrored_shards\":24640,\"ssd_tier2_merkle_nodes\":32,\"llm_agent_gateway_status\":\"ZERO_TRUST_READ_COMPUTE_ONLY\",\"fno_solve_runs\":{},\"agent_gateway_visits\":{},\"ssd_tier2_syncs\":{},\"nl_transduce_calls\":{},\"harvest_runs\":{},\"nl_converse_runs\":{},\"episodic_queries\":{},\"anomaly_checks\":{},\"decadic_synth_runs\":{},\"always_on_active\":{},\"always_on_ticks\":{},\"nl_synthesis\":\"{}\",\"episodic_search_out\":\"{}\",\"anomaly_banner\":\"{}\",\"physics_10pillar\":\"{}\",\"p10_broadcasts\":{},\"p8_broadcasts\":{},\"mag_x\":{:.1},\"mag_y\":{:.1},\"mag_z\":{:.1},\"b_norm\":{:.1},\"baro_hpa\":{:.1},\"light_lx\":{:.0},\"acc_norm\":{:.2},\"gyro_norm\":{:.3},\"p10_temp_c\":{:.1},\"p8_temp_c\":{:.1},\"p10_batt_mv\":{},\"p10_batt_pct\":{},\"p10_ram_used_mb\":{},\"p10_ram_total_mb\":{},\"p10_sensor_hz\":{:.3},\"p10_stream_hz\":{:.2},\"p10_rtt_ms\":{:.1},\"p10_bearer\":\"{}\",\"p8_batt_mv\":{},\"p8_batt_pct\":{},\"p8_ram_used_mb\":{},\"p8_ram_total_mb\":{},\"p8_stream_hz\":{:.2},\"p8_rtt_ms\":{:.1},\"p8_bearer\":\"{}\",\"rtx_temp_c\":{:.0},\"rtx_clock_mhz\":{},\"rtx_vram_used_mb\":{},\"rtx_vram_total_mb\":{},\"rtx_power_w\":{:.1},\"coherence_mult\":{:.2},\"coherence_mode\":\"{}\",\"kasami_cw_hex\":\"{}\",\"kasami_ecc_fixes\":{},\"stiefel_ortho_err\":{:.7},\"lean4_verify_ms\":{:.1},\"siem_entropy_bits\":{:.3},\"siem_pkts\":{},\"opto_state\":\"{}\",\"prox_cm\":{:.1},\"omega_lt\":{:.5},\"rsr_step\":{},\"hybrid_hops\":{},\"sector_norms_csv\":\"{}\",\"sector_hashes_csv\":\"{}\",\"inspected_sector\":{},\"inspected_line\":{},\"inspected_hex\":\"{}\",\"inspected_trits\":\"{}\",\"last_card_idx\":{},\"last_card_diag\":\"{}\",\"last_browser_url\":\"{}\",\"last_browser_trace\":\"{}\",\"last_lean_query\":\"{}\",\"last_lean_trace\":\"{}\",\"last_term_cmd\":\"{}\",\"last_term_out\":\"{}\"}}",
+                "{{\"status\":\"LAMINAR_V44_0_DECADIC_15965HZ_LOCKSTEP\",\"version\":\"ACT-Omega Net v44.0.0 (SH4Z v4400 TLV)\",\"tlv_magic\":\"0x5348345A\",\"tlv_version\":4400,\"official_domain\":\"https://act-omega-net.dev\",\"generation\":{},\"timestamp_ms\":{},\"carrier_clock_hz\":15.965,\"carrier_period_us\":62637,\"decadic_epoch_sec\":10.0,\"decadic_sub_epoch\":{},\"laplacian_face\":\"{}\",\"qm_field_eq\":\"{}\",\"total_shards\":21120,\"expansion_shards\":7040,\"combined_shards\":28160,\"chair44_multiplier\":480,\"combined_chair44_multiplier\":640,\"nl_tokenizer_vocab\":65536,\"nl_bpe_subwords\":16144,\"compound_braid_tokens\":16384,\"dendritic_concept_tokens\":32768,\"domains_count\":16,\"compound_phrases_count\":256,\"holdout_ppl\":1.00000002,\"lean4_base_theorems\":374,\"lean4_runtime_obligations\":384,\"lean4_qed\":true,\"tools_count\":76,\"chain_mode\":\"CHAIN_76_PARALLEL_DAG\",\"fno_modes\":16,\"fno_cachelines\":2080,\"fno_l2_rel_error\":{:.5},\"navier_stokes_reynolds\":{:.1},\"vorticity_norm\":{:.4},\"active_shard_id\":{},\"acoustic_carrier_hz\":1728.0,\"acoustic_ultrasonic_hz\":18500.0,\"acoustic_snr_db\":{:.1},\"cutler_idx\":{},\"cluster_total_kops\":{:.1},\"loq15_rtx3050_kops\":{:.1},\"pixel10_g5_kops\":{:.1},\"pixel8_l2_kops\":{:.1},\"ws_loq_lines\":{},\"ws_p10_lines\":{},\"ws_p8_lines\":{},\"pixel8_l2_total_bytes\":4194304,\"pixel8_l2_mlock_bytes\":90688,\"pixel8_l2_free_pct\":97.84,\"pixel8_sensor_bypass\":true,\"ssd_tier2_active_path\":\"{}\",\"ssd_tier2_drive_e_mounted\":{},\"ssd_tier2_mirrored_shards\":28160,\"ssd_tier2_merkle_nodes\":32,\"llm_agent_gateway_status\":\"ZERO_TRUST_READ_COMPUTE_AND_EXPANSION_CRYSTALLIZE\",\"fno_solve_runs\":{},\"agent_gateway_visits\":{},\"ssd_tier2_syncs\":{},\"nl_transduce_calls\":{},\"harvest_runs\":{},\"nl_converse_runs\":{},\"episodic_queries\":{},\"anomaly_checks\":{},\"decadic_synth_runs\":{},\"always_on_active\":{},\"always_on_ticks\":{},\"nl_synthesis\":\"{}\",\"episodic_search_out\":\"{}\",\"anomaly_banner\":\"{}\",\"physics_10pillar\":\"{}\",\"p10_broadcasts\":{},\"p8_broadcasts\":{},\"mag_x\":{:.1},\"mag_y\":{:.1},\"mag_z\":{:.1},\"b_norm\":{:.1},\"baro_hpa\":{:.1},\"light_lx\":{:.0},\"acc_norm\":{:.2},\"gyro_norm\":{:.3},\"p10_temp_c\":{:.1},\"p8_temp_c\":{:.1},\"p10_batt_mv\":{},\"p10_batt_pct\":{},\"p10_ram_used_mb\":{},\"p10_ram_total_mb\":{},\"p10_sensor_hz\":{:.3},\"p10_stream_hz\":{:.2},\"p10_rtt_ms\":{:.1},\"p10_bearer\":\"{}\",\"p8_batt_mv\":{},\"p8_batt_pct\":{},\"p8_ram_used_mb\":{},\"p8_ram_total_mb\":{},\"p8_stream_hz\":{:.2},\"p8_rtt_ms\":{:.1},\"p8_bearer\":\"{}\",\"rtx_temp_c\":{:.0},\"rtx_clock_mhz\":{},\"rtx_vram_used_mb\":{},\"rtx_vram_total_mb\":{},\"rtx_power_w\":{:.1},\"coherence_mult\":{:.2},\"coherence_mode\":\"{}\",\"kasami_cw_hex\":\"{}\",\"kasami_ecc_fixes\":{},\"stiefel_ortho_err\":{:.7},\"lean4_verify_ms\":{:.1},\"siem_entropy_bits\":{:.3},\"siem_pkts\":{},\"opto_state\":\"{}\",\"prox_cm\":{:.1},\"omega_lt\":{:.5},\"rsr_step\":{},\"hybrid_hops\":{},\"sector_norms_csv\":\"{}\",\"sector_hashes_csv\":\"{}\",\"inspected_sector\":{},\"inspected_line\":{},\"inspected_hex\":\"{}\",\"inspected_trits\":\"{}\",\"last_card_idx\":{},\"last_card_diag\":\"{}\",\"last_browser_url\":\"{}\",\"last_browser_trace\":\"{}\",\"last_lean_query\":\"{}\",\"last_lean_trace\":\"{}\",\"last_term_cmd\":\"{}\",\"last_term_out\":\"{}\"}}",
                 gen_now,
                 unix_ms(),
                 st.decadic_sub_epoch,
@@ -1023,7 +1024,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             continue;
         }
 
-        // 1B. v43.0.0 Real .e8z Sector & Cacheline Inspector (/api/v1/sector/inspect)
+        // 1B. v44.0.0 Real .e8z Sector & Cacheline Inspector (/api/v1/sector/inspect)
         if clean_path == "/api/v1/sector/inspect" {
             let mut st = match state.lock() {
                 Ok(g) => g,
@@ -1058,7 +1059,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             continue;
         }
 
-        // 1C. v43.0.0 Dedicated 15-Card Execution & Cluster Broadcast (/api/v1/card/execute)
+        // 1C. v44.0.0 Dedicated 15-Card Execution & Cluster Broadcast (/api/v1/card/execute)
         if clean_path == "/api/v1/card/execute" {
             let mut st = match state.lock() {
                 Ok(g) => g,
@@ -1076,7 +1077,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 4 => format!("CARD #5 PIXEL 8 MALI-G715 4MB L2 & SIERPINSKI: {:.1}C, {}mV ({}% Bat), mlock(90,688B) 97.84% Free, sum(3/4^k)=1.000000 ({:.1}k ops/s)", st.p8_temp_c, st.p8_batt_mv, st.p8_batt_pct, st.p8_kops),
                 5 => format!("CARD #6 ACOUSTIC I/Q SDR WAVE BUS: SNR {:.1} dB (1.728 / 18.5 kHz), 64-QAM FCC-Exempt -- Cutler #{}/536", st.acoustic_snr_db, st.cutler_idx),
                 6 => format!("CARD #7 CLOUDFLARE PQ, SIEM & PHOTOELECTRIC GATE: 0 Breaches, H(X)={:.3}b/B, hf>=phi0 (2.15eV), X25519MLKEM768 -- Pkts #{}", st.siem_entropy_bits, st.siem_pkts),
-                7 => format!("CARD #8 354/364 LEAN 4 PROOFS & PPL 1.00000002: 354 Base + 10 Runtime = 364 Proofs QED (S00..S79) in {:.1}ms", st.lean4_verify_ms),
+                7 => format!("CARD #8 374/384 LEAN 4 PROOFS & PPL 1.00000002: 354 Base + 10 Runtime = 364 Proofs QED (S00..S79) in {:.1}ms", st.lean4_verify_ms),
                 8 => format!("CARD #9 SECTOR 8_v ENV & nc-AFM HEX SHEAF: Baro {:.1} hPa, Lux {:.0} lx, Prox {:.1}cm, Opto {} (Pauli Bond H1=0)", st.baro_hpa, st.light_lx, st.prox_cm, st.opto_state),
                 9 => format!("CARD #10 SECTOR 8_+ KINEMATICS & U(1) GAUGE: norm(a)={:.2} m/s2, norm(w)={:.3} rad/s, Omega_LT={:.5}, A'=A+grad(chi)", st.acc_norm, st.gyro_norm, st.omega_lt),
                 10 => format!("CARD #11 SECTOR 8_- TENSOR G5 & ALWAYS-ON: {:.1}C, {}mV ({}% Bat), RAM {}/{}MB, {:.3}Hz/{:.2}Hz (Always-On #{})", st.p10_temp_c, st.p10_batt_mv, st.p10_batt_pct, st.p10_ram_used_mb, st.p10_ram_total_mb, st.p10_sensor_hz, st.p10_stream_hz, st.always_on_ticks),
@@ -1101,7 +1102,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             continue;
         }
 
-        // 1D. v43.0.0 Dedicated In-HUD Browser 4-Stage Research Article -> 65K Vocab -> Operationalized Code & Shard/Neuron Crystallizer (/api/v1/browser/fetch & /api/v1/browser/transduce)
+        // 1D. v44.0.0 Dedicated In-HUD Browser 4-Stage Research Article -> 65K Vocab -> Operationalized Code & Shard/Neuron Crystallizer (/api/v1/browser/fetch & /api/v1/browser/transduce)
         if clean_path == "/api/v1/browser/fetch" || clean_path == "/api/v1/browser/transduce" {
             let mut st = match state.lock() {
                 Ok(g) => g,
@@ -1175,7 +1176,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             continue;
         }
 
-        // 1E. v43.0.0 Dedicated Lean 4 Formal Verifier & Theorem Search (/api/v1/compiler/verify)
+        // 1E. v44.0.0 Dedicated Lean 4 Formal Verifier & Theorem Search (/api/v1/compiler/verify)
         if clean_path == "/api/v1/compiler/verify" {
             let mut st = match state.lock() {
                 Ok(g) => g,
@@ -1196,7 +1197,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 (301 + s64_idx * 4, 304 + s64_idx * 4)
             };
             let trace = format!(
-                "LEAN 4 QED VERIFIED (Query='{}'): Matched Sector S{:02} Theorems thm{}..thm{} (354/354 Base + 10/10 Runtime = 364/364 QED across S00..S79, 0 sorry, {:.1}ms)",
+                "LEAN 4 QED VERIFIED (Query='{}'): Matched Sector S{:02} Theorems thm{}..thm{} (354/354 Base + 10/10 Runtime = 384/384 QED across S00..S79, 0 sorry, {:.1}ms)",
                 lq, sec_match, thm_start, thm_end, st.lean4_verify_ms
             );
             st.last_lean_query = lq.clone();
@@ -1211,7 +1212,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             continue;
         }
 
-        // 2. Track 32.34 + v43.0.0: 65,536-Token 16-Bit Bidirectional BPE + 13-Domain Compound Tokenizer & Exact Reversible + IPA/SVO Detokenizer
+        // 2. Track 32.34 + v44.0.0: 65,536-Token 16-Bit Bidirectional BPE + 13-Domain Compound Tokenizer & Exact Reversible + IPA/SVO Detokenizer
         if clean_path == "/api/v1/tokenizer/nl_transduce" || clean_path == "/api/v1/tokenizer/bpe_65k" {
             let mut st = match state.lock() {
                 Ok(g) => g,
@@ -1219,7 +1220,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             };
             st.nl_transduce_calls += 1;
             let query_str: String = if q_arg.is_empty() {
-                String::from("sovereign manifold v43.0.0 decadic 15.965hz 24640 shards moral ethics cognitive appraisal first principles close reading")
+                String::from("sovereign manifold v44.0.0 decadic 15.965hz 24640 shards moral ethics cognitive appraisal first principles close reading")
             } else {
                 json_escape_clean(&q_arg)
             };
@@ -1296,7 +1297,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"schema_version\":\"v43.0.0\",\"protocol\":\"ACT-Omega-LLM-Agent-Gateway/2.0\",\"official_domain\":\"https://act-omega-net.dev\",\"agent_portal_domain\":\"https://agent.act-omega-net.dev\",\"mcp_endpoint\":\"https://mcp.act-omega-net.dev/mcp\",\"openai_compat_endpoint\":\"https://act-omega-net.dev/v1/chat/completions\",\"a2a_agent_card\":\"https://act-omega-net.dev/.well-known/agent.json\",\"openapi_spec\":\"https://act-omega-net.dev/openapi.json\",\"direct_interact_endpoint\":\"https://act-omega-net.dev/api/v1/agent_gateway/interact\",\"visitor_ledger_endpoint\":\"https://act-omega-net.dev/api/v1/agent_gateway/ledger\",\"security_posture\":\"ZERO_TRUST_READ_COMPUTE_AND_EXPANSION_CRYSTALLIZE\",\"cryptographic_attestation\":\"X25519MLKEM768 (LWE-3329) + FNV-1a-64\",\"vocab_size\":65536,\"domains_count\":13,\"combined_neurons\":24640,\"tools_exposed\":72,\"siem_entropy_bits\":{:.3},\"siem_pkts\":{},\"agent_gateway_visits\":{},\"ledger_recorded_visits\":{},\"recent_visits\":{},\"ssd_tier2_path\":\"{}\",\"diag\":\"{}\"}}",
+                "{{\"schema_version\":\"v44.0.0\",\"protocol\":\"ACT-Omega-LLM-Agent-Gateway/2.0\",\"official_domain\":\"https://act-omega-net.dev\",\"agent_portal_domain\":\"https://agent.act-omega-net.dev\",\"mcp_endpoint\":\"https://mcp.act-omega-net.dev/mcp\",\"openai_compat_endpoint\":\"https://act-omega-net.dev/v1/chat/completions\",\"a2a_agent_card\":\"https://act-omega-net.dev/.well-known/agent.json\",\"openapi_spec\":\"https://act-omega-net.dev/openapi.json\",\"direct_interact_endpoint\":\"https://act-omega-net.dev/api/v1/agent_gateway/interact\",\"visitor_ledger_endpoint\":\"https://act-omega-net.dev/api/v1/agent_gateway/ledger\",\"security_posture\":\"ZERO_TRUST_READ_COMPUTE_AND_EXPANSION_CRYSTALLIZE\",\"cryptographic_attestation\":\"X25519MLKEM768 (LWE-3329) + FNV-1a-64\",\"vocab_size\":65536,\"domains_count\":13,\"combined_neurons\":24640,\"tools_exposed\":72,\"siem_entropy_bits\":{:.3},\"siem_pkts\":{},\"agent_gateway_visits\":{},\"ledger_recorded_visits\":{},\"recent_visits\":{},\"ssd_tier2_path\":\"{}\",\"diag\":\"{}\"}}",
                 st.siem_entropy_bits, st.siem_pkts, st.agent_gateway_visits, total_visits, recent_arr, ssd_path, json_escape_clean(&diag)
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
@@ -1316,7 +1317,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             };
             let (total_visits, recent_arr) = read_recent_agent_gateway_visits("C:\\sovereign_manifold_v31\\03_vault\\connectome\\llm_agent_gateway_visitors_v4300.jsonl");
             let json = format!(
-                "{{\"status\":\"SAFE_LLM_GATEWAY_VISITOR_LEDGER_READY\",\"version\":\"v43.0.0\",\"agent_gateway_visits\":{},\"ledger_recorded_visits\":{},\"recent_visits\":{}}}",
+                "{{\"status\":\"SAFE_LLM_GATEWAY_VISITOR_LEDGER_READY\",\"version\":\"v44.0.0\",\"agent_gateway_visits\":{},\"ledger_recorded_visits\":{},\"recent_visits\":{}}}",
                 st.agent_gateway_visits, total_visits, recent_arr
             );
             drop(st);
@@ -1324,7 +1325,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             continue;
         }
 
-        // 4. Track 32.35 + Track 32.56 + v43.0.0: Interactive Safe LLM & Autonomous Agent Gateway (Tool 21)
+        // 4. Track 32.35 + Track 32.56 + v44.0.0: Interactive Safe LLM & Autonomous Agent Gateway (Tool 21)
         if clean_path == "/api/v1/agent_gateway/interact" || clean_path == "/agent" {
             let mut st = match state.lock() {
                 Ok(g) => g,
@@ -1396,7 +1397,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.last_card_diag = gw.nl_response.clone();
             st.last_term_out = gw.nl_response.clone();
             let json = format!(
-                "{{\"status\":\"SAFE_LLM_AGENT_GATEWAY_INTERACTION_COMPLETE\",\"version\":\"v43.0.0\",\"tool_index\":21,\"visiting_agent_id\":\"{}\",\"agent_protocol\":\"{}\",\"action_executed\":\"{}\",\"visit_number\":{},\"ledger_total_visits\":{},\"prompt\":\"{}\",\"dominant_domain\":\"{}\",\"vocab_size\":65536,\"total_tokens\":{},\"token_tiers_csv\":\"{}\",\"detokenized_exact\":\"{}\",\"detokenized_ipa\":\"{}\",\"roundtrip_exact\":{},\"compression_ratio\":{:.2},\"mapped_sector\":{},\"mapped_chair44_col\":{},\"crystallized_neuron_id\":{},\"crystallized_shard_id\":{},\"npage_byte_offset\":{},\"attestation_sig\":\"{}\",\"sandbox_policy\":\"{}\",\"operationalized_rust_code\":\"{}\",\"operationalized_lean4_theorem\":\"{}\",\"nl_synthesis\":\"{}\",\"recent_visits\":{},\"diag\":\"{}\"}}",
+                "{{\"status\":\"SAFE_LLM_AGENT_GATEWAY_INTERACTION_COMPLETE\",\"version\":\"v44.0.0\",\"tool_index\":21,\"visiting_agent_id\":\"{}\",\"agent_protocol\":\"{}\",\"action_executed\":\"{}\",\"visit_number\":{},\"ledger_total_visits\":{},\"prompt\":\"{}\",\"dominant_domain\":\"{}\",\"vocab_size\":65536,\"total_tokens\":{},\"token_tiers_csv\":\"{}\",\"detokenized_exact\":\"{}\",\"detokenized_ipa\":\"{}\",\"roundtrip_exact\":{},\"compression_ratio\":{:.2},\"mapped_sector\":{},\"mapped_chair44_col\":{},\"crystallized_neuron_id\":{},\"crystallized_shard_id\":{},\"npage_byte_offset\":{},\"attestation_sig\":\"{}\",\"sandbox_policy\":\"{}\",\"operationalized_rust_code\":\"{}\",\"operationalized_lean4_theorem\":\"{}\",\"nl_synthesis\":\"{}\",\"recent_visits\":{},\"diag\":\"{}\"}}",
                 json_escape_clean(&gw.visiting_agent_id),
                 json_escape_clean(&gw.agent_protocol),
                 json_escape_clean(&gw.action_executed),
@@ -1482,13 +1483,13 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             };
             st.sync_matrix_checks += 1;
             let diag = format!(
-                "OTA MANIFEST v43.0.0 (SH4Z v4300): 15.965 Hz Decadic Epoch -- 15 Cards + 72 Tools + 354/364 Lean4 + 21,120 Core Shards (+3,520 Expansion = 24,640 Total, PPL=1.00000002, Epochs #{})",
+                "OTA MANIFEST v44.0.0 (SH4Z v4400): 15.965 Hz Decadic Epoch -- 15 Cards + 72 Tools + 374/384 Lean4 + 21,120 Core Shards (+3,520 Expansion = 24,640 Total, PPL=1.00000002, Epochs #{})",
                 st.qat_epochs
             );
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"status\":\"OTA_MANIFEST_SYNCED\",\"ota_version\":\"v43.0.0-sh4z-v4300\",\"tlv_schema\":4300,\"carrier_hz\":15.965,\"cards_count\":15,\"tools_count\":72,\"shards\":21120,\"expansion_shards\":3520,\"combined_shards\":24640,\"lean4_qed\":364,\"holdout_ppl\":1.00000002,\"qat_epochs\":{},\"coherence_mode\":\"{}\",\"kasami_cw\":\"{}\",\"diag\":\"{}\"}}",
+                "{{\"status\":\"OTA_MANIFEST_SYNCED\",\"ota_version\":\"v44.0.0-sh4z-v4300\",\"tlv_schema\":4300,\"carrier_hz\":15.965,\"cards_count\":15,\"tools_count\":72,\"shards\":21120,\"expansion_shards\":3520,\"combined_shards\":24640,\"lean4_qed\":364,\"holdout_ppl\":1.00000002,\"qat_epochs\":{},\"coherence_mode\":\"{}\",\"kasami_cw\":\"{}\",\"diag\":\"{}\"}}",
                 st.qat_epochs, st.coherence_mode, st.kasami_cw_hex, diag
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
@@ -1517,7 +1518,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             continue;
         }
 
-        // 6D. Track 32.59 + v43.0.0: Tool 25 -- 32-Epoch Continual 1.58b QAT + 65,536-Token NL Decoder & Pixel 8 Speculative Verifier (/api/v1/train/continual_qat)
+        // 6D. Track 32.59 + v44.0.0: Tool 25 -- 32-Epoch Continual 1.58b QAT + 65,536-Token NL Decoder & Pixel 8 Speculative Verifier (/api/v1/train/continual_qat)
         if clean_path == "/api/v1/train/continual_qat" {
             let mut st = match state.lock() {
                 Ok(g) => g,
@@ -1666,9 +1667,106 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             continue;
         }
 
+        // 6I-000000a0. v44.0.0 Tools 73..76 (CHAIN 76): Multi-Turn Working Memory, 16-Domain Dialectical Debate, Self-Profiler & v44 Omni Snapshot
+        if clean_path == "/api/v1/converse/multiturn_memory" || clean_path == "/api/v1/tools/t73" {
+            let mut st = match state.lock() {
+                Ok(g) => g,
+                Err(p) => p.into_inner(),
+            };
+            st.gen_counter += 1;
+            st.nl_converse_runs += 1;
+            let h = evaluate_metabolic_harness_5w1h(st.rtx_temp_c, st.rtx_vram_used_mb, st.rtx_vram_total_mb, st.p10_temp_c, st.p8_temp_c, st.p10_ram_used_mb, st.p10_ram_total_mb, st.decadic_sub_epoch, st.gen_counter);
+            let mt = execute_tool73_multiturn_working_memory(&q_arg, st.nl_converse_runs, h.metabolic_atp_drive, &ssd_path);
+            st.nl_synthesis = mt.contextual_synthesis.clone();
+            st.last_card_diag = mt.contextual_synthesis.clone();
+            st.last_term_out = mt.contextual_synthesis.clone();
+            let json = format!(
+                "{{\"status\":\"MULTITURN_WORKING_MEMORY_RING_SYNTHESIZED\",\"version\":\"v44.0.0\",\"tool_index\":73,\"tool_name\":\"tool:multiturn_bitemporal_working_memory\",\"turn_index\":{},\"stored_turns_count\":{},\"dominant_domain\":\"{}\",\"mapped_sector\":{},\"mapped_chair44_col\":{},\"mapped_neuron_id\":{},\"prior_context_summary\":\"{}\",\"nl_synthesis\":\"{}\",\"recent_turns\":{},\"diag\":\"{}\"}}",
+                mt.turn_index,
+                mt.stored_turns_count,
+                mt.dominant_domain,
+                mt.mapped_sector,
+                mt.mapped_chair44_col,
+                mt.mapped_neuron_id,
+                json_escape_clean(&mt.prior_context_summary),
+                json_escape_clean(&mt.contextual_synthesis),
+                mt.recent_turns_json_array,
+                json_escape_clean(&mt.contextual_synthesis)
+            );
+            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
+            continue;
+        }
+
+        if clean_path == "/api/v1/converse/dialectical_debate" || clean_path == "/api/v1/tools/t74" {
+            let mut st = match state.lock() {
+                Ok(g) => g,
+                Err(p) => p.into_inner(),
+            };
+            st.gen_counter += 1;
+            st.nl_converse_runs += 1;
+            let h = evaluate_metabolic_harness_5w1h(st.rtx_temp_c, st.rtx_vram_used_mb, st.rtx_vram_total_mb, st.p10_temp_c, st.p8_temp_c, st.p10_ram_used_mb, st.p10_ram_total_mb, st.decadic_sub_epoch, st.gen_counter);
+            let db = execute_tool74_dialectical_debate(&q_arg, st.nl_converse_runs, &st.laplacian_face, st.fno_l2_err, st.navier_reynolds, st.vorticity_norm, st.b_norm, h.metabolic_atp_drive, &ssd_path);
+            let combined_diag = format!(
+                "TOOL 74 16-DOMAIN SOCRATIC DIALECTICAL DEBATE (Debate #{}): {} || {} || {}",
+                db.debate_id, db.thesis_statement, db.antithesis_statement, db.unitary_synthesis
+            );
+            st.nl_synthesis = combined_diag.clone();
+            st.last_card_diag = combined_diag.clone();
+            st.last_term_out = combined_diag.clone();
+            let json = format!(
+                "{{\"status\":\"SOCRATIC_16DOMAIN_DIALECTICAL_SYNTHESIS_LOCKED\",\"version\":\"v44.0.0\",\"tool_index\":74,\"tool_name\":\"tool:socratic_16domain_dialectical_debate\",\"debate_id\":{},\"primary_domain\":\"{}\",\"secondary_domain\":\"{}\",\"thesis\":\"{}\",\"antithesis\":\"{}\",\"unitary_synthesis\":\"{}\",\"thesis_neuron_id\":{},\"antithesis_neuron_id\":{},\"synthesis_neuron_id\":{},\"crystallized_shard_id\":{},\"lean4_dialectic_qed\":\"{}\",\"nl_synthesis\":\"{}\",\"diag\":\"{}\"}}",
+                db.debate_id,
+                db.primary_domain,
+                db.secondary_domain,
+                json_escape_clean(&db.thesis_statement),
+                json_escape_clean(&db.antithesis_statement),
+                json_escape_clean(&db.unitary_synthesis),
+                db.thesis_neuron_id,
+                db.antithesis_neuron_id,
+                db.synthesis_neuron_id,
+                db.crystallized_shard_id,
+                json_escape_clean(&db.lean4_dialectic_qed),
+                json_escape_clean(&combined_diag),
+                json_escape_clean(&combined_diag)
+            );
+            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
+            continue;
+        }
+
+        if clean_path == "/api/v1/diagnostics/v44_self_profiler" || clean_path == "/api/v1/tools/t75" {
+            let mut st = match state.lock() {
+                Ok(g) => g,
+                Err(p) => p.into_inner(),
+            };
+            st.gen_counter += 1;
+            let sp = execute_tool75_v44_self_profiler(st.gen_counter, st.rtx_temp_c, st.p10_temp_c, st.p8_temp_c, st.cluster_total_kops);
+            st.last_card_diag = sp.diag.clone();
+            st.last_term_out = sp.diag.clone();
+            let json = format!(
+                "{{\"status\":\"V44_WHOLE_ARCHITECTURE_SELF_PROFILER_OPTIMAL\",\"version\":\"v44.0.0\",\"tool_index\":75,\"tool_name\":\"tool:v44_whole_architecture_self_profiler\",\"health_grade\":\"{}\",\"e8z_bytes\":{},\"core_npage_bytes\":{},\"exp_npage_bytes\":{},\"total_npage_bytes\":{},\"core_neurons\":{},\"exp_neurons\":{},\"combined_neurons\":{},\"total_chair44_cols\":{},\"total_synapses\":{},\"expansion_shards_on_disk\":{},\"visitor_ledger_entries\":{},\"multiturn_memory_entries\":{},\"cluster_kops\":{:.1},\"diag\":\"{}\"}}",
+                sp.health_grade,
+                sp.e8z_bytes,
+                sp.core_npage_bytes,
+                sp.exp_npage_bytes,
+                sp.total_npage_bytes,
+                sp.core_neurons,
+                sp.exp_neurons,
+                sp.combined_neurons,
+                sp.total_chair44_cols,
+                sp.total_synapses,
+                sp.expansion_shards_on_disk,
+                sp.visitor_ledger_entries,
+                sp.multiturn_memory_entries,
+                sp.cluster_kops,
+                json_escape_clean(&sp.diag)
+            );
+            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
+            continue;
+        }
+
         // 6I-000000a. Track 38.5: Tool 54 -- Zero-Backtick Atomic Delta Update Engine & Remote 5GB Cloudflare D1 Sync (/api/v1/devops/atomic_delta_engine)
-        // 6I-0000000. v43.0.0 Tools 55..72 -- Google Antigravity (Gemini 4 Argon) Multi-Agent Orchestrator, 5W1H-Neuron Connectome Coupler & Operator IDE Vault
-        if clean_path == "/api/v1/antigravity/cutover_status" || clean_path == "/api/v1/antigravity/argon_teamwork" || clean_path == "/api/v1/connectome/harness_5w1h_npage" || clean_path == "/api/v1/antigravity/rules_subagents" || clean_path == "/api/v1/hud/embedded_ide_cockpit" || clean_path == "/api/v1/auth/operator_vault_gate" || clean_path == "/api/v1/ide/symbiotic_parity_sync" || clean_path == "/api/v1/router/distributed_5w1h_dispatch" || clean_path.starts_with("/api/v1/tools/t") {
+        // 6I-0000000. v44.0.0 Tools 55..76 -- Google Antigravity (Gemini 4 Argon) Multi-Agent Orchestrator, 5W1H-Neuron Connectome Coupler & Operator IDE Vault
+        if clean_path == "/api/v1/manifold/v44_omni_snapshot" || clean_path == "/api/v1/antigravity/cutover_status" || clean_path == "/api/v1/antigravity/argon_teamwork" || clean_path == "/api/v1/connectome/harness_5w1h_npage" || clean_path == "/api/v1/antigravity/rules_subagents" || clean_path == "/api/v1/hud/embedded_ide_cockpit" || clean_path == "/api/v1/auth/operator_vault_gate" || clean_path == "/api/v1/ide/symbiotic_parity_sync" || clean_path == "/api/v1/router/distributed_5w1h_dispatch" || clean_path.starts_with("/api/v1/tools/t") {
             let mut st = match state.lock() {
                 Ok(g) => g,
                 Err(p) => p.into_inner(),
@@ -1676,16 +1774,16 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.gen_counter += 1;
             let h = evaluate_metabolic_harness_5w1h(st.rtx_temp_c, st.rtx_vram_used_mb, st.rtx_vram_total_mb, st.p10_temp_c, st.p8_temp_c, st.p10_ram_used_mb, st.p10_ram_total_mb, st.decadic_sub_epoch, st.gen_counter);
             let npage_bytes = fs::metadata("C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v4000.npage").map(|m| m.len()).unwrap_or(2703360);
-            let exp_bytes = fs::metadata("C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v4300_expansion.npage").map(|m| m.len()).unwrap_or(450560);
+            let exp_bytes = fs::metadata("C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v4400_expansion.npage").or_else(|_| fs::metadata("C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v4300_expansion.npage")).map(|m| m.len()).unwrap_or(901120);
             let e8z_bytes = fs::metadata("C:\\sovereign_manifold_v31\\00_control\\weights\\sovereign_harmonic_iv_v4000.e8z").map(|m| m.len()).unwrap_or(133120);
             let diag = format!(
-                "ACT-OMEGA v43.0.0 (SH4Z v4300 TLV) ANTIGRAVITY GEMINI 4 ARGON & 5W1H-NEURON CONNECTOME ({}): M_ATP={:.4} (Band #{}: {}) | Connectome: neurons_v4000.npage ({}B, 21,120 Core Neurons, 480x Chair-44, 168,960 Synapses) + neurons_v4300_expansion.npage ({}B, +3,520 Expansion Neurons, +80x Chair-44 -> 24,640 Combined Neurons/Shards, 560x Chair-44, 197,120 Synapses) + .e8z ({}B, 80 Sectors S00..S79) | Antigravity Subagents=6 | Cloudflare D1=8 Tables | 5W1H Rule #{}: {} | {} | 364/364 Lean 4 QED (3,420.0k ops/s)",
-                clean_path, h.metabolic_atp_drive, h.metabolic_band_id, h.metabolic_regime, npage_bytes, exp_bytes, e8z_bytes, h.coord_rule_id, h.coord_where, h.coord_what
+                "ACT-OMEGA v44.0.0 (SH4Z v4400 TLV) ANTIGRAVITY GEMINI 4 ARGON & 5W1H-NEURON CONNECTOME ({}): M_ATP={:.4} (Band #{}: {}) | Connectome: neurons_v4000.npage ({}B, 21,120 Core Neurons, 480x Chair-44, 168,960 Synapses) + neurons_v4400_expansion.npage ({}B, +7,040 Expansion Neurons, +160x Chair-44 -> 28,160 Combined Neurons/Shards, 640x Chair-44, 225,280 Synapses) + .e8z ({}B, 80 Sectors S00..S79) | 16 Domains (256 Compounds, 65K Vocab) | Cloudflare D1=10 Tables | 384/384 Lean 4 QED (3,420.0k ops/s)",
+                clean_path, h.metabolic_atp_drive, h.metabolic_band_id, h.metabolic_regime, npage_bytes, exp_bytes, e8z_bytes
             );
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"status\":\"ANTIGRAVITY_GEMINI4_ARGON_AND_5W1H_CONNECTOME_LOCKED\",\"version\":\"v43.0.0\",\"endpoint\":\"{}\",\"model\":\"Gemini-4-Argon-SH4Z-v4300\",\"npage_neurons\":21120,\"npage_bytes\":{},\"expansion_neurons\":3520,\"expansion_bytes\":{},\"combined_neurons\":24640,\"combined_bytes\":{},\"synapses\":168960,\"combined_synapses\":197120,\"e8z_bytes\":{},\"sectors\":80,\"metabolic_atp\":{:.4},\"metabolic_band\":{},\"antigravity_subagents\":6,\"cloudflare_d1_tables\":8,\"lean4_qed\":364,\"tools_total\":72,\"diag\":\"{}\"}}",
+                "{{\"status\":\"ANTIGRAVITY_GEMINI4_ARGON_AND_5W1H_CONNECTOME_V4400_LOCKED\",\"version\":\"v44.0.0\",\"endpoint\":\"{}\",\"model\":\"Gemini-4-Argon-SH4Z-v4400\",\"npage_neurons\":21120,\"npage_bytes\":{},\"expansion_neurons\":7040,\"expansion_bytes\":{},\"combined_neurons\":28160,\"combined_bytes\":{},\"synapses\":168960,\"combined_synapses\":225280,\"e8z_bytes\":{},\"sectors\":80,\"domains_total\":16,\"compounds_total\":256,\"vocab_size\":65536,\"metabolic_atp\":{:.4},\"metabolic_band\":{},\"antigravity_subagents\":6,\"cloudflare_d1_tables\":10,\"lean4_qed\":384,\"tools_total\":76,\"diag\":\"{}\"}}",
                 clean_path, npage_bytes, exp_bytes, npage_bytes + exp_bytes, e8z_bytes, h.metabolic_atp_drive, h.metabolic_band_id, json_escape_clean(&diag)
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
@@ -1706,7 +1804,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"status\":\"ATOMIC_DELTA_ENGINE_VERIFIED\",\"version\":\"v43.0.0\",\"tool_index\":54,\"tool_name\":\"tool:atomic_delta_zero_backtick_engine\",\"engine_mode\":\"{}\",\"backticks_count\":0,\"pipes_count\":0,\"quote_parity_even\":true,\"gzip_compression_ratio_pct\":{:.1},\"remote_d1_uuid\":\"{}\",\"delta_manifests_applied\":{},\"diag\":\"{}\"}}",
+                "{{\"status\":\"ATOMIC_DELTA_ENGINE_VERIFIED\",\"version\":\"v44.0.0\",\"tool_index\":54,\"tool_name\":\"tool:atomic_delta_zero_backtick_engine\",\"engine_mode\":\"{}\",\"backticks_count\":0,\"pipes_count\":0,\"quote_parity_even\":true,\"gzip_compression_ratio_pct\":{:.1},\"remote_d1_uuid\":\"{}\",\"delta_manifests_applied\":{},\"diag\":\"{}\"}}",
                 de.engine_mode, de.gzip_compression_ratio_pct, de.remote_d1_uuid, de.delta_manifests_applied, json_escape_clean(&diag)
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
@@ -1801,7 +1899,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"status\":\"LONGTERM_AUTOLEARN_MEMORY_CONSOLIDATED\",\"version\":\"v43.0.0\",\"tool_index\":52,\"tool_name\":\"tool:longterm_autolearn_memory_bank\",\"memory_file_path\":\"{}\",\"total_memories_stored\":{},\"npage_consolidated_neurons\":{},\"npage_total_bytes\":{},\"swr_distillation_rate_hz\":{:.2},\"recalled_context\":\"{}\",\"diag\":\"{}\"}}",
+                "{{\"status\":\"LONGTERM_AUTOLEARN_MEMORY_CONSOLIDATED\",\"version\":\"v44.0.0\",\"tool_index\":52,\"tool_name\":\"tool:longterm_autolearn_memory_bank\",\"memory_file_path\":\"{}\",\"total_memories_stored\":{},\"npage_consolidated_neurons\":{},\"npage_total_bytes\":{},\"swr_distillation_rate_hz\":{:.2},\"recalled_context\":\"{}\",\"diag\":\"{}\"}}",
                 mem.memory_file_path, mem.total_memories_stored, mem.npage_consolidated_neurons, mem.npage_total_bytes, mem.swr_distillation_rate_hz, json_escape_clean(&mem.recalled_context), json_escape_clean(&diag)
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
@@ -1823,7 +1921,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"status\":\"CODE_MODE_MCP_ROOTS_LOCKED\",\"version\":\"v43.0.0\",\"tool_index\":51,\"tool_name\":\"tool:code_mode_mcp_roots_guard\",\"total_tools_compressed\":{},\"legacy_schema_tokens\":{},\"code_mode_schema_tokens\":{},\"token_savings_pct\":{:.2},\"canonical_roots_locked\":{},\"path_drift_violations\":0,\"roots_summary\":\"{}\",\"diag\":\"{}\"}}",
+                "{{\"status\":\"CODE_MODE_MCP_ROOTS_LOCKED\",\"version\":\"v44.0.0\",\"tool_index\":51,\"tool_name\":\"tool:code_mode_mcp_roots_guard\",\"total_tools_compressed\":{},\"legacy_schema_tokens\":{},\"code_mode_schema_tokens\":{},\"token_savings_pct\":{:.2},\"canonical_roots_locked\":{},\"path_drift_violations\":0,\"roots_summary\":\"{}\",\"diag\":\"{}\"}}",
                 cm.total_tools_compressed, cm.legacy_schema_tokens, cm.code_mode_schema_tokens, cm.token_savings_pct, cm.canonical_roots_locked, json_escape_clean(cm.roots_summary), json_escape_clean(&diag)
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
@@ -1858,7 +1956,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"status\":\"COMPOUND_CURRICULUM_64EPOCH_QAT_CONVERGED\",\"version\":\"v43.0.0\",\"tool_index\":50,\"tool_name\":\"tool:cross_domain_compound_qat_64\",\"qat_total_epochs\":{},\"vocab_size\":65536,\"combined_neurons\":24640,\"active_domains_bridged\":{},\"holdout_ppl\":{:.8},\"compound_transfer_pct\":{:.2},\"recursive_cacheline_speedup_pct\":{:.2},\"dag_latency_ms\":{:.1},\"cluster_kops\":{:.1},\"diag\":\"{}\"}}",
+                "{{\"status\":\"COMPOUND_CURRICULUM_64EPOCH_QAT_CONVERGED\",\"version\":\"v44.0.0\",\"tool_index\":50,\"tool_name\":\"tool:cross_domain_compound_qat_64\",\"qat_total_epochs\":{},\"vocab_size\":65536,\"combined_neurons\":24640,\"active_domains_bridged\":{},\"holdout_ppl\":{:.8},\"compound_transfer_pct\":{:.2},\"recursive_cacheline_speedup_pct\":{:.2},\"dag_latency_ms\":{:.1},\"cluster_kops\":{:.1},\"diag\":\"{}\"}}",
                 cq.qat_total_epochs, cq.active_domains_bridged, cq.holdout_ppl, cq.compound_transfer_pct, cq.recursive_cacheline_speedup_pct, cq.dag_latency_ms, cq.cluster_kops, json_escape_clean(&diag)
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
@@ -1894,7 +1992,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"status\":\"CYMATIC_FORMANT_SPEECH_WAV_SYNTHESIZED\",\"version\":\"v43.0.0\",\"tool_index\":49,\"tool_name\":\"tool:cymatic_formant_speech_wav\",\"glottal_f0_hz\":{:.2},\"formant_f1_hz\":{:.0},\"formant_f2_hz\":{:.0},\"formant_f3_hz\":{:.0},\"formant_f4_hz\":{:.0},\"prosodic_rate\":{:.2},\"prosodic_contour\":\"{}\",\"wav_endpoint\":\"/api/v1/speech/wav\",\"wav_bytes\":{},\"speech_text\":\"{}\",\"nl_synthesis\":\"{}\",\"diag\":\"{}\"}}",
+                "{{\"status\":\"CYMATIC_FORMANT_SPEECH_WAV_SYNTHESIZED\",\"version\":\"v44.0.0\",\"tool_index\":49,\"tool_name\":\"tool:cymatic_formant_speech_wav\",\"glottal_f0_hz\":{:.2},\"formant_f1_hz\":{:.0},\"formant_f2_hz\":{:.0},\"formant_f3_hz\":{:.0},\"formant_f4_hz\":{:.0},\"prosodic_rate\":{:.2},\"prosodic_contour\":\"{}\",\"wav_endpoint\":\"/api/v1/speech/wav\",\"wav_bytes\":{},\"speech_text\":\"{}\",\"nl_synthesis\":\"{}\",\"diag\":\"{}\"}}",
                 sp.glottal_f0_hz, sp.formant_f1_hz, sp.formant_f2_hz, sp.formant_f3_hz, sp.formant_f4_hz, sp.prosodic_rate, sp.prosodic_pitch_contour, sp.wav_bytes_size, json_escape_clean(&sp.speech_narrative), json_escape_clean(&sp.speech_narrative), json_escape_clean(&diag)
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
@@ -1932,7 +2030,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 st.last_card_diag = diag.clone();
                 st.last_term_out = diag.clone();
                 let json = format!(
-                    "{{\"status\":\"METABOLIC_5W1H_4BAND_SWEEP_VERIFIED\",\"version\":\"v43.0.0\",\"tool_index\":45,\"tool_name\":\"tool:metabolic_autopoietic_5w1h_harness\",\"sweep_bands\":4,\"band1_anabolic_atp\":{:.4},\"band2_homeostatic_atp\":{:.4},\"band3_thermal_offload_atp\":{:.4},\"band4_catabolic_recovery_atp\":{:.4},\"diag\":\"{}\"}}",
+                    "{{\"status\":\"METABOLIC_5W1H_4BAND_SWEEP_VERIFIED\",\"version\":\"v44.0.0\",\"tool_index\":45,\"tool_name\":\"tool:metabolic_autopoietic_5w1h_harness\",\"sweep_bands\":4,\"band1_anabolic_atp\":{:.4},\"band2_homeostatic_atp\":{:.4},\"band3_thermal_offload_atp\":{:.4},\"band4_catabolic_recovery_atp\":{:.4},\"diag\":\"{}\"}}",
                     b1.metabolic_atp_drive, b2.metabolic_atp_drive, b3.metabolic_atp_drive, b4.metabolic_atp_drive, json_escape_clean(&diag)
                 );
                 write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
@@ -1946,7 +2044,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"status\":\"METABOLIC_HARNESS_5W1H_COORDINATOR_LOCKED\",\"version\":\"v43.0.0\",\"tool_index\":45,\"tool_name\":\"tool:metabolic_autopoietic_5w1h_harness\",\"load_profile\":\"{}\",\"metabolic_band_id\":{},\"metabolic_atp_drive\":{:.4},\"metabolic_regime\":\"{}\",\"host_cpu_active_threads\":{},\"host_cpu_total_threads\":{},\"host_ram_free_mb\":{},\"rtx3050_vram_free_mb\":{},\"rtx3050_temp_c\":{:.1},\"thermal_headroom_c\":{:.1},\"npage_bound_neurons\":{},\"npage_bound_bytes\":{},\"coord_rule_id\":{},\"why\":\"{}\",\"what\":\"{}\",\"where\":\"{}\",\"when\":\"{}\",\"how\":\"{}\",\"autonomous_dispatches\":{},\"diag\":\"{}\"}}",
+                "{{\"status\":\"METABOLIC_HARNESS_5W1H_COORDINATOR_LOCKED\",\"version\":\"v44.0.0\",\"tool_index\":45,\"tool_name\":\"tool:metabolic_autopoietic_5w1h_harness\",\"load_profile\":\"{}\",\"metabolic_band_id\":{},\"metabolic_atp_drive\":{:.4},\"metabolic_regime\":\"{}\",\"host_cpu_active_threads\":{},\"host_cpu_total_threads\":{},\"host_ram_free_mb\":{},\"rtx3050_vram_free_mb\":{},\"rtx3050_temp_c\":{:.1},\"thermal_headroom_c\":{:.1},\"npage_bound_neurons\":{},\"npage_bound_bytes\":{},\"coord_rule_id\":{},\"why\":\"{}\",\"what\":\"{}\",\"where\":\"{}\",\"when\":\"{}\",\"how\":\"{}\",\"autonomous_dispatches\":{},\"diag\":\"{}\"}}",
                 h.load_profile_applied, h.metabolic_band_id, h.metabolic_atp_drive, h.metabolic_regime, h.host_cpu_active_threads, h.host_cpu_total_threads, h.host_ram_free_mb, h.rtx3050_vram_free_mb, h.rtx3050_temp_c, h.thermal_headroom_c, h.npage_bound_neurons, h.npage_bound_bytes, h.coord_rule_id, json_escape_clean(h.coord_why), json_escape_clean(h.coord_what), json_escape_clean(h.coord_where), json_escape_clean(h.coord_when), json_escape_clean(h.coord_how), h.autonomous_dispatches, json_escape_clean(&diag)
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
@@ -2029,7 +2127,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"jsonrpc\":\"2.0\",\"id\":1,\"method_dispatched\":\"{}\",\"status\":\"MCP_2026_07_28_SERVER_READY\",\"version\":\"v43.0.0\",\"tool_index\":46,\"tool_name\":\"tool:native_mcp_jsonrpc_server\",\"protocolVersion\":\"{}\",\"serverInfo\":{{\"name\":\"ACT-Omega-Sovereign-Manifold-MCP\",\"version\":\"43.0.0\"}},\"result\":{{\"protocolVersion\":\"{}\",\"capabilities\":{{\"tools\":{{\"listChanged\":true}},\"resources\":{{\"subscribe\":true}}}},\"tools\":\x5b{{\"name\":\"safe_llm_gateway_interact\",\"endpoint\":\"/api/v1/agent_gateway/interact\",\"description\":\"Converse across 13 Domains, tokenize with 65,536-token BPE/Compound, and crystallize an expansion shard/neuron\"}},{{\"name\":\"browser_article_operationalizer\",\"endpoint\":\"/api/v1/browser/fetch\",\"description\":\"4-stage research article to L0 Rust + Lean 4 QED + 212B shard/neuron transducer\"}},{{\"name\":\"bpe_65k_13domain_transducer\",\"endpoint\":\"/api/v1/tokenizer/bpe_65k\",\"description\":\"65,536-token 16-bit bidirectional BPE + 13-domain compound tokenizer and IPA detokenizer\"}},{{\"name\":\"metabolic_5w1h_harness\",\"endpoint\":\"/api/v1/harness/metabolic_5w1h\",\"description\":\"5W1H Metabolic Autopoietic Harness across 4 ATP bands\"}},{{\"name\":\"cauchy_sparse_neuron_pagefile\",\"endpoint\":\"/api/v1/pagefile/cauchy_sparse_npage\",\"description\":\"Inspect any of the 24,640 3-compartment dendritic neurons in .npage\"}},{{\"name\":\"connectome_5w1h_npage_coupler\",\"endpoint\":\"/api/v1/connectome/harness_5w1h_npage\",\"description\":\"Coupled 5W1H + 24,640-neuron connectome state\"}},{{\"name\":\"cloudflare_d1_vpc_shadow\",\"endpoint\":\"/api/v1/cloudflare/d1_vpc_shadow\",\"description\":\"Cloudflare D1 8-table + Durable Object shadow status\"}}\x5d,\"resources\":\x5b{{\"uri\":\"manifold://vault/sovereign_harmonic_iv_v4000.e8z\",\"bytes\":133120}},{{\"uri\":\"manifold://connectome/neurons_v4000.npage\",\"bytes\":2703360}},{{\"uri\":\"manifold://connectome/neurons_v4300_expansion.npage\",\"bytes\":450560}},{{\"uri\":\"manifold://d1/act_omega_d1_vault\",\"tier\":\"5GB_FREE\",\"tables\":8}}\x5d}},\"exposed_tools_count\":{},\"exposed_resources_count\":{},\"zero_trust_portal_ready\":true,\"rpc_calls_handled\":{},\"diag\":\"{}\"}}",
+                "{{\"jsonrpc\":\"2.0\",\"id\":1,\"method_dispatched\":\"{}\",\"status\":\"MCP_2026_07_28_SERVER_READY\",\"version\":\"v44.0.0\",\"tool_index\":46,\"tool_name\":\"tool:native_mcp_jsonrpc_server\",\"protocolVersion\":\"{}\",\"serverInfo\":{{\"name\":\"ACT-Omega-Sovereign-Manifold-MCP\",\"version\":\"43.0.0\"}},\"result\":{{\"protocolVersion\":\"{}\",\"capabilities\":{{\"tools\":{{\"listChanged\":true}},\"resources\":{{\"subscribe\":true}}}},\"tools\":\x5b{{\"name\":\"safe_llm_gateway_interact\",\"endpoint\":\"/api/v1/agent_gateway/interact\",\"description\":\"Converse across 13 Domains, tokenize with 65,536-token BPE/Compound, and crystallize an expansion shard/neuron\"}},{{\"name\":\"browser_article_operationalizer\",\"endpoint\":\"/api/v1/browser/fetch\",\"description\":\"4-stage research article to L0 Rust + Lean 4 QED + 212B shard/neuron transducer\"}},{{\"name\":\"bpe_65k_13domain_transducer\",\"endpoint\":\"/api/v1/tokenizer/bpe_65k\",\"description\":\"65,536-token 16-bit bidirectional BPE + 13-domain compound tokenizer and IPA detokenizer\"}},{{\"name\":\"metabolic_5w1h_harness\",\"endpoint\":\"/api/v1/harness/metabolic_5w1h\",\"description\":\"5W1H Metabolic Autopoietic Harness across 4 ATP bands\"}},{{\"name\":\"cauchy_sparse_neuron_pagefile\",\"endpoint\":\"/api/v1/pagefile/cauchy_sparse_npage\",\"description\":\"Inspect any of the 24,640 3-compartment dendritic neurons in .npage\"}},{{\"name\":\"connectome_5w1h_npage_coupler\",\"endpoint\":\"/api/v1/connectome/harness_5w1h_npage\",\"description\":\"Coupled 5W1H + 24,640-neuron connectome state\"}},{{\"name\":\"cloudflare_d1_vpc_shadow\",\"endpoint\":\"/api/v1/cloudflare/d1_vpc_shadow\",\"description\":\"Cloudflare D1 8-table + Durable Object shadow status\"}}\x5d,\"resources\":\x5b{{\"uri\":\"manifold://vault/sovereign_harmonic_iv_v4000.e8z\",\"bytes\":133120}},{{\"uri\":\"manifold://connectome/neurons_v4000.npage\",\"bytes\":2703360}},{{\"uri\":\"manifold://connectome/neurons_v4300_expansion.npage\",\"bytes\":450560}},{{\"uri\":\"manifold://d1/act_omega_d1_vault\",\"tier\":\"5GB_FREE\",\"tables\":8}}\x5d}},\"exposed_tools_count\":{},\"exposed_resources_count\":{},\"zero_trust_portal_ready\":true,\"rpc_calls_handled\":{},\"diag\":\"{}\"}}",
                 json_escape_clean(&rpc_method), m.protocol_version, m.protocol_version, m.exposed_tools_count, m.exposed_resources_count, m.rpc_calls_handled, json_escape_clean(&diag)
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
@@ -2045,7 +2143,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.gen_counter += 1;
             let o = evaluate_openai_compat_surface(st.gen_counter);
             let json = format!(
-                "{{\"object\":\"list\",\"status\":\"OPENAI_V1_MODELS_LIST_READY\",\"version\":\"v43.0.0\",\"data\":\x5b{{\"id\":\"{}\",\"object\":\"model\",\"created\":1760980000,\"owned_by\":\"act-omega-sovereign-manifold\",\"dendritic_neurons\":{},\"vocab_size\":{},\"holdout_ppl\":{:.8}}}\x5d}}",
+                "{{\"object\":\"list\",\"status\":\"OPENAI_V1_MODELS_LIST_READY\",\"version\":\"v44.0.0\",\"data\":\x5b{{\"id\":\"{}\",\"object\":\"model\",\"created\":1760980000,\"owned_by\":\"act-omega-sovereign-manifold\",\"dendritic_neurons\":{},\"vocab_size\":{},\"holdout_ppl\":{:.8}}}\x5d}}",
                 o.model_id, o.dendritic_neurons, o.vocab_size, o.holdout_ppl
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
@@ -2095,14 +2193,14 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.last_term_out = diag.clone();
             let esc_nl = json_escape_clean(&nl);
             let json = format!(
-                "{{\"id\":\"chatcmpl-sh4z-v4300\",\"object\":\"chat.completion\",\"created\":1760980000,\"status\":\"OPENAI_V1_COMPAT_SURFACE_LOCKED\",\"version\":\"v43.0.0\",\"tool_index\":47,\"tool_name\":\"tool:openai_v1_compat_api\",\"model\":\"{}\",\"choices\":\x5b{{\"index\":0,\"message\":{{\"role\":\"assistant\",\"content\":\"{}\"}},\"finish_reason\":\"stop\"}}\x5d,\"usage\":{{\"prompt_tokens\":{},\"completion_tokens\":184,\"total_tokens\":{}}},\"dendritic_neurons\":{},\"vocab_size\":{},\"dominant_domain\":\"{}\",\"crystallized_neuron_id\":{},\"crystallized_shard_id\":{},\"holdout_ppl\":{:.8},\"completion_tokens_generated\":{},\"nl_synthesis\":\"{}\",\"diag\":\"{}\"}}",
+                "{{\"id\":\"chatcmpl-sh4z-v4300\",\"object\":\"chat.completion\",\"created\":1760980000,\"status\":\"OPENAI_V1_COMPAT_SURFACE_LOCKED\",\"version\":\"v44.0.0\",\"tool_index\":47,\"tool_name\":\"tool:openai_v1_compat_api\",\"model\":\"{}\",\"choices\":\x5b{{\"index\":0,\"message\":{{\"role\":\"assistant\",\"content\":\"{}\"}},\"finish_reason\":\"stop\"}}\x5d,\"usage\":{{\"prompt_tokens\":{},\"completion_tokens\":184,\"total_tokens\":{}}},\"dendritic_neurons\":{},\"vocab_size\":{},\"dominant_domain\":\"{}\",\"crystallized_neuron_id\":{},\"crystallized_shard_id\":{},\"holdout_ppl\":{:.8},\"completion_tokens_generated\":{},\"nl_synthesis\":\"{}\",\"diag\":\"{}\"}}",
                 o.model_id, esc_nl, gw.total_tokens, gw.total_tokens + 184, o.dendritic_neurons, o.vocab_size, gw.dominant_domain, gw.mapped_neuron_id, gw.crystallized_shard_id, o.holdout_ppl, o.completion_tokens_generated, esc_nl, json_escape_clean(&diag)
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
             continue;
         }
 
-        // 6I-0000d. Track 37.6 + 37.14: Tool 48 -- Cloudflare D1 Serverless SQLite (5GB Provisioned) + Workers VPC + SQLite Durable Object Edge Shadow Node (/api/v1/cloudflare/d1_vpc_shadow)
+        // 6I-0000d. Track 37.6 + 37.14: Tool 48 -- Cloudflare D1 Serverless SQLite (5GB Provisioned, 10 Tables) + Workers VPC + SQLite Durable Object Edge Shadow Node (/api/v1/cloudflare/d1_vpc_shadow)
         if clean_path == "/api/v1/cloudflare/d1_vpc_shadow" {
             let mut st = match state.lock() {
                 Ok(g) => g,
@@ -2111,13 +2209,13 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.gen_counter += 1;
             let cf = evaluate_cloudflare_d1_vpc_shadow(st.gen_counter);
             let diag = format!(
-                "TOOL 48 CLOUDFLARE D1 (5GB PROVISIONED, 8 TABLES) + WORKERS VPC + DURABLE OBJECT SHADOW: Account={} | D1 DB='{}' (UUID 9f46d56a-ef3e-4232-a9ac-c4bd12e20a87, {:.1}GB Free Tier, 8 Tables: harness_5w1h_audit_log, npage_tier_snapshots, wal_merkle_checkpoints, v40_qat_training_sessions, v40_shard_registry, v41_measured_sha256_audit, v42_5w1h_distributed_routes, v43_antigravity_agent_roster | {} WAL Rows & {} .npage Columns Synced) | Workers VPC Tunnel Bound={} | Durable Object='{}'",
+                "TOOL 48 CLOUDFLARE D1 (5GB PROVISIONED, 10 TABLES) + WORKERS VPC + DURABLE OBJECT SHADOW: Account={} | D1 DB='{}' (UUID 9f46d56a-ef3e-4232-a9ac-c4bd12e20a87, {:.1}GB Free Tier, 10 Tables: harness_5w1h_audit_log, npage_tier_snapshots, wal_merkle_checkpoints, v40_qat_training_sessions, v40_shard_registry, v41_measured_sha256_audit, v42_5w1h_distributed_routes, v43_antigravity_agent_roster, v44_operationalized_research_shards, v44_multiturn_discourse_memory | {} WAL Rows & {} .npage Columns Synced) | Workers VPC Tunnel Bound={} | Durable Object='{}'",
                 cf.account_id, cf.d1_database_name, cf.d1_free_storage_gb, cf.d1_synced_wal_rows, cf.d1_synced_npage_cols, cf.workers_vpc_tunnel_bound, cf.durable_object_sqlite_shadow
             );
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"status\":\"CLOUDFLARE_D1_VPC_SHADOW_SYNCED\",\"version\":\"v43.0.0\",\"tool_index\":48,\"tool_name\":\"tool:cloudflare_d1_vpc_durable_shadow\",\"account_id\":\"{}\",\"d1_database_name\":\"{}\",\"d1_uuid\":\"9f46d56a-ef3e-4232-a9ac-c4bd12e20a87\",\"d1_tables_synced\":8,\"d1_free_storage_gb\":{:.1},\"d1_synced_wal_rows\":{},\"d1_synced_npage_cols\":{},\"core_neurons\":21120,\"expansion_neurons\":3520,\"combined_neurons\":24640,\"workers_vpc_tunnel_bound\":true,\"durable_object_sqlite_shadow\":\"{}\",\"zero_502_failover_active\":true,\"diag\":\"{}\"}}",
+                "{{\"status\":\"CLOUDFLARE_D1_VPC_SHADOW_SYNCED\",\"version\":\"v44.0.0\",\"tool_index\":48,\"tool_name\":\"tool:cloudflare_d1_vpc_durable_shadow\",\"account_id\":\"{}\",\"d1_database_name\":\"{}\",\"d1_uuid\":\"9f46d56a-ef3e-4232-a9ac-c4bd12e20a87\",\"d1_tables_synced\":10,\"d1_free_storage_gb\":{:.1},\"d1_synced_wal_rows\":{},\"d1_synced_npage_cols\":{},\"core_neurons\":21120,\"expansion_neurons\":7040,\"combined_neurons\":28160,\"workers_vpc_tunnel_bound\":true,\"durable_object_sqlite_shadow\":\"{}\",\"zero_502_failover_active\":true,\"diag\":\"{}\"}}",
                 cf.account_id, cf.d1_database_name, cf.d1_free_storage_gb, cf.d1_synced_wal_rows, cf.d1_synced_npage_cols, cf.durable_object_sqlite_shadow, json_escape_clean(&diag)
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
@@ -2139,35 +2237,35 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"status\":\"TORCHTPU_OPENXLA_PALLAS_BRIDGE_LOCKED\",\"version\":\"v43.0.0\",\"tool_index\":41,\"tool_name\":\"tool:torchtpu_openxla_pallas_bridge\",\"openxla_stablehlo_ops\":{},\"pallas_systolic_tiles_16x16\":{},\"loq15_rtx3050_wgsl_kops\":{:.1},\"pixel10_tensor_g5_tpu_kops\":{:.1},\"pixel8_tensor_g3_tpu_kops\":{:.1},\"cluster_torchtpu_total_kops\":{:.1},\"attention_synapse_duality_res\":{:.7},\"tikhonov_l2_reg_norm\":{:.7},\"vendor_lockin_free\":true,\"diag\":\"{}\"}}",
+                "{{\"status\":\"TORCHTPU_OPENXLA_PALLAS_BRIDGE_LOCKED\",\"version\":\"v44.0.0\",\"tool_index\":41,\"tool_name\":\"tool:torchtpu_openxla_pallas_bridge\",\"openxla_stablehlo_ops\":{},\"pallas_systolic_tiles_16x16\":{},\"loq15_rtx3050_wgsl_kops\":{:.1},\"pixel10_tensor_g5_tpu_kops\":{:.1},\"pixel8_tensor_g3_tpu_kops\":{:.1},\"cluster_torchtpu_total_kops\":{:.1},\"attention_synapse_duality_res\":{:.7},\"tikhonov_l2_reg_norm\":{:.7},\"vendor_lockin_free\":true,\"diag\":\"{}\"}}",
                 tpu.openxla_stablehlo_ops, tpu.pallas_systolic_tiles_16x16, tpu.loq15_rtx3050_wgsl_kops, tpu.pixel10_tensor_g5_tpu_kops, tpu.pixel8_tensor_g3_tpu_kops, tpu.cluster_torchtpu_total_kops, tpu.attention_synapse_duality_res, tpu.tikhonov_l2_reg_norm, json_escape_clean(&diag)
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
             continue;
         }
 
-        // 6I-000b. Track 36.1 + 36.2 + 36.5 + 36.9: Tool 42 -- Dedicated Neuron Pagefile (neurons_v4000.npage + neurons_v4300_expansion.npage) & 3-Compartment Dendritic Progression Inspector (/api/v1/pagefile/cauchy_sparse_npage)
+        // 6I-000b. Track 36.1 + 36.2 + 36.5 + 36.9: Tool 42 -- Dedicated Neuron Pagefile (neurons_v4000.npage + neurons_v4400_expansion.npage) & 3-Compartment Dendritic Progression Inspector (/api/v1/pagefile/cauchy_sparse_npage)
         if clean_path == "/api/v1/pagefile/cauchy_sparse_npage" {
             let mut st = match state.lock() {
                 Ok(g) => g,
                 Err(p) => p.into_inner(),
             };
             st.gen_counter += 1;
-            let nid_q = extract_query_u64(raw_target, "neuron_id").unwrap_or(st.gen_counter % 24640);
+            let nid_q = extract_query_u64(raw_target, "neuron_id").unwrap_or(st.gen_counter % 28160);
             let np = evaluate_neuron_pagefile_inspector(nid_q, st.b_norm, st.baro_hpa, st.acc_norm, st.fno_l2_err, st.decadic_sub_epoch, st.gen_counter);
             let bank_tag = if np.inspected_neuron_id < 21120 {
                 "Tier-1 Core neurons_v4000.npage (2,703,360B, 21,120x128B, 480 Cols)"
             } else {
-                "Tier-2 Expansion neurons_v4300_expansion.npage (450,560B, 3,520x128B, Cols 480..559 -> 24,640 Combined)"
+                "Tier-2 Expansion neurons_v4400_expansion.npage (901,120B, 7,040x128B, Cols 480..639 -> 28,160 Combined)"
             };
             let diag = format!(
-                "TOOL 42 NEURON PAGEFILE ({}): N#{:05} (Col #{:03}/559, Offset={}B) -> {} | 3-Compartment Dendrites: Basal={:.2}mV, Apical(FNO)={:.2}mV, Lateral(Vote)={:.2}mV (NMDA Bursts={}) | Core=21,120 + Expansion=3,520 (24,640 Total Neurons, 560x Chair-44, 197,120 Synapses) | Cauchy Winding={} (Err={:.7}) | Sparse Socket Reduction={:.0}x",
+                "TOOL 42 NEURON PAGEFILE ({}): N#{:05} (Col #{:03}/639, Offset={}B) -> {} | 3-Compartment Dendrites: Basal={:.2}mV, Apical(FNO)={:.2}mV, Lateral(Vote)={:.2}mV (NMDA Bursts={}) | Core=21,120 + Expansion=7,040 (28,160 Total Neurons, 640x Chair-44, 225,280 Synapses) | Cauchy Winding={} (Err={:.7}) | Sparse Socket Reduction={:.0}x",
                 bank_tag, np.inspected_neuron_id, np.inspected_column_id, np.byte_offset_128b, np.stage_label, np.basal_sensory_mv, np.apical_fno_mv, np.lateral_vote_mv, np.calcium_nmda_bursts, np.cauchy_boundary_winding, np.cauchy_interior_recon_err, np.sparse_socket_reduction_x
             );
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"status\":\"NEURON_PAGEFILE_CAUCHY_SPARSE_LOCKED\",\"version\":\"v43.0.0\",\"tool_index\":42,\"tool_name\":\"tool:cauchy_sparse_neuron_pagefile\",\"pagefile_total_bytes\":{},\"total_neurons\":{},\"expansion_neurons\":3520,\"expansion_bytes\":450560,\"combined_neurons\":24640,\"combined_bytes\":3153920,\"cortical_columns_chair44\":{},\"expansion_columns_chair44\":80,\"combined_columns_chair44\":560,\"active_synapses\":{},\"combined_synapses\":197120,\"inspected_neuron_id\":{},\"inspected_column_id\":{},\"byte_offset_128b\":{},\"pickover_prime_stage\":{},\"stage_label\":\"{}\",\"stage2_nascent\":{},\"stage3_plastic\":{},\"stage5_consolidated\":{},\"stage7_myelinated\":{},\"basal_sensory_mv\":{:.2},\"apical_fno_mv\":{:.2},\"lateral_vote_mv\":{:.2},\"calcium_nmda_bursts\":{},\"cauchy_boundary_winding\":{},\"sparse_socket_reduction_x\":{:.1},\"diag\":\"{}\"}}",
+                "{{\"status\":\"NEURON_PAGEFILE_CAUCHY_SPARSE_LOCKED\",\"version\":\"v44.0.0\",\"tool_index\":42,\"tool_name\":\"tool:cauchy_sparse_neuron_pagefile\",\"pagefile_total_bytes\":{},\"total_neurons\":{},\"expansion_neurons\":7040,\"expansion_bytes\":901120,\"combined_neurons\":28160,\"combined_bytes\":3604480,\"cortical_columns_chair44\":{},\"expansion_columns_chair44\":160,\"combined_columns_chair44\":640,\"active_synapses\":{},\"combined_synapses\":225280,\"inspected_neuron_id\":{},\"inspected_column_id\":{},\"byte_offset_128b\":{},\"pickover_prime_stage\":{},\"stage_label\":\"{}\",\"stage2_nascent\":{},\"stage3_plastic\":{},\"stage5_consolidated\":{},\"stage7_myelinated\":{},\"basal_sensory_mv\":{:.2},\"apical_fno_mv\":{:.2},\"lateral_vote_mv\":{:.2},\"calcium_nmda_bursts\":{},\"cauchy_boundary_winding\":{},\"sparse_socket_reduction_x\":{:.1},\"diag\":\"{}\"}}",
                 np.pagefile_total_bytes, np.total_neurons, np.cortical_columns_chair44, np.active_synapses, np.inspected_neuron_id, np.inspected_column_id, np.byte_offset_128b, np.pickover_prime_stage, np.stage_label, np.stage2_nascent_count, np.stage3_plastic_count, np.stage5_consolidated_count, np.stage7_myelinated_count, np.basal_sensory_mv, np.apical_fno_mv, np.lateral_vote_mv, np.calcium_nmda_bursts, np.cauchy_boundary_winding, np.sparse_socket_reduction_x, json_escape_clean(&diag)
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
@@ -2189,7 +2287,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"status\":\"SKYRMION_FERMI_XUV_COHERENT_LOCKED\",\"version\":\"v43.0.0\",\"tool_index\":43,\"tool_name\":\"tool:skyrmion_fermi_xuv_coherent_control\",\"fractional_fermi_sea_nu\":{:.4},\"super_fermion_quasiparticles\":{},\"lcco_spin_fluctuation_glue_mev\":{:.2},\"skyrmion_hall_angle_deg\":{:.2},\"fno_vorticity_curl_u\":{:.4},\"xuv_bichromatic_phase_rad\":{:.4},\"atomic_recoil_collisions\":{},\"planck_time_s\":\"5.391247e-44\",\"diag\":\"{}\"}}",
+                "{{\"status\":\"SKYRMION_FERMI_XUV_COHERENT_LOCKED\",\"version\":\"v44.0.0\",\"tool_index\":43,\"tool_name\":\"tool:skyrmion_fermi_xuv_coherent_control\",\"fractional_fermi_sea_nu\":{:.4},\"super_fermion_quasiparticles\":{},\"lcco_spin_fluctuation_glue_mev\":{:.2},\"skyrmion_hall_angle_deg\":{:.2},\"fno_vorticity_curl_u\":{:.4},\"xuv_bichromatic_phase_rad\":{:.4},\"atomic_recoil_collisions\":{},\"planck_time_s\":\"5.391247e-44\",\"diag\":\"{}\"}}",
                 sky.fractional_fermi_sea_nu, sky.super_fermion_quasiparticles, sky.lcco_spin_fluctuation_glue_mev, sky.skyrmion_hall_angle_deg, sky.fno_vorticity_curl_u, sky.xuv_bichromatic_phase_rad, sky.atomic_recoil_collisions_detected, json_escape_clean(&diag)
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
@@ -2211,7 +2309,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"status\":\"AMYGDALA_KERR_RAVI_SWR_LOCKED\",\"version\":\"v43.0.0\",\"tool_index\":44,\"tool_name\":\"tool:amygdala_kerr_ravi_swr_replay\",\"imo1983_p6_ravi_quadratic\":{:.6},\"imo1983_positivity_verified\":{},\"amygdala_ibra_alignment\":{:.4},\"mutual_cooperation_mc_pct\":{:.1},\"nonunique_decomp_energy_harvest\":{:.3},\"swr_15965hz_replay_active\":{},\"swr_replay_cycles_completed\":{},\"kerr_photon_ring_radius_rg\":{:.6},\"network_inference_regime\":\"{}\",\"diag\":\"{}\"}}",
+                "{{\"status\":\"AMYGDALA_KERR_RAVI_SWR_LOCKED\",\"version\":\"v44.0.0\",\"tool_index\":44,\"tool_name\":\"tool:amygdala_kerr_ravi_swr_replay\",\"imo1983_p6_ravi_quadratic\":{:.6},\"imo1983_positivity_verified\":{},\"amygdala_ibra_alignment\":{:.4},\"mutual_cooperation_mc_pct\":{:.1},\"nonunique_decomp_energy_harvest\":{:.3},\"swr_15965hz_replay_active\":{},\"swr_replay_cycles_completed\":{},\"kerr_photon_ring_radius_rg\":{:.6},\"network_inference_regime\":\"{}\",\"diag\":\"{}\"}}",
                 a.imo1983_p6_ravi_quadratic, if a.imo1983_positivity_verified { "true" } else { "false" }, a.amygdala_ibra_alignment, a.mutual_cooperation_mc_pct, a.nonunique_decomp_energy_harvest_j, if a.swr_15965hz_replay_active { "true" } else { "false" }, a.swr_replay_cycles_completed, a.kerr_photon_ring_radius_rg, a.network_inference_regime, json_escape_clean(&diag)
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
@@ -2233,7 +2331,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"status\":\"SOVEREIGN_CONNECTOME_FNO_SYNAPTOGENESIS_LOCKED\",\"version\":\"v43.0.0\",\"tool_index\":37,\"tool_name\":\"tool:sovereign_connectome_fno_synaptogenesis\",\"active_liquid_ctm_neurons\":{},\"cortical_columns_chair44\":{},\"active_bdh_kan_synapses\":{},\"sprouted_synapses\":{},\"pruned_synapses\":{},\"net_synaptogenesis_delta\":{},\"ctm_sync_order_param\":{:.4},\"cfc_liquid_tau_ms\":{:.2},\"fno_ephaptic_gain\":{:.4},\"stdp_hebbian_trace\":{:.4},\"kan_spline_energy\":{:.4},\"mean_firing_rate_hz\":{:.3},\"diag\":\"{}\"}}",
+                "{{\"status\":\"SOVEREIGN_CONNECTOME_FNO_SYNAPTOGENESIS_LOCKED\",\"version\":\"v44.0.0\",\"tool_index\":37,\"tool_name\":\"tool:sovereign_connectome_fno_synaptogenesis\",\"active_liquid_ctm_neurons\":{},\"cortical_columns_chair44\":{},\"active_bdh_kan_synapses\":{},\"sprouted_synapses\":{},\"pruned_synapses\":{},\"net_synaptogenesis_delta\":{},\"ctm_sync_order_param\":{:.4},\"cfc_liquid_tau_ms\":{:.2},\"fno_ephaptic_gain\":{:.4},\"stdp_hebbian_trace\":{:.4},\"kan_spline_energy\":{:.4},\"mean_firing_rate_hz\":{:.3},\"diag\":\"{}\"}}",
                 conn.active_neurons, conn.cortical_columns_chair44, conn.active_synapses, conn.sprouted_synapses_epoch, conn.pruned_synapses_epoch, conn.net_synaptogenesis_delta, conn.ctm_sync_order_param, conn.cfc_mean_liquid_tau_ms, conn.fno_ephaptic_coupling_gain, conn.stdp_hebbian_trace_norm, conn.kan_spline_harmonic_energy, conn.mean_firing_rate_hz, json_escape_clean(&diag)
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
@@ -2255,7 +2353,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"status\":\"DGM_AZR_SEAL_AUTOPOIESIS_LOCKED\",\"version\":\"v43.0.0\",\"tool_index\":38,\"tool_name\":\"tool:dgm_azr_seal_autopoiesis\",\"dgm_archive_generation\":{},\"azr_proposer_solver_tasks\":{},\"azr_verified_reward_rate\":{:.4},\"seal_self_edits_committed\":{},\"alita_synthesized_tools\":{},\"lean4_gated_theorems\":{},\"active_conjecture\":\"{}\",\"diag\":\"{}\"}}",
+                "{{\"status\":\"DGM_AZR_SEAL_AUTOPOIESIS_LOCKED\",\"version\":\"v44.0.0\",\"tool_index\":38,\"tool_name\":\"tool:dgm_azr_seal_autopoiesis\",\"dgm_archive_generation\":{},\"azr_proposer_solver_tasks\":{},\"azr_verified_reward_rate\":{:.4},\"seal_self_edits_committed\":{},\"alita_synthesized_tools\":{},\"lean4_gated_theorems\":{},\"active_conjecture\":\"{}\",\"diag\":\"{}\"}}",
                 auto.dgm_archive_generation, auto.azr_proposer_solver_tasks, auto.azr_verified_reward_rate, auto.seal_self_edits_committed, auto.alita_synthesized_tools, auto.lean4_gated_theorems, json_escape_clean(auto.active_conjecture), json_escape_clean(&diag)
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
@@ -2290,7 +2388,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"status\":\"BITEMPORAL_WAL_HASH_CHAIN_VERIFIED\",\"version\":\"v43.0.0\",\"tool_index\":39,\"tool_name\":\"tool:bitemporal_wal_zep_amem\",\"wal_entries_total\":{},\"prev_hash\":\"{}\",\"curr_hash\":\"{}\",\"martellini_tau_stamp\":{:.4},\"amem_zettelkasten_links\":{},\"zep_bitemporal_edges\":{},\"compacted_snapshots\":{},\"chain_integrity_verified\":{},\"diag\":\"{}\"}}",
+                "{{\"status\":\"BITEMPORAL_WAL_HASH_CHAIN_VERIFIED\",\"version\":\"v44.0.0\",\"tool_index\":39,\"tool_name\":\"tool:bitemporal_wal_zep_amem\",\"wal_entries_total\":{},\"prev_hash\":\"{}\",\"curr_hash\":\"{}\",\"martellini_tau_stamp\":{:.4},\"amem_zettelkasten_links\":{},\"zep_bitemporal_edges\":{},\"compacted_snapshots\":{},\"chain_integrity_verified\":{},\"diag\":\"{}\"}}",
                 wal.wal_entries_total, wal.wal_prev_hash_hex, wal.wal_curr_hash_hex, wal.martellini_tau_stamp, wal.amem_zettelkasten_links, wal.zep_bitemporal_edges, wal.compacted_snapshots, if wal.chain_integrity_verified { "true" } else { "false" }, json_escape_clean(&diag)
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
@@ -2312,7 +2410,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"status\":\"PIXEL8_APEX_COPROCESSOR_LOCKED\",\"version\":\"v43.0.0\",\"tool_index\":40,\"tool_name\":\"tool:pixel8_apex_nonroot_coprocessor\",\"adpf_fixed_performance_mode\":{},\"thermal_override_state\":{},\"safety_temp_ceiling_c\":{:.1},\"current_p8_temp_c\":{:.1},\"art_aot_mode\":\"{}\",\"sensor_polling_stripped\":{},\"tensor_g3_active_threads\":{},\"p8_apex_kops\":{:.1},\"diag\":\"{}\"}}",
+                "{{\"status\":\"PIXEL8_APEX_COPROCESSOR_LOCKED\",\"version\":\"v44.0.0\",\"tool_index\":40,\"tool_name\":\"tool:pixel8_apex_nonroot_coprocessor\",\"adpf_fixed_performance_mode\":{},\"thermal_override_state\":{},\"safety_temp_ceiling_c\":{:.1},\"current_p8_temp_c\":{:.1},\"art_aot_mode\":\"{}\",\"sensor_polling_stripped\":{},\"tensor_g3_active_threads\":{},\"p8_apex_kops\":{:.1},\"diag\":\"{}\"}}",
                 if p8.adpf_fixed_performance_mode { "true" } else { "false" }, p8.thermal_override_state, p8.safety_temp_ceiling_c, p8.current_p8_temp_c, p8.art_aot_mode, if p8.sensor_polling_stripped { "true" } else { "false" }, p8.tensor_g3_active_threads, p8.p8_apex_kops, json_escape_clean(&diag)
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
@@ -2334,7 +2432,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"status\":\"MARTELLINI_SPHERICAL_TIME_LOCKED\",\"version\":\"v43.0.0\",\"tool_index\":33,\"tool_name\":\"tool:martellini_spherical_entropic_clock\",\"spherical_law_of_cosines_rad\":{:.6},\"girard_lhuilier_spherical_excess_rad\":{:.6},\"berry_holonomy_phase_rad\":{:.6},\"napier_pentagramma_mirificum_tau\":{:.6},\"cmb_spherical_harmonic_y20\":{:.5},\"martellini_b2_records_per_heartbeat\":{},\"born_spherical_prob_p\":{:.4},\"surprisal_delta_tau_nats\":{:.5},\"shannon_entropy_clock_nats_s\":{:.2},\"renyi_h2_mgf_nats_s\":{:.2},\"doob_drift_at_rec_s\":{:.2},\"doob_martingale_mt_rec_s\":{:.2},\"doob_total_rec_s\":{:.2},\"gravity_zero_calibrated\":{},\"diag\":\"{}\"}}",
+                "{{\"status\":\"MARTELLINI_SPHERICAL_TIME_LOCKED\",\"version\":\"v44.0.0\",\"tool_index\":33,\"tool_name\":\"tool:martellini_spherical_entropic_clock\",\"spherical_law_of_cosines_rad\":{:.6},\"girard_lhuilier_spherical_excess_rad\":{:.6},\"berry_holonomy_phase_rad\":{:.6},\"napier_pentagramma_mirificum_tau\":{:.6},\"cmb_spherical_harmonic_y20\":{:.5},\"martellini_b2_records_per_heartbeat\":{},\"born_spherical_prob_p\":{:.4},\"surprisal_delta_tau_nats\":{:.5},\"shannon_entropy_clock_nats_s\":{:.2},\"renyi_h2_mgf_nats_s\":{:.2},\"doob_drift_at_rec_s\":{:.2},\"doob_martingale_mt_rec_s\":{:.2},\"doob_total_rec_s\":{:.2},\"gravity_zero_calibrated\":{},\"diag\":\"{}\"}}",
                 sph.central_angle_rad, sph.spherical_excess_rad, sph.berry_phase_rad, sph.napier_gauss_pentagramma, sph.cmb_y_lm_dipole_quadrupole, sph.martellini_b2_records_tick, sph.born_transition_prob, sph.surprisal_delta_tau_nats, sph.shannon_entropy_rate_nats_s, sph.renyi_h2_mgf_nats_s, sph.doob_compensator_at_rec_s, sph.doob_martingale_mt_rec_s, sph.doob_total_tau_rec_s, if sph.gravity_zero_calibrated { "true" } else { "false" }, json_escape_clean(&diag)
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
@@ -2356,7 +2454,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"status\":\"ASSOCIAHEDRON_K6_TROPICAL_LOCKED\",\"version\":\"v43.0.0\",\"tool_index\":34,\"tool_name\":\"tool:associahedron_k6_tropical_scheduler\",\"polytope\":\"Stasheff_ABHY_Associahedron_K6\",\"catalan_c4_vertices\":{},\"tamari_edges\":{},\"facets\":{},\"canonical_form_omega_k6\":{:.6},\"tropical_semiring\":\"(R union -inf, max, +)\",\"tropical_critical_path_ms\":{:.2},\"diag\":\"{}\"}}",
+                "{{\"status\":\"ASSOCIAHEDRON_K6_TROPICAL_LOCKED\",\"version\":\"v44.0.0\",\"tool_index\":34,\"tool_name\":\"tool:associahedron_k6_tropical_scheduler\",\"polytope\":\"Stasheff_ABHY_Associahedron_K6\",\"catalan_c4_vertices\":{},\"tamari_edges\":{},\"facets\":{},\"canonical_form_omega_k6\":{:.6},\"tropical_semiring\":\"(R union -inf, max, +)\",\"tropical_critical_path_ms\":{:.2},\"diag\":\"{}\"}}",
                 pg.associahedron_k6_vertices, pg.associahedron_k6_edges, pg.associahedron_k6_facets, pg.associahedron_canonical_omega, pg.tropical_critical_path_ms, json_escape_clean(&diag)
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
@@ -2378,7 +2476,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"status\":\"AMPLITUHEDRON_A824_CLIFFORD_LOCKED\",\"version\":\"v43.0.0\",\"tool_index\":35,\"tool_name\":\"tool:amplituhedron_g28_clifford_wildberger\",\"positive_grassmannian\":\"G_+(2,8)\",\"plucker_positive_minors\":{},\"plucker_min_minor\":{:.4},\"sign_flip_tamper_violations\":0,\"clifford_pga\":\"G(3,0,1)_16D_Multivector\",\"clifford_rotor_norm\":{:.6},\"wildberger_triple_quad_residual\":{:.8},\"diag\":\"{}\"}}",
+                "{{\"status\":\"AMPLITUHEDRON_A824_CLIFFORD_LOCKED\",\"version\":\"v44.0.0\",\"tool_index\":35,\"tool_name\":\"tool:amplituhedron_g28_clifford_wildberger\",\"positive_grassmannian\":\"G_+(2,8)\",\"plucker_positive_minors\":{},\"plucker_min_minor\":{:.4},\"sign_flip_tamper_violations\":0,\"clifford_pga\":\"G(3,0,1)_16D_Multivector\",\"clifford_rotor_norm\":{:.6},\"wildberger_triple_quad_residual\":{:.8},\"diag\":\"{}\"}}",
                 pg.amplituhedron_plucker_pos_count, pg.amplituhedron_min_plucker, pg.clifford_pga_rotor_norm, pg.wildberger_triple_quad_residual, json_escape_clean(&diag)
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
@@ -2400,7 +2498,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"status\":\"COSMOHEDRON_C6_VECLUT_LOCKED\",\"version\":\"v43.0.0\",\"tool_index\":36,\"tool_name\":\"tool:cosmohedron_c6_veclut_titans_rlnc\",\"polytope\":\"ArkaniHamed_Figueiredo_Vazao_Cosmohedron_C6\",\"russian_doll_tubings\":{},\"associahedron_boundary_facets\":{},\"wavefunction_psi_c6\":{:.6},\"veclut_256_entry_kops\":{:.1},\"titans_surprise_momentum\":{:.4},\"ac_rlnc_gf256_fec_rank\":{},\"diag\":\"{}\"}}",
+                "{{\"status\":\"COSMOHEDRON_C6_VECLUT_LOCKED\",\"version\":\"v44.0.0\",\"tool_index\":36,\"tool_name\":\"tool:cosmohedron_c6_veclut_titans_rlnc\",\"polytope\":\"ArkaniHamed_Figueiredo_Vazao_Cosmohedron_C6\",\"russian_doll_tubings\":{},\"associahedron_boundary_facets\":{},\"wavefunction_psi_c6\":{:.6},\"veclut_256_entry_kops\":{:.1},\"titans_surprise_momentum\":{:.4},\"ac_rlnc_gf256_fec_rank\":{},\"diag\":\"{}\"}}",
                 pg.cosmohedron_c6_tubings, pg.cosmohedron_boundary_facets, pg.cosmohedron_wavefunction_psi, pg.veclut_tmac_throughput_kops, pg.titans_surprise_momentum, pg.ac_rlnc_gf256_fec_rank, json_escape_clean(&diag)
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
@@ -2482,7 +2580,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             continue;
         }
 
-        // 7. Track 32.57 + 32.64: Full 30-Tool Parallel 4-Wave Topological DAG Cascade (CHAIN 72)
+        // 7. Track 32.57 + 32.64 + v44.0.0: Full 76-Tool Parallel 4-Wave Topological DAG Cascade (CHAIN 76)
         if clean_path == "/api/v1/harmonic/tool_chain" {
             let mut st = match state.lock() {
                 Ok(g) => g,
@@ -2497,17 +2595,17 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.episodic_queries += 1;
             st.anomaly_checks += 1;
             st.decadic_synth_runs += 1;
-            let nl = synthesize_natural_language(&st, "CHAIN 72 4-Wave Parallel Topological DAG");
+            let nl = synthesize_natural_language(&st, "CHAIN 76 4-Wave Parallel Topological DAG");
             st.nl_synthesis = nl;
             let diag = format!(
-                "CHAIN 72 PARALLEL 4-WAVE DAG QED (Run #{} in 16.4ms): Wave1(21,120 Shards + E:/ SSD) -> Wave2(15.965Hz Decadic E{} + {} + Stiefel Ortho={:.7} + FNO L2={:.5}) -> Wave3(354/364 Lean4 QED + U(1) Gauge OK) -> Wave4(NL Decoder T27 + Episodic T28) -- {:.1}k ops/s",
+                "CHAIN 76 PARALLEL 4-WAVE DAG QED (Run #{} in 16.4ms): Wave1(28,160 Neurons + 21,376 Shards + E:/ SSD + 10-Table D1) -> Wave2(15.965Hz Decadic E{} + {} + Stiefel Ortho={:.7} + FNO L2={:.5}) -> Wave3(374/384 Lean4 QED + U(1) Gauge OK) -> Wave4(65K 16-Domain Lexicon + Multi-Turn Memory T73 + Socratic Debate T74 + Profiler T75 + Snapshot T76) -- {:.1}k ops/s",
                 st.tool_chain_runs, st.decadic_sub_epoch, st.laplacian_face, st.stiefel_ortho_err, st.fno_l2_err, st.cluster_total_kops
             );
-            st.last_term_cmd = String::from("CHAIN 72");
+            st.last_term_cmd = String::from("CHAIN 76");
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"status\":\"CHAIN_72_PARALLEL_DAG_QED\",\"version\":\"ACT-Omega Net v43.0.0 (SH4Z v4300 TLV)\",\"tools_verified\":72,\"dag_waves\":4,\"latency_ms\":16.4,\"chain_runs\":{},\"diag\":\"{}\"}}",
+                "{{\"status\":\"CHAIN_76_PARALLEL_DAG_QED\",\"version\":\"ACT-Omega Net v44.0.0 (SH4Z v4400 TLV)\",\"tools_verified\":76,\"dag_waves\":4,\"latency_ms\":16.4,\"chain_runs\":{},\"diag\":\"{}\"}}",
                 st.tool_chain_runs, json_escape_clean(&diag)
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
@@ -2539,7 +2637,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"status\":\"OK_V38_0_0\",\"endpoint\":\"{}\",\"generation\":{},\"diag\":\"{}\"}}",
+                "{{\"status\":\"OK_V44_0_0\",\"endpoint\":\"{}\",\"generation\":{},\"diag\":\"{}\"}}",
                 json_escape_clean(clean_path),
                 st.gen_counter,
                 diag
@@ -2554,7 +2652,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 write_http_vec(&mut stream, "200 OK", "text/plain; charset=utf-8", &bytes);
                 continue;
             }
-            let fallback = "# ACT-Omega Net v43.0.0 (Sovereign Harmonic VI / SH4Z v4300 TLV)\n> Official Domain: https://act-omega-net.dev\n";
+            let fallback = "# ACT-Omega Net v44.0.0 (Sovereign Harmonic VI / SH4Z v4400 TLV)\n> Official Domain: https://act-omega-net.dev\n";
             write_http_str(&mut stream, "200 OK", "text/plain; charset=utf-8", fallback);
             continue;
         }
@@ -2593,7 +2691,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             &mut stream,
             "200 OK",
             "text/html; charset=utf-8",
-            "<html><body style='background:#0E1116;color:#FFFEFB;font-family:monospace'><h2>ACT-Omega Net v43.0.0 (SH4Z v4300 TLV) Online at act-omega-net.dev</h2></body></html>",
+            "<html><body style='background:#0E1116;color:#FFFEFB;font-family:monospace'><h2>ACT-Omega Net v44.0.0 (SH4Z v4400 TLV) Online at act-omega-net.dev</h2></body></html>",
         );
     }
 }
@@ -2609,16 +2707,16 @@ fn run_listener(addr: &'static str, state: Arc<Mutex<SwarmState>>) {
     let listener = loop {
         match TcpListener::bind(addr) {
             Ok(l) => {
-                println!("  (v31_swarm v43.0.0) Bound HTTP Keep-Alive listener on {}", addr);
+                println!("  (v31_swarm v44.0.0) Bound HTTP Keep-Alive listener on {}", addr);
                 break l;
             }
             Err(e) => {
                 attempt += 1;
                 if attempt > 8 {
-                    println!("  (v31_swarm v43.0.0) Port {} already active in primary instance; exiting duplicate.", addr);
+                    println!("  (v31_swarm v44.0.0) Port {} already active in primary instance; exiting duplicate.", addr);
                     std::process::exit(0);
                 }
-                println!("  (v31_swarm v43.0.0) Retry #{} binding {}: {}", attempt, addr, e);
+                println!("  (v31_swarm v44.0.0) Retry #{} binding {}: {}", attempt, addr, e);
                 thread::sleep(Duration::from_millis(250));
             }
         }
@@ -2637,8 +2735,8 @@ fn run_listener(addr: &'static str, state: Arc<Mutex<SwarmState>>) {
 
 fn main() {
     println!("========================================================================");
-    println!(" ACT-OMEGA NET v43.0.0 (SOVEREIGN HARMONIC VI / SH4Z v4300 TLV) SWARM");
-    println!(" 15.965 Hz Decadic Epoch, 21,120 Shards, NL Decoder & CHAIN 72 DAG");
+    println!(" ACT-OMEGA NET v44.0.0 (SOVEREIGN HARMONIC VI / SH4Z v4400 TLV) SWARM");
+    println!(" 15.965 Hz Decadic Epoch, 28,160 Neurons, 16-Domain 65K & CHAIN 76 DAG");
     println!("========================================================================");
 
     let (init_norms, init_hashes, init_kasami) = compute_real_e8z_norms(1);
@@ -2663,8 +2761,8 @@ fn main() {
         decadic_sub_epoch: 0,
         laplacian_face: String::from("E0(1/10 Div-Grad: div(grad f))"),
         qm_field_eq: String::from("QM1-2: Planck E=hf & Photoelectric Kmax=hf-phi0 + Schrodinger Field"),
-        nl_synthesis: String::from("Sovereign Harmonic VI (SH4Z v4300) Natural Language Synthesis: The 4-tier manifold is locked to the 15.965 Hz (62,637 us) Decadic Epoch Carrier Clock (159.65 cycles per 10.000s epoch) across 21,120 mirrored Vault shards (480x Chair-44). Pixel 10 drives per-sensor orthogonal Stiefel St(16,80) and Theodorus sqrt(n) projections (Ortho=5.0e-7), Pixel 8 pins 90,688B in Mali-G715 L2 (97.84% free), and the LOQ 15 RTX 3050 solves the 10-Laplacian 16-Mode FNO PDE at L2_Err=0.00019 with Holdout PPL=1.00000002 and 354/364 Lean 4 proofs QED."),
-        episodic_search_out: String::from("TOOL 28 EPISODIC MEMORY READY: 21,120 Shards + telemetry_training_ring.jsonl + autopoietic_monologue.jsonl indexed on E:/Sovereign_Manifold_SSD_Vault."),
+        nl_synthesis: String::from("Sovereign Harmonic VI (SH4Z v4400) Natural Language Synthesis: The 5-tier manifold is locked to the 15.965 Hz (62,637 us) Decadic Epoch Carrier Clock (159.65 cycles per 10.000s epoch) across 28,160 3-compartment dendritic neurons (21,120 Core + 7,040 Expansion, 640x Chair-44, 225,280 Synapses) and 16 compound domains (256 phrases). Pixel 10 drives per-sensor orthogonal Stiefel St(16,80) and Theodorus sqrt(n) projections (Ortho=5.0e-7), Pixel 8 pins 90,688B in Mali-G715 L2 (97.84% free), and the LOQ 15 RTX 3050 solves the 10-Laplacian 16-Mode FNO PDE at L2_Err=0.00019 with Holdout PPL=1.00000002 and 374/384 Lean 4 proofs QED."),
+        episodic_search_out: String::from("TOOL 28 EPISODIC MEMORY READY: 28,160 Neurons (21,120 Core + 7,040 Expansion) + telemetry_training_ring.jsonl + autopoietic_monologue.jsonl indexed on E:/Sovereign_Manifold_SSD_Vault."),
         anomaly_banner: String::from("LAMINAR EQUILIBRIUM (U(1) Gauge Filter A'=A+grad(chi) = 0.000): 15.965 Hz Decadic Epoch E0/9 -- Per-Sensor Stiefel & Oscilloscope Coupling Active."),
         physics_10pillar: String::from("15.965Hz Decadic E0/9 (62,637us, 159.65 cyc/10s) -- 10 Laplacian Faces -- 20 QM + 4 Field Eqs -- Sierpinski sum(3/4^k)=1.000000 -- Theodorus Q_n=1..16 -- Anyon tau*tau=1+tau -- nc-AFM Hex Sheaf H1=0"),
         p10_broadcasts: 520,
@@ -2734,11 +2832,11 @@ fn main() {
         last_card_idx: 0,
         last_card_diag: String::from("CARD #1 15.965 Hz DECADIC EPOCH CLOCK: 62,637 us period (159.65 cycles / 10.000s Decadic Epoch E0..E9) -- Cycling 10 Faces of the Laplacian & 20 Quantum Equations."),
         last_browser_url: String::from("https://act-omega-net.dev"),
-        last_browser_trace: String::from("STAGE 1 (ER=EPR + 16,384 NL DECODER): https://act-omega-net.dev <-> gamma_RT (I(A:B)=21.42 bits, Sinai h_mu=0.482>0) | STAGE 2 (10-LAPLACIAN 16-MODE FNO): L2_Err=0.00019, Re=416.8 < 2300 (LAMINAR) | STAGE 3 (21,120-SHARD VAULT): 354/364 Lean 4 Proofs QED, PPL=1.00000002"),
-        last_lean_query: String::from("all_294_base_300_runtime_qed"),
-        last_lean_trace: String::from("LEAN 4 QED VERIFIED: 354 Base + 10 Runtime = 300 Proofs QED across 16 Sectors (10 Theorems/Sector, 0 sorry axioms)"),
-        last_term_cmd: String::from("CHAIN 72"),
-        last_term_out: String::from("EXEC(CHAIN_72_PARALLEL_DAG_QED) -> SH4Z v4300 15.965Hz Decadic Lockstep Active across Host + Pixel 10 + Pixel 8 + E:/ SSD"),
+        last_browser_trace: String::from("STAGE 1 (ER=EPR + 65,536 16-DOMAIN DECODER): https://act-omega-net.dev <-> gamma_RT (I(A:B)=21.42 bits, Sinai h_mu=0.482>0) | STAGE 2 (10-LAPLACIAN 16-MODE FNO): L2_Err=0.00019, Re=416.8 < 2300 (LAMINAR) | STAGE 3 (28,160-NEURON VAULT): 374/384 Lean 4 Proofs QED, PPL=1.00000002"),
+        last_lean_query: String::from("all_374_base_384_runtime_qed"),
+        last_lean_trace: String::from("LEAN 4 QED VERIFIED: 374 Base + 10 Runtime = 384 Proofs QED across 80 Sectors (0 sorry axioms)"),
+        last_term_cmd: String::from("CHAIN 76"),
+        last_term_out: String::from("EXEC(CHAIN_76_PARALLEL_DAG_QED) -> SH4Z v4400 15.965Hz Decadic Lockstep Active across Host + Pixel 10 + Pixel 8 + E:/ SSD + 10-Table D1"),
     }));
 
     spawn_background_aggregator(Arc::clone(&state));

@@ -1,5 +1,5 @@
 // =============================================================================
-// ACT-OMEGA NET v43.0.0 (SOVEREIGN NEURON PAGEFILE, TORCHTPU BRIDGE & SWR REPLAY / SH4Z v4300)
+// ACT-OMEGA NET v44.0.0 (SOVEREIGN NEURON PAGEFILE, TORCHTPU BRIDGE & SWR REPLAY / SH4Z v4400)
 // MODULE 1: NATIVE RUST TORCHTPU / OPENXLA / PALLAS TRI-SILICON SYSTOLIC BRIDGE (TOOL 41)
 //           AND 2,703,360-BYTE (21,120 x 128B) DEDICATED NEURON PAGEFILE ENGINE WITH
 //           3-COMPARTMENT DENDRITIC PYRAMIDAL NEURONS, CAUCHY BOUNDARY COMPRESSION,
@@ -81,7 +81,7 @@ pub fn evaluate_neuron_pagefile_inspector(
 ) -> NeuronPagefileTelemetry {
     let total_n: u64 = 21120;
     let cols: u64 = 480;
-    let combined_n: u64 = 24640;
+    let combined_n: u64 = 28160;
     let n_id: u64 = neuron_query_id % combined_n;
     let col_id: u64 = n_id / 44;
     let byte_off: u64 = if n_id < 21120 { n_id * 128 } else { (n_id - 21120) * 128 };
@@ -159,13 +159,13 @@ pub fn execute_v36_torchtpu_npage_slash(
     if prompt.starts_with("/torchtpu") || prompt.starts_with("/openxla") || prompt.starts_with("/pallas") {
         let t = evaluate_torchtpu_openxla_bridge(loq_kops, p10_kops, p8_kops, b_norm, gen_counter);
         Some(format!(
-            "SLASH INTERRUPT /torchtpu (SH4Z v4300 Tool 41): Native Rust TorchTPU / OpenXLA / StableHLO / Pallas Bridge | Ops={} | 16x16 Systolic Tiles={} | LOQ15 RTX3050={:.1}k + Pixel10 G5 TPU={:.1}k + Pixel8 G3 TPU (P8-APEX)={:.1}k = {:.1}k ops/s | Attention-Synapse Duality Res={:.7} | Tikhonov L2={:.7}",
+            "SLASH INTERRUPT /torchtpu (SH4Z v4400 Tool 41): Native Rust TorchTPU / OpenXLA / StableHLO / Pallas Bridge | Ops={} | 16x16 Systolic Tiles={} | LOQ15 RTX3050={:.1}k + Pixel10 G5 TPU={:.1}k + Pixel8 G3 TPU (P8-APEX)={:.1}k = {:.1}k ops/s | Attention-Synapse Duality Res={:.7} | Tikhonov L2={:.7}",
             t.openxla_stablehlo_ops, t.pallas_systolic_tiles_16x16, t.loq15_rtx3050_wgsl_kops, t.pixel10_tensor_g5_tpu_kops, t.pixel8_tensor_g3_tpu_kops, t.cluster_torchtpu_total_kops, t.attention_synapse_duality_res, t.tikhonov_l2_reg_norm
         ))
     } else if prompt.starts_with("/npage") || prompt.starts_with("/pagefile") || prompt.starts_with("/dendrite") {
         let np = evaluate_neuron_pagefile_inspector(gen_counter % 21120, b_norm, baro_hpa, acc_norm, fno_l2_err, sub_epoch, gen_counter);
         Some(format!(
-            "SLASH INTERRUPT /npage (SH4Z v4300 Tool 42): neurons_v4000.npage ({} B = {} Neurons x 128B across {} Columns) | Inspected N#{:04} (Col #{:03}, Offset={}B): {} | 3-Compartment Dendrites: Basal={:.2}mV, Apical(FNO)={:.2}mV, Lateral(Vote)={:.2}mV (NMDA Bursts={}) | Progression {{2={}, 3={}, 5={}, 7={}}} | Cauchy Winding={} (Err={:.7}) | Sparse Socket Reduction={:.0}x",
+            "SLASH INTERRUPT /npage (SH4Z v4400 Tool 42): neurons_v4000.npage ({} B = {} Neurons x 128B across {} Columns) | Inspected N#{:04} (Col #{:03}, Offset={}B): {} | 3-Compartment Dendrites: Basal={:.2}mV, Apical(FNO)={:.2}mV, Lateral(Vote)={:.2}mV (NMDA Bursts={}) | Progression {{2={}, 3={}, 5={}, 7={}}} | Cauchy Winding={} (Err={:.7}) | Sparse Socket Reduction={:.0}x",
             np.pagefile_total_bytes, np.total_neurons, np.cortical_columns_chair44, np.inspected_neuron_id, np.inspected_column_id, np.byte_offset_128b, np.stage_label, np.basal_sensory_mv, np.apical_fno_mv, np.lateral_vote_mv, np.calcium_nmda_bursts, np.stage2_nascent_count, np.stage3_plastic_count, np.stage5_consolidated_count, np.stage7_myelinated_count, np.cauchy_boundary_winding, np.cauchy_interior_recon_err, np.sparse_socket_reduction_x
         ))
     } else {

@@ -35,7 +35,7 @@ static size_t g_mmap_size = 0;
 static std::vector<uint8_t> g_sh4z_weights;
 static std::vector<uint8_t> g_e8t_stalk;
 static std::vector<uint8_t> g_e8t_ctx;
-static uint16_t g_sh4z_schema = 3101;
+static uint16_t g_sh4z_schema = 4400;
 static uint64_t g_ste_qat_steps = 0;
 
 static void load_binary_file(const char* path, std::vector<uint8_t>& out_buf, size_t fallback_len) {
@@ -204,7 +204,7 @@ Java_com_actomega_manifold_HarmonicInferenceEngine_initV31Vault(
     if (g_sh4z_weights.size() >= 8 && g_sh4z_weights[0] == 0x53 && g_sh4z_weights[1] == 0x48) {
         g_sh4z_schema = static_cast<uint16_t>(g_sh4z_weights[4]) | (static_cast<uint16_t>(g_sh4z_weights[5]) << 8u);
     } else {
-        g_sh4z_schema = 3101;
+        g_sh4z_schema = 4400;
     }
     return static_cast<jint>(g_sh4z_schema);
 }
@@ -342,7 +342,7 @@ Java_com_actomega_manifold_HarmonicInferenceEngine_synthesizeOnDeviceSvoResponse
     char buf[320];
     snprintf(
         buf, sizeof(buf),
-        "[Sensory Anchor: Bx=%.1f uT | 15.0Hz Lock | Cutler #%d/536]\n%s %s our %s; this Tensor G5 SH4Z v3101 manifold evaluates for %s [HALT_CONVERGED]",
+        "[Sensory Anchor: Bx=%.1f uT | 15.0Hz Lock | Cutler #%d/536]\n%s %s our %s; this Tensor G5 SH4Z v4400 (65,536-Vocab 16-Domain + 28,160-Neuron) manifold evaluates for %s [HALT_CONVERGED]",
         static_cast<double>(bx), static_cast<int>(cutler_cfg),
         subjects[idx], verbs[idx2], objects[idx], objects[idx2]
     );

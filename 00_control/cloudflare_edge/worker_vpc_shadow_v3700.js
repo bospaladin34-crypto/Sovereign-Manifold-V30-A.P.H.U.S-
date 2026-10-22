@@ -1,6 +1,6 @@
 // ACT-Omega Net v43.0.0 (SH4Z v4300 TLV) Cloudflare Workers VPC + 8-Table D1 + SQLite Durable Object Shadow & Autonomous Cron Node
 // Account ID: a37cf8ab07e7c5f886c302be3f098744 | D1 UUID: 9f46d56a-ef3e-4232-a9ac-c4bd12e20a87
-// Vocab: 65,536 Bidirectional BPE + 8-Domain Compound | Connectome: 22,880 Neurons (21,120 Core + 1,760 Expansion)
+// Vocab: 65,536 Bidirectional BPE + 8-Domain Compound (128 Phrases) | Connectome: 24,640 Neurons (21,120 Core + 3,520 Expansion)
 
 export class SovereignEdgeShadowDO {
   constructor(state, env) {
@@ -12,7 +12,7 @@ export class SovereignEdgeShadowDO {
 
   async alarm() {
     const now = Date.now();
-    this.sql.exec(`INSERT INTO edge_heartbeat (chain, atp, core_neurons, exp_neurons, vocab_size, ts) VALUES ('CHAIN_72_DO_ALARM', 0.9495, 21120, 1760, 65536, ?);`, now);
+    this.sql.exec(`INSERT INTO edge_heartbeat (chain, atp, core_neurons, exp_neurons, vocab_size, ts) VALUES ('CHAIN_72_DO_ALARM', 0.9524, 21120, 3520, 65536, ?);`, now);
     await this.state.storage.setAlarm(now + 900000);
   }
 
@@ -20,7 +20,7 @@ export class SovereignEdgeShadowDO {
     const url = new URL(request.url);
     const now = Date.now();
     if (url.pathname === "/shadow/sync") {
-      this.sql.exec(`INSERT INTO edge_heartbeat (chain, atp, core_neurons, exp_neurons, vocab_size, ts) VALUES ('CHAIN_72', 0.9495, 21120, 1760, 65536, ?);`, now);
+      this.sql.exec(`INSERT INTO edge_heartbeat (chain, atp, core_neurons, exp_neurons, vocab_size, ts) VALUES ('CHAIN_72', 0.9524, 21120, 3520, 65536, ?);`, now);
       await this.state.storage.setAlarm(now + 900000);
       const countRow = this.sql.exec(`SELECT COUNT(*) AS cnt FROM edge_heartbeat;`).one();
       return Response.json({
@@ -29,9 +29,12 @@ export class SovereignEdgeShadowDO {
         chain: "CHAIN_72",
         durable_object: "SovereignEdgeShadowDO_SQLite",
         vocab_size: 65536,
+        compound_phrases_8d: 128,
         core_neurons: 21120,
-        expansion_neurons: 1760,
-        combined_neurons: 22880,
+        expansion_neurons: 3520,
+        combined_neurons: 24640,
+        chair44_columns_total: 560,
+        synapses_total: 197120,
         heartbeats_stored: countRow ? countRow.cnt : 1,
         next_alarm_ms: now + 900000,
         timestamp_ms: now
@@ -42,9 +45,12 @@ export class SovereignEdgeShadowDO {
       schema: "SH4Z_v4300_TLV",
       chain: "CHAIN_72",
       vocab_size: 65536,
+      compound_phrases_8d: 128,
       core_neurons: 21120,
-      expansion_neurons: 1760,
-      combined_neurons: 22880
+      expansion_neurons: 3520,
+      combined_neurons: 24640,
+      chair44_columns_total: 560,
+      synapses_total: 197120
     });
   }
 }
@@ -55,7 +61,7 @@ export default {
     if (env && env.ACT_OMEGA_D1) {
       ctx.waitUntil(
         env.ACT_OMEGA_D1.prepare(
-          "INSERT INTO harness_5w1h_audit_log (chain_level, metabolic_band, atp_score, why_motivation, what_tools_invoked, where_silicon_target, when_schedule_window, how_execution_kernel, recorded_at_ms) VALUES ('CHAIN_72', 'BAND_1_CRON_65K_VOCAB_AND_22880_NEURONS', 0.9512, 'Autonomous 15m Cron Heartbeat & 65,536-Token / 22,880-Neuron D1 Verification', 'Tools 25, 27, 45, 48, 50 & 70', 'Cloudflare-D1+DurableObject+LOQ15+DualPixel', '*/15 * * * * Cron + 15.965 Hz Decadic Lockstep', 'SH4Z_v4300_CRON_TRIGGER (65,536 Vocab, 22,880 Neurons)', ?);"
+          "INSERT INTO harness_5w1h_audit_log (chain_level, metabolic_band, atp_score, why_motivation, what_tools_invoked, where_silicon_target, when_schedule_window, how_execution_kernel, recorded_at_ms) VALUES ('CHAIN_72', 'BAND_1_CRON_65K_VOCAB_AND_24640_NEURONS', 0.9524, 'Autonomous 15m Cron Heartbeat & 65,536-Token / 24,640-Neuron D1 Verification', 'Tools 25, 27, 42, 45, 48, 50 & 70', 'Cloudflare-D1+DurableObject+LOQ15+DualPixel', '*/15 * * * * Cron + 15.965 Hz Decadic Lockstep', 'SH4Z_v4300_CRON_TRIGGER (65,536 Vocab, 128 8D Phrases, 24,640 Neurons)', ?);"
         ).bind(now).run()
       );
     }
@@ -86,7 +92,7 @@ export default {
           if (url.pathname === "/api/v1/cloudflare/cron_sync") {
             const now = Date.now();
             await env.ACT_OMEGA_D1.prepare(
-              "INSERT INTO harness_5w1h_audit_log (chain_level, metabolic_band, atp_score, why_motivation, what_tools_invoked, where_silicon_target, when_schedule_window, how_execution_kernel, recorded_at_ms) VALUES ('CHAIN_72', 'BAND_1_CLOSED_LOOP_65K_VOCAB_22880_NEURONS', 0.9512, 'Cycle-3 Autonomous Closed-Loop Sync (65,536 Vocab + 22,880 Neurons)', 'Tools 25, 27, 45, 48, 50 & 70', 'LOQ15+Pixel10+Pixel8+SSD+D1', '15.965 Hz Decadic Epoch + 159.65 Hz SWR Replay', 'SH4Z_v4300_CLOSED_LOOP (65,536 Bidirectional BPE+Compound)', ?);"
+              "INSERT INTO harness_5w1h_audit_log (chain_level, metabolic_band, atp_score, why_motivation, what_tools_invoked, where_silicon_target, when_schedule_window, how_execution_kernel, recorded_at_ms) VALUES ('CHAIN_72', 'BAND_1_CLOSED_LOOP_65K_VOCAB_24640_NEURONS', 0.9524, 'Cycle-3 Autonomous Closed-Loop Sync (65,536 Vocab + 128 8D Phrases + 24,640 Neurons)', 'Tools 25, 27, 42, 45, 48, 50 & 70', 'LOQ15+Pixel10+Pixel8+SSD+D1', '15.965 Hz Decadic Epoch + 159.65 Hz SWR Replay', 'SH4Z_v4300_CLOSED_LOOP (65,536 Bidirectional BPE+Compound, 560x Chair-44)', ?);"
             ).bind(now).run();
           }
           const auditRows = await env.ACT_OMEGA_D1.prepare("SELECT artifact_name, byte_length, sha256_digest, measured_shards, measured_neurons FROM v41_measured_sha256_audit ORDER BY artifact_name ASC;").all();
@@ -116,14 +122,16 @@ export default {
         cron_schedule: "*/15 * * * *",
         model: "sovereign-harmonic-v4300",
         vocab_size: 65536,
+        compound_phrases_8d: 128,
         domains_bridged: 8,
         chain: "CHAIN_72",
         tools_total: 72,
         lean4_qed: 364,
         npage_core_neurons: 21120,
-        npage_expansion_neurons: 1760,
-        npage_combined_neurons: 22880,
-        chair44_columns_total: 520,
+        npage_expansion_neurons: 3520,
+        npage_combined_neurons: 24640,
+        chair44_columns_total: 560,
+        synapses_total: 197120,
         durable_object_shadow: doSummary,
         d1_live: d1Summary
       });
@@ -133,8 +141,9 @@ export default {
       status: "ONLINE",
       chain: "CHAIN_72",
       vocab_size: 65536,
+      compound_phrases_8d: 128,
       d1_tables: 8,
-      npage_combined_neurons: 22880
+      npage_combined_neurons: 24640
     });
   }
 };

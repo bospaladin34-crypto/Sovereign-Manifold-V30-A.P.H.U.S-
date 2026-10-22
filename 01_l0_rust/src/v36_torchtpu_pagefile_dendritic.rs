@@ -81,7 +81,7 @@ pub fn evaluate_neuron_pagefile_inspector(
 ) -> NeuronPagefileTelemetry {
     let total_n: u64 = 21120;
     let cols: u64 = 480;
-    let combined_n: u64 = 22880;
+    let combined_n: u64 = 24640;
     let n_id: u64 = neuron_query_id % combined_n;
     let col_id: u64 = n_id / 44;
     let byte_off: u64 = if n_id < 21120 { n_id * 128 } else { (n_id - 21120) * 128 };

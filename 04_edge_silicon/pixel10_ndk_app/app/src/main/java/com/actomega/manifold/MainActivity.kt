@@ -470,9 +470,9 @@ object SovereignLiveBus : SensorEventListener {
                 "/api/v1/card/execute?card_id=2"
             ),
             TelemetryCardItem(
-                "4. VAULT (21,120+1,760) & HARVESTER",
-                "21,120 CORE + 1,760 EXP (520x CHAIR44)",
-                String.format(Locale.US, "22,880 Shards/Neurons -- WS=%.1fk ops/s", hostClusterKops),
+                "4. VAULT (21,120+3,520) & HARVESTER",
+                "21,120 CORE + 3,520 EXP (560x CHAIR44)",
+                String.format(Locale.US, "24,640 Shards/Neurons -- WS=%.1fk ops/s", hostClusterKops),
                 true,
                 2,
                 "/api/v1/card/execute?card_id=3"
@@ -543,9 +543,9 @@ object SovereignLiveBus : SensorEventListener {
                 "/api/v1/card/execute?card_id=11"
             ),
             TelemetryCardItem(
-                "13. 16,384 NL DECODER & CONVERSE (TOOL 27)",
-                "4,096 NL BPE + 4,096 COMPOUND",
-                "NL<->24D Transduce Calls: #$hostNlCalls -- 480x Chair-44",
+                "13. 65,536 BPE + 8D COMPOUND (TOOL 27)",
+                "16,128 NL + 16,384 8D + 24,640 DEN",
+                "NL<->24D Transduce Calls: #$hostNlCalls -- 560x Chair-44",
                 true,
                 13,
                 "/api/v1/card/execute?card_id=12"
@@ -1706,10 +1706,14 @@ fun SovereignCockpitV326Screen() {
                     val qEnc = java.net.URLEncoder.encode(cmdPrompt, "UTF-8")
                     invokeHostEndpoint("/api/v1/agent_gateway/interact?agent_id=mobile_hud&q=$qEnc", null, "EXECUTE PROMPT")
                 }
-                ToolButton603010("CHAIN 72", AccentRed10, TextIvory30, Modifier.weight(1f)) {
+                ToolButton603010("TRANSDUCE 65K BPE", Color(0xFF002B24), Color(0xFF00FFCC), Modifier.weight(1f)) {
+                    val qEnc = java.net.URLEncoder.encode(cmdPrompt, "UTF-8")
+                    invokeHostEndpoint("/api/v1/tokenizer/bpe_65k?q=$qEnc", null, "65,536-TOKEN BPE+8D INSPECTOR")
+                }
+                ToolButton603010("CHAIN 72", AccentRed10, TextIvory30, Modifier.weight(0.8f)) {
                     invokeHostEndpoint("/api/v1/harmonic/tool_chain?q=chain64_parallel_dag", null, "CHAIN 72")
                 }
-                ToolButton603010("CLEAR LOG", SlateSurface30, TextIvory30, Modifier.weight(0.7f)) {
+                ToolButton603010("CLEAR", SlateSurface30, TextIvory30, Modifier.weight(0.6f)) {
                     toolOutput = "READY."
                 }
             }

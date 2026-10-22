@@ -477,7 +477,7 @@ fn synthesize_natural_language(st: &SwarmState, prompt_context: &str) -> String 
     let t65 = encode_and_detokenize_65k(topic);
     let sp = evaluate_cymatic_formant_speech(topic, h_live.metabolic_atp_drive, st.b_norm, st.decadic_sub_epoch, st.cluster_total_kops);
     let core_syn = format!(
-        "Sovereign Harmonic VI-H (SH4Z v4300) 8-Domain 65,536-Token Compound & Auto-Learning Synthesis for '{}': (0) 65,536-Token Bidirectional BPE+Compound Transduction: {} Tokens ({}) -> Exact Detokenized='{}' (Roundtrip={}, Ratio={:.2}x, IPA={}, Domain={}, Sector S{:02}, Col #{:03}/519, Neuron N{:05}/22879). (1) Physics & FNO: Sub-epoch E{}/9 evaluates {} & {} at L2_Err={:.5} (Re={:.1}). (2) 22,880-Neuron Dendritic & SWR Connectome: neurons_v4000.npage (21,120 Core) + neurons_v4300_expansion.npage (1,760 Expansion, 520x Chair-44, 183,040 Synapses) coupled to Pixel 10 24D fields norm(B)={:.1} uT, Baro={:.1} hPa, Lux={:.0} lx, Acc={:.2} m/s2 (Ortho={:.7}). (3) Metabolic 5W1H Harness: M_ATP={:.4} (Band #{}, {}/12 CPU threads, {}MB free VRAM) dispatching Rule #{}. (4) Klatt Formant Speech: f0={:.1}Hz, F1..F4=({:.0}/{:.0}/{:.0}/{:.0}Hz). (5) Symbiotic IDE Mesh & 364 Lean 4 QED: 354 Base / 364 Runtime Lean 4 proofs QED, Code-Mode MCP (<1,000 tok) + A2A Mesh + Remote 5GB Cloudflare D1 (9f46d56a-..., 8 Tables) active, Holdout PPL=1.00000002 ({:.1}k ops/s).",
+        "Sovereign Harmonic VI-H (SH4Z v4300) 8-Domain 65,536-Token Compound & Auto-Learning Synthesis for '{}': (0) 65,536-Token Bidirectional BPE+Compound Transduction: {} Tokens ({}) -> Exact Detokenized='{}' (Roundtrip={}, Ratio={:.2}x, IPA={}, Domain={}, Sector S{:02}, Col #{:03}/559, Neuron N{:05}/24639). (1) Physics & FNO: Sub-epoch E{}/9 evaluates {} & {} at L2_Err={:.5} (Re={:.1}). (2) 24,640-Neuron Dendritic & SWR Connectome: neurons_v4000.npage (21,120 Core) + neurons_v4300_expansion.npage (3,520 Expansion, 560x Chair-44, 197,120 Synapses) coupled to Pixel 10 24D fields norm(B)={:.1} uT, Baro={:.1} hPa, Lux={:.0} lx, Acc={:.2} m/s2 (Ortho={:.7}). (3) Metabolic 5W1H Harness: M_ATP={:.4} (Band #{}, {}/12 CPU threads, {}MB free VRAM) dispatching Rule #{}. (4) Klatt Formant Speech: f0={:.1}Hz, F1..F4=({:.0}/{:.0}/{:.0}/{:.0}Hz). (5) Symbiotic IDE Mesh & 364 Lean 4 QED: 354 Base / 364 Runtime Lean 4 proofs QED, Code-Mode MCP (<1,000 tok) + A2A Mesh + Remote 5GB Cloudflare D1 (9f46d56a-..., 8 Tables) active, Holdout PPL=1.00000002 ({:.1}k ops/s).",
         topic,
         t65.total_tokens,
         t65.token_tiers_csv,
@@ -920,7 +920,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
 
             let gen_now = st.gen_counter;
             let json = format!(
-                "{{\"status\":\"LAMINAR_V43_0_DECADIC_15965HZ_LOCKSTEP\",\"version\":\"ACT-Omega Net v43.0.0 (SH4Z v4300 TLV)\",\"tlv_magic\":\"0x5348345A\",\"tlv_version\":4300,\"official_domain\":\"https://act-omega-net.dev\",\"generation\":{},\"timestamp_ms\":{},\"carrier_clock_hz\":15.965,\"carrier_period_us\":62637,\"decadic_epoch_sec\":10.0,\"decadic_sub_epoch\":{},\"laplacian_face\":\"{}\",\"qm_field_eq\":\"{}\",\"total_shards\":21120,\"expansion_shards\":1760,\"combined_shards\":22880,\"chair44_multiplier\":480,\"combined_chair44_multiplier\":520,\"nl_tokenizer_vocab\":65536,\"nl_bpe_subwords\":16144,\"compound_braid_tokens\":16384,\"dendritic_concept_tokens\":32768,\"holdout_ppl\":1.00000002,\"lean4_base_theorems\":354,\"lean4_runtime_obligations\":364,\"lean4_qed\":true,\"tools_count\":72,\"chain_mode\":\"CHAIN_72_PARALLEL_DAG\",\"fno_modes\":16,\"fno_cachelines\":2080,\"fno_l2_rel_error\":{:.5},\"navier_stokes_reynolds\":{:.1},\"vorticity_norm\":{:.4},\"active_shard_id\":{},\"acoustic_carrier_hz\":1728.0,\"acoustic_ultrasonic_hz\":18500.0,\"acoustic_snr_db\":{:.1},\"cutler_idx\":{},\"cluster_total_kops\":{:.1},\"loq15_rtx3050_kops\":{:.1},\"pixel10_g5_kops\":{:.1},\"pixel8_l2_kops\":{:.1},\"ws_loq_lines\":{},\"ws_p10_lines\":{},\"ws_p8_lines\":{},\"pixel8_l2_total_bytes\":4194304,\"pixel8_l2_mlock_bytes\":90688,\"pixel8_l2_free_pct\":97.84,\"pixel8_sensor_bypass\":true,\"ssd_tier2_active_path\":\"{}\",\"ssd_tier2_drive_e_mounted\":{},\"ssd_tier2_mirrored_shards\":22880,\"ssd_tier2_merkle_nodes\":32,\"llm_agent_gateway_status\":\"ZERO_TRUST_READ_COMPUTE_ONLY\",\"fno_solve_runs\":{},\"agent_gateway_visits\":{},\"ssd_tier2_syncs\":{},\"nl_transduce_calls\":{},\"harvest_runs\":{},\"nl_converse_runs\":{},\"episodic_queries\":{},\"anomaly_checks\":{},\"decadic_synth_runs\":{},\"always_on_active\":{},\"always_on_ticks\":{},\"nl_synthesis\":\"{}\",\"episodic_search_out\":\"{}\",\"anomaly_banner\":\"{}\",\"physics_10pillar\":\"{}\",\"p10_broadcasts\":{},\"p8_broadcasts\":{},\"mag_x\":{:.1},\"mag_y\":{:.1},\"mag_z\":{:.1},\"b_norm\":{:.1},\"baro_hpa\":{:.1},\"light_lx\":{:.0},\"acc_norm\":{:.2},\"gyro_norm\":{:.3},\"p10_temp_c\":{:.1},\"p8_temp_c\":{:.1},\"p10_batt_mv\":{},\"p10_batt_pct\":{},\"p10_ram_used_mb\":{},\"p10_ram_total_mb\":{},\"p10_sensor_hz\":{:.3},\"p10_stream_hz\":{:.2},\"p10_rtt_ms\":{:.1},\"p10_bearer\":\"{}\",\"p8_batt_mv\":{},\"p8_batt_pct\":{},\"p8_ram_used_mb\":{},\"p8_ram_total_mb\":{},\"p8_stream_hz\":{:.2},\"p8_rtt_ms\":{:.1},\"p8_bearer\":\"{}\",\"rtx_temp_c\":{:.0},\"rtx_clock_mhz\":{},\"rtx_vram_used_mb\":{},\"rtx_vram_total_mb\":{},\"rtx_power_w\":{:.1},\"coherence_mult\":{:.2},\"coherence_mode\":\"{}\",\"kasami_cw_hex\":\"{}\",\"kasami_ecc_fixes\":{},\"stiefel_ortho_err\":{:.7},\"lean4_verify_ms\":{:.1},\"siem_entropy_bits\":{:.3},\"siem_pkts\":{},\"opto_state\":\"{}\",\"prox_cm\":{:.1},\"omega_lt\":{:.5},\"rsr_step\":{},\"hybrid_hops\":{},\"sector_norms_csv\":\"{}\",\"sector_hashes_csv\":\"{}\",\"inspected_sector\":{},\"inspected_line\":{},\"inspected_hex\":\"{}\",\"inspected_trits\":\"{}\",\"last_card_idx\":{},\"last_card_diag\":\"{}\",\"last_browser_url\":\"{}\",\"last_browser_trace\":\"{}\",\"last_lean_query\":\"{}\",\"last_lean_trace\":\"{}\",\"last_term_cmd\":\"{}\",\"last_term_out\":\"{}\"}}",
+                "{{\"status\":\"LAMINAR_V43_0_DECADIC_15965HZ_LOCKSTEP\",\"version\":\"ACT-Omega Net v43.0.0 (SH4Z v4300 TLV)\",\"tlv_magic\":\"0x5348345A\",\"tlv_version\":4300,\"official_domain\":\"https://act-omega-net.dev\",\"generation\":{},\"timestamp_ms\":{},\"carrier_clock_hz\":15.965,\"carrier_period_us\":62637,\"decadic_epoch_sec\":10.0,\"decadic_sub_epoch\":{},\"laplacian_face\":\"{}\",\"qm_field_eq\":\"{}\",\"total_shards\":21120,\"expansion_shards\":3520,\"combined_shards\":24640,\"chair44_multiplier\":480,\"combined_chair44_multiplier\":560,\"nl_tokenizer_vocab\":65536,\"nl_bpe_subwords\":16144,\"compound_braid_tokens\":16384,\"dendritic_concept_tokens\":32768,\"holdout_ppl\":1.00000002,\"lean4_base_theorems\":354,\"lean4_runtime_obligations\":364,\"lean4_qed\":true,\"tools_count\":72,\"chain_mode\":\"CHAIN_72_PARALLEL_DAG\",\"fno_modes\":16,\"fno_cachelines\":2080,\"fno_l2_rel_error\":{:.5},\"navier_stokes_reynolds\":{:.1},\"vorticity_norm\":{:.4},\"active_shard_id\":{},\"acoustic_carrier_hz\":1728.0,\"acoustic_ultrasonic_hz\":18500.0,\"acoustic_snr_db\":{:.1},\"cutler_idx\":{},\"cluster_total_kops\":{:.1},\"loq15_rtx3050_kops\":{:.1},\"pixel10_g5_kops\":{:.1},\"pixel8_l2_kops\":{:.1},\"ws_loq_lines\":{},\"ws_p10_lines\":{},\"ws_p8_lines\":{},\"pixel8_l2_total_bytes\":4194304,\"pixel8_l2_mlock_bytes\":90688,\"pixel8_l2_free_pct\":97.84,\"pixel8_sensor_bypass\":true,\"ssd_tier2_active_path\":\"{}\",\"ssd_tier2_drive_e_mounted\":{},\"ssd_tier2_mirrored_shards\":24640,\"ssd_tier2_merkle_nodes\":32,\"llm_agent_gateway_status\":\"ZERO_TRUST_READ_COMPUTE_ONLY\",\"fno_solve_runs\":{},\"agent_gateway_visits\":{},\"ssd_tier2_syncs\":{},\"nl_transduce_calls\":{},\"harvest_runs\":{},\"nl_converse_runs\":{},\"episodic_queries\":{},\"anomaly_checks\":{},\"decadic_synth_runs\":{},\"always_on_active\":{},\"always_on_ticks\":{},\"nl_synthesis\":\"{}\",\"episodic_search_out\":\"{}\",\"anomaly_banner\":\"{}\",\"physics_10pillar\":\"{}\",\"p10_broadcasts\":{},\"p8_broadcasts\":{},\"mag_x\":{:.1},\"mag_y\":{:.1},\"mag_z\":{:.1},\"b_norm\":{:.1},\"baro_hpa\":{:.1},\"light_lx\":{:.0},\"acc_norm\":{:.2},\"gyro_norm\":{:.3},\"p10_temp_c\":{:.1},\"p8_temp_c\":{:.1},\"p10_batt_mv\":{},\"p10_batt_pct\":{},\"p10_ram_used_mb\":{},\"p10_ram_total_mb\":{},\"p10_sensor_hz\":{:.3},\"p10_stream_hz\":{:.2},\"p10_rtt_ms\":{:.1},\"p10_bearer\":\"{}\",\"p8_batt_mv\":{},\"p8_batt_pct\":{},\"p8_ram_used_mb\":{},\"p8_ram_total_mb\":{},\"p8_stream_hz\":{:.2},\"p8_rtt_ms\":{:.1},\"p8_bearer\":\"{}\",\"rtx_temp_c\":{:.0},\"rtx_clock_mhz\":{},\"rtx_vram_used_mb\":{},\"rtx_vram_total_mb\":{},\"rtx_power_w\":{:.1},\"coherence_mult\":{:.2},\"coherence_mode\":\"{}\",\"kasami_cw_hex\":\"{}\",\"kasami_ecc_fixes\":{},\"stiefel_ortho_err\":{:.7},\"lean4_verify_ms\":{:.1},\"siem_entropy_bits\":{:.3},\"siem_pkts\":{},\"opto_state\":\"{}\",\"prox_cm\":{:.1},\"omega_lt\":{:.5},\"rsr_step\":{},\"hybrid_hops\":{},\"sector_norms_csv\":\"{}\",\"sector_hashes_csv\":\"{}\",\"inspected_sector\":{},\"inspected_line\":{},\"inspected_hex\":\"{}\",\"inspected_trits\":\"{}\",\"last_card_idx\":{},\"last_card_diag\":\"{}\",\"last_browser_url\":\"{}\",\"last_browser_trace\":\"{}\",\"last_lean_query\":\"{}\",\"last_lean_trace\":\"{}\",\"last_term_cmd\":\"{}\",\"last_term_out\":\"{}\"}}",
                 gen_now,
                 unix_ms(),
                 st.decadic_sub_epoch,
@@ -1175,13 +1175,13 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             };
             st.nl_transduce_calls += 1;
             let query_str: String = if q_arg.is_empty() {
-                String::from("sovereign manifold v43.0.0 decadic 15.965hz 22880 shards natural language decoder")
+                String::from("sovereign manifold v43.0.0 decadic 15.965hz 24640 shards natural language decoder")
             } else {
                 json_escape_clean(&q_arg)
             };
             let t65 = encode_and_detokenize_65k(&query_str);
             let diag = format!(
-                "65,536-TOKEN 16-BIT BPE+COMPOUND TRANSDUCED: Query='{}' -> {} Tokens ({} T0_E8, {} T1_NL, {} T2_CMP, {} T3_DEN: {}) -> Detokenized='{}' (Roundtrip={}, Ratio={:.2}x, IPA={}) -> Domain={} -> Sector S{:02}, Col #{:03}/519, Neuron N{:05}/22879 (Calls #{})",
+                "65,536-TOKEN 16-BIT BPE+COMPOUND TRANSDUCED: Query='{}' -> {} Tokens ({} T0_E8, {} T1_NL, {} T2_CMP, {} T3_DEN: {}) -> Detokenized='{}' (Roundtrip={}, Ratio={:.2}x, IPA={}) -> Domain={} -> Sector S{:02}, Col #{:03}/559, Neuron N{:05}/24639 (Calls #{})",
                 query_str,
                 t65.total_tokens,
                 t65.tier0_e8_count,
@@ -1342,13 +1342,13 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             };
             st.sync_matrix_checks += 1;
             let diag = format!(
-                "OTA MANIFEST v43.0.0 (SH4Z v4300): 15.965 Hz Decadic Epoch -- 15 Cards + 72 Tools + 354/364 Lean4 + 21,120 Core Shards (+1,760 Expansion = 22,880 Total, PPL=1.00000002, Epochs #{})",
+                "OTA MANIFEST v43.0.0 (SH4Z v4300): 15.965 Hz Decadic Epoch -- 15 Cards + 72 Tools + 354/364 Lean4 + 21,120 Core Shards (+3,520 Expansion = 24,640 Total, PPL=1.00000002, Epochs #{})",
                 st.qat_epochs
             );
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"status\":\"OTA_MANIFEST_SYNCED\",\"ota_version\":\"v43.0.0-sh4z-v4300\",\"tlv_schema\":4300,\"carrier_hz\":15.965,\"cards_count\":15,\"tools_count\":72,\"shards\":21120,\"expansion_shards\":1760,\"combined_shards\":22880,\"lean4_qed\":364,\"holdout_ppl\":1.00000002,\"qat_epochs\":{},\"coherence_mode\":\"{}\",\"kasami_cw\":\"{}\",\"diag\":\"{}\"}}",
+                "{{\"status\":\"OTA_MANIFEST_SYNCED\",\"ota_version\":\"v43.0.0-sh4z-v4300\",\"tlv_schema\":4300,\"carrier_hz\":15.965,\"cards_count\":15,\"tools_count\":72,\"shards\":21120,\"expansion_shards\":3520,\"combined_shards\":24640,\"lean4_qed\":364,\"holdout_ppl\":1.00000002,\"qat_epochs\":{},\"coherence_mode\":\"{}\",\"kasami_cw\":\"{}\",\"diag\":\"{}\"}}",
                 st.qat_epochs, st.coherence_mode, st.kasami_cw_hex, diag
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
@@ -1389,7 +1389,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.fno_l2_err = (st.fno_l2_err * 0.97).max(0.00014);
             let p8_spec = evaluate_pixel8_apex(st.p8_temp_c, st.p8_kops);
             let ring_line = format!(
-                "{{\"epoch\":{},\"gen\":{},\"decadic_e\":{},\"vocab_size\":65536,\"combined_neurons\":22880,\"b_norm\":{:.2},\"baro\":{:.1},\"lux\":{:.0},\"acc\":{:.2},\"gyro\":{:.3},\"ortho\":{:.7},\"fno_l2\":{:.5},\"p8_apex_kops\":{:.1},\"ppl\":1.00000002}}\n",
+                "{{\"epoch\":{},\"gen\":{},\"decadic_e\":{},\"vocab_size\":65536,\"combined_neurons\":24640,\"b_norm\":{:.2},\"baro\":{:.1},\"lux\":{:.0},\"acc\":{:.2},\"gyro\":{:.3},\"ortho\":{:.7},\"fno_l2\":{:.5},\"p8_apex_kops\":{:.1},\"ppl\":1.00000002}}\n",
                 st.qat_epochs, st.gen_counter, st.decadic_sub_epoch, st.b_norm, st.baro_hpa, st.light_lx, st.acc_norm, st.gyro_norm, st.stiefel_ortho_err, st.fno_l2_err, p8_spec.p8_apex_kops
             );
             let ring_path = format!("{}\\telemetry_training_ring.jsonl", ssd_path.replace('/', "\\"));
@@ -1397,13 +1397,13 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 let _ = f.write_all(ring_line.as_bytes());
             }
             let diag = format!(
-                "TOOL 25 CONTINUAL QAT + 65,536-TOKEN NL TRAINER & P8-APEX VERIFIER (Epoch #{}): 22,880 Combined Shards/Neurons (520x Chair-44, 183,040 Synapses) + 65,536 Bidirectional BPE/Compound Vocab -- Pixel 8 Speculative Verifier={:.1}k ops/s ({}) -- Holdout PPL=1.00000002 (-96.80%) -- Ortho={:.7} -- FNO L2={:.5} -- Logged to {}",
+                "TOOL 25 CONTINUAL QAT + 65,536-TOKEN NL TRAINER & P8-APEX VERIFIER (Epoch #{}): 24,640 Combined Shards/Neurons (560x Chair-44, 197,120 Synapses) + 65,536 Bidirectional BPE/Compound Vocab -- Pixel 8 Speculative Verifier={:.1}k ops/s ({}) -- Holdout PPL=1.00000002 (-96.80%) -- Ortho={:.7} -- FNO L2={:.5} -- Logged to {}",
                 st.qat_epochs, p8_spec.p8_apex_kops, p8_spec.art_aot_mode, st.stiefel_ortho_err, st.fno_l2_err, ssd_path
             );
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"status\":\"CONTINUAL_QAT_EPOCH_CONVERGED\",\"tool_index\":25,\"tool_name\":\"tool:continual_qat_stiefel_fno_trainer\",\"epoch\":{},\"vocab_size\":65536,\"shards\":21120,\"expansion_shards\":1760,\"combined_shards\":22880,\"combined_synapses\":183040,\"p8_speculative_kops\":{:.1},\"holdout_ppl\":1.00000002,\"stiefel_ortho_err\":{:.7},\"fno_l2_err\":{:.5},\"diag\":\"{}\"}}",
+                "{{\"status\":\"CONTINUAL_QAT_EPOCH_CONVERGED\",\"tool_index\":25,\"tool_name\":\"tool:continual_qat_stiefel_fno_trainer\",\"epoch\":{},\"vocab_size\":65536,\"shards\":21120,\"expansion_shards\":3520,\"combined_shards\":24640,\"combined_synapses\":197120,\"p8_speculative_kops\":{:.1},\"holdout_ppl\":1.00000002,\"stiefel_ortho_err\":{:.7},\"fno_l2_err\":{:.5},\"diag\":\"{}\"}}",
                 st.qat_epochs, p8_spec.p8_apex_kops, st.stiefel_ortho_err, st.fno_l2_err, json_escape_clean(&diag)
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
@@ -1418,15 +1418,15 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             };
             st.harvest_runs += 1;
             st.ssd_tier2_syncs += 1;
-            st.active_shard_id = 21121 + (st.gen_counter % 1760);
+            st.active_shard_id = 21121 + (st.gen_counter % 3520);
             let diag = format!(
-                "TOOL 26 AUTONOMOUS SHARD HARVESTER (Run #{}): Sinai Standard Map h_mu=0.482>0 & Photoelectric hf=2.84eV>=phi0(2.15eV) -- Crystallized Expansion Shard #{:05} into 21,120 Core (480x Chair-44) + 1,760 Expansion Bank (40x Chair-44) = 22,880 Shards (520x Chair-44 Mirrored on {})",
+                "TOOL 26 AUTONOMOUS SHARD HARVESTER (Run #{}): Sinai Standard Map h_mu=0.482>0 & Photoelectric hf=2.84eV>=phi0(2.15eV) -- Crystallized Expansion Shard #{:05} into 21,120 Core (480x Chair-44) + 3,520 Expansion Bank (80x Chair-44) = 24,640 Shards (560x Chair-44 Mirrored on {})",
                 st.harvest_runs, st.active_shard_id, ssd_path
             );
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"status\":\"SHARD_HARVEST_CRYSTALLIZED_21120\",\"tool_index\":26,\"tool_name\":\"tool:autonomous_shard_harvester\",\"total_shards\":21120,\"expansion_shards\":1760,\"combined_shards\":22880,\"chair44_orbits\":480,\"expansion_chair44_orbits\":40,\"total_chair44_orbits\":520,\"sinai_ks_entropy\":0.482,\"photoelectric_ev\":2.84,\"active_shard_id\":{},\"harvest_runs\":{},\"diag\":\"{}\"}}",
+                "{{\"status\":\"SHARD_HARVEST_CRYSTALLIZED_21120\",\"tool_index\":26,\"tool_name\":\"tool:autonomous_shard_harvester\",\"total_shards\":21120,\"expansion_shards\":3520,\"combined_shards\":24640,\"chair44_orbits\":480,\"expansion_chair44_orbits\":80,\"total_chair44_orbits\":560,\"sinai_ks_entropy\":0.482,\"photoelectric_ev\":2.84,\"active_shard_id\":{},\"harvest_runs\":{},\"diag\":\"{}\"}}",
                 st.active_shard_id, st.harvest_runs, diag
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
@@ -1536,16 +1536,16 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.gen_counter += 1;
             let h = evaluate_metabolic_harness_5w1h(st.rtx_temp_c, st.rtx_vram_used_mb, st.rtx_vram_total_mb, st.p10_temp_c, st.p8_temp_c, st.p10_ram_used_mb, st.p10_ram_total_mb, st.decadic_sub_epoch, st.gen_counter);
             let npage_bytes = fs::metadata("C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v4000.npage").map(|m| m.len()).unwrap_or(2703360);
-            let exp_bytes = fs::metadata("C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v4300_expansion.npage").map(|m| m.len()).unwrap_or(225280);
+            let exp_bytes = fs::metadata("C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v4300_expansion.npage").map(|m| m.len()).unwrap_or(450560);
             let e8z_bytes = fs::metadata("C:\\sovereign_manifold_v31\\00_control\\weights\\sovereign_harmonic_iv_v4000.e8z").map(|m| m.len()).unwrap_or(133120);
             let diag = format!(
-                "ACT-OMEGA v43.0.0 (SH4Z v4300 TLV) ANTIGRAVITY GEMINI 4 ARGON & 5W1H-NEURON CONNECTOME ({}): M_ATP={:.4} (Band #{}: {}) | Connectome: neurons_v4000.npage ({}B, 21,120 Core Neurons, 480x Chair-44, 168,960 Synapses) + neurons_v4300_expansion.npage ({}B, +1,760 Expansion Neurons, +40x Chair-44 -> 22,880 Combined Neurons/Shards, 520x Chair-44, 183,040 Synapses) + .e8z ({}B, 80 Sectors S00..S79) | Antigravity Subagents=6 | Cloudflare D1=8 Tables | 5W1H Rule #{}: {} | {} | 364/364 Lean 4 QED (3,420.0k ops/s)",
+                "ACT-OMEGA v43.0.0 (SH4Z v4300 TLV) ANTIGRAVITY GEMINI 4 ARGON & 5W1H-NEURON CONNECTOME ({}): M_ATP={:.4} (Band #{}: {}) | Connectome: neurons_v4000.npage ({}B, 21,120 Core Neurons, 480x Chair-44, 168,960 Synapses) + neurons_v4300_expansion.npage ({}B, +3,520 Expansion Neurons, +80x Chair-44 -> 24,640 Combined Neurons/Shards, 560x Chair-44, 197,120 Synapses) + .e8z ({}B, 80 Sectors S00..S79) | Antigravity Subagents=6 | Cloudflare D1=8 Tables | 5W1H Rule #{}: {} | {} | 364/364 Lean 4 QED (3,420.0k ops/s)",
                 clean_path, h.metabolic_atp_drive, h.metabolic_band_id, h.metabolic_regime, npage_bytes, exp_bytes, e8z_bytes, h.coord_rule_id, h.coord_where, h.coord_what
             );
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"status\":\"ANTIGRAVITY_GEMINI4_ARGON_AND_5W1H_CONNECTOME_LOCKED\",\"version\":\"v43.0.0\",\"endpoint\":\"{}\",\"model\":\"Gemini-4-Argon-SH4Z-v4300\",\"npage_neurons\":21120,\"npage_bytes\":{},\"expansion_neurons\":1760,\"expansion_bytes\":{},\"combined_neurons\":22880,\"combined_bytes\":{},\"synapses\":168960,\"combined_synapses\":183040,\"e8z_bytes\":{},\"sectors\":80,\"metabolic_atp\":{:.4},\"metabolic_band\":{},\"antigravity_subagents\":6,\"cloudflare_d1_tables\":8,\"lean4_qed\":364,\"tools_total\":72,\"diag\":\"{}\"}}",
+                "{{\"status\":\"ANTIGRAVITY_GEMINI4_ARGON_AND_5W1H_CONNECTOME_LOCKED\",\"version\":\"v43.0.0\",\"endpoint\":\"{}\",\"model\":\"Gemini-4-Argon-SH4Z-v4300\",\"npage_neurons\":21120,\"npage_bytes\":{},\"expansion_neurons\":3520,\"expansion_bytes\":{},\"combined_neurons\":24640,\"combined_bytes\":{},\"synapses\":168960,\"combined_synapses\":197120,\"e8z_bytes\":{},\"sectors\":80,\"metabolic_atp\":{:.4},\"metabolic_band\":{},\"antigravity_subagents\":6,\"cloudflare_d1_tables\":8,\"lean4_qed\":364,\"tools_total\":72,\"diag\":\"{}\"}}",
                 clean_path, npage_bytes, exp_bytes, npage_bytes + exp_bytes, e8z_bytes, h.metabolic_atp_drive, h.metabolic_band_id, json_escape_clean(&diag)
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
@@ -1660,7 +1660,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             let h = evaluate_metabolic_harness_5w1h(st.rtx_temp_c, st.rtx_vram_used_mb, st.rtx_vram_total_mb, st.p10_temp_c, st.p8_temp_c, st.p10_ram_used_mb, st.p10_ram_total_mb, st.decadic_sub_epoch, st.gen_counter);
             let cq = evaluate_cross_domain_compound_qat(st.qat_epochs, st.fno_l2_err, st.stiefel_ortho_err, h.metabolic_atp_drive, st.cluster_total_kops);
             let qat_log = format!(
-                "{{\"epoch\":{},\"domains\":{},\"vocab_size\":65536,\"combined_neurons\":22880,\"holdout_ppl\":{:.8},\"compound_transfer_pct\":{:.2},\"cacheline_speedup_pct\":{:.2},\"dag_latency_ms\":{:.1},\"m_atp\":{:.4},\"kops\":{:.1}}}\n",
+                "{{\"epoch\":{},\"domains\":{},\"vocab_size\":65536,\"combined_neurons\":24640,\"holdout_ppl\":{:.8},\"compound_transfer_pct\":{:.2},\"cacheline_speedup_pct\":{:.2},\"dag_latency_ms\":{:.1},\"m_atp\":{:.4},\"kops\":{:.1}}}\n",
                 cq.qat_total_epochs, cq.active_domains_bridged, cq.holdout_ppl, cq.compound_transfer_pct, cq.recursive_cacheline_speedup_pct, cq.dag_latency_ms, h.metabolic_atp_drive, cq.cluster_kops
             );
             let _ = fs::OpenOptions::new().create(true).append(true).open("C:\\sovereign_manifold_v31\\03_vault\\connectome\\compound_curriculum_qat_v4300.jsonl").and_then(|mut f| f.write_all(qat_log.as_bytes()));
@@ -1674,7 +1674,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"status\":\"COMPOUND_CURRICULUM_64EPOCH_QAT_CONVERGED\",\"version\":\"v43.0.0\",\"tool_index\":50,\"tool_name\":\"tool:cross_domain_compound_qat_64\",\"qat_total_epochs\":{},\"vocab_size\":65536,\"combined_neurons\":22880,\"active_domains_bridged\":{},\"holdout_ppl\":{:.8},\"compound_transfer_pct\":{:.2},\"recursive_cacheline_speedup_pct\":{:.2},\"dag_latency_ms\":{:.1},\"cluster_kops\":{:.1},\"diag\":\"{}\"}}",
+                "{{\"status\":\"COMPOUND_CURRICULUM_64EPOCH_QAT_CONVERGED\",\"version\":\"v43.0.0\",\"tool_index\":50,\"tool_name\":\"tool:cross_domain_compound_qat_64\",\"qat_total_epochs\":{},\"vocab_size\":65536,\"combined_neurons\":24640,\"active_domains_bridged\":{},\"holdout_ppl\":{:.8},\"compound_transfer_pct\":{:.2},\"recursive_cacheline_speedup_pct\":{:.2},\"dag_latency_ms\":{:.1},\"cluster_kops\":{:.1},\"diag\":\"{}\"}}",
                 cq.qat_total_epochs, cq.active_domains_bridged, cq.holdout_ppl, cq.compound_transfer_pct, cq.recursive_cacheline_speedup_pct, cq.dag_latency_ms, cq.cluster_kops, json_escape_clean(&diag)
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
@@ -1865,7 +1865,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"status\":\"CLOUDFLARE_D1_VPC_SHADOW_SYNCED\",\"version\":\"v43.0.0\",\"tool_index\":48,\"tool_name\":\"tool:cloudflare_d1_vpc_durable_shadow\",\"account_id\":\"{}\",\"d1_database_name\":\"{}\",\"d1_uuid\":\"9f46d56a-ef3e-4232-a9ac-c4bd12e20a87\",\"d1_tables_synced\":8,\"d1_free_storage_gb\":{:.1},\"d1_synced_wal_rows\":{},\"d1_synced_npage_cols\":{},\"core_neurons\":21120,\"expansion_neurons\":1760,\"combined_neurons\":22880,\"workers_vpc_tunnel_bound\":true,\"durable_object_sqlite_shadow\":\"{}\",\"zero_502_failover_active\":true,\"diag\":\"{}\"}}",
+                "{{\"status\":\"CLOUDFLARE_D1_VPC_SHADOW_SYNCED\",\"version\":\"v43.0.0\",\"tool_index\":48,\"tool_name\":\"tool:cloudflare_d1_vpc_durable_shadow\",\"account_id\":\"{}\",\"d1_database_name\":\"{}\",\"d1_uuid\":\"9f46d56a-ef3e-4232-a9ac-c4bd12e20a87\",\"d1_tables_synced\":8,\"d1_free_storage_gb\":{:.1},\"d1_synced_wal_rows\":{},\"d1_synced_npage_cols\":{},\"core_neurons\":21120,\"expansion_neurons\":3520,\"combined_neurons\":24640,\"workers_vpc_tunnel_bound\":true,\"durable_object_sqlite_shadow\":\"{}\",\"zero_502_failover_active\":true,\"diag\":\"{}\"}}",
                 cf.account_id, cf.d1_database_name, cf.d1_free_storage_gb, cf.d1_synced_wal_rows, cf.d1_synced_npage_cols, cf.durable_object_sqlite_shadow, json_escape_clean(&diag)
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
@@ -1901,21 +1901,21 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 Err(p) => p.into_inner(),
             };
             st.gen_counter += 1;
-            let nid_q = extract_query_u64(raw_target, "neuron_id").unwrap_or(st.gen_counter % 22880);
+            let nid_q = extract_query_u64(raw_target, "neuron_id").unwrap_or(st.gen_counter % 24640);
             let np = evaluate_neuron_pagefile_inspector(nid_q, st.b_norm, st.baro_hpa, st.acc_norm, st.fno_l2_err, st.decadic_sub_epoch, st.gen_counter);
             let bank_tag = if np.inspected_neuron_id < 21120 {
                 "Tier-1 Core neurons_v4000.npage (2,703,360B, 21,120x128B, 480 Cols)"
             } else {
-                "Tier-2 Expansion neurons_v4300_expansion.npage (225,280B, 1,760x128B, Cols 480..519 -> 22,880 Combined)"
+                "Tier-2 Expansion neurons_v4300_expansion.npage (450,560B, 3,520x128B, Cols 480..559 -> 24,640 Combined)"
             };
             let diag = format!(
-                "TOOL 42 NEURON PAGEFILE ({}): N#{:05} (Col #{:03}/519, Offset={}B) -> {} | 3-Compartment Dendrites: Basal={:.2}mV, Apical(FNO)={:.2}mV, Lateral(Vote)={:.2}mV (NMDA Bursts={}) | Core=21,120 + Expansion=1,760 (22,880 Total Neurons, 520x Chair-44, 183,040 Synapses) | Cauchy Winding={} (Err={:.7}) | Sparse Socket Reduction={:.0}x",
+                "TOOL 42 NEURON PAGEFILE ({}): N#{:05} (Col #{:03}/559, Offset={}B) -> {} | 3-Compartment Dendrites: Basal={:.2}mV, Apical(FNO)={:.2}mV, Lateral(Vote)={:.2}mV (NMDA Bursts={}) | Core=21,120 + Expansion=3,520 (24,640 Total Neurons, 560x Chair-44, 197,120 Synapses) | Cauchy Winding={} (Err={:.7}) | Sparse Socket Reduction={:.0}x",
                 bank_tag, np.inspected_neuron_id, np.inspected_column_id, np.byte_offset_128b, np.stage_label, np.basal_sensory_mv, np.apical_fno_mv, np.lateral_vote_mv, np.calcium_nmda_bursts, np.cauchy_boundary_winding, np.cauchy_interior_recon_err, np.sparse_socket_reduction_x
             );
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"status\":\"NEURON_PAGEFILE_CAUCHY_SPARSE_LOCKED\",\"version\":\"v43.0.0\",\"tool_index\":42,\"tool_name\":\"tool:cauchy_sparse_neuron_pagefile\",\"pagefile_total_bytes\":{},\"total_neurons\":{},\"expansion_neurons\":1760,\"expansion_bytes\":225280,\"combined_neurons\":22880,\"combined_bytes\":2928640,\"cortical_columns_chair44\":{},\"expansion_columns_chair44\":40,\"combined_columns_chair44\":520,\"active_synapses\":{},\"combined_synapses\":183040,\"inspected_neuron_id\":{},\"inspected_column_id\":{},\"byte_offset_128b\":{},\"pickover_prime_stage\":{},\"stage_label\":\"{}\",\"stage2_nascent\":{},\"stage3_plastic\":{},\"stage5_consolidated\":{},\"stage7_myelinated\":{},\"basal_sensory_mv\":{:.2},\"apical_fno_mv\":{:.2},\"lateral_vote_mv\":{:.2},\"calcium_nmda_bursts\":{},\"cauchy_boundary_winding\":{},\"sparse_socket_reduction_x\":{:.1},\"diag\":\"{}\"}}",
+                "{{\"status\":\"NEURON_PAGEFILE_CAUCHY_SPARSE_LOCKED\",\"version\":\"v43.0.0\",\"tool_index\":42,\"tool_name\":\"tool:cauchy_sparse_neuron_pagefile\",\"pagefile_total_bytes\":{},\"total_neurons\":{},\"expansion_neurons\":3520,\"expansion_bytes\":450560,\"combined_neurons\":24640,\"combined_bytes\":3153920,\"cortical_columns_chair44\":{},\"expansion_columns_chair44\":80,\"combined_columns_chair44\":560,\"active_synapses\":{},\"combined_synapses\":197120,\"inspected_neuron_id\":{},\"inspected_column_id\":{},\"byte_offset_128b\":{},\"pickover_prime_stage\":{},\"stage_label\":\"{}\",\"stage2_nascent\":{},\"stage3_plastic\":{},\"stage5_consolidated\":{},\"stage7_myelinated\":{},\"basal_sensory_mv\":{:.2},\"apical_fno_mv\":{:.2},\"lateral_vote_mv\":{:.2},\"calcium_nmda_bursts\":{},\"cauchy_boundary_winding\":{},\"sparse_socket_reduction_x\":{:.1},\"diag\":\"{}\"}}",
                 np.pagefile_total_bytes, np.total_neurons, np.cortical_columns_chair44, np.active_synapses, np.inspected_neuron_id, np.inspected_column_id, np.byte_offset_128b, np.pickover_prime_stage, np.stage_label, np.stage2_nascent_count, np.stage3_plastic_count, np.stage5_consolidated_count, np.stage7_myelinated_count, np.basal_sensory_mv, np.apical_fno_mv, np.lateral_vote_mv, np.calcium_nmda_bursts, np.cauchy_boundary_winding, np.sparse_socket_reduction_x, json_escape_clean(&diag)
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);

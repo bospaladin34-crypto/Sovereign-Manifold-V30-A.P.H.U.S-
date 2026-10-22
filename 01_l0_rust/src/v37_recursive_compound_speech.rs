@@ -141,7 +141,7 @@ pub fn evaluate_cross_domain_compound_qat(
         recursive_cacheline_speedup_pct: 7.84_f64,
         dag_latency_ms: 14.2_f64,
         cluster_kops,
-        domain_matrix_summary: "8-DOMAIN 65K COMPOUND SYNTHESIS (D1:E8xLeech_Gauge_FNO + D2:3Comp_Dendritic_SWR_22880 + D3:364_Lean4_PosGeom_LUT + D4:Metabolic_5W1H_TorchTPU + D5:Klatt_Formant_WAV_Speech + D6:MCP_OpenAI_CloudflareD1 + D7:Skyrmion_Fermi_Kerr_Physics + D8:Antigravity_DualPixel_Edge)",
+        domain_matrix_summary: "8-DOMAIN 65K COMPOUND SYNTHESIS (D1:E8xLeech_Gauge_FNO + D2:3Comp_Dendritic_SWR_24640 + D3:364_Lean4_PosGeom_LUT + D4:Metabolic_5W1H_TorchTPU + D5:Klatt_Formant_WAV_Speech + D6:MCP_OpenAI_CloudflareD1 + D7:Skyrmion_Fermi_Kerr_Physics + D8:Antigravity_DualPixel_Edge)",
     }
 }
 

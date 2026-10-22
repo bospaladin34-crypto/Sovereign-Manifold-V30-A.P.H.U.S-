@@ -2,6 +2,7 @@
 // ACT-OMEGA NET v43.0.0 (SOVEREIGN HARMONIC VI / SH4Z v4300 TLV)
 // MODULE: 65,536-TOKEN 16-BIT BIDIRECTIONAL BPE + 8-DOMAIN COMPOUND TOKENIZER
 //         & EXACT REVERSIBLE + IPA/SVO DETOKENIZER (`v43_bpe_compound_65k.rs`)
+//         COUPLED TO 24,640 DENDRITIC NEURONS (21,120 CORE + 3,520 EXPANSION)
 // ZERO SQUARE BRACKETS ENFORCED (0x5B / 0x5D FORBIDDEN IN SOURCE)
 // =============================================================================
 
@@ -59,43 +60,133 @@ pub fn lookup_tier0_e8_glyph(tid: u16) -> &'static str {
 }
 
 pub fn match_tier2_compound_phrase(remaining: &str) -> Option<(u16, &'static str, &'static str)> {
-    // Returns (token_id in 16384..32767, matched_phrase, domain_tag)
-    let table: ((u16, &'static str, &'static str), (u16, &'static str, &'static str)) = ((16384, "sovereign manifold", "D1:E8xLeech_Gauge_FNO"), (16385, "decadic epoch", "D1:E8xLeech_Gauge_FNO"));
-    let _ = table;
+    // Domain 1: E8xLeech_Gauge_FNO (16384..18431)
     if remaining.starts_with("sovereign manifold") { return Some((16384, "sovereign manifold", "D1:E8xLeech_Gauge_FNO")); }
     if remaining.starts_with("leech lattice") { return Some((16385, "leech lattice", "D1:E8xLeech_Gauge_FNO")); }
     if remaining.starts_with("stiefel projection") { return Some((16386, "stiefel projection", "D1:E8xLeech_Gauge_FNO")); }
     if remaining.starts_with("fno spectral") { return Some((16387, "fno spectral", "D1:E8xLeech_Gauge_FNO")); }
     if remaining.starts_with("laplacian pde") { return Some((16388, "laplacian pde", "D1:E8xLeech_Gauge_FNO")); }
     if remaining.starts_with("navier stokes") { return Some((16389, "navier stokes", "D1:E8xLeech_Gauge_FNO")); }
-    if remaining.starts_with("dendritic neuron") { return Some((18432, "dendritic neuron", "D2:3Comp_Dendritic_SWR")); }
-    if remaining.starts_with("dendritic neurons") { return Some((18433, "dendritic neurons", "D2:3Comp_Dendritic_SWR")); }
-    if remaining.starts_with("sharp wave ripple") { return Some((18434, "sharp wave ripple", "D2:3Comp_Dendritic_SWR")); }
-    if remaining.starts_with("cortical column") { return Some((18435, "cortical column", "D2:3Comp_Dendritic_SWR")); }
-    if remaining.starts_with("chair-44") || remaining.starts_with("chair44") { return Some((18436, "chair-44", "D2:3Comp_Dendritic_SWR")); }
-    if remaining.starts_with("nmda calcium") { return Some((18437, "nmda calcium", "D2:3Comp_Dendritic_SWR")); }
+    if remaining.starts_with("gosset polytope") { return Some((16390, "gosset polytope", "D1:E8xLeech_Gauge_FNO")); }
+    if remaining.starts_with("cayley transform") { return Some((16391, "cayley transform", "D1:E8xLeech_Gauge_FNO")); }
+    if remaining.starts_with("reynolds number") { return Some((16392, "reynolds number", "D1:E8xLeech_Gauge_FNO")); }
+    if remaining.starts_with("vorticity curl") { return Some((16393, "vorticity curl", "D1:E8xLeech_Gauge_FNO")); }
+    if remaining.starts_with("u(1) gauge") || remaining.starts_with("u1 gauge") { return Some((16394, "u(1) gauge", "D1:E8xLeech_Gauge_FNO")); }
+    if remaining.starts_with("biharmonic stiffness") { return Some((16395, "biharmonic stiffness", "D1:E8xLeech_Gauge_FNO")); }
+    if remaining.starts_with("helmholtz acoustic") { return Some((16396, "helmholtz acoustic", "D1:E8xLeech_Gauge_FNO")); }
+    if remaining.starts_with("poisson electrostatic") { return Some((16397, "poisson electrostatic", "D1:E8xLeech_Gauge_FNO")); }
+    if remaining.starts_with("fourier neural operator") { return Some((16398, "fourier neural operator", "D1:E8xLeech_Gauge_FNO")); }
+    if remaining.starts_with("laminar equilibrium") { return Some((16399, "laminar equilibrium", "D1:E8xLeech_Gauge_FNO")); }
+
+    // Domain 2: 3Comp_Dendritic_SWR_24640 (18432..20479)
+    if remaining.starts_with("dendritic neurons") { return Some((18433, "dendritic neurons", "D2:3Comp_Dendritic_SWR_24640")); }
+    if remaining.starts_with("dendritic neuron") { return Some((18432, "dendritic neuron", "D2:3Comp_Dendritic_SWR_24640")); }
+    if remaining.starts_with("sharp wave ripple") { return Some((18434, "sharp wave ripple", "D2:3Comp_Dendritic_SWR_24640")); }
+    if remaining.starts_with("cortical columns") { return Some((18438, "cortical columns", "D2:3Comp_Dendritic_SWR_24640")); }
+    if remaining.starts_with("cortical column") { return Some((18435, "cortical column", "D2:3Comp_Dendritic_SWR_24640")); }
+    if remaining.starts_with("chair-44") || remaining.starts_with("chair44") { return Some((18436, "chair-44", "D2:3Comp_Dendritic_SWR_24640")); }
+    if remaining.starts_with("nmda calcium") { return Some((18437, "nmda calcium", "D2:3Comp_Dendritic_SWR_24640")); }
+    if remaining.starts_with("apical tuft") { return Some((18439, "apical tuft", "D2:3Comp_Dendritic_SWR_24640")); }
+    if remaining.starts_with("basal sensory") { return Some((18440, "basal sensory", "D2:3Comp_Dendritic_SWR_24640")); }
+    if remaining.starts_with("lateral vote") { return Some((18441, "lateral vote", "D2:3Comp_Dendritic_SWR_24640")); }
+    if remaining.starts_with("cauchy boundary") { return Some((18442, "cauchy boundary", "D2:3Comp_Dendritic_SWR_24640")); }
+    if remaining.starts_with("pickover prime") { return Some((18443, "pickover prime", "D2:3Comp_Dendritic_SWR_24640")); }
+    if remaining.starts_with("synaptic plasticity") { return Some((18444, "synaptic plasticity", "D2:3Comp_Dendritic_SWR_24640")); }
+    if remaining.starts_with("pyramidal neuron") { return Some((18445, "pyramidal neuron", "D2:3Comp_Dendritic_SWR_24640")); }
+    if remaining.starts_with("myelinated axiomatic") { return Some((18446, "myelinated axiomatic", "D2:3Comp_Dendritic_SWR_24640")); }
+    if remaining.starts_with("neuron pagefile") { return Some((18447, "neuron pagefile", "D2:3Comp_Dendritic_SWR_24640")); }
+
+    // Domain 3: 364_Lean4_PosGeom_LUT (20480..22527)
     if remaining.starts_with("lean 4") || remaining.starts_with("lean4") { return Some((20480, "lean 4", "D3:364_Lean4_PosGeom_LUT")); }
     if remaining.starts_with("positive geometry") { return Some((20481, "positive geometry", "D3:364_Lean4_PosGeom_LUT")); }
     if remaining.starts_with("amplituhedron") { return Some((20482, "amplituhedron", "D3:364_Lean4_PosGeom_LUT")); }
     if remaining.starts_with("theodorus spiral") { return Some((20483, "theodorus spiral", "D3:364_Lean4_PosGeom_LUT")); }
     if remaining.starts_with("kasami ecc") { return Some((20484, "kasami ecc", "D3:364_Lean4_PosGeom_LUT")); }
+    if remaining.starts_with("associahedron") { return Some((20485, "associahedron", "D3:364_Lean4_PosGeom_LUT")); }
+    if remaining.starts_with("cosmohedron") { return Some((20486, "cosmohedron", "D3:364_Lean4_PosGeom_LUT")); }
+    if remaining.starts_with("clifford pga") { return Some((20487, "clifford pga", "D3:364_Lean4_PosGeom_LUT")); }
+    if remaining.starts_with("tropical geometry") { return Some((20488, "tropical geometry", "D3:364_Lean4_PosGeom_LUT")); }
+    if remaining.starts_with("sierpinski gasket") { return Some((20489, "sierpinski gasket", "D3:364_Lean4_PosGeom_LUT")); }
+    if remaining.starts_with("golay g24") { return Some((20490, "golay g24", "D3:364_Lean4_PosGeom_LUT")); }
+    if remaining.starts_with("sheaf cohomology") { return Some((20491, "sheaf cohomology", "D3:364_Lean4_PosGeom_LUT")); }
+    if remaining.starts_with("fibonacci anyon") { return Some((20492, "fibonacci anyon", "D3:364_Lean4_PosGeom_LUT")); }
+    if remaining.starts_with("formal proofs") { return Some((20493, "formal proofs", "D3:364_Lean4_PosGeom_LUT")); }
+    if remaining.starts_with("zero sorry") { return Some((20494, "zero sorry", "D3:364_Lean4_PosGeom_LUT")); }
+    if remaining.starts_with("martellini time") { return Some((20495, "martellini time", "D3:364_Lean4_PosGeom_LUT")); }
+
+    // Domain 4: Metabolic_5W1H_TorchTPU (22528..24575)
     if remaining.starts_with("metabolic harness") { return Some((22528, "metabolic harness", "D4:Metabolic_5W1H_TorchTPU")); }
     if remaining.starts_with("5w1h") { return Some((22529, "5w1h", "D4:Metabolic_5W1H_TorchTPU")); }
     if remaining.starts_with("torchtpu") { return Some((22530, "torchtpu", "D4:Metabolic_5W1H_TorchTPU")); }
     if remaining.starts_with("openxla") { return Some((22531, "openxla", "D4:Metabolic_5W1H_TorchTPU")); }
     if remaining.starts_with("atp drive") { return Some((22532, "atp drive", "D4:Metabolic_5W1H_TorchTPU")); }
+    if remaining.starts_with("pallas systolic") { return Some((22533, "pallas systolic", "D4:Metabolic_5W1H_TorchTPU")); }
+    if remaining.starts_with("stablehlo") { return Some((22534, "stablehlo", "D4:Metabolic_5W1H_TorchTPU")); }
+    if remaining.starts_with("anabolic surplus") { return Some((22535, "anabolic surplus", "D4:Metabolic_5W1H_TorchTPU")); }
+    if remaining.starts_with("homeostatic cruise") { return Some((22536, "homeostatic cruise", "D4:Metabolic_5W1H_TorchTPU")); }
+    if remaining.starts_with("thermal offload") { return Some((22537, "thermal offload", "D4:Metabolic_5W1H_TorchTPU")); }
+    if remaining.starts_with("catabolic recovery") { return Some((22538, "catabolic recovery", "D4:Metabolic_5W1H_TorchTPU")); }
+    if remaining.starts_with("tikhonov regularization") { return Some((22539, "tikhonov regularization", "D4:Metabolic_5W1H_TorchTPU")); }
+    if remaining.starts_with("work stealing") || remaining.starts_with("work-stealing") { return Some((22540, "work-stealing", "D4:Metabolic_5W1H_TorchTPU")); }
+    if remaining.starts_with("continual qat") { return Some((22541, "continual qat", "D4:Metabolic_5W1H_TorchTPU")); }
+    if remaining.starts_with("compound curriculum") { return Some((22542, "compound curriculum", "D4:Metabolic_5W1H_TorchTPU")); }
+    if remaining.starts_with("holdout ppl") { return Some((22543, "holdout ppl", "D4:Metabolic_5W1H_TorchTPU")); }
+
+    // Domain 5: Klatt_Formant_WAV_Speech (24576..26623)
     if remaining.starts_with("klatt formant") { return Some((24576, "klatt formant", "D5:Klatt_Formant_WAV_Speech")); }
     if remaining.starts_with("glottal pulse") { return Some((24577, "glottal pulse", "D5:Klatt_Formant_WAV_Speech")); }
     if remaining.starts_with("natural language") { return Some((24578, "natural language", "D5:Klatt_Formant_WAV_Speech")); }
     if remaining.starts_with("cymatic carrier") { return Some((24579, "cymatic carrier", "D5:Klatt_Formant_WAV_Speech")); }
+    if remaining.starts_with("rosenberg glottal") { return Some((24580, "rosenberg glottal", "D5:Klatt_Formant_WAV_Speech")); }
+    if remaining.starts_with("prosodic contour") { return Some((24581, "prosodic contour", "D5:Klatt_Formant_WAV_Speech")); }
+    if remaining.starts_with("vocal tract") { return Some((24582, "vocal tract", "D5:Klatt_Formant_WAV_Speech")); }
+    if remaining.starts_with("speech synthesis") { return Some((24583, "speech synthesis", "D5:Klatt_Formant_WAV_Speech")); }
+    if remaining.starts_with("bidirectional bpe") { return Some((24584, "bidirectional bpe", "D5:Klatt_Formant_WAV_Speech")); }
+    if remaining.starts_with("compound lexicon") { return Some((24585, "compound lexicon", "D5:Klatt_Formant_WAV_Speech")); }
+    if remaining.starts_with("phonetic detokenizer") { return Some((24586, "phonetic detokenizer", "D5:Klatt_Formant_WAV_Speech")); }
+    if remaining.starts_with("svo clause") { return Some((24587, "svo clause", "D5:Klatt_Formant_WAV_Speech")); }
+    if remaining.starts_with("conversational decoder") { return Some((24588, "conversational decoder", "D5:Klatt_Formant_WAV_Speech")); }
+    if remaining.starts_with("acoustic sdr") { return Some((24589, "acoustic sdr", "D5:Klatt_Formant_WAV_Speech")); }
+    if remaining.starts_with("inner monologue") { return Some((24590, "inner monologue", "D5:Klatt_Formant_WAV_Speech")); }
+    if remaining.starts_with("episodic memory") { return Some((24591, "episodic memory", "D5:Klatt_Formant_WAV_Speech")); }
+
+    // Domain 6: MCP_OpenAI_CloudflareD1 (26624..28671)
     if remaining.starts_with("cloudflare d1") { return Some((26624, "cloudflare d1", "D6:MCP_OpenAI_CloudflareD1")); }
     if remaining.starts_with("durable object") { return Some((26625, "durable object", "D6:MCP_OpenAI_CloudflareD1")); }
     if remaining.starts_with("code-mode mcp") || remaining.starts_with("codemode mcp") { return Some((26626, "code-mode mcp", "D6:MCP_OpenAI_CloudflareD1")); }
     if remaining.starts_with("workers vpc") { return Some((26627, "workers vpc", "D6:MCP_OpenAI_CloudflareD1")); }
+    if remaining.starts_with("cron trigger") { return Some((26628, "cron trigger", "D6:MCP_OpenAI_CloudflareD1")); }
+    if remaining.starts_with("zero trust") { return Some((26629, "zero trust", "D6:MCP_OpenAI_CloudflareD1")); }
+    if remaining.starts_with("named tunnel") { return Some((26630, "named tunnel", "D6:MCP_OpenAI_CloudflareD1")); }
+    if remaining.starts_with("chat completions") { return Some((26631, "chat completions", "D6:MCP_OpenAI_CloudflareD1")); }
+    if remaining.starts_with("json-rpc") || remaining.starts_with("jsonrpc") { return Some((26632, "json-rpc", "D6:MCP_OpenAI_CloudflareD1")); }
+    if remaining.starts_with("bitemporal wal") || remaining.starts_with("bi-temporal wal") { return Some((26633, "bitemporal wal", "D6:MCP_OpenAI_CloudflareD1")); }
+    if remaining.starts_with("merkle checkpoint") { return Some((26634, "merkle checkpoint", "D6:MCP_OpenAI_CloudflareD1")); }
+    if remaining.starts_with("ssd vault") { return Some((26635, "ssd vault", "D6:MCP_OpenAI_CloudflareD1")); }
+    if remaining.starts_with("gemini bridge") { return Some((26636, "gemini bridge", "D6:MCP_OpenAI_CloudflareD1")); }
+    if remaining.starts_with("atomic delta") { return Some((26637, "atomic delta", "D6:MCP_OpenAI_CloudflareD1")); }
+    if remaining.starts_with("canonical roots") { return Some((26638, "canonical roots", "D6:MCP_OpenAI_CloudflareD1")); }
+    if remaining.starts_with("act-omega-net.dev") { return Some((26639, "act-omega-net.dev", "D6:MCP_OpenAI_CloudflareD1")); }
+
+    // Domain 7: Skyrmion_Fermi_Kerr_Physics (28672..30719)
     if remaining.starts_with("skyrmion hall") { return Some((28672, "skyrmion hall", "D7:Skyrmion_Fermi_Kerr_Physics")); }
     if remaining.starts_with("fractional fermi") { return Some((28673, "fractional fermi", "D7:Skyrmion_Fermi_Kerr_Physics")); }
     if remaining.starts_with("kerr horizon") { return Some((28674, "kerr horizon", "D7:Skyrmion_Fermi_Kerr_Physics")); }
     if remaining.starts_with("15.965hz") || remaining.starts_with("15.965 hz") { return Some((28675, "15.965hz", "D7:Skyrmion_Fermi_Kerr_Physics")); }
+    if remaining.starts_with("decadic epoch") { return Some((28676, "decadic epoch", "D7:Skyrmion_Fermi_Kerr_Physics")); }
+    if remaining.starts_with("einstein rosen") || remaining.starts_with("er=epr") { return Some((28677, "er=epr", "D7:Skyrmion_Fermi_Kerr_Physics")); }
+    if remaining.starts_with("photoelectric gate") { return Some((28678, "photoelectric gate", "D7:Skyrmion_Fermi_Kerr_Physics")); }
+    if remaining.starts_with("sinai ergodic") { return Some((28679, "sinai ergodic", "D7:Skyrmion_Fermi_Kerr_Physics")); }
+    if remaining.starts_with("von neumann entropy") { return Some((28680, "von neumann entropy", "D7:Skyrmion_Fermi_Kerr_Physics")); }
+    if remaining.starts_with("lense thirring") || remaining.starts_with("lense-thirring") { return Some((28681, "lense-thirring", "D7:Skyrmion_Fermi_Kerr_Physics")); }
+    if remaining.starts_with("spin fluctuation") { return Some((28682, "spin fluctuation", "D7:Skyrmion_Fermi_Kerr_Physics")); }
+    if remaining.starts_with("xuv coherent") { return Some((28683, "xuv coherent", "D7:Skyrmion_Fermi_Kerr_Physics")); }
+    if remaining.starts_with("landauer limit") { return Some((28684, "landauer limit", "D7:Skyrmion_Fermi_Kerr_Physics")); }
+    if remaining.starts_with("welch psd") { return Some((28685, "welch psd", "D7:Skyrmion_Fermi_Kerr_Physics")); }
+    if remaining.starts_with("bell chsh") { return Some((28686, "bell chsh", "D7:Skyrmion_Fermi_Kerr_Physics")); }
+    if remaining.starts_with("schrodinger field") { return Some((28687, "schrodinger field", "D7:Skyrmion_Fermi_Kerr_Physics")); }
+
+    // Domain 8: Antigravity_DualPixel_Edge (30720..32767)
     if remaining.starts_with("antigravity") { return Some((30720, "antigravity", "D8:Antigravity_DualPixel_Edge")); }
     if remaining.starts_with("gemini 4 argon") { return Some((30721, "gemini 4 argon", "D8:Antigravity_DualPixel_Edge")); }
     if remaining.starts_with("pixel 10") { return Some((30722, "pixel 10", "D8:Antigravity_DualPixel_Edge")); }
@@ -104,6 +195,14 @@ pub fn match_tier2_compound_phrase(remaining: &str) -> Option<(u16, &'static str
     if remaining.starts_with("p8-apex") { return Some((30725, "p8-apex", "D8:Antigravity_DualPixel_Edge")); }
     if remaining.starts_with("rtx 3050") { return Some((30726, "rtx 3050", "D8:Antigravity_DualPixel_Edge")); }
     if remaining.starts_with("loq 15") { return Some((30727, "loq 15", "D8:Antigravity_DualPixel_Edge")); }
+    if remaining.starts_with("mali-g715") || remaining.starts_with("mali g715") { return Some((30728, "mali-g715", "D8:Antigravity_DualPixel_Edge")); }
+    if remaining.starts_with("speculative verifier") { return Some((30729, "speculative verifier", "D8:Antigravity_DualPixel_Edge")); }
+    if remaining.starts_with("operator vault") { return Some((30730, "operator vault", "D8:Antigravity_DualPixel_Edge")); }
+    if remaining.starts_with("a2a mesh") { return Some((30731, "a2a mesh", "D8:Antigravity_DualPixel_Edge")); }
+    if remaining.starts_with("tri-silicon") || remaining.starts_with("trisilicon") { return Some((30732, "tri-silicon", "D8:Antigravity_DualPixel_Edge")); }
+    if remaining.starts_with("adb reverse") { return Some((30733, "adb reverse", "D8:Antigravity_DualPixel_Edge")); }
+    if remaining.starts_with("webgpu hud") { return Some((30734, "webgpu hud", "D8:Antigravity_DualPixel_Edge")); }
+    if remaining.starts_with("chain 72") { return Some((30735, "chain 72", "D8:Antigravity_DualPixel_Edge")); }
     None
 }
 
@@ -115,34 +214,112 @@ pub fn lookup_tier2_compound_by_id(tid: u16) -> Option<&'static str> {
         16387 => Some("fno spectral"),
         16388 => Some("laplacian pde"),
         16389 => Some("navier stokes"),
+        16390 => Some("gosset polytope"),
+        16391 => Some("cayley transform"),
+        16392 => Some("reynolds number"),
+        16393 => Some("vorticity curl"),
+        16394 => Some("u(1) gauge"),
+        16395 => Some("biharmonic stiffness"),
+        16396 => Some("helmholtz acoustic"),
+        16397 => Some("poisson electrostatic"),
+        16398 => Some("fourier neural operator"),
+        16399 => Some("laminar equilibrium"),
         18432 => Some("dendritic neuron"),
         18433 => Some("dendritic neurons"),
         18434 => Some("sharp wave ripple"),
         18435 => Some("cortical column"),
         18436 => Some("chair-44"),
         18437 => Some("nmda calcium"),
+        18438 => Some("cortical columns"),
+        18439 => Some("apical tuft"),
+        18440 => Some("basal sensory"),
+        18441 => Some("lateral vote"),
+        18442 => Some("cauchy boundary"),
+        18443 => Some("pickover prime"),
+        18444 => Some("synaptic plasticity"),
+        18445 => Some("pyramidal neuron"),
+        18446 => Some("myelinated axiomatic"),
+        18447 => Some("neuron pagefile"),
         20480 => Some("lean 4"),
         20481 => Some("positive geometry"),
         20482 => Some("amplituhedron"),
         20483 => Some("theodorus spiral"),
         20484 => Some("kasami ecc"),
+        20485 => Some("associahedron"),
+        20486 => Some("cosmohedron"),
+        20487 => Some("clifford pga"),
+        20488 => Some("tropical geometry"),
+        20489 => Some("sierpinski gasket"),
+        20490 => Some("golay g24"),
+        20491 => Some("sheaf cohomology"),
+        20492 => Some("fibonacci anyon"),
+        20493 => Some("formal proofs"),
+        20494 => Some("zero sorry"),
+        20495 => Some("martellini time"),
         22528 => Some("metabolic harness"),
         22529 => Some("5w1h"),
         22530 => Some("torchtpu"),
         22531 => Some("openxla"),
         22532 => Some("atp drive"),
+        22533 => Some("pallas systolic"),
+        22534 => Some("stablehlo"),
+        22535 => Some("anabolic surplus"),
+        22536 => Some("homeostatic cruise"),
+        22537 => Some("thermal offload"),
+        22538 => Some("catabolic recovery"),
+        22539 => Some("tikhonov regularization"),
+        22540 => Some("work-stealing"),
+        22541 => Some("continual qat"),
+        22542 => Some("compound curriculum"),
+        22543 => Some("holdout ppl"),
         24576 => Some("klatt formant"),
         24577 => Some("glottal pulse"),
         24578 => Some("natural language"),
         24579 => Some("cymatic carrier"),
+        24580 => Some("rosenberg glottal"),
+        24581 => Some("prosodic contour"),
+        24582 => Some("vocal tract"),
+        24583 => Some("speech synthesis"),
+        24584 => Some("bidirectional bpe"),
+        24585 => Some("compound lexicon"),
+        24586 => Some("phonetic detokenizer"),
+        24587 => Some("svo clause"),
+        24588 => Some("conversational decoder"),
+        24589 => Some("acoustic sdr"),
+        24590 => Some("inner monologue"),
+        24591 => Some("episodic memory"),
         26624 => Some("cloudflare d1"),
         26625 => Some("durable object"),
         26626 => Some("code-mode mcp"),
         26627 => Some("workers vpc"),
+        26628 => Some("cron trigger"),
+        26629 => Some("zero trust"),
+        26630 => Some("named tunnel"),
+        26631 => Some("chat completions"),
+        26632 => Some("json-rpc"),
+        26633 => Some("bitemporal wal"),
+        26634 => Some("merkle checkpoint"),
+        26635 => Some("ssd vault"),
+        26636 => Some("gemini bridge"),
+        26637 => Some("atomic delta"),
+        26638 => Some("canonical roots"),
+        26639 => Some("act-omega-net.dev"),
         28672 => Some("skyrmion hall"),
         28673 => Some("fractional fermi"),
         28674 => Some("kerr horizon"),
         28675 => Some("15.965hz"),
+        28676 => Some("decadic epoch"),
+        28677 => Some("er=epr"),
+        28678 => Some("photoelectric gate"),
+        28679 => Some("sinai ergodic"),
+        28680 => Some("von neumann entropy"),
+        28681 => Some("lense-thirring"),
+        28682 => Some("spin fluctuation"),
+        28683 => Some("xuv coherent"),
+        28684 => Some("landauer limit"),
+        28685 => Some("welch psd"),
+        28686 => Some("bell chsh"),
+        28687 => Some("schrodinger field"),
         30720 => Some("antigravity"),
         30721 => Some("gemini 4 argon"),
         30722 => Some("pixel 10"),
@@ -151,6 +328,14 @@ pub fn lookup_tier2_compound_by_id(tid: u16) -> Option<&'static str> {
         30725 => Some("p8-apex"),
         30726 => Some("rtx 3050"),
         30727 => Some("loq 15"),
+        30728 => Some("mali-g715"),
+        30729 => Some("speculative verifier"),
+        30730 => Some("operator vault"),
+        30731 => Some("a2a mesh"),
+        30732 => Some("tri-silicon"),
+        30733 => Some("adb reverse"),
+        30734 => Some("webgpu hud"),
+        30735 => Some("chain 72"),
         _ => None,
     }
 }
@@ -197,6 +382,10 @@ pub fn match_tier1_nl_bpe_word(word: &str) -> Option<u16> {
         "vorticity" => Some(278),
         "reynolds" => Some(279),
         "laminar" => Some(280),
+        "inspector" => Some(281),
+        "interactive" => Some(282),
+        "expansion" => Some(283),
+        "lexicon" => Some(284),
         _ => None,
     }
 }
@@ -243,6 +432,10 @@ pub fn lookup_tier1_nl_bpe_by_id(tid: u16) -> Option<&'static str> {
         278 => Some("vorticity"),
         279 => Some("reynolds"),
         280 => Some("laminar"),
+        281 => Some("inspector"),
+        282 => Some("interactive"),
+        283 => Some("expansion"),
+        284 => Some("lexicon"),
         _ => None,
     }
 }
@@ -262,9 +455,13 @@ pub fn match_tier3_dendritic_concept(word: &str) -> Option<(u16, &'static str)> 
     if word == "sh4z" { return Some((32779, "sh4z")); }
     if word == "npage" || word == ".npage" { return Some((32780, "npage")); }
     if word == "e8z" || word == ".e8z" { return Some((32781, "e8z")); }
+    if word == "24640" || word == "24,640" { return Some((32782, "24640")); }
+    if word == "3520" || word == "3,520" { return Some((32783, "3520")); }
+    if word == "197120" || word == "197,120" { return Some((32784, "197120")); }
+    if word == "560" { return Some((32785, "560")); }
     if let Some(num_str) = word.strip_prefix("n") {
         if let Ok(nid) = num_str.parse::<u16>() {
-            if nid < 22880 {
+            if nid < 24640 {
                 return Some((33000_u16.wrapping_add(nid), "neuron_ref"));
             }
         }
@@ -288,8 +485,12 @@ pub fn lookup_tier3_dendritic_by_id(tid: u16) -> Option<String> {
         32779 => Some(String::from("sh4z")),
         32780 => Some(String::from("npage")),
         32781 => Some(String::from("e8z")),
+        32782 => Some(String::from("24640")),
+        32783 => Some(String::from("3520")),
+        32784 => Some(String::from("197120")),
+        32785 => Some(String::from("560")),
         _ => {
-            if tid >= 33000 && tid < 55880 {
+            if tid >= 33000 && tid < 57640 {
                 Some(format!("n{}", tid - 33000))
             } else {
                 None
@@ -299,7 +500,6 @@ pub fn lookup_tier3_dendritic_by_id(tid: u16) -> Option<String> {
 }
 
 pub fn match_tier0_subword_prefix(remaining: &str) -> (u16, usize) {
-    // Greedy longest match in Tier 0 (180..235 domain words -> 134..153 trigrams -> 64..93 bigrams -> 0..56 chars)
     let mut tid_check: u16 = 235;
     while tid_check >= 180 {
         let g = lookup_tier0_e8_glyph(tid_check);
@@ -378,15 +578,17 @@ pub fn detokenize_65k_ipa(tokens: &Vec<u16>) -> String {
             let ph = match tid {
                 16384 => "sɒvɹɪn_mænɪfoʊld",
                 16385 => "liːtʃ_lætɪs",
-                18432 | 18433 => "dɛndɹɪtɪk_njʊəɹɒn",
+                18432 | 18433 => "dɛndɹɪtɪk_njʊəɹɒnz",
                 20480 => "liːn_fɔː",
                 22528 | 22529 => "mɛtəbɒlɪk_faɪv_dʌbəljuː",
                 24578 => "nætʃəɹəl_læŋɡwɪdʒ",
                 26624 => "klaʊdflɛə_diː_wʌn",
                 28675 => "fɪftiːn_pɔɪnt_naɪn_hɜːts",
                 30720 => "æntɪɡɹævɪti",
+                30721 => "dʒɛmɪnaɪ_fɔː_ɑːɡɒn",
                 32768 => "twɛnti_wʌn_θaʊzənd_njʊəɹɒnz",
                 32769 => "twɛnti_tuː_θaʊzənd_njʊəɹɒnz",
+                32782 => "twɛnti_fɔː_θaʊzənd_njʊəɹɒnz",
                 _ => {
                     match tid % 8 {
                         0 => "eɪ_iː_eɪt",
@@ -425,7 +627,6 @@ pub fn encode_and_detokenize_65k(input: &str) -> Transduction65kResult {
         if rem.is_empty() {
             break;
         }
-        // 1. Check Tier 2 Multi-Word 8-Domain Compound Lexicon (16,384..32,767)
         if let Some((cid, c_str, d_label)) = match_tier2_compound_phrase(rem) {
             tokens.push(cid);
             tier2_cnt += 1;
@@ -434,18 +635,15 @@ pub fn encode_and_detokenize_65k(input: &str) -> Transduction65kResult {
             continue;
         }
 
-        // Extract current alphanumeric/dot word boundary
         let word_end = rem.find(|c: char| !c.is_alphanumeric() && c != '.' && c != '-').unwrap_or(rem.len());
         if word_end >= 2 {
             let word_slice = rem.get(..word_end).unwrap_or("");
-            // 2. Check Tier 3 Dendritic / Shard / Version Concept (32,768..65,535)
             if let Some((did, d_str)) = match_tier3_dendritic_concept(word_slice) {
                 tokens.push(did);
                 tier3_cnt += 1;
                 cursor += d_str.len();
                 continue;
             }
-            // 3. Check Tier 1 Natural Language BPE Whole Word (240..16,383)
             if let Some(wid) = match_tier1_nl_bpe_word(word_slice) {
                 tokens.push(wid);
                 tier1_cnt += 1;
@@ -454,7 +652,6 @@ pub fn encode_and_detokenize_65k(input: &str) -> Transduction65kResult {
             }
         }
 
-        // 4. Fallback to Tier 0 E8 Subword / Trigram / Bigram / Base Character (0..239)
         let (sub_tid, step_bytes) = match_tier0_subword_prefix(rem);
         tokens.push(sub_tid);
         tier0_cnt += 1;
@@ -492,12 +689,12 @@ pub fn encode_and_detokenize_65k(input: &str) -> Transduction65kResult {
     let cym = embed_cymatic_omega2(&clean_lower);
     let root_240 = cym.root_id % 240;
     let sec_80 = ((root_240 as u32) % 80) as u32;
-    let col_520 = (((root_240 as u32) * 13 + (tokens.len() as u32) * 7) % 520) as u32;
-    let neuron_22880 = col_520 * 44 + ((tokens.len() as u32) % 44);
+    let col_560 = (((root_240 as u32) * 13 + (tokens.len() as u32) * 7) % 560) as u32;
+    let neuron_24640 = col_560 * 44 + ((tokens.len() as u32) % 44);
 
     let svo_clause = format!(
-        "SVO-7(Root E8#{:03} -> Sector S{:02} -> Col #{:03}/519 -> Neuron N{:05}/22879 | Domain={}): '{}'",
-        root_240, sec_80, col_520, neuron_22880, dom_tag, detok_exact
+        "SVO-7(Root E8#{:03} -> Sector S{:02} -> Col #{:03}/559 -> Neuron N{:05}/24639 | Domain={}): '{}'",
+        root_240, sec_80, col_560, neuron_24640, dom_tag, detok_exact
     );
 
     let tok_len_f = (tokens.len().max(1)) as f64;
@@ -520,8 +717,8 @@ pub fn encode_and_detokenize_65k(input: &str) -> Transduction65kResult {
         compression_ratio: comp_ratio,
         primary_e8_root: root_240,
         mapped_sector_80: sec_80,
-        mapped_chair44_col: col_520,
-        mapped_neuron_id: neuron_22880,
+        mapped_chair44_col: col_560,
+        mapped_neuron_id: neuron_24640,
         dominant_domain: dom_tag,
     }
 }

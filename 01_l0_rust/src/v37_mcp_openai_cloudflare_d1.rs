@@ -65,7 +65,7 @@ pub fn evaluate_openai_compat_surface(gen_counter: u64) -> OpenAiCompatTelemetry
         model_id: "sovereign-harmonic-v4300",
         base_url_path: "https://act-omega-net.dev/v1/chat/completions",
         vocab_size: 65536,
-        dendritic_neurons: 22880,
+        dendritic_neurons: 24640,
         completion_tokens_generated: 12048000 + (gen_counter * 32),
         holdout_ppl: 1.00000002_f64,
     }
@@ -77,9 +77,9 @@ pub fn evaluate_cloudflare_d1_vpc_shadow(gen_counter: u64) -> CloudflareD1Shadow
         d1_database_name: "act_omega_d1_vault",
         d1_free_storage_gb: 5.0_f64,
         d1_synced_wal_rows: 54200 + (gen_counter % 8192),
-        d1_synced_npage_cols: 520,
+        d1_synced_npage_cols: 560,
         workers_vpc_tunnel_bound: true,
-        durable_object_sqlite_shadow: "SovereignEdgeShadowDO (8 D1 Tables + 480 Core + 40 Expansion Columns Synced)",
+        durable_object_sqlite_shadow: "SovereignEdgeShadowDO (8 D1 Tables + 480 Core + 80 Expansion Columns Synced)",
         zero_502_failover_active: true,
     }
 }

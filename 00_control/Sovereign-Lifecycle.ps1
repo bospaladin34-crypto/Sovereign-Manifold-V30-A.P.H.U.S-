@@ -135,9 +135,15 @@ function Start-SovereignClusterSafely {
 
     $swProc = Get-Process -Name "v31_swarm" -ErrorAction SilentlyContinue
     if (-not $swProc) {
-        Start-Process -FilePath $swarmExe -WorkingDirectory $root -WindowStyle Minimized
+        $startup = New-CimInstance -ClassName Win32_ProcessStartup -ClientOnly
+        $startup.ShowWindow = [uint16]0
+        $null = Invoke-CimMethod -ClassName Win32_Process -MethodName Create -Arguments @{
+            CommandLine = "`"$swarmExe`""
+            CurrentDirectory = $root
+            ProcessStartupInformation = $startup
+        }
         Start-Sleep -Seconds 2
-        Write-Host "  [2/5] Launched v31_swarm.exe (:8097 L0 API/MCP + :5173 WebGPU HUD)..." -ForegroundColor Green
+        Write-Host "  [2/5] Launched v31_swarm.exe via WMI Service Host (:8097 L0 API/MCP + :5173 WebGPU HUD)..." -ForegroundColor Green
     } else {
         $swPid = $swProc[0].Id
         Write-Host "  [2/5] v31_swarm.exe already running (PID $swPid)..." -ForegroundColor Green
@@ -146,9 +152,16 @@ function Start-SovereignClusterSafely {
     $cfProc = Get-Process -Name "cloudflared" -ErrorAction SilentlyContinue
     if (-not $cfProc) {
         if ((Test-Path $cfExe) -and (Test-Path $cfCfg)) {
-            Start-Process -FilePath $cfExe -ArgumentList @("tunnel", "--config", $cfCfg, "run", "9cdea4c4-831d-4ccc-983d-5f7587a98206") -WorkingDirectory $root -WindowStyle Hidden
-            Start-Sleep -Seconds 2
-            Write-Host "  [3/5] Launched Cloudflare Named Tunnel (9cdea4c4 -> act-omega-net.dev :5173, api/mcp :8097)..." -ForegroundColor Green
+            $startup = New-CimInstance -ClassName Win32_ProcessStartup -ClientOnly
+            $startup.ShowWindow = [uint16]0
+            $cfCmd = "`"$cfExe`" tunnel --config `"$cfCfg`" --logfile `"C:\sovereign_manifold_v31\00_control\cloudflared_named.log`" run 9cdea4c4-831d-4ccc-983d-5f7587a98206"
+            $null = Invoke-CimMethod -ClassName Win32_Process -MethodName Create -Arguments @{
+                CommandLine = $cfCmd
+                CurrentDirectory = $root
+                ProcessStartupInformation = $startup
+            }
+            Start-Sleep -Seconds 3
+            Write-Host "  [3/5] Launched Cloudflare Named Tunnel via WMI Service Host (9cdea4c4 -> act-omega-net.dev :5173, api/mcp :8097)..." -ForegroundColor Green
         } else {
             Write-Host "  [3/5] WARNING: cloudflared.exe or config not found!" -ForegroundColor Yellow
         }

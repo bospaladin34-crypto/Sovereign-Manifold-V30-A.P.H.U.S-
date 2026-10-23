@@ -32,7 +32,7 @@
 
 | Dimension / Subsystem | `v43.0.0` Baseline | `v47.0.0` (`SH4Z v4700 TLV`) Production Specification |
 | :--- | :--- | :--- |
-| **Model Weights & Sector Mask** | `sovereign_harmonic_iv_v4000.e8z` (`133,120 B`) | **`sovereign_harmonic_iv_v4000.e8z` (`133,120 B = 2,080 × 64 B` cachelines, `80` Active Sectors `S00..S79`, `u128` Mask `0xFFFF_FFFFFFFFFFFFFFFF`, SHA-256 `c383b1b7d00e6ce8cef22593536aea2d66523d53360c3552a64970a61e394b23`)** |
+| **Model Weights & Sector Mask** | `sovereign_harmonic_iv_v4000.e8z` (`133,120 B`) | **`sovereign_harmonic_iv_v4000.e8z` (`133,120 B = 2,080 × 64 B` cachelines, `80` Active Sectors `S00..S79`, `u128` Mask `0xFFFF_FFFFFFFFFFFFFFFF`, SHA-256 `e32cbb03d8df1a343969a0a41d101e90c81930656051160f59492f8bb4adbdb6`)** |
 | **Connectome & `.npage` SHM** | `21,120` Neurons (`480 × Chair-44`, `2,703,360 B`) | **`42,240` 3-Compartment Dendritic Pyramidal Neurons == `42,240` Shards (`21,120` Core + `21,120` Expansion = `5,406,720 B / 5.16 MB` in `neurons_v4600_42240.npage` `542d7b47...`, `960 × Chair-44` columns, `337,920` BDH/KAN synapses)** |
 | **Vocabulary & Tokenizer** | `16,384` Dual-Horizon Tokens | **`131,072` 24-Domain Open-Vocabulary BPE & Morphological Tokens (`416` Compound Phrases `65,536..131,071` + `65,280` Morphological Subwords `256..65,535` + `256` Byte Atoms `0..255`, `0 <UNK>`) with Real Synaptic QAT (`Post-PPL = 4.012657`, `86.08%` Fluency)** |
 | **Formal Verification** | `344 / 364` Lean 4 Proofs | **`432 / 432` Non-Trivial Lean 4 CIC Proofs QED (`SovereignManifoldTheorems.lean`, `0 sorry`, `0 True : Prop`)** |

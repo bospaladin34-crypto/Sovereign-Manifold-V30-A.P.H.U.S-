@@ -45,3 +45,10 @@
 {"epoch":45,"domains":24,"vocab_size":131072,"combined_neurons":42240,"holdout_ppl":1.119488,"compound_transfer_pct":98.833,"cacheline_speedup_pct":31.92,"dag_latency_ms":0.401,"m_atp":0.7671,"kops":4511.5}
 {"epoch":46,"domains":24,"vocab_size":131072,"combined_neurons":42240,"holdout_ppl":1.118589,"compound_transfer_pct":98.820,"cacheline_speedup_pct":31.89,"dag_latency_ms":0.145,"m_atp":0.7644,"kops":4510.7}
 {"epoch":47,"domains":24,"vocab_size":131072,"combined_neurons":42240,"holdout_ppl":1.118422,"compound_transfer_pct":98.805,"cacheline_speedup_pct":31.91,"dag_latency_ms":0.099,"m_atp":0.7613,"kops":4511.4}
+{"epoch":48,"domains":24,"vocab_size":131072,"combined_neurons":42240,"holdout_ppl":1.118494,"compound_transfer_pct":98.829,"cacheline_speedup_pct":31.90,"dag_latency_ms":0.147,"m_atp":0.7662,"kops":4511.1}
+{"epoch":49,"domains":24,"vocab_size":131072,"combined_neurons":42240,"holdout_ppl":1.118479,"compound_transfer_pct":98.843,"cacheline_speedup_pct":31.91,"dag_latency_ms":0.133,"m_atp":0.7691,"kops":4511.3}
+{"epoch":50,"domains":24,"vocab_size":131072,"combined_neurons":42240,"holdout_ppl":1.108357,"compound_transfer_pct":98.609,"cacheline_speedup_pct":32.01,"dag_latency_ms":0.140,"m_atp":0.7210,"kops":4514.8}
+{"epoch":51,"domains":24,"vocab_size":131072,"combined_neurons":42240,"holdout_ppl":1.108962,"compound_transfer_pct":98.675,"cacheline_speedup_pct":33.40,"dag_latency_ms":0.177,"m_atp":0.7346,"kops":4562.2}
+{"epoch":52,"domains":24,"vocab_size":131072,"combined_neurons":42240,"holdout_ppl":1.108740,"compound_transfer_pct":98.653,"cacheline_speedup_pct":33.41,"dag_latency_ms":0.126,"m_atp":0.7301,"kops":4562.5}
+{"epoch":53,"domains":24,"vocab_size":131072,"combined_neurons":42240,"holdout_ppl":1.108569,"compound_transfer_pct":98.628,"cacheline_speedup_pct":31.95,"dag_latency_ms":0.230,"m_atp":0.7249,"kops":4512.8}
+{"epoch":54,"domains":24,"vocab_size":131072,"combined_neurons":42240,"holdout_ppl":1.108594,"compound_transfer_pct":98.667,"cacheline_speedup_pct":31.94,"dag_latency_ms":0.104,"m_atp":0.7330,"kops":4512.2}

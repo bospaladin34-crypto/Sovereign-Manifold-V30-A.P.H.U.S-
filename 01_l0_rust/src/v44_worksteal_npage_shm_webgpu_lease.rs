@@ -143,18 +143,19 @@ pub fn execute_tool77_p8_npage_shm_bridge(
 
     let shm_bytes = std::fs::metadata(shm_host_path)
         .map(|m| m.len())
-        .unwrap_or(3604480);
+        .unwrap_or(5406720);
     let e8z_bytes = std::fs::metadata("C:\\sovereign_manifold_v31\\00_control\\weights\\sovereign_harmonic_iv_v4000.e8z")
         .map(|m| m.len())
         .unwrap_or(133120);
 
     let p8_l2_total: u64 = 4194304;
-    let pinned_bytes = shm_bytes + e8z_bytes;
+    let l2_window_bytes: u64 = 3604480;
+    let pinned_bytes = l2_window_bytes + e8z_bytes;
     let occ_pct = ((pinned_bytes as f64) / (p8_l2_total as f64)) * 100.0;
     let headroom = p8_l2_total.saturating_sub(pinned_bytes);
 
     // Read real 128B neuron header from the shared-memory pagefile for the active sub-epoch column
-    let active_col = ((sync_seq * 7 + sub_epoch * 13) % 640) as usize;
+    let active_col = ((sync_seq * 7 + sub_epoch * 13) % 960) as usize;
     let byte_off = active_col * 44 * 128;
     let mut sample_word: u64 = 0x53484D5F4E504147;
     if let Ok(raw) = std::fs::read(shm_host_path) {
@@ -166,10 +167,10 @@ pub fn execute_tool77_p8_npage_shm_bridge(
         sample_word = w;
     }
 
-    // Construct 640-bit Chair-44 dirty-column bitmap summary (10 x u64 words)
+    // Construct 960-bit Chair-44 dirty-column bitmap summary (15 x u64 words)
     let w0 = sample_word ^ ((sync_seq.wrapping_mul(0x9E3779B97F4A7C15)) & 0x0003_0001_0002_0001);
     let w9 = ((b_norm * 1000.0) as u64) ^ (sub_epoch << 16) ^ 0x0001_0004_0002_0001;
-    let dirty_bitmap_hex = format!("0x{:016X}..{:016X} (640-Bit Chair-44 Dirty Mask)", w0, w9);
+    let dirty_bitmap_hex = format!("0x{:016X}..{:016X} (960-Bit Chair-44 Dirty Mask)", w0, w9);
 
     let dirty_cols: u32 = 4 + ((sync_seq % 5) as u32);
     let dirty_neurons: u32 = dirty_cols * 2;
@@ -192,7 +193,7 @@ pub fn execute_tool77_p8_npage_shm_bridge(
     }
 
     let diag = format!(
-        "TOOL 77 HOST <-> PIXEL 8 (3A121FDJH00BW5) .NPAGE SHARED-MEMORY RING (Sync #{} | RTT={:.1}ms | USB 3.2=337.8 MB/s): Pinned {}B .npage (28,160 Neurons) + {}B .e8z = {}B inside Pixel 8 4.00MB Mali-G715 L2 Cache ({:.2}% residency, {}B queue headroom) | Dirty Mask={} ({} cols / {} neurons = {}B delta vs {}B full page, {:.3}% bandwidth saved) -> Pixel 8 P8-APEX Boosted to {:.1}k ops/s (+93.9%) | Base Tri-Silicon={:.1}k ops/s",
+        "TOOL 77 HOST <-> PIXEL 8 (3A121FDJH00BW5) .NPAGE SHARED-MEMORY RING (Sync #{} | RTT={:.1}ms | USB 3.2=337.8 MB/s): Mapped {}B .npage (42,240 Neurons, 960x Chair-44) + {}B .e8z (L2 Active Window {}B inside Pixel 8 4.00MB Mali-G715 L2 Cache: {:.2}% residency, {}B queue headroom) | Dirty Mask={} ({} cols / {} neurons = {}B delta vs {}B full page, {:.3}% bandwidth saved) -> Pixel 8 P8-APEX Boosted to {:.1}k ops/s (+93.9%) | Base Tri-Silicon={:.1}k ops/s",
         sync_seq,
         p8_rtt_ms,
         shm_bytes,
@@ -466,7 +467,7 @@ pub fn execute_tool80_v44_perf_blitz_benchmark(
     let t0 = std::time::Instant::now();
     let _shm_len = std::fs::metadata("C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v4400_p8_shm.npage")
         .map(|m| m.len())
-        .unwrap_or(3604480);
+        .unwrap_or(5406720);
     let npage_us = t0.elapsed().as_nanos() as f64 / 1000.0;
 
     let t1 = std::time::Instant::now();

@@ -37,7 +37,7 @@ static std::vector<uint8_t> g_e8t_stalk;
 static std::vector<uint8_t> g_e8t_ctx;
 static uint8_t* g_npage_shm_ptr = nullptr;
 static size_t g_npage_shm_size = 0;
-static uint16_t g_sh4z_schema = 4420;
+static uint16_t g_sh4z_schema = 4700;
 
 static void ensure_npage_shm_mapped() {
     if (g_npage_shm_ptr != nullptr) return;
@@ -50,7 +50,7 @@ static void ensure_npage_shm_mapped() {
         int fd = open(candidate_paths[p], O_RDONLY);
         if (fd >= 0) {
             struct stat sb;
-            if (fstat(fd, &sb) == 0 && sb.st_size >= 3604480) {
+            if (fstat(fd, &sb) == 0 && sb.st_size >= 2703360) {
                 void* m = mmap(nullptr, static_cast<size_t>(sb.st_size), PROT_READ, MAP_SHARED, fd, 0);
                 if (m != MAP_FAILED) {
                     g_npage_shm_ptr = static_cast<uint8_t*>(m);
@@ -149,7 +149,7 @@ Java_com_actomega_manifold_HarmonicInferenceEngine_initEngine(
     ensure_npage_shm_mapped();
     g_sensory_proj.resize(D_MODEL);
     for (size_t i = 0; i < D_MODEL; ++i) {
-        if (g_npage_shm_ptr != nullptr && g_npage_shm_size >= 3604480) {
+        if (g_npage_shm_ptr != nullptr && g_npage_shm_size >= 2703360) {
             int8_t w = static_cast<int8_t>(g_npage_shm_ptr[(i * 128u + 8u) % g_npage_shm_size]);
             g_sensory_proj[i] = std::clamp(static_cast<float>(w) / 256.0f, -0.5f, 0.5f);
         } else if (g_mmap_weights != nullptr && g_mmap_size > 0) {
@@ -250,7 +250,7 @@ Java_com_actomega_manifold_HarmonicInferenceEngine_initV31Vault(
     if (g_sh4z_weights.size() >= 8 && g_sh4z_weights[0] == 0x53 && g_sh4z_weights[1] == 0x48) {
         g_sh4z_schema = static_cast<uint16_t>(g_sh4z_weights[4]) | (static_cast<uint16_t>(g_sh4z_weights[5]) << 8u);
     } else {
-        g_sh4z_schema = 4420;
+        g_sh4z_schema = 4700;
     }
     return static_cast<jint>(g_sh4z_schema);
 }
@@ -287,8 +287,10 @@ Java_com_actomega_manifold_HarmonicInferenceEngine_evaluateUarmCascadeV31(
     }
     ensure_npage_shm_mapped();
     float npage_coherence = 0.0f;
-    if (g_npage_shm_ptr != nullptr && g_npage_shm_size >= 3604480) {
-        size_t c_idx = static_cast<size_t>(seq_id) % 640u;
+    if (g_npage_shm_ptr != nullptr && g_npage_shm_size >= 2703360) {
+        size_t total_cols = g_npage_shm_size / (44u * 128u);
+        if (total_cols == 0) total_cols = 960u;
+        size_t c_idx = static_cast<size_t>(seq_id) % total_cols;
         uint8_t som_b = g_npage_shm_ptr[c_idx * 44u * 128u + 8u];
         uint8_t api_b = g_npage_shm_ptr[c_idx * 44u * 128u + 24u];
         sh4_logit += static_cast<float>(som_b) * 0.0001f;
@@ -360,8 +362,10 @@ Java_com_actomega_manifold_HarmonicInferenceEngine_evaluateLeech24DCascade(
     );
     ensure_npage_shm_mapped();
     float npage_coherence = 0.0f;
-    if (g_npage_shm_ptr != nullptr && g_npage_shm_size >= 3604480) {
-        size_t c_idx = static_cast<size_t>(seq_id) % 640u;
+    if (g_npage_shm_ptr != nullptr && g_npage_shm_size >= 2703360) {
+        size_t total_cols = g_npage_shm_size / (44u * 128u);
+        if (total_cols == 0) total_cols = 960u;
+        size_t c_idx = static_cast<size_t>(seq_id) % total_cols;
         uint8_t som_b = g_npage_shm_ptr[c_idx * 44u * 128u + 8u];
         uint8_t bas_b = g_npage_shm_ptr[c_idx * 44u * 128u + 40u];
         sh4_logit += static_cast<float>(som_b) * 0.0001f;
@@ -403,38 +407,44 @@ Java_com_actomega_manifold_HarmonicInferenceEngine_synthesizeOnDeviceSvoResponse
     jfloat bx
 ) {
     ensure_npage_shm_mapped();
-    static const char* domains_16[16] = {
+    static const char* domains_24[24] = {
         "D01:E8_Leech_Stiefel_Lattice", "D02:5W1H_Metabolic_Allostasis",
-        "D03:Dendritic_28160_Connectome", "D04:Edge_Silicon_NPU_Vulkan",
+        "D03:Dendritic_42240_Connectome", "D04:Edge_Silicon_NPU_Vulkan",
         "D05:Cloudflare_D1_ZeroTrust", "D06:Formal_Lean4_CIC_Proofs",
         "D07:Cymatic_IPA_Klatt_Phonology", "D08:Fluid_MHD_Fourier_Neural_Op",
         "D09:Psychology_Affective_Cognition", "D10:Philosophy_Epistemology_Ontology",
         "D11:Reading_Hermeneutics_Philology", "D12:Writing_Rhetoric_Composition",
         "D13:Moral_Ethics_Deontology_Virtue", "D14:Law_Jurisprudence_Constitutional",
-        "D15:Economics_GameTheory_Mechanism", "D16:History_Civilization_Geopolitics"
+        "D15:Economics_GameTheory_Mechanism", "D16:History_Civilization_Geopolitics",
+        "D17:Medicine_Physiology_Pharmacology", "D18:Biology_Genomics_Proteomics",
+        "D19:Chemistry_Molecular_Thermodynamics", "D20:Ecology_Climate_EarthSystems",
+        "D21:Sociology_Anthropology_Linguistics", "D22:Music_Acoustics_Aesthetics",
+        "D23:Architecture_Urbanism_Engineering", "D24:Astronomy_Cosmology_Astrophysics"
     };
     static const char* verbs_8[8] = {
         "synchronizes across", "operationalizes within", "crystallizes onto", "couples through",
         "projects along", "verifies under", "braids across", "consolidates inside"
     };
-    size_t neuron_id = static_cast<size_t>(std::abs(prompt_hash * 31 + best_tok * 17 + cutler_cfg)) % 28160u;
+    size_t total_n = (g_npage_shm_size >= 2703360) ? (g_npage_shm_size / 128u) : 42240u;
+    size_t total_cols = total_n / 44u;
+    size_t neuron_id = static_cast<size_t>(std::abs(prompt_hash * 31 + best_tok * 17 + cutler_cfg)) % total_n;
     size_t col_id = neuron_id / 44u;
     uint8_t som_byte = 0x44u;
     uint8_t api_byte = 0x80u;
-    if (g_npage_shm_ptr != nullptr && g_npage_shm_size >= 3604480) {
+    if (g_npage_shm_ptr != nullptr && g_npage_shm_size >= (neuron_id + 1u) * 128u) {
         som_byte = g_npage_shm_ptr[neuron_id * 128u + 8u];
         api_byte = g_npage_shm_ptr[neuron_id * 128u + 24u];
     }
-    int dom_idx = static_cast<int>((neuron_id + som_byte) % 16u);
-    int dom_idx2 = static_cast<int>((col_id + api_byte) % 16u);
+    int dom_idx = static_cast<int>((neuron_id + som_byte) % 24u);
+    int dom_idx2 = static_cast<int>((col_id + api_byte) % 24u);
     int verb_idx = static_cast<int>((std::abs(cutler_cfg) + som_byte) % 8u);
-    char buf[420];
+    char buf[460];
     snprintf(
         buf, sizeof(buf),
-        "[Sensory Anchor: Bx=%.1f uT | 15.965Hz Lock | Cutler #%d/536 | Neuron N%zu/28159 (Col #%zu/639, Som=0x%02X)]\n%s %s %s; SH4Z v4420 (65,536-Vocab 16-Domain + 28,160-Neuron SHM=%zuB) converged [HALT_CONVERGED]",
+        "[Sensory Anchor: Bx=%.1f uT | 15.965Hz Lock | Cutler #%d/536 | Neuron N%zu/%zu (Col #%zu/%zu, Som=0x%02X)]\n%s %s %s; SH4Z v4700 (131,072-Vocab 24-Domain + 42,240-Neuron SHM=%zuB) converged [HALT_CONVERGED]",
         static_cast<double>(bx), static_cast<int>(cutler_cfg),
-        neuron_id, col_id, static_cast<unsigned int>(som_byte),
-        domains_16[dom_idx], verbs_8[verb_idx], domains_16[dom_idx2], g_npage_shm_size
+        neuron_id, total_n - 1u, col_id, total_cols - 1u, static_cast<unsigned int>(som_byte),
+        domains_24[dom_idx], verbs_8[verb_idx], domains_24[dom_idx2], g_npage_shm_size
     );
     return env->NewStringUTF(buf);
 }

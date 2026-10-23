@@ -15,3 +15,4 @@
 {"sync_seq":551,"shm_bytes":3604480,"pinned_l2_bytes":3737600,"l2_occupancy_pct":89.11,"dirty_cols":5,"delta_wire_bytes":1280,"p8_shm_kops":1139.2,"base_trisilicon_kops":4512.3}
 {"sync_seq":1430,"shm_bytes":3604480,"pinned_l2_bytes":3737600,"l2_occupancy_pct":89.11,"dirty_cols":4,"delta_wire_bytes":1024,"p8_shm_kops":1139.2,"base_trisilicon_kops":4511.5}
 {"sync_seq":1225,"shm_bytes":3604480,"pinned_l2_bytes":3737600,"l2_occupancy_pct":89.11,"dirty_cols":4,"delta_wire_bytes":1024,"p8_shm_kops":1138.2,"base_trisilicon_kops":4511.3}
+{"sync_seq":185,"shm_bytes":5406720,"pinned_l2_bytes":3737600,"l2_occupancy_pct":89.11,"dirty_cols":4,"delta_wire_bytes":1024,"p8_shm_kops":1139.8,"base_trisilicon_kops":4512.4}

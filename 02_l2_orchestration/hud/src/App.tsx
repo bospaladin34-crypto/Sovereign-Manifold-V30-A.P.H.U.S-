@@ -1240,9 +1240,9 @@ export function App() {
       for (let i = 0; i < w.length; i++) {
         hashAcc = Math.imul(hashAcc ^ w.charCodeAt(i), 0x01000193) >>> 0;
       }
-      if (w.includes("neuron") || w.includes("28160") || w.includes("24640") || w.includes("21120") || w.includes("m_atp") || /^n\d+$/.test(w)) {
+      if (w.includes("neuron") || w.includes("42240") || w.includes("28160") || w.includes("24640") || w.includes("21120") || w.includes("m_atp") || /^n\d+$/.test(w)) {
         const numMatch = w.match(/\d+/);
-        const nIdx = numMatch ? Math.min(28159, parseInt(numMatch[0], 10)) : (hashAcc % 28160);
+        const nIdx = numMatch ? Math.min(42239, parseInt(numMatch[0], 10)) : (hashAcc % 42240);
         const tid = 32768 + (nIdx % 32768);
         ids.push(tid);
         labels.push(`T3_DEN(${tid})`);
@@ -1271,12 +1271,12 @@ export function App() {
     });
     const ratio = cleanInput.length / Math.max(1, ids.length);
     const mappedSector = hashAcc % 80;
-    const mappedCol = hashAcc % 640;
-    const mappedNeuron = hashAcc % 28160;
+    const mappedCol = hashAcc % 960;
+    const mappedNeuron = hashAcc % 42240;
     const doms = [
       "D1:E8xLeech_Gauge_FNO",
-      "D2:3Comp_Dendritic_SWR_28160",
-      "D3:384_Lean4_PosGeom_LUT",
+      "D2:3Comp_Dendritic_SWR_42240",
+      "D3:432_Lean4_PosGeom_LUT",
       "D4:Metabolic_5W1H_TorchTPU",
       "D5:Klatt_Formant_WAV_Speech",
       "D6:MCP_OpenAI_CloudflareD1",
@@ -2036,7 +2036,7 @@ export function App() {
                     const bankStart = Math.floor(selectedSector / 16) * 16;
                     const sec = bankStart + r;
                     const globalIdx = (r * 130 + c) % 2080;
-                    const colIdx = Math.floor((globalIdx * 640) / 2080);
+                    const colIdx = Math.floor((globalIdx * 960) / 2080);
                     const nIdx = colIdx * 44;
                     setSelectedSector(sec);
                     setSelectedLine(c);
@@ -2055,7 +2055,7 @@ export function App() {
             <button
               key={sIdx}
               onClick={() => {
-                const colIdx = Math.min(639, sIdx * 8);
+                const colIdx = Math.min(959, sIdx * 12);
                 const nIdx = colIdx * 44;
                 setSelectedSector(sIdx);
                 setBpeQuery(`${sName.toLowerCase()} sector_s${sIdx} chair44_col_${colIdx} neuron_n${nIdx}`);
@@ -2079,7 +2079,7 @@ export function App() {
         </div>
         <div style={{ color: "#FFB454", fontSize: 10.5, marginTop: 5, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 6 }}>
           <span>
-            Sector #{selectedSector}/79 ({SECTOR_NAMES[selectedSector] || `S${selectedSector}`}+SSD_TIER2): Line #{selectedLine}/129 (Global #{((selectedSector % 16) * 130 + selectedLine)}/2079, Offset {((selectedSector % 16) * 130 + selectedLine) * 64}B) -- Norm={(tel.sector_norms_csv.split(",")[selectedSector % 16] || "0.8942")} -- Hash={(tel.sector_hashes_csv.split(",")[selectedSector % 16] || "0x811C9DC5")} -- Chair-44 Col #{(((selectedSector % 16) * 130 + selectedLine) * 640 / 2080) | 0}/639 (21,120 Core + 7,040 Exp = 28,160 Neurons) -- Theorems thm{selectedSector * 5 + 1}..thm{selectedSector * 5 + 5} (400/400 QED)
+            Sector #{selectedSector}/79 ({SECTOR_NAMES[selectedSector] || `S${selectedSector}`}+SSD_TIER2): Line #{selectedLine}/129 (Global #{((selectedSector % 16) * 130 + selectedLine)}/2079, Offset {((selectedSector % 16) * 130 + selectedLine) * 64}B) -- Norm={(tel.sector_norms_csv.split(",")[selectedSector % 16] || "0.8942")} -- Hash={(tel.sector_hashes_csv.split(",")[selectedSector % 16] || "0x811C9DC5")} -- Chair-44 Col #{(((selectedSector % 16) * 130 + selectedLine) * 960 / 2080) | 0}/959 (21,120 Core + 21,120 Exp = 42,240 Neurons) -- Theorems thm{selectedSector * 5 + 1}..thm{selectedSector * 5 + 5} (432/432 QED)
           </span>
           <div style={{ display: "flex", gap: 6 }}>
             <button
@@ -2089,10 +2089,10 @@ export function App() {
               INSPECT CORE N{(((((selectedSector % 16) * 130 + selectedLine) * 480 / 2080) | 0) * 44)} (T42)
             </button>
             <button
-              onClick={() => callEndpoint(`/api/v1/pagefile/cauchy_sparse_npage?neuron_id=${21120 + ((((selectedSector % 16) * 130 + selectedLine) * 160 / 2080) | 0) * 44}`, `EXP NPAGE COL #${480 + ((((selectedSector % 16) * 130 + selectedLine) * 160 / 2080) | 0)}`)}
+              onClick={() => callEndpoint(`/api/v1/pagefile/cauchy_sparse_npage?neuron_id=${21120 + ((((selectedSector % 16) * 130 + selectedLine) * 480 / 2080) | 0) * 44}`, `EXP NPAGE COL #${480 + ((((selectedSector % 16) * 130 + selectedLine) * 480 / 2080) | 0)}`)}
               style={{ background: "#1A1228", color: "#B388FF", border: "1px solid #B388FF", borderRadius: 4, padding: "2px 8px", fontSize: 10, fontWeight: "bold", cursor: "pointer" }}
             >
-              INSPECT EXPANSION N{21120 + ((((selectedSector % 16) * 130 + selectedLine) * 160 / 2080) | 0) * 44} (COL #{480 + ((((selectedSector % 16) * 130 + selectedLine) * 160 / 2080) | 0)})
+              INSPECT EXPANSION N{21120 + ((((selectedSector % 16) * 130 + selectedLine) * 480 / 2080) | 0) * 44} (COL #{480 + ((((selectedSector % 16) * 130 + selectedLine) * 480 / 2080) | 0)})
             </button>
           </div>
         </div>
@@ -2421,8 +2421,8 @@ export function App() {
       {/* DRAWER 1: Live 12-Channel Sensor Sparklines */}
       <div style={{ background: "#141922", border: "1px solid #2A3B4D", borderRadius: 6, padding: "8px 10px", marginBottom: 8 }}>
         <div onClick={() => setDrawer1Open(!drawer1Open)} style={{ display: "flex", justifyContent: "space-between", cursor: "pointer", fontWeight: "bold", marginBottom: drawer1Open ? 6 : 0 }}>
-          <span>[-] DRAWER 1: LIVE 12-CHANNEL SENSOR SPARKLINES &amp; BIPARTITE SYNAPSE PROJECTION (MLP + GRU + FNO -&gt; S00..S79 / 640x CHAIR-44)</span>
-          <span style={{ color: "#FFB454" }}>12 Live Hardware Inputs @ {tel.p10_sensor_hz.toFixed(3)} Hz -&gt; Active S{selectedSector}:L{selectedLine} (Col #{(((selectedSector % 16) * 130 + selectedLine) * 640 / 2080) | 0}/639)</span>
+          <span>[-] DRAWER 1: LIVE 12-CHANNEL SENSOR SPARKLINES &amp; BIPARTITE SYNAPSE PROJECTION (MLP + GRU + FNO -&gt; S00..S79 / 960x CHAIR-44)</span>
+          <span style={{ color: "#FFB454" }}>12 Live Hardware Inputs @ {tel.p10_sensor_hz.toFixed(3)} Hz -&gt; Active S{selectedSector}:L{selectedLine} (Col #{(((selectedSector % 16) * 130 + selectedLine) * 960 / 2080) | 0}/959)</span>
         </div>
         {drawer1Open && (
           <>
@@ -2430,7 +2430,7 @@ export function App() {
               <button onClick={() => { setSelectedSector(48); callEndpoint("/api/v1/sector/inspect?sector=48&line=0", "D1 -> P10 24D MAGNETOMETER S48..S63"); }} style={{ background: "#0D2618", color: "#56D364", border: "1px solid #56D364", borderRadius: 4, padding: "3px 8px", fontSize: 10, fontWeight: "bold", cursor: "pointer" }}>FOCUS P10 SENSOR BANK (S48..S63)</button>
               <button onClick={() => { setSelectedSector(64); callEndpoint("/api/v1/shm/p8_npage_bridge", "D1 -> P8 MALI-G715 .NPAGE SHM S64..S79"); }} style={{ background: "#1A1228", color: "#B388FF", border: "1px solid #B388FF", borderRadius: 4, padding: "3px 8px", fontSize: 10, fontWeight: "bold", cursor: "pointer" }}>FOCUS P8 .NPAGE SHM BANK (S64..S79)</button>
               <button onClick={() => { setSelectedSector(0); callEndpoint("/api/v1/worksteal/elastic_scheduler", "D1 -> LOQ 15 RTX 3050 BANK S00..S47"); }} style={{ background: "#1C2632", color: "#FFB454", border: "1px solid #FFB454", borderRadius: 4, padding: "3px 8px", fontSize: 10, fontWeight: "bold", cursor: "pointer" }}>FOCUS HOST RTX 3050 BANK (S00..S47)</button>
-              <button onClick={() => callEndpoint("/api/v1/connectome/harness_5w1h_npage", "D1 -> 5W1H + 28,160-NEURON SYNAPSE PROJECTION")} style={{ background: "#002B24", color: "#00FFCC", border: "1px solid #00FFCC", borderRadius: 4, padding: "3px 8px", fontSize: 10, fontWeight: "bold", cursor: "pointer" }}>PROJECT 12 CHANNELS -&gt; 225,280 SYNAPSES (T70)</button>
+              <button onClick={() => callEndpoint("/api/v1/connectome/harness_5w1h_npage", "D1 -> 5W1H + 42,240-NEURON SYNAPSE PROJECTION")} style={{ background: "#002B24", color: "#00FFCC", border: "1px solid #00FFCC", borderRadius: 4, padding: "3px 8px", fontSize: 10, fontWeight: "bold", cursor: "pointer" }}>PROJECT 12 CHANNELS -&gt; 337,920 SYNAPSES (T70)</button>
             </div>
             <canvas
               ref={sparkCanvasRef}
@@ -2656,8 +2656,8 @@ export function App() {
               <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginBottom: 5 }}>
                 {[
                   { label: "D1:E8xLeech+FNO", q: "sovereign manifold leech lattice stiefel projection fno spectral laplacian pde navier stokes" },
-                  { label: "D2:28,160-Dendritic", q: "dendritic neurons sharp wave ripple cortical column chair-44 n0 n28159 28160" },
-                  { label: "D3:384-Lean4+PosGeom", q: "lean 4 positive geometry amplituhedron associahedron cosmohedron clifford pga formal proofs" },
+                  { label: "D2:42,240-Dendritic", q: "dendritic neurons sharp wave ripple cortical column chair-44 n0 n42239 42240" },
+                  { label: "D3:432-Lean4+PosGeom", q: "lean 4 positive geometry amplituhedron associahedron cosmohedron clifford pga formal proofs" },
                   { label: "D4:5W1H+ATP+TorchTPU", q: "metabolic harness 5w1h torchtpu openxla atp drive anabolic surplus continual qat" },
                   { label: "D5:Klatt+WAV+SDR", q: "klatt formant natural language speech synthesis bidirectional bpe compound lexicon" },
                   { label: "D6:MCP+D1+OpenAI", q: "cloudflare d1 durable object code-mode mcp chat completions bitemporal wal merkle checkpoint" },
@@ -2688,20 +2688,20 @@ export function App() {
                 <input
                   value={bpeQuery}
                   onChange={(e) => setBpeQuery(e.target.value)}
-                  placeholder="Enter 16-domain compound phrases, natural language, or neuron IDs (n0..n28159)..."
+                  placeholder="Enter 24-domain compound phrases, natural language, or neuron IDs (n0..n42239)..."
                   style={{ flex: 1, background: "#05080C", color: "#FFFEFB", border: "1px solid #2A3B4D", borderRadius: 4, padding: "4px 8px", fontFamily: "monospace", fontSize: 11 }}
                 />
                 <button
                   onClick={() => runBpeInspector(bpeQuery)}
                   style={{ background: "#00FFCC", color: "#05080C", border: "none", borderRadius: 4, padding: "4px 10px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}
                 >
-                  TRANSDUCE &amp; DETOKENIZE 65K
+                  TRANSDUCE &amp; DETOKENIZE 131K
                 </button>
                 <button
                   onClick={() => callEndpoint(`/api/v1/pagefile/cauchy_sparse_npage?neuron_id=${bpeResult.mapped_neuron_id}`, `BPE MAPPED NEURON N${bpeResult.mapped_neuron_id}`)}
                   style={{ background: "#1A1228", color: "#B388FF", border: "1px solid #B388FF", borderRadius: 4, padding: "4px 10px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}
                 >
-                  INSPECT MAPPED N{bpeResult.mapped_neuron_id} (C#{bpeResult.mapped_chair44_col}/639)
+                  INSPECT MAPPED N{bpeResult.mapped_neuron_id} (C#{bpeResult.mapped_chair44_col}/959)
                 </button>
               </div>
               <div style={{ fontSize: 10, color: "#9FB0C2", lineHeight: 1.45 }}>
@@ -2711,7 +2711,7 @@ export function App() {
                 <div>
                   <span style={{ color: "#56D364", fontWeight: "bold" }}>EXACT DETOKENIZED:</span> &quot;{bpeResult.detokenized_exact}&quot; |{" "}
                   <span style={{ color: "#00FFCC", fontWeight: "bold" }}>DOMAIN:</span> {bpeResult.dominant_domain} |{" "}
-                  <span style={{ color: "#B388FF", fontWeight: "bold" }}>CONNECTOME BIJECTION:</span> Sector S{bpeResult.mapped_sector} &lt;-&gt; Chair-44 Col #{bpeResult.mapped_chair44_col}/639 &lt;-&gt; Neuron N{bpeResult.mapped_neuron_id}/28159
+                  <span style={{ color: "#B388FF", fontWeight: "bold" }}>CONNECTOME BIJECTION:</span> Sector S{bpeResult.mapped_sector} &lt;-&gt; Chair-44 Col #{bpeResult.mapped_chair44_col}/959 &lt;-&gt; Neuron N{bpeResult.mapped_neuron_id}/42239
                 </div>
                 <div>
                   <span style={{ color: "#FFB454", fontWeight: "bold" }}>IPA PHONETIC STREAM:</span> {bpeResult.ipa_stream}
@@ -2725,7 +2725,7 @@ export function App() {
               <input
                 value={episodicQuery}
                 onChange={(e) => setEpisodicQuery(e.target.value)}
-                placeholder="Search 28,160 Neurons, 21,376 Shards & JSONL Rings (e.g. b_norm, ortho, decadic_e, epoch)..."
+                placeholder="Search 42,240 Neurons, 42,240 Shards & JSONL Rings (e.g. b_norm, ortho, decadic_e, epoch)..."
                 style={{ flex: 1, background: "#0A0D12", color: "#FFFEFB", border: "1px solid #2A3B4D", borderRadius: 4, padding: "4px 8px", fontFamily: "monospace", fontSize: 11 }}
               />
               <button
@@ -2810,8 +2810,8 @@ export function App() {
               <button onClick={() => callEndpoint(`/api/v1/converse/dialectical_debate?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 74: 16-DOMAIN SOCRATIC DIALECTICAL DEBATE")} style={{ background: "#002b24", color: "#00ffcc", border: "1px solid #00ffcc", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 74: 16-Domain Socratic Debate</button>
               <button onClick={() => callEndpoint(`/api/v1/converse/multiturn_memory?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 73: MULTI-TURN BI-TEMPORAL WORKING MEMORY")} style={{ background: "#261038", color: "#ffd700", border: "1px solid #ffd700", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 73: Multi-Turn Working Memory</button>
               <button onClick={() => { setOperatorVaultOpen(true); setOperatorUnlocked(true); callEndpoint("/api/v1/antigravity/cutover_status", "TOOL 72: GOOGLE ANTIGRAVITY GEMINI 4 ARGON CUTOVER VERIFIER"); }} style={{ background: "#3a1c00", color: "#ffea00", border: "1px solid #ffea00", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 72: Antigravity Cutover</button>
-              <button onClick={() => callEndpoint("/api/v1/antigravity/argon_teamwork", "TOOL 71: GEMINI 4 ARGON 6-SUBAGENT TEAMWORK DISPATCHER")} style={{ background: "#2e1638", color: "#ff9eff", border: "1px solid #ff9eff", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 71: Argon 6-Subagents</button>
-              <button onClick={() => callEndpoint("/api/v1/connectome/harness_5w1h_npage", "TOOL 70: 5W1H HARNESS + 28,160-NEURON CONNECTOME COUPLER")} style={{ background: "#002b24", color: "#00ffcc", border: "1px solid #00ffcc", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 70: 5W1H+28,160 Connectome</button>
+              <button onClick={() => callEndpoint("/api/v1/antigravity/argon_teamwork", "TOOL 71: GEMINI 4 ARGON 7-SUBAGENT TEAMWORK DISPATCHER")} style={{ background: "#2e1638", color: "#ff9eff", border: "1px solid #ff9eff", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 71: Argon 7-Subagents</button>
+              <button onClick={() => callEndpoint("/api/v1/connectome/harness_5w1h_npage", "TOOL 70: 5W1H HARNESS + 42,240-NEURON CONNECTOME COUPLER")} style={{ background: "#002b24", color: "#00ffcc", border: "1px solid #00ffcc", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 70: 5W1H+42,240 Connectome</button>
               <button onClick={() => callEndpoint("/api/v1/antigravity/rules_subagents", "TOOL 69: ANTIGRAVITY GEMINI.MD & .AGENTS/ RULES ENGINE")} style={{ background: "#1c2b00", color: "#a6ff00", border: "1px solid #a6ff00", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 69: .agents/ Rules</button>
               <button onClick={() => { setOperatorVaultOpen(true); setOperatorUnlocked(true); callEndpoint("/api/v1/hud/embedded_ide_cockpit", "TOOL 68: EMBEDDED IDE VAULT"); }} style={{ background: "#261038", color: "#ffd700", border: "1px solid #ffd700", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 68: Embedded IDE Vault</button>
               <button onClick={() => callEndpoint("/api/v1/auth/operator_vault_gate", "TOOL 67: OPERATOR VAULT PASSKEY GATE")} style={{ background: "#1f1030", color: "#e0b0ff", border: "1px solid #b388ff", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 67: Operator Vault Gate</button>
@@ -2819,7 +2819,7 @@ export function App() {
               <button onClick={() => callEndpoint("/api/v1/router/distributed_5w1h_dispatch", "TOOL 65: 5W1H DISTRIBUTED ROUTER DISPATCH")} style={{ background: "#2b2100", color: "#ffb700", border: "1px solid #ffb700", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 65: 5W1H Router Dispatch</button>
               <button onClick={() => callEndpoint("/api/v1/tools/t64", "TOOL 64: HUD ZERO-MOCK HOT-RELOAD")} style={{ background: "#0d2618", color: "#00ff66", border: "1px solid #00ff66", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 64: HUD Hot-Reload</button>
               <button onClick={() => callEndpoint("/api/v1/tools/t63", "TOOL 63: DUAL-PHONE APK SYNC")} style={{ background: "#0d2618", color: "#00ff66", border: "1px solid #00ff66", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 63: Dual-Phone APK Sync</button>
-              <button onClick={() => callEndpoint("/api/v1/tools/t62", "TOOL 62: 28,160-NEURON VAULT ACCELERATOR")} style={{ background: "#1a2436", color: "#58a6ff", border: "1px solid #58a6ff", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 62: 28,160-Neuron Vault</button>
+              <button onClick={() => callEndpoint("/api/v1/tools/t62", "TOOL 62: 42,240-NEURON VAULT ACCELERATOR")} style={{ background: "#1a2436", color: "#58a6ff", border: "1px solid #58a6ff", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 62: 42,240-Neuron Vault</button>
               <button onClick={() => callEndpoint("/api/v1/tools/t61", "TOOL 61: 10-SESSION QAT BLITZ")} style={{ background: "#1a2436", color: "#58a6ff", border: "1px solid #58a6ff", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 61: 10-Session QAT Blitz</button>
               <button onClick={() => callEndpoint("/api/v1/tools/t60", "TOOL 60: CLOUDFLARE D1 10-TABLE PIPELINE")} style={{ background: "#1a2436", color: "#58a6ff", border: "1px solid #58a6ff", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 60: D1 10-Table Pipeline</button>
               <button onClick={() => callEndpoint("/api/v1/tools/t59", "TOOL 59: OMNI-WIRING MEASURED SHA-256 AUDIT")} style={{ background: "#1a2436", color: "#58a6ff", border: "1px solid #58a6ff", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 59: Omni-Wiring Audit</button>
@@ -2840,12 +2840,12 @@ export function App() {
               <button onClick={() => callEndpoint("/api/v1/harness/metabolic_5w1h", "TOOL 45: METABOLIC 5W1H HARNESS")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 45: Metabolic ATP &amp; 5W1H Harness</button>
               <button onClick={() => callEndpoint("/api/v1/neuro/amygdala_kerr_ravi", "TOOL 44: AMYGDALA+KERR+RAVI")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 44: Amygdala + Kerr SWR + IMO Ravi</button>
               <button onClick={() => callEndpoint("/api/v1/physics/skyrmion_fermi_xuv", "TOOL 43: SKYRMION+FERMI+XUV")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 43: Fractional Fermi + Skyrmion Hall + XUV</button>
-              <button onClick={() => callEndpoint("/api/v1/pagefile/cauchy_sparse_npage", "TOOL 42: NEURON PAGEFILE .NPAGE")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 42: Neuron Pagefile (.npage 28,160x128B)</button>
+              <button onClick={() => callEndpoint("/api/v1/pagefile/cauchy_sparse_npage", "TOOL 42: NEURON PAGEFILE .NPAGE")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 42: Neuron Pagefile (.npage 42,240x128B)</button>
               <button onClick={() => callEndpoint("/api/v1/torchtpu/openxla_pallas_bridge", "TOOL 41: TORCHTPU BRIDGE 2.48M")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 41: TorchTPU Tri-Silicon Bridge (2,480k)</button>
               <button onClick={() => callEndpoint("/api/v1/edge/p8_apex_coprocessor", "TOOL 40: PIXEL 8 P8-APEX 426.4k")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 40: Pixel 8 P8-APEX (588.0k ops/s)</button>
               <button onClick={() => callEndpoint("/api/v1/logging/bitemporal_wal", "TOOL 39: BI-TEMPORAL WAL")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 39: Bi-Temporal Hash-Chained WAL</button>
               <button onClick={() => callEndpoint("/api/v1/autopoiesis/dgm_azr_seal", "TOOL 38: DGM+AZR+SEAL")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 38: DGM + AZR + SEAL Autopoiesis</button>
-              <button onClick={() => callEndpoint("/api/v1/connectome/fno_synaptogenesis", "TOOL 37: 28160N CONNECTOME")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 37: 28,160-Neuron FNO Connectome</button>
+              <button onClick={() => callEndpoint("/api/v1/connectome/fno_synaptogenesis", "TOOL 37: 42240N CONNECTOME")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 37: 42,240-Neuron FNO Connectome</button>
               <button onClick={() => callEndpoint("/api/v1/geometry/cosmohedron_veclut", "TOOL 36: COSMOHEDRON C6")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 36: Cosmohedron C6 &amp; Vec-LUT</button>
               <button onClick={() => callEndpoint("/api/v1/geometry/amplituhedron_clifford", "TOOL 35: AMPLITUHEDRON A824")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 35: Amplituhedron &amp; Clifford PGA</button>
               <button onClick={() => callEndpoint("/api/v1/geometry/associahedron_tropical", "TOOL 34: ASSOCIAHEDRON K6")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 34: Associahedron K6 &amp; Tropical</button>
@@ -2856,10 +2856,10 @@ export function App() {
               <button onClick={() => callEndpoint("/api/v1/anomaly/stream", "TOOL 29: U(1) ANOMALY")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 29: U(1) Gauge Anomaly</button>
               <button onClick={() => callEndpoint(`/api/v1/memory/episodic_search?q=${encodeURIComponent(episodicQuery)}`, "TOOL 28: EPISODIC SEARCH")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 28: Episodic Memory Search</button>
               <button onClick={() => callEndpoint(`/api/v1/model/converse?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 27: NL CONVERSE")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 27: NL Conversational Decoder</button>
-              <button onClick={() => callEndpoint("/api/v1/vault/harvest", "TOOL 26: 28160 HARVESTER")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 26: 28,160-Neuron Harvester</button>
+              <button onClick={() => callEndpoint("/api/v1/vault/harvest", "TOOL 26: 42240 HARVESTER")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 26: 42,240-Neuron Harvester</button>
               <button onClick={() => callEndpoint("/api/v1/train/continual_qat?q=epoch32", "TOOL 25: 32-EPOCH QAT")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 25: 32-Epoch QAT Trainer</button>
               <button onClick={() => callEndpoint("/api/v1/cluster/sync_matrix", "TOOL 24: SYNC MATRIX")} style={{ background: "#1C2632", color: "#FFFEFB", border: "1px solid #2A3B4D", borderRadius: 4, padding: "4px 8px", cursor: "pointer", fontSize: 10 }}>TOOL 24: Cluster Drift Matrix</button>
-              <button onClick={() => callEndpoint("/api/v1/storage/ssd_tier2?q=merkle32", "TOOL 23: E:/ SSD TIER-2")} style={{ background: "#1C2632", color: "#FFFEFB", border: "1px solid #2A3B4D", borderRadius: 4, padding: "4px 8px", cursor: "pointer", fontSize: 10 }}>TOOL 23: E:\ SSD Vault (28,160)</button>
+              <button onClick={() => callEndpoint("/api/v1/storage/ssd_tier2?q=merkle32", "TOOL 23: E:/ SSD TIER-2")} style={{ background: "#1C2632", color: "#FFFEFB", border: "1px solid #2A3B4D", borderRadius: 4, padding: "4px 8px", cursor: "pointer", fontSize: 10 }}>TOOL 23: E:\ SSD Vault (42,240)</button>
               <button onClick={() => callEndpoint("/api/v1/operator/fno_solve?q=navier_16x80", "TOOL 22: 10-LAPLACIAN FNO")} style={{ background: "#1C2632", color: "#FFFEFB", border: "1px solid #2A3B4D", borderRadius: 4, padding: "4px 8px", cursor: "pointer", fontSize: 10 }}>TOOL 22: 10-Laplacian FNO</button>
               <button onClick={() => callEndpoint("/api/v1/agent_gateway/interact?agent_id=hud&q=verify", "TOOL 21: SAFE LLM GATEWAY")} style={{ background: "#1C2632", color: "#FFFEFB", border: "1px solid #2A3B4D", borderRadius: 4, padding: "4px 8px", cursor: "pointer", fontSize: 10 }}>TOOL 21: Safe LLM Gateway</button>
               <button onClick={() => callEndpoint("/api/v1/browser/fetch?url=https://arxiv.org/abs/1306.0533", "TOOL 20: ER=EPR BROWSER")} style={{ background: "#1C2632", color: "#FFFEFB", border: "1px solid #2A3B4D", borderRadius: 4, padding: "4px 8px", cursor: "pointer", fontSize: 10 }}>TOOL 20: ER=EPR Browser</button>

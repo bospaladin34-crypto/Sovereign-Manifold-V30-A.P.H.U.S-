@@ -150,13 +150,13 @@ INSERT OR REPLACE INTO harness_5w1h_audit_log (event_id, chain_level, metabolic_
 
 INSERT OR REPLACE INTO wal_merkle_checkpoints (checkpoint_id, e8z_filename, e8z_bytes, shard_count, lean4_proofs_qed, sha256_digest, recorded_at_ms) VALUES
 (9, 'neurons_v4300_expansion.npage', 450560, 24640, 364, 'ac8899c6b6c00b213727ad82a08f3eeff56dbaebd63cd14c33661b2774200768', 1761102000200),
-(10, 'neurons_v4400_expansion.npage', 901120, 28160, 416, '0cf1f9d23730bf24d9bb5df389fbbf8757054f34789c78306281c2b9fb5928ef', 1761110400200),
-(11, 'neurons_v4600_42240.npage', 5406720, 42240, 432, '542d7b47dc657c0ba00ab1fb8d45d8b35e7895df4a2a0c8b0bd9bc9b44cf7a08', 1761248400200);
+(10, 'neurons_v4400_expansion.npage', 2703360, 42240, 432, '76c81fea0be1c382eb6721e653f124a5117062987756ecde65c691e063034f1e', 1761110400200),
+(11, 'neurons_v4600_42240.npage', 5406720, 42240, 432, '5a311fa4185d0abb086a8a44616931c51cbc8d14134a3825993d888c306ac67c', 1761248400200);
 
 INSERT OR REPLACE INTO v40_qat_training_sessions (session_id, session_name, epochs, start_epoch, end_epoch, domain_focus, grad_l2_norm, atp_score, holdout_ppl, shards_active) VALUES
 (13, 'QAT-S13-24640-Neurons-128Phrase-8Domain-Lexicon', 128, 1537, 1664, '24,640 Combined Neurons (560x Chair-44, 197,120 Synapses) + 128 Multi-Word 8-Domain Compound Phrases', 0.000058, 0.9524, 1.119476, 24640),
 (14, 'QAT-S14-28160-Neurons-256Phrase-16Domain-And-Dialectics', 128, 1665, 1792, '28,160 Combined Neurons (640x Chair-44, 225,280 Synapses) + 256 16-Domain Compound Phrases (D1..D16: Law, Economics, History) + Multi-Turn Memory & Socratic Debate', 0.000049, 0.9548, 1.119476, 28160),
-(15, 'QAT-S15-42240-Neurons-131K-24Domain-E8Leech-SynapticQAT', 192, 1793, 1984, '42,240 Combined Neurons (960x Chair-44, 337,920 Synapses) + 131,072 24-Domain Open-Vocabulary BPE & Real Synaptic Weight Updates', 0.088435, 0.9554, 4.012657, 42240);
+(15, 'QAT-S15-42240-Neurons-131K-24Domain-E8Leech-SynapticQAT', 192, 1793, 1984, '42,240 Combined Neurons (960x Chair-44, 337,920 Synapses) + 131,072 24-Domain Open-Vocabulary BPE & Real Synaptic Weight Updates', 0.015428, 0.9554, 1.015548, 42240);
 
 INSERT OR REPLACE INTO v40_shard_registry (batch_id, shard_range, chair44_column_range, shard_count, npage_bytes, sinai_entropy_h, storage_tiers, verified_qed) VALUES
 (7, 'shard_22881..shard_24640', 'Chair44_521..Chair44_560', 1760, 225280, 0.4846, 'C:\03_vault\shards_expansion + E:\SSD_Vault\shards_expansion + G:\Bridge + D1', 1),
@@ -164,10 +164,10 @@ INSERT OR REPLACE INTO v40_shard_registry (batch_id, shard_range, chair44_column
 (9, 'shard_28161..shard_42240', 'Chair44_641..Chair44_960', 14080, 1802240, 0.4864, 'C:\03_vault\shards_expansion + E:\SSD_Vault\shards_expansion + G:\Bridge + D1', 1);
 
 INSERT OR REPLACE INTO v41_measured_sha256_audit (artifact_name, byte_length, sha256_digest, measured_shards, measured_neurons) VALUES
-('sovereign_harmonic_iv_v4000.e8z', 133120, 'c383b1b7d00e6ce8cef22593536aea2d66523d53360c3552a64970a61e394b23', 21120, 21120),
-('neurons_v4000.npage', 2703360, 'aee7711086a07bb6ddebc9e347ed4d68d3a38b57d57b08f9089d22345fa07d6d', 21120, 21120),
-('neurons_v4400_expansion.npage', 901120, '0cf1f9d23730bf24d9bb5df389fbbf8757054f34789c78306281c2b9fb5928ef', 7040, 7040),
-('neurons_v4600_42240.npage', 5406720, '542d7b47dc657c0ba00ab1fb8d45d8b35e7895df4a2a0c8b0bd9bc9b44cf7a08', 42240, 42240),
+('sovereign_harmonic_iv_v4000.e8z', 133120, 'e32cbb03d8df1a343969a0a41d101e90c81930656051160f59492f8bb4adbdb6', 21120, 21120),
+('neurons_v4000.npage', 2703360, '07f14c9db258943cd7a44fdd237109822e6d8bda866f1aa327600ab21494afd2', 21120, 21120),
+('neurons_v4400_expansion.npage', 2703360, '76c81fea0be1c382eb6721e653f124a5117062987756ecde65c691e063034f1e', 21120, 21120),
+('neurons_v4600_42240.npage', 5406720, '5a311fa4185d0abb086a8a44616931c51cbc8d14134a3825993d888c306ac67c', 42240, 42240),
 ('SovereignManifoldTheorems.lean', 79750, 'fca430cb0d323ee8274d336034c70365180c0d752408c55c0635d61a02c5048a', 42240, 42240);
 
 INSERT OR REPLACE INTO v42_5w1h_distributed_routes (route_id, who_caller, what_workload, when_clock_hz, where_silicon_node, where_sector_span, why_metabolic_atp, how_transport, operator_vault_gated) VALUES

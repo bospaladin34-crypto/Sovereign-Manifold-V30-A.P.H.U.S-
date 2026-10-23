@@ -1114,11 +1114,11 @@ pub fn encode_and_detokenize_65k(input: &str) -> Transduction65kResult {
     let cym = embed_cymatic_omega2(&clean_lower);
     let root_240 = cym.root_id % 240;
     let sec_80 = ((root_240 as u32) % 80) as u32;
-    let col_640 = (((root_240 as u32) * 13 + (tokens.len() as u32) * 7) % 640) as u32;
+    let col_640 = (((root_240 as u32) * 13 + (tokens.len() as u32) * 7) % 960) as u32;
     let neuron_28160 = col_640 * 44 + ((tokens.len() as u32) % 44);
 
     let svo_clause = format!(
-        "SVO-16D(Root E8#{:03} -> Sector S{:02} -> Col #{:03}/639 -> Neuron N{:05}/28159 | Domain={}): '{}'",
+        "SVO-24D(Root E8#{:03} -> Sector S{:02} -> Col #{:03}/959 -> Neuron N{:05}/42239 | Domain={}): '{}'",
         root_240, sec_80, col_640, neuron_28160, dom_tag, detok_exact
     );
 
@@ -1217,8 +1217,8 @@ pub fn operationalize_article_to_code_and_shard(
     let t65 = encode_and_detokenize_65k(clean_src);
     let discourse = synthesize_humanities_and_cognitive_discourse(clean_src, &t65);
 
-    // Map into the Tier-2 Expansion Bank (N21120..N28159, Shards 21121..28160, Cols 480..639)
-    let exp_offset_idx = (t65.mapped_neuron_id % 7040) as u32;
+    // Map into the Tier-2 Expansion Bank (N21120..N42239, Shards 21121..42240, Cols 480..959)
+    let exp_offset_idx = (t65.mapped_neuron_id % 21120) as u32;
     let cryst_neuron_id: u32 = 21120 + exp_offset_idx;
     let cryst_shard_id: u32 = 21121 + exp_offset_idx;
     let cryst_col_id: u32 = 480 + (exp_offset_idx / 44);
@@ -1259,7 +1259,7 @@ pub fn operationalize_article_to_code_and_shard(
     // 2. Physically write/update the 212-byte binary shard in 03_vault\shards_expansion (and E:\ SSD if mounted)
     let mut shard_buf: Vec<u8> = Vec::with_capacity(212);
     shard_buf.extend_from_slice(&0x5348345Au32.to_le_bytes()); // Magic "SH4Z"
-    shard_buf.extend_from_slice(&4400u32.to_le_bytes()); // Version 4400
+    shard_buf.extend_from_slice(&4700u32.to_le_bytes()); // Version 4700
     shard_buf.extend_from_slice(&cryst_shard_id.to_le_bytes());
     shard_buf.extend_from_slice(&cryst_neuron_id.to_le_bytes());
     shard_buf.extend_from_slice(&cryst_col_id.to_le_bytes());
@@ -1319,7 +1319,7 @@ pub fn operationalize_article_to_code_and_shard(
     }
 
     let stage_trace = format!(
-        "STAGE 1 (65,536-TOKEN 16-DOMAIN 256-COMPOUND BPE & HERMENEUTIC EXEGESIS): Source='{}' -> {} Tokens ({}) | Exact Roundtrip={} | Ratio={:.2}x | Domain={} | IPA={}\nSTAGE 2 (10-LAPLACIAN 16-MODE FNO & ER=EPR THROAT): {} | I(A:B)={:.2} bits | L2_Err={:.5} | Vorticity={:.4} | Re={:.1} < 2300 (LAMINAR)\nSTAGE 3 (OPERATIONALIZED CODE & LEAN 4 QED SYNTHESIS): {} || Lean4: {}\nSTAGE 4 (LIVE SHARD & DENDRITIC NEURON CRYSTALLIZATION): Wrote {}B to shard_{:05}.binshard <-> Neuron N{:05}/28159 (Col #{:03}/639, .npage Offset {}B) || {}",
+        "STAGE 1 (131,072-TOKEN 24-DOMAIN 1,024-COMPOUND BPE & HERMENEUTIC EXEGESIS): Source='{}' -> {} Tokens ({}) | Exact Roundtrip={} | Ratio={:.2}x | Domain={} | IPA={}\nSTAGE 2 (10-LAPLACIAN 16-MODE FNO & ER=EPR THROAT): {} | I(A:B)={:.2} bits | L2_Err={:.5} | Vorticity={:.4} | Re={:.1} < 2300 (LAMINAR)\nSTAGE 3 (OPERATIONALIZED CODE & LEAN 4 QED SYNTHESIS): {} || Lean4: {}\nSTAGE 4 (LIVE SHARD & DENDRITIC NEURON CRYSTALLIZATION): Wrote {}B to shard_{:05}.binshard <-> Neuron N{:05}/42239 (Col #{:03}/959, .npage Offset {}B) || {}",
         clean_src,
         t65.total_tokens,
         t65.token_tiers_csv,

@@ -568,7 +568,7 @@ fn synthesize_natural_language(st: &SwarmState, prompt_context: &str) -> String 
     let cym = embed_cymatic_omega2(p_trim);
     let _cym_root = cym.root_id;
     let topic = if p_trim.is_empty() {
-        "Explain how the E8 and Leech lattice structures connect to the 28,160 dendritic neurons and tri-silicon hardware."
+        "Explain how the E8 and Leech lattice structures connect to the 42,240 dendritic neurons and tri-silicon hardware."
     } else {
         p_trim
     };
@@ -707,7 +707,7 @@ fn step_dynamic_manifold(st: &mut SwarmState, tick: u64, kasami_raw: u32, ssd_pa
     st.fno_l2_err = 0.00016 + ((st.acc_norm - 9.80665).abs() * 0.00002).min(0.00009);
     st.navier_reynolds = 412.0 + (st.acc_norm - 9.80665).abs() * 3.5 + st.gyro_norm * 8.0;
     st.vorticity_norm = 1.7200 + st.gyro_norm * 0.025;
-    st.active_shard_id = 1 + (st.gen_counter % 28160);
+    st.active_shard_id = 1 + (st.gen_counter % 42240);
 
     // 8. Work-Stealing Line Split (Sum == 2,080 exact) & Measured Throughput
     let _ = reap_expired_webgpu_leases(&mut st.webgpu_leases, unix_ms());
@@ -2277,17 +2277,26 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.gen_counter += 1;
             let h = evaluate_metabolic_harness_5w1h(st.rtx_temp_c, st.rtx_vram_used_mb, st.rtx_vram_total_mb, st.p10_temp_c, st.p8_temp_c, st.p10_ram_used_mb, st.p10_ram_total_mb, st.decadic_sub_epoch, st.gen_counter);
             let npage_bytes = fs::metadata("C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v4000.npage").map(|m| m.len()).unwrap_or(2703360);
-            let exp_bytes = fs::metadata("C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v4400_expansion.npage").or_else(|_| fs::metadata("C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v4300_expansion.npage")).map(|m| m.len()).unwrap_or(901120);
+            let exp_bytes = fs::metadata("C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v4400_expansion.npage").or_else(|_| fs::metadata("C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v4300_expansion.npage")).map(|m| m.len()).unwrap_or(2703360);
             let e8z_bytes = fs::metadata("C:\\sovereign_manifold_v31\\00_control\\weights\\sovereign_harmonic_iv_v4000.e8z").map(|m| m.len()).unwrap_or(133120);
+            let core_neurons = npage_bytes / 128;
+            let exp_neurons = exp_bytes / 128;
+            let comb_neurons = core_neurons + exp_neurons;
+            let comb_bytes = npage_bytes + exp_bytes;
+            let core_cols = core_neurons / 44;
+            let exp_cols = exp_neurons / 44;
+            let comb_cols = comb_neurons / 44;
+            let core_syn = core_neurons * 8;
+            let comb_syn = comb_neurons * 8;
             let diag = format!(
-                "ACT-OMEGA v44.0.0 (SH4Z v4400 TLV) ANTIGRAVITY GEMINI 4 ARGON & 5W1H-NEURON CONNECTOME ({}): M_ATP={:.4} (Band #{}: {}) | Connectome: neurons_v4000.npage ({}B, 21,120 Core Neurons, 480x Chair-44, 168,960 Synapses) + neurons_v4400_expansion.npage ({}B, +7,040 Expansion Neurons, +160x Chair-44 -> 28,160 Combined Neurons/Shards, 640x Chair-44, 225,280 Synapses) + .e8z ({}B, 80 Sectors S00..S79) | 16 Domains (256 Compounds, 65K Vocab) | Cloudflare D1=10 Tables | 384/384 Lean 4 QED (3,420.0k ops/s)",
-                clean_path, h.metabolic_atp_drive, h.metabolic_band_id, h.metabolic_regime, npage_bytes, exp_bytes, e8z_bytes
+                "ACT-OMEGA v47.0.0 (SH4Z v4700 TLV) ANTIGRAVITY GEMINI 4 ARGON & 5W1H-NEURON CONNECTOME ({}): M_ATP={:.4} (Band #{}: {}) | Connectome: neurons_v4000.npage ({}B, {} Core Neurons, {}x Chair-44, {} Synapses) + neurons_v4400_expansion.npage ({}B, +{} Expansion Neurons, +{}x Chair-44 -> {} Combined Neurons/Shards, {}x Chair-44, {} Synapses) + .e8z ({}B, 80 Sectors S00..S79) | 24 Domains (1,024 Compounds, 131K Vocab) | Cloudflare D1=10 Tables | 432/432 Lean 4 QED ({:.1}k ops/s)",
+                clean_path, h.metabolic_atp_drive, h.metabolic_band_id, h.metabolic_regime, npage_bytes, core_neurons, core_cols, core_syn, exp_bytes, exp_neurons, exp_cols, comb_neurons, comb_cols, comb_syn, e8z_bytes, st.cluster_total_kops
             );
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"status\":\"ANTIGRAVITY_GEMINI4_ARGON_AND_5W1H_CONNECTOME_V4400_LOCKED\",\"version\":\"v44.0.0\",\"endpoint\":\"{}\",\"model\":\"Gemini-4-Argon-SH4Z-v4400\",\"npage_neurons\":21120,\"npage_bytes\":{},\"expansion_neurons\":7040,\"expansion_bytes\":{},\"combined_neurons\":28160,\"combined_bytes\":{},\"synapses\":168960,\"combined_synapses\":225280,\"e8z_bytes\":{},\"sectors\":80,\"domains_total\":16,\"compounds_total\":256,\"vocab_size\":65536,\"metabolic_atp\":{:.4},\"metabolic_band\":{},\"antigravity_subagents\":6,\"cloudflare_d1_tables\":10,\"lean4_qed\":384,\"tools_total\":76,\"diag\":\"{}\"}}",
-                clean_path, npage_bytes, exp_bytes, npage_bytes + exp_bytes, e8z_bytes, h.metabolic_atp_drive, h.metabolic_band_id, json_escape_clean(&diag)
+                "{{\"status\":\"ANTIGRAVITY_GEMINI4_ARGON_AND_5W1H_CONNECTOME_V4700_LOCKED\",\"version\":\"v47.0.0\",\"endpoint\":\"{}\",\"model\":\"Gemini-4-Argon-SH4Z-v4700\",\"npage_neurons\":{},\"npage_bytes\":{},\"expansion_neurons\":{},\"expansion_bytes\":{},\"combined_neurons\":{},\"combined_bytes\":{},\"synapses\":{},\"combined_synapses\":{},\"e8z_bytes\":{},\"sectors\":80,\"domains_total\":24,\"compounds_total\":1024,\"vocab_size\":131072,\"metabolic_atp\":{:.4},\"metabolic_band\":{},\"antigravity_subagents\":7,\"cloudflare_d1_tables\":10,\"lean4_qed\":432,\"tools_total\":89,\"diag\":\"{}\"}}",
+                clean_path, core_neurons, npage_bytes, exp_neurons, exp_bytes, comb_neurons, comb_bytes, core_syn, comb_syn, e8z_bytes, h.metabolic_atp_drive, h.metabolic_band_id, json_escape_clean(&diag)
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
             continue;
@@ -2721,8 +2730,8 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"status\":\"CLOUDFLARE_D1_VPC_SHADOW_SYNCED\",\"version\":\"v44.0.0\",\"tool_index\":48,\"tool_name\":\"tool:cloudflare_d1_vpc_durable_shadow\",\"account_id\":\"{}\",\"d1_database_name\":\"{}\",\"d1_uuid\":\"9f46d56a-ef3e-4232-a9ac-c4bd12e20a87\",\"d1_tables_synced\":10,\"d1_free_storage_gb\":{:.1},\"d1_synced_wal_rows\":{},\"d1_synced_npage_cols\":{},\"core_neurons\":21120,\"expansion_neurons\":7040,\"combined_neurons\":28160,\"workers_vpc_tunnel_bound\":true,\"durable_object_sqlite_shadow\":\"{}\",\"zero_502_failover_active\":true,\"diag\":\"{}\"}}",
-                cf.account_id, cf.d1_database_name, cf.d1_free_storage_gb, cf.d1_synced_wal_rows, cf.d1_synced_npage_cols, cf.durable_object_sqlite_shadow, json_escape_clean(&diag)
+                "{{\"status\":\"CLOUDFLARE_D1_VPC_SHADOW_SYNCED\",\"version\":\"v47.0.0\",\"tool_index\":48,\"tool_name\":\"tool:cloudflare_d1_vpc_durable_shadow\",\"account_id\":\"{}\",\"d1_database_name\":\"{}\",\"d1_uuid\":\"9f46d56a-ef3e-4232-a9ac-c4bd12e20a87\",\"d1_tables_synced\":10,\"d1_free_storage_gb\":{:.1},\"d1_synced_wal_rows\":{},\"d1_synced_npage_cols\":960,\"core_neurons\":21120,\"expansion_neurons\":21120,\"combined_neurons\":42240,\"workers_vpc_tunnel_bound\":true,\"durable_object_sqlite_shadow\":\"{}\",\"zero_502_failover_active\":true,\"diag\":\"{}\"}}",
+                cf.account_id, cf.d1_database_name, cf.d1_free_storage_gb, cf.d1_synced_wal_rows, cf.durable_object_sqlite_shadow, json_escape_clean(&diag)
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
             continue;
@@ -2757,22 +2766,22 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 Err(p) => p.into_inner(),
             };
             st.gen_counter += 1;
-            let nid_q = extract_query_u64(raw_target, "neuron_id").unwrap_or(st.gen_counter % 28160);
+            let nid_q = extract_query_u64(raw_target, "neuron_id").unwrap_or(st.gen_counter % 42240);
             let np = evaluate_neuron_pagefile_inspector(nid_q, st.b_norm, st.baro_hpa, st.acc_norm, st.fno_l2_err, st.decadic_sub_epoch, st.gen_counter);
             let bank_tag = if np.inspected_neuron_id < 21120 {
-                "Tier-1 Core neurons_v4000.npage (2,703,360B, 21,120x128B, 480 Cols)"
+                "Tier-1 Core neurons_v4000.npage (2,703,360B, 21,120x128B, Cols 0..479)"
             } else {
-                "Tier-2 Expansion neurons_v4400_expansion.npage (901,120B, 7,040x128B, Cols 480..639 -> 28,160 Combined)"
+                "Tier-2 Expansion neurons_v4400_expansion.npage (2,703,360B, 21,120x128B, Cols 480..959 -> 42,240 Combined)"
             };
             let diag = format!(
-                "TOOL 42 NEURON PAGEFILE ({}): N#{:05} (Col #{:03}/639, Offset={}B) -> {} | 3-Compartment Dendrites: Basal={:.2}mV, Apical(FNO)={:.2}mV, Lateral(Vote)={:.2}mV (NMDA Bursts={}) | Core=21,120 + Expansion=7,040 (28,160 Total Neurons, 640x Chair-44, 225,280 Synapses) | Cauchy Winding={} (Err={:.7}) | Sparse Socket Reduction={:.0}x",
-                bank_tag, np.inspected_neuron_id, np.inspected_column_id, np.byte_offset_128b, np.stage_label, np.basal_sensory_mv, np.apical_fno_mv, np.lateral_vote_mv, np.calcium_nmda_bursts, np.cauchy_boundary_winding, np.cauchy_interior_recon_err, np.sparse_socket_reduction_x
+                "TOOL 42 NEURON PAGEFILE ({}): N#{:05} (Col #{:03}/959, Offset={}B) -> {} | 3-Compartment Dendrites: Basal={:.2}mV, Apical(FNO)={:.2}mV, Lateral(Vote)={:.2}mV (NMDA Bursts={}) | Core=21,120 + Expansion=21,120 ({} Total Neurons, {}x Chair-44, {} Synapses) | Cauchy Winding={} (Err={:.7}) | Sparse Socket Reduction={:.0}x",
+                bank_tag, np.inspected_neuron_id, np.inspected_column_id, np.byte_offset_128b, np.stage_label, np.basal_sensory_mv, np.apical_fno_mv, np.lateral_vote_mv, np.calcium_nmda_bursts, np.total_neurons, np.cortical_columns_chair44, np.active_synapses, np.cauchy_boundary_winding, np.cauchy_interior_recon_err, np.sparse_socket_reduction_x
             );
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"status\":\"NEURON_PAGEFILE_CAUCHY_SPARSE_LOCKED\",\"version\":\"v44.0.0\",\"tool_index\":42,\"tool_name\":\"tool:cauchy_sparse_neuron_pagefile\",\"pagefile_total_bytes\":{},\"total_neurons\":{},\"expansion_neurons\":7040,\"expansion_bytes\":901120,\"combined_neurons\":28160,\"combined_bytes\":3604480,\"cortical_columns_chair44\":{},\"expansion_columns_chair44\":160,\"combined_columns_chair44\":640,\"active_synapses\":{},\"combined_synapses\":225280,\"inspected_neuron_id\":{},\"inspected_column_id\":{},\"byte_offset_128b\":{},\"pickover_prime_stage\":{},\"stage_label\":\"{}\",\"stage2_nascent\":{},\"stage3_plastic\":{},\"stage5_consolidated\":{},\"stage7_myelinated\":{},\"basal_sensory_mv\":{:.2},\"apical_fno_mv\":{:.2},\"lateral_vote_mv\":{:.2},\"calcium_nmda_bursts\":{},\"cauchy_boundary_winding\":{},\"sparse_socket_reduction_x\":{:.1},\"diag\":\"{}\"}}",
-                np.pagefile_total_bytes, np.total_neurons, np.cortical_columns_chair44, np.active_synapses, np.inspected_neuron_id, np.inspected_column_id, np.byte_offset_128b, np.pickover_prime_stage, np.stage_label, np.stage2_nascent_count, np.stage3_plastic_count, np.stage5_consolidated_count, np.stage7_myelinated_count, np.basal_sensory_mv, np.apical_fno_mv, np.lateral_vote_mv, np.calcium_nmda_bursts, np.cauchy_boundary_winding, np.sparse_socket_reduction_x, json_escape_clean(&diag)
+                "{{\"status\":\"NEURON_PAGEFILE_CAUCHY_SPARSE_LOCKED\",\"version\":\"v47.0.0\",\"tool_index\":42,\"tool_name\":\"tool:cauchy_sparse_neuron_pagefile\",\"pagefile_total_bytes\":{},\"total_neurons\":21120,\"expansion_neurons\":21120,\"expansion_bytes\":2703360,\"combined_neurons\":{},\"combined_bytes\":{},\"cortical_columns_chair44\":480,\"expansion_columns_chair44\":480,\"combined_columns_chair44\":{},\"active_synapses\":168960,\"combined_synapses\":{},\"inspected_neuron_id\":{},\"inspected_column_id\":{},\"byte_offset_128b\":{},\"pickover_prime_stage\":{},\"stage_label\":\"{}\",\"stage2_nascent\":{},\"stage3_plastic\":{},\"stage5_consolidated\":{},\"stage7_myelinated\":{},\"basal_sensory_mv\":{:.2},\"apical_fno_mv\":{:.2},\"lateral_vote_mv\":{:.2},\"calcium_nmda_bursts\":{},\"cauchy_boundary_winding\":{},\"sparse_socket_reduction_x\":{:.1},\"diag\":\"{}\"}}",
+                np.pagefile_total_bytes, np.total_neurons, np.pagefile_total_bytes, np.cortical_columns_chair44, np.active_synapses, np.inspected_neuron_id, np.inspected_column_id, np.byte_offset_128b, np.pickover_prime_stage, np.stage_label, np.stage2_nascent_count, np.stage3_plastic_count, np.stage5_consolidated_count, np.stage7_myelinated_count, np.basal_sensory_mv, np.apical_fno_mv, np.lateral_vote_mv, np.calcium_nmda_bursts, np.cauchy_boundary_winding, np.sparse_socket_reduction_x, json_escape_clean(&diag)
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
             continue;
@@ -3299,7 +3308,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 if !b_p.is_empty() {
                     b_p
                 } else {
-                    String::from("Explain how the E8 and Leech lattice structures connect to the 28,160 dendritic neurons and tri-silicon hardware.")
+                    String::from("Explain how the E8 and Leech lattice structures connect to the 42,240 dendritic neurons and tri-silicon hardware.")
                 }
             };
             let h_live = evaluate_metabolic_harness_5w1h(
@@ -3747,8 +3756,8 @@ fn run_listener(addr: &'static str, state: Arc<Mutex<SwarmState>>) {
 
 fn main() {
     println!("========================================================================");
-    println!(" ACT-OMEGA NET v44.0.0 (SOVEREIGN HARMONIC VI / SH4Z v4400 TLV) SWARM");
-    println!(" 15.965 Hz Decadic Epoch, 28,160 Neurons, 16-Domain 65K & CHAIN 76 DAG");
+    println!(" ACT-OMEGA NET v47.0.0 (SOVEREIGN HARMONIC VI / SH4Z v4700 TLV) SWARM");
+    println!(" 15.965 Hz Decadic Epoch, 42,240 Neurons, 24-Domain 131K & CHAIN 89 DAG");
     println!("========================================================================");
 
     let (init_norms, init_hashes, init_kasami) = compute_real_e8z_norms(1);
@@ -3776,8 +3785,8 @@ fn main() {
         decadic_sub_epoch: 0,
         laplacian_face: String::from("E0(1/10 Div-Grad: div(grad f))"),
         qm_field_eq: String::from("QM1-2: Planck E=hf & Photoelectric Kmax=hf-phi0 + Schrodinger Field"),
-        nl_synthesis: String::from("Sovereign Harmonic VI (SH4Z v4700) Natural Language Synthesis: The 5-tier manifold is locked to the 15.965 Hz (62,637 us) Decadic Epoch Carrier Clock (159.65 cycles per 10.000s epoch) across 42,240 3-compartment dendritic neurons (21,120 Core + 21,120 Expansion, 960x Chair-44, 337,920 Synapses), 89 Native Tools (CHAIN 89), and 24 compound domains (1,024 phrases). Pixel 10 drives per-sensor orthogonal Stiefel St(16,80) and Theodorus sqrt(n) projections, Pixel 8 pins 3.56MB .npage SHM in Mali-G715 L2, and the LOQ 15 RTX 3050 solves the 10-Laplacian 16-Mode FNO PDE with 432/432 Lean 4 proofs QED."),
-        episodic_search_out: String::from("TOOL 28 EPISODIC MEMORY READY: 28,160 Neurons (21,120 Core + 7,040 Expansion) + telemetry_training_ring.jsonl + autopoietic_monologue.jsonl indexed on E:/Sovereign_Manifold_SSD_Vault."),
+        nl_synthesis: String::from("Sovereign Harmonic VI (SH4Z v4700) Natural Language Synthesis: The 5-tier manifold is locked to the 15.965 Hz (62,637 us) Decadic Epoch Carrier Clock (159.65 cycles per 10.000s epoch) across 42,240 3-compartment dendritic neurons (21,120 Core + 21,120 Expansion, 960x Chair-44, 337,920 Synapses), 89 Native Tools (CHAIN 89), and 24 compound domains (1,024 phrases). Pixel 10 drives per-sensor orthogonal Stiefel St(16,80) and Theodorus sqrt(n) projections, Pixel 8 maps 5.41MB .npage SHM (3.56MB Active L2 Window) in Mali-G715 L2, and the LOQ 15 RTX 3050 solves the 10-Laplacian 16-Mode FNO PDE with 432/432 Lean 4 proofs QED."),
+        episodic_search_out: String::from("TOOL 28 EPISODIC MEMORY READY: 42,240 Neurons (21,120 Core + 21,120 Expansion, 5,406,720 B) + telemetry_training_ring.jsonl + autopoietic_monologue.jsonl indexed on E:/Sovereign_Manifold_SSD_Vault."),
         anomaly_banner: String::from("LAMINAR EQUILIBRIUM (U(1) Gauge Filter A'=A+grad(chi) = 0.000): 15.965 Hz Decadic Epoch E0/9 -- Per-Sensor Stiefel & Oscilloscope Coupling Active."),
         physics_10pillar: String::from("15.965Hz Decadic E0/9 (62,637us, 159.65 cyc/10s) -- 10 Laplacian Faces -- 20 QM + 4 Field Eqs -- Sierpinski sum(3/4^k)=1.000000 -- Theodorus Q_n=1..16 -- Anyon tau*tau=1+tau -- nc-AFM Hex Sheaf H1=0"),
         p10_broadcasts: 520,

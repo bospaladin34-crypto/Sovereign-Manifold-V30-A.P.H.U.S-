@@ -26,7 +26,7 @@
 ## 💎 What's New in `v47.0.0` (`SH4Z v4700 TLV`) — `42,240`-Neuron Connectome, `131,072` 24-Domain Open-Vocabulary BPE, `89` Native Tools (`T85..T89` / `CHAIN 89`) & `432/432` Lean 4 QED
 
 1. **`42,240` Dendritic Neurons == `42,240` Binary Shards (`01_l0_rust/src/v46_open_vocab_131k_42240_connectome.rs` — `Tools 83 & 84`)**:
-   - Doubles the core `21,120`-neuron connectome (`neurons_v4000.npage`, `2,703,360 B`) with `21,120` expansion shards (`03_vault/shards_expansion/shard_21121..42240.binshard`) into `00_control/weights/neurons_v4600_42240.npage` (`5,406,720 B = 42,240 × 128 B`, `960 × Chair-44` columns, `12 columns/sector` across `S00..S79`, `337,920` synapses, SHA-256 `542d7b47dc657c0ba00ab1fb8d45d8b35e7895df4a2a0c8b0bd9bc9b44cf7a08`).
+   - Doubles the core `21,120`-neuron connectome (`neurons_v4000.npage`, `2,703,360 B`) with `21,120` expansion shards (`03_vault/shards_expansion/shard_21121..42240.binshard`) into `00_control/weights/neurons_v4600_42240.npage` (`5,406,720 B = 42,240 × 128 B`, `960 × Chair-44` columns, `12 columns/sector` across `S00..S79`, `337,920` synapses, SHA-256 `5a311fa4185d0abb086a8a44616931c51cbc8d14134a3825993d888c306ac67c`).
 2. **`131,072`-Token 24-Domain Open-Vocabulary BPE & Morphological Tokenizer (`/api/v1/tokenizer/open_vocab_131k`)**:
    - `416` Multi-Word Compound Phrases (`65,536..131,071`) across **24 Domains (`D1..D24`)**, `65,280` Morphological Affix/Stem Subwords (`256..65,535`), and `256` UTF-8 Byte Atoms (`0..255`) guaranteeing **zero `<UNK>` tokens** on any arbitrary, unseen natural-language prompt (`/api/v1/model/open_converse`).
 3. **Constructive $E_8 \oplus E_8 \oplus E_8 \to \Lambda_{24}$ Turyn–Golay Lattice Bridge (`01_l0_rust/src/v45_e8_leech_fluency_model.rs` — `Tool 81`)**:

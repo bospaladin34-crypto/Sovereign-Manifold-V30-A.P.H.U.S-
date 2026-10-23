@@ -340,15 +340,15 @@ object SovereignLiveBus : SensorEventListener {
         }
 
         scope.launch {
-            // Ensure 3,604,480 B (28,160-Neuron) .npage Shared Memory is persisted in app-private storage for Unplugged Roaming & Continuum Handover
+            // Ensure 5,406,720 B (42,240-Neuron) .npage Shared Memory is persisted in app-private storage for Unplugged Roaming & Continuum Handover
             try {
                 val privNpage = File(appCtx.filesDir, "neurons_v4400_p8_shm.npage")
-                if (!privNpage.exists() || privNpage.length() < 3604480L) {
+                if (!privNpage.exists() || privNpage.length() < 5406720L) {
                     val tmpNpage = File("/data/local/tmp/neurons_v4400_p8_shm.npage")
                     val extNpage = File("/sdcard/Android/data/com.actomega.manifold/files/neurons_v4400_p8_shm.npage")
-                    if (tmpNpage.exists() && tmpNpage.length() >= 3604480L) {
+                    if (tmpNpage.exists() && tmpNpage.length() >= 5406720L) {
                         tmpNpage.copyTo(privNpage, overwrite = true)
-                    } else if (extNpage.exists() && extNpage.length() >= 3604480L) {
+                    } else if (extNpage.exists() && extNpage.length() >= 5406720L) {
                         extNpage.copyTo(privNpage, overwrite = true)
                     }
                 }
@@ -2061,7 +2061,7 @@ fun SovereignCockpitV326Screen() {
             val byteEnd = byteStart + 8319
             val thmStart = selectedSector * 5 + 1
             val thmEnd = thmStart + 4
-            val chairCol = ((lineStart + selectedLine) * 640) / 2080
+            val chairCol = ((lineStart + selectedLine) * 960) / 2080
             Text(
                 text = "Sector #$selectedSector/79 (${sectorNames[selectedSector.coerceIn(0, sectorNames.lastIndex)]}) Line #$selectedLine/129: Lines $lineStart..$lineEnd (Bytes $byteStart..$byteEnd = 130x64B, Chair-44 Col #$chairCol/959, 42,240 Neurons) -- Theorems thm$thmStart..thm$thmEnd (432/432 QED)",
                 color = AccentAmber10,

@@ -337,10 +337,10 @@ pub fn project_tri_e8_to_leech24(
     };
 
     let sector_80: u32 = ((oct1.mapped_sector_base + oct2.mapped_sector_base + oct3.mapped_sector_base + ((prompt_hash % 80) as u32)) % 80) as u32;
-    let col_offset_8: u32 = ((cw24 ^ (prompt_hash as u32)) % 8) as u32;
-    let chair44_col_640: u32 = (sector_80 * 8 + col_offset_8) % 640;
+    let col_offset_12: u32 = ((cw24 ^ (prompt_hash as u32)) % 12) as u32;
+    let chair44_col_640: u32 = (sector_80 * 12 + col_offset_12) % 960;
     let neuron_offset_44: u32 = (kissing_idx % 44) as u32;
-    let neuron_id_28160: u32 = (chair44_col_640 * 44 + neuron_offset_44) % 28160;
+    let neuron_id_28160: u32 = (chair44_col_640 * 44 + neuron_offset_44) % 42240;
 
     let leech_norm_scaled: u32 = ((oct1.cartan_quadratic_norm + oct2.cartan_quadratic_norm + oct3.cartan_quadratic_norm).round() as u32).max(1);
 

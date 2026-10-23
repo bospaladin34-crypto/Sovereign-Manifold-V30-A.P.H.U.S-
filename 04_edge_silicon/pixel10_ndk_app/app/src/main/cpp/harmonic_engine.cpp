@@ -41,17 +41,26 @@ static uint16_t g_sh4z_schema = 4420;
 
 static void ensure_npage_shm_mapped() {
     if (g_npage_shm_ptr != nullptr) return;
-    int fd = open("/data/local/tmp/neurons_v4400_p8_shm.npage", O_RDONLY);
-    if (fd >= 0) {
-        struct stat sb;
-        if (fstat(fd, &sb) == 0 && sb.st_size >= 3604480) {
-            void* m = mmap(nullptr, static_cast<size_t>(sb.st_size), PROT_READ, MAP_SHARED, fd, 0);
-            if (m != MAP_FAILED) {
-                g_npage_shm_ptr = static_cast<uint8_t*>(m);
-                g_npage_shm_size = static_cast<size_t>(sb.st_size);
+    const char* candidate_paths[3] = {
+        "/data/local/tmp/neurons_v4400_p8_shm.npage",
+        "/data/data/com.actomega.manifold/files/neurons_v4400_p8_shm.npage",
+        "/sdcard/Android/data/com.actomega.manifold/files/neurons_v4400_p8_shm.npage"
+    };
+    for (int p = 0; p < 3; ++p) {
+        int fd = open(candidate_paths[p], O_RDONLY);
+        if (fd >= 0) {
+            struct stat sb;
+            if (fstat(fd, &sb) == 0 && sb.st_size >= 3604480) {
+                void* m = mmap(nullptr, static_cast<size_t>(sb.st_size), PROT_READ, MAP_SHARED, fd, 0);
+                if (m != MAP_FAILED) {
+                    g_npage_shm_ptr = static_cast<uint8_t*>(m);
+                    g_npage_shm_size = static_cast<size_t>(sb.st_size);
+                    close(fd);
+                    return;
+                }
             }
+            close(fd);
         }
-        close(fd);
     }
 }
 

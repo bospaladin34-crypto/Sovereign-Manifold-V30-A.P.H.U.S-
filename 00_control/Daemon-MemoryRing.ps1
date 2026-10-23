@@ -1,10 +1,11 @@
 # C:\sovereign_manifold_v31\00_control\Daemon-MemoryRing.ps1
-# ACT-Omega Net v44.2.0 (SH4Z v4420 TLV) Watchdog, Atomic Hot-Swapper, Pixel 8 P8-APEX Booster & Safe Pause Sentinel
+# ACT-Omega Net v44.3.0 (SH4Z v4430 TLV) Watchdog, Atomic Hot-Swapper, Pixel 8 P8-APEX + Pixel 10 Unplugged SHM Sync & Safe Pause Sentinel
 $ErrorActionPreference = "SilentlyContinue"
 $root = "C:\sovereign_manifold_v31"
 $p8Serial = "3A121FDJH00BW5"
 $p10Serial = "58170DLCR0004V"
 $pauseFile = "C:\sovereign_manifold_v31\00_control\daemon.paused"
+$shmPath   = "C:\sovereign_manifold_v31\00_control\weights\neurons_v4400_p8_shm.npage"
 
 # 1. Heal System-Wide PowerShell Profile (C:\Windows\System32\WindowsPowerShell\v1.0\profile.ps1) if unquoted lines exist
 $sysProfile = "C:\Windows\System32\WindowsPowerShell\v1.0\profile.ps1"
@@ -12,7 +13,7 @@ if (Test-Path $sysProfile) {
     $rawSys = Get-Content -Raw $sysProfile
     if ($rawSys -match "Aperiodic Law") {
         $cleanSysProfile = @'
-# ACT-Omega Sovereign Manifold System Profile (v44.2.0 SH4Z v4420 TLV)
+# ACT-Omega Sovereign Manifold System Profile (v44.3.0 SH4Z v4430 TLV)
 # 1. Zero-Square-Bracket & Zero-Mock Muse Mandate
 # 2. 1:1 Shard-to-Neuron Connectome Bijection (21,120 Core + 7,040 Expansion = 28,160 Shards/Neurons)
 # 3. Aperiodic Law: Prioritize order without repetition; treat lattices as quasicrystals.
@@ -20,6 +21,17 @@ if (Test-Path $sysProfile) {
 # 5. Entropy Preservation: Maintain von Neumann entropy: S_vN = -Tr(rho ln rho).
 '@
         Set-Content -Path $sysProfile -Value $cleanSysProfile -Encoding UTF8 -Force
+    }
+}
+
+function Start-WmiDetachedProcess {
+    param([string]$CmdLine)
+    $startup = New-CimInstance -ClassName Win32_ProcessStartup -ClientOnly
+    $startup.ShowWindow = [uint16]0
+    $null = Invoke-CimMethod -ClassName Win32_Process -MethodName Create -Arguments @{
+        CommandLine = $CmdLine
+        CurrentDirectory = $root
+        ProcessStartupInformation = $startup
     }
 }
 
@@ -46,7 +58,7 @@ function Invoke-SovereignHotSwap {
         Remove-Item -Path $trigFile -Force -ErrorAction SilentlyContinue
         Remove-Item -Path "C:\sovereign_manifold_v31\01_l0_rust\target\release\v31_swarm.old.exe" -Force -ErrorAction SilentlyContinue
         Remove-Item -Path "C:\sovereign_manifold_v31\01_l0_rust\target\release\v31_swarm_prev.exe" -Force -ErrorAction SilentlyContinue
-        Start-Process -FilePath $prodExe -WorkingDirectory $root -WindowStyle Minimized
+        Start-WmiDetachedProcess -CmdLine "`"$prodExe`""
     }
 }
 
@@ -71,7 +83,7 @@ while ($true) {
     $sw = Get-Process -Name "v31_swarm" -ErrorAction SilentlyContinue
     if (-not $sw) {
         if (Test-Path $prodExe) {
-            Start-Process -FilePath $prodExe -WorkingDirectory $root -WindowStyle Minimized
+            Start-WmiDetachedProcess -CmdLine "`"$prodExe`""
         }
     }
     foreach ($ser in @($p8Serial, $p10Serial)) {
@@ -96,10 +108,10 @@ while ($true) {
     $cf = Get-Process -Name "cloudflared" -ErrorAction SilentlyContinue
     if (-not $cf) {
         $cfExe = "C:\sovereign_manifold_v31\00_control\cloudflared.exe"
-        if (-not (Test-Path $cfExe)) { $cfExe = "cloudflared.exe" }
         $cfg = "C:\sovereign_manifold_v31\00_control\cloudflare_named_config.yml"
-        if (Test-Path $cfg) {
-            Start-Process -FilePath $cfExe -ArgumentList @("tunnel", "--config", $cfg, "run", "9cdea4c4-831d-4ccc-983d-5f7587a98206") -WorkingDirectory $root -WindowStyle Hidden
+        if ((Test-Path $cfExe) -and (Test-Path $cfg)) {
+            $cfCmd = "`"$cfExe`" tunnel --config `"$cfg`" --logfile `"C:\sovereign_manifold_v31\00_control\cloudflared_named.log`" run 9cdea4c4-831d-4ccc-983d-5f7587a98206"
+            Start-WmiDetachedProcess -CmdLine $cfCmd
         }
     }
     $script:loopTick = ($script:loopTick + 1)
@@ -115,6 +127,8 @@ while ($true) {
             $leanBytes = if (Test-Path $leanFile) { (Get-Item $leanFile).Length } else { 44990 }
             $null = Invoke-RestMethod -Uri "https://sovereign-loq15-vpc-shadow.bospaladin34.workers.dev/api/v1/cloudflare/cron_sync?atp=$atp&rtx_temp=$rtxT&kops=$kops&lean_sha256=$leanSha&lean_bytes=$leanBytes" -TimeoutSec 5
             $null = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/training/cross_domain_compound_qat" -TimeoutSec 3
+            # Keep Pixel 10 unplugged .npage SHM & Continuum Handover Capsule fresh whenever Pixel 10 is connected
+            powershell.exe -NoProfile -ExecutionPolicy Bypass -File "C:\sovereign_manifold_v31\00_control\Sovereign-Lifecycle.ps1" -Action handover | Out-Null
         } catch {}
     }
     Start-Sleep -Seconds 10

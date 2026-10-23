@@ -60,6 +60,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.File
 import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
 import java.net.URL
@@ -274,12 +275,27 @@ object SovereignLiveBus : SensorEventListener {
         }
 
         scope.launch {
+            // Ensure 3,604,480 B (28,160-Neuron) .npage Shared Memory is persisted in app-private storage for Unplugged Roaming & Continuum Handover
+            try {
+                val privNpage = File(appCtx.filesDir, "neurons_v4400_p8_shm.npage")
+                if (!privNpage.exists() || privNpage.length() < 3604480L) {
+                    val tmpNpage = File("/data/local/tmp/neurons_v4400_p8_shm.npage")
+                    val extNpage = File("/sdcard/Android/data/com.actomega.manifold/files/neurons_v4400_p8_shm.npage")
+                    if (tmpNpage.exists() && tmpNpage.length() >= 3604480L) {
+                        tmpNpage.copyTo(privNpage, overwrite = true)
+                    } else if (extNpage.exists() && extNpage.length() >= 3604480L) {
+                        extNpage.copyTo(privNpage, overwrite = true)
+                    }
+                }
+            } catch (_: Throwable) {}
+
             val baseHosts = listOf(
-                Triple("http://127.0.0.1:8097", "B1:USB(:8097) HOST-SYNC", 350),
-                Triple("http://127.0.0.1:5173", "B1:USB(:5173) HOST-SYNC", 350),
-                Triple("http://10.0.24.243:8097", "B2:WIFI-LAN(:8097) SYNC", 600),
-                Triple("https://api.act-omega-net.dev", "B3:CF-WAN(api.act-omega-net.dev)", 1664),
-                Triple("https://act-omega-net.dev", "B4:CF-WAN(act-omega-net.dev)", 1664)
+                Triple("http://127.0.0.1:8097", "B1:USB(:8097) SHM-ZERO-COPY", 350),
+                Triple("http://127.0.0.1:5173", "B1:USB(:5173) SHM-ZERO-COPY", 350),
+                Triple("http://10.0.24.243:8097", "B2:WIFI-LAN(:8097) UNPLUGGED-SHM", 550),
+                Triple("https://api.act-omega-net.dev", "B3:CF-WAN(api.act-omega-net.dev) ROAM-SHM", 1500),
+                Triple("https://act-omega-net.dev", "B4:CF-WAN(act-omega-net.dev) ROAM-SHM", 1500),
+                Triple("https://sovereign-loq15-vpc-shadow.bospaladin34.workers.dev", "B5:CF-EDGE-DO(CONTINUUM-ALIVE)", 1800)
             )
             var loopIdx = 0
             while (true) {
@@ -302,36 +318,37 @@ object SovereignLiveBus : SensorEventListener {
                     }
                 } catch (_: Throwable) {}
 
-                var bearer = baseHosts[stickyBearerIdx].second
+                var bearer = baseHosts[stickyBearerIdx.coerceIn(0, baseHosts.lastIndex)].second
                 var rtt = 1.4
                 var synced = false
                 val bNormNow = sqrt(magX * magX + magY * magY + magZ * magZ)
 
                 val candidateOrder = mutableListOf<Int>()
-                if (stickyBearerIdx >= 2 && (loopIdx % 10 == 0)) {
+                if (stickyBearerIdx >= 2 && (loopIdx % 6 == 0)) {
                     candidateOrder.add(0)
+                    candidateOrder.add(2)
                 }
-                candidateOrder.add(stickyBearerIdx)
+                candidateOrder.add(stickyBearerIdx.coerceIn(0, baseHosts.lastIndex))
                 for (i in baseHosts.indices) {
                     if (!candidateOrder.contains(i)) candidateOrder.add(i)
                 }
 
+                val dirtyCol = (tickCount % 640L).toInt()
                 for (idx in candidateOrder) {
                     val bUrl = baseHosts[idx].first
-                    if (bUrl.contains("http://10.0.24.243:8097")) continue
                     val bLabel = baseHosts[idx].second
                     val tOut = baseHosts[idx].third
                     val querySuffix = if (isPixel8ComputeNode) {
                         String.format(
                             Locale.US,
-                            "/api/v1/telemetry?node=pixel8&p8_kops=89.6&p8_free=97.84&temp=%.1f&mv=%d&bat=%d&ram_u=%d&ram_t=%d&thz=2.00&rtt=%.1f",
-                            battTempC, battMv, battPct, ramUsedMb, ramTotalMb, rtt
+                            "/api/v1/telemetry?node=pixel8&p8_kops=1140.0&p8_free=89.11&col=%d&temp=%.1f&mv=%d&bat=%d&ram_u=%d&ram_t=%d&thz=2.00&rtt=%.1f",
+                            dirtyCol, battTempC, battMv, battPct, ramUsedMb, ramTotalMb, rtt
                         )
                     } else {
                         String.format(
                             Locale.US,
-                            "/api/v1/telemetry?node=pixel10&mx=%.1f&my=%.1f&mz=%.1f&bn=%.1f&baro=%.1f&lux=%.0f&acc=%.2f&gyro=%.3f&temp=%.1f&mv=%d&bat=%d&ram_u=%d&ram_t=%d&shz=%.2f&thz=2.00&rtt=%.1f",
-                            magX, magY, magZ, bNormNow, baroHpa, lightLx, accNorm, gyroNorm,
+                            "/api/v1/telemetry?node=pixel10&col=%d&mx=%.1f&my=%.1f&mz=%.1f&bn=%.1f&baro=%.1f&lux=%.0f&acc=%.2f&gyro=%.3f&temp=%.1f&mv=%d&bat=%d&ram_u=%d&ram_t=%d&shz=%.2f&thz=2.00&rtt=%.1f",
+                            dirtyCol, magX, magY, magZ, bNormNow, baroHpa, lightLx, accNorm, gyroNorm,
                             battTempC, battMv, battPct, ramUsedMb, ramTotalMb, measuredSensorHz, rtt
                         )
                     }

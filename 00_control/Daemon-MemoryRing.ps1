@@ -1,9 +1,10 @@
 # C:\sovereign_manifold_v31\00_control\Daemon-MemoryRing.ps1
-# ACT-Omega Net v43.0.0 (SH4Z v4300 TLV) Watchdog, Atomic Hot-Swapper, Pixel 8 P8-APEX Booster & System Profile Healer
+# ACT-Omega Net v44.2.0 (SH4Z v4420 TLV) Watchdog, Atomic Hot-Swapper, Pixel 8 P8-APEX Booster & Safe Pause Sentinel
 $ErrorActionPreference = "SilentlyContinue"
 $root = "C:\sovereign_manifold_v31"
 $p8Serial = "3A121FDJH00BW5"
 $p10Serial = "58170DLCR0004V"
+$pauseFile = "C:\sovereign_manifold_v31\00_control\daemon.paused"
 
 # 1. Heal System-Wide PowerShell Profile (C:\Windows\System32\WindowsPowerShell\v1.0\profile.ps1) if unquoted lines exist
 $sysProfile = "C:\Windows\System32\WindowsPowerShell\v1.0\profile.ps1"
@@ -11,9 +12,9 @@ if (Test-Path $sysProfile) {
     $rawSys = Get-Content -Raw $sysProfile
     if ($rawSys -match "Aperiodic Law") {
         $cleanSysProfile = @'
-# ACT-Omega Sovereign Manifold System Profile (v43.0.0 SH4Z v4300 TLV)
+# ACT-Omega Sovereign Manifold System Profile (v44.2.0 SH4Z v4420 TLV)
 # 1. Zero-Square-Bracket & Zero-Mock Muse Mandate
-# 2. 1:1 Shard-to-Neuron Connectome Bijection (21,120 Shards == 21,120 Neurons)
+# 2. 1:1 Shard-to-Neuron Connectome Bijection (21,120 Core + 7,040 Expansion = 28,160 Shards/Neurons)
 # 3. Aperiodic Law: Prioritize order without repetition; treat lattices as quasicrystals.
 # 4. ER=EPR: Address non-local dependencies via quantum threads.
 # 5. Entropy Preservation: Maintain von Neumann entropy: S_vN = -Tr(rho ln rho).
@@ -24,6 +25,7 @@ if (Test-Path $sysProfile) {
 
 # 2. Immediate Atomic Hot-Swap Helper
 function Invoke-SovereignHotSwap {
+    if (Test-Path $pauseFile) { return }
     $stageExe = "C:\sovereign_manifold_v31\01_l0_rust\target_stage\release\v31_swarm.exe"
     $prodExe  = "C:\sovereign_manifold_v31\01_l0_rust\target\release\v31_swarm.exe"
     $trigFile = "C:\sovereign_manifold_v31\00_control\hotswap.trigger"
@@ -50,14 +52,20 @@ function Invoke-SovereignHotSwap {
 
 Invoke-SovereignHotSwap
 
-# 3. Initial Pixel 8 P8-APEX Non-Root Performance Lock on Startup
-cmd.exe /c "adb.exe -s $p8Serial shell svc power stayon usb >nul 2>&1"
-cmd.exe /c "adb.exe -s $p8Serial shell dumpsys deviceidle disable >nul 2>&1"
-cmd.exe /c "adb.exe -s $p8Serial shell cmd deviceidle whitelist +com.actomega.manifold >nul 2>&1"
-cmd.exe /c "adb.exe -s $p8Serial shell cmd power set-fixed-performance-mode-enabled true >nul 2>&1"
-cmd.exe /c "adb.exe -s $p8Serial shell cmd thermalservice override-status 0 >nul 2>&1"
+# 3. Initial Pixel 8 P8-APEX Non-Root Performance Lock on Startup (if not paused)
+if (-not (Test-Path $pauseFile)) {
+    cmd.exe /c "adb.exe -s $p8Serial shell svc power stayon usb >nul 2>&1"
+    cmd.exe /c "adb.exe -s $p8Serial shell dumpsys deviceidle disable >nul 2>&1"
+    cmd.exe /c "adb.exe -s $p8Serial shell cmd deviceidle whitelist +com.actomega.manifold >nul 2>&1"
+    cmd.exe /c "adb.exe -s $p8Serial shell cmd power set-fixed-performance-mode-enabled true >nul 2>&1"
+    cmd.exe /c "adb.exe -s $p8Serial shell cmd thermalservice override-status 0 >nul 2>&1"
+}
 
 while ($true) {
+    if (Test-Path $pauseFile) {
+        Start-Sleep -Seconds 5
+        continue
+    }
     Invoke-SovereignHotSwap
     $prodExe = "C:\sovereign_manifold_v31\01_l0_rust\target\release\v31_swarm.exe"
     $sw = Get-Process -Name "v31_swarm" -ErrorAction SilentlyContinue
@@ -87,9 +95,11 @@ while ($true) {
     }
     $cf = Get-Process -Name "cloudflared" -ErrorAction SilentlyContinue
     if (-not $cf) {
+        $cfExe = "C:\sovereign_manifold_v31\00_control\cloudflared.exe"
+        if (-not (Test-Path $cfExe)) { $cfExe = "cloudflared.exe" }
         $cfg = "C:\sovereign_manifold_v31\00_control\cloudflare_named_config.yml"
         if (Test-Path $cfg) {
-            Start-Process -FilePath "cloudflared.exe" -ArgumentList @("tunnel", "--config", $cfg, "run", "sovereign-manifold") -WindowStyle Minimized
+            Start-Process -FilePath $cfExe -ArgumentList @("tunnel", "--config", $cfg, "run", "sovereign-manifold") -WorkingDirectory $root -WindowStyle Hidden
         }
     }
     $script:loopTick = ($script:loopTick + 1)

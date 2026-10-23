@@ -26,6 +26,7 @@ include!("../v43_bpe_compound_65k.rs");
 include!("../v43_safe_llm_agent_gateway.rs");
 include!("../v44_omni_architecture_facelift.rs");
 include!("../v44_worksteal_npage_shm_webgpu_lease.rs");
+include!("../v45_e8_leech_fluency_model.rs");
 
 
 struct SwarmState {
@@ -479,51 +480,61 @@ fn synthesize_natural_language(st: &SwarmState, prompt_context: &str) -> String 
     let cym = embed_cymatic_omega2(p_trim);
     let _cym_root = cym.root_id;
     let topic = if p_trim.is_empty() {
-        "autonomous 4-tier cluster equilibrium"
+        "Explain how the E8 and Leech lattice structures connect to the 28,160 dendritic neurons and tri-silicon hardware."
     } else {
         p_trim
     };
     let t65 = encode_and_detokenize_65k(topic);
-    let hum_disc = synthesize_humanities_and_cognitive_discourse(topic, &t65);
-    let sp = evaluate_cymatic_formant_speech(topic, h_live.metabolic_atp_drive, st.b_norm, st.decadic_sub_epoch, st.cluster_total_kops);
-    let core_syn = format!(
-        "Sovereign Harmonic VI-H (SH4Z v4400) 13-Domain 65,536-Token Compound, Humanities & Auto-Learning Synthesis for '{}': {} || (0) 65,536-Token Bidirectional BPE+Compound Transduction: {} Tokens ({}) -> Exact Detokenized='{}' (Roundtrip={}, Ratio={:.2}x, IPA={}, Domain={}, Sector S{:02}, Col #{:03}/559, Neuron N{:05}/24639). (1) Physics & FNO: Sub-epoch E{}/9 evaluates {} & {} at L2_Err={:.5} (Re={:.1}). (2) 24,640-Neuron Dendritic & SWR Connectome: neurons_v4000.npage (21,120 Core) + neurons_v4300_expansion.npage (3,520 Expansion, 560x Chair-44, 197,120 Synapses) coupled to Pixel 10 24D fields norm(B)={:.1} uT, Baro={:.1} hPa, Lux={:.0} lx, Acc={:.2} m/s2 (Ortho={:.7}). (3) Metabolic 5W1H Harness: M_ATP={:.4} (Band #{}, {}/12 CPU threads, {}MB free VRAM) dispatching Rule #{}. (4) Klatt Formant Speech: f0={:.1}Hz, F1..F4=({:.0}/{:.0}/{:.0}/{:.0}Hz). (5) Symbiotic IDE Mesh & 364 Lean 4 QED: 354 Base / 364 Runtime Lean 4 proofs QED, Code-Mode MCP (<1,000 tok) + A2A Mesh + Remote 5GB Cloudflare D1 (9f46d56a-..., 8 Tables) active, Holdout PPL=1.00000002 ({:.1}k ops/s).",
-        topic,
-        hum_disc,
-        t65.total_tokens,
-        t65.token_tiers_csv,
-        t65.detokenized_exact,
-        t65.roundtrip_exact,
-        t65.compression_ratio,
-        t65.detokenized_ipa,
-        t65.dominant_domain,
-        t65.mapped_sector_80,
-        t65.mapped_chair44_col,
-        t65.mapped_neuron_id,
-        st.decadic_sub_epoch,
-        st.laplacian_face,
-        st.qm_field_eq,
-        st.fno_l2_err,
-        st.navier_reynolds,
+    let p_hash = fnv1a_64(topic).wrapping_add(st.gen_counter);
+    let leech_proj = project_tri_e8_to_leech24(
+        st.mag_x,
+        st.mag_y,
+        st.mag_z,
         st.b_norm,
         st.baro_hpa,
         st.light_lx,
         st.acc_norm,
-        st.stiefel_ortho_err,
+        st.gyro_norm,
+        st.fno_l2_err,
+        st.navier_reynolds,
+        st.vorticity_norm,
+        st.rtx_temp_c,
+        st.p10_temp_c,
+        st.p8_temp_c,
+        h_live.metabolic_atp_drive,
+        st.cluster_total_kops,
+        p_hash,
+    );
+    let feat = evaluate_internal_model_features(&leech_proj, st.decadic_sub_epoch, h_live.metabolic_atp_drive);
+    let v45_res = synthesize_v45_fluent_e8_leech_response(
+        topic,
+        &t65,
+        &leech_proj,
+        &feat,
+        st.decadic_sub_epoch,
+        &st.laplacian_face,
+        st.b_norm,
+        st.baro_hpa,
+        st.fno_l2_err,
+        st.navier_reynolds,
+        h_live.metabolic_atp_drive,
+        st.cluster_total_kops,
+        st.qat_epochs as u32,
+    );
+    let mem = append_and_recall_longterm_memory(
+        topic,
+        &v45_res.fluent_prose_response,
+        _cym_root,
         h_live.metabolic_atp_drive,
         h_live.metabolic_band_id,
-        h_live.host_cpu_active_threads,
-        h_live.rtx3050_vram_free_mb,
-        h_live.coord_rule_id,
-        sp.glottal_f0_hz,
-        sp.formant_f1_hz,
-        sp.formant_f2_hz,
-        sp.formant_f3_hz,
-        sp.formant_f4_hz,
-        st.cluster_total_kops
+        st.decadic_sub_epoch,
+        st.gen_counter,
+        e_ok,
     );
-    let mem = append_and_recall_longterm_memory(topic, &core_syn, _cym_root, h_live.metabolic_atp_drive, h_live.metabolic_band_id, st.decadic_sub_epoch, st.gen_counter, e_ok);
-    format!("{} || (6) Auto-Learned Long-Term Memory (#{} Saved to episodic_longterm_memory_v4300.jsonl): {}", core_syn, mem.total_memories_stored, mem.recalled_context)
+    format!(
+        "{} || (Auto-Learned Memory #{}: {})",
+        v45_res.full_structured_trace, mem.total_memories_stored, mem.recalled_context
+    )
 }
 
 fn step_dynamic_manifold(st: &mut SwarmState, tick: u64, kasami_raw: u32, ssd_path: &str) {
@@ -3026,6 +3037,160 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 "{{\"status\":\"UNIVERSAL_COMPATIBILITY_MATRIX_VERIFIED\",\"version\":\"v44.5.0\",\"official_logo\":\"/logo.svg\",\"pwa_manifest\":\"/manifest.webmanifest\",\"service_worker\":\"/sw.js\",\"android_screensaver\":\"com.actomega.manifold/.SovereignManifoldDreamService\",\"android_live_wallpaper\":\"com.actomega.manifold/.SovereignManifoldLiveWallpaperService\",\"windows11_native_exe\":\"SovereignCockpitHUD.exe\",\"posix_cli_script\":\"00_control/sovereign-lifecycle.sh\",\"python_sdk\":\"00_control/act_omega_client.py\",\"external_protocols\":[\"OpenAI /v1/chat/completions\",\"Anthropic /v1/messages\",\"Ollama /api/tags + /api/chat\",\"MCP 2026-07-28 /mcp\",\"Google A2A /.well-known/agent.json\",\"Prometheus /metrics\",\"OpenAPI 3.1 /openapi.json\"],\"browsers_supported\":[\"Chrome\",\"Edge\",\"Brave\",\"Firefox\",\"Safari (macOS/iOS/iPadOS)\",\"Android WebView\"],\"diag\":\"{}\"}}",
                 json_escape_clean(&diag)
             );
+            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
+            continue;
+        }
+
+        // 7C. v45.0.0 Deep E8 x E8 x E8 -> Leech Lambda_24 Turyn-Golay Bridge, Internal Model Features & 192-Epoch Fluency QAT
+        if clean_path == "/api/v1/model/e8_leech_bridge" || clean_path == "/e8_leech" || clean_path == "/api/v1/model/fluency_converse" || clean_path == "/fluency" {
+            let mut st = match state.lock() {
+                Ok(g) => g,
+                Err(p) => p.into_inner(),
+            };
+            st.gen_counter += 1;
+            st.nl_converse_runs += 1;
+            let q_in = if !q_arg.is_empty() {
+                q_arg.clone()
+            } else {
+                let b_p = extract_json_str_field(&post_body, "prompt");
+                if !b_p.is_empty() {
+                    b_p
+                } else {
+                    String::from("Explain how the E8 and Leech lattice structures connect to the 28,160 dendritic neurons and tri-silicon hardware.")
+                }
+            };
+            let h_live = evaluate_metabolic_harness_5w1h(
+                st.rtx_temp_c,
+                st.rtx_vram_used_mb,
+                st.rtx_vram_total_mb,
+                st.p10_temp_c,
+                st.p8_temp_c,
+                st.p10_ram_used_mb,
+                st.p10_ram_total_mb,
+                st.decadic_sub_epoch,
+                st.gen_counter,
+            );
+            let t65 = encode_and_detokenize_65k(&q_in);
+            let p_hash = fnv1a_64(&q_in).wrapping_add(st.gen_counter);
+            let proj = project_tri_e8_to_leech24(
+                st.mag_x,
+                st.mag_y,
+                st.mag_z,
+                st.b_norm,
+                st.baro_hpa,
+                st.light_lx,
+                st.acc_norm,
+                st.gyro_norm,
+                st.fno_l2_err,
+                st.navier_reynolds,
+                st.vorticity_norm,
+                st.rtx_temp_c,
+                st.p10_temp_c,
+                st.p8_temp_c,
+                h_live.metabolic_atp_drive,
+                st.cluster_total_kops,
+                p_hash,
+            );
+            let feat = evaluate_internal_model_features(&proj, st.decadic_sub_epoch, h_live.metabolic_atp_drive);
+            let v45 = synthesize_v45_fluent_e8_leech_response(
+                &q_in,
+                &t65,
+                &proj,
+                &feat,
+                st.decadic_sub_epoch,
+                &st.laplacian_face,
+                st.b_norm,
+                st.baro_hpa,
+                st.fno_l2_err,
+                st.navier_reynolds,
+                h_live.metabolic_atp_drive,
+                st.cluster_total_kops,
+                st.qat_epochs as u32,
+            );
+            st.nl_synthesis = v45.full_structured_trace.clone();
+            st.last_card_diag = v45.fluent_prose_response.clone();
+            st.last_term_out = v45.full_structured_trace.clone();
+            let json = format!(
+                "{{\"status\":\"V45_E8_LEECH_FLUENCY_SYNTHESIZED\",\"version\":\"v45.0.0\",\"prompt\":\"{}\",\"discourse_intent\":\"{}\",\"dominant_domain\":\"{}\",\"fluent_prose_response\":\"{}\",\"e8_octet1_root\":{},\"e8_octet1_coset\":\"{}\",\"e8_octet1_coords\":\"{}\",\"e8_octet2_root\":{},\"e8_octet2_coset\":\"{}\",\"e8_octet2_coords\":\"{}\",\"e8_octet3_root\":{},\"e8_octet3_coset\":\"{}\",\"e8_octet3_coords\":\"{}\",\"golay24_codeword\":\"{}\",\"golay_octad_id\":{},\"leech_kissing_index\":{},\"leech_kissing_total\":196560,\"leech_shell_class\":\"{}\",\"fibration_sector\":{},\"fibration_chair44_col\":{},\"fibration_neuron_id\":{},\"e8_cartan_attention_score\":{:.4},\"e8_attention_entropy_nats\":{:.4},\"npage_basal_v\":{:.3},\"npage_apical_v\":{:.3},\"npage_lateral_v\":{:.3},\"nmda_ca2_plateau_gate\":{:.4},\"pickover_prime_class\":{},\"active_inference_free_energy\":{:.5},\"winning_branch_name\":\"{}\",\"winning_branch_fluency_score\":{:.4},\"p8_draft_acceptance_rate\":{:.2},\"qat_epochs_completed\":{},\"holdout_ppl\":{:.9},\"e8_quant_mse\":{:.5},\"nl_synthesis\":\"{}\",\"diag\":\"{}\"}}",
+                json_escape_clean(&v45.prompt),
+                v45.discourse_intent,
+                v45.dominant_domain,
+                json_escape_clean(&v45.fluent_prose_response),
+                v45.leech_proj.octet1_env_mag.root_id_240,
+                v45.leech_proj.octet1_env_mag.coset_winner,
+                json_escape_clean(&v45.leech_proj.octet1_env_mag.root_coords_csv),
+                v45.leech_proj.octet2_kin_fno.root_id_240,
+                v45.leech_proj.octet2_kin_fno.coset_winner,
+                json_escape_clean(&v45.leech_proj.octet2_kin_fno.root_coords_csv),
+                v45.leech_proj.octet3_sil_npage.root_id_240,
+                v45.leech_proj.octet3_sil_npage.coset_winner,
+                json_escape_clean(&v45.leech_proj.octet3_sil_npage.root_coords_csv),
+                json_escape_clean(&v45.leech_proj.golay24_codeword_hex),
+                v45.leech_proj.golay_octad_id_759,
+                v45.leech_proj.leech_kissing_index_196560,
+                json_escape_clean(v45.leech_proj.leech_shell_class),
+                v45.leech_proj.fibration_sector_80,
+                v45.leech_proj.fibration_chair44_col_640,
+                v45.leech_proj.fibration_neuron_id_28160,
+                v45.internal_features.e8_cartan_attention_score,
+                v45.internal_features.e8_attention_entropy_nats,
+                v45.internal_features.npage_basal_v,
+                v45.internal_features.npage_apical_v,
+                v45.internal_features.npage_lateral_v,
+                v45.internal_features.nmda_ca2_plateau_gate,
+                v45.internal_features.pickover_prime_class,
+                v45.internal_features.active_inference_free_energy,
+                json_escape_clean(v45.internal_features.winning_branch_name),
+                v45.internal_features.winning_branch_fluency_score,
+                v45.internal_features.p8_draft_acceptance_rate,
+                v45.qat_epochs_completed,
+                v45.holdout_ppl,
+                v45.e8_quant_mse,
+                json_escape_clean(&v45.full_structured_trace),
+                json_escape_clean(&v45.fluent_prose_response)
+            );
+            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
+            continue;
+        }
+        if clean_path == "/api/v1/model/train_e8_leech_qat" || clean_path == "/train_v45" {
+            let mut st = match state.lock() {
+                Ok(g) => g,
+                Err(p) => p.into_inner(),
+            };
+            st.gen_counter += 1;
+            st.qat_epochs += 1;
+            let h_live = evaluate_metabolic_harness_5w1h(
+                st.rtx_temp_c,
+                st.rtx_vram_used_mb,
+                st.rtx_vram_total_mb,
+                st.p10_temp_c,
+                st.p8_temp_c,
+                st.p10_ram_used_mb,
+                st.p10_ram_total_mb,
+                st.decadic_sub_epoch,
+                st.gen_counter,
+            );
+            let json = execute_v45_e8_leech_qat_training(
+                st.gen_counter,
+                st.b_norm,
+                st.baro_hpa,
+                st.acc_norm,
+                st.gyro_norm,
+                st.fno_l2_err,
+                st.navier_reynolds,
+                st.vorticity_norm,
+                st.rtx_temp_c,
+                st.p10_temp_c,
+                st.p8_temp_c,
+                h_live.metabolic_atp_drive,
+                st.cluster_total_kops,
+                &ssd_path,
+            );
+            let diag = extract_json_str_field(&json, "diag");
+            if !diag.is_empty() {
+                st.last_card_diag = diag.clone();
+                st.last_term_out = diag;
+            }
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
             continue;
         }

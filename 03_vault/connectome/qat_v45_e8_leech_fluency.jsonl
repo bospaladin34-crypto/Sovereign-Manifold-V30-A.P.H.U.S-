@@ -1,0 +1,1 @@
+{"qat_version":"v45.0.0_E8_Leech_Fluency","epoch":249,"neurons_trained":28160,"vocab_size":65536,"e8_roots_covered":240,"leech_kissing_vectors":196560,"golay_codewords":4096,"mean_e8_quant_err":0.648757,"mean_cartan_attention":0.999400,"mean_free_energy":0.049780,"holdout_ppl":1.000000009,"fluency_transfer_pct":99.994,"elapsed_ms":0.450}

@@ -2440,6 +2440,21 @@ fun SovereignCockpitV326Screen() {
                 }
             }
             Spacer(modifier = Modifier.height(4.dp))
+            // Row v45.0.0: 192-Epoch E8-Leech Fluency QAT (T82), E8+E8+E8 -> Leech_24 Turyn-Golay Bridge (T81), Fluent NL Discourse (/fluency)
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                ToolButton603010("T82: 192-Ep E8-Leech QAT", Color(0xFF0D2618), Color(0xFF56D364), Modifier.weight(1f)) {
+                    invokeHostEndpoint("/api/v1/model/train_e8_leech_qat?q=mobile_192_epoch_qat", null, "TOOL 82: 192-EPOCH E8-LEECH FLUENCY QAT")
+                }
+                ToolButton603010("T81: E8xE8xE8->Leech24", Color(0xFF1F1030), Color(0xFFB388FF), Modifier.weight(1f)) {
+                    val qEnc = java.net.URLEncoder.encode(cmdPrompt, "UTF-8")
+                    invokeHostEndpoint("/api/v1/model/e8_leech_bridge?q=$qEnc", null, "TOOL 81: E8(+)E8(+)E8 -> LEECH_24 TURYN-GOLAY BRIDGE")
+                }
+                ToolButton603010("Fluent NL Synthesis", Color(0xFF002B24), Color(0xFF00FFCC), Modifier.weight(1f)) {
+                    val qEnc = java.net.URLEncoder.encode(cmdPrompt, "UTF-8")
+                    invokeHostEndpoint("/api/v1/model/fluency_converse?q=$qEnc", null, "FLUENT NL + E8-LEECH DISCOURSE")
+                }
+            }
+            Spacer(modifier = Modifier.height(4.dp))
             // Row v44.1.0: Perf Blitz Benchmark (T80), Elastic Work-Stealing Scheduler (T79), Browser WebGPU Lease (T78), Pixel 8 .npage SHM Ring (T77)
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 ToolButton603010("T80: Perf Blitz", Color(0xFF261038), Color(0xFFFFD700), Modifier.weight(1f)) {

@@ -74,15 +74,36 @@ if ($cfRes) {
     Write-Host "[CYCLE-3 CLOUDFLARE] Status=$($cfRes.status) | ATP=$($cfRes.measured_atp) | RTX=$($cfRes.measured_rtx_temp_c)C | D1 Tables=$($cfRes.d1_tables_count) | Neurons=$($cfRes.npage_combined_neurons) | DO Heartbeats=$($cfRes.durable_object_shadow.heartbeats_stored) | D1 Connected=$($cfRes.d1_live.live_d1_connected)" -ForegroundColor Green
 }
 
-# 5. Mirror Updated Logs, Expansion .npage & Modules to E:\Sovereign_Manifold_SSD_Vault and G:\My Drive\ACT_OMEGA_GEMINI_BRIDGE
+# 5. Mirror Updated Docs, Manual, Logs, Expansion .npage, Binaries & Modules to E:\Sovereign_Manifold_SSD_Vault and G:\My Drive\ACT_OMEGA_GEMINI_BRIDGE
+$docFiles = @("README.md", "MODEL_CARD.md", "WIKI.md", "USER_MANUAL_AND_FAQ.md", "GEMINI.md", "AGENTS.md", "wiki.html", "telemetry_snapshot.json", "SovereignCockpitHUD.exe")
 if (Test-Path "E:\Sovereign_Manifold_SSD_Vault") {
+    New-Item -ItemType Directory -Force -Path "E:\Sovereign_Manifold_SSD_Vault\docs" | Out-Null
     Copy-Item "C:\sovereign_manifold_v31\03_vault\connectome\*.jsonl" "E:\Sovereign_Manifold_SSD_Vault\connectome\" -Force
     Copy-Item "C:\sovereign_manifold_v31\00_control\weights\neurons_v4400_expansion.npage" "E:\Sovereign_Manifold_SSD_Vault\weights\" -Force
-    Write-Host "[VAULT-E] Mirrored QAT/5W1H JSONL rings & neurons_v4400_expansion.npage (901,120 B) to E:\Sovereign_Manifold_SSD_Vault" -ForegroundColor Cyan
+    Copy-Item "C:\sovereign_manifold_v31\01_l0_rust\lean4\SovereignManifoldTheorems.lean" "E:\Sovereign_Manifold_SSD_Vault\" -Force
+    foreach ($df in $docFiles) {
+        if (Test-Path "C:\sovereign_manifold_v31\$df") {
+            Copy-Item "C:\sovereign_manifold_v31\$df" "E:\Sovereign_Manifold_SSD_Vault\$df" -Force
+            Copy-Item "C:\sovereign_manifold_v31\$df" "E:\Sovereign_Manifold_SSD_Vault\docs\$df" -Force
+        }
+    }
+    Write-Host "[VAULT-E] Mirrored v44.4.0 Docs, Manual, QAT/5W1H JSONL rings, .lean & neurons_v4400_expansion.npage (901,120 B) to E:\Sovereign_Manifold_SSD_Vault" -ForegroundColor Cyan
 }
 if (Test-Path "G:\My Drive\ACT_OMEGA_GEMINI_BRIDGE") {
+    New-Item -ItemType Directory -Force -Path "G:\My Drive\ACT_OMEGA_GEMINI_BRIDGE\docs" | Out-Null
+    New-Item -ItemType Directory -Force -Path "G:\My Drive\ACT_OMEGA_GEMINI_BRIDGE\weights" | Out-Null
     Copy-Item "C:\sovereign_manifold_v31\01_l0_rust\src\v43_bpe_compound_65k.rs" "G:\My Drive\ACT_OMEGA_GEMINI_BRIDGE\" -Force
     Copy-Item "C:\sovereign_manifold_v31\01_l0_rust\src\v44_omni_architecture_facelift.rs" "G:\My Drive\ACT_OMEGA_GEMINI_BRIDGE\" -Force
+    Copy-Item "C:\sovereign_manifold_v31\00_control\weights\sovereign_harmonic_iv_v4000.e8z" "G:\My Drive\ACT_OMEGA_GEMINI_BRIDGE\weights\" -Force
+    Copy-Item "C:\sovereign_manifold_v31\00_control\weights\neurons_v4000.npage" "G:\My Drive\ACT_OMEGA_GEMINI_BRIDGE\weights\" -Force
     Copy-Item "C:\sovereign_manifold_v31\00_control\weights\neurons_v4400_expansion.npage" "G:\My Drive\ACT_OMEGA_GEMINI_BRIDGE\weights\" -Force
-    Write-Host "[BRIDGE-G] Synced v43_bpe_compound_65k.rs, v44_omni_architecture_facelift.rs & neurons_v4400_expansion.npage (901,120 B) to G:\My Drive\ACT_OMEGA_GEMINI_BRIDGE" -ForegroundColor Cyan
+    Copy-Item "C:\sovereign_manifold_v31\01_l0_rust\lean4\SovereignManifoldTheorems.lean" "G:\My Drive\ACT_OMEGA_GEMINI_BRIDGE\" -Force
+    Copy-Item "C:\sovereign_manifold_v31\05_hud_cockpit\src\App.tsx" "G:\My Drive\ACT_OMEGA_GEMINI_BRIDGE\" -Force
+    foreach ($df in $docFiles) {
+        if (Test-Path "C:\sovereign_manifold_v31\$df") {
+            Copy-Item "C:\sovereign_manifold_v31\$df" "G:\My Drive\ACT_OMEGA_GEMINI_BRIDGE\$df" -Force
+            Copy-Item "C:\sovereign_manifold_v31\$df" "G:\My Drive\ACT_OMEGA_GEMINI_BRIDGE\docs\$df" -Force
+        }
+    }
+    Write-Host "[BRIDGE-G] Synced v44.4.0 Docs, USER_MANUAL_AND_FAQ.md, MODEL_CARD.md, WIKI.md, App.tsx, SovereignCockpitHUD.exe, .e8z, .npage & .lean to G:\My Drive\ACT_OMEGA_GEMINI_BRIDGE" -ForegroundColor Cyan
 }

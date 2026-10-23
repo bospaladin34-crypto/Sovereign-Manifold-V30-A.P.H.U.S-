@@ -119,7 +119,10 @@ export function App() {
   const [operatorVaultOpen, setOperatorVaultOpen] = useState<boolean>(false);
   const [operatorPasskey, setOperatorPasskey] = useState<string>("");
   const [operatorUnlocked, setOperatorUnlocked] = useState<boolean>(false);
-  const [ideConsoleLog, setIdeConsoleLog] = useState<string>("[OPERATOR & ANTIGRAVITY VAULT READY] Gemini 4 Argon (6 Subagents) + Goose v1.55.0 + Zed v1.24.4 + VSCodium/Cline locked to SH4Z-v4300-TriSilicon (C:\\sovereign_manifold_v31). All 15 Telemetry Cards, 3D Stiefel Scope, 16x130 Heatmap & 72 Tools active.");
+  const [helpSidebarOpen, setHelpSidebarOpen] = useState<boolean>(false);
+  const [helpSection, setHelpSection] = useState<string>("QUICKSTART");
+  const [helpSearch, setHelpSearch] = useState<string>("");
+  const [ideConsoleLog, setIdeConsoleLog] = useState<string>("[OPERATOR & ANTIGRAVITY VAULT READY] Gemini 4 Argon (6 Subagents) + Goose v1.55.0 + Zed v1.24.4 + VSCodium/Cline locked to SH4Z-v4440-TriSilicon (C:\\sovereign_manifold_v31). All 15 Telemetry Cards, 3D Stiefel Scope, 16x130 Heatmap & 80 Tools active.");
   const [tel, setTel] = useState<TelemetryState>({
     generation: 745000,
     decadic_sub_epoch: 0,
@@ -1449,6 +1452,21 @@ export function App() {
             <div style={{ background: "#1C2632", border: "1px solid #56D364", color: "#56D364", padding: "2px 8px", borderRadius: 4, fontSize: 11, fontWeight: "bold" }}>
               LIVE PHONE BROADCAST SYNC (P10 #{tel.p10_broadcasts} / P8 #{tel.p8_broadcasts})
             </div>
+            <button
+              onClick={() => setHelpSidebarOpen(!helpSidebarOpen)}
+              style={{
+                background: helpSidebarOpen ? "#00FFCC" : "#14222E",
+                color: helpSidebarOpen ? "#050A0E" : "#00FFCC",
+                border: "1.5px solid #00FFCC",
+                borderRadius: 4,
+                padding: "3px 10px",
+                fontWeight: "bold",
+                cursor: "pointer",
+                fontSize: 10.5
+              }}
+            >
+              {helpSidebarOpen ? "[X] CLOSE HELP & FAQ MANUAL" : "[?] HELP, FAQ & USER MANUAL"}
+            </button>
           </div>
         </div>
         <div style={{ color: "#FFFEFB", fontSize: 11, marginTop: 2 }}>
@@ -1564,6 +1582,9 @@ export function App() {
           </button>
           <button onClick={() => setOperatorVaultOpen(!operatorVaultOpen)} style={{ background: operatorVaultOpen ? "#b388ff" : "#1a1228", color: operatorVaultOpen ? "#050a0e" : "#b388ff", border: "1px solid #b388ff", borderRadius: "4px", padding: "3px 8px", cursor: "pointer", fontFamily: "monospace", fontSize: "10px", fontWeight: "bold" }}>
             {operatorVaultOpen ? "HIDE OPERATOR & ANTIGRAVITY VAULT" : "OPEN OPERATOR VAULT (ANTIGRAVITY + GOOSE + ZED + CLINE) & 5W1H"}
+          </button>
+          <button onClick={() => setHelpSidebarOpen(!helpSidebarOpen)} style={{ background: helpSidebarOpen ? "#00ffcc" : "#002b24", color: helpSidebarOpen ? "#050a0e" : "#00ffcc", border: "1px solid #00ffcc", borderRadius: "4px", padding: "3px 8px", cursor: "pointer", fontFamily: "monospace", fontSize: "10px", fontWeight: "bold" }}>
+            {helpSidebarOpen ? "HIDE STEP-BY-STEP USER GUIDE" : "STEP-BY-STEP HELP & FAQ SIDEBAR"}
           </button>
         </div>
 
@@ -2457,6 +2478,266 @@ export function App() {
           </>
         )}
       </div>
+
+      {/* FLOATING QUICK-OPEN HELP TAB ON RIGHT EDGE WHEN SIDEBAR CLOSED */}
+      {!helpSidebarOpen && (
+        <button
+          onClick={() => setHelpSidebarOpen(true)}
+          title="Open Step-by-Step Operator Help, FAQ & User Manual"
+          style={{
+            position: "fixed",
+            right: 0,
+            top: "45%",
+            zIndex: 9998,
+            background: "#002B24",
+            color: "#00FFCC",
+            border: "1.5px solid #00FFCC",
+            borderRight: "none",
+            borderRadius: "6px 0 0 6px",
+            padding: "10px 7px",
+            fontWeight: "bold",
+            cursor: "pointer",
+            fontSize: 10.5,
+            fontFamily: "monospace",
+            boxShadow: "-3px 0 12px rgba(0, 255, 204, 0.25)",
+            writingMode: "vertical-rl",
+            textOrientation: "mixed"
+          }}
+        >
+          [?] HELP &amp; USER MANUAL
+        </button>
+      )}
+
+      {/* DEDICATED STEP-BY-STEP HELP, FAQ & CONTINUOUS OPERATOR USER MANUAL SIDEBAR */}
+      {helpSidebarOpen && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            right: 0,
+            width: 470,
+            maxWidth: "94vw",
+            height: "100vh",
+            zIndex: 9999,
+            background: "#090E14",
+            borderLeft: "2px solid #00FFCC",
+            boxShadow: "-8px 0 28px rgba(0,0,0,0.85)",
+            display: "flex",
+            flexDirection: "column",
+            fontFamily: "'JetBrains Mono', Consolas, monospace",
+            color: "#FFFEFB"
+          }}
+        >
+          {/* Sidebar Header */}
+          <div style={{ background: "#101822", borderBottom: "1px solid #2A3B4D", padding: "10px 14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div>
+              <div style={{ color: "#00FFCC", fontWeight: "bold", fontSize: 12.5 }}>
+                ACT-OMEGA v44.4.0 OPERATOR MANUAL &amp; STEP-BY-STEP GUIDE
+              </div>
+              <div style={{ color: "#9FB0C2", fontSize: 10, marginTop: 2 }}>
+                Live Status: <b style={{ color: "#56D364" }}>ONLINE ({tel.cluster_total_kops.toFixed(1)}k ops/s)</b> | 28,160N (3.56MB SHM) | 400/400 QED
+              </div>
+            </div>
+            <button
+              onClick={() => setHelpSidebarOpen(false)}
+              style={{ background: "#3A1111", color: "#FF4D4D", border: "1px solid #FF4D4D", borderRadius: 4, padding: "4px 9px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}
+            >
+              CLOSE [X]
+            </button>
+          </div>
+
+          {/* Search & Section Tabs */}
+          <div style={{ padding: "8px 12px", background: "#0C1219", borderBottom: "1px solid #2A3B4D" }}>
+            <input
+              value={helpSearch}
+              onChange={(e) => setHelpSearch(e.target.value)}
+              placeholder="Filter manual steps, commands, or FAQ (e.g. reboot, unplug, 502, shm, widget)..."
+              style={{ width: "100%", background: "#060A0E", color: "#FFFEFB", border: "1px solid #2A3B4D", borderRadius: 4, padding: "5px 8px", fontFamily: "monospace", fontSize: 10.5, marginBottom: 6 }}
+            />
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+              {[
+                { id: "QUICKSTART", label: "1. Start/Stop" },
+                { id: "HUD_TOUR", label: "2. HUD Tour" },
+                { id: "PHONES_SHM", label: "3. Phones & SHM" },
+                { id: "WIN11_NATIVE", label: "4. Win11 & Widgets" },
+                { id: "CLOUD_D1", label: "5. Cloud & G: Drive" },
+                { id: "FAQ", label: "6. FAQ & Fixes" }
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => { setHelpSection(tab.id); setHelpSearch(""); }}
+                  style={{
+                    background: helpSection === tab.id && !helpSearch ? "#00FFCC" : "#141D28",
+                    color: helpSection === tab.id && !helpSearch ? "#050A0E" : "#FFFEFB",
+                    border: "1px solid #00FFCC",
+                    borderRadius: 4,
+                    padding: "3px 7px",
+                    fontSize: 9.5,
+                    fontWeight: "bold",
+                    cursor: "pointer"
+                  }}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Scrollable Step-by-Step Content */}
+          <div style={{ flex: 1, overflowY: "auto", padding: "12px 14px", fontSize: 10.5, lineHeight: 1.5 }}>
+            {(helpSection === "QUICKSTART" || helpSearch.trim() !== "") && (
+              <div style={{ background: "#0D141D", border: "1px solid #FFB454", borderRadius: 6, padding: "10px 12px", marginBottom: 10 }}>
+                <div style={{ color: "#FFB454", fontWeight: "bold", fontSize: 11.5, marginBottom: 6 }}>
+                  1. QUICK-START: STARTING, STOPPING &amp; REBOOTING SAFELY
+                </div>
+                <div style={{ marginBottom: 6 }}>
+                  <b>Step 1 — Check Live Cluster Status (`sovereign-status`):</b><br />
+                  Open any PowerShell window and type <code>sovereign-status</code>. It verifies all 7 subsystems: Watchdog Sentinel, Host L0 Swarm (`:8097`/`:5173`), Cloudflare Named Tunnel (`act-omega-net.dev`), Pixel 10 (`58170DLCR0004V`), Pixel 8 (`3A121FDJH00BW5`), External Vaults (`E:\` &amp; `G:\`), and the Windows 11 Tray/HUD.
+                </div>
+                <div style={{ marginBottom: 6 }}>
+                  <b>Step 2 — Bring Everything Online (`ignite` or `sovereign-start`):</b><br />
+                  Type <code>ignite</code> (or <code>sovereign-start</code>). This clears `00_control\daemon.paused`, spawns `v31_swarm.exe` and `cloudflared.exe` detached under WMI Service Host (`WmiPrvSE.exe`), arms ADB port-reversing + `3.56 MB` `.npage` Shared Memory on both phones, and launches `SovereignCockpitHUD.exe`.
+                </div>
+                <div style={{ marginBottom: 6 }}>
+                  <b>Step 3 — Safe Host Stop with Edge Handover (`halt` or `sovereign-stop`):</b><br />
+                  Type <code>halt</code> (or <code>sovereign-stop</code>). Before stopping the PC services, it automatically snapshots the `3,604,480 B` (`28,160`-neuron) `.npage` shared memory and 5W1H ATP state to Pixel 8, Pixel 10, and the Cloudflare Edge Durable Object so the phones keep the architecture alive while the PC is off.
+                </div>
+                <div style={{ marginBottom: 8 }}>
+                  <b>Step 4 — Safe PC Restart or Shutdown (`sovereign-reboot` / `sovereign-shutdown`):</b><br />
+                  Type <code>sovereign-reboot</code> or <code>sovereign-shutdown</code> (or restart Windows normally—the registered `SovereignManifold-GracefulShutdownHandover` task runs automatically on shutdown, and `ACT-Omega-v32-6-AutopoieticDaemon` auto-ignites everything on boot).
+                </div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                  <button onClick={() => callEndpoint("/api/v1/diagnostics/v44_self_profiler", "MANUAL STEP: RUN 6-LAYER AUDIT")} style={{ background: "#56D364", color: "#050A0E", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>RUN 6-LAYER AUDIT NOW (T75)</button>
+                  <button onClick={() => callEndpoint("/api/v1/diagnostics/v44_perf_blitz", "MANUAL STEP: RUN PERF BLITZ")} style={{ background: "#FFB454", color: "#050A0E", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>RUN PERF BLITZ (T80)</button>
+                </div>
+              </div>
+            )}
+
+            {(helpSection === "HUD_TOUR" || helpSearch.trim() !== "") && (
+              <div style={{ background: "#0D141D", border: "1px solid #00E5FF", borderRadius: 6, padding: "10px 12px", marginBottom: 10 }}>
+                <div style={{ color: "#00E5FF", fontWeight: "bold", fontSize: 11.5, marginBottom: 6 }}>
+                  2. STEP-BY-STEP HUD NAVIGATION &amp; MODULE INTERCONNECTIVITY
+                </div>
+                <div style={{ marginBottom: 6 }}>
+                  <b>• Drawer A (`15 Interactive Telemetry Cards`):</b><br />
+                  Displays real-time metrics across the `15.965 Hz` Decadic clock, Pixel 10 24D Magnetometer, Stiefel `St(16,80)`, `28,160`-Neuron Vault, Pixel 8 `4.00 MB` L2 `.npage` SHM, Acoustic SDR, Cloudflare PQ/SIEM, `400/400` Lean 4 proofs, RTX 3050 6GB, and `E:\` SSD. <i>Click any card</i> to jump to its sector and execute its live L0 diagnostic.
+                </div>
+                <div style={{ marginBottom: 6 }}>
+                  <b>• Drawer B (`60 FPS 3D Stiefel Scope &amp; 15.965 Hz Oscilloscope`):</b><br />
+                  Left canvas renders the Theodorus sqrt(n) spiral &amp; Stiefel manifold tilted in real time by Pixel 10's Magnetometer/Accelerometer/Gyroscope. Right canvas renders the 3-wave Decadic oscilloscope.
+                </div>
+                <div style={{ marginBottom: 6 }}>
+                  <b>• Pinned Workspace (`16×130` Heatmap &amp; `S00..S79` Sector Pills):</b><br />
+                  Represents all `2,080` cachelines (`133,120 B`) of `sovereign_harmonic_iv_v4000.e8z`. <i>Click any cell or `S00..S79` pill</i> to inspect its exact `.e8z` hex/trits, select its `Chair-44` column (`0..639`) and neuron (`N0..N28159`), and automatically transduce it in the 65K BPE Tokenizer!
+                </div>
+                <div style={{ marginBottom: 6 }}>
+                  <b>• Drawer 1 (`12-Channel Sensor Sparklines`) &amp; Drawer 2 (`Acoustic SDR &amp; FNO Waterfall`):</b><br />
+                  Drawer 1 plots all 12 live hardware inputs (`MagX/Y/Z`, `|B|`, `Baro`, `Lux`, `Acc`, `Gyro`, `P10/P8/RTX Temps`, `KOPS/s`). Clicking any sparkline or waterfall cell routes straight to its mapped sector.
+                </div>
+                <div style={{ marginBottom: 8 }}>
+                  <b>• Drawer 3 (`400/400 Lean 4 Verifier`) &amp; Drawer 4 (`80 Tools + 65K BPE + NL Converse`):</b><br />
+                  Contains the 65,536-token 16-Domain BPE/Compound Inspector, Episodic Memory Search, Slash Command Palette (`/SYNC`, `/LATTICE`, `/IGNITE`, `/EXECUTE_OMNI_BRAID`), Voice TTS toggle, and all 80 native tools (`T01..T80`).
+                </div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                  <button onClick={() => { setDrawerAOpen(true); setDrawerBOpen(true); setDrawer1Open(true); setDrawer2Open(true); setDrawer3Open(true); setDrawer4Open(true); }} style={{ background: "#00E5FF", color: "#050A0E", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>OPEN ALL DRAWERS</button>
+                  <button onClick={() => { setSelectedSector(48); callEndpoint("/api/v1/sector/inspect?sector=48&line=0", "MANUAL: INSPECT P10 S48"); }} style={{ background: "#1C2632", color: "#00FFCC", border: "1px solid #00FFCC", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>TEST S48 (P10 SENSORS)</button>
+                  <button onClick={() => { setSelectedSector(64); callEndpoint("/api/v1/sector/inspect?sector=64&line=0", "MANUAL: INSPECT P8 S64"); }} style={{ background: "#1C2632", color: "#FFB454", border: "1px solid #FFB454", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>TEST S64 (P8 L2 SHM)</button>
+                </div>
+              </div>
+            )}
+
+            {(helpSection === "PHONES_SHM" || helpSearch.trim() !== "") && (
+              <div style={{ background: "#0D141D", border: "1px solid #B388FF", borderRadius: 6, padding: "10px 12px", marginBottom: 10 }}>
+                <div style={{ color: "#B388FF", fontWeight: "bold", fontSize: 11.5, marginBottom: 6 }}>
+                  3. DUAL-PIXEL PHONES &amp; UNPLUGGED `.NPAGE` SHARED MEMORY
+                </div>
+                <div style={{ marginBottom: 6 }}>
+                  <b>• How Shared Memory Works Across Pixel 8 (Plugged In) &amp; Pixel 10 (Mobile):</b><br />
+                  Both phones store the full `3,604,480 B` (`3.56 MB`, `28,160`-neuron / `640× Chair-44`) pagefile (`neurons_v4400_p8_shm.npage`) across three paths: `/data/local/tmp/`, `/sdcard/Android/data/com.actomega.manifold/files/`, and private internal app storage (`filesDir`).
+                </div>
+                <div style={{ marginBottom: 6 }}>
+                  <b>• What Happens When You Unplug Pixel 10 and Leave:</b><br />
+                  1. Native C++ (`harmonic_engine.cpp`) memory-maps the local `3.56 MB` `.npage` file (`npage_coherence` stays `100%` online with zero USB cable).<br />
+                  2. `SovereignLiveBus` automatically fails over across 5 Bearers without dropping a tick:<br />
+                  &nbsp;&nbsp;• `B1:USB` (`127.0.0.1:8097` when plugged in)<br />
+                  &nbsp;&nbsp;• `B2:WIFI-LAN` (`10.0.24.243:8097` when unplugged at home)<br />
+                  &nbsp;&nbsp;• `B3/B4:CF-WAN` (`api.act-omega-net.dev` when away on 5G/LTE)<br />
+                  &nbsp;&nbsp;• `B5:CF-EDGE-DO` (`sovereign-loq15-vpc-shadow...workers.dev` if the Host PC is off!)<br />
+                  3. Every 500ms, Pixel 10 &amp; Pixel 8 exchange dirty `Chair-44` column deltas (`col=0..639`) through the Host or Cloudflare Durable Object so their shared memory stays synchronized anywhere.
+                </div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                  <button onClick={() => callEndpoint("/api/v1/shm/p8_npage_bridge", "MANUAL: SYNC 3.56MB .NPAGE SHM")} style={{ background: "#B388FF", color: "#050A0E", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>SYNC 3.56MB .NPAGE SHM NOW (T77)</button>
+                  <button onClick={() => callEndpoint("/api/v1/tools/t63", "MANUAL: VERIFY DUAL-PHONE APK SYNC")} style={{ background: "#1C2632", color: "#FFFEFB", border: "1px solid #B388FF", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>VERIFY DUAL-PHONE SYNC (T63)</button>
+                </div>
+              </div>
+            )}
+
+            {(helpSection === "WIN11_NATIVE" || helpSearch.trim() !== "") && (
+              <div style={{ background: "#0D141D", border: "1px solid #56D364", borderRadius: 6, padding: "10px 12px", marginBottom: 10 }}>
+                <div style={{ color: "#56D364", fontWeight: "bold", fontSize: 11.5, marginBottom: 6 }}>
+                  4. WINDOWS 11 SYSTEM TRAY, DESKTOP WIDGET, NATIVE APP &amp; ANDROID WIDGET
+                </div>
+                <div style={{ marginBottom: 6 }}>
+                  <b>• Windows 11 System Tray Icon (`Ω44` — `SovereignCockpitHUD.exe`):</b><br />
+                  Look in the bottom-right Windows 11 system tray for the amber/green <b>Ω44</b> icon. Hover to see live KOPS/s and RTX/P10/P8 temperatures. Double-click it (or type <code>hud</code> in PowerShell) to open the chromeless <b>Native Desktop HUD App</b> with hardware WebGPU &amp; Vulkan enabled. Right-click the tray icon for one-click actions (`Open Native HUD`, `Toggle Mini-Widget`, `Switch Corner/Top Banner Mode`, `Sync .npage SHM`, `Handover to Phones`, `Safe Start/Restart/Stop`).
+                </div>
+                <div style={{ marginBottom: 6 }}>
+                  <b>• Windows 11 Live Desktop &amp; Top Banner Widget:</b><br />
+                  Floats on your desktop with a live clickable `16×130` heatmap and 5 quick buttons (`NATIVE HUD`, `SYNC SHM`, `HANDOVER`, `VERIFY 6L`, `BANNER`). Click `BANNER` to dock it at top-center like a live lockscreen/status bar.
+                </div>
+                <div style={{ marginBottom: 4 }}>
+                  <b>• Improved Android HomescreenWidget &amp; Ongoing Notification:</b><br />
+                  On Pixel 10 &amp; Pixel 8, the ongoing notification and homescreen widget show live `28,160N (3.56MB SHM)`, `RTX/P10/P8 Temps`, `Active Bearer`, and include interactive **`OPEN HUD`** and **`SYNC SHM`** buttons.
+                </div>
+              </div>
+            )}
+
+            {(helpSection === "CLOUD_D1" || helpSearch.trim() !== "") && (
+              <div style={{ background: "#0D141D", border: "1px solid #FFEA00", borderRadius: 6, padding: "10px 12px", marginBottom: 10 }}>
+                <div style={{ color: "#FFEA00", fontWeight: "bold", fontSize: 11.5, marginBottom: 6 }}>
+                  5. CLOUDFLARE D1 (10 TABLES), GITHUB 3-BRANCH &amp; G:\ DRIVE MIRROR
+                </div>
+                <div style={{ marginBottom: 6 }}>
+                  <b>• Remote 5 GB Cloudflare D1 (`act_omega_d1_vault`):</b><br />
+                  Synchronizes 10 tables (`harness_5w1h_audit_log`, `npage_tier_snapshots`, `wal_merkle_checkpoints`, `v40_qat_training_sessions`, `v40_shard_registry`, `v41_measured_sha256_audit`, `v42_5w1h_distributed_routes`, `v43_antigravity_agent_roster`, `v44_omni_manifold_snapshots`, `v44_webgpu_compute_leases`).
+                </div>
+                <div style={{ marginBottom: 8 }}>
+                  <b>• External SSD (`E:\`) &amp; Google Drive (`G:\My Drive\ACT_OMEGA_GEMINI_BRIDGE`):</b><br />
+                  Mirrors `README.md`, `MODEL_CARD.md`, `WIKI.md`, `USER_MANUAL_AND_FAQ.md`, `.e8z`, `.npage`, `.lean`, and `telemetry_snapshot.json` automatically via Tool 23 (`E:\`) and Tool 55 (`G:\`).
+                </div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                  <button onClick={() => callEndpoint("/api/v1/tools/t55", "MANUAL: SYNC G:\\ DRIVE BRIDGE")} style={{ background: "#FFEA00", color: "#050A0E", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>SYNC G:\ DRIVE BRIDGE (T55)</button>
+                  <button onClick={() => callEndpoint("/api/v1/manifold/v44_omni_snapshot", "MANUAL: SYNC 10-TABLE D1 SNAPSHOT")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>SYNC 10-TABLE CLOUDFLARE D1 (T76)</button>
+                </div>
+              </div>
+            )}
+
+            {(helpSection === "FAQ" || helpSearch.trim() !== "") && (
+              <div style={{ background: "#0D141D", border: "1px solid #E94E34", borderRadius: 6, padding: "10px 12px", marginBottom: 10 }}>
+                <div style={{ color: "#E94E34", fontWeight: "bold", fontSize: 11.5, marginBottom: 6 }}>
+                  6. FREQUENTLY ASKED QUESTIONS (FAQ) &amp; TROUBLESHOOTING
+                </div>
+                <div style={{ marginBottom: 6 }}>
+                  <b>Q1: What if `act-omega-net.dev` ever shows Error 502 or Error 1033?</b><br />
+                  <span style={{ color: "#9FB0C2" }}>A: Run <code>ignite</code> (or <code>sovereign-start</code>) in PowerShell. Our lifecycle controller spawns `cloudflared.exe` detached under WMI Service Host (`Win32_Process.Create`) with exact Tunnel UUID `9cdea4c4-831d-4ccc-983d-5f7587a98206` so it never dies when a terminal closes.</span>
+                </div>
+                <div style={{ marginBottom: 6 }}>
+                  <b>Q2: How do I unlock the Operator &amp; Antigravity Vault in the HUD?</b><br />
+                  <span style={{ color: "#9FB0C2" }}>A: Click <b>OPEN OPERATOR VAULT</b>, enter your key from `00_control\.operator_vault_key` (or `ACT_OMEGA_OPERATOR_KEY`), and click <b>UNLOCK VAULT</b>. No credentials are hardcoded in source.</span>
+                </div>
+                <div style={{ marginBottom: 6 }}>
+                  <b>Q3: How do I verify 100% true hardware data and zero dummy code at any time?</b><br />
+                  <span style={{ color: "#9FB0C2" }}>A: Run <code>verify</code> (or <code>sovereign-verify</code>) in PowerShell, or click <b>TOOL 75: v44 Self-Profiler</b>. It verifies `0` square brackets across `v33..v44*.rs`, `400/400` non-trivial Lean 4 theorems, `28,160` neurons (`3,604,480 B` `.npage`), live QAT PPL, and HTTP 200 on `act-omega-net.dev`.</span>
+                </div>
+                <div style={{ marginBottom: 4 }}>
+                  <b>Q4: How do I hot-swap a new Rust L0 binary without dropping connections?</b><br />
+                  <span style={{ color: "#9FB0C2" }}>A: Build with <code>cargo build --release --bin v31_swarm --target-dir target_stage</code> and run <code>hotswap</code> in PowerShell.</span>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

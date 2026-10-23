@@ -172,7 +172,7 @@ function Invoke-SovereignSixLayerVerify {
     Write-Host "==========================================================================" -ForegroundColor Cyan
 
     # Layer 1: L0 Rust Zero-Square-Bracket & Live Endpoints
-    $v33to44 = Get-ChildItem "C:\sovereign_manifold_v31\01_l0_rust\src\v*.rs" | Where-Object { $_.Name -notmatch "v31_" }
+    $v33to44 = Get-ChildItem "C:\sovereign_manifold_v31\01_l0_rust\src\v*.rs" | Where-Object { $_.Name -match "^v(3[3-9]|4[0-9])_" }
     $brackets = 0
     foreach ($f in $v33to44) {
         $b = [System.IO.File]::ReadAllBytes($f.FullName)
@@ -189,7 +189,7 @@ function Invoke-SovereignSixLayerVerify {
     Write-Host "  [LAYER 2 - LEAN 4 QED]  Theorems=$thmCnt/400 | Trivial(N=N)=$trivCnt | SHA256=${leanSha}..." -ForegroundColor Green
 
     # Layer 3: 5W1H & 28,160-Neuron Shared Memory (.npage)
-    $t59 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/introspect/bijection_21120" -TimeoutSec 4
+    $t59 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/introspect/shard_neuron_bijection" -TimeoutSec 4
     $shmBytes = (Get-Item $shmPath).Length
     Write-Host "  [LAYER 3 - CONNECTOME]  CoreShards=$($t59.shards_counted)/$($t59.core_neurons_measured) (Scan=$($t59.scan_ms)ms) | Combined .npage SHM=${shmBytes}B (28,160N)" -ForegroundColor Green
 

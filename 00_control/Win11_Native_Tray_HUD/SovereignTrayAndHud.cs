@@ -106,7 +106,7 @@ namespace SovereignManifoldDesktop
             _onOpenNativeHud = onOpenNativeHud;
             _onRunAction = onRunAction;
 
-            this.Text = "ACT-Omega v46.0.0 Live Desktop Widget";
+            this.Text = "ACT-Omega v47.0.0 Live Desktop Widget";
             this.FormBorderStyle = FormBorderStyle.None;
             this.StartPosition = FormStartPosition.Manual;
             this.Size = new Size(420, 238);
@@ -257,11 +257,11 @@ namespace SovereignManifoldDesktop
             using (SolidBrush brInset = new SolidBrush(Color.FromArgb(10, 13, 18)))
             {
                 string modeTag = _topDesktopBannerMode ? "[WIN11 DESKTOP TOP-BANNER OVERLAY]" : "[WIN11 LIVE DESKTOP MINI-WIDGET]";
-                g.DrawString("ACT-OMEGA v46.0.0 (SH4Z v4600) " + modeTag, fTitle, brAmber, 12, 10);
+                g.DrawString("ACT-OMEGA v47.0.0 (SH4Z v4700) " + modeTag, fTitle, brAmber, 12, 10);
 
                 Brush statusBr = _tel.Online ? brGreen : brRed;
                 string statusTxt = _tel.Online
-                    ? string.Format("ONLINE | Tick #{0} | {1:0.0}k ops/s | 416/416 QED", _tel.Generation, _tel.ClusterKops)
+                    ? string.Format("ONLINE | Tick #{0} | {1:0.0}k ops/s | 432/432 QED | 89 Tools (T85..T89)", _tel.Generation, _tel.ClusterKops)
                     : "OFFLINE / AWAITING LOCALHOST :8097 TELEMETRY";
                 g.DrawString(statusTxt, fSub, statusBr, 12, 28);
 
@@ -346,7 +346,7 @@ namespace SovereignManifoldDesktop
             }
 
             ContextMenu menu = new ContextMenu();
-            _miStatus = new MenuItem("ACT-Omega v46.0.0 | Awaiting :8097 Telemetry...");
+            _miStatus = new MenuItem("ACT-Omega v47.0.0 | Awaiting :8097 Telemetry...");
             _miStatus.Enabled = false;
             menu.MenuItems.Add(_miStatus);
             menu.MenuItems.Add("-");
@@ -365,7 +365,7 @@ namespace SovereignManifoldDesktop
             menu.MenuItems.Add("-");
             menu.MenuItems.Add(new MenuItem("Sync 3.56MB .npage Shared Memory (P8 + P10 Roaming)", (s, e) => ExecuteClusterAction("/api/v1/shm/p8_npage_bridge", "SYNC .NPAGE SHM")));
             menu.MenuItems.Add(new MenuItem("Handover Continuum State to Phones + Cloudflare DO", (s, e) => ExecuteClusterAction("HANDOVER_PHONES", "HANDOVER TO PHONES")));
-            menu.MenuItems.Add(new MenuItem("Run 6-Layer True-Data Audit (T75 Self-Profiler)", (s, e) => ExecuteClusterAction("/api/v1/diagnostics/v44_self_profiler", "6-LAYER AUDIT")));
+            menu.MenuItems.Add(new MenuItem("Run 6-Layer True-Data Audit (89 Tools / 432 QED)", (s, e) => ExecuteClusterAction("/api/v1/diagnostics/v44_self_profiler", "6-LAYER AUDIT")));
             menu.MenuItems.Add("-");
             menu.MenuItems.Add(new MenuItem("Safe Start / Ignite All 6 Layers", (s, e) => RunLifecycleScript("start")));
             menu.MenuItems.Add(new MenuItem("Safe Restart Cluster", (s, e) => RunLifecycleScript("restart")));
@@ -379,7 +379,7 @@ namespace SovereignManifoldDesktop
 
             _trayIcon = new NotifyIcon();
             _trayIcon.Icon = BuildDynamicSovereignIcon(false);
-            _trayIcon.Text = "ACT-Omega v46.0.0 | Connecting to :8097...";
+            _trayIcon.Text = "ACT-Omega v47.0.0 | Connecting to :8097...";
             _trayIcon.ContextMenu = menu;
             _trayIcon.Visible = true;
             _trayIcon.DoubleClick += (s, e) => LaunchNativeDesktopHudWindow();
@@ -411,7 +411,7 @@ namespace SovereignManifoldDesktop
                 using (SolidBrush br = new SolidBrush(online ? Color.FromArgb(86, 211, 100) : Color.FromArgb(233, 78, 52)))
                 using (Font f = new Font("Consolas", 9.0f, FontStyle.Bold))
                 {
-                    g.DrawString("Ω46", f, br, 3, 9);
+                    g.DrawString("Ω47", f, br, 3, 9);
                 }
                 IntPtr hIcon = bmp.GetHicon();
                 return Icon.FromHandle(hIcon);
@@ -473,7 +473,7 @@ namespace SovereignManifoldDesktop
             if (endpointOrCmd == "HANDOVER_PHONES")
             {
                 RunLifecycleScript("handover");
-                _trayIcon.ShowBalloonTip(2000, "ACT-Omega v46.0.0 Continuum Handover", "3.56MB .npage SHM & 6-Layer state handed over to Pixel 8, Pixel 10 & Cloudflare DO.", ToolTipIcon.Info);
+                _trayIcon.ShowBalloonTip(2000, "ACT-Omega v47.0.0 Continuum Handover", "3.56MB .npage SHM & 6-Layer state handed over to Pixel 8, Pixel 10 & Cloudflare DO.", ToolTipIcon.Info);
                 return;
             }
             ThreadPool.QueueUserWorkItem(_ =>
@@ -575,11 +575,11 @@ namespace SovereignManifoldDesktop
                         _widgetForm.BeginInvoke((MethodInvoker)delegate
                         {
                             _widgetForm.UpdateTelemetry(_tel);
-                            string tip = string.Format("ACT-Omega v46.0 | {0:0}k ops/s | RTX {1:0}C | P10 {2:0.0}C | P8 {3:0.0}C",
+                            string tip = string.Format("ACT-Omega v47.0 | {0:0}k ops/s | RTX {1:0}C | P10 {2:0.0}C | P8 {3:0.0}C",
                                 _tel.ClusterKops, _tel.RtxTemp, _tel.P10Temp, _tel.P8Temp);
                             if (tip.Length > 63) tip = tip.Substring(0, 63);
                             _trayIcon.Text = tip;
-                            _miStatus.Text = string.Format("ACT-Omega v46.0.0 | {0:0.0}k ops/s | Tick #{1}", _tel.ClusterKops, _tel.Generation);
+                            _miStatus.Text = string.Format("ACT-Omega v47.0.0 | {0:0.0}k ops/s | Tick #{1} | 89 Tools", _tel.ClusterKops, _tel.Generation);
                         });
                     }
                 }
@@ -604,7 +604,7 @@ namespace SovereignManifoldDesktop
             }
 
             bool createdNew;
-            using (Mutex mutex = new Mutex(true, "Global\\ActOmegaSovereignCockpitTray_v4600", out createdNew))
+            using (Mutex mutex = new Mutex(true, "Global\\ActOmegaSovereignCockpitTray_v4700", out createdNew))
             {
                 if (!createdNew)
                 {

@@ -1,4 +1,4 @@
--- ACT-Omega Net v41.0.0 Zero-Mock Cryptographic SHA-256 D1 Checkpoint (Muse Audit #5 Remediated)
+-- ACT-Omega Net v47.0.0 (SH4Z v4700 TLV) Zero-Mock Cryptographic SHA-256 D1 Checkpoint (432/432 Lean 4 QED)
 CREATE TABLE IF NOT EXISTS v41_measured_sha256_audit (
     artifact_name TEXT PRIMARY KEY,
     byte_length INTEGER NOT NULL,

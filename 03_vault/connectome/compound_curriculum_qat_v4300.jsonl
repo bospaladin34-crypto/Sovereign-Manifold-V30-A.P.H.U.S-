@@ -34,3 +34,14 @@
 {"epoch":34,"domains":24,"vocab_size":131072,"combined_neurons":42240,"holdout_ppl":1.119456,"compound_transfer_pct":98.757,"cacheline_speedup_pct":31.94,"dag_latency_ms":0.106,"m_atp":0.7516,"kops":4512.2}
 {"epoch":35,"domains":24,"vocab_size":131072,"combined_neurons":42240,"holdout_ppl":1.119692,"compound_transfer_pct":98.780,"cacheline_speedup_pct":31.91,"dag_latency_ms":0.112,"m_atp":0.7562,"kops":4511.4}
 {"epoch":36,"domains":24,"vocab_size":131072,"combined_neurons":42240,"holdout_ppl":1.119534,"compound_transfer_pct":98.741,"cacheline_speedup_pct":31.91,"dag_latency_ms":0.133,"m_atp":0.7482,"kops":4511.2}
+{"epoch":37,"domains":24,"vocab_size":131072,"combined_neurons":42240,"holdout_ppl":1.118608,"compound_transfer_pct":98.711,"cacheline_speedup_pct":31.92,"dag_latency_ms":0.110,"m_atp":0.7421,"kops":4511.6}
+{"epoch":38,"domains":24,"vocab_size":131072,"combined_neurons":42240,"holdout_ppl":1.118415,"compound_transfer_pct":98.732,"cacheline_speedup_pct":34.83,"dag_latency_ms":0.121,"m_atp":0.7464,"kops":4611.1}
+{"epoch":39,"domains":24,"vocab_size":131072,"combined_neurons":42240,"holdout_ppl":1.118508,"compound_transfer_pct":98.817,"cacheline_speedup_pct":34.81,"dag_latency_ms":0.105,"m_atp":0.7637,"kops":4610.5}
+{"epoch":40,"domains":24,"vocab_size":131072,"combined_neurons":42240,"holdout_ppl":1.118466,"compound_transfer_pct":98.822,"cacheline_speedup_pct":33.37,"dag_latency_ms":0.098,"m_atp":0.7648,"kops":4561.2}
+{"epoch":41,"domains":24,"vocab_size":131072,"combined_neurons":42240,"holdout_ppl":1.119156,"compound_transfer_pct":98.798,"cacheline_speedup_pct":31.89,"dag_latency_ms":0.105,"m_atp":0.7598,"kops":4510.7}
+{"epoch":42,"domains":24,"vocab_size":131072,"combined_neurons":42240,"holdout_ppl":1.119923,"compound_transfer_pct":98.774,"cacheline_speedup_pct":31.89,"dag_latency_ms":0.166,"m_atp":0.7551,"kops":4510.7}
+{"epoch":43,"domains":24,"vocab_size":131072,"combined_neurons":42240,"holdout_ppl":1.119453,"compound_transfer_pct":98.882,"cacheline_speedup_pct":31.90,"dag_latency_ms":0.147,"m_atp":0.7771,"kops":4511.1}
+{"epoch":44,"domains":24,"vocab_size":131072,"combined_neurons":42240,"holdout_ppl":1.119715,"compound_transfer_pct":98.917,"cacheline_speedup_pct":31.88,"dag_latency_ms":0.440,"m_atp":0.7842,"kops":4510.5}
+{"epoch":45,"domains":24,"vocab_size":131072,"combined_neurons":42240,"holdout_ppl":1.119488,"compound_transfer_pct":98.833,"cacheline_speedup_pct":31.92,"dag_latency_ms":0.401,"m_atp":0.7671,"kops":4511.5}
+{"epoch":46,"domains":24,"vocab_size":131072,"combined_neurons":42240,"holdout_ppl":1.118589,"compound_transfer_pct":98.820,"cacheline_speedup_pct":31.89,"dag_latency_ms":0.145,"m_atp":0.7644,"kops":4510.7}
+{"epoch":47,"domains":24,"vocab_size":131072,"combined_neurons":42240,"holdout_ppl":1.118422,"compound_transfer_pct":98.805,"cacheline_speedup_pct":31.91,"dag_latency_ms":0.099,"m_atp":0.7613,"kops":4511.4}

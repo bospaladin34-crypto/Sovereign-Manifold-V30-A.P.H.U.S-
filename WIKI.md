@@ -1,19 +1,19 @@
 <!-- ========================================================================================= -->
-<!-- ACT-OMEGA NET v46.0.0 — SOVEREIGN ENCYCLOPEDIA, OPERATOR WIKI & STEP-BY-STEP USER MANUAL -->
+<!-- ACT-OMEGA NET v47.0.0 — SOVEREIGN ENCYCLOPEDIA, OPERATOR WIKI & STEP-BY-STEP USER MANUAL -->
 <!-- ========================================================================================= -->
 
-# 🌌 ACT-Omega Net `v46.0.0` (`SH4Z v4600 TLV`) — Sovereign Encyclopedia, Operator Wiki & Step-by-Step User Manual: `42,240` Neurons == `42,240` Shards (`960 × Chair-44` | `5,406,720 B` `.npage` SHM), `131,072` 24-Domain Open-Vocabulary BPE & Morphological Tokenizer (`0 <UNK>`), Constructive $E_8 \oplus E_8 \oplus E_8 \to \Lambda_{24}$ Leech Lattice Bridge, Real Synaptic-Update QAT (`PPL 4.012657`) & `416/416` Lean 4 Proofs QED
+# 🌌 ACT-Omega Net `v47.0.0` (`SH4Z v4700 TLV`) — Sovereign Encyclopedia, Operator Wiki & Step-by-Step User Manual: `42,240` Neurons == `42,240` Shards (`960 × Chair-44` | `5,406,720 B` `.npage` SHM), `131,072` 24-Domain Open-Vocabulary BPE & Morphological Tokenizer (`0 <UNK>`), `89` Native Tools (`T85..T89` / `CHAIN 89`), Constructive $E_8 \oplus E_8 \oplus E_8 \to \Lambda_{24}$ Leech Lattice Bridge, Real Synaptic-Update QAT (`PPL 4.012657`) & `432/432` Lean 4 Proofs QED
 
 <p align="center">
   <img src="./act_omega_logo.jpg" alt="ACT-Omega Net Official Sovereign Harmonic Emblem" width="200" style="border-radius: 20px; border: 2px solid #FFB454;" />
 </p>
 
-[![Release](https://img.shields.io/badge/Release-v46.0.0_(SH4Z_v4600_TLV_%7C_42,240_Neurons_%2B_131K_Open--Vocab_BPE)-00FFCC?style=for-the-badge&logo=github)](https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-/releases/tag/v46.0.0)
-[![Weight Binary](https://img.shields.io/badge/Weights-SH4Z_v4600_(133,120_B_%7C_80_Sectors_u128_0xFFFF__FFFFFFFFFFFFFFFF)-FF007F?style=for-the-badge)](https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-/tree/vesper_production/00_control/weights)
+[![Release](https://img.shields.io/badge/Release-v47.0.0_(SH4Z_v4700_TLV_%7C_42,240_Neurons_%2B_131K_Open--Vocab_BPE)-00FFCC?style=for-the-badge&logo=github)](https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-/releases/tag/v47.0.0)
+[![Weight Binary](https://img.shields.io/badge/Weights-SH4Z_v4700_(133,120_B_%7C_80_Sectors_u128_0xFFFF__FFFFFFFFFFFFFFFF)-FF007F?style=for-the-badge)](https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-/tree/vesper_production/00_control/weights)
 [![Neuron Pagefile](https://img.shields.io/badge/Shards_%26_Neurons-42,240_1:1_Bijection_(960x_Chair--44_%7C_5,406,720_B_.npage_SHM)-7B61FF?style=for-the-badge)](https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-/tree/vesper_production/00_control/weights)
 [![SHA-256 Verified](https://img.shields.io/badge/SHA--256_Verified-c383b1b7..._%7C_542d7b47..._(Zero_Unmeasured)-FF8800?style=for-the-badge)](https://bospaladin34-crypto.github.io/telemetry_snapshot.json)
-[![Lean 4 Proofs](https://img.shields.io/badge/Lean_4_Proofs-416_/_416_Runtime_QED_(0_Sorry_%7C_0_True_:_Prop)-00BFFF?style=for-the-badge)](https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-/tree/vesper_production/01_l0_rust/lean4)
-[![Tool Lattice](https://img.shields.io/badge/Tools-84_/_84_(CHAIN_84_Dynamic_Hardware_Probes)-FFD700?style=for-the-badge)](https://mcp.act-omega-net.dev/mcp)
+[![Lean 4 Proofs](https://img.shields.io/badge/Lean_4_Proofs-432_/_432_Runtime_QED_(0_Sorry_%7C_0_True_:_Prop)-00BFFF?style=for-the-badge)](https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-/tree/vesper_production/01_l0_rust/lean4)
+[![Tool Lattice](https://img.shields.io/badge/Tools-89_/_89_(CHAIN_89_Dynamic_Hardware_Probes)-FFD700?style=for-the-badge)](https://mcp.act-omega-net.dev/mcp)
 [![Tri-Silicon Cluster](https://img.shields.io/badge/Tri--Silicon_Cluster-LOQ15_%2B_Pixel10_%2B_Pixel8_(~4,512.5k_ops/s)-00FF66?style=for-the-badge)](https://act-omega-net.dev)
 [![Cloudflare D1 Vault](https://img.shields.io/badge/Cloudflare_D1_Vault-9f46d56a_(10_Tables_Live_SQL)-F38020?style=for-the-badge)](https://mcp.act-omega-net.dev/v1/d1/status)
 [![Operator Manual](https://img.shields.io/badge/Operator_Manual-USER__MANUAL__AND__FAQ.md_%2B_HUD_Sidebar-34A853?style=for-the-badge)](./USER_MANUAL_AND_FAQ.md)
@@ -38,13 +38,13 @@
   5. **`5. CLOUD, D1 & G:`** (Cloudflare Named Tunnel, 10-Table D1 SQLite Vault, `E:\` SSD & `G:\My Drive\ACT_OMEGA_GEMINI_BRIDGE`)
   6. **`6. FAQ & TROUBLESHOOT`** (Preventing Cloudflare `502`/`1033`, Muse 100% True-Data checks, Passkey auth, and `hotswap`)
 
-## ⚡ Executive Summary — What's New in `v46.0.0` (`SH4Z v4600 TLV` Architecture Facelift & 6-Layer Hardening)
+## ⚡ Executive Summary — What's New in `v47.0.0` (`SH4Z v4700 TLV` Architecture Facelift & 6-Layer Hardening)
 
-| Dimension / Subsystem | `v43.0.0` Baseline | `v46.0.0` (`SH4Z v4600 TLV`) Production Specification |
+| Dimension / Subsystem | `v43.0.0` Baseline | `v47.0.0` (`SH4Z v4700 TLV`) Production Specification |
 | :--- | :--- | :--- |
-| **Telemetry & Probe Engine** | Static constants in `v38/v40` | **100% Zero-Unmeasured Hardware Telemetry across all `84` Tools (`v38`, `v40`, `v44`, `v45`, `v46`), continuous 6-pillar `v44_self_profiler` (`95/100`), real loopback IP + passkey auth, and live-captured `telemetry_snapshot.json`** |
+| **Telemetry & Probe Engine** | Static constants in `v38/v40` | **100% Zero-Unmeasured Hardware Telemetry across all `89` Tools (`CHAIN 89`), continuous 6-pillar `v44_self_profiler` (`95/100`), real loopback IP + passkey auth, and live-captured `telemetry_snapshot.json`** |
 | **Shard & Neuron Parity** | `21,120` Neurons (`480 × Chair-44`, `2,703,360 B`) | **`42,240` Neurons == `42,240` Shards (`21,120` Core + `21,120` Expansion = `5,406,720 B / 5.16 MB` in `neurons_v4600_42240.npage` `542d7b47...`, `960 × Chair-44` columns, `337,920` BDH/KAN synapses)** |
-| **131K BPE & Lean 4 Proofs** | `16,384` Vocab / `364` Proofs | **`131,072` 24-Domain Open-Vocabulary BPE (`Post-PPL = 4.012657`, `0 <UNK>`) + `416 / 416` Non-Trivial Lean 4 Proofs QED (`fca430cb...`, `0 sorry`, `0 True : Prop`)** |
+| **131K BPE & Lean 4 Proofs** | `16,384` Vocab / `364` Proofs | **`131,072` 24-Domain Open-Vocabulary BPE (`Post-PPL = 4.012657`, `0 <UNK>`) + `432 / 432` Non-Trivial Lean 4 Proofs QED (`0 sorry`, `0 True : Prop`)** |
 | **Unplugged SHM & Win11 Native** | Tethered-only / HTML tab | **Unplugged Pixel 10 `.npage` SHM Roaming (`Tool 77`) + Native Windows 11 System Tray, Desktop Top-Banner Widget & App Launcher (`SovereignCockpitHUD.exe`) + Android Live Screensaver (`SovereignDreamService`)** |
 | **10-Table D1 & `G:\` Bridge** | `8` Tables | **`10` Live Cloudflare D1 Tables (`act_omega_d1_vault`) + WebCrypto SHA-256 Edge Worker + Automatic Mirroring to `G:\My Drive\ACT_OMEGA_GEMINI_BRIDGE` and `E:\Sovereign_Manifold_SSD_Vault`** |
 

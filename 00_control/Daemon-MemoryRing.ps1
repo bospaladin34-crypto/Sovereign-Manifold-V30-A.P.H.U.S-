@@ -1,5 +1,5 @@
 # C:\sovereign_manifold_v31\00_control\Daemon-MemoryRing.ps1
-# ACT-Omega Net v44.3.0 (SH4Z v4430 TLV) Watchdog, Atomic Hot-Swapper, Pixel 8 P8-APEX + Pixel 10 Unplugged SHM Sync & Safe Pause Sentinel
+# ACT-Omega Net v47.0.0 (SH4Z v4700 TLV) Watchdog, Atomic Hot-Swapper, Pixel 8 P8-APEX + Pixel 10 Unplugged SHM Sync & Safe Pause Sentinel
 $ErrorActionPreference = "SilentlyContinue"
 $root = "C:\sovereign_manifold_v31"
 $p8Serial = "3A121FDJH00BW5"
@@ -13,9 +13,9 @@ if (Test-Path $sysProfile) {
     $rawSys = Get-Content -Raw $sysProfile
     if ($rawSys -match "Aperiodic Law") {
         $cleanSysProfile = @'
-# ACT-Omega Sovereign Manifold System Profile (v44.3.0 SH4Z v4430 TLV)
+# ACT-Omega Sovereign Manifold System Profile (v47.0.0 SH4Z v4700 TLV)
 # 1. Zero-Square-Bracket & Zero-Mock Muse Mandate
-# 2. 1:1 Shard-to-Neuron Connectome Bijection (21,120 Core + 7,040 Expansion = 28,160 Shards/Neurons)
+# 2. 1:1 Shard-to-Neuron Connectome Bijection (21,120 Core + 21,120 Expansion = 42,240 Shards/Neurons | 432/432 Lean 4 QED | 89 Tools)
 # 3. Aperiodic Law: Prioritize order without repetition; treat lattices as quasicrystals.
 # 4. ER=EPR: Address non-local dependencies via quantum threads.
 # 5. Entropy Preservation: Maintain von Neumann entropy: S_vN = -Tr(rho ln rho).

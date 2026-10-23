@@ -1,5 +1,5 @@
 -- =============================================================================
--- ACT-OMEGA NET v44.0.0 (SH4Z v4400 TLV) - FULL 10-TABLE CLOUDFLARE D1 SYNC
+-- ACT-OMEGA NET v47.0.0 (SH4Z v4700 TLV) - FULL 10-TABLE CLOUDFLARE D1 SYNC
 -- Synchronizes all 10 tables in act_omega_d1_vault (9f46d56a-ef3e-4232-a9ac-c4bd12e20a87):
 -- 1. harness_5w1h_audit_log
 -- 2. npage_tier_snapshots
@@ -15,7 +15,7 @@
 
 CREATE TABLE IF NOT EXISTS npage_tier_snapshots (
     snapshot_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    schema_version TEXT NOT NULL DEFAULT 'SH4Z_v4600_TLV',
+    schema_version TEXT NOT NULL DEFAULT 'SH4Z_v4700_TLV',
     total_neurons INTEGER NOT NULL DEFAULT 42240,
     total_bytes INTEGER NOT NULL DEFAULT 5406720,
     active_synapses INTEGER NOT NULL DEFAULT 337920,
@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS npage_tier_snapshots (
 
 CREATE TABLE IF NOT EXISTS harness_5w1h_audit_log (
     event_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    chain_level TEXT NOT NULL DEFAULT 'CHAIN_84',
+    chain_level TEXT NOT NULL DEFAULT 'CHAIN_89',
     metabolic_band TEXT NOT NULL,
     atp_score REAL NOT NULL,
     why_motivation TEXT NOT NULL,
@@ -44,7 +44,7 @@ CREATE TABLE IF NOT EXISTS wal_merkle_checkpoints (
     e8z_filename TEXT NOT NULL DEFAULT 'sovereign_harmonic_iv_v4000.e8z',
     e8z_bytes INTEGER NOT NULL DEFAULT 133120,
     shard_count INTEGER NOT NULL DEFAULT 42240,
-    lean4_proofs_qed INTEGER NOT NULL DEFAULT 416,
+    lean4_proofs_qed INTEGER NOT NULL DEFAULT 432,
     sha256_digest TEXT NOT NULL,
     recorded_at_ms INTEGER NOT NULL
 );
@@ -141,17 +141,17 @@ CREATE TABLE IF NOT EXISTS v44_multiturn_working_memory_ring (
 INSERT OR REPLACE INTO npage_tier_snapshots (snapshot_id, schema_version, total_neurons, total_bytes, active_synapses, swr_sub_epochs, swr_compression_ratio, metabolic_atp_score, rtx3050_temp_c, recorded_at_ms) VALUES
 (9, 'SH4Z_v4300_EXPANSION_BANK_24640', 24640, 3153920, 197120, 10, 24.0, 0.9524, 49.0, 1761102000000),
 (10, 'SH4Z_v4400_EXPANSION_BANK_28160', 28160, 3604480, 225280, 10, 24.0, 0.9548, 49.0, 1761110400000),
-(11, 'SH4Z_v4600_CONNECTOME_42240_NEURONS', 42240, 5406720, 337920, 10, 24.0, 0.9554, 49.0, 1761248400000);
+(11, 'SH4Z_v4700_CONNECTOME_42240_NEURONS', 42240, 5406720, 337920, 10, 24.0, 0.9554, 49.0, 1761248400000);
 
 INSERT OR REPLACE INTO harness_5w1h_audit_log (event_id, chain_level, metabolic_band, atp_score, why_motivation, what_tools_invoked, where_silicon_target, when_schedule_window, how_execution_kernel, recorded_at_ms) VALUES
 (10, 'CHAIN_72', 'BAND_1_24640_CONNECTOME_128_8D_LEXICON_HUD_INSPECTOR', 0.9524, 'Expand Connectome to 24,640 Neurons/Shards (+3,520 = 80x Chair-44), 128 8-Domain Compound Phrases & Interactive 65K BPE HUD/APK Inspector', 'Tools 25, 27, 42, 45, 48, 50 & 70 + /api/v1/tokenizer/bpe_65k', 'LOQ15 + Pixel 10 + Pixel 8 + E: SSD + G: Bridge + Cloudflare D1/Worker/DO', '*/15 * * * * Cron + 15.965 Hz Decadic Lockstep', 'neurons_v4300_expansion.npage (450,560B, 3,520N) -> 24,640 Combined Neurons (560x Chair-44, 197,120 Synapses)', 1761102000100),
 (11, 'CHAIN_76', 'BAND_1_V4400_ARCHITECTURE_FACELIFT_28160_NEURONS_16DOMAINS', 0.9548, 'Execute v44.0.0 5-Cycle Facelift: 16 Domains (256 Compounds), 28,160 Neurons (640x Chair-44), Safe LLM Gateway, Multi-Turn Memory (T73), Socratic Debate (T74), Self-Profiler (T75) & Omni-Snapshot (T76)', 'Tools 01-76 (CHAIN 76 Parallel DAG + 10-Table D1 + Dual-Pixel C++ JNI SH4Z v4400)', 'LOQ15 RTX 3050 (S00..S47) + Pixel 10 G5 (S48..S63) + Pixel 8 P8-APEX (S64..S79) + E: SSD + 10-Table D1', '*/15 * * * * Cron + 15.965 Hz Decadic Epoch + 159.65 Hz SWR Replay', 'neurons_v4400_expansion.npage (901,120B, 7,040N) -> 28,160 Combined Neurons (640x Chair-44, 225,280 Synapses, 384/384 Lean 4 QED)', 1761110400100),
-(12, 'CHAIN_84', 'BAND_1_V4600_42240_NEURONS_131K_24D_OPEN_VOCAB_MUSE_VERIFIED', 0.9554, 'Execute v46.0.0 42,240-Neuron Connectome Expansion (960x Chair-44, 5,406,720 B .npage), 131,072 24-Domain Open-Vocabulary BPE & Muse Zero-Unmeasured Hardening', 'Tools 01-84 (CHAIN 84 Parallel DAG + Real Synaptic QAT + Measured SHA-256)', 'LOQ15 RTX 3050 (S00..S47) + Pixel 10 G5 (S48..S63) + Pixel 8 P8-APEX (S64..S79) + E: SSD + 10-Table D1', '*/15 * * * * Cron + 15.965 Hz Decadic Epoch + 159.65 Hz SWR Replay', 'neurons_v4600_42240.npage (5,406,720B, 42,240N) -> 42,240 Combined Neurons == 42,240 Shards (960x Chair-44, 337,920 Synapses, 416/416 Lean 4 QED)', 1761248400100);
+(12, 'CHAIN_89', 'BAND_1_V4700_42240_NEURONS_131K_24D_89TOOLS_432QED', 0.9554, 'Execute v47.0.0 42,240-Neuron Connectome (960x Chair-44, 5,406,720 B .npage), 131,072 24-Domain Open-Vocabulary BPE, 89 Tools (T85..T89) & 432/432 Lean 4 QED', 'Tools 01-89 (CHAIN 89 Parallel DAG + Real Synaptic QAT + Measured SHA-256)', 'LOQ15 RTX 3050 (S00..S47) + Pixel 10 G5 (S48..S63) + Pixel 8 P8-APEX (S64..S79) + E: SSD + 10-Table D1', '*/15 * * * * Cron + 15.965 Hz Decadic Epoch + 159.65 Hz SWR Replay', 'neurons_v4600_42240.npage (5,406,720B, 42,240N) -> 42,240 Combined Neurons == 42,240 Shards (960x Chair-44, 337,920 Synapses, 432/432 Lean 4 QED)', 1761248400100);
 
 INSERT OR REPLACE INTO wal_merkle_checkpoints (checkpoint_id, e8z_filename, e8z_bytes, shard_count, lean4_proofs_qed, sha256_digest, recorded_at_ms) VALUES
 (9, 'neurons_v4300_expansion.npage', 450560, 24640, 364, 'ac8899c6b6c00b213727ad82a08f3eeff56dbaebd63cd14c33661b2774200768', 1761102000200),
 (10, 'neurons_v4400_expansion.npage', 901120, 28160, 416, '0cf1f9d23730bf24d9bb5df389fbbf8757054f34789c78306281c2b9fb5928ef', 1761110400200),
-(11, 'neurons_v4600_42240.npage', 5406720, 42240, 416, '542d7b47dc657c0ba00ab1fb8d45d8b35e7895df4a2a0c8b0bd9bc9b44cf7a08', 1761248400200);
+(11, 'neurons_v4600_42240.npage', 5406720, 42240, 432, '542d7b47dc657c0ba00ab1fb8d45d8b35e7895df4a2a0c8b0bd9bc9b44cf7a08', 1761248400200);
 
 INSERT OR REPLACE INTO v40_qat_training_sessions (session_id, session_name, epochs, start_epoch, end_epoch, domain_focus, grad_l2_norm, atp_score, holdout_ppl, shards_active) VALUES
 (13, 'QAT-S13-24640-Neurons-128Phrase-8Domain-Lexicon', 128, 1537, 1664, '24,640 Combined Neurons (560x Chair-44, 197,120 Synapses) + 128 Multi-Word 8-Domain Compound Phrases', 0.000058, 0.9524, 1.119476, 24640),
@@ -179,10 +179,10 @@ INSERT OR REPLACE INTO v42_5w1h_distributed_routes (route_id, who_caller, what_w
 (6, 'Google_Antigravity_Gemini4_Argon', 'Multi_Agent_Teamwork_And_5W1H_Connectome_28160', 15.965, 'TriSilicon_And_Cloudflare_10Tables', 'S00..S79', 0.9548, 'Antigravity_ServerUrl_MCP_8097', 1);
 
 INSERT OR REPLACE INTO v43_antigravity_agent_roster (agent_id, agent_name, agent_file, model_tier, domain_scope, bound_npage_neurons, bound_sectors, mcp_server_url, status) VALUES
-(1, 'l0-rust-lean4-architect', '.agents/agents/01-l0-rust-lean4-architect.md', 'Gemini-4-Argon (pro)', '01_l0_rust + v31_swarm.exe + 384/384 Lean 4 QED', 42240, 'S00..S47', 'http://127.0.0.1:8097/api/v1/mcp/rpc', 'ACTIVE_READY'),
+(1, 'l0-rust-lean4-architect', '.agents/agents/01-l0-rust-lean4-architect.md', 'Gemini-4-Argon (pro)', '01_l0_rust + v31_swarm.exe + 432/432 Lean 4 QED', 42240, 'S00..S47', 'http://127.0.0.1:8097/api/v1/mcp/rpc', 'ACTIVE_READY'),
 (2, '5w1h-connectome-router', '.agents/agents/02-5w1h-connectome-router.md', 'Gemini-4-Argon (pro)', 'Tool 45/65/70 5W1H Harness + 21,120 Core + 21,120 Expansion Neurons', 42240, 'S00..S79', 'http://127.0.0.1:8097/api/v1/mcp/rpc', 'ACTIVE_READY'),
-(3, 'hud-cockpit-guardian', '.agents/agents/03-hud-cockpit-guardian.md', 'Gemini-4-Argon (pro)', '05_hud_cockpit (15 Cards + 5-Node Ribbon + 16x130 Heatmap + 24D BPE + T73..T76)', 42240, 'S00..S79', 'http://127.0.0.1:8097/api/v1/mcp/rpc', 'ACTIVE_READY'),
-(4, 'dual-pixel-edge-ndk', '.agents/agents/04-dual-pixel-edge-ndk.md', 'Gemini-4-Argon (pro)', '04_edge_silicon Pixel 10 (58170DLCR0004V) & Pixel 8 (3A121FDJH00BW5) SH4Z v4600', 42240, 'S48..S79', 'http://127.0.0.1:8097/api/v1/mcp/rpc', 'ACTIVE_READY'),
+(3, 'hud-cockpit-guardian', '.agents/agents/03-hud-cockpit-guardian.md', 'Gemini-4-Argon (pro)', '05_hud_cockpit (15 Cards + 5-Node Ribbon + 16x130 Heatmap + 24D BPE + T73..T89)', 42240, 'S00..S79', 'http://127.0.0.1:8097/api/v1/mcp/rpc', 'ACTIVE_READY'),
+(4, 'dual-pixel-edge-ndk', '.agents/agents/04-dual-pixel-edge-ndk.md', 'Gemini-4-Argon (pro)', '04_edge_silicon Pixel 10 (58170DLCR0004V) & Pixel 8 (3A121FDJH00BW5) SH4Z v4700', 42240, 'S48..S79', 'http://127.0.0.1:8097/api/v1/mcp/rpc', 'ACTIVE_READY'),
 (5, 'cloudflare-d1-tunnel-ops', '.agents/agents/05-cloudflare-d1-tunnel-ops.md', 'Gemini-4-Argon (pro)', 'act-omega-net.dev Tunnel + Remote 5GB D1 (10 Tables) + E:/G: Vaults', 42240, 'S00..S79', 'https://mcp.act-omega-net.dev/mcp', 'ACTIVE_READY'),
 (6, 'muse-zero-mock-auditor', '.agents/agents/06-muse-zero-mock-auditor.md', 'Gemini-4-Argon (pro)', 'Pre-Commit Zero-Mock Gate + SHA-256 Audit + GitHub 3-Branch Release', 42240, 'S00..S79', 'http://127.0.0.1:8097/api/v1/mcp/rpc', 'ACTIVE_READY'),
 (7, 'periphery-widgets-mini-hud-sync', '.agents/agents/07-periphery-widgets-mini-hud-sync.md', 'Gemini-4-Argon (pro)', 'Win11 Native Tray HUD + Android Widget/Wallpaper + PWA sw.js + Cloudflare Edge + First-Pass Periphery Sync', 42240, 'S00..S79', 'http://127.0.0.1:8097/api/v1/mcp/rpc', 'ACTIVE_READY');

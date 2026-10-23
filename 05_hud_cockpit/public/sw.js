@@ -1,4 +1,4 @@
-const CACHE_NAME = 'act-omega-hud-v46-1';
+const CACHE_NAME = 'act-omega-hud-v47-0';
 const STATIC_ASSETS = [
   '/',
   '/index.html',

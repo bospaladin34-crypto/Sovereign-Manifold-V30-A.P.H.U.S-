@@ -181,11 +181,11 @@ object SovereignLiveBus : SensorEventListener {
     @Volatile private var stickyBearerIdx = 0
         @Volatile var lastInspectedHex = "53 48 34 5A 88 0C FF FF E8 24 7F C3 1B 4D 8E 2A"
     @Volatile var hostLastCardIdx = 0
-    @Volatile var hostLastCardDiag = "[OTA SYNC v46.0.0]: 15.965 Hz Decadic Epoch + Per-Sensor Stiefel + 42,240 Shards Active."
-    @Volatile var hostLastTermOut = "EXEC(CHAIN_80_PARALLEL_DAG_QED) -> 42,240 Shards -- 416/416 Lean4 QED"
+    @Volatile var hostLastCardDiag = "[OTA SYNC v47.0.0]: 15.965 Hz Decadic Epoch + Per-Sensor Stiefel + 42,240 Shards + Tools 85..89 Active."
+    @Volatile var hostLastTermOut = "EXEC(CHAIN_89_PARALLEL_DAG_QED) -> 42,240 Shards -- 432/432 Lean4 QED -- 89 Tools"
     @Volatile var hostLaplacianFace = "E0(1/10 Div-Grad: div(grad f))"
     @Volatile var hostAnomalyBanner = "LAMINAR EQUILIBRIUM (U(1) Gauge Filter A'=A+grad(chi) = 0.000): 15.965 Hz Decadic Epoch Active."
-    @Volatile var hostNlSynthesis = "Sovereign Harmonic VI (SH4Z v4600) Natural Language Synthesis: 15.965 Hz Decadic Epoch locked across 42,240 Shards (960x Chair-44), Per-Sensor Stiefel Ortho=5.0e-7, 10-Laplacian FNO L2=0.00019."
+    @Volatile var hostNlSynthesis = "Sovereign Harmonic VII (SH4Z v4700) Natural Language Synthesis: 15.965 Hz Decadic Epoch locked across 42,240 Shards (960x Chair-44), 89 Native Tools (T85..T89), Per-Sensor Stiefel Ortho=5.0e-7, 10-Laplacian FNO L2=0.00019, 432/432 Lean 4 Proofs QED."
     @Volatile var hostEpisodicOut = "TOOL 28 EPISODIC MEMORY READY: 21,120 Shards + JSONL Rings indexed on E:/Sovereign_Manifold_SSD_Vault." 
     @Volatile var lastInspectedTrits = "Offset=0x13C00 (80896B) -- Trits(-1/0/+1)=21/22/21 -- 1.585b Golay G24"
     private val e8zCachelineNorms = FloatArray(2080)
@@ -719,7 +719,7 @@ object SovereignLiveBus : SensorEventListener {
 
         val c3 = String.format(
             Locale.US,
-            "SH4Z v4600 (133120B 80-Sector) -- Gen #%d -- Lean4: 416/416 Proofs QED in %.1fms\n" +
+            "SH4Z v4700 (133120B 80-Sector) -- Gen #%d -- Lean4: 432/432 Proofs QED in %.1fms\n" +
                 "42,240 Neurons (960x Chair-44) -- Kasami Cw=%s -- RSR #%d -- HybridLink Hops=%d\n" +
                 "LLM-Gateway (Tool 21): #%d -- FNO PDE (Tool 22): #%d (Re=%.1f) -- E:/ SSD (Tool 23): #%d",
             gen,
@@ -741,10 +741,10 @@ object SovereignLiveBus : SensorEventListener {
             card1Text = c1,
             card2Text = c2,
             card3Text = c3,
-            card4Status = "SH4Z v4600 SYNCED",
+            card4Status = "SH4Z v4700 SYNCED",
             activeBearer = bearer,
             rttMs = rtt,
-            leanProofs = 416,
+            leanProofs = 432,
             totalShards = 42240,
             p8L2FreePct = 89.11,
             clusterKops = hostClusterKops.toDouble(),
@@ -780,7 +780,7 @@ object SovereignLiveBus : SensorEventListener {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 val ch = NotificationChannel(
                     channelId,
-                    "Sovereign Manifold v46.0.0 Telemetry",
+                    "Sovereign Manifold v47.0.0 Telemetry",
                     NotificationManager.IMPORTANCE_LOW
                 )
                 nm.createNotificationChannel(ch)
@@ -800,13 +800,13 @@ object SovereignLiveBus : SensorEventListener {
             val syncPi = android.app.PendingIntent.getBroadcast(context, 4402, syncIntent, piFlags)
 
             val title = if (isPixel8ComputeNode) {
-                String.format(Locale.US, "SH4Z v4600 P8 .npage SHM (89.11%% L2) -- %.1fk ops/s", snap.clusterKops)
+                String.format(Locale.US, "SH4Z v4700 P8 .npage SHM (89.11%% L2) -- %.1fk ops/s", snap.clusterKops)
             } else {
-                String.format(Locale.US, "SH4Z v4600 P10 24D + .npage SHM -- %.1fk ops/s", snap.clusterKops)
+                String.format(Locale.US, "SH4Z v4700 P10 24D + .npage SHM -- %.1fk ops/s", snap.clusterKops)
             }
             val body = String.format(
                 Locale.US,
-                "Tick #%d | 42,240N (5.41MB/3.56MB SHM) | 131K Vocab | 416/416 QED | %s (%.1fms)",
+                "Tick #%d | 42,240N (5.41MB/3.56MB SHM) | 131K Vocab | 89 Tools | 432/432 QED | %s (%.1fms)",
                 snap.gen,
                 snap.activeBearer,
                 snap.rttMs
@@ -898,11 +898,11 @@ object SovereignLiveBus : SensorEventListener {
                 snap.gen, bNorm, baroHpa, snap.fnoRuns, snap.clusterKops, snap.rttMs
             )
             val titleLine = if (isPixel8ComputeNode) {
-                "SOVEREIGN v46.0.0 P8-APEX -- 42,240N .NPAGE SHM"
+                "SOVEREIGN v47.0.0 P8-APEX -- 42,240N .NPAGE SHM"
             } else {
-                "SOVEREIGN v46.0.0 P10-G5 -- 42,240N .NPAGE SHM"
+                "SOVEREIGN v47.0.0 P10-G5 -- 42,240N .NPAGE SHM"
             }
-            val subLine = "act-omega-net.dev -- 960x Chair-44 -- 131K Vocab -- 416/416 QED"
+            val subLine = "act-omega-net.dev -- 960x Chair-44 -- 131K Vocab -- 89 Tools -- 432/432 QED"
 
             val piFlags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE
@@ -1278,7 +1278,7 @@ object SovereignVisualizerRenderer {
         paint.textSize = (w * 0.032f).coerceIn(22f, 38f)
         paint.color = 0xFFFFB454.toInt()
         val nodeTag = if (isP8) "PIXEL 8 P8-APEX (4.00MB L2 SHM)" else "PIXEL 10 TENSOR G5 (24D + SHM)"
-        canvas.drawText("ACT-OMEGA v46.0.0 SH4Z -- $nodeTag", cx, h * 0.08f, paint)
+        canvas.drawText("ACT-OMEGA v47.0.0 SH4Z -- $nodeTag", cx, h * 0.08f, paint)
 
         paint.textSize = (w * 0.025f).coerceIn(17f, 28f)
         paint.color = 0xFF00FFCC.toInt()
@@ -1291,7 +1291,7 @@ object SovereignVisualizerRenderer {
 
         paint.color = 0xFF9FB0C2.toInt()
         canvas.drawText(
-            String.format(Locale.US, "Tick #%d | 960x Chair-44 | 131,072 Vocab | 416/416 Lean 4 QED | %s", snap.gen, snap.activeBearer.take(24)),
+            String.format(Locale.US, "Tick #%d | 960x Chair-44 | 131,072 Vocab | 89 Tools | 432/432 Lean 4 QED | %s", snap.gen, snap.activeBearer.take(24)),
             cx,
             h * 0.945f,
             paint
@@ -1316,7 +1316,7 @@ class SovereignDreamSettingsActivity : ComponentActivity() {
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 Text(
-                    "ACT-OMEGA v46.0.0 SCREENSAVER & LIVE WALLPAPER",
+                    "ACT-OMEGA v47.0.0 SCREENSAVER & LIVE WALLPAPER",
                     color = AccentAmber10,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
@@ -1559,6 +1559,11 @@ fun SovereignCockpitV326Screen() {
                 }
                 val diagField = pickJsonField(res, "diag")
                 val fluentField = pickJsonField(res, "fluent_prose_response")
+                val v47LexField = pickJsonField(res, "fluent_synthesis")
+                val v47CotField = pickJsonField(res, "cot_narrative")
+                val v47RagField = pickJsonField(res, "rag_grounded_answer")
+                val v47VoiceField = pickJsonField(res, "embodied_utterance")
+                val v47SciField = pickJsonField(res, "scientist_summary")
                 val traceField = pickJsonField(res, "trace")
                 val detailField = pickJsonField(res, "detail")
                 val hexField = pickJsonField(res, "hex_16b")
@@ -1572,7 +1577,12 @@ fun SovereignCockpitV326Screen() {
                 if (tritField != null) SovereignLiveBus.lastInspectedTrits = tritField
                 if (nlField != null) SovereignLiveBus.hostNlSynthesis = nlField
                 if (epField != null) SovereignLiveBus.hostEpisodicOut = epField
-                if (fluentField != null) mobileFluentProse = fluentField
+                val v47Combined = listOfNotNull(v47SciField, v47CotField, v47RagField, v47VoiceField, v47LexField).joinToString("\n")
+                if (v47Combined.isNotEmpty()) {
+                    mobileFluentProse = v47Combined
+                } else if (fluentField != null) {
+                    mobileFluentProse = fluentField
+                }
                 if (golayField != null) {
                     fun pickInt(k: String, d: Int): Int {
                         val p = "\"$k\":"
@@ -1661,7 +1671,7 @@ fun SovereignCockpitV326Screen() {
                         )
                     }
                     Text(
-                        text = "SOVEREIGN MANIFOLD TELEMETRY CONSOLE -- ACT-OMEGA NET v46.0.0 (SH4Z v4600 TLV)",
+                        text = "SOVEREIGN MANIFOLD TELEMETRY CONSOLE -- ACT-OMEGA NET v47.0.0 (SH4Z v4700 TLV)",
                         color = AccentAmber10,
                         fontSize = 9.2.sp,
                         fontWeight = FontWeight.Bold,
@@ -2053,7 +2063,7 @@ fun SovereignCockpitV326Screen() {
             val thmEnd = thmStart + 4
             val chairCol = ((lineStart + selectedLine) * 640) / 2080
             Text(
-                text = "Sector #$selectedSector/79 (${sectorNames[selectedSector.coerceIn(0, sectorNames.lastIndex)]}) Line #$selectedLine/129: Lines $lineStart..$lineEnd (Bytes $byteStart..$byteEnd = 130x64B, Chair-44 Col #$chairCol/959, 42,240 Neurons) -- Theorems thm$thmStart..thm$thmEnd (416/416 QED)",
+                text = "Sector #$selectedSector/79 (${sectorNames[selectedSector.coerceIn(0, sectorNames.lastIndex)]}) Line #$selectedLine/129: Lines $lineStart..$lineEnd (Bytes $byteStart..$byteEnd = 130x64B, Chair-44 Col #$chairCol/959, 42,240 Neurons) -- Theorems thm$thmStart..thm$thmEnd (432/432 QED)",
                 color = AccentAmber10,
                 fontSize = 8.2.sp,
                 lineHeight = 11.5.sp,
@@ -2627,6 +2637,30 @@ fun SovereignCockpitV326Screen() {
                 }
             }
             Spacer(modifier = Modifier.height(4.dp))
+            // Row v47.0.0: Sovereign Scientist (T89), Embodied Sensor+Voice .WAV (T88), RAG-on-Leech (T87), 4-Hop Leech Geodesic CoT (T86), Self-Growing OOV Lexicon (T85)
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                ToolButton603010("T89: Scientist RK4", Color(0xFF261038), Color(0xFFFFD700), Modifier.weight(1f)) {
+                    val qEnc = java.net.URLEncoder.encode(cmdPrompt, "UTF-8")
+                    invokeHostEndpoint("/api/v1/v47/sovereign_scientist?q=$qEnc", null, "TOOL 89: SOVEREIGN SCIENTIST (RK4+LEAN4)")
+                }
+                ToolButton603010("T88: Sensor+Voice", Color(0xFF0D2618), Color(0xFF56D364), Modifier.weight(1f)) {
+                    val qEnc = java.net.URLEncoder.encode(cmdPrompt, "UTF-8")
+                    invokeHostEndpoint("/api/v1/v47/embodied_sensor_voice_loop?q=$qEnc", null, "TOOL 88: EMBODIED 24D SENSOR + VOICE .WAV")
+                }
+                ToolButton603010("T87: RAG-on-Leech", Color(0xFF091F2C), Color(0xFF00E5FF), Modifier.weight(1f)) {
+                    val qEnc = java.net.URLEncoder.encode(cmdPrompt, "UTF-8")
+                    invokeHostEndpoint("/api/v1/v47/rag_on_leech?q=$qEnc", null, "TOOL 87: SOVEREIGN RAG-ON-LEECH")
+                }
+                ToolButton603010("T86: 4-Hop CoT", Color(0xFF1F1030), Color(0xFFB388FF), Modifier.weight(1f)) {
+                    val qEnc = java.net.URLEncoder.encode(cmdPrompt, "UTF-8")
+                    invokeHostEndpoint("/api/v1/v47/leech_geodesic_cot?q=$qEnc", null, "TOOL 86: 4-HOP LEECH GEODESIC CoT")
+                }
+                ToolButton603010("T85: OOV Lexicon", Color(0xFF2B1D00), Color(0xFFFFB454), Modifier.weight(1f)) {
+                    val qEnc = java.net.URLEncoder.encode(cmdPrompt, "UTF-8")
+                    invokeHostEndpoint("/api/v1/v47/self_growing_lexicon?q=$qEnc", null, "TOOL 85: SELF-GROWING OOV LEXICON (.NPAGE STDP)")
+                }
+            }
+            Spacer(modifier = Modifier.height(4.dp))
             // Row v46.0.0: 131K Open-Vocab & 42,240N NL (T83), 192-Epoch E8-Leech Fluency QAT (T82), E8+E8+E8 -> Leech_24 Bridge (T81), OOV Novel Test
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 ToolButton603010("T83: 131K Open-Vocab", Color(0xFF2B1D00), Color(0xFFFFB454), Modifier.weight(1f)) {
@@ -2958,7 +2992,7 @@ fun SovereignCockpitV326Screen() {
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = String.format(Locale.US, "[SH4Z v4600 (133,120 B / 130.00 KB 80-Sector 60-30-10 HUD)]: Work-Stealing=2,080 Lines (%.1fk ops/s) -- 416/416 Lean 4 QED -- 42,240 Neurons (960x Chair44, 5.41MB SHM) -- 131,072 BPE+24D Tokens -- E:/ Tier-2 SSD Active", snap.clusterKops),
+                        text = String.format(Locale.US, "[SH4Z v4700 (133,120 B / 130.00 KB 80-Sector 60-30-10 HUD)]: Work-Stealing=2,080 Lines (%.1fk ops/s) -- 432/432 Lean 4 QED -- 42,240 Neurons (960x Chair44, 5.41MB SHM) -- 131,072 BPE+24D Tokens -- 89 Tools (T85..T89) -- E:/ Tier-2 SSD Active", snap.clusterKops),
                         color = AccentAmber10,
                         fontSize = 8.5.sp,
                         lineHeight = 12.sp,

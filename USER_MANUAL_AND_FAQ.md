@@ -1,4 +1,4 @@
-# ACT-Omega Net `v46.0.0` (`SH4Z v4600 TLV`) — Complete Operator User Manual, Step-by-Step Guide & FAQ
+# ACT-Omega Net `v47.0.0` (`SH4Z v4700 TLV`) — Complete Operator User Manual, Step-by-Step Guide & FAQ
 
 > **Continuously Updated Master Manual** (`C:\sovereign_manifold_v31\USER_MANUAL_AND_FAQ.md`)
 > Mirrored automatically to:
@@ -21,7 +21,7 @@ All lifecycle operations are unified in **`C:\sovereign_manifold_v31\00_control\
 | **`sovereign-stop-all`** | Performs the full Continuum Handover and also stops the mobile APKs on Pixel 10 & Pixel 8 and resets thermal locks. |
 | **`sovereign-restart`** | Gracefully hands over state, restarts `v31_swarm.exe` and `cloudflared.exe`, and reconnects the phones. |
 | **`handover`** *(or `sovereign-handover`)* | Manually pushes the latest `3.56 MB` `.npage` Shared Memory and `continuum_handover_capsule.json` to Pixel 8, Pixel 10 (both `/data/local/tmp` and `/sdcard/Android/data/com.actomega.manifold/files`), `E:\` SSD, and Cloudflare Edge DO. |
-| **`verify`** *(or `sovereign-verify`)* | Runs the **6-Layer True-Data & Anti-502 Verification Audit** (checks `0` square brackets in `v33..v46*.rs`, `416/416` non-trivial Lean 4 proofs, `42,240` neurons / `5,406,720 B` `.npage` + `3,604,480 B` edge SHM, `0` hardcoded passkeys, Dual-Pixel SHM residency, and HTTP `200` on `https://act-omega-net.dev`). |
+| **`verify`** *(or `sovereign-verify`)* | Runs the **6-Layer True-Data & Anti-502 Verification Audit** (checks `0` square brackets in `v33..v47*.rs`, `432/432` non-trivial Lean 4 proofs, `42,240` neurons / `5,406,720 B` `.npage` + `3,604,480 B` edge SHM, `89` native tools, `0` hardcoded passkeys, Dual-Pixel SHM residency, and HTTP `200` on `https://act-omega-net.dev`). |
 | **`hud`** *(or `sovereign-hud`)* | Opens the **Native Windows 11 Desktop HUD Application** (`SovereignCockpitHUD.exe --hud`) in a chromeless hardware-accelerated WebGPU window. |
 | **`sovereign-reboot`** | Executes `handover` to Pixel 8, Pixel 10, and Cloudflare DO, then safely restarts Windows. |
 | **`sovereign-shutdown`** | Executes `handover` to Pixel 8, Pixel 10, and Cloudflare DO, then safely shuts down Windows. |

@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <radialGradient id="bgObsidian" cx="50%" cy="50%" r="55%">
+      <stop offset="0%" stop-color="#0D1924" />
+      <stop offset="100%" stop-color="#050A0E" />
+    </radialGradient>
+    <linearGradient id="goldOmega" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFE082" />
+      <stop offset="50%" stop-color="#FFB454" />
+      <stop offset="100%" stop-color="#E94E34" />
+    </linearGradient>
+    <linearGradient id="cyanTorus" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00E5FF" />
+      <stop offset="100%" stop-color="#56D364" />
+    </linearGradient>
+  </defs>
+  <rect width="256" height="256" rx="44" fill="url(#bgObsidian)" stroke="#1E3448" stroke-width="4" />
+  <!-- Outer 24-Node Leech Constellation Ring -->
+  <circle cx="128" cy="128" r="106" fill="none" stroke="#FFB454" stroke-opacity="0.35" stroke-width="1.5" stroke-dasharray="4 7" />
+  <circle cx="128" cy="128" r="88" fill="none" stroke="url(#cyanTorus)" stroke-opacity="0.75" stroke-width="2" />
+  <!-- Stiefel Torus Geodesic Ellipses -->
+  <ellipse cx="128" cy="128" rx="88" ry="38" fill="none" stroke="#00E5FF" stroke-opacity="0.45" stroke-width="1.5" transform="rotate(30 128 128)" />
+  <ellipse cx="128" cy="128" rx="88" ry="38" fill="none" stroke="#00E5FF" stroke-opacity="0.45" stroke-width="1.5" transform="rotate(-30 128 128)" />
+  <ellipse cx="128" cy="128" rx="88" ry="38" fill="none" stroke="#56D364" stroke-opacity="0.35" stroke-width="1.5" transform="rotate(90 128 128)" />
+  <!-- Theodorus Square-Root Spiral Core -->
+  <path d="M128,128 L142,128 L142,114 L126,108 L112,120 L114,142 L138,148 L158,128" fill="none" stroke="#00FFCC" stroke-width="2.2" stroke-linecap="round" />
+  <!-- Golden Sovereign Omega (Ω) -->
+  <path d="M 70 184 L 106 184 L 106 168 C 84 155 74 132 74 108 C 74 74 98 50 128 50 C 158 50 182 74 182 108 C 182 132 172 155 150 168 L 150 184 L 186 184"
+        fill="none" stroke="url(#goldOmega)" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" />
+  <!-- 8 Cardinal Constellation Nodes -->
+  <circle cx="128" cy="22" r="4.5" fill="#FFB454" />
+  <circle cx="128" cy="234" r="4.5" fill="#00E5FF" />
+  <circle cx="22" cy="128" r="4.5" fill="#00E5FF" />
+  <circle cx="234" cy="128" r="4.5" fill="#FFB454" />
+  <circle cx="53" cy="53" r="3.5" fill="#56D364" />
+  <circle cx="203" cy="53" r="3.5" fill="#56D364" />
+  <circle cx="53" cy="203" r="3.5" fill="#FFB454" />
+  <circle cx="203" cy="203" r="3.5" fill="#FFB454" />
+</svg>

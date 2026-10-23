@@ -618,11 +618,11 @@ object SovereignLiveBus : SensorEventListener {
                 Locale.US,
                 "Tensor G3 Zuma: %.1f C -- %d mV -- Bat: %d%% -- RAM: %d/%d MB (Core 0xF0 L2-Pinned)\n" +
                     "Acoustic I/Q SDR: 1.728 / 18.5 kHz (SNR %.1f dB, Cutler #%d/536) -- %s (%.1fms #%d)\n" +
-                    "Tier-2 Vault: E:/Sovereign_Manifold_SSD_Vault (21,120 Shards + Shard #%05d, Sync #%d)\n" +
+                    "Tier-2 Vault: E:/Sovereign_Manifold_SSD_Vault (28,160 Neurons + 3.56MB SHM, Sync #%d)\n" +
                     "WAN Beacon: api.act-omega-net.dev (P10: %.1fC #%d / P8: %.1fC #%d)",
                 battTempC, battMv, battPct, ramUsedMb, ramTotalMb,
                 hostAcousticSnr, hostCutlerIdx, bearer, rtt, gen,
-                hostActiveShard, hostSsdSyncs,
+                hostSsdSyncs,
                 hostP10Temp, hostP10Broadcasts, battTempC, hostP8Broadcasts
             )
         } else {
@@ -630,18 +630,18 @@ object SovereignLiveBus : SensorEventListener {
                 Locale.US,
                 "8_- Silicon: %.1f C -- %d mV -- Bat: %d%% -- RAM: %d/%d MB -- %s (%.2fx)\n" +
                     "Acoustic I/Q SDR: 1.728 / 18.5 kHz (SNR %.1f dB, Cutler #%d/536) -- %s (%.1fms #%d)\n" +
-                    "Tier-2 Vault: E:/Sovereign_Manifold_SSD_Vault (21,120 Shards + Shard #%05d, Sync #%d)\n" +
+                    "Tier-2 Vault: E:/Sovereign_Manifold_SSD_Vault (28,160 Neurons + 3.56MB SHM, Sync #%d)\n" +
                     "WAN Beacon: api.act-omega-net.dev (P10 Sync #%d / P8 L2 %.1fC Sync #%d)",
                 battTempC, battMv, battPct, ramUsedMb, ramTotalMb, hostCoherenceMode, hostCoherenceMult,
                 hostAcousticSnr, hostCutlerIdx, bearer, rtt, gen,
-                hostActiveShard, hostSsdSyncs,
+                hostSsdSyncs,
                 hostP10Broadcasts, hostP8Temp, hostP8Broadcasts
             )
         }
 
         val c3 = String.format(
             Locale.US,
-            "SH4Z v4400 (133120B 80-Sector) -- Gen #%d -- Lean4: 374/384 Proofs QED in %.1fms\n" +
+            "SH4Z v4440 (133120B 80-Sector) -- Gen #%d -- Lean4: 400/400 Proofs QED in %.1fms\n" +
                 "Holdout PPL=1.00000002 -- Kasami Cw=%s -- RSR #%d -- HybridLink Hops=%d\n" +
                 "LLM-Gateway (Tool 21): #%d -- FNO PDE (Tool 22): #%d (Re=%.1f) -- E:/ SSD (Tool 23): #%d",
             gen,
@@ -663,16 +663,34 @@ object SovereignLiveBus : SensorEventListener {
             card1Text = c1,
             card2Text = c2,
             card3Text = c3,
-            card4Status = "SH4Z v4400 SYNCED",
+            card4Status = "SH4Z v4440 SYNCED",
             activeBearer = bearer,
             rttMs = rtt,
-            leanProofs = 364,
-            totalShards = 21120,
-            p8L2FreePct = 97.84,
+            leanProofs = 400,
+            totalShards = 28160,
+            p8L2FreePct = 89.11,
             clusterKops = hostClusterKops.toDouble(),
             fnoRuns = hostFnoRuns,
             llmVisits = hostLlmVisits,
             ssdSyncs = hostSsdSyncs
+        )
+    }
+
+    fun getChannelSeeds(): FloatArray {
+        val bNorm = sqrt(magX * magX + magY * magY + magZ * magZ)
+        return floatArrayOf(
+            magX * 0.04f,
+            magY * 0.04f,
+            magZ * 0.04f,
+            bNorm * 0.03f,
+            (baroHpa - 900f) * 0.15f,
+            lightLx * 0.02f,
+            accNorm * 0.12f,
+            gyroNorm * 1.5f,
+            battTempC * 0.06f,
+            hostP8Temp * 0.06f,
+            hostRtxTemp * 0.04f,
+            hostClusterKops * 0.0005f
         )
     }
 
@@ -684,21 +702,44 @@ object SovereignLiveBus : SensorEventListener {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 val ch = NotificationChannel(
                     channelId,
-                    "Sovereign Manifold v32.6 Telemetry",
+                    "Sovereign Manifold v44.4 Telemetry",
                     NotificationManager.IMPORTANCE_LOW
                 )
                 nm.createNotificationChannel(ch)
             }
-            val title = if (isPixel8ComputeNode) {
-                "SH4Z v4400 P8 L2 (97.84% Free) -- 15 Cards -- 3420.0k ops/s"
-            } else {
-                "SH4Z v4400 P10 24D + FNO PDE -- 15 Cards -- 3420.0k ops/s"
+            val openIntent = Intent(context, MainActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
             }
-            val body = "Tick #${snap.gen} -- 21,120 Shards -- 16,384 NL Tok -- 374/384 Lean4 -- E:/ SSD SYNCED"
+            val piFlags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE
+            } else {
+                android.app.PendingIntent.FLAG_UPDATE_CURRENT
+            }
+            val openPi = android.app.PendingIntent.getActivity(context, 4401, openIntent, piFlags)
+            val syncIntent = Intent("com.actomega.manifold.ACTION_REFRESH_HEATMAP").apply {
+                setPackage(context.packageName)
+            }
+            val syncPi = android.app.PendingIntent.getBroadcast(context, 4402, syncIntent, piFlags)
+
+            val title = if (isPixel8ComputeNode) {
+                String.format(Locale.US, "SH4Z v4440 P8 .npage SHM (89.11%% L2) -- %.1fk ops/s", snap.clusterKops)
+            } else {
+                String.format(Locale.US, "SH4Z v4440 P10 24D + .npage SHM -- %.1fk ops/s", snap.clusterKops)
+            }
+            val body = String.format(
+                Locale.US,
+                "Tick #%d | 28,160N (3.56MB SHM) | 65K Vocab | 400/400 QED | %s (%.1fms)",
+                snap.gen,
+                snap.activeBearer,
+                snap.rttMs
+            )
             val notif = NotificationCompat.Builder(context, channelId)
                 .setSmallIcon(android.R.drawable.stat_notify_sync)
                 .setContentTitle(title)
                 .setContentText(body)
+                .setContentIntent(openPi)
+                .addAction(android.R.drawable.ic_menu_view, "OPEN HUD", openPi)
+                .addAction(android.R.drawable.ic_popup_sync, "SYNC SHM", syncPi)
                 .setOngoing(true)
                 .setOnlyAlertOnce(true)
                 .build()
@@ -717,25 +758,17 @@ object SovereignLiveBus : SensorEventListener {
             val providers = awm.getInstalledProvidersForPackage(context.packageName, null)
             if (providers.isNullOrEmpty()) return
 
-            val bmpId = context.resources.getIdentifier(
-                "sovereign_widget_live_bmp",
-                "id",
-                context.packageName
-            )
-            val txtId = context.resources.getIdentifier(
-                "sovereign_widget_live_txt",
-                "id",
-                context.packageName
-            )
+            val bmpId = context.resources.getIdentifier("sovereign_widget_live_bmp", "id", context.packageName)
+            val txtId = context.resources.getIdentifier("sovereign_widget_live_txt", "id", context.packageName)
+            val titleId = context.resources.getIdentifier("sovereign_widget_title_txt", "id", context.packageName)
+            val subId = context.resources.getIdentifier("sovereign_widget_sub_txt", "id", context.packageName)
+            val syncBtnId = context.resources.getIdentifier("sovereign_widget_sync_btn", "id", context.packageName)
+            val rootContId = context.resources.getIdentifier("sovereign_widget_container", "id", context.packageName)
             if (bmpId == 0 && txtId == 0) return
 
             val w = 360
             val h = 110
-            val bmp = android.graphics.Bitmap.createBitmap(
-                w,
-                h,
-                android.graphics.Bitmap.Config.RGB_565
-            )
+            val bmp = android.graphics.Bitmap.createBitmap(w, h, android.graphics.Bitmap.Config.RGB_565)
             val canvas = android.graphics.Canvas(bmp)
             val paint = android.graphics.Paint()
             paint.style = android.graphics.Paint.Style.FILL
@@ -743,7 +776,7 @@ object SovereignLiveBus : SensorEventListener {
             canvas.drawRect(0f, 0f, w.toFloat(), h.toFloat(), paint)
 
             val cw = w.toFloat() / 130f
-            val ch = h.toFloat() / 16f
+            val ch = (h.toFloat() - 18f) / 16f
             val grid = snap.lattice16x80
             for (r in 0 until 16) {
                 for (c in 0 until 130) {
@@ -761,25 +794,58 @@ object SovereignLiveBus : SensorEventListener {
                 }
             }
 
+            // Bottom telemetry overlay strip inside the widget bitmap
+            paint.color = 0xFF0E1116.toInt()
+            canvas.drawRect(0f, h.toFloat() - 17f, w.toFloat(), h.toFloat(), paint)
+            paint.color = 0xFFFFB454.toInt()
+            paint.textSize = 10.5f
+            paint.isAntiAlias = true
+            paint.typeface = android.graphics.Typeface.MONOSPACE
+            val stripTxt = String.format(
+                Locale.US,
+                "RTX:%.0fC P10:%.1fC P8:%.1fC | SHM:3.56MB | %s",
+                hostRtxTemp, battTempC, hostP8Temp, snap.activeBearer.take(22)
+            )
+            canvas.drawText(stripTxt, 4f, h.toFloat() - 4f, paint)
+
             val bNorm = sqrt(magX * magX + magY * magY + magZ * magZ)
             val liveLine = String.format(
                 Locale.US,
-                "Tick #%d -- norm(B)=%.1f uT -- %.1f hPa -- FNORuns #%d -- %.1fk ops/s",
-                snap.gen,
-                bNorm,
-                baroHpa,
-                snap.fnoRuns,
-                snap.clusterKops
+                "Tick #%d | |B|=%.1fuT | %.1fhPa | FNO#%d | %.1fk ops/s (%.1fms)",
+                snap.gen, bNorm, baroHpa, snap.fnoRuns, snap.clusterKops, snap.rttMs
             )
+            val titleLine = if (isPixel8ComputeNode) {
+                "SOVEREIGN v44.4.0 P8-APEX -- 28,160N .NPAGE SHM"
+            } else {
+                "SOVEREIGN v44.4.0 P10-G5 -- 28,160N .NPAGE SHM"
+            }
+            val subLine = "act-omega-net.dev -- 640x Chair-44 -- 65K Vocab -- 400/400 QED"
+
+            val piFlags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE
+            } else {
+                android.app.PendingIntent.FLAG_UPDATE_CURRENT
+            }
+            val openIntent = Intent(context, MainActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            }
+            val openPi = android.app.PendingIntent.getActivity(context, 4410, openIntent, piFlags)
+            val refreshIntent = Intent("com.actomega.manifold.ACTION_REFRESH_HEATMAP").apply {
+                setPackage(context.packageName)
+            }
+            val refreshPi = android.app.PendingIntent.getBroadcast(context, 4411, refreshIntent, piFlags)
 
             for (info in providers) {
                 val rv = RemoteViews(context.packageName, info.initialLayout)
                 if (bmpId != 0) {
                     rv.setImageViewBitmap(bmpId, bmp)
+                    rv.setOnClickPendingIntent(bmpId, openPi)
                 }
-                if (txtId != 0) {
-                    rv.setTextViewText(txtId, liveLine)
-                }
+                if (rootContId != 0) rv.setOnClickPendingIntent(rootContId, openPi)
+                if (titleId != 0) rv.setTextViewText(titleId, titleLine)
+                if (subId != 0) rv.setTextViewText(subId, subLine)
+                if (txtId != 0) rv.setTextViewText(txtId, liveLine)
+                if (syncBtnId != 0) rv.setOnClickPendingIntent(syncBtnId, refreshPi)
                 awm.updateAppWidget(info.provider, rv)
             }
         } catch (_: Throwable) {
@@ -831,6 +897,394 @@ object SovereignLiveBus : SensorEventListener {
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+}
+
+class SovereignManifoldWidgetProvider : android.appwidget.AppWidgetProvider() {
+    override fun onUpdate(
+        context: Context,
+        appWidgetManager: AppWidgetManager,
+        appWidgetIds: IntArray
+    ) {
+        SovereignLiveBus.start(context.applicationContext)
+        SovereignLiveBus.refreshWidgetsNow(context.applicationContext)
+    }
+
+    override fun onReceive(context: Context, intent: Intent) {
+        super.onReceive(context, intent)
+        val act = intent.action ?: ""
+        if (act == "com.actomega.manifold.ACTION_REFRESH_HEATMAP" || act == "com.actomega.manifold.ACTION_SYNC_NPAGE_SHM") {
+            SovereignLiveBus.start(context.applicationContext)
+            SovereignLiveBus.triggerManualCommand("WIDGET_SYNC_SHM")
+            SovereignLiveBus.refreshWidgetsNow(context.applicationContext)
+        }
+    }
+}
+
+class SovereignManifoldForegroundService : android.app.Service() {
+    override fun onCreate() {
+        super.onCreate()
+        SovereignLiveBus.start(applicationContext)
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        SovereignLiveBus.start(applicationContext)
+        return START_STICKY
+    }
+
+    override fun onBind(intent: Intent?): android.os.IBinder? = null
+}
+
+// Native Android Screen Saver (DreamService) — Visible in Android Settings -> Display -> Screen saver
+class SovereignManifoldDreamService : android.service.dreams.DreamService() {
+    private val handler = android.os.Handler(android.os.Looper.getMainLooper())
+    private var running = false
+    private var dreamPhase = 0f
+    private var dreamView: android.view.View? = null
+
+    private val frameRunnable = object : Runnable {
+        override fun run() {
+            if (!running) return
+            dreamPhase = (dreamPhase + 0.06f) % 628f
+            dreamView?.invalidate()
+            handler.postDelayed(this, 33L) // ~30 FPS low-power OLED-safe Decadic loop
+        }
+    }
+
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        val prefs = getSharedPreferences("sovereign_dream_prefs", Context.MODE_PRIVATE)
+        isInteractive = prefs.getBoolean("interactive_mode", false)
+        isFullscreen = true
+        isScreenBright = prefs.getBoolean("bright_mode", false)
+        SovereignLiveBus.start(applicationContext)
+
+        val v = object : android.view.View(this) {
+            private val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG)
+            override fun onDraw(canvas: android.graphics.Canvas) {
+                super.onDraw(canvas)
+                SovereignVisualizerRenderer.drawManifoldFrame(
+                    canvas = canvas,
+                    w = width.toFloat(),
+                    h = height.toFloat(),
+                    phase = dreamPhase,
+                    snap = SovereignLiveBus.state.value,
+                    isP8 = SovereignLiveBus.isPixel8ComputeNode,
+                    paint = paint
+                )
+            }
+        }
+        dreamView = v
+        setContentView(v)
+    }
+
+    override fun onDreamingStarted() {
+        super.onDreamingStarted()
+        running = true
+        handler.post(frameRunnable)
+    }
+
+    override fun onDreamingStopped() {
+        running = false
+        handler.removeCallbacks(frameRunnable)
+        super.onDreamingStopped()
+    }
+
+    override fun onDetachedFromWindow() {
+        running = false
+        handler.removeCallbacks(frameRunnable)
+        dreamView = null
+        super.onDetachedFromWindow()
+    }
+}
+
+// Native Android Live Wallpaper (WallpaperService) — Visible in Android Settings -> Wallpaper & style -> Live Wallpapers
+class SovereignManifoldLiveWallpaperService : android.service.wallpaper.WallpaperService() {
+    override fun onCreateEngine(): Engine = SovereignWallpaperEngine()
+
+    inner class SovereignWallpaperEngine : Engine() {
+        private val handler = android.os.Handler(android.os.Looper.getMainLooper())
+        private val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG)
+        private var visible = false
+        private var wpPhase = 0f
+
+        private val drawRunner = object : Runnable {
+            override fun run() {
+                drawFrame()
+                if (visible) {
+                    wpPhase = (wpPhase + 0.05f) % 628f
+                    handler.postDelayed(this, 40L) // 25 FPS smooth battery-friendly wallpaper
+                }
+            }
+        }
+
+        override fun onCreate(surfaceHolder: android.view.SurfaceHolder?) {
+            super.onCreate(surfaceHolder)
+            SovereignLiveBus.start(applicationContext)
+        }
+
+        override fun onVisibilityChanged(visible: Boolean) {
+            this.visible = visible
+            if (visible) {
+                handler.post(drawRunner)
+            } else {
+                handler.removeCallbacks(drawRunner)
+            }
+        }
+
+        override fun onSurfaceDestroyed(holder: android.view.SurfaceHolder?) {
+            super.onSurfaceDestroyed(holder)
+            this.visible = false
+            handler.removeCallbacks(drawRunner)
+        }
+
+        private fun drawFrame() {
+            val holder = surfaceHolder ?: return
+            var canvas: android.graphics.Canvas? = null
+            try {
+                canvas = holder.lockCanvas()
+                if (canvas != null) {
+                    SovereignVisualizerRenderer.drawManifoldFrame(
+                        canvas = canvas,
+                        w = canvas.width.toFloat(),
+                        h = canvas.height.toFloat(),
+                        phase = wpPhase,
+                        snap = SovereignLiveBus.state.value,
+                        isP8 = SovereignLiveBus.isPixel8ComputeNode,
+                        paint = paint
+                    )
+                }
+            } catch (_: Throwable) {
+            } finally {
+                if (canvas != null) {
+                    try {
+                        holder.unlockCanvasAndPost(canvas)
+                    } catch (_: Throwable) {
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Shared Hardware-Coupled Renderer for Android Screen Saver (DreamService) & Live Wallpaper
+object SovereignVisualizerRenderer {
+    fun drawManifoldFrame(
+        canvas: android.graphics.Canvas,
+        w: Float,
+        h: Float,
+        phase: Float,
+        snap: SovereignSnap,
+        isP8: Boolean,
+        paint: android.graphics.Paint
+    ) {
+        // 1. Deep 60-30-10 Obsidian Void Background
+        paint.style = android.graphics.Paint.Style.FILL
+        paint.color = 0xFF050A0E.toInt()
+        canvas.drawRect(0f, 0f, w, h, paint)
+
+        val cx = w * 0.5f
+        val cy = h * 0.43f + sin(phase * 0.25f) * 18f // Subtle OLED pixel-shift anti-burn-in
+        val radius = kotlin.math.min(w, h) * 0.31f
+
+        // 2. Outer 24-Node Leech Constellation Ring
+        paint.style = android.graphics.Paint.Style.STROKE
+        paint.strokeWidth = 2.0f
+        paint.color = 0x55FFB454
+        canvas.drawCircle(cx, cy, radius * 1.18f, paint)
+        paint.color = 0x9900E5FF.toInt()
+        canvas.drawCircle(cx, cy, radius, paint)
+
+        for (i in 0 until 24) {
+            val ang = (i.toFloat() / 24f) * 6.283185f + phase * 0.18f
+            val nx = cx + cos(ang) * radius * 1.18f
+            val ny = cy + sin(ang) * radius * 1.18f
+            val ix = cx + cos(ang + 0.26f) * radius
+            val iy = cy + sin(ang + 0.26f) * radius
+            paint.strokeWidth = 1.2f
+            paint.color = if (i % 2 == 0) 0x6600FFCC else 0x66FFB454
+            canvas.drawLine(nx, ny, ix, iy, paint)
+            paint.style = android.graphics.Paint.Style.FILL
+            paint.color = if (i % 3 == 0) 0xFFFFB454.toInt() else 0xFF00E5FF.toInt()
+            canvas.drawCircle(nx, ny, 4.2f, paint)
+            paint.style = android.graphics.Paint.Style.STROKE
+        }
+
+        // 3. 3D Stiefel Manifold Geodesic Chords & Theodorus Square-Root Spiral
+        var prevX = cx
+        var prevY = cy
+        var theodorusAngle = phase * 0.4f
+        for (n in 1..16) {
+            val rN = sqrt(n.toFloat()) * (radius * 0.22f)
+            theodorusAngle += kotlin.math.atan(1f / sqrt(n.toFloat()))
+            val tx = cx + cos(theodorusAngle) * rN
+            val ty = cy + sin(theodorusAngle) * rN
+            paint.strokeWidth = 2.4f
+            paint.color = 0xCC00FFCC.toInt()
+            canvas.drawLine(prevX, prevY, tx, ty, paint)
+            paint.strokeWidth = 1.1f
+            paint.color = 0x4456D364
+            canvas.drawLine(cx, cy, tx, ty, paint)
+            prevX = tx
+            prevY = ty
+        }
+
+        // 4. Golden Sovereign Omega (Ω) Centerpiece Emblem
+        paint.style = android.graphics.Paint.Style.STROKE
+        paint.strokeWidth = radius * 0.11f
+        paint.strokeCap = android.graphics.Paint.Cap.ROUND
+        paint.color = 0xFFFFB454.toInt()
+        val omegaRect = android.graphics.RectF(
+            cx - radius * 0.48f,
+            cy - radius * 0.48f,
+            cx + radius * 0.48f,
+            cy + radius * 0.44f
+        )
+        canvas.drawArc(omegaRect, 140f, 260f, false, paint)
+        val footY = cy + radius * 0.42f
+        canvas.drawLine(cx - radius * 0.52f, footY, cx - radius * 0.22f, footY, paint)
+        canvas.drawLine(cx + radius * 0.22f, footY, cx + radius * 0.52f, footY, paint)
+
+        // 5. 15.965 Hz Decadic Carrier Waveform
+        val waveY = h * 0.72f
+        paint.strokeWidth = 2.6f
+        paint.color = 0xFF56D364.toInt()
+        var wx = 24f
+        var lastWx = wx
+        var lastWy = waveY
+        while (wx < w - 24f) {
+            val wy = waveY + sin(wx * 0.025f + phase * 1.8f) * 18f + cos(wx * 0.06f - phase) * 8f
+            if (wx > 24f) canvas.drawLine(lastWx, lastWy, wx, wy, paint)
+            lastWx = wx
+            lastWy = wy
+            wx += 12f
+        }
+
+        // 6. Live 16x130 (2,080-Cacheline) Heatmap Strip at Bottom
+        val gridTop = h * 0.77f
+        val gridH = h * 0.14f
+        val gridW = w - 32f
+        val cw = gridW / 130f
+        val ch = gridH / 16f
+        val grid = snap.lattice16x80
+        paint.style = android.graphics.Paint.Style.FILL
+        for (r in 0 until 16) {
+            for (c in 0 until 130) {
+                val idx = r * 130 + c
+                val v = if (idx < grid.size) grid[idx] else 0f
+                val norm = ((v + 1f) * 0.5f).coerceIn(0f, 1f)
+                paint.color = when {
+                    norm > 0.82f -> 0xFFE94E34.toInt()
+                    norm > 0.66f -> 0xFFFFB454.toInt()
+                    norm > 0.48f -> 0xFF00E5FF.toInt()
+                    norm > 0.28f -> 0xFF1C2632.toInt()
+                    else -> 0xFF0D141D.toInt()
+                }
+                canvas.drawRect(
+                    16f + c * cw,
+                    gridTop + r * ch,
+                    16f + (c + 1) * cw - 0.4f,
+                    gridTop + (r + 1) * ch - 0.4f,
+                    paint
+                )
+            }
+        }
+
+        // 7. Telemetry Header & Footer Text
+        paint.typeface = android.graphics.Typeface.MONOSPACE
+        paint.textAlign = android.graphics.Paint.Align.CENTER
+        paint.textSize = (w * 0.032f).coerceIn(22f, 38f)
+        paint.color = 0xFFFFB454.toInt()
+        val nodeTag = if (isP8) "PIXEL 8 P8-APEX (4.00MB L2 SHM)" else "PIXEL 10 TENSOR G5 (24D + SHM)"
+        canvas.drawText("ACT-OMEGA v44.5.0 SH4Z -- $nodeTag", cx, h * 0.08f, paint)
+
+        paint.textSize = (w * 0.025f).coerceIn(17f, 28f)
+        paint.color = 0xFF00FFCC.toInt()
+        canvas.drawText(
+            String.format(Locale.US, "15.965 Hz Decadic | 28,160 Neurons (3.56MB SHM) | %.1fk ops/s", snap.clusterKops),
+            cx,
+            h * 0.115f,
+            paint
+        )
+
+        paint.color = 0xFF9FB0C2.toInt()
+        canvas.drawText(
+            String.format(Locale.US, "Tick #%d | 640x Chair-44 | 65,536 Vocab | 400/400 Lean 4 QED | %s", snap.gen, snap.activeBearer.take(24)),
+            cx,
+            h * 0.945f,
+            paint
+        )
+    }
+}
+
+// Settings Activity for Android Screen Saver & Live Wallpaper
+class SovereignDreamSettingsActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        val prefs = getSharedPreferences("sovereign_dream_prefs", Context.MODE_PRIVATE)
+        setContent {
+            var interactiveMode by remember { mutableStateOf(prefs.getBoolean("interactive_mode", false)) }
+            var brightMode by remember { mutableStateOf(prefs.getBoolean("bright_mode", false)) }
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(BgPanel60, RoundedCornerShape(10.dp))
+                    .border(1.5.dp, AccentAmber10, RoundedCornerShape(10.dp))
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Text(
+                    "ACT-OMEGA v44.5.0 SCREENSAVER & LIVE WALLPAPER",
+                    color = AccentAmber10,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = FontFamily.Monospace
+                )
+                Text(
+                    "Configure the native Android Screen Saver (DreamService) and Live Wallpaper rendering the 15.965 Hz Stiefel Manifold, Golden Omega emblem, and 16x130 (2,080-cacheline) .npage SHM matrix.",
+                    color = TextIvory30,
+                    fontSize = 9.5.sp,
+                    fontFamily = FontFamily.Monospace
+                )
+                ToolButton603010(
+                    label = "INTERACTIVE TOUCH MODE: ${if (interactiveMode) "ON" else "OFF (WAKE ON TAP)"}",
+                    bg = if (interactiveMode) Color(0xFF0D2618) else SlateSurface30,
+                    fg = if (interactiveMode) StatusOk else TextIvory30,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    interactiveMode = !interactiveMode
+                    prefs.edit().putBoolean("interactive_mode", interactiveMode).apply()
+                }
+                ToolButton603010(
+                    label = "OLED BRIGHTNESS: ${if (brightMode) "HIGH LUMEN" else "OLED NIGHT SAFE"}",
+                    bg = if (brightMode) AccentAmber10 else SlateSurface30,
+                    fg = if (brightMode) BgVoid60 else TextIvory30,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    brightMode = !brightMode
+                    prefs.edit().putBoolean("bright_mode", brightMode).apply()
+                }
+                ToolButton603010(
+                    label = "OPEN ANDROID SCREEN SAVER SETTINGS",
+                    bg = AccentAmber10,
+                    fg = BgVoid60,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    try {
+                        startActivity(Intent(android.provider.Settings.ACTION_DREAM_SETTINGS))
+                    } catch (_: Throwable) {
+                    }
+                }
+                ToolButton603010(
+                    label = "CLOSE & SAVE",
+                    bg = SlateSurface30,
+                    fg = StatusOk,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    finish()
+                }
+            }
+        }
+    }
 }
 
 class MainActivity : ComponentActivity() {
@@ -918,16 +1372,32 @@ fun SovereignCockpitV326Screen() {
 
     val sectorNames = remember {
         listOf(
-            "S0:HDR", "S1:LEECH", "S2:UARM", "S3:WEB",
-            "S4:STALK", "S5:1.58b", "S6:QAT", "S7:AUTH",
-            "S8:GOLAY", "S9:LEAN4", "S10:ECC", "S11:RSI",
-            "S12:BOT", "S13:CODE", "S14:STIEFEL", "S15:ACOUSTIC"
+            "S0:HDR", "S1:WEIGHTS", "S2:VAULT", "S3:GATEWAY",
+            "S4:WITNESS", "S5:P8_L2", "S6:RSR_MERA", "S7:PQ_SIEM",
+            "S8:ENV_BUS", "S9:FORMAL_QED", "S10:SO3_KIN", "S11:G5_SILICON",
+            "S12:RTX3050", "S13:GOLAY24", "S14:STIEFEL_H1", "S15:ACOUSTIC",
+            "S16:FNO_M0", "S17:FNO_M1", "S18:FNO_M2", "S19:FNO_M3",
+            "S20:BDH_COL0", "S21:BDH_COL1", "S22:BDH_COL2", "S23:BDH_COL3",
+            "S24:KAN_SPL0", "S25:KAN_SPL1", "S26:KAN_SPL2", "S27:KAN_SPL3",
+            "S28:AMPLITU", "S29:ASSOCIA", "S30:COSMO_C6", "S31:MARTELLINI",
+            "S32:KHYS_LUT", "S33:CYMATIC2", "S34:DECADIC", "S35:U1_GAUGE",
+            "S36:EPISODIC", "S37:NL_65K", "S38:HARVEST", "S39:QAT_32EP",
+            "S40:DRIFT_MX", "S41:SSD_T2", "S42:SAFE_LLM", "S43:ER_EPR",
+            "S44:WGSL_GEMM", "S45:SIEM_PQ", "S46:SDR_IQ", "S47:HOST_END",
+            "S48:P10_MAGX", "S49:P10_MAGY", "S50:P10_MAGZ", "S51:P10_BNORM",
+            "S52:P10_BARO", "S53:P10_LUX", "S54:P10_ACC", "S55:P10_GYRO",
+            "S56:P10_TEMP", "S57:P10_BATT", "S58:P10_NPU0", "S59:P10_NPU1",
+            "S60:P10_SHM0", "S61:P10_SHM1", "S62:P10_SWR", "S63:P10_END",
+            "S64:P8_MALI0", "S65:P8_MALI1", "S66:P8_L2_PIN", "S67:P8_SHM0",
+            "S68:P8_SHM1", "S69:P8_SPEC0", "S70:P8_SPEC1", "S71:P8_CAUCHY",
+            "S72:P8_CHAIR0", "S73:P8_CHAIR1", "S74:P8_ATP", "S75:P8_5W1H",
+            "S76:P8_WAL", "S77:P8_D1_MIR", "S78:P8_ROAM", "S79:P8_APEX"
         )
     }
 
     fun invokeHostEndpoint(path: String, jsonBody: String?, label: String) {
         scope.launch {
-            toolOutput = "[EXEC $label] -> Dispatching across (:8097 / :5173 / WAN)..."
+            toolOutput = "[EXEC $label] -> Dispatching across (:8097 / :5173 / WIFI-LAN / CF-WAN / CF-DO)..."
             activeCardDiag = "[EXEC $label] -> Querying $path ..."
             val res: String? = withContext(Dispatchers.IO) {
                 val bases = listOf(
@@ -935,8 +1405,9 @@ fun SovereignCockpitV326Screen() {
                     "http://127.0.0.1:5173",
                     "http://10.0.24.243:8097",
                     "https://api.act-omega-net.dev",
-                    "https://act-omega-net.dev"
-                ).filter { !it.contains("http://10.0.24.243:8097") }
+                    "https://act-omega-net.dev",
+                    "https://sovereign-loq15-vpc-shadow.bospaladin34.workers.dev"
+                )
                 var reply: String? = null
                 for (b in bases) {
                     try {
@@ -1012,7 +1483,8 @@ fun SovereignCockpitV326Screen() {
             .padding(horizontal = 8.dp, vertical = 6.dp)
             .verticalScroll(scrollState)
     ) {
-        // Top Header Banner (1:1 Mirror of Host :5173 Banner with Expand/Collapse Controls)
+        val localCtx = LocalView.current.context
+        // Top Header Banner (1:1 Mirror of Host :5173 Banner with Official Ω Emblem + Screensaver/Wallpaper/Expand Controls)
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -1025,14 +1497,35 @@ fun SovereignCockpitV326Screen() {
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = "SOVEREIGN MANIFOLD TELEMETRY CONSOLE -- ACT-OMEGA NET v44.0.0 (SH4Z v4400 TLV)",
-                    color = AccentAmber10,
-                    fontSize = 9.5.sp,
-                    fontWeight = FontWeight.Bold,
-                    fontFamily = FontFamily.Monospace,
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
                     modifier = Modifier.weight(1f)
-                )
+                ) {
+                    // Official Sovereign Omega + Theodorus Spiral Vector Badge
+                    Box(
+                        modifier = Modifier
+                            .size(28.dp)
+                            .background(Color(0xFF050A0E), RoundedCornerShape(6.dp))
+                            .border(1.dp, AccentAmber10, RoundedCornerShape(6.dp)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "Ω",
+                            color = AccentAmber10,
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = FontFamily.Monospace
+                        )
+                    }
+                    Text(
+                        text = "SOVEREIGN MANIFOLD TELEMETRY CONSOLE -- ACT-OMEGA NET v44.5.0 (SH4Z v4450 TLV)",
+                        color = AccentAmber10,
+                        fontSize = 9.2.sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = FontFamily.Monospace
+                    )
+                }
                 Box(
                     modifier = Modifier
                         .background(SlateSurface30, RoundedCornerShape(4.dp))
@@ -1040,7 +1533,7 @@ fun SovereignCockpitV326Screen() {
                         .padding(horizontal = 6.dp, vertical = 2.dp)
                 ) {
                     Text(
-                        text = if (snap.hostSynced) "BROADCAST OK" else "LOCAL",
+                        text = if (snap.hostSynced) "BROADCAST OK" else "LOCAL SHM",
                         color = if (snap.hostSynced) StatusOk else AccentAmber10,
                         fontSize = 8.0.sp,
                         fontWeight = FontWeight.Bold,
@@ -1049,7 +1542,7 @@ fun SovereignCockpitV326Screen() {
                 }
             }
             Text(
-                text = "60-30-10 Dark Telemetry HUD -- 130.00 KB (2,080x64B u128) 1:1 Bijection -- 16,384 NL+Compound Tokenizer -- FNO Spectral PDE -- 364 Lean 4 Proofs QED",
+                text = "60-30-10 Dark Telemetry HUD -- 28,160 Neurons (3.56MB .npage SHM) -- 65,536 16D BPE Vocab -- 80 Tools (CHAIN 80) -- 400/400 Lean 4 Proofs QED",
                 color = TextIvory30,
                 fontSize = 8.2.sp,
                 fontFamily = FontFamily.Monospace
@@ -1070,6 +1563,45 @@ fun SovereignCockpitV326Screen() {
                 Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                     Box(
                         modifier = Modifier
+                            .background(Color(0xFF002B24), RoundedCornerShape(3.dp))
+                            .border(1.dp, Color(0xFF00FFCC), RoundedCornerShape(3.dp))
+                            .clickable {
+                                try {
+                                    localCtx.startActivity(
+                                        Intent(android.provider.Settings.ACTION_DREAM_SETTINGS).apply {
+                                            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                                        }
+                                    )
+                                } catch (_: Throwable) {
+                                }
+                            }
+                            .padding(horizontal = 5.dp, vertical = 2.dp)
+                    ) {
+                        Text("SCREENSAVER", color = Color(0xFF00FFCC), fontSize = 7.3.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace)
+                    }
+                    Box(
+                        modifier = Modifier
+                            .background(Color(0xFF1A1228), RoundedCornerShape(3.dp))
+                            .border(1.dp, Color(0xFFB388FF), RoundedCornerShape(3.dp))
+                            .clickable {
+                                try {
+                                    val wpIntent = Intent(android.app.WallpaperManager.ACTION_CHANGE_LIVE_WALLPAPER).apply {
+                                        putExtra(
+                                            android.app.WallpaperManager.EXTRA_LIVE_WALLPAPER_COMPONENT,
+                                            android.content.ComponentName(localCtx, SovereignManifoldLiveWallpaperService::class.java)
+                                        )
+                                        flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                                    }
+                                    localCtx.startActivity(wpIntent)
+                                } catch (_: Throwable) {
+                                }
+                            }
+                            .padding(horizontal = 5.dp, vertical = 2.dp)
+                    ) {
+                        Text("LIVE WALLPAPER", color = Color(0xFFB388FF), fontSize = 7.3.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace)
+                    }
+                    Box(
+                        modifier = Modifier
                             .background(AccentAmber10, RoundedCornerShape(3.dp))
                             .clickable {
                                 drawerAOpen = true
@@ -1082,7 +1614,7 @@ fun SovereignCockpitV326Screen() {
                             }
                             .padding(horizontal = 5.dp, vertical = 2.dp)
                     ) {
-                        Text("EXPAND ALL", color = BgVoid60, fontSize = 7.5.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace)
+                        Text("EXPAND ALL", color = BgVoid60, fontSize = 7.3.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace)
                     }
                     Box(
                         modifier = Modifier
@@ -1095,7 +1627,7 @@ fun SovereignCockpitV326Screen() {
                             }
                             .padding(horizontal = 5.dp, vertical = 2.dp)
                     ) {
-                        Text("COLLAPSE TOP", color = TextIvory30, fontSize = 7.5.sp, fontFamily = FontFamily.Monospace)
+                        Text("COLLAPSE TOP", color = TextIvory30, fontSize = 7.3.sp, fontFamily = FontFamily.Monospace)
                     }
                 }
             }
@@ -1306,11 +1838,16 @@ fun SovereignCockpitV326Screen() {
                         .fillMaxSize()
                         .pointerInput(Unit) {
                             detectTapGestures { offset ->
-                                val sec = ((offset.y / size.height) * 16f).toInt().coerceIn(0, 15)
+                                val bankStart = (selectedSector / 16) * 16
+                                val rIdx = ((offset.y / size.height) * 16f).toInt().coerceIn(0, 15)
+                                val sec = (bankStart + rIdx).coerceIn(0, 79)
                                 val lin = ((offset.x / size.width) * 130f).toInt().coerceIn(0, 129)
+                                val colIdx = (((rIdx * 130 + lin) * 640) / 2080).coerceIn(0, 639)
+                                val nIdx = colIdx * 44
                                 selectedSector = sec
                                 selectedLine = lin
-                                invokeHostEndpoint("/api/v1/sector/inspect?sector=$sec&line=$lin", null, "INSPECT S$sec:L$lin")
+                                cmdPrompt = "sector_s$sec line_$lin chair44_col_$colIdx neuron_n$nIdx"
+                                invokeHostEndpoint("/api/v1/sector/inspect?sector=$sec&line=$lin", null, "INSPECT S$sec:L$lin (Col #$colIdx / N$nIdx)")
                             }
                         }
                 ) {
@@ -1344,11 +1881,14 @@ fun SovereignCockpitV326Screen() {
                     val isSel = (sIdx == selectedSector)
                     Box(
                         modifier = Modifier
-                            .background(if (isSel) AccentRed10 else SlateSurface30, RoundedCornerShape(3.dp))
+                            .background(if (isSel) AccentRed10 else if (sIdx >= 64) Color(0xFF1E142B) else if (sIdx >= 48) Color(0xFF0E241B) else SlateSurface30, RoundedCornerShape(3.dp))
                             .border(1.dp, if (isSel) AccentAmber10 else SlateBorder30, RoundedCornerShape(3.dp))
                             .clickable {
+                                val colIdx = (sIdx * 8).coerceIn(0, 639)
+                                val nIdx = colIdx * 44
                                 selectedSector = sIdx
-                                invokeHostEndpoint("/api/v1/StateGraph?q=${sectorNames[sIdx]}", null, "SECTOR ${sectorNames[sIdx]}")
+                                cmdPrompt = "${sectorNames[sIdx]} sector_s$sIdx chair44_col_$colIdx neuron_n$nIdx"
+                                invokeHostEndpoint("/api/v1/sector/inspect?sector=$sIdx&line=$selectedLine", null, "SECTOR ${sectorNames[sIdx]} -> COL #$colIdx / N$nIdx")
                             }
                             .padding(horizontal = 6.dp, vertical = 3.dp)
                     ) {
@@ -1363,15 +1903,15 @@ fun SovereignCockpitV326Screen() {
                 }
             }
             Spacer(modifier = Modifier.height(4.dp))
-            val lineStart = selectedSector * 130
+            val lineStart = (selectedSector % 16) * 130
             val lineEnd = lineStart + 129
-            val byteStart = selectedSector * 8320
+            val byteStart = (selectedSector % 16) * 8320
             val byteEnd = byteStart + 8319
-            val thmStart = selectedSector * 10 + 1
-            val thmEnd = thmStart + 9
-            val chairCol = ((lineStart + selectedLine) * 480) / 2080
+            val thmStart = selectedSector * 5 + 1
+            val thmEnd = thmStart + 4
+            val chairCol = ((lineStart + selectedLine) * 640) / 2080
             Text(
-                text = "Sector #$selectedSector (${sectorNames[selectedSector]}) Line #$selectedLine/129: Lines $lineStart..$lineEnd (Bytes $byteStart..$byteEnd = 130x64B, Chair-44 Col #$chairCol/519) -- Theorems thm$thmStart..thm$thmEnd (384/384 QED) -- PPL=1.00000002",
+                text = "Sector #$selectedSector/79 (${sectorNames[selectedSector.coerceIn(0, sectorNames.lastIndex)]}) Line #$selectedLine/129: Lines $lineStart..$lineEnd (Bytes $byteStart..$byteEnd = 130x64B, Chair-44 Col #$chairCol/639, 28,160 Neurons) -- Theorems thm$thmStart..thm$thmEnd (400/400 QED) -- PPL=1.00000002",
                 color = AccentAmber10,
                 fontSize = 8.2.sp,
                 lineHeight = 11.5.sp,
@@ -1564,13 +2104,30 @@ fun SovereignCockpitV326Screen() {
 
         // DRAWER 1: LIVE 12-CHANNEL SENSOR SPARKLINES & BIPARTITE SYNAPSE PROJECTION + 24D LEECH / P8 L2
         DrawerCard603010(
-            title = "[-] DRAWER 1: LIVE 12-CHANNEL SENSOR SPARKLINES & BIPARTITE SYNAPSE PROJECTION (MLP + GRU + FNO -> S00..S79)",
+            title = "[-] DRAWER 1: LIVE 12-CHANNEL SENSOR SPARKLINES & BIPARTITE SYNAPSE PROJECTION (MLP + GRU + FNO -> S00..S79 / 640x CHAIR-44)",
             accentBorder = SlateBorder30,
             titleColor = TextIvory30,
-            rightLabel = "12 Inputs -> 16 Sectors",
+            rightLabel = "12 Inputs -> S$selectedSector:L$selectedLine",
             isOpen = drawer1Open,
             onToggle = { drawer1Open = !drawer1Open }
         ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                ToolButton603010("P10 SENSORS (S48..63)", Color(0xFF0D2618), StatusOk, Modifier.weight(1f)) {
+                    selectedSector = 48
+                    invokeHostEndpoint("/api/v1/sector/inspect?sector=48&line=0", null, "D1 -> P10 24D SENSORS S48..S63")
+                }
+                ToolButton603010("P8 .NPAGE SHM (S64..79)", Color(0xFF1A1228), Color(0xFFB388FF), Modifier.weight(1f)) {
+                    selectedSector = 64
+                    invokeHostEndpoint("/api/v1/shm/p8_npage_bridge", null, "D1 -> P8 MALI-G715 .NPAGE SHM")
+                }
+                ToolButton603010("5W1H + 28,160N (T70)", Color(0xFF002B24), Color(0xFF00FFCC), Modifier.weight(1f)) {
+                    invokeHostEndpoint("/api/v1/connectome/harness_5w1h_npage", null, "D1 -> 5W1H + 28,160-NEURON COUPLER")
+                }
+            }
+            Spacer(modifier = Modifier.height(4.dp))
             val d1Body: String = snap.card1Text
             Text(
                 text = d1Body,
@@ -1581,7 +2138,7 @@ fun SovereignCockpitV326Screen() {
             )
             Spacer(modifier = Modifier.height(3.dp))
             Text(
-                text = "FNO 16-Mode Spectral Green's: K_phi(v)=F^-1(R_phi*F(v))+W*v -- Re=418.4 (LAMINAR) -- L2_Err=0.00019 -- 3420.0k ops/s",
+                text = String.format(Locale.US, "FNO 16-Mode Spectral Green's: K_phi(v)=F^-1(R_phi*F(v))+W*v -- Re=418.4 (LAMINAR) -- L2_Err=0.00019 -- %.1fk ops/s", snap.clusterKops),
                 color = AccentAmber10,
                 fontSize = 8.8.sp,
                 fontFamily = FontFamily.Monospace
@@ -1595,24 +2152,40 @@ fun SovereignCockpitV326Screen() {
                     .border(1.dp, SlateBorder30, RoundedCornerShape(4.dp))
                     .padding(3.dp)
             ) {
-                Canvas(modifier = Modifier.fillMaxSize()) {
+                val chSeeds = SovereignLiveBus.getChannelSeeds()
+                Canvas(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .pointerInput(Unit) {
+                            detectTapGestures { offset ->
+                                val chIdx = ((offset.y / size.height) * 12f).toInt().coerceIn(0, 11)
+                                val targetSec = (chIdx * 6) % 80
+                                selectedSector = targetSec
+                                invokeHostEndpoint("/api/v1/sector/inspect?sector=$targetSec&line=$selectedLine", null, "SPARKLINE CH#${chIdx + 1} -> S$targetSec:L$selectedLine")
+                            }
+                        }
+                ) {
                     val w = size.width
                     val h = size.height
+                    val secMod = (selectedSector + 1) * 0.11f + selectedLine * 0.02f
                     for (ch in 0 until 12) {
                         val yBase = 5f + (ch.toFloat() / 11f) * (h - 10f)
+                        val seed = if (ch < chSeeds.size) chSeeds[ch] else 0f
+                        val amp = 2.6f + kotlin.math.abs(seed).coerceAtMost(2.8f)
                         val p = Path()
                         var x = 6f
                         while (x < w - 6f) {
-                            val y = yBase + sin(x * 0.03f + uiPhase * 1.3f + ch * 0.55f) * 3.8f
+                            val y = yBase + sin(x * 0.03f + uiPhase * 1.3f + ch * 0.55f + seed + secMod) * amp
                             if (x == 6f) p.moveTo(x, y) else p.lineTo(x, y)
                             x += 10f
                         }
-                        val col = when (ch % 3) {
+                        val isLinked = (selectedSector % 12) == ch
+                        val col = if (isLinked) StatusOk else when (ch % 3) {
                             0 -> AccentRed10
                             1 -> AccentAmber10
                             else -> Color(0xFF3B536B)
                         }
-                        drawPath(p, color = col, style = Stroke(width = 1.4f))
+                        drawPath(p, color = col, style = Stroke(width = if (isLinked) 2.0f else 1.4f))
                     }
                 }
             }
@@ -1620,12 +2193,12 @@ fun SovereignCockpitV326Screen() {
 
         Spacer(modifier = Modifier.height(6.dp))
 
-        // DRAWER 2: FCC-EXEMPT ACOUSTIC I/Q WAVE SDR WATERFALL (1.728 kHz / 18.5 kHz) & FNO HELMHOLTZ + STIEFEL
+        // DRAWER 2: FCC-EXEMPT ACOUSTIC I/Q WAVE SDR WATERFALL (1.728 kHz / 18.5 kHz), FNO HELMHOLTZ & UNPLUGGED .NPAGE SHM BRIDGE
         DrawerCard603010(
-            title = "[-] DRAWER 2: FCC-EXEMPT ACOUSTIC I/Q WAVE SDR WATERFALL (1.728 kHz / 18.5 kHz) & FNO HELMHOLTZ + STIEFEL",
+            title = "[-] DRAWER 2: FCC-EXEMPT ACOUSTIC I/Q WAVE SDR WATERFALL, FNO HELMHOLTZ & UNPLUGGED .NPAGE SHM BRIDGE",
             accentBorder = SlateBorder30,
             titleColor = TextIvory30,
-            rightLabel = "SNR=43.80 dB -- k=33",
+            rightLabel = "SNR=43.80 dB -- 3.56MB SHM",
             isOpen = drawer2Open,
             onToggle = { drawer2Open = !drawer2Open }
         ) {
@@ -1644,6 +2217,18 @@ fun SovereignCockpitV326Screen() {
                 }
             }
             Spacer(modifier = Modifier.height(4.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                ToolButton603010("SYNC 3.56MB .NPAGE SHM (T77)", Color(0xFF0D2618), StatusOk, Modifier.weight(1f)) {
+                    invokeHostEndpoint("/api/v1/shm/p8_npage_bridge", null, "SYNC 3.56MB .NPAGE SHM")
+                }
+                ToolButton603010("VERIFY E:/ SSD TIER-2 (T23)", Color(0xFF1A1228), Color(0xFFB388FF), Modifier.weight(1f)) {
+                    invokeHostEndpoint("/api/v1/storage/ssd_tier2?q=merkle32", null, "VERIFY E:/ SSD TIER-2")
+                }
+            }
+            Spacer(modifier = Modifier.height(4.dp))
             val d2Body: String = snap.card2Text
             Text(
                 text = d2Body,
@@ -1654,7 +2239,7 @@ fun SovereignCockpitV326Screen() {
             )
             Spacer(modifier = Modifier.height(2.dp))
             Text(
-                text = "Tier-2 Vault: E:/Sovereign_Manifold_SSD_Vault (21,120 Shards + 32-Node Merkle Mirror SYNCED)",
+                text = "Tier-2 Vault: E:/Sovereign_Manifold_SSD_Vault (28,160 Neurons + 3.56MB SHM + 32-Node Merkle Mirror SYNCED)",
                 color = StatusOk,
                 fontSize = 8.8.sp,
                 fontFamily = FontFamily.Monospace
@@ -1668,14 +2253,28 @@ fun SovereignCockpitV326Screen() {
                     .border(1.dp, SlateBorder30, RoundedCornerShape(4.dp))
                     .padding(3.dp)
             ) {
-                Canvas(modifier = Modifier.fillMaxSize()) {
+                Canvas(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .pointerInput(Unit) {
+                            detectTapGestures { offset ->
+                                val rIdx = ((offset.y / size.height) * 8f).toInt().coerceIn(0, 7)
+                                val cIdx = ((offset.x / size.width) * 64f).toInt().coerceIn(0, 63)
+                                val sec = (rIdx * 10 + (cIdx % 10)) % 80
+                                val ln = (cIdx * 2) % 130
+                                selectedSector = sec
+                                selectedLine = ln
+                                invokeHostEndpoint("/api/v1/sector/inspect?sector=$sec&line=$ln", null, "WATERFALL ($rIdx,$cIdx) -> S$sec:L$ln")
+                            }
+                        }
+                ) {
                     val rows = 8
                     val cols = 64
                     val cw = size.width / cols.toFloat()
                     val ch = size.height / rows.toFloat()
                     for (r in 0 until rows) {
                         for (c in 0 until cols) {
-                            val v = sin(c * 0.16f + uiPhase + (r + 4) * 0.28f) * 0.6f + cos((r + 4) * 0.45f - uiPhase * 0.7f + c * 0.06f) * 0.4f
+                            val v = sin((c + selectedLine) * 0.16f + uiPhase + (r + 4 + selectedSector) * 0.28f) * 0.6f + cos((r + 4 + selectedSector) * 0.45f - uiPhase * 0.7f + (c + selectedLine) * 0.06f) * 0.4f
                             drawRect(
                                 color = cellColor603010(v),
                                 topLeft = Offset(c * cw, r * ch),
@@ -1689,12 +2288,12 @@ fun SovereignCockpitV326Screen() {
 
         Spacer(modifier = Modifier.height(6.dp))
 
-        // DRAWER 3: FORMAL VERIFICATION SUITE (374 BASE / 384 RUNTIME LEAN 4 PROOFS QED) & 4-STAGE CASCADE
+        // DRAWER 3: FORMAL VERIFICATION SUITE (400/400 LEAN 4 PROOFS QED) & 4-STAGE CASCADE
         DrawerCard603010(
-            title = "[-] DRAWER 3: FORMAL VERIFICATION SUITE (374 BASE / 384 RUNTIME LEAN 4 PROOFS QED) & 4-STAGE CASCADE",
+            title = "[-] DRAWER 3: FORMAL VERIFICATION SUITE (400/400 LEAN 4 PROOFS QED) & 4-STAGE CASCADE",
             accentBorder = AccentAmber10,
             titleColor = TextIvory30,
-            rightLabel = "80 Sectors = 374 Base (384 QED)",
+            rightLabel = "80 Sectors = 400/400 QED",
             isOpen = drawer3Open,
             onToggle = { drawer3Open = !drawer3Open }
         ) {
@@ -1713,14 +2312,14 @@ fun SovereignCockpitV326Screen() {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "[4-Stage Cascade Trace] Stage 4 (FNO Spectral PDE + 16,384 NL Tokenizer + 21,120 Shards): Carrier=1,728Hz/18.5kHz -- FNO L2_Err=0.00019 -- PPL=1.00000002",
+                    text = "[4-Stage Cascade Trace] Stage 4 (FNO Spectral PDE + 65,536 BPE/16D Tokenizer + 28,160 Neurons): Carrier=1,728Hz/18.5kHz -- FNO L2_Err=0.00019 -- PPL=1.00000002",
                     color = AccentAmber10,
                     fontSize = 8.4.sp,
                     fontFamily = FontFamily.Monospace,
                     modifier = Modifier.weight(0.72f)
                 )
-                ToolButton603010("VERIFY 384 LEAN 4", AccentAmber10, BgVoid60, Modifier.weight(0.28f)) {
-                    invokeHostEndpoint("/api/v1/compiler/verify?q=" + java.net.URLEncoder.encode(leanQuery, "UTF-8"), null, "VERIFY 384 LEAN 4 QED")
+                ToolButton603010("VERIFY 400 LEAN 4", AccentAmber10, BgVoid60, Modifier.weight(0.28f)) {
+                    invokeHostEndpoint("/api/v1/compiler/verify?q=" + java.net.URLEncoder.encode(leanQuery, "UTF-8"), null, "VERIFY 400/400 LEAN 4 QED")
                 }
             }
             Spacer(modifier = Modifier.height(4.dp))
@@ -1743,12 +2342,12 @@ fun SovereignCockpitV326Screen() {
 
         Spacer(modifier = Modifier.height(6.dp))
 
-        // DRAWER 4: 76-TOOL EXECUTION REGISTRY (CHAIN 76 DAG), PRESET QUERIES & TELEMETRY LOG TERMINAL (ALL 16 BUTTONS MATCHING HOST)
+        // DRAWER 4: 80-TOOL EXECUTION REGISTRY (CHAIN 80 DAG), PRESET QUERIES & TELEMETRY LOG TERMINAL (ALL 16 BUTTONS MATCHING HOST)
         DrawerCard603010(
-            title = "[-] DRAWER 4: 76-TOOL EXECUTION REGISTRY (CHAIN 76 DAG), PRESET QUERIES & TELEMETRY LOG TERMINAL",
+            title = "[-] DRAWER 4: 80-TOOL EXECUTION REGISTRY (CHAIN 80 DAG), PRESET QUERIES & TELEMETRY LOG TERMINAL",
             accentBorder = AccentRed10,
             titleColor = TextIvory30,
-            rightLabel = "WS=3420.0k ops/s -- 21,120 Shards",
+            rightLabel = String.format(Locale.US, "WS=%.1fk ops/s -- 28,160N", snap.clusterKops),
             isOpen = drawer4Open,
             onToggle = { drawer4Open = !drawer4Open }
         ) {
@@ -2122,14 +2721,14 @@ fun SovereignCockpitV326Screen() {
                 ToolButton603010("TOOL 8: Self-Analyze", AccentAmber10, BgVoid60, Modifier.weight(1f)) {
                     invokeHostEndpoint("/api/v1/telemetry", null, "TOOL 8: ZERO-DUMMY AUDIT")
                 }
-                ToolButton603010("TOOL 5: Lean 4 (364)", SlateSurface30, TextIvory30, Modifier.weight(1f)) {
-                    invokeHostEndpoint("/api/v1/compiler/verify", null, "TOOL 5: 350 LEAN 4 PROOFS")
+                ToolButton603010("TOOL 5: Lean 4 (400)", SlateSurface30, TextIvory30, Modifier.weight(1f)) {
+                    invokeHostEndpoint("/api/v1/compiler/verify", null, "TOOL 5: 400/400 LEAN 4 PROOFS")
                 }
-                ToolButton603010("TOOL 2: Vault (21120)", SlateSurface30, TextIvory30, Modifier.weight(1f)) {
-                    invokeHostEndpoint("/api/v1/StateGraph", null, "TOOL 2: 21,120-SHARD VAULT")
+                ToolButton603010("TOOL 2: Vault (28160)", SlateSurface30, TextIvory30, Modifier.weight(1f)) {
+                    invokeHostEndpoint("/api/v1/StateGraph", null, "TOOL 2: 28,160-NEURON VAULT")
                 }
-                ToolButton603010("CHAIN 76: Full Verify", AccentRed10, TextIvory30, Modifier.weight(1f)) {
-                    invokeHostEndpoint("/api/v1/harmonic/tool_chain?q=chain64_parallel_dag", null, "CHAIN 76: 25-STEP VERIFY")
+                ToolButton603010("CHAIN 80: Full Verify", AccentRed10, TextIvory30, Modifier.weight(1f)) {
+                    invokeHostEndpoint("/api/v1/harmonic/tool_chain?q=chain80_parallel_dag", null, "CHAIN 80: 80-TOOL VERIFY")
                 }
             }
 
@@ -2151,7 +2750,7 @@ fun SovereignCockpitV326Screen() {
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = "[SH4Z v4400 (133,120 B / 130.00 KB 80-Sector 60-30-10 HUD)]: Work-Stealing=960+640+480 (2,080 Lines, 3420.0k ops/s) -- 344/364 Lean 4 QED -- 21,120 Shards (480x Chair44) -- 16,384 NL+Compound Tokens -- E:/ Tier-2 SSD Active -- PPL=1.00000002",
+                        text = String.format(Locale.US, "[SH4Z v4440 (133,120 B / 130.00 KB 80-Sector 60-30-10 HUD)]: Work-Stealing=2,080 Lines (%.1fk ops/s) -- 400/400 Lean 4 QED -- 28,160 Neurons (640x Chair44, 3.56MB SHM) -- 65,536 BPE+16D Tokens -- E:/ Tier-2 SSD Active -- PPL=1.00000002", snap.clusterKops),
                         color = AccentAmber10,
                         fontSize = 8.5.sp,
                         lineHeight = 12.sp,

@@ -934,6 +934,359 @@ class SovereignManifoldForegroundService : android.app.Service() {
     override fun onBind(intent: Intent?): android.os.IBinder? = null
 }
 
+// Native Android Screen Saver (DreamService) — Visible in Android Settings -> Display -> Screen saver
+class SovereignManifoldDreamService : android.service.dreams.DreamService() {
+    private val handler = android.os.Handler(android.os.Looper.getMainLooper())
+    private var running = false
+    private var dreamPhase = 0f
+    private var dreamView: android.view.View? = null
+
+    private val frameRunnable = object : Runnable {
+        override fun run() {
+            if (!running) return
+            dreamPhase = (dreamPhase + 0.06f) % 628f
+            dreamView?.invalidate()
+            handler.postDelayed(this, 33L) // ~30 FPS low-power OLED-safe Decadic loop
+        }
+    }
+
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        val prefs = getSharedPreferences("sovereign_dream_prefs", Context.MODE_PRIVATE)
+        isInteractive = prefs.getBoolean("interactive_mode", false)
+        isFullscreen = true
+        isScreenBright = prefs.getBoolean("bright_mode", false)
+        SovereignLiveBus.start(applicationContext)
+
+        val v = object : android.view.View(this) {
+            private val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG)
+            override fun onDraw(canvas: android.graphics.Canvas) {
+                super.onDraw(canvas)
+                SovereignVisualizerRenderer.drawManifoldFrame(
+                    canvas = canvas,
+                    w = width.toFloat(),
+                    h = height.toFloat(),
+                    phase = dreamPhase,
+                    snap = SovereignLiveBus.state.value,
+                    isP8 = SovereignLiveBus.isPixel8ComputeNode,
+                    paint = paint
+                )
+            }
+        }
+        dreamView = v
+        setContentView(v)
+    }
+
+    override fun onDreamingStarted() {
+        super.onDreamingStarted()
+        running = true
+        handler.post(frameRunnable)
+    }
+
+    override fun onDreamingStopped() {
+        running = false
+        handler.removeCallbacks(frameRunnable)
+        super.onDreamingStopped()
+    }
+
+    override fun onDetachedFromWindow() {
+        running = false
+        handler.removeCallbacks(frameRunnable)
+        dreamView = null
+        super.onDetachedFromWindow()
+    }
+}
+
+// Native Android Live Wallpaper (WallpaperService) — Visible in Android Settings -> Wallpaper & style -> Live Wallpapers
+class SovereignManifoldLiveWallpaperService : android.service.wallpaper.WallpaperService() {
+    override fun onCreateEngine(): Engine = SovereignWallpaperEngine()
+
+    inner class SovereignWallpaperEngine : Engine() {
+        private val handler = android.os.Handler(android.os.Looper.getMainLooper())
+        private val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG)
+        private var visible = false
+        private var wpPhase = 0f
+
+        private val drawRunner = object : Runnable {
+            override fun run() {
+                drawFrame()
+                if (visible) {
+                    wpPhase = (wpPhase + 0.05f) % 628f
+                    handler.postDelayed(this, 40L) // 25 FPS smooth battery-friendly wallpaper
+                }
+            }
+        }
+
+        override fun onCreate(surfaceHolder: android.view.SurfaceHolder?) {
+            super.onCreate(surfaceHolder)
+            SovereignLiveBus.start(applicationContext)
+        }
+
+        override fun onVisibilityChanged(visible: Boolean) {
+            this.visible = visible
+            if (visible) {
+                handler.post(drawRunner)
+            } else {
+                handler.removeCallbacks(drawRunner)
+            }
+        }
+
+        override fun onSurfaceDestroyed(holder: android.view.SurfaceHolder?) {
+            super.onSurfaceDestroyed(holder)
+            this.visible = false
+            handler.removeCallbacks(drawRunner)
+        }
+
+        private fun drawFrame() {
+            val holder = surfaceHolder ?: return
+            var canvas: android.graphics.Canvas? = null
+            try {
+                canvas = holder.lockCanvas()
+                if (canvas != null) {
+                    SovereignVisualizerRenderer.drawManifoldFrame(
+                        canvas = canvas,
+                        w = canvas.width.toFloat(),
+                        h = canvas.height.toFloat(),
+                        phase = wpPhase,
+                        snap = SovereignLiveBus.state.value,
+                        isP8 = SovereignLiveBus.isPixel8ComputeNode,
+                        paint = paint
+                    )
+                }
+            } catch (_: Throwable) {
+            } finally {
+                if (canvas != null) {
+                    try {
+                        holder.unlockCanvasAndPost(canvas)
+                    } catch (_: Throwable) {
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Shared Hardware-Coupled Renderer for Android Screen Saver (DreamService) & Live Wallpaper
+object SovereignVisualizerRenderer {
+    fun drawManifoldFrame(
+        canvas: android.graphics.Canvas,
+        w: Float,
+        h: Float,
+        phase: Float,
+        snap: SovereignSnap,
+        isP8: Boolean,
+        paint: android.graphics.Paint
+    ) {
+        // 1. Deep 60-30-10 Obsidian Void Background
+        paint.style = android.graphics.Paint.Style.FILL
+        paint.color = 0xFF050A0E.toInt()
+        canvas.drawRect(0f, 0f, w, h, paint)
+
+        val cx = w * 0.5f
+        val cy = h * 0.43f + sin(phase * 0.25f) * 18f // Subtle OLED pixel-shift anti-burn-in
+        val radius = kotlin.math.min(w, h) * 0.31f
+
+        // 2. Outer 24-Node Leech Constellation Ring
+        paint.style = android.graphics.Paint.Style.STROKE
+        paint.strokeWidth = 2.0f
+        paint.color = 0x55FFB454
+        canvas.drawCircle(cx, cy, radius * 1.18f, paint)
+        paint.color = 0x9900E5FF.toInt()
+        canvas.drawCircle(cx, cy, radius, paint)
+
+        for (i in 0 until 24) {
+            val ang = (i.toFloat() / 24f) * 6.283185f + phase * 0.18f
+            val nx = cx + cos(ang) * radius * 1.18f
+            val ny = cy + sin(ang) * radius * 1.18f
+            val ix = cx + cos(ang + 0.26f) * radius
+            val iy = cy + sin(ang + 0.26f) * radius
+            paint.strokeWidth = 1.2f
+            paint.color = if (i % 2 == 0) 0x6600FFCC else 0x66FFB454
+            canvas.drawLine(nx, ny, ix, iy, paint)
+            paint.style = android.graphics.Paint.Style.FILL
+            paint.color = if (i % 3 == 0) 0xFFFFB454.toInt() else 0xFF00E5FF.toInt()
+            canvas.drawCircle(nx, ny, 4.2f, paint)
+            paint.style = android.graphics.Paint.Style.STROKE
+        }
+
+        // 3. 3D Stiefel Manifold Geodesic Chords & Theodorus Square-Root Spiral
+        var prevX = cx
+        var prevY = cy
+        var theodorusAngle = phase * 0.4f
+        for (n in 1..16) {
+            val rN = sqrt(n.toFloat()) * (radius * 0.22f)
+            theodorusAngle += kotlin.math.atan(1f / sqrt(n.toFloat()))
+            val tx = cx + cos(theodorusAngle) * rN
+            val ty = cy + sin(theodorusAngle) * rN
+            paint.strokeWidth = 2.4f
+            paint.color = 0xCC00FFCC.toInt()
+            canvas.drawLine(prevX, prevY, tx, ty, paint)
+            paint.strokeWidth = 1.1f
+            paint.color = 0x4456D364
+            canvas.drawLine(cx, cy, tx, ty, paint)
+            prevX = tx
+            prevY = ty
+        }
+
+        // 4. Golden Sovereign Omega (Ω) Centerpiece Emblem
+        paint.style = android.graphics.Paint.Style.STROKE
+        paint.strokeWidth = radius * 0.11f
+        paint.strokeCap = android.graphics.Paint.Cap.ROUND
+        paint.color = 0xFFFFB454.toInt()
+        val omegaRect = android.graphics.RectF(
+            cx - radius * 0.48f,
+            cy - radius * 0.48f,
+            cx + radius * 0.48f,
+            cy + radius * 0.44f
+        )
+        canvas.drawArc(omegaRect, 140f, 260f, false, paint)
+        val footY = cy + radius * 0.42f
+        canvas.drawLine(cx - radius * 0.52f, footY, cx - radius * 0.22f, footY, paint)
+        canvas.drawLine(cx + radius * 0.22f, footY, cx + radius * 0.52f, footY, paint)
+
+        // 5. 15.965 Hz Decadic Carrier Waveform
+        val waveY = h * 0.72f
+        paint.strokeWidth = 2.6f
+        paint.color = 0xFF56D364.toInt()
+        var wx = 24f
+        var lastWx = wx
+        var lastWy = waveY
+        while (wx < w - 24f) {
+            val wy = waveY + sin(wx * 0.025f + phase * 1.8f) * 18f + cos(wx * 0.06f - phase) * 8f
+            if (wx > 24f) canvas.drawLine(lastWx, lastWy, wx, wy, paint)
+            lastWx = wx
+            lastWy = wy
+            wx += 12f
+        }
+
+        // 6. Live 16x130 (2,080-Cacheline) Heatmap Strip at Bottom
+        val gridTop = h * 0.77f
+        val gridH = h * 0.14f
+        val gridW = w - 32f
+        val cw = gridW / 130f
+        val ch = gridH / 16f
+        val grid = snap.lattice16x80
+        paint.style = android.graphics.Paint.Style.FILL
+        for (r in 0 until 16) {
+            for (c in 0 until 130) {
+                val idx = r * 130 + c
+                val v = if (idx < grid.size) grid[idx] else 0f
+                val norm = ((v + 1f) * 0.5f).coerceIn(0f, 1f)
+                paint.color = when {
+                    norm > 0.82f -> 0xFFE94E34.toInt()
+                    norm > 0.66f -> 0xFFFFB454.toInt()
+                    norm > 0.48f -> 0xFF00E5FF.toInt()
+                    norm > 0.28f -> 0xFF1C2632.toInt()
+                    else -> 0xFF0D141D.toInt()
+                }
+                canvas.drawRect(
+                    16f + c * cw,
+                    gridTop + r * ch,
+                    16f + (c + 1) * cw - 0.4f,
+                    gridTop + (r + 1) * ch - 0.4f,
+                    paint
+                )
+            }
+        }
+
+        // 7. Telemetry Header & Footer Text
+        paint.typeface = android.graphics.Typeface.MONOSPACE
+        paint.textAlign = android.graphics.Paint.Align.CENTER
+        paint.textSize = (w * 0.032f).coerceIn(22f, 38f)
+        paint.color = 0xFFFFB454.toInt()
+        val nodeTag = if (isP8) "PIXEL 8 P8-APEX (4.00MB L2 SHM)" else "PIXEL 10 TENSOR G5 (24D + SHM)"
+        canvas.drawText("ACT-OMEGA v44.5.0 SH4Z -- $nodeTag", cx, h * 0.08f, paint)
+
+        paint.textSize = (w * 0.025f).coerceIn(17f, 28f)
+        paint.color = 0xFF00FFCC.toInt()
+        canvas.drawText(
+            String.format(Locale.US, "15.965 Hz Decadic | 28,160 Neurons (3.56MB SHM) | %.1fk ops/s", snap.clusterKops),
+            cx,
+            h * 0.115f,
+            paint
+        )
+
+        paint.color = 0xFF9FB0C2.toInt()
+        canvas.drawText(
+            String.format(Locale.US, "Tick #%d | 640x Chair-44 | 65,536 Vocab | 400/400 Lean 4 QED | %s", snap.gen, snap.activeBearer.take(24)),
+            cx,
+            h * 0.945f,
+            paint
+        )
+    }
+}
+
+// Settings Activity for Android Screen Saver & Live Wallpaper
+class SovereignDreamSettingsActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        val prefs = getSharedPreferences("sovereign_dream_prefs", Context.MODE_PRIVATE)
+        setContent {
+            var interactiveMode by remember { mutableStateOf(prefs.getBoolean("interactive_mode", false)) }
+            var brightMode by remember { mutableStateOf(prefs.getBoolean("bright_mode", false)) }
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(BgPanel60, RoundedCornerShape(10.dp))
+                    .border(1.5.dp, AccentAmber10, RoundedCornerShape(10.dp))
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Text(
+                    "ACT-OMEGA v44.5.0 SCREENSAVER & LIVE WALLPAPER",
+                    color = AccentAmber10,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = FontFamily.Monospace
+                )
+                Text(
+                    "Configure the native Android Screen Saver (DreamService) and Live Wallpaper rendering the 15.965 Hz Stiefel Manifold, Golden Omega emblem, and 16x130 (2,080-cacheline) .npage SHM matrix.",
+                    color = TextIvory30,
+                    fontSize = 9.5.sp,
+                    fontFamily = FontFamily.Monospace
+                )
+                ToolButton603010(
+                    label = "INTERACTIVE TOUCH MODE: ${if (interactiveMode) "ON" else "OFF (WAKE ON TAP)"}",
+                    bg = if (interactiveMode) Color(0xFF0D2618) else SlateSurface30,
+                    fg = if (interactiveMode) StatusOk else TextIvory30,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    interactiveMode = !interactiveMode
+                    prefs.edit().putBoolean("interactive_mode", interactiveMode).apply()
+                }
+                ToolButton603010(
+                    label = "OLED BRIGHTNESS: ${if (brightMode) "HIGH LUMEN" else "OLED NIGHT SAFE"}",
+                    bg = if (brightMode) AccentAmber10 else SlateSurface30,
+                    fg = if (brightMode) BgVoid60 else TextIvory30,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    brightMode = !brightMode
+                    prefs.edit().putBoolean("bright_mode", brightMode).apply()
+                }
+                ToolButton603010(
+                    label = "OPEN ANDROID SCREEN SAVER SETTINGS",
+                    bg = AccentAmber10,
+                    fg = BgVoid60,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    try {
+                        startActivity(Intent(android.provider.Settings.ACTION_DREAM_SETTINGS))
+                    } catch (_: Throwable) {
+                    }
+                }
+                ToolButton603010(
+                    label = "CLOSE & SAVE",
+                    bg = SlateSurface30,
+                    fg = StatusOk,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    finish()
+                }
+            }
+        }
+    }
+}
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -1130,7 +1483,8 @@ fun SovereignCockpitV326Screen() {
             .padding(horizontal = 8.dp, vertical = 6.dp)
             .verticalScroll(scrollState)
     ) {
-        // Top Header Banner (1:1 Mirror of Host :5173 Banner with Expand/Collapse Controls)
+        val localCtx = LocalView.current.context
+        // Top Header Banner (1:1 Mirror of Host :5173 Banner with Official Ω Emblem + Screensaver/Wallpaper/Expand Controls)
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -1143,14 +1497,35 @@ fun SovereignCockpitV326Screen() {
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = "SOVEREIGN MANIFOLD TELEMETRY CONSOLE -- ACT-OMEGA NET v44.0.0 (SH4Z v4400 TLV)",
-                    color = AccentAmber10,
-                    fontSize = 9.5.sp,
-                    fontWeight = FontWeight.Bold,
-                    fontFamily = FontFamily.Monospace,
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
                     modifier = Modifier.weight(1f)
-                )
+                ) {
+                    // Official Sovereign Omega + Theodorus Spiral Vector Badge
+                    Box(
+                        modifier = Modifier
+                            .size(28.dp)
+                            .background(Color(0xFF050A0E), RoundedCornerShape(6.dp))
+                            .border(1.dp, AccentAmber10, RoundedCornerShape(6.dp)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "Ω",
+                            color = AccentAmber10,
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = FontFamily.Monospace
+                        )
+                    }
+                    Text(
+                        text = "SOVEREIGN MANIFOLD TELEMETRY CONSOLE -- ACT-OMEGA NET v44.5.0 (SH4Z v4450 TLV)",
+                        color = AccentAmber10,
+                        fontSize = 9.2.sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = FontFamily.Monospace
+                    )
+                }
                 Box(
                     modifier = Modifier
                         .background(SlateSurface30, RoundedCornerShape(4.dp))
@@ -1158,7 +1533,7 @@ fun SovereignCockpitV326Screen() {
                         .padding(horizontal = 6.dp, vertical = 2.dp)
                 ) {
                     Text(
-                        text = if (snap.hostSynced) "BROADCAST OK" else "LOCAL",
+                        text = if (snap.hostSynced) "BROADCAST OK" else "LOCAL SHM",
                         color = if (snap.hostSynced) StatusOk else AccentAmber10,
                         fontSize = 8.0.sp,
                         fontWeight = FontWeight.Bold,
@@ -1167,7 +1542,7 @@ fun SovereignCockpitV326Screen() {
                 }
             }
             Text(
-                text = "60-30-10 Dark Telemetry HUD -- 130.00 KB (2,080x64B u128) 1:1 Bijection -- 16,384 NL+Compound Tokenizer -- FNO Spectral PDE -- 364 Lean 4 Proofs QED",
+                text = "60-30-10 Dark Telemetry HUD -- 28,160 Neurons (3.56MB .npage SHM) -- 65,536 16D BPE Vocab -- 80 Tools (CHAIN 80) -- 400/400 Lean 4 Proofs QED",
                 color = TextIvory30,
                 fontSize = 8.2.sp,
                 fontFamily = FontFamily.Monospace
@@ -1188,6 +1563,45 @@ fun SovereignCockpitV326Screen() {
                 Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                     Box(
                         modifier = Modifier
+                            .background(Color(0xFF002B24), RoundedCornerShape(3.dp))
+                            .border(1.dp, Color(0xFF00FFCC), RoundedCornerShape(3.dp))
+                            .clickable {
+                                try {
+                                    localCtx.startActivity(
+                                        Intent(android.provider.Settings.ACTION_DREAM_SETTINGS).apply {
+                                            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                                        }
+                                    )
+                                } catch (_: Throwable) {
+                                }
+                            }
+                            .padding(horizontal = 5.dp, vertical = 2.dp)
+                    ) {
+                        Text("SCREENSAVER", color = Color(0xFF00FFCC), fontSize = 7.3.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace)
+                    }
+                    Box(
+                        modifier = Modifier
+                            .background(Color(0xFF1A1228), RoundedCornerShape(3.dp))
+                            .border(1.dp, Color(0xFFB388FF), RoundedCornerShape(3.dp))
+                            .clickable {
+                                try {
+                                    val wpIntent = Intent(android.app.WallpaperManager.ACTION_CHANGE_LIVE_WALLPAPER).apply {
+                                        putExtra(
+                                            android.app.WallpaperManager.EXTRA_LIVE_WALLPAPER_COMPONENT,
+                                            android.content.ComponentName(localCtx, SovereignManifoldLiveWallpaperService::class.java)
+                                        )
+                                        flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                                    }
+                                    localCtx.startActivity(wpIntent)
+                                } catch (_: Throwable) {
+                                }
+                            }
+                            .padding(horizontal = 5.dp, vertical = 2.dp)
+                    ) {
+                        Text("LIVE WALLPAPER", color = Color(0xFFB388FF), fontSize = 7.3.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace)
+                    }
+                    Box(
+                        modifier = Modifier
                             .background(AccentAmber10, RoundedCornerShape(3.dp))
                             .clickable {
                                 drawerAOpen = true
@@ -1200,7 +1614,7 @@ fun SovereignCockpitV326Screen() {
                             }
                             .padding(horizontal = 5.dp, vertical = 2.dp)
                     ) {
-                        Text("EXPAND ALL", color = BgVoid60, fontSize = 7.5.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace)
+                        Text("EXPAND ALL", color = BgVoid60, fontSize = 7.3.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace)
                     }
                     Box(
                         modifier = Modifier
@@ -1213,7 +1627,7 @@ fun SovereignCockpitV326Screen() {
                             }
                             .padding(horizontal = 5.dp, vertical = 2.dp)
                     ) {
-                        Text("COLLAPSE TOP", color = TextIvory30, fontSize = 7.5.sp, fontFamily = FontFamily.Monospace)
+                        Text("COLLAPSE TOP", color = TextIvory30, fontSize = 7.3.sp, fontFamily = FontFamily.Monospace)
                     }
                 }
             }

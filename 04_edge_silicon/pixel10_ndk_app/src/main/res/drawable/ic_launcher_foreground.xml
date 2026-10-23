@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Outer Cyan Stiefel Torus Ring -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#00E5FF"
+        android:strokeWidth="1.6"
+        android:pathData="M54,54m-31,0a31,31 0,1 1,62 0a31,31 0,1 1,-62 0" />
+    <!-- Inner Theodorus Spiral Chord -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#56D364"
+        android:strokeWidth="1.4"
+        android:pathData="M54,54 L61,54 L61,47 L53,44 L46,50 L47,61 L59,64 L68,54" />
+    <!-- Luminous Golden Sovereign Omega (Ω) -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFB454"
+        android:strokeWidth="5.5"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M34,72 L46,72 L46,66 C38,61 35,53 35,45 C35,33 43,25 54,25 C65,25 73,33 73,45 C73,53 70,61 62,66 L62,72 L74,72" />
+    <!-- Cardinal Leech Nodes -->
+    <path android:fillColor="#FFB454" android:pathData="M54,19m-2.2,0a2.2,2.2 0,1 1,4.4 0a2.2,2.2 0,1 1,-4.4 0" />
+    <path android:fillColor="#00E5FF" android:pathData="M54,89m-2.2,0a2.2,2.2 0,1 1,4.4 0a2.2,2.2 0,1 1,-4.4 0" />
+    <path android:fillColor="#00E5FF" android:pathData="M19,54m-2.2,0a2.2,2.2 0,1 1,4.4 0a2.2,2.2 0,1 1,-4.4 0" />
+    <path android:fillColor="#FFB454" android:pathData="M89,54m-2.2,0a2.2,2.2 0,1 1,4.4 0a2.2,2.2 0,1 1,-4.4 0" />
+</vector>

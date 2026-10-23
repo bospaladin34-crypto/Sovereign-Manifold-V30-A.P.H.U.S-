@@ -10,9 +10,15 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
 
+    <uses-feature
+        android:name="android.software.live_wallpaper"
+        android:required="false" />
+
     <application
         android:allowBackup="true"
-        android:label="ACT-Omega v44.4 SH4Z"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:label="ACT-Omega v44.5 SH4Z"
         android:supportsRtl="true"
         android:usesCleartextTraffic="true"
         android:theme="@android:style/Theme.DeviceDefault.NoActionBar">
@@ -27,16 +33,60 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".SovereignDreamSettingsActivity"
+            android:exported="true"
+            android:label="ACT-Omega Screensaver &amp; Live Wallpaper Settings"
+            android:theme="@android:style/Theme.DeviceDefault.Dialog.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.PREFERENCE" />
+            </intent-filter>
+        </activity>
+
         <service
             android:name=".SovereignManifoldForegroundService"
             android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="dataSync" />
 
+        <!-- Native Android Screen Saver (DreamService) visible in Settings -> Display -> Screen saver -->
+        <service
+            android:name=".SovereignManifoldDreamService"
+            android:enabled="true"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher"
+            android:label="@string/sovereign_dream_label"
+            android:permission="android.permission.BIND_DREAM_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.dreams.DreamService" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <meta-data
+                android:name="android.service.dream"
+                android:resource="@xml/sovereign_dream_info" />
+        </service>
+
+        <!-- Native Android Live Wallpaper visible in Settings -> Wallpaper & style -> Live Wallpapers -->
+        <service
+            android:name=".SovereignManifoldLiveWallpaperService"
+            android:enabled="true"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher"
+            android:label="@string/sovereign_wallpaper_label"
+            android:permission="android.permission.BIND_WALLPAPER">
+            <intent-filter>
+                <action android:name="android.service.wallpaper.WallpaperService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.service.wallpaper"
+                android:resource="@xml/sovereign_live_wallpaper_info" />
+        </service>
+
         <receiver
             android:name=".SovereignManifoldWidgetProvider"
             android:exported="true"
-            android:label="SH4Z v4440 Live 16x130 &amp; .npage SHM Widget">
+            android:label="SH4Z v4450 Live 16x130 &amp; .npage SHM Widget">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
                 <action android:name="com.actomega.manifold.ACTION_REFRESH_HEATMAP" />

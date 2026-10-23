@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/sovereign_widget_container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#FF0E1116"
+    android:padding="7dp">
+    <FrameLayout android:id="@+id/widget_root" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
+    <ImageView android:id="@+id/widget_heatmap_img" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+        <TextView
+            android:id="@+id/sovereign_widget_title_txt"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="SOVEREIGN v44.4.0 (SH4Z v4440) -- 28,160N .NPAGE SHM"
+            android:textColor="#FFFFB454"
+            android:textSize="9.5sp"
+            android:textStyle="bold"
+            android:fontFamily="monospace" />
+        <TextView
+            android:id="@+id/sovereign_widget_sync_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="#FF1C2632"
+            android:paddingLeft="6dp"
+            android:paddingRight="6dp"
+            android:paddingTop="2dp"
+            android:paddingBottom="2dp"
+            android:text="SYNC SHM"
+            android:textColor="#FF56D364"
+            android:textSize="8.5sp"
+            android:textStyle="bold"
+            android:fontFamily="monospace" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/sovereign_widget_sub_txt"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="act-omega-net.dev -- 28,160 Neurons (3.56MB SHM) -- 65K Vocab -- 400/400 QED"
+        android:textColor="#FFFFFEFB"
+        android:textSize="8.2sp"
+        android:fontFamily="monospace" />
+    <TextView
+        android:id="@+id/sovereign_widget_live_txt"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Tick #906200 -- 15.965Hz Decadic + 5W1H Connectome -- 4520.0k ops/s"
+        android:textColor="#FF56D364"
+        android:textSize="8.2sp"
+        android:fontFamily="monospace"
+        android:layout_marginBottom="3dp" />
+    <ImageView
+        android:id="@+id/sovereign_widget_live_bmp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="fitXY"
+        android:background="#FF141922" />
+</LinearLayout>

@@ -1429,11 +1429,34 @@ export function App() {
     <div style={{ background: "#0E1116", color: "#FFFEFB", minHeight: "100vh", padding: "10px 14px", fontFamily: "'JetBrains Mono', Consolas, monospace", fontSize: "12px" }}>
       {/* Top Banner + Always-On Toggle + Physical Anomaly Banner */}
       <div style={{ background: "#141922", border: "1px solid #FFB454", borderRadius: 6, padding: "8px 12px", marginBottom: 8 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div style={{ color: "#FFB454", fontWeight: "bold", fontSize: 13 }}>
-            SOVEREIGN MANIFOLD TELEMETRY CONSOLE -- ACT-OMEGA NET v44.0.0 (SH4Z v4400 TLV -- 15.965 Hz DECADIC EPOCH)
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 6 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
+            <img
+              src="/act_omega_logo.jpg"
+              onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/logo.svg"; }}
+              alt="ACT-Omega Official Emblem"
+              style={{ width: 34, height: 34, borderRadius: 7, border: "1.5px solid #FFB454", boxShadow: "0 0 8px rgba(0,255,204,0.35)" }}
+            />
+            <div style={{ color: "#FFB454", fontWeight: "bold", fontSize: 13 }}>
+              SOVEREIGN MANIFOLD TELEMETRY CONSOLE -- ACT-OMEGA NET v44.5.0 (SH4Z v4450 TLV -- 15.965 Hz DECADIC EPOCH)
+            </div>
           </div>
-          <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+          <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
+            <button
+              onClick={() => callEndpoint("/api/v1/compat/matrix", "UNIVERSAL OS / BROWSER / EXTERNAL PROGRAM COMPAT MATRIX")}
+              style={{
+                background: "#1C1428",
+                color: "#B388FF",
+                border: "1px solid #B388FF",
+                borderRadius: 4,
+                padding: "3px 8px",
+                fontWeight: "bold",
+                cursor: "pointer",
+                fontSize: 10.5
+              }}
+            >
+              COMPAT MATRIX (OS/PWA/OLLAMA/MCP)
+            </button>
             <button
               onClick={() => callEndpoint("/api/v1/always_on/toggle", "ALWAYS-ON STREAM TOGGLE")}
               style={{
@@ -2685,9 +2708,19 @@ export function App() {
                   <b>• Windows 11 Live Desktop &amp; Top Banner Widget:</b><br />
                   Floats on your desktop with a live clickable `16×130` heatmap and 5 quick buttons (`NATIVE HUD`, `SYNC SHM`, `HANDOVER`, `VERIFY 6L`, `BANNER`). Click `BANNER` to dock it at top-center like a live lockscreen/status bar.
                 </div>
-                <div style={{ marginBottom: 4 }}>
-                  <b>• Improved Android HomescreenWidget &amp; Ongoing Notification:</b><br />
-                  On Pixel 10 &amp; Pixel 8, the ongoing notification and homescreen widget show live `28,160N (3.56MB SHM)`, `RTX/P10/P8 Temps`, `Active Bearer`, and include interactive **`OPEN HUD`** and **`SYNC SHM`** buttons.
+                <div style={{ marginBottom: 6 }}>
+                  <b>• Android Live Screensaver (`DreamService`), Live Wallpaper &amp; Widget:</b><br />
+                  On Pixel 10 &amp; Pixel 8, open <b>Android Settings -&gt; Display -&gt; Screen saver</b> (or tap <code>SCREENSAVER</code> in the mobile HUD header) to select <b>ACT-Omega Live Screensaver (3D Stiefel &amp; 16x130 SHM)</b>, or open <b>Wallpaper &amp; style -&gt; Live Wallpapers</b> to pick <b>ACT-Omega Live Wallpaper</b>. Both phones also feature the Adaptive Official Ω Icon, Homescreen/Keyguard Widget, and Ongoing Notification (`OPEN HUD` + `SYNC SHM`).
+                </div>
+                <div style={{ marginBottom: 8 }}>
+                  <b>• Universal Cross-OS, Browser PWA &amp; External Program Compatibility (`v44.5.0`):</b><br />
+                  Connect any external tool directly to <code>:8097</code> or <code>https://act-omega-net.dev</code> via <b>OpenAI</b> (<code>/v1/chat/completions</code>), <b>Anthropic</b> (<code>/v1/messages</code>), <b>Ollama</b> (<code>/api/tags</code> &amp; <code>/api/chat</code>), <b>MCP 2026-07-28</b> (<code>/mcp</code>), <b>Google A2A</b> (<code>/.well-known/agent.json</code>), <b>Prometheus</b> (<code>/metrics</code>), or <b>OpenAPI 3.1</b> (<code>/openapi.json</code>). Installable as a standalone PWA across Chrome, Edge, Brave, Firefox &amp; Safari (`macOS/iOS/iPadOS/Linux/Win11`), plus POSIX CLI (<code>00_control/sovereign-lifecycle.sh</code>) and Python SDK (<code>00_control/act_omega_client.py</code>).
+                </div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                  <button onClick={() => callEndpoint("/api/v1/compat/matrix", "MANUAL: VERIFY UNIVERSAL COMPATIBILITY MATRIX")} style={{ background: "#56D364", color: "#050A0E", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>VERIFY COMPAT MATRIX</button>
+                  <button onClick={() => callEndpoint("/api/tags", "MANUAL: TEST OLLAMA /API/TAGS BRIDGE")} style={{ background: "#1C2632", color: "#00FFCC", border: "1px solid #00FFCC", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>TEST OLLAMA BRIDGE (/api/tags)</button>
+                  <button onClick={() => callEndpoint("/v1/messages?q=Verify+Anthropic+SDK+Bridge", "MANUAL: TEST ANTHROPIC /V1/MESSAGES BRIDGE")} style={{ background: "#1C2632", color: "#FFB454", border: "1px solid #FFB454", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>TEST ANTHROPIC (/v1/messages)</button>
+                  <button onClick={() => callEndpoint("/metrics", "MANUAL: SCRAPE PROMETHEUS /METRICS")} style={{ background: "#1C2632", color: "#B388FF", border: "1px solid #B388FF", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>PROMETHEUS (/metrics)</button>
                 </div>
               </div>
             )}

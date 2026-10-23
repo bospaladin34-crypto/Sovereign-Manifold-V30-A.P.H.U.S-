@@ -2,7 +2,11 @@
 <!-- ACT-OMEGA NET v44.4.0 — SOVEREIGN ENCYCLOPEDIA, OPERATOR WIKI & STEP-BY-STEP USER MANUAL -->
 <!-- ========================================================================================= -->
 
-# 🌌 ACT-Omega Net `v44.4.0` (`SH4Z v4440 TLV`) — Sovereign Encyclopedia, Operator Wiki & Step-by-Step User Manual (`28,160` Neurons == `28,160` Shards | `640 × Chair-44` | `3,604,480 B` `.npage` SHM | `65,536` Vocab | `400/400` Lean 4 Proofs QED | `80` Tools)
+# 🌌 ACT-Omega Net `v44.5.0` (`SH4Z v4450 TLV`) — Sovereign Encyclopedia, Operator Wiki & Step-by-Step User Manual (`28,160` Neurons == `28,160` Shards | `640 × Chair-44` | `3,604,480 B` `.npage` SHM | `65,536` Vocab | `400/400` Lean 4 Proofs QED | `80` Tools)
+
+<p align="center">
+  <img src="./act_omega_logo.jpg" alt="ACT-Omega Net Official Sovereign Harmonic Emblem" width="200" style="border-radius: 20px; border: 2px solid #FFB454;" />
+</p>
 
 [![Release](https://img.shields.io/badge/Release-v44.4.0_(SH4Z_v4440_TLV_%7C_6--Layer_True--Data_100%2F100)-00FFCC?style=for-the-badge&logo=github)](https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-/releases/tag/v44.4.0)
 [![Weight Binary](https://img.shields.io/badge/Weights-SH4Z_v4440_(133,120_B_%7C_80_Sectors_u128_0xFFFF__FFFFFFFFFFFFFFFF)-FF007F?style=for-the-badge)](https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-/tree/vesper_production/00_control/weights)

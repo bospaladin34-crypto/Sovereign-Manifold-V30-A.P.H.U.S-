@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#050A0E" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="ACT-Omega HUD" />
+    <meta name="description" content="ACT-Omega Net v44.5.0 (SH4Z v4450 TLV) — 28,160 Neurons, 80 Sectors, 80 Native Tools, 65,536 Vocab &amp; 15.965 Hz Decadic Cockpit HUD" />
+    <link rel="icon" type="image/svg+xml" href="/logo.svg" />
+    <link rel="alternate icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <title>ACT-Omega Net v44.5.0 (SH4Z v4450 15.965Hz Decadic HUD) — 28,160 Shards/Neurons, 80 Sectors &amp; 80 Tools</title>
+  </head>
+  <body style="margin:0;background:#0E1116;color:#FFFEFB;">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch(() => {});
+        });
+      }
+    </script>
+  </body>
+</html>

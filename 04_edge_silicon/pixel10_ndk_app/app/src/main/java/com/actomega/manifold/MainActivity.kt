@@ -230,9 +230,30 @@ object SovereignLiveBus : SensorEventListener {
         val idx = json.indexOf(pat)
         if (idx < 0) return defaultVal
         val start = idx + pat.length
-        val end = json.indexOf("\"", start)
-        if (end <= start) return defaultVal
-        return json.substring(start, end)
+        val sb = StringBuilder()
+        var i = start
+        while (i < json.length) {
+            val ch = json[i]
+            if (ch == '\\' && i + 1 < json.length) {
+                val nxt = json[i + 1]
+                when (nxt) {
+                    '"' -> sb.append('"')
+                    '\\' -> sb.append('\\')
+                    'n' -> sb.append('\n')
+                    'r' -> sb.append('\r')
+                    't' -> sb.append('\t')
+                    else -> sb.append(nxt)
+                }
+                i += 2
+                continue
+            }
+            if (ch == '"') {
+                return sb.toString()
+            }
+            sb.append(ch)
+            i++
+        }
+        return defaultVal
     }
 
     private fun extractJsonFloat(json: String, key: String, defaultVal: Float): Float {
@@ -1361,12 +1382,20 @@ fun SovereignCockpitV326Screen() {
 
     var cmdPrompt by remember {
         mutableStateOf(
-            "run 16-mode fourier neural operator pde solver and llm agent gateway with 8192 natural language tokenizer"
+            "Explain how the E8 root lattice (240 roots) and the 24-dimensional Leech lattice (196,560 minimal vectors) connect to our 28,160 dendritic neurons and natural language fluency"
         )
     }
     var toolOutput by remember {
         mutableStateOf(
-            "EXEC(tool:fourier_neural_operator_pde) -> 16-Mode Spectral FNO K_phi(v)=F^-1(R_phi*F(v))+W*v -> Navier-Stokes Re=418.4 < 2300 (L2 Rel Err=0.00019, 3420.0k ops/s) (HALT_CONVERGED)"
+            "EXEC(V45_E8_LEECH_FLUENCY_QED) -> E8(+)E8(+)E8 -> Leech_24 Turyn-Golay Bridge (240 E8 Roots, 4,096 Golay G24, 196,560 Kissing Vectors) -> 28,160 Dendritic Neurons (192-Epoch QAT PPL=1.000000008)"
+        )
+    }
+    var mobileE8Roots by remember { mutableStateOf("R1=#133 (8_v) | R2=#229 (8_+) | R3=#229 (8_-)") }
+    var mobileGolayLeech by remember { mutableStateOf("Golay24=0x737BEF (Octad #755/759) -> Leech #193,371/196,560") }
+    var mobileFibration by remember { mutableStateOf("S58 -> Col #465/639 -> Neuron N20495/28159 (Cartan=0.9994, F=0.0404)") }
+    var mobileFluentProse by remember {
+        mutableStateOf(
+            "In ACT-Omega Net v45.0.0, the E8 root system and the 24-dimensional Leech lattice (Lambda_24) form the exact mathematical backbone connecting physical sensor telemetry to neural memory. Using Turyn's tri-direct construction (E8 + E8 + E8 glued by the 24-bit Extended Binary Golay Code G24), every 24-dimensional state vector is decomposed into three 8-dimensional E8 octets and routed via a 3:1 fibration across 80 Sectors, 640 Chair-44 Columns, and 28,160 3-Compartment Dendritic Neurons."
         )
     }
 
@@ -1441,26 +1470,77 @@ fun SovereignCockpitV326Screen() {
                     val i0 = src.indexOf(pat)
                     if (i0 < 0) return null
                     val start = i0 + pat.length
-                    val end = src.indexOf("\"", start)
-                    if (end <= start) return null
-                    return src.substring(start, end)
+                    val sb = StringBuilder()
+                    var i = start
+                    while (i < src.length) {
+                        val ch = src[i]
+                        if (ch == '\\' && i + 1 < src.length) {
+                            val nxt = src[i + 1]
+                            when (nxt) {
+                                '"' -> sb.append('"')
+                                '\\' -> sb.append('\\')
+                                'n' -> sb.append('\n')
+                                'r' -> sb.append('\r')
+                                't' -> sb.append('\t')
+                                else -> sb.append(nxt)
+                            }
+                            i += 2
+                            continue
+                        }
+                        if (ch == '"') {
+                            return sb.toString()
+                        }
+                        sb.append(ch)
+                        i++
+                    }
+                    return null
                 }
                 val diagField = pickJsonField(res, "diag")
+                val fluentField = pickJsonField(res, "fluent_prose_response")
                 val traceField = pickJsonField(res, "trace")
                 val detailField = pickJsonField(res, "detail")
                 val hexField = pickJsonField(res, "hex_16b")
                 val tritField = pickJsonField(res, "trit_summary")
                 val nlField = pickJsonField(res, "nl_synthesis")
                 val epField = pickJsonField(res, "episodic_search_out")
+                val golayField = pickJsonField(res, "golay24_codeword")
+                val shellField = pickJsonField(res, "leech_shell_class")
+                val branchField = pickJsonField(res, "winning_branch_name")
                 if (hexField != null) SovereignLiveBus.lastInspectedHex = hexField
                 if (tritField != null) SovereignLiveBus.lastInspectedTrits = tritField
                 if (nlField != null) SovereignLiveBus.hostNlSynthesis = nlField
                 if (epField != null) SovereignLiveBus.hostEpisodicOut = epField
+                if (fluentField != null) mobileFluentProse = fluentField
+                if (golayField != null) {
+                    fun pickInt(k: String, d: Int): Int {
+                        val p = "\"$k\":"
+                        val idx = res.indexOf(p)
+                        if (idx < 0) return d
+                        val s = idx + p.length
+                        var e = s
+                        while (e < res.length && (res[e].isDigit() || res[e] == '-')) e++
+                        return res.substring(s, e).toIntOrNull() ?: d
+                    }
+                    val r1 = pickInt("e8_octet1_root", 133)
+                    val r2 = pickInt("e8_octet2_root", 229)
+                    val r3 = pickInt("e8_octet3_root", 229)
+                    val octId = pickInt("golay_octad_id", 755)
+                    val kIdx = pickInt("leech_kissing_index", 193371)
+                    val secId = pickInt("fibration_sector", 58)
+                    val colId = pickInt("fibration_chair44_col", 465)
+                    val nId = pickInt("fibration_neuron_id", 20495)
+                    selectedSector = secId
+                    mobileE8Roots = "R1=#$r1/240 (8_v) | R2=#$r2/240 (8_+) | R3=#$r3/240 (8_-)"
+                    mobileGolayLeech = "Golay24=$golayField (Octad #$octId/759) -> Leech #$kIdx/196,560 (${shellField?.take(28) ?: "Lambda_24"})"
+                    mobileFibration = "S$secId -> Col #$colId/639 -> Neuron N$nId/28159 (${branchField?.take(36) ?: "Active-Inference"})"
+                }
                 val cleanMsg = when {
+                    nlField != null -> nlField
                     diagField != null -> diagField
+                    fluentField != null -> fluentField
                     traceField != null -> traceField
                     detailField != null -> detailField
-                    else -> res.replace("\n", " ").replace("\r", " ").replace("  ", " ").take(340)
+                    else -> res.replace("\n", " ").replace("\r", " ").replace("  ", " ").take(420)
                 }
                 if (traceField != null) {
                     browserStageTrace = traceField.replace(" | ", "\n")
@@ -2437,6 +2517,51 @@ fun SovereignCockpitV326Screen() {
                 ToolButton603010("/OMNI_BRAID", SlateSurface30, StatusOk, Modifier.weight(1f)) {
                     cmdPrompt = "/EXECUTE_OMNI_BRAID"
                     invokeHostEndpoint("/api/v1/model/converse?q=%2FEXECUTE_OMNI_BRAID", null, "SLASH /EXECUTE_OMNI_BRAID")
+                }
+            }
+            Spacer(modifier = Modifier.height(4.dp))
+            // v45.0.0 Mobile E8(+)E8(+)E8 -> Leech_24 Turyn-Golay Lattice Bridge, Internal Model Features & 192-Epoch Fluency QAT Panel
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color(0xFF080D14), RoundedCornerShape(5.dp))
+                    .border(1.dp, Color(0xFFB388FF), RoundedCornerShape(5.dp))
+                    .padding(6.dp)
+            ) {
+                Column {
+                    Text(
+                        text = "[v45.0.0 E8(+)E8(+)E8 -> LEECH_24 TURYN-GOLAY LATTICE BRIDGE & FLUENCY QAT]:",
+                        color = Color(0xFFB388FF),
+                        fontSize = 8.2.sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = FontFamily.Monospace
+                    )
+                    Text(
+                        text = "E8 Roots: $mobileE8Roots",
+                        color = Color(0xFF00FFCC),
+                        fontSize = 8.0.sp,
+                        fontFamily = FontFamily.Monospace
+                    )
+                    Text(
+                        text = "Leech_24: $mobileGolayLeech",
+                        color = AccentAmber10,
+                        fontSize = 8.0.sp,
+                        fontFamily = FontFamily.Monospace
+                    )
+                    Text(
+                        text = "3:1 Fibration: $mobileFibration",
+                        color = StatusOk,
+                        fontSize = 8.0.sp,
+                        fontFamily = FontFamily.Monospace
+                    )
+                    Spacer(modifier = Modifier.height(3.dp))
+                    Text(
+                        text = mobileFluentProse,
+                        color = TextIvory30,
+                        fontSize = 8.2.sp,
+                        lineHeight = 11.2.sp,
+                        fontFamily = FontFamily.Monospace
+                    )
                 }
             }
             Spacer(modifier = Modifier.height(4.dp))

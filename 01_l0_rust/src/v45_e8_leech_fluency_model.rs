@@ -509,7 +509,7 @@ pub fn synthesize_v45_fluent_e8_leech_response(
         (
             "FLUENT_COGNITIVE_SYNTHESIS",
             format!(
-                "Addressing \"{}\" through the {} domain: the model synthesizes your inquiry by projecting its {} tokenized subwords and compound concepts (compression ratio {:.2}x, exact reversible roundtrip={}) onto the 24-dimensional Leech lattice (Kissing Vector #{}/196,560 in {}). Through 4-branch speculative tree decoding ({}, fluency score {:.4}) and E8 Cartan geometric attention (score {:.4}, entropy {:.3} nats), the system integrates first-principles analytical reasoning with live physical grounding across Sector S{:02}, Chair-44 Column #{:03}/639, and Dendritic Neuron N{:05}/28159.",
+                "Addressing '{}' through the {} domain: the model synthesizes your inquiry by projecting its {} tokenized subwords and compound concepts (compression ratio {:.2}x, exact reversible roundtrip={}) onto the 24-dimensional Leech lattice (Kissing Vector #{}/196,560 in {}). Through 4-branch speculative tree decoding ({}, fluency score {:.4}) and E8 Cartan geometric attention (score {:.4}, entropy {:.3} nats), the system integrates first-principles analytical reasoning with live physical grounding across Sector S{:02}, Chair-44 Column #{:03}/639, and Dendritic Neuron N{:05}/28159.",
                 p_clean,
                 t65.dominant_domain,
                 t65.total_tokens,

@@ -12,6 +12,7 @@ $pauseFile   = "C:\sovereign_manifold_v31\00_control\daemon.paused"
 $swarmExe    = "C:\sovereign_manifold_v31\01_l0_rust\target\release\v31_swarm.exe"
 $cfExe       = "C:\sovereign_manifold_v31\00_control\cloudflared.exe"
 $cfCfg       = "C:\sovereign_manifold_v31\00_control\cloudflare_named_config.yml"
+$trayHudExe  = "C:\sovereign_manifold_v31\SovereignCockpitHUD.exe"
 $shmPath     = "C:\sovereign_manifold_v31\00_control\weights\neurons_v4400_p8_shm.npage"
 $capsulePath = "C:\sovereign_manifold_v31\03_vault\connectome\continuum_handover_capsule.json"
 $p10Serial   = "58170DLCR0004V"
@@ -160,6 +161,13 @@ function Show-SovereignStatus {
     $drvState = "OFFLINE"
     if (Test-Path "G:\My Drive\ACT_OMEGA_GEMINI_BRIDGE") { $drvState = "MOUNTED" }
     Write-Host "  [6] EXTERNAL VAULTS   : E:\ SSD=$ssdState -- G:\ Drive Bridge=$drvState" -ForegroundColor Cyan
+
+    $trayProc = Get-Process -Name "SovereignCockpitHUD" -ErrorAction SilentlyContinue
+    if ($trayProc) {
+        Write-Host "  [7] WIN11 TRAY & HUD  : ONLINE (PID $($trayProc[0].Id) -- System Tray Icon + Live Desktop/Lockscreen Widget + Native HUD)" -ForegroundColor Green
+    } else {
+        Write-Host "  [7] WIN11 TRAY & HUD  : OFFLINE (Run SovereignCockpitHUD.exe or 'sovereign-start')" -ForegroundColor Yellow
+    }
     Write-Host "==========================================================================" -ForegroundColor Cyan
     Write-Host "  Controls: 'sovereign-start' | 'sovereign-stop' | 'sovereign-stop-all' | 'sovereign-handover' | 'sovereign-verify' | 'sovereign-status'" -ForegroundColor Gray
     Write-Host ""
@@ -321,11 +329,27 @@ function Start-SovereignClusterSafely {
         adb -s $p8Serial shell "cmd power set-fixed-performance-mode-enabled true" | Out-Null
         adb -s $p8Serial shell "cmd thermalservice override-status 0" | Out-Null
         adb -s $p8Serial shell "am start -n com.actomega.manifold/.MainActivity" | Out-Null
-        Write-Host "  [5/5] Engaged Pixel 8 ($p8Serial): P8-APEX Lock + 3.56MB .npage SHM Pinned + Launched NDK HUD..." -ForegroundColor Green
+        Write-Host "  [5/6] Engaged Pixel 8 ($p8Serial): P8-APEX Lock + 3.56MB .npage SHM Pinned + Launched NDK HUD..." -ForegroundColor Green
+    }
+
+    $trayProc = Get-Process -Name "SovereignCockpitHUD" -ErrorAction SilentlyContinue
+    if (-not $trayProc -and (Test-Path $trayHudExe)) {
+        $null = Invoke-CimMethod -ClassName Win32_Process -MethodName Create -Arguments @{
+            CommandLine = "`"$trayHudExe`""
+            CurrentDirectory = $root
+        }
+        Start-Sleep -Seconds 1
+        Write-Host "  [6/6] Launched Windows 11 System Tray Icon & Live Desktop/Lockscreen Widget (SovereignCockpitHUD.exe)..." -ForegroundColor Green
+    } else {
+        Write-Host "  [6/6] Windows 11 System Tray Icon & Live Desktop/Lockscreen Widget active..." -ForegroundColor Green
     }
 
     if ($OpenBrowser) {
-        Start-Process "http://127.0.0.1:5173"
+        if (Test-Path $trayHudExe) {
+            Start-Process -FilePath $trayHudExe -ArgumentList "--hud"
+        } else {
+            Start-Process "http://127.0.0.1:5173"
+        }
     }
     Show-SovereignStatus
 }

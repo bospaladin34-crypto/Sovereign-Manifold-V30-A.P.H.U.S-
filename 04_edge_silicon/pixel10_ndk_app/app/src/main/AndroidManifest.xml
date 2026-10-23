@@ -12,7 +12,7 @@
 
     <application
         android:allowBackup="true"
-        android:label="ACT-Omega v32.0 SH4Z"
+        android:label="ACT-Omega v44.4 SH4Z"
         android:supportsRtl="true"
         android:usesCleartextTraffic="true"
         android:theme="@android:style/Theme.DeviceDefault.NoActionBar">
@@ -36,10 +36,11 @@
         <receiver
             android:name=".SovereignManifoldWidgetProvider"
             android:exported="true"
-            android:label="SH4Z v3200 Tensor Heatmap">
+            android:label="SH4Z v4440 Live 16x130 &amp; .npage SHM Widget">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
                 <action android:name="com.actomega.manifold.ACTION_REFRESH_HEATMAP" />
+                <action android:name="com.actomega.manifold.ACTION_SYNC_NPAGE_SHM" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"

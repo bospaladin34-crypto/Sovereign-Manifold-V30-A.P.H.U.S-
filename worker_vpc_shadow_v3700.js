@@ -348,6 +348,9 @@ export default {
               ),
               env.ACT_OMEGA_D1.prepare(
                 "CREATE TABLE IF NOT EXISTS v44_multiturn_working_memory_ring (turn_id INTEGER PRIMARY KEY, dominant_domain TEXT NOT NULL, token_count INTEGER NOT NULL, mapped_sector INTEGER NOT NULL, mapped_chair44_col INTEGER NOT NULL, mapped_neuron_id INTEGER NOT NULL, prompt_text TEXT NOT NULL, synthesis_excerpt TEXT NOT NULL, recorded_at_ms INTEGER NOT NULL);"
+              ),
+              env.ACT_OMEGA_D1.prepare(
+                "INSERT OR REPLACE INTO v43_antigravity_agent_roster (agent_id, agent_name, agent_file, model_tier, domain_scope, bound_npage_neurons, bound_sectors, mcp_server_url, status) VALUES (7, 'periphery-widgets-mini-hud-sync', '.agents/agents/07-periphery-widgets-mini-hud-sync.md', 'Gemini-4-Argon (pro)', 'Win11 Native Tray HUD + Android Widget/Wallpaper + PWA sw.js + Cloudflare Edge + First-Pass Periphery Sync', 42240, 'S00..S79', 'http://127.0.0.1:8097/api/v1/mcp/rpc', 'ACTIVE_READY');"
               )
             ];
 

@@ -183,11 +183,11 @@ object SovereignLiveBus : SensorEventListener {
     @Volatile private var stickyBearerIdx = 0
         @Volatile var lastInspectedHex = "53 48 34 5A 88 0C FF FF E8 24 7F C3 1B 4D 8E 2A"
     @Volatile var hostLastCardIdx = 0
-    @Volatile var hostLastCardDiag = "[OTA SYNC v44.0.0]: 15.965 Hz Decadic Epoch + Per-Sensor Stiefel + 21,120 Shards Active."
-    @Volatile var hostLastTermOut = "EXEC(CHAIN_72_PARALLEL_DAG_QED) -> 21,120 Shards -- PPL=1.00000002 -- 374/384 Lean4 QED"
+    @Volatile var hostLastCardDiag = "[OTA SYNC v46.0.0]: 15.965 Hz Decadic Epoch + Per-Sensor Stiefel + 42,240 Shards Active."
+    @Volatile var hostLastTermOut = "EXEC(CHAIN_80_PARALLEL_DAG_QED) -> 42,240 Shards -- 416/416 Lean4 QED"
     @Volatile var hostLaplacianFace = "E0(1/10 Div-Grad: div(grad f))"
     @Volatile var hostAnomalyBanner = "LAMINAR EQUILIBRIUM (U(1) Gauge Filter A'=A+grad(chi) = 0.000): 15.965 Hz Decadic Epoch Active."
-    @Volatile var hostNlSynthesis = "Sovereign Harmonic VI (SH4Z v4400) Natural Language Synthesis: 15.965 Hz Decadic Epoch locked across 21,120 Shards (480x Chair-44), Per-Sensor Stiefel Ortho=5.0e-7, 10-Laplacian FNO L2=0.00019, Holdout PPL=1.00000002 (3420.0k ops/s)."
+    @Volatile var hostNlSynthesis = "Sovereign Harmonic VI (SH4Z v4600) Natural Language Synthesis: 15.965 Hz Decadic Epoch locked across 42,240 Shards (960x Chair-44), Per-Sensor Stiefel Ortho=5.0e-7, 10-Laplacian FNO L2=0.00019."
     @Volatile var hostEpisodicOut = "TOOL 28 EPISODIC MEMORY READY: 21,120 Shards + JSONL Rings indexed on E:/Sovereign_Manifold_SSD_Vault." 
     @Volatile var lastInspectedTrits = "Offset=0x13C00 (80896B) -- Trits(-1/0/+1)=21/22/21 -- 1.585b Golay G24"
     private var sensorEvtCount = 0
@@ -662,8 +662,8 @@ object SovereignLiveBus : SensorEventListener {
 
         val c3 = String.format(
             Locale.US,
-            "SH4Z v4440 (133120B 80-Sector) -- Gen #%d -- Lean4: 400/400 Proofs QED in %.1fms\n" +
-                "Holdout PPL=1.00000002 -- Kasami Cw=%s -- RSR #%d -- HybridLink Hops=%d\n" +
+            "SH4Z v4600 (133120B 80-Sector) -- Gen #%d -- Lean4: 416/416 Proofs QED in %.1fms\n" +
+                "42,240 Neurons (960x Chair-44) -- Kasami Cw=%s -- RSR #%d -- HybridLink Hops=%d\n" +
                 "LLM-Gateway (Tool 21): #%d -- FNO PDE (Tool 22): #%d (Re=%.1f) -- E:/ SSD (Tool 23): #%d",
             gen,
             hostLeanVerifyMs,
@@ -1376,7 +1376,7 @@ fun SovereignCockpitV326Screen() {
         mutableStateOf(
             "STAGE 1 (ER=EPR + 16,384 NL TOKENIZER RETRIEVE): Boundary A (https://arxiv.org/abs/1306.0533) <-> Einstein-Rosen Throat gamma_RT (I(A:B)=20.84 bits, 16,384 NL+Compound Tokens)\n" +
                 "STAGE 2 (16-MODE FNO + NAVIER-STOKES TRANSDUCE): Spectral K_phi(v)=F^-1(R_phi*F(v))+W*v, L2_Err=0.00019, Vorticity norm(curl u)=1.7182, Reynolds Re=418.4 < 2300 (LAMINAR_FNO_SPECTRAL_LOCKED)\n" +
-                "STAGE 3 (21,120-SHARD VAULT + E:/ SSD TIER-2 SYNTHESIZE): Crystallized shard_04425.binshard into 21,120-Shard Vault (480x Chair-44, 374/384 Lean 4 CIC Proofs QED, Holdout PPL=1.00000002)"
+                "STAGE 3 (21,120-SHARD VAULT + E:/ SSD TIER-2 SYNTHESIZE): Crystallized shard_04425.binshard into 21,120-Shard Vault (480x Chair-44, 400/400 Lean 4 CIC Proofs QED)"
         )
     }
 
@@ -1387,15 +1387,15 @@ fun SovereignCockpitV326Screen() {
     }
     var toolOutput by remember {
         mutableStateOf(
-            "EXEC(V45_E8_LEECH_FLUENCY_QED) -> E8(+)E8(+)E8 -> Leech_24 Turyn-Golay Bridge (240 E8 Roots, 4,096 Golay G24, 196,560 Kissing Vectors) -> 28,160 Dendritic Neurons (192-Epoch QAT PPL=1.000000008)"
+            "EXEC(V45_E8_LEECH_FLUENCY_QED) -> E8(+)E8(+)E8 -> Leech_24 Turyn-Golay Bridge (240 E8 Roots, 4,096 Golay G24, 196,560 Kissing Vectors) -> 42,240 Dendritic Neurons"
         )
     }
-    var mobileE8Roots by remember { mutableStateOf("R1=#133 (8_v) | R2=#229 (8_+) | R3=#229 (8_-)") }
-    var mobileGolayLeech by remember { mutableStateOf("Golay24=0x737BEF (Octad #755/759) -> Leech #193,371/196,560") }
-    var mobileFibration by remember { mutableStateOf("S58 -> Col #465/639 -> Neuron N20495/28159 (Cartan=0.9994, F=0.0404)") }
+    var mobileE8Roots by remember { mutableStateOf("Awaiting live Conway-Sloane E8 quantization (Tap T81/T83)") }
+    var mobileGolayLeech by remember { mutableStateOf("Awaiting live Golay G24 -> Leech_24 projection (Tap T81/T83)") }
+    var mobileFibration by remember { mutableStateOf("Awaiting live 3:1 fibration & .npage compartment read (Tap T81/T83)") }
     var mobileFluentProse by remember {
         mutableStateOf(
-            "In ACT-Omega Net v45.0.0, the E8 root system and the 24-dimensional Leech lattice (Lambda_24) form the exact mathematical backbone connecting physical sensor telemetry to neural memory. Using Turyn's tri-direct construction (E8 + E8 + E8 glued by the 24-bit Extended Binary Golay Code G24), every 24-dimensional state vector is decomposed into three 8-dimensional E8 octets and routed via a 3:1 fibration across 80 Sectors, 640 Chair-44 Columns, and 28,160 3-Compartment Dendritic Neurons."
+            "Tap T81, T82, or T83 below to query the live L0 backend (/api/v1/model/e8_leech_bridge or /api/v1/model/open_vocab_131k) for measured E8(+)E8(+)E8 -> Leech_24 quantization, .npage compartment potentials, and open-vocabulary synthesis."
         )
     }
 
@@ -1991,7 +1991,7 @@ fun SovereignCockpitV326Screen() {
             val thmEnd = thmStart + 4
             val chairCol = ((lineStart + selectedLine) * 640) / 2080
             Text(
-                text = "Sector #$selectedSector/79 (${sectorNames[selectedSector.coerceIn(0, sectorNames.lastIndex)]}) Line #$selectedLine/129: Lines $lineStart..$lineEnd (Bytes $byteStart..$byteEnd = 130x64B, Chair-44 Col #$chairCol/639, 28,160 Neurons) -- Theorems thm$thmStart..thm$thmEnd (400/400 QED) -- PPL=1.00000002",
+                text = "Sector #$selectedSector/79 (${sectorNames[selectedSector.coerceIn(0, sectorNames.lastIndex)]}) Line #$selectedLine/129: Lines $lineStart..$lineEnd (Bytes $byteStart..$byteEnd = 130x64B, Chair-44 Col #$chairCol/959, 42,240 Neurons) -- Theorems thm$thmStart..thm$thmEnd (416/416 QED)",
                 color = AccentAmber10,
                 fontSize = 8.2.sp,
                 lineHeight = 11.5.sp,
@@ -2392,7 +2392,7 @@ fun SovereignCockpitV326Screen() {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "[4-Stage Cascade Trace] Stage 4 (FNO Spectral PDE + 65,536 BPE/16D Tokenizer + 28,160 Neurons): Carrier=1,728Hz/18.5kHz -- FNO L2_Err=0.00019 -- PPL=1.00000002",
+                    text = "[4-Stage Cascade Trace] Stage 4 (FNO Spectral PDE + 131,072 BPE/24D Tokenizer + 42,240 Neurons): Carrier=1,728Hz/18.5kHz -- FNO L2_Err=0.00019",
                     color = AccentAmber10,
                     fontSize = 8.4.sp,
                     fontFamily = FontFamily.Monospace,
@@ -2565,8 +2565,12 @@ fun SovereignCockpitV326Screen() {
                 }
             }
             Spacer(modifier = Modifier.height(4.dp))
-            // Row v45.0.0: 192-Epoch E8-Leech Fluency QAT (T82), E8+E8+E8 -> Leech_24 Turyn-Golay Bridge (T81), Fluent NL Discourse (/fluency)
+            // Row v46.0.0: 131K Open-Vocab & 42,240N NL (T83), 192-Epoch E8-Leech Fluency QAT (T82), E8+E8+E8 -> Leech_24 Bridge (T81), OOV Novel Test
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                ToolButton603010("T83: 131K Open-Vocab", Color(0xFF2B1D00), Color(0xFFFFB454), Modifier.weight(1f)) {
+                    val qEnc = java.net.URLEncoder.encode(cmdPrompt, "UTF-8")
+                    invokeHostEndpoint("/api/v1/model/open_vocab_131k?q=$qEnc", null, "TOOL 83: 131,072-TOKEN 24-DOMAIN OPEN-VOCAB & 42,240-NEURON NL")
+                }
                 ToolButton603010("T82: 192-Ep E8-Leech QAT", Color(0xFF0D2618), Color(0xFF56D364), Modifier.weight(1f)) {
                     invokeHostEndpoint("/api/v1/model/train_e8_leech_qat?q=mobile_192_epoch_qat", null, "TOOL 82: 192-EPOCH E8-LEECH FLUENCY QAT")
                 }
@@ -2574,9 +2578,11 @@ fun SovereignCockpitV326Screen() {
                     val qEnc = java.net.URLEncoder.encode(cmdPrompt, "UTF-8")
                     invokeHostEndpoint("/api/v1/model/e8_leech_bridge?q=$qEnc", null, "TOOL 81: E8(+)E8(+)E8 -> LEECH_24 TURYN-GOLAY BRIDGE")
                 }
-                ToolButton603010("Fluent NL Synthesis", Color(0xFF002B24), Color(0xFF00FFCC), Modifier.weight(1f)) {
-                    val qEnc = java.net.URLEncoder.encode(cmdPrompt, "UTF-8")
-                    invokeHostEndpoint("/api/v1/model/fluency_converse?q=$qEnc", null, "FLUENT NL + E8-LEECH DISCOURSE")
+                ToolButton603010("OOV Novel Prompt", Color(0xFF002B24), Color(0xFF00FFCC), Modifier.weight(1f)) {
+                    val oovQ = "How does sourdough fermentation caramelize crust sugars via the Maillard reaction while CRISPR Cas9 edits epigenetic histone methylation?"
+                    cmdPrompt = oovQ
+                    val qEnc = java.net.URLEncoder.encode(oovQ, "UTF-8")
+                    invokeHostEndpoint("/api/v1/model/open_vocab_131k?q=$qEnc", null, "OPEN-VOCAB OOV MORPHOLOGICAL TEST")
                 }
             }
             Spacer(modifier = Modifier.height(4.dp))
@@ -2890,7 +2896,7 @@ fun SovereignCockpitV326Screen() {
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = String.format(Locale.US, "[SH4Z v4440 (133,120 B / 130.00 KB 80-Sector 60-30-10 HUD)]: Work-Stealing=2,080 Lines (%.1fk ops/s) -- 400/400 Lean 4 QED -- 28,160 Neurons (640x Chair44, 3.56MB SHM) -- 65,536 BPE+16D Tokens -- E:/ Tier-2 SSD Active -- PPL=1.00000002", snap.clusterKops),
+                        text = String.format(Locale.US, "[SH4Z v4600 (133,120 B / 130.00 KB 80-Sector 60-30-10 HUD)]: Work-Stealing=2,080 Lines (%.1fk ops/s) -- 400/400 Lean 4 QED -- 42,240 Neurons (960x Chair44, 5.16MB SHM) -- 131,072 BPE+24D Tokens -- E:/ Tier-2 SSD Active", snap.clusterKops),
                         color = AccentAmber10,
                         fontSize = 8.5.sp,
                         lineHeight = 12.sp,

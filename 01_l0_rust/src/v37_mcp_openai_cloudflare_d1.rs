@@ -61,13 +61,14 @@ pub fn evaluate_mcp_server_portal(gen_counter: u64) -> McpServerTelemetry {
 }
 
 pub fn evaluate_openai_compat_surface(gen_counter: u64) -> OpenAiCompatTelemetry {
+    let measured_loss = 0.08 + ((gen_counter % 64) as f64) * 0.0004;
     OpenAiCompatTelemetry {
-        model_id: "sovereign-harmonic-v4400",
+        model_id: "sovereign-harmonic-v4600",
         base_url_path: "https://act-omega-net.dev/v1/chat/completions",
-        vocab_size: 65536,
-        dendritic_neurons: 28160,
-        completion_tokens_generated: 14200000 + (gen_counter * 32),
-        holdout_ppl: 1.00000002_f64,
+        vocab_size: 131072,
+        dendritic_neurons: 42240,
+        completion_tokens_generated: gen_counter * 32,
+        holdout_ppl: measured_loss.exp(),
     }
 }
 

@@ -176,52 +176,84 @@ function Show-SovereignStatus {
 function Invoke-SovereignSixLayerVerify {
     Write-Host ""
     Write-Host "==========================================================================" -ForegroundColor Cyan
-    Write-Host "   ACT-OMEGA v44.3.0: 6-LAYER TRUE-DATA & ANTI-502 VERIFICATION AUDIT     " -ForegroundColor Cyan
+    Write-Host "   ACT-OMEGA v46.0.0: 6-LAYER TRUE-DATA & ANTI-502 VERIFICATION AUDIT     " -ForegroundColor Cyan
     Write-Host "==========================================================================" -ForegroundColor Cyan
 
+    $failCount = 0
+
     # Layer 1: L0 Rust Zero-Square-Bracket & Live Endpoints
-    $v33to44 = Get-ChildItem "C:\sovereign_manifold_v31\01_l0_rust\src\v*.rs" | Where-Object { $_.Name -match "^v(3[3-9]|4[0-9])_" }
+    $v33to46 = Get-ChildItem "C:\sovereign_manifold_v31\01_l0_rust\src\v*.rs" | Where-Object { $_.Name -match "^v(3[3-9]|4[0-9])_" }
     $brackets = 0
-    foreach ($f in $v33to44) {
+    foreach ($f in $v33to46) {
         $b = [System.IO.File]::ReadAllBytes($f.FullName)
         $brackets += ($b | Where-Object { $_ -eq 0x5B -or $_ -eq 0x5D }).Count
     }
-    $qat = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/training/cross_domain_compound_qat" -TimeoutSec 3
-    Write-Host "  [LAYER 1 - L0 RUST]     Brackets(v33..v44)=$brackets | QAT PPL=$($qat.holdout_ppl) | Measured Latency=$($qat.dag_latency_ms)ms" -ForegroundColor Green
+    $qat = $null
+    try {
+        $qat = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/training/cross_domain_compound_qat" -TimeoutSec 4
+    } catch {}
+    $l1Pass = ($brackets -eq 0) -and ($null -ne $qat) -and ([double]$qat.holdout_ppl -gt 1.0001)
+    if (-not $l1Pass) { $failCount++ }
+    Write-Host ("  [LAYER 1 - L0 RUST]     [{0}] Brackets(v33..v46)={1} (Req:0) | QAT PPL={2} (Req:>1.0001) | Latency={3}ms" -f ($(if($l1Pass){"PASS"}else{"FAIL"}), $brackets, $(if($qat){$qat.holdout_ppl}else{"UNREACHABLE"}), $(if($qat){$qat.dag_latency_ms}else{"N/A"}))) -ForegroundColor $(if($l1Pass){"Green"}else{"Red"})
 
     # Layer 2: Lean 4 Formal Proofs
     $leanRaw = Get-Content -Raw "C:\sovereign_manifold_v31\01_l0_rust\lean4\SovereignManifoldTheorems.lean"
     $thmCnt = ([regex]::Matches($leanRaw, '(?m)^theorem\s+')).Count
     $trivCnt = ([regex]::Matches($leanRaw, '\((\d+) = \1\)')).Count
     $leanSha = (Get-FileHash "C:\sovereign_manifold_v31\01_l0_rust\lean4\SovereignManifoldTheorems.lean" -Algorithm SHA256).Hash.ToLower().Substring(0, 16)
-    Write-Host "  [LAYER 2 - LEAN 4 QED]  Theorems=$thmCnt/400 | Trivial(N=N)=$trivCnt | SHA256=${leanSha}..." -ForegroundColor Green
+    $l2Pass = ($thmCnt -ge 400) -and ($trivCnt -eq 0)
+    if (-not $l2Pass) { $failCount++ }
+    Write-Host ("  [LAYER 2 - LEAN 4 QED]  [{0}] Theorems={1}/400 (Req:>=400) | Trivial(N=N)={2} (Req:0) | SHA256={3}..." -f ($(if($l2Pass){"PASS"}else{"FAIL"}), $thmCnt, $trivCnt, $leanSha)) -ForegroundColor $(if($l2Pass){"Green"}else{"Red"})
 
     # Layer 3: 5W1H & 28,160-Neuron Shared Memory (.npage)
-    $prof = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/diagnostics/v44_self_profiler" -TimeoutSec 4
-    $shmBytes = (Get-Item $shmPath).Length
-    Write-Host "  [LAYER 3 - CONNECTOME]  CoreNeurons=$($prof.core_neurons)/21120 + Exp=$($prof.exp_neurons) ($($prof.expansion_shards_on_disk) shards) | Combined .npage SHM=${shmBytes}B ($($prof.combined_neurons)N)" -ForegroundColor Green
+    $prof = $null
+    try {
+        $prof = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/diagnostics/v44_self_profiler" -TimeoutSec 4
+    } catch {}
+    $shmBytes = if (Test-Path $shmPath) { (Get-Item $shmPath).Length } else { 0 }
+    $l3Pass = ($null -ne $prof) -and ($prof.core_neurons -eq 21120) -and ($prof.exp_neurons -eq $prof.expansion_shards_on_disk) -and ($shmBytes -eq 3604480)
+    if (-not $l3Pass) { $failCount++ }
+    Write-Host ("  [LAYER 3 - CONNECTOME]  [{0}] Core={1}/21120 + Exp={2} ({3} shards) | SHM={4}B (Req:3604480B) | Grade={5} ({6})" -f ($(if($l3Pass){"PASS"}else{"FAIL"}), $(if($prof){$prof.core_neurons}else{0}), $(if($prof){$prof.exp_neurons}else{0}), $(if($prof){$prof.expansion_shards_on_disk}else{0}), $shmBytes, $(if($prof){$prof.health_grade}else{"N/A"}), $(if($prof){$prof.health_score}else{0}))) -ForegroundColor $(if($l3Pass){"Green"}else{"Red"})
 
-    # Layer 4: Host WebGPU HUD
+    # Layer 4: Host WebGPU HUD (checking both src and dist bundles for zero leaked passkeys)
     $hudDist = Test-Path "C:\sovereign_manifold_v31\05_hud_cockpit\dist\index.html"
-    $passHits = (Select-String -Path "C:\sovereign_manifold_v31\05_hud_cockpit\src\App.tsx" -Pattern "SOVEREIGN-LOQ15-4200").Count
-    Write-Host "  [LAYER 4 - WEBGPU HUD]  BundleReady=$hudDist | HardcodedPasskeys=$passHits | 15 Cards + 3D Scope + 16x130 Heatmap=INTACT" -ForegroundColor Green
+    $passHitsSrc = @(Select-String -Path "C:\sovereign_manifold_v31\05_hud_cockpit\src\App.tsx" -Pattern "SOVEREIGN-LOQ15-4200" -ErrorAction SilentlyContinue).Count
+    $passHitsDist = @(Get-ChildItem "C:\sovereign_manifold_v31\05_hud_cockpit\dist\assets\*.js","C:\sovereign_manifold_v31\02_l2_orchestration\hud\dist\assets\*.js","C:\sovereign_manifold_v31\docs\assets\*.js" -ErrorAction SilentlyContinue | Select-String -Pattern "SOVEREIGN-LOQ15-4200" -ErrorAction SilentlyContinue).Count
+    $passHits = $passHitsSrc + $passHitsDist
+    $l4Pass = $hudDist -and ($passHits -eq 0)
+    if (-not $l4Pass) { $failCount++ }
+    Write-Host ("  [LAYER 4 - WEBGPU HUD]  [{0}] BundleReady={1} | HardcodedPasskeys(src+dist)={2} (Req:0)" -f ($(if($l4Pass){"PASS"}else{"FAIL"}), $hudDist, $passHits)) -ForegroundColor $(if($l4Pass){"Green"}else{"Red"})
 
     # Layer 5: Dual-Pixel NDK & Unplugged SHM Persistence
     $adbRaw = (adb devices) -join " "
     $p8ShmOk = if ($adbRaw -match $p8Serial) { ((adb -s $p8Serial shell "ls -l /data/local/tmp/neurons_v4400_p8_shm.npage") -join " ") -match "3604480" } else { $false }
-    $p10ShmOk = if ($adbRaw -match $p10Serial) { ((adb -s $p10Serial shell "ls -l /sdcard/Android/data/com.actomega.manifold/files/neurons_v4400_p8_shm.npage") -join " ") -match "3604480" } else { $true }
-    Write-Host "  [LAYER 5 - DUAL PIXEL]  P8 Tethered SHM(3.56MB)=$p8ShmOk | P10 Unplugged-Ready SHM(3.56MB)=$p10ShmOk" -ForegroundColor Green
+    $p10ShmOk = if ($adbRaw -match $p10Serial) { ((adb -s $p10Serial shell "ls -l /sdcard/Android/data/com.actomega.manifold/files/neurons_v4400_p8_shm.npage") -join " ") -match "3604480" } else { $false }
+    $l5Pass = $p8ShmOk -and $p10ShmOk
+    if (-not $l5Pass) { $failCount++ }
+    Write-Host ("  [LAYER 5 - DUAL PIXEL]  [{0}] P8 Tethered SHM(3.56MB)={1} | P10 SHM(3.56MB)={2}" -f ($(if($l5Pass){"PASS"}else{"FAIL"}), $p8ShmOk, $p10ShmOk)) -ForegroundColor $(if($l5Pass){"Green"}else{"Red"})
 
     # Layer 6: Cloudflare Named Tunnel & Edge Continuum DO
     $wanCode = 0
     try {
         $rWan = Invoke-WebRequest -Uri "https://act-omega-net.dev/" -UseBasicParsing -TimeoutSec 5
-        $wanCode = $rWan.StatusCode
+        $wanCode = [int]$rWan.StatusCode
     } catch {}
-    $contRes = Invoke-RestMethod -Uri "https://sovereign-loq15-vpc-shadow.bospaladin34.workers.dev/api/v1/continuum/handover?node=verify_probe" -TimeoutSec 5
-    Write-Host "  [LAYER 6 - CLOUDFLARE]  https://act-omega-net.dev HTTP=$wanCode | Edge Continuum DO=$($contRes.status)" -ForegroundColor Green
+    $contRes = $null
+    try {
+        $contRes = Invoke-RestMethod -Uri "https://sovereign-loq15-vpc-shadow.bospaladin34.workers.dev/api/v1/continuum/handover?node=verify_probe" -TimeoutSec 5
+    } catch {}
+    $l6Pass = ($wanCode -eq 200) -and ($null -ne $contRes) -and ($null -ne $contRes.status)
+    if (-not $l6Pass) { $failCount++ }
+    Write-Host ("  [LAYER 6 - CLOUDFLARE]  [{0}] https://act-omega-net.dev HTTP={1} (Req:200) | Edge DO={2}" -f ($(if($l6Pass){"PASS"}else{"FAIL"}), $wanCode, $(if($contRes){$contRes.status}else{"UNREACHABLE"}))) -ForegroundColor $(if($l6Pass){"Green"}else{"Red"})
     Write-Host "==========================================================================" -ForegroundColor Cyan
-    Write-Host ""
+    if ($failCount -gt 0) {
+        Write-Host "  [AUDIT RESULT: FAILED ($failCount/6 LAYERS FAILED THRESHOLD CHECKS)]" -ForegroundColor Red
+        Write-Host ""
+        throw "SovereignSixLayerVerify failed $failCount layer threshold(s)."
+    } else {
+        Write-Host "  [AUDIT RESULT: PASSED (6/6 LAYERS MET ALL MEASURED THRESHOLDS)]" -ForegroundColor Green
+        Write-Host ""
+    }
 }
 
 function Stop-SovereignClusterSafely {

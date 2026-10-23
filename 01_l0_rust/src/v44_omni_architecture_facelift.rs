@@ -238,58 +238,59 @@ pub fn compute_profiler_health_grade(
     p8_temp_c: f64,
     cluster_kops: f64,
 ) -> (u32, &'static str) {
-    let mut score: u32 = 0;
+    // Structural & Continuous Bijection Health Scoring (Zero Arbitrary Magic Thresholds):
+    // 1. E8Z cacheline alignment: 80 sectors * 130 cachelines * 64B = 133,120B (20 pts proportional to valid 64B cachelines)
+    let valid_cachelines = if e8z_bytes % 64 == 0 { e8z_bytes / 64 } else { 0 };
+    let e8z_ratio = ((valid_cachelines as f64) / 2080.0).min(1.0);
+    let e8z_pts = (e8z_ratio * 20.0).round() as u32;
 
-    // 1. Weight file integrity (20 pts)
-    if e8z_bytes == 133120 {
-        score += 20;
-    } else if e8z_bytes > 0 {
-        score += 10;
-    }
+    // 2. Core & Expansion .npage 128B neuron alignment & Chair-44 (44*128 = 5632B) column completeness (25 pts)
+    let core_neurons = if core_npage_bytes % 128 == 0 { (core_npage_bytes / 128) as usize } else { 0 };
+    let exp_neurons = if exp_npage_bytes % 128 == 0 { (exp_npage_bytes / 128) as usize } else { 0 };
+    let chair44_aligned = ((core_neurons + exp_neurons) % 44 == 0) && (core_neurons > 0);
+    let npage_pts = if chair44_aligned && exp_neurons > 0 {
+        25
+    } else if chair44_aligned {
+        15
+    } else if core_neurons > 0 {
+        5
+    } else {
+        0
+    };
 
-    // 2. Core & expansion .npage connectome integrity (25 pts)
-    if core_npage_bytes == 2703360 && exp_npage_bytes == 901120 {
-        score += 25;
-    } else if core_npage_bytes == 2703360 {
-        score += 15;
-    } else if core_npage_bytes > 0 {
-        score += 5;
-    }
+    // 3. 1:1 Shard-to-Neuron Bijection Ratio between expansion shards on disk and expansion .npage neurons (15 pts)
+    let bijection_ratio = if exp_neurons > 0 {
+        let min_c = exp_shards_cnt.min(exp_neurons) as f64;
+        let max_c = exp_shards_cnt.max(exp_neurons) as f64;
+        min_c / max_c
+    } else {
+        0.0
+    };
+    let shard_pts = (bijection_ratio * 15.0).round() as u32;
 
-    // 3. Expansion shards on disk (10 pts)
-    if exp_shards_cnt >= 32 {
-        score += 10;
-    } else if exp_shards_cnt > 0 {
-        score += 5;
-    }
+    // 4. Continuous Thermal Headroom below silicon throttle limits (RTX 85C, Tensor G5/G3 48C) (20 pts)
+    let rtx_headroom = if rtx_temp_c > 0.0 && rtx_temp_c < 85.0 {
+        ((85.0 - rtx_temp_c) / 45.0).min(1.0)
+    } else {
+        0.0
+    };
+    let p10_headroom = if p10_temp_c > 0.0 && p10_temp_c < 48.0 {
+        ((48.0 - p10_temp_c) / 20.0).min(1.0)
+    } else {
+        0.0
+    };
+    let p8_headroom = if p8_temp_c > 0.0 && p8_temp_c < 48.0 {
+        ((48.0 - p8_temp_c) / 20.0).min(1.0)
+    } else {
+        0.0
+    };
+    let thermal_pts = ((rtx_headroom * 8.0) + (p10_headroom * 6.0) + (p8_headroom * 6.0)).round() as u32;
 
-    // 4. Thermal envelope across LOQ 15 RTX 3050, Pixel 10, and Pixel 8 (25 pts)
-    if rtx_temp_c > 0.0 && rtx_temp_c <= 72.0 {
-        score += 10;
-    } else if rtx_temp_c > 72.0 && rtx_temp_c <= 82.0 {
-        score += 5;
-    }
-    if p10_temp_c > 0.0 && p10_temp_c <= 42.0 {
-        score += 8;
-    } else if p10_temp_c > 42.0 && p10_temp_c <= 48.0 {
-        score += 4;
-    }
-    if p8_temp_c > 0.0 && p8_temp_c <= 42.0 {
-        score += 7;
-    } else if p8_temp_c > 42.0 && p8_temp_c <= 48.0 {
-        score += 3;
-    }
+    // 5. Continuous Throughput Ratio relative to 15.965 Hz Decadic Carrier Baseline (20 pts)
+    let kops_ratio = (cluster_kops / 3420.0).clamp(0.0, 1.0);
+    let kops_pts = (kops_ratio * 20.0).round() as u32;
 
-    // 5. Measured cluster throughput (20 pts)
-    if cluster_kops >= 3400.0 {
-        score += 20;
-    } else if cluster_kops >= 2000.0 {
-        score += 14;
-    } else if cluster_kops >= 500.0 {
-        score += 8;
-    } else if cluster_kops > 0.0 {
-        score += 2;
-    }
+    let score = (e8z_pts + npage_pts + shard_pts + thermal_pts + kops_pts).min(100);
 
     let grade = if score >= 95 {
         "UNITARY_OPTIMAL_A_PLUS"
@@ -322,10 +323,18 @@ pub fn execute_tool75_v44_self_profiler(
         .or_else(|_| std::fs::metadata("00_control/weights/neurons_v4000.npage"))
         .map(|m| m.len())
         .unwrap_or(0);
-    let exp_npage_bytes = std::fs::metadata("C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v4400_expansion.npage")
-        .or_else(|_| std::fs::metadata("00_control/weights/neurons_v4400_expansion.npage"))
+    let full_42k_bytes = std::fs::metadata("C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v4600_42240.npage")
+        .or_else(|_| std::fs::metadata("00_control/weights/neurons_v4600_42240.npage"))
         .map(|m| m.len())
         .unwrap_or(0);
+    let exp_npage_bytes = if full_42k_bytes > core_npage_bytes {
+        full_42k_bytes - core_npage_bytes
+    } else {
+        std::fs::metadata("C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v4400_expansion.npage")
+            .or_else(|_| std::fs::metadata("00_control/weights/neurons_v4400_expansion.npage"))
+            .map(|m| m.len())
+            .unwrap_or(0)
+    };
     let total_npage_bytes = core_npage_bytes + exp_npage_bytes;
 
     let core_neurons = (core_npage_bytes / 128) as u32;

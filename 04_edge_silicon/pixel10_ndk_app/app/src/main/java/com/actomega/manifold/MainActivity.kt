@@ -93,9 +93,7 @@ data class TelemetryCardItem(
 data class SovereignSnap(
     val gen: Long = 745000L,
     val hostSynced: Boolean = true,
-    val lattice16x80: FloatArray = FloatArray(2080) { i ->
-        sin(i * 0.11f) * cos((i / 130) * 0.37f)
-    },
+    val lattice16x80: FloatArray = FloatArray(2080),
     val cards15: List<TelemetryCardItem> = emptyList(),
     val card1Text: String = "",
     val card2Text: String = "",
@@ -190,8 +188,52 @@ object SovereignLiveBus : SensorEventListener {
     @Volatile var hostNlSynthesis = "Sovereign Harmonic VI (SH4Z v4600) Natural Language Synthesis: 15.965 Hz Decadic Epoch locked across 42,240 Shards (960x Chair-44), Per-Sensor Stiefel Ortho=5.0e-7, 10-Laplacian FNO L2=0.00019."
     @Volatile var hostEpisodicOut = "TOOL 28 EPISODIC MEMORY READY: 21,120 Shards + JSONL Rings indexed on E:/Sovereign_Manifold_SSD_Vault." 
     @Volatile var lastInspectedTrits = "Offset=0x13C00 (80896B) -- Trits(-1/0/+1)=21/22/21 -- 1.585b Golay G24"
+    private val e8zCachelineNorms = FloatArray(2080)
+    private val hostSectorNorms = FloatArray(16) { 0.895f }
+    @Volatile private var e8zLoaded = false
     private var sensorEvtCount = 0
     private var sensorWinStartMs = 0L
+
+    private fun loadMeasuredE8zAsset(context: Context) {
+        if (e8zLoaded) return
+        try {
+            val raw = context.assets.open("sovereign_harmonic_iv_v4000.e8z").use { it.readBytes() }
+            val lines = minOf(2080, raw.size / 64)
+            if (lines <= 0) return
+            val rawEnergies = DoubleArray(lines)
+            var minE = Double.POSITIVE_INFINITY
+            var maxE = Double.NEGATIVE_INFINITY
+            for (idx in 0 until lines) {
+                val baseOff = idx * 64
+                var sumSq = 0.0
+                var sumDiff = 0.0
+                for (b in 0 until 64) {
+                    val uVal = raw[baseOff + b].toInt() and 0xFF
+                    val centered = (uVal.toDouble() - 127.5) / 127.5
+                    sumSq += centered * centered
+                    if (b > 0) {
+                        val prevVal = raw[baseOff + b - 1].toInt() and 0xFF
+                        sumDiff += kotlin.math.abs(uVal - prevVal).toDouble() / 255.0
+                    }
+                }
+                val rms = sqrt(sumSq / 64.0)
+                val tv = sumDiff / 63.0
+                val b0 = raw[baseOff + (idx % 64)].toInt() and 0xFF
+                val b1 = raw[baseOff + ((idx * 7 + 13) % 64)].toInt() and 0xFF
+                val byteMix = ((b0 xor b1) and 0xFF).toDouble() / 255.0
+                val energy = 0.45 * rms + 0.35 * tv + 0.20 * byteMix
+                rawEnergies[idx] = energy
+                if (energy < minE) minE = energy
+                if (energy > maxE) maxE = energy
+            }
+            val span = maxOf(1e-6, maxE - minE)
+            for (idx in 0 until lines) {
+                e8zCachelineNorms[idx] = ((rawEnergies[idx] - minE) / span).toFloat().coerceIn(0f, 1f)
+            }
+            e8zLoaded = true
+        } catch (_: Throwable) {
+        }
+    }
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private val _state = MutableStateFlow(buildInitialSnap())
@@ -269,9 +311,11 @@ object SovereignLiveBus : SensorEventListener {
     }
 
     fun start(context: Context) {
+        val appCtx = context.applicationContext
+        loadMeasuredE8zAsset(appCtx)
         if (started) return
         started = true
-        val appCtx = context.applicationContext
+        _state.value = composeSnap(tickCount, true, "B1:USB(:8097/:5173) + B3:CF-WAN", 11.4)
 
         // Strictly bypass SensorManager on Pixel 8 Compute-Only Node
         if (!isPixel8ComputeNode) {
@@ -438,6 +482,16 @@ object SovereignLiveBus : SensorEventListener {
                             hostAnomalyBanner = extractJsonString(body, "anomaly_banner", hostAnomalyBanner)
                             hostNlSynthesis = extractJsonString(body, "nl_synthesis", hostNlSynthesis)
                             hostEpisodicOut = extractJsonString(body, "episodic_search_out", hostEpisodicOut)
+                            val secCsv = extractJsonString(body, "sector_norms_csv", "")
+                            if (secCsv.isNotEmpty()) {
+                                val parts = secCsv.split(",")
+                                for (sIdx in 0 until minOf(16, parts.size)) {
+                                    val v = parts[sIdx].trim().toFloatOrNull()
+                                    if (v != null && v > 0f) {
+                                        hostSectorNorms[sIdx] = v
+                                    }
+                                }
+                            }
                             if (isPixel8ComputeNode) {
                                 magX = extractJsonFloat(body, "mag_x", magX)
                                 magY = extractJsonFloat(body, "mag_y", magY)
@@ -473,15 +527,18 @@ object SovereignLiveBus : SensorEventListener {
 
     private fun composeSnap(gen: Long, synced: Boolean, bearer: String, rtt: Double): SovereignSnap {
         val bNorm = sqrt(magX * magX + magY * magY + magZ * magZ)
-        val sensorMod = (bNorm * 0.012f) + (accNorm * 0.02f) + (gyroNorm * 0.15f)
-        val phase = (gen % 360L) * 0.045f + sensorMod
+        val pulseCol = (gen % 130L).toInt()
         val grid = FloatArray(2080) { idx ->
             val r = idx / 130
             val c = idx % 130
-            val waveA = sin(c * 0.14f + phase + r * 0.25f + (magX * 0.01f))
-            val waveB = cos(r * 0.42f - phase * 0.7f + c * 0.05f + (magY * 0.01f))
-            val orthoMod = (hostOrthoErr * 1000.0).toFloat().coerceIn(-0.15f, 0.15f)
-            (waveA * 0.58f + waveB * 0.36f + orthoMod).coerceIn(-1.0f, 1.0f)
+            val e8zNorm = e8zCachelineNorms[idx]
+            val liveSecNorm = hostSectorNorms[r % 16]
+            val secDelta = if (liveSecNorm > 0f) ((liveSecNorm - 0.895f) * 3.5f).coerceIn(-0.15f, 0.15f) else 0f
+            var norm = (e8zNorm + secDelta).coerceIn(0f, 1f)
+            if (c == pulseCol || c == (pulseCol + 1) % 130) {
+                norm = (norm + 0.22f).coerceAtMost(1.0f)
+            }
+            (norm * 2.0f - 1.0f).coerceIn(-1.0f, 1.0f)
         }
 
         val cards = listOf(
@@ -770,11 +827,16 @@ object SovereignLiveBus : SensorEventListener {
     }
 
     fun refreshWidgetsNow(context: Context) {
-        updateSafeHomeScreenWidget(context.applicationContext, _state.value)
+        val appCtx = context.applicationContext
+        loadMeasuredE8zAsset(appCtx)
+        val snap = composeSnap(tickCount, _state.value.hostSynced, _state.value.activeBearer, _state.value.rttMs)
+        _state.value = snap
+        updateSafeHomeScreenWidget(appCtx, snap)
     }
 
     private fun updateSafeHomeScreenWidget(context: Context, snap: SovereignSnap) {
         try {
+            loadMeasuredE8zAsset(context.applicationContext)
             val awm = AppWidgetManager.getInstance(context) ?: return
             val providers = awm.getInstalledProvidersForPackage(context.packageName, null)
             if (providers.isNullOrEmpty()) return
@@ -805,10 +867,10 @@ object SovereignLiveBus : SensorEventListener {
                     val v = if (idx < grid.size) grid[idx] else 0f
                     val norm = ((v + 1f) * 0.5f).coerceIn(0f, 1f)
                     paint.color = when {
-                        norm > 0.84f -> 0xFFE94E34.toInt()
-                        norm > 0.68f -> 0xFFFFB454.toInt()
-                        norm > 0.48f -> 0xFF3B536B.toInt()
-                        norm > 0.26f -> 0xFF1C2632.toInt()
+                        norm > 0.78f -> 0xFFE94E34.toInt()
+                        norm > 0.58f -> 0xFFFFB454.toInt()
+                        norm > 0.38f -> 0xFF3B536B.toInt()
+                        norm > 0.18f -> 0xFF1C2632.toInt()
                         else -> 0xFF131922.toInt()
                     }
                     canvas.drawRect(c * cw, r * ch, (c + 1) * cw - 0.5f, (r + 1) * ch - 0.5f, paint)
@@ -1194,11 +1256,11 @@ object SovereignVisualizerRenderer {
                 val v = if (idx < grid.size) grid[idx] else 0f
                 val norm = ((v + 1f) * 0.5f).coerceIn(0f, 1f)
                 paint.color = when {
-                    norm > 0.82f -> 0xFFE94E34.toInt()
-                    norm > 0.66f -> 0xFFFFB454.toInt()
-                    norm > 0.48f -> 0xFF00E5FF.toInt()
-                    norm > 0.28f -> 0xFF1C2632.toInt()
-                    else -> 0xFF0D141D.toInt()
+                    norm > 0.78f -> 0xFFE94E34.toInt()
+                    norm > 0.58f -> 0xFFFFB454.toInt()
+                    norm > 0.38f -> 0xFF3B536B.toInt()
+                    norm > 0.18f -> 0xFF1C2632.toInt()
+                    else -> 0xFF131922.toInt()
                 }
                 canvas.drawRect(
                     16f + c * cw,
@@ -1331,10 +1393,10 @@ class MainActivity : ComponentActivity() {
 fun cellColor603010(v: Float): Color {
     val norm = ((v + 1.0f) * 0.5f).coerceIn(0.0f, 1.0f)
     return when {
-        norm > 0.84f -> AccentRed10
-        norm > 0.68f -> AccentAmber10
-        norm > 0.48f -> Color(0xFF3B536B)
-        norm > 0.26f -> SlateSurface30
+        norm > 0.78f -> AccentRed10
+        norm > 0.58f -> AccentAmber10
+        norm > 0.38f -> Color(0xFF3B536B)
+        norm > 0.18f -> SlateSurface30
         else -> Color(0xFF131922)
     }
 }

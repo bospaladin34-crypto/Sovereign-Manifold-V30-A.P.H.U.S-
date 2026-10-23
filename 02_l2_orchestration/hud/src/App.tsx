@@ -774,6 +774,58 @@ export function App() {
   const oscCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const browserCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const sparkCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [e8zCachelineNorms, setE8zCachelineNorms] = useState<Float64Array>(() => new Float64Array(2080));
+
+  // Load measured 2,080 x 64B cacheline norms from sovereign_harmonic_iv_v4000.e8z (133,120 B)
+  useEffect(() => {
+    let alive = true;
+    const loadE8zBinary = async () => {
+      try {
+        const res = await fetch("/sovereign_harmonic_iv_v4000.e8z", { cache: "no-store" });
+        if (!res.ok) return;
+        const buf = await res.arrayBuffer();
+        const raw = new Uint8Array(buf);
+        const lines = Math.min(2080, Math.floor(raw.length / 64));
+        if (lines <= 0) return;
+        const rawEnergies = new Float64Array(2080);
+        let minE = Number.POSITIVE_INFINITY;
+        let maxE = Number.NEGATIVE_INFINITY;
+        for (let idx = 0; idx < lines; idx++) {
+          const baseOff = idx * 64;
+          let sumSq = 0;
+          let sumDiff = 0;
+          for (let b = 0; b < 64; b++) {
+            const centered = (raw[baseOff + b] - 127.5) / 127.5;
+            sumSq += centered * centered;
+            if (b > 0) {
+              sumDiff += Math.abs(raw[baseOff + b] - raw[baseOff + b - 1]) / 255.0;
+            }
+          }
+          const rms = Math.sqrt(sumSq / 64.0);
+          const tv = sumDiff / 63.0;
+          const byteMix = ((raw[baseOff + (idx % 64)] ^ raw[baseOff + ((idx * 7 + 13) % 64)]) & 0xff) / 255.0;
+          const energy = 0.45 * rms + 0.35 * tv + 0.20 * byteMix;
+          rawEnergies[idx] = energy;
+          if (energy < minE) minE = energy;
+          if (energy > maxE) maxE = energy;
+        }
+        const span = Math.max(1e-6, maxE - minE);
+        const normalized = new Float64Array(2080);
+        for (let idx = 0; idx < lines; idx++) {
+          normalized[idx] = (rawEnergies[idx] - minE) / span;
+        }
+        if (alive) {
+          setE8zCachelineNorms(normalized);
+        }
+      } catch {
+        // ignore if binary not yet cached
+      }
+    };
+    loadE8zBinary();
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   // 1. Poll live telemetry from v31_swarm.exe (receives Pixel 10 + Pixel 8 live broadcasts!)
   useEffect(() => {
@@ -1596,14 +1648,20 @@ export function App() {
   ];
 
   const sectorNormsArr = tel.sector_norms_csv.split(",").map(Number);
+  const pulseCol = tel.generation % 130;
   const cellColor = (r: number, c: number) => {
-    const secNorm = sectorNormsArr[r % Math.max(1, sectorNormsArr.length)] || 0.89;
-    const v = Math.sin(c * 0.16 + phase + r * 0.28) * 0.45 + Math.cos(r * 0.45 - phase * 0.7 + c * 0.06) * 0.25 + (secNorm - 0.5) * 0.6;
-    const norm = Math.max(0, Math.min(1, (v + 1) * 0.5));
-    if (norm > 0.84) return "#E94E34";
-    if (norm > 0.68) return "#FFB454";
-    if (norm > 0.48) return "#3B536B";
-    if (norm > 0.26) return "#1C2632";
+    const lineIdx = r * 130 + c;
+    const e8zNorm = e8zCachelineNorms[lineIdx] ?? 0.0;
+    const liveSecNorm = sectorNormsArr[r % Math.max(1, sectorNormsArr.length)] || 0.0;
+    const secDelta = liveSecNorm > 0 ? Math.max(-0.15, Math.min(0.15, (liveSecNorm - 0.895) * 3.5)) : 0.0;
+    let norm = Math.max(0, Math.min(1, e8zNorm + secDelta));
+    if (c === pulseCol || c === (pulseCol + 1) % 130) {
+      norm = Math.min(1.0, norm + 0.22);
+    }
+    if (norm > 0.78) return "#E94E34";
+    if (norm > 0.58) return "#FFB454";
+    if (norm > 0.38) return "#3B536B";
+    if (norm > 0.18) return "#1C2632";
     return "#131922";
   };
 

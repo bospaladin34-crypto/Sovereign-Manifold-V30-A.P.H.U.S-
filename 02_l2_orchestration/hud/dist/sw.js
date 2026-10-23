@@ -1,4 +1,4 @@
-const CACHE_NAME = 'act-omega-hud-v46-0';
+const CACHE_NAME = 'act-omega-hud-v46-1';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -6,6 +6,7 @@ const STATIC_ASSETS = [
   '/icon-192.png',
   '/icon-512.png',
   '/act_omega_logo.jpg',
+  '/sovereign_harmonic_iv_v4000.e8z',
   '/manifest.webmanifest'
 ];
 

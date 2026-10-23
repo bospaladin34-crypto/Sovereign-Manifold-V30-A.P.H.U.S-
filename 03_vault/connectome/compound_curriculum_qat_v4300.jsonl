@@ -21,3 +21,7 @@
 {"epoch":21,"domains":24,"vocab_size":131072,"combined_neurons":42240,"holdout_ppl":1.118539,"compound_transfer_pct":98.743,"cacheline_speedup_pct":31.95,"dag_latency_ms":0.162,"m_atp":0.7485,"kops":4512.6}
 {"epoch":22,"domains":24,"vocab_size":131072,"combined_neurons":42240,"holdout_ppl":1.118445,"compound_transfer_pct":98.770,"cacheline_speedup_pct":31.91,"dag_latency_ms":0.217,"m_atp":0.7542,"kops":4511.2}
 {"epoch":23,"domains":24,"vocab_size":131072,"combined_neurons":42240,"holdout_ppl":1.119083,"compound_transfer_pct":98.814,"cacheline_speedup_pct":31.91,"dag_latency_ms":0.110,"m_atp":0.7631,"kops":4511.4}
+{"epoch":24,"domains":24,"vocab_size":131072,"combined_neurons":42240,"holdout_ppl":1.119820,"compound_transfer_pct":98.831,"cacheline_speedup_pct":31.90,"dag_latency_ms":0.106,"m_atp":0.7666,"kops":4511.1}
+{"epoch":25,"domains":24,"vocab_size":131072,"combined_neurons":42240,"holdout_ppl":1.119464,"compound_transfer_pct":98.838,"cacheline_speedup_pct":31.91,"dag_latency_ms":0.192,"m_atp":0.7681,"kops":4511.4}
+{"epoch":26,"domains":24,"vocab_size":131072,"combined_neurons":42240,"holdout_ppl":1.119670,"compound_transfer_pct":98.808,"cacheline_speedup_pct":31.92,"dag_latency_ms":0.152,"m_atp":0.7619,"kops":4511.7}
+{"epoch":27,"domains":24,"vocab_size":131072,"combined_neurons":42240,"holdout_ppl":1.119581,"compound_transfer_pct":98.823,"cacheline_speedup_pct":31.91,"dag_latency_ms":0.440,"m_atp":0.7651,"kops":4511.4}

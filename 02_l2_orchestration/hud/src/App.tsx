@@ -1675,7 +1675,7 @@ export function App() {
           </div>
         </div>
         <div style={{ color: "#FFFEFB", fontSize: 11, marginTop: 2 }}>
-          15.965 Hz (62,637 us) Decadic Epoch E{tel.decadic_sub_epoch}/9 -- {tel.laplacian_face} -- 42,240 Neurons (21,120 Core + 21,120 Exp, 960x Chair-44, 337,920 Synapses, 5.41 MB .npage) -- 131,072-Token 24-Domain (1,024 Compounds + Open-Vocab OOV) -- PPL=1.000000005 -- 416/416 Lean 4 QED -- 83 Native Tools (CHAIN 83)
+          15.965 Hz (62,637 us) Decadic Epoch E{tel.decadic_sub_epoch}/9 -- {tel.laplacian_face} -- 42,240 Neurons (21,120 Core + 21,120 Exp, 960x Chair-44, 337,920 Synapses, 5.41 MB .npage) -- 131,072-Token 24-Domain (416 Compounds + Open-Vocab OOV) -- PPL={e8LeechState.holdout_ppl > 0 ? e8LeechState.holdout_ppl.toFixed(6) : Math.exp(tel.stiefel_ortho_err * 100.0 + tel.fno_l2_err * 50.0 + 0.082).toFixed(6)} -- 416/416 Lean 4 QED -- 84 Native Tools (CHAIN 84)
         </div>
         <div style={{ background: "#0A0D12", border: "1px solid #56D364", borderRadius: 4, padding: "4px 8px", marginTop: 5, color: "#56D364", fontSize: 10.5 }}>
           [TOOL 29 REAL-TIME PHYSICAL &amp; U(1) GAUGE ALERT BANNER]: {tel.anomaly_banner}

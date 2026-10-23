@@ -10,4 +10,4 @@ VALUES
 ('CHAIN_50', 'BAND_4_CATABOLIC_SWR_RECOVERY', 0.1840, 'Critical thermal/memory pressure (82.8C); trigger Kerr KV eviction & 159.65Hz SWR .npage flush', 'Tools 44, 39, 48 (Amygdala-Kerr Eviction + Bi-Temporal WAL + D1 Snapshot)', 'Host L0 Ring + ORICO E: SSD Vault + Cloudflare D1 Edge', 'Immediate Recovery Barrier (< 1.8ms) + Sub-Epoch E8..E9 SWR', 'Evict low-salience KV across r_+ horizon + Flush .npage to E: SSD', 1760982000400);
 
 INSERT INTO wal_merkle_checkpoints (e8z_filename, e8z_bytes, shard_count, lean4_proofs_qed, sha256_digest, recorded_at_ms)
-VALUES ('sovereign_harmonic_v3710.e8z', 103424, 9680, 284, 'SH4Z_v3710_58SECTOR_103424B_284QED_VERIFIED', 1760982000500);
+VALUES ('sovereign_harmonic_iv_v4000.e8z', 133120, 21120, 416, 'c383b1b7d00e6ce8cef22593536aea2d66523d53360c3552a64970a61e394b23', 1760982000500);

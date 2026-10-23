@@ -189,9 +189,9 @@ function Invoke-SovereignSixLayerVerify {
     Write-Host "  [LAYER 2 - LEAN 4 QED]  Theorems=$thmCnt/400 | Trivial(N=N)=$trivCnt | SHA256=${leanSha}..." -ForegroundColor Green
 
     # Layer 3: 5W1H & 28,160-Neuron Shared Memory (.npage)
-    $t59 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/introspect/shard_neuron_bijection" -TimeoutSec 4
+    $prof = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/diagnostics/v44_self_profiler" -TimeoutSec 4
     $shmBytes = (Get-Item $shmPath).Length
-    Write-Host "  [LAYER 3 - CONNECTOME]  CoreShards=$($t59.shards_counted)/$($t59.core_neurons_measured) (Scan=$($t59.scan_ms)ms) | Combined .npage SHM=${shmBytes}B (28,160N)" -ForegroundColor Green
+    Write-Host "  [LAYER 3 - CONNECTOME]  CoreNeurons=$($prof.core_neurons)/21120 + Exp=$($prof.exp_neurons) ($($prof.expansion_shards_on_disk) shards) | Combined .npage SHM=${shmBytes}B ($($prof.combined_neurons)N)" -ForegroundColor Green
 
     # Layer 4: Host WebGPU HUD
     $hudDist = Test-Path "C:\sovereign_manifold_v31\05_hud_cockpit\dist\index.html"

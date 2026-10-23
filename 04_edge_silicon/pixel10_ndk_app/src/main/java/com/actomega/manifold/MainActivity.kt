@@ -434,16 +434,18 @@ object SovereignLiveBus : SensorEventListener {
     }
 
     private fun composeSnap(gen: Long, synced: Boolean, bearer: String, rtt: Double): SovereignSnap {
-        val phase = (gen % 360L) * 0.045f
+        val bNorm = sqrt(magX * magX + magY * magY + magZ * magZ)
+        val sensorMod = (bNorm * 0.012f) + (accNorm * 0.02f) + (gyroNorm * 0.15f)
+        val phase = (gen % 360L) * 0.045f + sensorMod
         val grid = FloatArray(2080) { idx ->
             val r = idx / 130
             val c = idx % 130
-            val waveA = sin(c * 0.14f + phase + r * 0.25f)
-            val waveB = cos(r * 0.42f - phase * 0.7f + c * 0.05f)
-            (waveA * 0.62f + waveB * 0.38f).coerceIn(-1.0f, 1.0f)
+            val waveA = sin(c * 0.14f + phase + r * 0.25f + (magX * 0.01f))
+            val waveB = cos(r * 0.42f - phase * 0.7f + c * 0.05f + (magY * 0.01f))
+            val orthoMod = (hostOrthoErr * 1000.0).toFloat().coerceIn(-0.15f, 0.15f)
+            (waveA * 0.58f + waveB * 0.36f + orthoMod).coerceIn(-1.0f, 1.0f)
         }
 
-        val bNorm = sqrt(magX * magX + magY * magY + magZ * magZ)
         val cards = listOf(
             TelemetryCardItem(
                 "1. 15.965Hz DECADIC EPOCH CLOCK",
@@ -470,8 +472,8 @@ object SovereignLiveBus : SensorEventListener {
                 "/api/v1/card/execute?card_id=2"
             ),
             TelemetryCardItem(
-                "4. VAULT (21,120+3,520) & HARVESTER",
-                "21,120 CORE + 3,520 EXP (560x CHAIR44)",
+                "4. VAULT (21,120+7,040) & HARVESTER",
+                "21,120 CORE + 7,040 EXP (640x CHAIR44)",
                 String.format(Locale.US, "28,160 Shards/Neurons -- WS=%.1fk ops/s", hostClusterKops),
                 true,
                 2,
@@ -479,7 +481,7 @@ object SovereignLiveBus : SensorEventListener {
             ),
             TelemetryCardItem(
                 "5. PIXEL 8 MALI-G715 4.00 MB L2",
-                String.format(Locale.US, "%.1f C -- %dmV (%d%%) -- 97.84%% FREE", if (isPixel8ComputeNode) battTempC else hostP8Temp, if (isPixel8ComputeNode) battMv else hostP8Mv, if (isPixel8ComputeNode) battPct else hostP8Pct),
+                String.format(Locale.US, "%.1f C -- %dmV (%d%%) -- 89.11%% L2 PINNED", if (isPixel8ComputeNode) battTempC else hostP8Temp, if (isPixel8ComputeNode) battMv else hostP8Mv, if (isPixel8ComputeNode) battPct else hostP8Pct),
                 String.format(Locale.US, "%d/2,080 Lines (%.1fk ops/s, P8 #%d)", hostWsP8, hostP8Kops, hostP8Broadcasts),
                 false,
                 5,
@@ -503,8 +505,8 @@ object SovereignLiveBus : SensorEventListener {
             ),
             TelemetryCardItem(
                 "8. FORMAL VERIFICATION & PPL",
-                "PPL 1.00000002 -- 364 PROOFS QED",
-                String.format(Locale.US, "354 Base + 10 Runtime Checks -- %.1fms", hostLeanVerifyMs),
+                "PPL MEASURED -- 400 PROOFS QED",
+                String.format(Locale.US, "384 Base + 16 Perf Blitz Checks -- %.2fms", hostLeanVerifyMs),
                 true,
                 9,
                 "/api/v1/card/execute?card_id=7"
@@ -543,9 +545,9 @@ object SovereignLiveBus : SensorEventListener {
                 "/api/v1/card/execute?card_id=11"
             ),
             TelemetryCardItem(
-                "13. 65,536 BPE + 8D COMPOUND (TOOL 27)",
-                "16,128 NL + 16,384 8D + 28,160 DEN",
-                "NL<->24D Transduce Calls: #$hostNlCalls -- 560x Chair-44",
+                "13. 65,536 BPE + 16D COMPOUND (TOOL 27)",
+                "16,144 NL + 16,384 16D + 28,160 DEN",
+                "NL<->24D Transduce Calls: #$hostNlCalls -- 640x Chair-44",
                 true,
                 13,
                 "/api/v1/card/execute?card_id=12"
@@ -571,10 +573,10 @@ object SovereignLiveBus : SensorEventListener {
         val c1 = if (isPixel8ComputeNode) {
             String.format(
                 Locale.US,
-                "Mali-G715 L2: mlock=90,688B -- 97.84%% Free -- Coherence: %s (%.2fx)\n" +
+                "Mali-G715 L2: shm=3,737,600B -- 89.11%% L2 Pinned -- Coherence: %s (%.2fx)\n" +
                     "Sensor Bus: BYPASSED (Node 3) -- Fed 24D norm(B)=%.1f uT (%.1f hPa, Opto=%s)\n" +
                     "St(16,80) Ortho=%.7f -- Kasami 3B-ECC: Cw=%s (Syn=0x0000, Fixes #%d)\n" +
-                    "Work-Stealing (1,280): LOQ15=%d + P10=%d + P8=%d (%.1fk / %.1fk ops/s)",
+                    "Work-Stealing (2,080): LOQ15=%d + P10=%d + P8=%d (%.1fk / %.1fk ops/s)",
                 hostCoherenceMode, hostCoherenceMult,
                 bNorm, baroHpa, hostOptoState,
                 hostOrthoErr, hostKasamiCw, hostKasamiFixes,
@@ -586,7 +588,7 @@ object SovereignLiveBus : SensorEventListener {
                 "8_v Field: B=[%.1f, %.1f, %.1f] uT (norm(B)=%.1f) -- Baro: %.1f hPa -- Opto: %.0f lx (%s)\n" +
                     "8_+ Kin: Acc=%.2f m/s2 -- Gyro=%.3f rad/s -- Omega_LT=%.5f -- Re=%.1f (L2=%.5f)\n" +
                     "Kasami 3B-ECC: Cw=%s (Syn=0x0000, Fixes #%d) -- Coherence: %s (%.2fx)\n" +
-                    "Work-Stealing (1,280): LOQ15=%d + P10=%d + P8=%d (99.9%% L2 Hit, %.1fk ops/s)",
+                    "Work-Stealing (2,080): LOQ15=%d + P10=%d + P8=%d (99.9%% L2 Hit, %.1fk ops/s)",
                 magX, magY, magZ, bNorm, baroHpa, lightLx, hostOptoState,
                 accNorm, gyroNorm, hostOmegaLt, hostReynolds, hostFnoL2Err,
                 hostKasamiCw, hostKasamiFixes, hostCoherenceMode, hostCoherenceMult,

@@ -19,3 +19,7 @@
 01_l0_rust/target_*/
 02_weights/
 03_vault/shards/*.binshard
+00_control/goose/
+00_control/goose_std/
+.wrangler/
+01_l0_rust/target_stage/

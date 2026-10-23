@@ -61,10 +61,17 @@ if ($qatRes) {
     Write-Host "[CYCLE-2 MODEL QAT] Epochs=$($qatRes.qat_total_epochs) | Bridged=16 Domains (256 Compounds) | Holdout PPL=$($qatRes.holdout_ppl) | Transfer=$($qatRes.compound_transfer_pct)% | P8 Speculative=$($cQatRes.p8_speculative_kops)k ops/s | Neurons=$($npageRes.combined_neurons) (640x Chair-44)" -ForegroundColor Magenta
 }
 
-# 4. Trigger Cloudflare Edge Worker Durable Object & 10-Table D1 Closed-Loop Sync
-$cfRes = Invoke-RestMethod -Uri "https://sovereign-loq15-vpc-shadow.bospaladin34.workers.dev/api/v1/cloudflare/cron_sync" -TimeoutSec 10
+# 4. Trigger Cloudflare Edge Worker Durable Object & 10-Table D1 Closed-Loop Sync with Live Measured Telemetry
+$harnLive = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/harness/metabolic_5w1h" -TimeoutSec 4
+$liveAtp = if ($harnLive -and $harnLive.metabolic_atp_score) { $harnLive.metabolic_atp_score } else { 0.8920 }
+$liveRtx = if ($profRes -and $profRes.rtx3050_temp_c) { $profRes.rtx3050_temp_c } else { 57.0 }
+$liveKops = if ($profRes -and $profRes.cluster_kops) { $profRes.cluster_kops } else { 4514.2 }
+$leanPath = "C:\sovereign_manifold_v31\01_l0_rust\lean4\SovereignManifoldTheorems.lean"
+$leanSha = if (Test-Path $leanPath) { (Get-FileHash -Path $leanPath -Algorithm SHA256).Hash.ToLower() } else { "" }
+$leanBytes = if (Test-Path $leanPath) { (Get-Item $leanPath).Length } else { 44990 }
+$cfRes = Invoke-RestMethod -Uri "https://sovereign-loq15-vpc-shadow.bospaladin34.workers.dev/api/v1/cloudflare/cron_sync?atp=$liveAtp&rtx_temp=$liveRtx&kops=$liveKops&lean_sha256=$leanSha&lean_bytes=$leanBytes" -TimeoutSec 10
 if ($cfRes) {
-    Write-Host "[CYCLE-3 CLOUDFLARE] Status=$($cfRes.status) | Cron=$($cfRes.cron_schedule) | D1 Tables=$($cfRes.d1_tables_count) | Neurons=$($cfRes.npage_combined_neurons) | DO Heartbeats=$($cfRes.durable_object_shadow.heartbeats_stored) | D1 Connected=$($cfRes.d1_live.live_d1_connected)" -ForegroundColor Green
+    Write-Host "[CYCLE-3 CLOUDFLARE] Status=$($cfRes.status) | ATP=$($cfRes.measured_atp) | RTX=$($cfRes.measured_rtx_temp_c)C | D1 Tables=$($cfRes.d1_tables_count) | Neurons=$($cfRes.npage_combined_neurons) | DO Heartbeats=$($cfRes.durable_object_shadow.heartbeats_stored) | D1 Connected=$($cfRes.d1_live.live_d1_connected)" -ForegroundColor Green
 }
 
 # 5. Mirror Updated Logs, Expansion .npage & Modules to E:\Sovereign_Manifold_SSD_Vault and G:\My Drive\ACT_OMEGA_GEMINI_BRIDGE

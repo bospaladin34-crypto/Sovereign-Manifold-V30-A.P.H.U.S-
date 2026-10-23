@@ -53,7 +53,7 @@ Your mission is to eliminate second-pass oversights and avoid redundant code loo
    - Sync `05_hud_cockpit\src\App.tsx` -> `02_l2_orchestration\hud\src\App.tsx`, run `npm run build` in `05_hud_cockpit`, and copy `05_hud_cockpit\dist\*` to `02_l2_orchestration\hud\dist\` and `docs\`.
 
 4. **Cloudflare Edge Worker, Named Tunnel & D1 SQL Seed/Sync Scripts**:
-   - `C:\sovereign_manifold_v31\00_control\cloudflare_edge\worker_continuum_do.js` & `wrangler.toml` (deploy via `npx wrangler deploy`)
+   - `C:\sovereign_manifold_v31\00_control\cloudflare_edge\worker_vpc_shadow_v3700.js` (active `main` in `wrangler.toml`), `worker_continuum_do.js`, & `wrangler.toml` (deploy via `npx wrangler deploy`)
    - `C:\sovereign_manifold_v31\00_control\cloudflare_named_config.yml` (`cloudflared` tunnel config)
    - D1 SQL scripts in `00_control\cloudflare_edge\`: `sync_d1_v4400_all10tables.sql`, `sync_d1_v4300_all8tables.sql`, `seed_d1_v4000.sql`, `seed_d1_v40_tables_only.sql`, `sync_d1_v3800.sql`, `seed_d1_v3710.sql`.
 

@@ -101,7 +101,7 @@ const SECTOR_NAMES = [
 
 export function App() {
   const [operatorVaultOpen, setOperatorVaultOpen] = useState<boolean>(false);
-  const [operatorPasskey, setOperatorPasskey] = useState<string>("SOVEREIGN-LOQ15-4200");
+  const [operatorPasskey, setOperatorPasskey] = useState<string>("");
   const [operatorUnlocked, setOperatorUnlocked] = useState<boolean>(false);
   const [ideConsoleLog, setIdeConsoleLog] = useState<string>("[OPERATOR & ANTIGRAVITY VAULT READY] Gemini 4 Argon (6 Subagents) + Goose v1.55.0 + Zed v1.24.4 + VSCodium/Cline locked to SH4Z-v4300-TriSilicon (C:\\sovereign_manifold_v31). All 15 Telemetry Cards, 3D Stiefel Scope, 16x130 Heatmap & 72 Tools active.");
   const [tel, setTel] = useState<TelemetryState>({
@@ -899,7 +899,7 @@ export function App() {
         // fallback
       }
     }
-    const fallbackMsg = `[${label} VERIFIED]: SH4Z v4300 -- 15.965Hz Decadic E${tel.decadic_sub_epoch} -- 24,640 Shards/Neurons (21,120 Core + 3,520 Exp) -- PPL=1.00000002 -- 3420.0k ops/s`;
+    const fallbackMsg = `[${label} OFFLINE / UNVERIFIED]: Backend probe unreachable -- verification did not run`;
     setTermOut(fallbackMsg);
     setCardDiag(fallbackMsg);
   };
@@ -1024,16 +1024,16 @@ export function App() {
       token_ids_csv: ids.join(","),
       token_labels_csv: labels.join(", "),
       detokenized_exact: cleanInput.toLowerCase(),
-      roundtrip_verified: true,
+      roundtrip_verified: false,
       compression_ratio: ratio,
       dominant_domain: dom,
       ipa_stream: `/svn_mnfold.bpe65k.${dom.split(":")[0].toLowerCase()}.n${mappedNeuron}/`,
-      svo_sentence: `[SVO-16D ${dom}]: Subject(S${mappedSector}:C${mappedCol}:N${mappedNeuron}) -> Verb(Transduce-65536-BPE, Ratio=${ratio.toFixed(2)}x, Roundtrip=true) -> Object(${ids.length} tokens)`,
+      svo_sentence: `[SVO-16D ${dom}]: Subject(S${mappedSector}:C${mappedCol}:N${mappedNeuron}) -> Verb(Transduce-65536-BPE, Ratio=${ratio.toFixed(2)}x, Roundtrip=false) -> Object(${ids.length} tokens)`,
       mapped_sector: mappedSector,
       mapped_chair44_col: mappedCol,
       mapped_neuron_id: mappedNeuron
     });
-    setTermOut(`[65K BPE VERIFIED]: Tokens=${ids.length} | Ratio=${ratio.toFixed(2)}x | Roundtrip=true | Domain=${dom} | Mapped S${mappedSector}:C${mappedCol}:N${mappedNeuron}`);
+    setTermOut(`[65K BPE OFFLINE / UNVERIFIED]: Backend unreachable -- client-side estimate only (Tokens=${ids.length}, Ratio=${ratio.toFixed(2)}x, Domain=${dom})`);
   };
 
   const runBrowserOperationalizer = async (articleInput: string, modeStr: string) => {
@@ -1360,8 +1360,10 @@ export function App() {
     }
   ];
 
+  const sectorNormsArr = tel.sector_norms_csv.split(",").map(Number);
   const cellColor = (r: number, c: number) => {
-    const v = Math.sin(c * 0.16 + phase + r * 0.28) * 0.6 + Math.cos(r * 0.45 - phase * 0.7 + c * 0.06) * 0.4;
+    const secNorm = sectorNormsArr[r % Math.max(1, sectorNormsArr.length)] || 0.89;
+    const v = Math.sin(c * 0.16 + phase + r * 0.28) * 0.45 + Math.cos(r * 0.45 - phase * 0.7 + c * 0.06) * 0.25 + (secNorm - 0.5) * 0.6;
     const norm = Math.max(0, Math.min(1, (v + 1) * 0.5));
     if (norm > 0.84) return "#E94E34";
     if (norm > 0.68) return "#FFB454";
@@ -1530,7 +1532,19 @@ export function App() {
                   style={{ background: "#050a0e", color: "#ffb700", border: "1px solid #b388ff", borderRadius: "4px", padding: "3px 8px", fontFamily: "monospace", fontSize: "11px" }}
                 />
                 <button
-                  onClick={() => setOperatorUnlocked(operatorPasskey.trim() === "SOVEREIGN-LOQ15-4200" || window.location.hostname === "127.0.0.1" || window.location.hostname === "localhost")}
+                  onClick={async () => {
+                    try {
+                      const r = await fetch(`/api/v1/auth/operator_vault_gate?key=${encodeURIComponent(operatorPasskey.trim())}`, { cache: "no-store" });
+                      if (r.ok) {
+                        const j = await r.json();
+                        setOperatorUnlocked(Boolean(j && j.authorized));
+                        setIdeConsoleLog(j && j.authorized ? "[OPERATOR VAULT UNLOCKED] Authenticated via backend ACT_OMEGA_OPERATOR_KEY." : "[OPERATOR VAULT DENIED] Invalid or unconfigured ACT_OMEGA_OPERATOR_KEY.");
+                      }
+                    } catch {
+                      setOperatorUnlocked(false);
+                      setIdeConsoleLog("[OPERATOR VAULT OFFLINE] Backend unreachable -- cannot verify operator key.");
+                    }
+                  }}
                   style={{ background: "#ffb700", color: "#050a0e", border: "none", borderRadius: "4px", padding: "4px 10px", cursor: "pointer", fontFamily: "monospace", fontSize: "11px", fontWeight: "bold" }}
                 >
                   {operatorUnlocked ? "VAULT UNLOCKED" : "UNLOCK VAULT"}
@@ -1547,7 +1561,7 @@ export function App() {
             </div>
             {!operatorUnlocked ? (
               <div style={{ fontSize: "11px", color: "#8ab4c9" }}>
-                Protected against accidental public overuse on act-omega-net.dev. Click UNLOCK VAULT (Passkey: SOVEREIGN-LOQ15-4200) to access Google Antigravity (Gemini 4 Argon), Goose, Zed, VSCodium/Cline, and 5W1H-Neuron Connectome controls while keeping all 15 Telemetry Cards below untouched.
+                Protected against accidental public overuse on act-omega-net.dev. Enter your configured operator key (`ACT_OMEGA_OPERATOR_KEY` or `00_control/.operator_vault_key`) and click UNLOCK VAULT to access Google Antigravity (Gemini 4 Argon), Goose, Zed, VSCodium/Cline, and 5W1H-Neuron Connectome controls while keeping all 15 Telemetry Cards below untouched.
               </div>
             ) : (
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "8px" }}>

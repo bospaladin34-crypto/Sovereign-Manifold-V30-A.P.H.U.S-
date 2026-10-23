@@ -19,6 +19,9 @@ include!("../v37_metabolic_harness_5w1h.rs");
 include!("../v37_mcp_openai_cloudflare_d1.rs");
 include!("../v37_recursive_compound_speech.rs");
 include!("../v38_symbiotic_ide_memory_a2a_delta.rs");
+include!("../v39_u128_gemini_bridge_distill_swarm.rs");
+include!("../v40_omni_introspect_21120_shards_qat10.rs");
+include!("../v42_distributed_5w1h_router_ide_vault.rs");
 include!("../v43_bpe_compound_65k.rs");
 include!("../v43_safe_llm_agent_gateway.rs");
 include!("../v44_omni_architecture_facelift.rs");
@@ -525,37 +528,10 @@ fn synthesize_natural_language(st: &SwarmState, prompt_context: &str) -> String 
 
 fn step_dynamic_manifold(st: &mut SwarmState, tick: u64, kasami_raw: u32, ssd_path: &str) {
     // 1. 15.965 Hz (62,637 us) Decadic Epoch (10.000s = 10 sub-epochs E0..E9) & Coherence Cycling
+    // Zero synthetic sensor override: st.mag_x/y/z, st.b_norm, st.baro_hpa, st.acc_norm, st.gyro_norm,
+    // st.p10_broadcasts, and st.p8_broadcasts are updated exclusively by real incoming Edge telemetry!
     st.decadic_sub_epoch = (tick / 2) % 10;
-    st.p10_broadcasts += 1;
-    st.p8_broadcasts += 1;
-    let phase_f = (tick as f64) * 0.314159;
-    st.mag_x = -29.3 + phase_f.sin() * 1.8;
-    st.mag_y = -32.6 + phase_f.cos() * 1.6;
-    st.mag_z = -30.3 + (phase_f * 0.7).sin() * 1.4;
     st.b_norm = (st.mag_x * st.mag_x + st.mag_y * st.mag_y + st.mag_z * st.mag_z).sqrt();
-    st.baro_hpa = 902.1 + (phase_f * 0.5).cos() * 0.8;
-    st.acc_norm = 9.72 + (phase_f * 1.3).sin() * 0.14;
-    st.gyro_norm = 0.18 + (phase_f * 0.9).cos().abs() * 0.09;
-    st.p10_broadcasts += 1;
-    st.p8_broadcasts += 1;
-    let phase_f = (tick as f64) * 0.314159;
-    st.mag_x = -29.3 + phase_f.sin() * 1.8;
-    st.mag_y = -32.6 + phase_f.cos() * 1.6;
-    st.mag_z = -30.3 + (phase_f * 0.7).sin() * 1.4;
-    st.b_norm = (st.mag_x * st.mag_x + st.mag_y * st.mag_y + st.mag_z * st.mag_z).sqrt();
-    st.baro_hpa = 902.1 + (phase_f * 0.5).cos() * 0.8;
-    st.acc_norm = 9.72 + (phase_f * 1.3).sin() * 0.14;
-    st.gyro_norm = 0.18 + (phase_f * 0.9).cos().abs() * 0.09;
-    st.p10_broadcasts += 1;
-    st.p8_broadcasts += 1;
-    let phase_f = (tick as f64) * 0.314159;
-    st.mag_x = -29.3 + phase_f.sin() * 1.8;
-    st.mag_y = -32.6 + phase_f.cos() * 1.6;
-    st.mag_z = -30.3 + (phase_f * 0.7).sin() * 1.4;
-    st.b_norm = (st.mag_x * st.mag_x + st.mag_y * st.mag_y + st.mag_z * st.mag_z).sqrt();
-    st.baro_hpa = 902.1 + (phase_f * 0.5).cos() * 0.8;
-    st.acc_norm = 9.72 + (phase_f * 1.3).sin() * 0.14;
-    st.gyro_norm = 0.18 + (phase_f * 0.9).cos().abs() * 0.09;
     let (lap_str, qm_str) = decadic_laplacian_and_qm(st.decadic_sub_epoch);
     st.laplacian_face = String::from(lap_str);
     st.qm_field_eq = String::from(qm_str);
@@ -784,23 +760,24 @@ fn search_episodic_ring(ssd_path: &str, query: &str) -> String {
     let q_lower = query.to_lowercase();
     let ring_file = format!("{}\\telemetry_training_ring.jsonl", ssd_path.replace('/', "\\"));
     let mono_file = format!("{}\\autopoietic_monologue.jsonl", ssd_path.replace('/', "\\"));
+    let lt_file = String::from("C:\\sovereign_manifold_v31\\03_vault\\connectome\\episodic_longterm_memory_v4300.jsonl");
+    let mt_file = String::from("C:\\sovereign_manifold_v31\\03_vault\\connectome\\multiturn_working_memory_v4400.jsonl");
     let mut matches = 0usize;
-    let mut latest_sample = String::from("epoch=32, b_norm=53.3uT, baro=902.1hPa, ortho=5.0e-7, fno_l2=0.00019, ppl=1.00000002");
+    let mut latest_sample = String::from("No matching episodes found for query.");
     let mut files = Vec::new();
     files.push(ring_file);
     files.push(mono_file);
+    files.push(lt_file);
+    files.push(mt_file);
     for p in files {
         if let Ok(content) = fs::read_to_string(&p) {
             for line in content.lines() {
-                if q_lower.is_empty() || line.to_lowercase().contains(&q_lower) {
+                if !line.trim().is_empty() && (q_lower.is_empty() || line.to_lowercase().contains(&q_lower)) {
                     matches += 1;
                     latest_sample = json_escape_clean(line);
                 }
             }
         }
-    }
-    if matches == 0 {
-        matches = 32;
     }
     if latest_sample.len() > 160 {
         if let Some(sub) = latest_sample.get(..160) {
@@ -808,7 +785,7 @@ fn search_episodic_ring(ssd_path: &str, query: &str) -> String {
         }
     }
     format!(
-        "TOOL 28 EPISODIC MEMORY SEARCH (Query='{}' on {}): Matched {} temporal episodes across 21,120 Shards & JSONL Rings -- Latest: {}",
+        "TOOL 28 EPISODIC MEMORY SEARCH (Query='{}' on {}): Matched {} temporal episodes across JSONL Rings -- Latest: {}",
         query, ssd_path, matches, latest_sample
     )
 }
@@ -1194,37 +1171,59 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             continue;
         }
 
-        // 1E. v44.0.0 Dedicated Lean 4 Formal Verifier & Theorem Search (/api/v1/compiler/verify)
+        // 1E. v44.2.0 Dedicated Lean 4 Formal Verifier & Theorem Search (/api/v1/compiler/verify)
         if clean_path == "/api/v1/compiler/verify" {
             let mut st = match state.lock() {
                 Ok(g) => g,
                 Err(p) => p.into_inner(),
             };
             st.gen_counter += 1;
+            let t0 = std::time::Instant::now();
             let lq = if q_arg.is_empty() {
-                String::from("all_354_base_364_runtime_qed")
+                String::from("theorem")
             } else {
                 json_escape_clean(&q_arg)
             };
+            let lean_path = "C:\\sovereign_manifold_v31\\01_l0_rust\\lean4\\SovereignManifoldTheorems.lean";
+            let mut total_theorems: usize = 0;
+            let mut sorry_count: usize = 0;
+            let mut matched_count: usize = 0;
+            let mut last_matched_name = String::from("none");
+            let lq_low = lq.to_ascii_lowercase();
+            if let Ok(content) = fs::read_to_string(lean_path) {
+                for line in content.lines() {
+                    let trimmed = line.trim();
+                    if trimmed.starts_with("theorem ") {
+                        total_theorems += 1;
+                        if trimmed.to_ascii_lowercase().contains(&lq_low) {
+                            matched_count += 1;
+                            if let Some(rest) = trimmed.strip_prefix("theorem ") {
+                                if let Some(name) = rest.split_whitespace().next() {
+                                    last_matched_name = String::from(name);
+                                }
+                            }
+                        }
+                    }
+                    if trimmed.contains("sorry") && !trimmed.starts_with("--") {
+                        sorry_count += 1;
+                    }
+                }
+            }
+            let verify_ms = t0.elapsed().as_secs_f64() * 1000.0;
+            st.lean4_verify_ms = verify_ms;
             let h = fnv1a_64(&lq);
             let sec_match = (h % 80) as usize;
-            let (thm_start, thm_end) = if sec_match < 30 {
-                (sec_match * 10 + 1, sec_match * 10 + 10)
-            } else {
-                let s64_idx = (sec_match - 30) % 16;
-                (301 + s64_idx * 4, 304 + s64_idx * 4)
-            };
             let trace = format!(
-                "LEAN 4 QED VERIFIED (Query='{}'): Matched Sector S{:02} Theorems thm{}..thm{} (354/354 Base + 10/10 Runtime = 384/384 QED across S00..S79, 0 sorry, {:.1}ms)",
-                lq, sec_match, thm_start, thm_end, st.lean4_verify_ms
+                "LEAN 4 FILE VERIFIER (Query='{}' on SovereignManifoldTheorems.lean): Parsed {} theorems on disk ({} matched query, latest='{}', sorry_count={}, {:.3}ms)",
+                lq, total_theorems, matched_count, last_matched_name, sorry_count, verify_ms
             );
             st.last_lean_query = lq.clone();
             st.last_lean_trace = trace.clone();
             st.last_card_diag = trace.clone();
             st.last_term_out = trace.clone();
             let json = format!(
-                "{{\"status\":\"LEAN4_364_PROOFS_QED\",\"query\":\"{}\",\"matched_sector\":{},\"theorems\":\"thm{}..thm{}\",\"base_theorems\":354,\"runtime_checks\":364,\"sorry_count\":0,\"verify_ms\":{:.1},\"trace\":\"{}\"}}",
-                lq, sec_match, thm_start, thm_end, st.lean4_verify_ms, trace
+                "{{\"status\":\"LEAN4_FILE_PROBED\",\"query\":\"{}\",\"matched_sector\":{},\"matched_theorems_count\":{},\"last_matched_theorem\":\"{}\",\"total_theorems_on_disk\":{},\"sorry_count\":{},\"verify_ms\":{:.3},\"trace\":\"{}\"}}",
+                lq, sec_match, matched_count, json_escape_clean(&last_matched_name), total_theorems, sorry_count, verify_ms, json_escape_clean(&trace)
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
             continue;
@@ -1761,7 +1760,8 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.last_card_diag = sp.diag.clone();
             st.last_term_out = sp.diag.clone();
             let json = format!(
-                "{{\"status\":\"V44_WHOLE_ARCHITECTURE_SELF_PROFILER_OPTIMAL\",\"version\":\"v44.0.0\",\"tool_index\":75,\"tool_name\":\"tool:v44_whole_architecture_self_profiler\",\"health_grade\":\"{}\",\"e8z_bytes\":{},\"core_npage_bytes\":{},\"exp_npage_bytes\":{},\"total_npage_bytes\":{},\"core_neurons\":{},\"exp_neurons\":{},\"combined_neurons\":{},\"total_chair44_cols\":{},\"total_synapses\":{},\"expansion_shards_on_disk\":{},\"visitor_ledger_entries\":{},\"multiturn_memory_entries\":{},\"cluster_kops\":{:.1},\"diag\":\"{}\"}}",
+                "{{\"status\":\"V44_WHOLE_ARCHITECTURE_SELF_PROFILER_PROBED\",\"version\":\"v44.2.0\",\"tool_index\":75,\"tool_name\":\"tool:v44_whole_architecture_self_profiler\",\"health_score\":{},\"health_grade\":\"{}\",\"e8z_bytes\":{},\"core_npage_bytes\":{},\"exp_npage_bytes\":{},\"total_npage_bytes\":{},\"core_neurons\":{},\"exp_neurons\":{},\"combined_neurons\":{},\"total_chair44_cols\":{},\"total_synapses\":{},\"expansion_shards_on_disk\":{},\"visitor_ledger_entries\":{},\"multiturn_memory_entries\":{},\"rtx3050_temp_c\":{:.1},\"p10_temp_c\":{:.1},\"p8_temp_c\":{:.1},\"cluster_kops\":{:.1},\"diag\":\"{}\"}}",
+                sp.health_score,
                 sp.health_grade,
                 sp.e8z_bytes,
                 sp.core_npage_bytes,
@@ -1775,9 +1775,99 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 sp.expansion_shards_on_disk,
                 sp.visitor_ledger_entries,
                 sp.multiturn_memory_entries,
+                sp.rtx3050_temp_c,
+                sp.p10_temp_c,
+                sp.p8_temp_c,
                 sp.cluster_kops,
                 json_escape_clean(&sp.diag)
             );
+            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
+            continue;
+        }
+
+        // Direct live-probed handlers for Tools 55..68 (v39, v40, v42 modules)
+        if clean_path == "/api/v1/gemini/bridge" || clean_path == "/api/v1/tools/t55" {
+            let json = tool_55_gemini_bidirectional_bridge_json();
+            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
+            continue;
+        }
+        if clean_path == "/api/v1/swarm/autonomous_coder" || clean_path == "/api/v1/tools/t56" {
+            let json = tool_56_autonomous_coder_swarm_json();
+            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
+            continue;
+        }
+        if clean_path == "/api/v1/training/online_ternary_distill" || clean_path == "/api/v1/tools/t57" {
+            let json = tool_57_online_ternary_distill_json();
+            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
+            continue;
+        }
+        if clean_path == "/api/v1/edge/mobile_action_trigger" || clean_path == "/api/v1/tools/t58" {
+            let json = tool_58_mobile_action_trigger_json();
+            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
+            continue;
+        }
+        if clean_path == "/api/v1/introspect/omni_wiring_audit" || clean_path == "/api/v1/tools/t59" {
+            let json = tool_59_omni_wiring_audit_json();
+            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
+            continue;
+        }
+        if clean_path == "/api/v1/d1/auto_trigger_pipeline" || clean_path == "/api/v1/tools/t60" {
+            let json = tool_60_d1_auto_trigger_pipeline_json();
+            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
+            continue;
+        }
+        if clean_path == "/api/v1/train/ten_session_qat_blitz" || clean_path == "/api/v1/tools/t61" {
+            let json = tool_61_ten_session_qat_blitz_json();
+            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
+            continue;
+        }
+        if clean_path == "/api/v1/vault/hyper_shard_accelerator" || clean_path == "/api/v1/tools/t62" {
+            let json = tool_62_hyper_shard_accelerator_json();
+            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
+            continue;
+        }
+        if clean_path == "/api/v1/edge/dual_phone_v40_sync" || clean_path == "/api/v1/tools/t63" {
+            let json = tool_63_dual_phone_v40_sync_json();
+            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
+            continue;
+        }
+        if clean_path == "/api/v1/hud/hot_reload_v40" || clean_path == "/api/v1/tools/t64" {
+            let json = tool_64_hud_hot_reload_v40_json();
+            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
+            continue;
+        }
+        if clean_path == "/api/v1/router/distributed_5w1h_dispatch" || clean_path == "/api/v1/tools/t65" {
+            let who_q = extract_query_param(raw_target, "who");
+            let what_q = extract_query_param(raw_target, "what");
+            let key_q = extract_query_param(raw_target, "key");
+            let who = if who_q.is_empty() { "Host_LOQ15_Operator" } else { &who_q };
+            let what = if what_q.is_empty() { "L0_Tensor_FNO" } else { &what_q };
+            let auth_ok = verify_operator_vault_secret(&key_q, true);
+            let json = tool_65_distributed_5w1h_router_json(who, what, auth_ok);
+            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
+            continue;
+        }
+        if clean_path == "/api/v1/ide/symbiotic_parity_sync" || clean_path == "/api/v1/tools/t66" {
+            let json = tool_66_symbiotic_ide_parity_json();
+            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
+            continue;
+        }
+        if clean_path == "/api/v1/auth/operator_vault_gate" || clean_path == "/api/v1/tools/t67" {
+            let key_q = {
+                let k1 = extract_query_param(raw_target, "key");
+                if !k1.is_empty() { k1 } else { q_arg.clone() }
+            };
+            let json = tool_67_operator_vault_gate_json(&key_q, true);
+            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
+            continue;
+        }
+        if clean_path == "/api/v1/hud/embedded_ide_cockpit" || clean_path == "/api/v1/tools/t68" {
+            let key_q = {
+                let k1 = extract_query_param(raw_target, "key");
+                if !k1.is_empty() { k1 } else { q_arg.clone() }
+            };
+            let auth_ok = verify_operator_vault_secret(&key_q, true);
+            let json = tool_68_embedded_ide_cockpit_json(auth_ok);
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
             continue;
         }

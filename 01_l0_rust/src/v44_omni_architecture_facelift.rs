@@ -1,10 +1,12 @@
 // =============================================================================
-// ACT-OMEGA NET v44.0.0 (SH4Z v4400 TLV) — OMNI ARCHITECTURE FACELIFT MODULE
+// ACT-OMEGA NET v44.2.0 (SH4Z v4420 TLV) — OMNI ARCHITECTURE FACELIFT MODULE
 // Implements CHAIN 76 (Tools 73..76):
 //   Tool 73: Multi-Turn Bitemporal Working Memory Ring (/api/v1/converse/multiturn_memory)
 //   Tool 74: 16-Domain Socratic Dialectical Debate Engine (/api/v1/converse/dialectical_debate)
 //   Tool 75: Whole-Architecture Self-Profiler & Healer (/api/v1/diagnostics/v44_self_profiler)
-//   Tool 76: v44.0.0 Unified 10-Table & 28,160-Neuron Snapshot (/api/v1/manifold/v44_omni_snapshot)
+//   Tool 76: v44.2.0 Unified 10-Table & 28,160-Neuron Snapshot (/api/v1/manifold/v44_omni_snapshot)
+// Muse Audit #3 Remediated: Self-Profiler computes genuine dynamic health grade (0..100)
+// from real disk byte sizes, thermal thresholds, and measured throughput (never always A+!).
 // ZERO SQUARE BRACKETS ENFORCED (0x5B / 0x5D FORBIDDEN IN SOURCE)
 // =============================================================================
 
@@ -54,6 +56,7 @@ pub struct V44SelfProfilerResult {
     pub p10_temp_c: f64,
     pub p8_temp_c: f64,
     pub cluster_kops: f64,
+    pub health_score: u32,
     pub health_grade: &'static str,
     pub diag: String,
 }
@@ -225,6 +228,84 @@ pub fn execute_tool74_dialectical_debate(
     }
 }
 
+pub fn compute_profiler_health_grade(
+    e8z_bytes: u64,
+    core_npage_bytes: u64,
+    exp_npage_bytes: u64,
+    exp_shards_cnt: usize,
+    rtx_temp_c: f64,
+    p10_temp_c: f64,
+    p8_temp_c: f64,
+    cluster_kops: f64,
+) -> (u32, &'static str) {
+    let mut score: u32 = 0;
+
+    // 1. Weight file integrity (20 pts)
+    if e8z_bytes == 133120 {
+        score += 20;
+    } else if e8z_bytes > 0 {
+        score += 10;
+    }
+
+    // 2. Core & expansion .npage connectome integrity (25 pts)
+    if core_npage_bytes == 2703360 && exp_npage_bytes == 901120 {
+        score += 25;
+    } else if core_npage_bytes == 2703360 {
+        score += 15;
+    } else if core_npage_bytes > 0 {
+        score += 5;
+    }
+
+    // 3. Expansion shards on disk (10 pts)
+    if exp_shards_cnt >= 32 {
+        score += 10;
+    } else if exp_shards_cnt > 0 {
+        score += 5;
+    }
+
+    // 4. Thermal envelope across LOQ 15 RTX 3050, Pixel 10, and Pixel 8 (25 pts)
+    if rtx_temp_c > 0.0 && rtx_temp_c <= 72.0 {
+        score += 10;
+    } else if rtx_temp_c > 72.0 && rtx_temp_c <= 82.0 {
+        score += 5;
+    }
+    if p10_temp_c > 0.0 && p10_temp_c <= 42.0 {
+        score += 8;
+    } else if p10_temp_c > 42.0 && p10_temp_c <= 48.0 {
+        score += 4;
+    }
+    if p8_temp_c > 0.0 && p8_temp_c <= 42.0 {
+        score += 7;
+    } else if p8_temp_c > 42.0 && p8_temp_c <= 48.0 {
+        score += 3;
+    }
+
+    // 5. Measured cluster throughput (20 pts)
+    if cluster_kops >= 3400.0 {
+        score += 20;
+    } else if cluster_kops >= 2000.0 {
+        score += 14;
+    } else if cluster_kops >= 500.0 {
+        score += 8;
+    } else if cluster_kops > 0.0 {
+        score += 2;
+    }
+
+    let grade = if score >= 95 {
+        "UNITARY_OPTIMAL_A_PLUS"
+    } else if score >= 85 {
+        "LAMINAR_HEALTHY_A"
+    } else if score >= 70 {
+        "NOMINAL_WARM_B"
+    } else if score >= 50 {
+        "DEGRADED_THROTTLED_C"
+    } else {
+        "CRITICAL_FAULT_F"
+    };
+
+    (score, grade)
+}
+
 pub fn execute_tool75_v44_self_profiler(
     profile_seq: u64,
     rtx_temp_c: f64,
@@ -232,22 +313,33 @@ pub fn execute_tool75_v44_self_profiler(
     p8_temp_c: f64,
     cluster_kops: f64,
 ) -> V44SelfProfilerResult {
+    // Zero fallback floor: if files are missing, report 0 bytes so health_grade downgrades!
     let e8z_bytes = std::fs::metadata("C:\\sovereign_manifold_v31\\00_control\\weights\\sovereign_harmonic_iv_v4000.e8z")
+        .or_else(|_| std::fs::metadata("00_control/weights/sovereign_harmonic_iv_v4000.e8z"))
         .map(|m| m.len())
-        .unwrap_or(133120);
+        .unwrap_or(0);
     let core_npage_bytes = std::fs::metadata("C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v4000.npage")
+        .or_else(|_| std::fs::metadata("00_control/weights/neurons_v4000.npage"))
         .map(|m| m.len())
-        .unwrap_or(2703360);
+        .unwrap_or(0);
     let exp_npage_bytes = std::fs::metadata("C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v4400_expansion.npage")
-        .or_else(|_| std::fs::metadata("C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v4300_expansion.npage"))
+        .or_else(|_| std::fs::metadata("00_control/weights/neurons_v4400_expansion.npage"))
         .map(|m| m.len())
-        .unwrap_or(901120);
+        .unwrap_or(0);
     let total_npage_bytes = core_npage_bytes + exp_npage_bytes;
 
+    let core_neurons = (core_npage_bytes / 128) as u32;
+    let exp_neurons = (exp_npage_bytes / 128) as u32;
+    let combined_neurons = core_neurons + exp_neurons;
+    let total_chair44_cols = combined_neurons / 44;
+    let total_synapses = combined_neurons * 8;
+
     let mut exp_shards_cnt: usize = 0;
-    if let Ok(rd) = std::fs::read_dir("C:\\sovereign_manifold_v31\\03_vault\\shards_expansion") {
-        for entry in rd {
-            if entry.is_ok() {
+    if let Ok(rd) = std::fs::read_dir("C:\\sovereign_manifold_v31\\03_vault\\shards_expansion")
+        .or_else(|_| std::fs::read_dir("03_vault/shards_expansion"))
+    {
+        for entry in rd.flatten() {
+            if entry.path().is_file() {
                 exp_shards_cnt += 1;
             }
         }
@@ -256,13 +348,31 @@ pub fn execute_tool75_v44_self_profiler(
     let (visitor_cnt, _) = read_recent_agent_gateway_visits("C:\\sovereign_manifold_v31\\03_vault\\connectome\\llm_agent_gateway_visitors_v4300.jsonl");
     let (mt_cnt, _, _) = read_multiturn_ring("C:\\sovereign_manifold_v31\\03_vault\\connectome\\multiturn_working_memory_v4400.jsonl");
 
-    let diag = format!(
-        "TOOL 75 v44.0.0 WHOLE-ARCHITECTURE SELF-PROFILER & BOTTLENECK HEALER (Run #{}): Grade=UNITARY_OPTIMAL_A+ | .e8z={}B (80 Sectors) | Core .npage={}B (21,120N) + Expansion .npage={}B (7,040N) = {}B (28,160 Neurons, 640x Chair-44, 225,280 Synapses) | Pre-Crystallized Expansion Shards on Disk={} | Visiting Agent Ledger={} | Multi-Turn Memory Ring={} | Thermals: RTX 3050={:.1}C, Pixel 10 G5={:.1}C, Pixel 8 P8-APEX={:.1}C | Throughput={:.1}k ops/s (384/384 Lean 4 QED)",
-        profile_seq,
+    let (health_score, health_grade) = compute_profiler_health_grade(
         e8z_bytes,
         core_npage_bytes,
         exp_npage_bytes,
+        exp_shards_cnt,
+        rtx_temp_c,
+        p10_temp_c,
+        p8_temp_c,
+        cluster_kops,
+    );
+
+    let diag = format!(
+        "TOOL 75 v44.2.0 WHOLE-ARCHITECTURE SELF-PROFILER & BOTTLENECK HEALER (Run #{}): Score={}/100 (Grade={}) | .e8z={}B | Core .npage={}B ({}N) + Expansion .npage={}B ({}N) = {}B ({} Neurons, {}x Chair-44, {} Synapses) | Expansion Shards on Disk={} | Visiting Agent Ledger={} | Multi-Turn Memory Ring={} | Thermals: RTX 3050={:.1}C, Pixel 10 G5={:.1}C, Pixel 8 P8-APEX={:.1}C | Throughput={:.1}k ops/s",
+        profile_seq,
+        health_score,
+        health_grade,
+        e8z_bytes,
+        core_npage_bytes,
+        core_neurons,
+        exp_npage_bytes,
+        exp_neurons,
         total_npage_bytes,
+        combined_neurons,
+        total_chair44_cols,
+        total_synapses,
         exp_shards_cnt,
         visitor_cnt,
         mt_cnt,
@@ -278,11 +388,11 @@ pub fn execute_tool75_v44_self_profiler(
         core_npage_bytes,
         exp_npage_bytes,
         total_npage_bytes,
-        core_neurons: 21120,
-        exp_neurons: 7040,
-        combined_neurons: 28160,
-        total_chair44_cols: 640,
-        total_synapses: 225280,
+        core_neurons,
+        exp_neurons,
+        combined_neurons,
+        total_chair44_cols,
+        total_synapses,
         expansion_shards_on_disk: exp_shards_cnt,
         visitor_ledger_entries: visitor_cnt,
         multiturn_memory_entries: mt_cnt,
@@ -290,7 +400,8 @@ pub fn execute_tool75_v44_self_profiler(
         p10_temp_c,
         p8_temp_c,
         cluster_kops,
-        health_grade: "UNITARY_OPTIMAL_A_PLUS",
+        health_score,
+        health_grade,
         diag,
     }
 }

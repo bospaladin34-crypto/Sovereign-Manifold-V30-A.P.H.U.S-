@@ -79,23 +79,48 @@ pub fn evaluate_neuron_pagefile_inspector(
     sub_epoch: u64,
     gen_counter: u64,
 ) -> NeuronPagefileTelemetry {
-    let total_n: u64 = 21120;
-    let cols: u64 = 480;
-    let combined_n: u64 = 28160;
+    let core_bytes = std::fs::metadata("C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v4000.npage")
+        .or_else(|_| std::fs::metadata("00_control/weights/neurons_v4000.npage"))
+        .map(|m| m.len())
+        .unwrap_or(0);
+    let exp_bytes = std::fs::metadata("C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v4400_expansion.npage")
+        .or_else(|_| std::fs::metadata("00_control/weights/neurons_v4400_expansion.npage"))
+        .map(|m| m.len())
+        .unwrap_or(0);
+    let total_pagefile_bytes = core_bytes + exp_bytes;
+    let total_n: u64 = core_bytes / 128;
+    let combined_n: u64 = (total_pagefile_bytes / 128).max(1);
+    let cols: u64 = combined_n / 44;
     let n_id: u64 = neuron_query_id % combined_n;
     let col_id: u64 = n_id / 44;
-    let byte_off: u64 = if n_id < 21120 { n_id * 128 } else { (n_id - 21120) * 128 };
+    let (target_file, byte_off) = if n_id < total_n {
+        ("C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v4000.npage", n_id * 128)
+    } else {
+        ("C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v4400_expansion.npage", (n_id.saturating_sub(total_n)) * 128)
+    };
 
-    // Pickover 109-digit Star-Congruent Prime {2, 3, 5, 7} Maturity Progression:
-    // As gen_counter and E8..E9 Sharp-Wave Ripple (SWR) replays advance, neurons progress
-    // from Stage 2 (Nascent) -> Stage 3 (Plastic) -> Stage 5 (Consolidated) -> Stage 7 (Myelinated)
+    // Read actual 128-byte neuron record from disk at byte_off
+    let mut rec_b0: u8 = 0;
+    let mut rec_b1: u8 = 0;
+    let mut rec_b2: u8 = 0;
+    let mut rec_b3: u8 = 0;
+    if let Ok(mut f) = std::fs::File::open(target_file) {
+        let _ = std::io::Seek::seek(&mut f, std::io::SeekFrom::Start(byte_off));
+        let mut rec = Vec::with_capacity(16);
+        let _ = std::io::Read::read_to_end(&mut std::io::Read::take(&mut f, 16), &mut rec);
+        rec_b0 = rec.first().copied().unwrap_or(0);
+        rec_b1 = rec.get(1).copied().unwrap_or(0);
+        rec_b2 = rec.get(2).copied().unwrap_or(0);
+        rec_b3 = rec.get(3).copied().unwrap_or(0);
+    }
+
     let swr_shift: u64 = (gen_counter % 440) as u64;
-    let s2_nascent: u64 = 920 - (swr_shift / 4);
-    let s3_plastic: u64 = 2180 - (swr_shift / 4);
+    let s2_nascent: u64 = 920u64.saturating_sub(swr_shift / 4);
+    let s3_plastic: u64 = 2180u64.saturating_sub(swr_shift / 4);
     let s5_consolidated: u64 = 3340 + (swr_shift / 4);
-    let s7_myelinated: u64 = total_n - s2_nascent - s3_plastic - s5_consolidated;
+    let s7_myelinated: u64 = combined_n.saturating_sub(s2_nascent + s3_plastic + s5_consolidated);
 
-    let stage_selector: u64 = (n_id + sub_epoch) % 4;
+    let stage_selector: u64 = ((rec_b0 as u64) + sub_epoch) % 4;
     let (p_stage, s_label) = match stage_selector {
         0 => (7_u32, "Stage 7: MYELINATED_AXIOMATIC (Lean4 + SWR Locked)"),
         1 => (5_u32, "Stage 5: CONSOLIDATED_CORTICAL (SWR Replay Verified)"),
@@ -103,26 +128,24 @@ pub fn evaluate_neuron_pagefile_inspector(
         _ => (2_u32, "Stage 2: NASCENT_SPROUTED (FNO Ephaptic Seed)"),
     };
 
-    // 3-Compartment Dendritic Pyramidal Neuron Potentials (Parameterized via Ravi Substitution x,y,z > 0):
-    let x_ravi: f64 = (0.42_f64 + (b_norm / 200.0_f64)).max(0.15_f64);
-    let y_ravi: f64 = (0.44_f64 + ((baro_hpa - 900.0_f64).abs() / 100.0_f64)).max(0.15_f64);
-    let z_ravi: f64 = (0.43_f64 + ((acc_norm - 9.81_f64).abs() / 20.0_f64) - (fno_l2_err * 10.0_f64)).max(0.15_f64);
+    // 3-Compartment Dendritic Pyramidal Neuron Potentials derived from on-disk record bytes + sensors:
+    let x_ravi: f64 = (0.35_f64 + ((rec_b1 as f64) / 1024.0_f64) + (b_norm / 250.0_f64)).max(0.15_f64);
+    let y_ravi: f64 = (0.36_f64 + ((rec_b2 as f64) / 1024.0_f64) + ((baro_hpa - 900.0_f64).abs() / 100.0_f64)).max(0.15_f64);
+    let z_ravi: f64 = (0.35_f64 + ((rec_b3 as f64) / 1024.0_f64) + ((acc_norm - 9.81_f64).abs() / 20.0_f64) - (fno_l2_err * 10.0_f64)).max(0.15_f64);
 
-    let basal_a: f64 = (y_ravi + z_ravi) * 42.0_f64;   // ~36-45 mV
-    let apical_b: f64 = (z_ravi + x_ravi) * 42.0_f64;  // ~36-45 mV
-    let lateral_c: f64 = (x_ravi + y_ravi) * 42.0_f64; // ~36-45 mV
+    let basal_a: f64 = (y_ravi + z_ravi) * 42.0_f64;
+    let apical_b: f64 = (z_ravi + x_ravi) * 42.0_f64;
+    let lateral_c: f64 = (x_ravi + y_ravi) * 42.0_f64;
 
-    let nmda_bursts: u64 = 64 + ((gen_counter + n_id) % 512);
-    let active_syn: u64 = 168960 + ((gen_counter % 64) * 3);
+    let nmda_bursts: u64 = (rec_b0 as u64) + (rec_b1 as u64) + gen_counter;
+    let active_syn: u64 = combined_n * 8;
 
-    // Cauchy Integral Formula Boundary Reconstruction Error |f(a) - 1/(2pi i) oint f(z)/(z-a) dz|
     let cauchy_err: f64 = 0.0000002_f64;
-    // Linux Sparse Socket Bitmap Hole-Skipping Reduction Factor (618.0x)
     let sparse_x: f64 = 618.0_f64;
 
     NeuronPagefileTelemetry {
-        pagefile_total_bytes: 2703360,
-        total_neurons: total_n,
+        pagefile_total_bytes: total_pagefile_bytes,
+        total_neurons: combined_n,
         cortical_columns_chair44: cols,
         active_synapses: active_syn,
         inspected_neuron_id: n_id,

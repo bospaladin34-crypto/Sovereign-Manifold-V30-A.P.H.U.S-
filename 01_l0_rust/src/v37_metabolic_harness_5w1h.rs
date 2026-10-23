@@ -43,30 +43,41 @@ pub fn evaluate_metabolic_harness_5w1h_with_load(
 ) -> MetabolicHarness5W1HTelemetry {
     let vram_tot: u64 = if rtx_vram_total_mb > 0 { rtx_vram_total_mb } else { 6144 };
     let host_ram_tot: u64 = 16384;
-    let total_threads: u32 = 12;
+    let total_threads: u32 = std::thread::available_parallelism().map(|n| n.get() as u32).unwrap_or(12);
+    let core_npage_b = std::fs::metadata("C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v4000.npage")
+        .or_else(|_| std::fs::metadata("00_control/weights/neurons_v4000.npage"))
+        .map(|m| m.len())
+        .unwrap_or(0);
+    let exp_npage_b = std::fs::metadata("C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v4400_expansion.npage")
+        .or_else(|_| std::fs::metadata("00_control/weights/neurons_v4400_expansion.npage"))
+        .map(|m| m.len())
+        .unwrap_or(0);
+    let measured_npage_bytes = core_npage_b + exp_npage_b;
+    let measured_npage_neurons = measured_npage_bytes / 128;
 
     let (sim_temp_c, active_threads, host_ram_free, vram_free, m_atp, band_id, load_label, rule_override) =
         if load_mode == "anabolic" || load_mode == "band1" {
-            (48.5_f64, 12_u32, 11420_u64, 5120_u64, 0.8920_f64, 1_u32, "STRESS_BAND_1_ANABOLIC_SURPLUS", 0_u64)
+            (48.5_f64, total_threads, 11420_u64, 5120_u64, 0.8920_f64, 1_u32, "STRESS_BAND_1_ANABOLIC_SURPLUS", 0_u64)
         } else if load_mode == "homeostatic" || load_mode == "band2" {
-            (61.5_f64, 8_u32, 9512_u64, 4879_u64, 0.6140_f64, 2_u32, "STRESS_BAND_2_HOMEOSTATIC_CRUISE", 1_u64)
+            (61.5_f64, (total_threads * 2) / 3, 9512_u64, 4879_u64, 0.6140_f64, 2_u32, "STRESS_BAND_2_HOMEOSTATIC_CRUISE", 1_u64)
         } else if load_mode == "thermal_throttle" || load_mode == "band3" {
-            (76.2_f64, 4_u32, 3280_u64, 1940_u64, 0.3680_f64, 3_u32, "STRESS_BAND_3_THERMAL_CONSERVATION_OFFLOAD", 2_u64)
+            (76.2_f64, total_threads / 3, 3280_u64, 1940_u64, 0.3680_f64, 3_u32, "STRESS_BAND_3_THERMAL_CONSERVATION_OFFLOAD", 2_u64)
         } else if load_mode == "catabolic_recovery" || load_mode == "band4" {
             (82.8_f64, 2_u32, 1840_u64, 820_u64, 0.1840_f64, 4_u32, "STRESS_BAND_4_CATABOLIC_SWR_RECOVERY", 4_u64)
         } else {
             let vf: u64 = if vram_tot > rtx_vram_used_mb { vram_tot - rtx_vram_used_mb } else { 4879 };
             let vram_ratio: f64 = (vf as f64) / (vram_tot as f64);
-            let h_free: u64 = 9840 + (gen_counter % 960);
+            let npage_mb: u64 = measured_npage_bytes / 1048576;
+            let h_free: u64 = 10240u64.saturating_sub(npage_mb);
             let p10_free: u64 = if p10_ram_total_mb > p10_ram_used_mb { p10_ram_total_mb - p10_ram_used_mb } else { 3200 };
             let ram_ratio: f64 = ((h_free + p10_free) as f64) / 24576.0_f64;
             let rtx_margin: f64 = (85.0_f64 - rtx_temp_c).max(5.0_f64) / 42.0_f64;
             let p8_margin: f64 = (43.0_f64 - p8_temp_c).max(2.0_f64) / 14.0_f64;
             let p10_margin: f64 = (45.0_f64 - p10_temp_c).max(2.0_f64) / 15.0_f64;
-            let act_t: u32 = 10 + ((gen_counter % 3) as u32);
-            let thread_ratio: f64 = (act_t as f64) / 12.0_f64;
+            let act_t: u32 = total_threads;
+            let thread_ratio: f64 = (act_t as f64) / (total_threads.max(1) as f64);
             let raw_atp: f64 = 0.30_f64 * thread_ratio + 0.30_f64 * ram_ratio.min(1.0_f64) + 0.25_f64 * vram_ratio.min(1.0_f64) + 0.15_f64 * rtx_margin.min(1.0_f64) * p8_margin.min(1.0_f64) * p10_margin.min(1.0_f64);
-            let live_atp: f64 = raw_atp.max(0.45_f64).min(0.9640_f64);
+            let live_atp: f64 = raw_atp.max(0.10_f64).min(0.9999_f64);
             let b_id: u32 = if live_atp >= 0.80_f64 { 1 } else if live_atp >= 0.50_f64 { 2 } else if live_atp >= 0.25_f64 { 3 } else { 4 };
             (rtx_temp_c, act_t, h_free, vf, live_atp, b_id, "LIVE_SILICON_INTEROCEPTION", sub_epoch % 5)
         };
@@ -131,15 +142,15 @@ pub fn evaluate_metabolic_harness_5w1h_with_load(
         rtx3050_vram_total_mb: vram_tot,
         rtx3050_temp_c: sim_temp_c,
         thermal_headroom_c: therm_headroom_c,
-        npage_bound_neurons: 21120,
-        npage_bound_bytes: 2703360,
+        npage_bound_neurons: measured_npage_neurons,
+        npage_bound_bytes: measured_npage_bytes,
         coord_rule_id: rule_override + 1,
         coord_why: w_why,
         coord_what: w_what,
         coord_where: w_where,
         coord_when: w_when,
         coord_how: w_how,
-        autonomous_dispatches: 1480 + (gen_counter * 4),
+        autonomous_dispatches: gen_counter,
     }
 }
 

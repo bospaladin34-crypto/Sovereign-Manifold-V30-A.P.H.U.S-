@@ -99,7 +99,7 @@ while ($true) {
         if (-not (Test-Path $cfExe)) { $cfExe = "cloudflared.exe" }
         $cfg = "C:\sovereign_manifold_v31\00_control\cloudflare_named_config.yml"
         if (Test-Path $cfg) {
-            Start-Process -FilePath $cfExe -ArgumentList @("tunnel", "--config", $cfg, "run", "sovereign-manifold") -WorkingDirectory $root -WindowStyle Hidden
+            Start-Process -FilePath $cfExe -ArgumentList @("tunnel", "--config", $cfg, "run", "9cdea4c4-831d-4ccc-983d-5f7587a98206") -WorkingDirectory $root -WindowStyle Hidden
         }
     }
     $script:loopTick = ($script:loopTick + 1)

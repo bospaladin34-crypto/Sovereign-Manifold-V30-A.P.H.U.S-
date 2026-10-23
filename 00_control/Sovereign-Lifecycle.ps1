@@ -146,9 +146,9 @@ function Start-SovereignClusterSafely {
     $cfProc = Get-Process -Name "cloudflared" -ErrorAction SilentlyContinue
     if (-not $cfProc) {
         if ((Test-Path $cfExe) -and (Test-Path $cfCfg)) {
-            Start-Process -FilePath $cfExe -ArgumentList @("tunnel", "--config", $cfCfg, "run", "sovereign-manifold") -WorkingDirectory $root -WindowStyle Hidden
+            Start-Process -FilePath $cfExe -ArgumentList @("tunnel", "--config", $cfCfg, "run", "9cdea4c4-831d-4ccc-983d-5f7587a98206") -WorkingDirectory $root -WindowStyle Hidden
             Start-Sleep -Seconds 2
-            Write-Host "  [3/5] Launched Cloudflare Named Tunnel (act-omega-net.dev -> :5173, api/mcp -> :8097)..." -ForegroundColor Green
+            Write-Host "  [3/5] Launched Cloudflare Named Tunnel (9cdea4c4 -> act-omega-net.dev :5173, api/mcp :8097)..." -ForegroundColor Green
         } else {
             Write-Host "  [3/5] WARNING: cloudflared.exe or config not found!" -ForegroundColor Yellow
         }

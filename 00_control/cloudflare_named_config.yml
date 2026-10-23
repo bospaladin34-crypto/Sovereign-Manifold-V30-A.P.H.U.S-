@@ -3,6 +3,8 @@ credentials-file: C:/Users/Nbell/.cloudflared/9cdea4c4-831d-4ccc-983d-5f7587a982
 ingress:
   - hostname: api.act-omega-net.dev
     service: http://127.0.0.1:8097
+  - hostname: mcp.act-omega-net.dev
+    service: http://127.0.0.1:8097
   - hostname: agent.act-omega-net.dev
     service: http://127.0.0.1:8097
   - hostname: hud.act-omega-net.dev

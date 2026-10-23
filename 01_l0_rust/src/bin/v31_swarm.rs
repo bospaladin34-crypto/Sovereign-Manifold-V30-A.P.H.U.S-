@@ -862,28 +862,70 @@ fn content_type_for(path: &str) -> &'static str {
     }
 }
 
+thread_local! {
+    static REQ_IS_HEAD: std::cell::Cell<bool> = std::cell::Cell::new(false);
+    static REQ_CONN_CLOSE: std::cell::Cell<bool> = std::cell::Cell::new(false);
+    static STREAM_WRITE_ERR: std::cell::Cell<bool> = std::cell::Cell::new(false);
+}
+
 fn write_http_str(stream: &mut TcpStream, status: &str, ctype: &str, body: &str) {
+    let is_head = REQ_IS_HEAD.with(|c| c.get());
+    let is_close = REQ_CONN_CLOSE.with(|c| c.get());
+    let conn_hdr = if is_close {
+        "Connection: close\r\n"
+    } else {
+        "Connection: keep-alive\r\nKeep-Alive: timeout=15, max=24\r\n"
+    };
     let header = format!(
-        "HTTP/1.1 {}\r\nContent-Type: {}\r\nContent-Length: {}\r\nAccess-Control-Allow-Origin: *\r\nAccess-Control-Allow-Methods: GET, POST, PUT, DELETE, PATCH, OPTIONS\r\nAccess-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, Anthropic-Version, X-Api-Key, Mcp-Session-Id, Accept\r\nTiming-Allow-Origin: *\r\nCache-Control: no-store\r\nConnection: keep-alive\r\nKeep-Alive: timeout=15, max=24\r\n\r\n",
+        "HTTP/1.1 {}\r\nContent-Type: {}\r\nContent-Length: {}\r\nAccess-Control-Allow-Origin: *\r\nAccess-Control-Allow-Methods: GET, POST, HEAD, PUT, DELETE, PATCH, OPTIONS\r\nAccess-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, Anthropic-Version, X-Api-Key, Mcp-Session-Id, Accept\r\nTiming-Allow-Origin: *\r\nCache-Control: no-store\r\n{}\r\n",
         status,
         ctype,
-        body.len()
+        body.len(),
+        conn_hdr
     );
-    let _ = stream.write_all(header.as_bytes());
-    let _ = stream.write_all(body.as_bytes());
-    let _ = stream.flush();
+    if stream.write_all(header.as_bytes()).is_err() {
+        STREAM_WRITE_ERR.with(|c| c.set(true));
+        return;
+    }
+    if !is_head {
+        if stream.write_all(body.as_bytes()).is_err() {
+            STREAM_WRITE_ERR.with(|c| c.set(true));
+            return;
+        }
+    }
+    if stream.flush().is_err() {
+        STREAM_WRITE_ERR.with(|c| c.set(true));
+    }
 }
 
 fn write_http_vec(stream: &mut TcpStream, status: &str, ctype: &str, body: &Vec<u8>) {
+    let is_head = REQ_IS_HEAD.with(|c| c.get());
+    let is_close = REQ_CONN_CLOSE.with(|c| c.get());
+    let conn_hdr = if is_close {
+        "Connection: close\r\n"
+    } else {
+        "Connection: keep-alive\r\nKeep-Alive: timeout=15, max=24\r\n"
+    };
     let header = format!(
-        "HTTP/1.1 {}\r\nContent-Type: {}\r\nContent-Length: {}\r\nAccess-Control-Allow-Origin: *\r\nAccess-Control-Allow-Methods: GET, POST, PUT, DELETE, PATCH, OPTIONS\r\nAccess-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, Anthropic-Version, X-Api-Key, Mcp-Session-Id, Accept\r\nTiming-Allow-Origin: *\r\nCache-Control: no-store\r\nConnection: keep-alive\r\nKeep-Alive: timeout=15, max=24\r\n\r\n",
+        "HTTP/1.1 {}\r\nContent-Type: {}\r\nContent-Length: {}\r\nAccess-Control-Allow-Origin: *\r\nAccess-Control-Allow-Methods: GET, POST, HEAD, PUT, DELETE, PATCH, OPTIONS\r\nAccess-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, Anthropic-Version, X-Api-Key, Mcp-Session-Id, Accept\r\nTiming-Allow-Origin: *\r\nCache-Control: no-store\r\n{}\r\n",
         status,
         ctype,
-        body.len()
+        body.len(),
+        conn_hdr
     );
-    let _ = stream.write_all(header.as_bytes());
-    let _ = stream.write_all(body.as_slice());
-    let _ = stream.flush();
+    if stream.write_all(header.as_bytes()).is_err() {
+        STREAM_WRITE_ERR.with(|c| c.set(true));
+        return;
+    }
+    if !is_head {
+        if stream.write_all(body.as_slice()).is_err() {
+            STREAM_WRITE_ERR.with(|c| c.set(true));
+            return;
+        }
+    }
+    if stream.flush().is_err() {
+        STREAM_WRITE_ERR.with(|c| c.set(true));
+    }
 }
 
 fn search_episodic_ring(ssd_path: &str, query: &str) -> String {
@@ -921,8 +963,8 @@ fn search_episodic_ring(ssd_path: &str, query: &str) -> String {
 }
 
 fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
-    let _ = stream.set_read_timeout(Some(Duration::from_millis(2500)));
-    let _ = stream.set_write_timeout(Some(Duration::from_millis(2500)));
+    let _ = stream.set_read_timeout(Some(Duration::from_millis(4500)));
+    let _ = stream.set_write_timeout(Some(Duration::from_millis(15000)));
     let _ = stream.set_nodelay(true);
 
     let cloned = match stream.try_clone() {
@@ -931,44 +973,72 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
     };
     let mut reader = BufReader::new(cloned);
 
+    REQ_IS_HEAD.with(|c| c.set(false));
+    REQ_CONN_CLOSE.with(|c| c.set(false));
+    STREAM_WRITE_ERR.with(|c| c.set(false));
+
     for _req_num in 0..24usize {
+        if REQ_CONN_CLOSE.with(|c| c.get()) || STREAM_WRITE_ERR.with(|c| c.get()) {
+            break;
+        }
         let mut first_line = String::new();
         match reader.read_line(&mut first_line) {
             Ok(0) => break,
             Ok(_) => {}
             Err(_) => break,
         }
-        if first_line.trim().is_empty() {
+        let trimmed_first = first_line.trim();
+        if trimmed_first.is_empty() || !trimmed_first.contains("HTTP/1.") {
             break;
         }
         let mut content_len: usize = 0;
+        let mut hdr_ok = true;
+        let mut conn_close = false;
         loop {
             let mut hdr_line = String::new();
             match reader.read_line(&mut hdr_line) {
-                Ok(0) => break,
+                Ok(0) => {
+                    hdr_ok = false;
+                    break;
+                }
                 Ok(_) => {
                     let h_low = hdr_line.to_ascii_lowercase();
                     if h_low.starts_with("content-length:") {
                         let val_s = h_low.get(15..).unwrap_or("").trim();
                         if let Ok(n) = val_s.parse::<usize>() {
-                            content_len = n.min(65536);
+                            content_len = n.min(262144);
                         }
+                    } else if h_low.starts_with("connection:") && h_low.contains("close") {
+                        conn_close = true;
                     }
                     if hdr_line == "\r\n" || hdr_line == "\n" {
                         break;
                     }
                 }
-                Err(_) => break,
+                Err(_) => {
+                    hdr_ok = false;
+                    break;
+                }
             }
+        }
+        if !hdr_ok {
+            break;
         }
         let mut post_body = String::new();
         if content_len > 0 {
-            let _ = (&mut reader).take(content_len as u64).read_to_string(&mut post_body);
+            let mut raw_body = vec![0u8; content_len];
+            if reader.read_exact(&mut raw_body).is_err() {
+                break;
+            }
+            post_body = String::from_utf8_lossy(&raw_body).into_owned();
         }
 
-        let mut parts = first_line.split_whitespace();
+        let mut parts = trimmed_first.split_whitespace();
         let method = parts.next().unwrap_or("GET");
         let raw_target = parts.next().unwrap_or("/");
+
+        REQ_IS_HEAD.with(|c| c.set(method.eq_ignore_ascii_case("HEAD")));
+        REQ_CONN_CLOSE.with(|c| c.set(conn_close || _req_num >= 23));
 
         if method == "OPTIONS" {
             write_http_str(&mut stream, "200 OK", "text/plain; charset=utf-8", "OK");

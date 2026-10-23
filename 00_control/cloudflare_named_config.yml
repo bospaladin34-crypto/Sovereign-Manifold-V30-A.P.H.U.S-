@@ -1,5 +1,9 @@
 tunnel: 9cdea4c4-831d-4ccc-983d-5f7587a98206
 credentials-file: C:/Users/Nbell/.cloudflared/9cdea4c4-831d-4ccc-983d-5f7587a98206.json
+originRequest:
+  keepAliveTimeout: 10s
+  keepAliveConnections: 32
+  connectTimeout: 5s
 ingress:
   - hostname: api.act-omega-net.dev
     service: http://127.0.0.1:8097

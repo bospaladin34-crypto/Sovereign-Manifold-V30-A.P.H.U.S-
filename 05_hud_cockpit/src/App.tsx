@@ -122,7 +122,7 @@ export function App() {
   const [helpSidebarOpen, setHelpSidebarOpen] = useState<boolean>(false);
   const [helpSection, setHelpSection] = useState<string>("QUICKSTART");
   const [helpSearch, setHelpSearch] = useState<string>("");
-  const [ideConsoleLog, setIdeConsoleLog] = useState<string>("[OPERATOR & ANTIGRAVITY VAULT READY] Gemini 4 Argon (6 Subagents) + Goose v1.55.0 + Zed v1.24.4 + VSCodium/Cline locked to SH4Z-v4440-TriSilicon (C:\\sovereign_manifold_v31). All 15 Telemetry Cards, 3D Stiefel Scope, 16x130 Heatmap & 80 Tools active.");
+  const [ideConsoleLog, setIdeConsoleLog] = useState<string>("[OPERATOR & ANTIGRAVITY VAULT READY] Gemini 4 Argon (6 Subagents) + Goose v1.55.0 + Zed v1.24.4 + VSCodium/Cline locked to SH4Z-v4600-TriSilicon (C:\\sovereign_manifold_v31). All 15 Telemetry Cards, 3D Stiefel Scope, 16x130 Heatmap & 84 Tools active.");
   const [tel, setTel] = useState<TelemetryState>({
     generation: 745000,
     decadic_sub_epoch: 0,
@@ -1620,7 +1620,7 @@ export function App() {
               style={{ width: 34, height: 34, borderRadius: 7, border: "1.5px solid #FFB454", boxShadow: "0 0 8px rgba(0,255,204,0.35)" }}
             />
             <div style={{ color: "#FFB454", fontWeight: "bold", fontSize: 13 }}>
-              SOVEREIGN MANIFOLD TELEMETRY CONSOLE -- ACT-OMEGA NET v44.5.0 (SH4Z v4450 TLV -- 15.965 Hz DECADIC EPOCH)
+              SOVEREIGN MANIFOLD TELEMETRY CONSOLE -- ACT-OMEGA NET v46.0.0 (SH4Z v4600 TLV -- 15.965 Hz DECADIC EPOCH)
             </div>
           </div>
           <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
@@ -1848,7 +1848,7 @@ export function App() {
                 </div>
                 <div style={{ background: "#070d14", border: "1px solid #ffb700", borderRadius: "4px", padding: "8px" }}>
                   <div style={{ color: "#ffb700", fontWeight: "bold", fontSize: "11px" }}>2. GOOSE v1.55.0 AUTONOMOUS AGENT</div>
-                  <div style={{ color: "#8ab4c9", fontSize: "10px", margin: "4px 0" }}>Model: SH4Z-v4300-TriSilicon | C:\sovereign_manifold_v31</div>
+                  <div style={{ color: "#8ab4c9", fontSize: "10px", margin: "4px 0" }}>Model: SH4Z-v4600-TriSilicon | C:\sovereign_manifold_v31</div>
                   <button onClick={() => { callEndpoint("/api/v1/ide/symbiotic_parity_sync", "TOOL 66: GOOSE + ZED + CLINE PARITY"); setIdeConsoleLog("[5W1H -> GOOSE v1.55.0] Dispatched autonomous sweep via tasks_queue.json & :8097/api/v1/mcp/rpc"); }} style={{ background: "#2b2100", color: "#ffb700", border: "1px solid #ffb700", borderRadius: "3px", padding: "3px 8px", cursor: "pointer", fontFamily: "monospace", fontSize: "10px" }}>Dispatch Goose Task (T66)</button>
                 </div>
                 <div style={{ background: "#070d14", border: "1px solid #00e5ff", borderRadius: "4px", padding: "8px" }}>

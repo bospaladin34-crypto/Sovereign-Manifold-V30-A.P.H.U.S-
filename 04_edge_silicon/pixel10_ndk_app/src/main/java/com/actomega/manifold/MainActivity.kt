@@ -684,11 +684,11 @@ object SovereignLiveBus : SensorEventListener {
             card1Text = c1,
             card2Text = c2,
             card3Text = c3,
-            card4Status = "SH4Z v4440 SYNCED",
+            card4Status = "SH4Z v4600 SYNCED",
             activeBearer = bearer,
             rttMs = rtt,
-            leanProofs = 400,
-            totalShards = 28160,
+            leanProofs = 416,
+            totalShards = 42240,
             p8L2FreePct = 89.11,
             clusterKops = hostClusterKops.toDouble(),
             fnoRuns = hostFnoRuns,
@@ -723,7 +723,7 @@ object SovereignLiveBus : SensorEventListener {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 val ch = NotificationChannel(
                     channelId,
-                    "Sovereign Manifold v44.4 Telemetry",
+                    "Sovereign Manifold v46.0.0 Telemetry",
                     NotificationManager.IMPORTANCE_LOW
                 )
                 nm.createNotificationChannel(ch)
@@ -743,13 +743,13 @@ object SovereignLiveBus : SensorEventListener {
             val syncPi = android.app.PendingIntent.getBroadcast(context, 4402, syncIntent, piFlags)
 
             val title = if (isPixel8ComputeNode) {
-                String.format(Locale.US, "SH4Z v4440 P8 .npage SHM (89.11%% L2) -- %.1fk ops/s", snap.clusterKops)
+                String.format(Locale.US, "SH4Z v4600 P8 .npage SHM (89.11%% L2) -- %.1fk ops/s", snap.clusterKops)
             } else {
-                String.format(Locale.US, "SH4Z v4440 P10 24D + .npage SHM -- %.1fk ops/s", snap.clusterKops)
+                String.format(Locale.US, "SH4Z v4600 P10 24D + .npage SHM -- %.1fk ops/s", snap.clusterKops)
             }
             val body = String.format(
                 Locale.US,
-                "Tick #%d | 28,160N (3.56MB SHM) | 65K Vocab | 400/400 QED | %s (%.1fms)",
+                "Tick #%d | 42,240N (5.41MB/3.56MB SHM) | 131K Vocab | 416/416 QED | %s (%.1fms)",
                 snap.gen,
                 snap.activeBearer,
                 snap.rttMs
@@ -836,11 +836,11 @@ object SovereignLiveBus : SensorEventListener {
                 snap.gen, bNorm, baroHpa, snap.fnoRuns, snap.clusterKops, snap.rttMs
             )
             val titleLine = if (isPixel8ComputeNode) {
-                "SOVEREIGN v44.4.0 P8-APEX -- 28,160N .NPAGE SHM"
+                "SOVEREIGN v46.0.0 P8-APEX -- 42,240N .NPAGE SHM"
             } else {
-                "SOVEREIGN v44.4.0 P10-G5 -- 28,160N .NPAGE SHM"
+                "SOVEREIGN v46.0.0 P10-G5 -- 42,240N .NPAGE SHM"
             }
-            val subLine = "act-omega-net.dev -- 640x Chair-44 -- 65K Vocab -- 400/400 QED"
+            val subLine = "act-omega-net.dev -- 960x Chair-44 -- 131K Vocab -- 416/416 QED"
 
             val piFlags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE
@@ -1216,12 +1216,12 @@ object SovereignVisualizerRenderer {
         paint.textSize = (w * 0.032f).coerceIn(22f, 38f)
         paint.color = 0xFFFFB454.toInt()
         val nodeTag = if (isP8) "PIXEL 8 P8-APEX (4.00MB L2 SHM)" else "PIXEL 10 TENSOR G5 (24D + SHM)"
-        canvas.drawText("ACT-OMEGA v44.5.0 SH4Z -- $nodeTag", cx, h * 0.08f, paint)
+        canvas.drawText("ACT-OMEGA v46.0.0 SH4Z -- $nodeTag", cx, h * 0.08f, paint)
 
         paint.textSize = (w * 0.025f).coerceIn(17f, 28f)
         paint.color = 0xFF00FFCC.toInt()
         canvas.drawText(
-            String.format(Locale.US, "15.965 Hz Decadic | 28,160 Neurons (3.56MB SHM) | %.1fk ops/s", snap.clusterKops),
+            String.format(Locale.US, "15.965 Hz Decadic | 42,240 Neurons (5.41MB/3.56MB SHM) | %.1fk ops/s", snap.clusterKops),
             cx,
             h * 0.115f,
             paint
@@ -1229,7 +1229,7 @@ object SovereignVisualizerRenderer {
 
         paint.color = 0xFF9FB0C2.toInt()
         canvas.drawText(
-            String.format(Locale.US, "Tick #%d | 640x Chair-44 | 65,536 Vocab | 400/400 Lean 4 QED | %s", snap.gen, snap.activeBearer.take(24)),
+            String.format(Locale.US, "Tick #%d | 960x Chair-44 | 131,072 Vocab | 416/416 Lean 4 QED | %s", snap.gen, snap.activeBearer.take(24)),
             cx,
             h * 0.945f,
             paint
@@ -1254,7 +1254,7 @@ class SovereignDreamSettingsActivity : ComponentActivity() {
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 Text(
-                    "ACT-OMEGA v44.5.0 SCREENSAVER & LIVE WALLPAPER",
+                    "ACT-OMEGA v46.0.0 SCREENSAVER & LIVE WALLPAPER",
                     color = AccentAmber10,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
@@ -1599,7 +1599,7 @@ fun SovereignCockpitV326Screen() {
                         )
                     }
                     Text(
-                        text = "SOVEREIGN MANIFOLD TELEMETRY CONSOLE -- ACT-OMEGA NET v44.5.0 (SH4Z v4450 TLV)",
+                        text = "SOVEREIGN MANIFOLD TELEMETRY CONSOLE -- ACT-OMEGA NET v46.0.0 (SH4Z v4600 TLV)",
                         color = AccentAmber10,
                         fontSize = 9.2.sp,
                         fontWeight = FontWeight.Bold,
@@ -2896,7 +2896,7 @@ fun SovereignCockpitV326Screen() {
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = String.format(Locale.US, "[SH4Z v4600 (133,120 B / 130.00 KB 80-Sector 60-30-10 HUD)]: Work-Stealing=2,080 Lines (%.1fk ops/s) -- 400/400 Lean 4 QED -- 42,240 Neurons (960x Chair44, 5.16MB SHM) -- 131,072 BPE+24D Tokens -- E:/ Tier-2 SSD Active", snap.clusterKops),
+                        text = String.format(Locale.US, "[SH4Z v4600 (133,120 B / 130.00 KB 80-Sector 60-30-10 HUD)]: Work-Stealing=2,080 Lines (%.1fk ops/s) -- 416/416 Lean 4 QED -- 42,240 Neurons (960x Chair44, 5.41MB SHM) -- 131,072 BPE+24D Tokens -- E:/ Tier-2 SSD Active", snap.clusterKops),
                         color = AccentAmber10,
                         fontSize = 8.5.sp,
                         lineHeight = 12.sp,

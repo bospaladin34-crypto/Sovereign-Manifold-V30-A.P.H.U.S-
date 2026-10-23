@@ -60,6 +60,17 @@ function Invoke-SovereignHotSwap {
         Remove-Item -Path "C:\sovereign_manifold_v31\01_l0_rust\target\release\v31_swarm_prev.exe" -Force -ErrorAction SilentlyContinue
         Start-WmiDetachedProcess -CmdLine "`"$prodExe`""
     }
+    $stageTray = "C:\sovereign_manifold_v31\00_control\SovereignCockpitHUD_stage.exe"
+    $prodTray  = "C:\sovereign_manifold_v31\SovereignCockpitHUD.exe"
+    if (Test-Path $stageTray) {
+        cmd.exe /c "taskkill /F /IM SovereignCockpitHUD.exe /T >nul 2>&1"
+        Get-Process -Name "SovereignCockpitHUD" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+        Start-Sleep -Milliseconds 400
+        Copy-Item -Path $stageTray -Destination $prodTray -Force
+        Copy-Item -Path $stageTray -Destination "C:\sovereign_manifold_v31\docs\SovereignCockpitHUD.exe" -Force
+        Remove-Item -Path $stageTray -Force -ErrorAction SilentlyContinue
+        Start-Process -FilePath $prodTray
+    }
 }
 
 Invoke-SovereignHotSwap

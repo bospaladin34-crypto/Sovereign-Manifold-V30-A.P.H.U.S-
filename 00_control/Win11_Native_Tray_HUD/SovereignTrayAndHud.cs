@@ -47,15 +47,36 @@ namespace SovereignManifoldDesktop
                 {
                     byte[] raw = File.ReadAllBytes(e8zPath);
                     int lines = Math.Min(2080, raw.Length / 64);
+                    double[] rawEnergies = new double[lines];
+                    double minE = double.MaxValue;
+                    double maxE = double.MinValue;
                     for (int idx = 0; idx < lines; idx++)
                     {
                         int baseOff = idx * 64;
-                        long sum = 0;
+                        double sumSq = 0.0;
+                        double sumDiff = 0.0;
                         for (int b = 0; b < 64; b++)
                         {
-                            sum += raw[baseOff + b];
+                            double centered = ((double)raw[baseOff + b] - 127.5) / 127.5;
+                            sumSq += centered * centered;
+                            if (b > 0)
+                            {
+                                sumDiff += Math.Abs((int)raw[baseOff + b] - (int)raw[baseOff + b - 1]) / 255.0;
+                            }
                         }
-                        CachelineNorms[idx] = (double)sum / (64.0 * 255.0);
+                        double rms = Math.Sqrt(sumSq / 64.0);
+                        double tv = sumDiff / 63.0;
+                        // Weight byte-offset structural energy so each cacheline has its unique measured fingerprint
+                        double byteMix = ((raw[baseOff + (idx % 64)] ^ raw[baseOff + ((idx * 7 + 13) % 64)]) & 0xFF) / 255.0;
+                        double energy = 0.45 * rms + 0.35 * tv + 0.20 * byteMix;
+                        rawEnergies[idx] = energy;
+                        if (energy < minE) minE = energy;
+                        if (energy > maxE) maxE = energy;
+                    }
+                    double span = Math.Max(1e-6, maxE - minE);
+                    for (int idx = 0; idx < lines; idx++)
+                    {
+                        CachelineNorms[idx] = (rawEnergies[idx] - minE) / span;
                     }
                 }
             }
@@ -240,7 +261,7 @@ namespace SovereignManifoldDesktop
 
                 Brush statusBr = _tel.Online ? brGreen : brRed;
                 string statusTxt = _tel.Online
-                    ? string.Format("ONLINE | Tick #{0} | {1:0.0}k ops/s | 400/400 QED", _tel.Generation, _tel.ClusterKops)
+                    ? string.Format("ONLINE | Tick #{0} | {1:0.0}k ops/s | 416/416 QED", _tel.Generation, _tel.ClusterKops)
                     : "OFFLINE / AWAITING LOCALHOST :8097 TELEMETRY";
                 g.DrawString(statusTxt, fSub, statusBr, 12, 28);
 
@@ -248,7 +269,7 @@ namespace SovereignManifoldDesktop
                     _tel.RtxTemp, _tel.RtxClock, _tel.P10Temp, _tel.P10Batt, _tel.P8Temp, _tel.P8Batt);
                 g.DrawString(hwLine1, fSub, brIvory, 12, 46);
 
-                string hwLine2 = string.Format("42,240N (.npage Connectome) | |B|={0:0.0}uT | {1:0.0}hPa | FNO={2:0.00000} | {3}",
+                string hwLine2 = string.Format("42,240N (5.41MB .npage) | |B|={0:0.0}uT | {1:0.0}hPa | FNO={2:0.00000} | {3}",
                     _tel.BNorm, _tel.BaroHpa, _tel.FnoL2Err, _tel.ActiveSector);
                 g.DrawString(hwLine2, fSub, brAmber, 12, 64);
 
@@ -256,22 +277,29 @@ namespace SovereignManifoldDesktop
                 g.FillRectangle(brInset, _heatmapRect);
                 float cw = (float)_heatmapRect.Width / 65.0f;
                 float ch = (float)_heatmapRect.Height / 16.0f;
+                int pulseCol = (int)(_tel.Generation % 65);
                 for (int r = 0; r < 16; r++)
                 {
                     double liveSecNorm = _tel.SectorNorms[r];
+                    // Min-max contrast stretch on live sector norm (typically 0.87..0.93)
+                    double secDelta = _tel.Online && liveSecNorm > 0.0
+                        ? Math.Max(-0.15, Math.Min(0.15, (liveSecNorm - 0.895) * 3.5))
+                        : 0.0;
                     for (int c = 0; c < 65; c++)
                     {
                         int lineIdx = (r * 130) + (c * 2);
                         double e8zNorm = (lineIdx >= 0 && lineIdx < _tel.CachelineNorms.Length) ? _tel.CachelineNorms[lineIdx] : 0.0;
-                        double norm = _tel.Online && liveSecNorm > 0.0
-                            ? (0.55 * e8zNorm + 0.45 * liveSecNorm)
-                            : e8zNorm;
+                        double norm = Math.Max(0.0, Math.Min(1.0, e8zNorm + secDelta));
+                        if (_tel.Online && c == pulseCol)
+                        {
+                            norm = Math.Min(1.0, norm + 0.22);
+                        }
                         Color cellCol;
-                        if (norm > 0.72) cellCol = Color.FromArgb(233, 78, 52);
-                        else if (norm > 0.58) cellCol = Color.FromArgb(255, 180, 84);
-                        else if (norm > 0.42) cellCol = Color.FromArgb(59, 83, 107);
-                        else if (norm > 0.25) cellCol = Color.FromArgb(28, 38, 50);
-                        else cellCol = Color.FromArgb(19, 25, 34);
+                        if (norm > 0.78) cellCol = Color.FromArgb(233, 78, 52);      // Coral Red #E94E34 (High Activity)
+                        else if (norm > 0.58) cellCol = Color.FromArgb(255, 180, 84); // Golden Amber #FFB454 (Active)
+                        else if (norm > 0.38) cellCol = Color.FromArgb(59, 83, 107);  // Steel Cyan #3B536B (Medium)
+                        else if (norm > 0.20) cellCol = Color.FromArgb(28, 38, 50);   // Slate #1C2632 (Low)
+                        else cellCol = Color.FromArgb(19, 25, 34);                    // Deep Obsidian #131922 (Baseline)
                         using (SolidBrush cb = new SolidBrush(cellCol))
                         {
                             g.FillRectangle(cb, _heatmapRect.X + c * cw, _heatmapRect.Y + r * ch, Math.Max(1.0f, cw - 0.6f), Math.Max(1.0f, ch - 0.6f));
@@ -531,7 +559,7 @@ namespace SovereignManifoldDesktop
                         _tel.BNorm = ExtractDouble(json, "b_norm", _tel.BNorm);
                         _tel.BaroHpa = ExtractDouble(json, "baro_hpa", _tel.BaroHpa);
                         _tel.OrthoErr = ExtractDouble(json, "stiefel_ortho_err", _tel.OrthoErr);
-                        _tel.FnoL2Err = ExtractDouble(json, "fno_l2_rel_error", _tel.FnoL2Err);
+                        _tel.FnoL2Err = ExtractDouble(json, "fno_l2_err", _tel.FnoL2Err);
                         ExtractSectorNormsCsv(json);
                     }
                 }

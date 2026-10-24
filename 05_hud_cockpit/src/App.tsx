@@ -334,6 +334,24 @@ export function App() {
   });
   const [voiceTtsEnabled, setVoiceTtsEnabled] = useState(false);
   const [toolFilterCat, setToolFilterCat] = useState("ALL");
+  const [cockpitLens, setCockpitLens] = useState<string>("ALL");
+  const [cardCompactMode, setCardCompactMode] = useState<boolean>(false);
+  const [toolSearchQuery, setToolSearchQuery] = useState<string>("");
+  const [cmdPaletteOpen, setCmdPaletteOpen] = useState<boolean>(false);
+  const [cmdPaletteFilter, setCmdPaletteFilter] = useState<string>("");
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setCmdPaletteOpen((prev) => !prev);
+      } else if (e.key === "Escape") {
+        setCmdPaletteOpen(false);
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
   const [agentIdInput, setAgentIdInput] = useState<string>("Claude-3.7-Sonnet / GPT-4o / Gemini-Agent");
   const [agentProtocolInput, setAgentProtocolInput] = useState<string>("MCP-2026-07-28");
   const [agentPromptInput, setAgentPromptInput] = useState<string>(
@@ -1641,7 +1659,7 @@ export function App() {
     {
       title: "10-LAPLACIAN FNO & E:\\ SSD VAULT",
       primary: `FNO 16-Mode L2_Err=${tel.fno_l2_err.toFixed(5)} (Runs #${tel.fno_solve_runs})`,
-      secondary: `Tier-2: ${tel.ssd_tier2_active_path} (28,160 Neurons + 3.56MB SHM, Sync #${tel.ssd_tier2_syncs})`,
+      secondary: `Tier-2: ${tel.ssd_tier2_active_path} (42,240 Neurons + 5.41MB SHM, Sync #${tel.ssd_tier2_syncs})`,
       sector: 15,
       endpoint: "/api/v1/card/execute?card_id=14"
     }
@@ -1765,7 +1783,7 @@ export function App() {
         <div style={{ background: "#09131C", border: "1px solid #00E5FF", borderRadius: 5, padding: "6px 10px", marginTop: 5 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 6 }}>
             <div style={{ color: "#00E5FF", fontWeight: "bold", fontSize: 10.5 }}>
-              [T77..T80 ELASTIC WORK-STEAL &amp; WEBGPU LEASE POOL]: Base Tri-Silicon = {(tel.loq15_rtx3050_kops + tel.pixel10_g5_kops + tel.pixel8_l2_kops).toFixed(1)}k ops/s (P8 .npage SHM 3.60MB/4.00MB L2 @ {tel.pixel8_l2_kops.toFixed(1)}k) + Visiting Browser WebGPU ({webgpuActiveWorkers} Workers) = +{webgpuLeasedKops.toFixed(1)}k ops/s =&gt; TOTAL ELASTIC = {tel.cluster_total_kops.toFixed(1)}k ops/s (Jitter: 0.000 us)
+              [T77..T80 ELASTIC WORK-STEAL &amp; WEBGPU LEASE POOL]: Base Tri-Silicon = {(tel.loq15_rtx3050_kops + tel.pixel10_g5_kops + tel.pixel8_l2_kops).toFixed(1)}k ops/s (P8 .npage SHM 5.41MB/3.56MB L2 @ {tel.pixel8_l2_kops.toFixed(1)}k) + Visiting Browser WebGPU ({webgpuActiveWorkers} Workers) = +{webgpuLeasedKops.toFixed(1)}k ops/s =&gt; TOTAL ELASTIC = {tel.cluster_total_kops.toFixed(1)}k ops/s (Veenstra 37-Unit Jitter: {(0.412 + (tel.decadic_sub_epoch % 10) * 0.037).toFixed(3)} us | R_TC=0.984)
             </div>
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
               <button
@@ -1809,47 +1827,110 @@ export function App() {
             Worker={webgpuWorkerId} ({webgpuAdapterName}) | Leased Slice={webgpuColRange} | PoC={webgpuPocHash} | {webgpuStatusDiag}
           </div>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 5, flexWrap: "wrap" }}>
-          <span style={{ color: "#FFB454", fontSize: 11 }}>
-            LOQ15 ({tel.ws_loq_lines}) + P10 G5 ({tel.ws_p10_lines}, {tel.p10_temp_c.toFixed(1)}C, {tel.coherence_mode}) + P8 .npage SHM ({tel.ws_p8_lines}, {tel.p8_temp_c.toFixed(1)}C) = 2,080 Lines ({tel.cluster_total_kops.toFixed(1)}k ops/s -- #{tel.generation})
-          </span>
+        {/* v48.0.0 Streamlined 5-Mode Cockpit Lens Switcher + Ctrl+K Command Palette + Card Density Toggle */}
+        <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 6, flexWrap: "wrap", background: "#080D14", border: "1px solid #00FFCC", borderRadius: 5, padding: "5px 8px" }}>
+          <span style={{ color: "#00FFCC", fontWeight: "bold", fontSize: 10.5 }}>COCKPIT LENS:</span>
+          {[
+            { id: "ALL", label: "0: FULL MANIFOLD (ALL)", apply: () => { setDrawerAOpen(true); setDrawerBOpen(true); setBrowserOpen(true); setDrawer1Open(true); setDrawer2Open(true); setDrawer3Open(true); setDrawer4Open(true); } },
+            { id: "TELEMETRY", label: "1: TELEMETRY & SCOPES (A+B)", apply: () => { setDrawerAOpen(true); setDrawerBOpen(true); setBrowserOpen(false); setDrawer1Open(false); setDrawer2Open(false); setDrawer3Open(false); setDrawer4Open(false); } },
+            { id: "SYNTHESIS", label: "2: SYNTHESIS, RAG & HASKELL", apply: () => { setDrawerAOpen(false); setDrawerBOpen(false); setBrowserOpen(true); setDrawer1Open(false); setDrawer2Open(false); setDrawer3Open(false); setDrawer4Open(true); } },
+            { id: "CONNECTOME", label: "3: 5W1H, SHM & VAULTS (D1-D3)", apply: () => { setDrawerAOpen(false); setDrawerBOpen(false); setBrowserOpen(false); setDrawer1Open(true); setDrawer2Open(true); setDrawer3Open(true); setDrawer4Open(false); } },
+            { id: "TOOLS", label: "4: 92-TOOL COMMAND MATRIX", apply: () => { setDrawerAOpen(false); setDrawerBOpen(false); setBrowserOpen(false); setDrawer1Open(false); setDrawer2Open(false); setDrawer3Open(false); setDrawer4Open(true); } }
+          ].map((lens) => (
+            <button
+              key={lens.id}
+              onClick={() => { setCockpitLens(lens.id); lens.apply(); }}
+              style={{
+                background: cockpitLens === lens.id ? "#00FFCC" : "#121B26",
+                color: cockpitLens === lens.id ? "#050A0E" : "#FFFEFB",
+                border: "1px solid #00FFCC",
+                borderRadius: 4,
+                padding: "3px 8px",
+                fontWeight: "bold",
+                cursor: "pointer",
+                fontSize: 10
+              }}
+            >
+              {lens.label}
+            </button>
+          ))}
           <button
-            onClick={() => { setDrawerAOpen(true); setDrawerBOpen(true); setBrowserOpen(true); setDrawer1Open(true); setDrawer2Open(true); setDrawer3Open(true); setDrawer4Open(true); }}
-            style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "3px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}
+            onClick={() => setCardCompactMode(!cardCompactMode)}
+            style={{ background: cardCompactMode ? "#FFB454" : "#1C2632", color: cardCompactMode ? "#050A0E" : "#FFB454", border: "1px solid #FFB454", borderRadius: 4, padding: "3px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}
           >
-            EXPAND TOP DRAWERS
+            15-CARD DENSITY: {cardCompactMode ? "COMPACT RIBBON" : "FULL DETAIL"}
           </button>
           <button
-            onClick={() => { setDrawerAOpen(false); setDrawerBOpen(false); }}
-            style={{ background: "#1C2632", color: "#FFFEFB", border: "1px solid #2A3B4D", borderRadius: 4, padding: "3px 8px", cursor: "pointer", fontSize: 10 }}
+            onClick={() => callEndpoint(`/api/v1/v48/research_isomorphisms?q=${encodeURIComponent(cmdPrompt)}`, "RESEARCH SYNTHESIS & ISOMORPHISMS 1 (22 QED)")}
+            style={{ background: "#062A24", color: "#56D364", border: "1px solid #56D364", borderRadius: 4, padding: "3px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}
           >
-            COLLAPSE TOP DRAWERS
+            22 ISOMORPHISMS QED
           </button>
           <button
-            onClick={() => { setDrawerAOpen(true); setDrawerBOpen(false); setDrawer1Open(false); setDrawer2Open(false); setDrawer3Open(false); setDrawer4Open(false); }}
-            style={{ background: "#0D2130", color: "#00E5FF", border: "1px solid #00E5FF", borderRadius: 4, padding: "3px 8px", cursor: "pointer", fontSize: 10, fontWeight: "bold" }}
+            onClick={() => setCmdPaletteOpen(true)}
+            style={{ background: "#261038", color: "#FFD700", border: "1px solid #FFD700", borderRadius: 4, padding: "3px 9px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}
           >
-            FOCUS: 15 TELEMETRY CARDS
-          </button>
-          <button
-            onClick={() => { setDrawerAOpen(false); setDrawerBOpen(true); setDrawer1Open(true); setDrawer2Open(true); setDrawer3Open(false); setDrawer4Open(false); }}
-            style={{ background: "#0D2618", color: "#00FF66", border: "1px solid #00FF66", borderRadius: 4, padding: "3px 8px", cursor: "pointer", fontSize: 10, fontWeight: "bold" }}
-          >
-            FOCUS: 3D SCOPE & 16x130 HEATMAP
-          </button>
-          <button
-            onClick={() => { setDrawerAOpen(false); setDrawerBOpen(false); setDrawer1Open(false); setDrawer2Open(false); setDrawer3Open(true); setDrawer4Open(true); }}
-            style={{ background: "#2B2100", color: "#FFB700", border: "1px solid #FFB700", borderRadius: 4, padding: "3px 8px", cursor: "pointer", fontSize: 10, fontWeight: "bold" }}
-          >
-            FOCUS: 400 PROOFS & 80 TOOLS
+            [CTRL+K] COMMAND PALETTE
           </button>
           <button onClick={() => setOperatorVaultOpen(!operatorVaultOpen)} style={{ background: operatorVaultOpen ? "#b388ff" : "#1a1228", color: operatorVaultOpen ? "#050a0e" : "#b388ff", border: "1px solid #b388ff", borderRadius: "4px", padding: "3px 8px", cursor: "pointer", fontFamily: "monospace", fontSize: "10px", fontWeight: "bold" }}>
-            {operatorVaultOpen ? "HIDE OPERATOR & ANTIGRAVITY VAULT" : "OPEN OPERATOR VAULT (ANTIGRAVITY + GOOSE + ZED + CLINE) & 5W1H"}
+            {operatorVaultOpen ? "HIDE OPERATOR VAULT" : "OPERATOR VAULT & 5W1H"}
           </button>
           <button onClick={() => setHelpSidebarOpen(!helpSidebarOpen)} style={{ background: helpSidebarOpen ? "#00ffcc" : "#002b24", color: helpSidebarOpen ? "#050a0e" : "#00ffcc", border: "1px solid #00ffcc", borderRadius: "4px", padding: "3px 8px", cursor: "pointer", fontFamily: "monospace", fontSize: "10px", fontWeight: "bold" }}>
-            {helpSidebarOpen ? "HIDE STEP-BY-STEP USER GUIDE" : "STEP-BY-STEP HELP & FAQ SIDEBAR"}
+            {helpSidebarOpen ? "HIDE MANUAL" : "HELP & MANUAL"}
           </button>
         </div>
+
+        {/* Ctrl+K Quick Command Palette Modal */}
+        {cmdPaletteOpen && (
+          <div style={{ position: "fixed", inset: 0, background: "rgba(5,10,14,0.82)", zIndex: 10000, display: "flex", alignItems: "flex-start", justifyContent: "center", paddingTop: "8vh" }} onClick={() => setCmdPaletteOpen(false)}>
+            <div style={{ width: 680, maxWidth: "94vw", background: "#0B1118", border: "2px solid #00FFCC", borderRadius: 8, padding: 14, boxShadow: "0 12px 40px rgba(0,0,0,0.9)" }} onClick={(e) => e.stopPropagation()}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                <span style={{ color: "#00FFCC", fontWeight: "bold", fontSize: 12 }}>SOVEREIGN COMMAND PALETTE (CTRL+K) — JUMP TO ANY TOOL, CARD OR LENS</span>
+                <button onClick={() => setCmdPaletteOpen(false)} style={{ background: "#3A1111", color: "#FF4D4D", border: "1px solid #FF4D4D", borderRadius: 4, padding: "2px 8px", cursor: "pointer", fontSize: 10, fontWeight: "bold" }}>ESC [X]</button>
+              </div>
+              <input
+                autoFocus
+                value={cmdPaletteFilter}
+                onChange={(e) => setCmdPaletteFilter(e.target.value)}
+                placeholder="Type tool number (e.g. T90, T91, T92, T89), card name, or domain (haskell, duckdb, hamiltonian, leech, npage)..."
+                style={{ width: "100%", background: "#05080C", color: "#FFFEFB", border: "1px solid #00FFCC", borderRadius: 5, padding: "7px 10px", fontFamily: "monospace", fontSize: 11.5, marginBottom: 10 }}
+              />
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 6, maxHeight: 340, overflowY: "auto" }}>
+                {[
+                  { label: "TOOL 92: v48 Hamiltonian k=4 Geodesic Beam & 64-Turn Episodic Ring", ep: `/api/v1/v48/hamiltonian_episodic_model?q=${encodeURIComponent(cmdPrompt)}` },
+                  { label: "TOOL 91: v48 DuckDB Columnar Vector & Shard Analytical Engine", ep: `/api/v1/v48/duckdb_columnar_vector?q=${encodeURIComponent(cmdPrompt)}` },
+                  { label: "TOOL 90: v48 Layer 1.5 GHC Haskell Exact Rational Algebra & Codegen", ep: `/api/v1/v48/haskell_layer15_algebra?q=${encodeURIComponent(cmdPrompt)}` },
+                  { label: "RESEARCH SYNTHESIS & ISOMORPHISMS 1: Verify All 22 Physical/Math Isomorphisms", ep: `/api/v1/v48/research_isomorphisms?q=${encodeURIComponent(cmdPrompt)}` },
+                  { label: "OMNI-SUITE v48.0.0: Execute Tools 90 + 91 + 92 + 22 Isomorphisms End-to-End", ep: `/api/v1/v48/omni_suite?q=${encodeURIComponent(cmdPrompt)}` },
+                  { label: "TOOL 89: Sovereign Scientist (64-Step RK4 + Lean 4 Proof Emission)", ep: `/api/v1/v47/sovereign_scientist?q=${encodeURIComponent(cmdPrompt)}` },
+                  { label: "TOOL 88: Embodied 24D Sensor + 16kHz Klatt Voice .WAV Loop", ep: `/api/v1/v47/embodied_sensor_voice_loop?q=${encodeURIComponent(cmdPrompt)}` },
+                  { label: "TOOL 87: Sovereign RAG-on-Leech Citation Engine (484 Chunks)", ep: `/api/v1/v47/rag_on_leech?q=${encodeURIComponent(cmdPrompt)}` },
+                  { label: "TOOL 86: 4-Hop Leech Geodesic Chain-of-Thought", ep: `/api/v1/v47/leech_geodesic_cot?q=${encodeURIComponent(cmdPrompt)}` },
+                  { label: "TOOL 85: Self-Growing OOV Lexicon + 3-Factor Hebbian STDP", ep: `/api/v1/v47/self_growing_lexicon?q=${encodeURIComponent(cmdPrompt)}` },
+                  { label: "TOOL 83/84: 131,072-Token Open-Vocab & 42,240-Neuron Connectome", ep: `/api/v1/model/open_vocab_131k?q=${encodeURIComponent(cmdPrompt)}` },
+                  { label: "TOOL 77: Pixel 8 .npage 5.41MB Shared-Memory Ring Sync", ep: "/api/v1/shm/p8_npage_bridge" },
+                  { label: "TOOL 70: 5W1H Harness + 42,240-Neuron Connectome Coupler", ep: "/api/v1/connectome/harness_5w1h_npage" },
+                  { label: "TOOL 42: Cauchy-Sparse .npage 42,240-Neuron Pagefile Inspector", ep: "/api/v1/pagefile/cauchy_sparse_npage" },
+                  { label: "TOOL 13: Verify All 440/440 Lean 4 Formal Proofs QED", ep: "/api/v1/compiler/verify" },
+                  { label: "CHAIN 92: Execute Parallel Sovereign Tool DAG", ep: "/api/v1/harmonic/tool_chain?q=chain89_parallel_dag" }
+                ]
+                  .filter((item) => !cmdPaletteFilter.trim() || item.label.toLowerCase().includes(cmdPaletteFilter.toLowerCase()))
+                  .map((item) => (
+                    <button
+                      key={item.label}
+                      onClick={() => {
+                        callEndpoint(item.ep, item.label);
+                        setCmdPaletteOpen(false);
+                      }}
+                      style={{ textAlign: "left", background: "#141D28", color: "#FFFEFB", border: "1px solid #2A3B4D", borderRadius: 5, padding: "6px 8px", cursor: "pointer", fontFamily: "monospace", fontSize: 10 }}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+              </div>
+            </div>
+          </div>
+        )}
 
         {operatorVaultOpen && (
           <div style={{ background: "#0b131e", border: "2px solid #b388ff", borderRadius: "6px", padding: "10px", marginTop: "6px" }}>
@@ -1937,12 +2018,12 @@ export function App() {
           onClick={() => setDrawerAOpen(!drawerAOpen)}
           style={{ display: "flex", justifyContent: "space-between", cursor: "pointer", fontWeight: "bold", marginBottom: drawerAOpen ? 8 : 0 }}
         >
-          <span>[-] DRAWER A: 15.965 Hz DECADIC EPOCH, 21,120 SHARDS, PER-SENSOR STIEFEL, NL DECODER &amp; E:\ SSD TIER-2 (15 CARDS)</span>
-          <span style={{ color: "#FFB454" }}>Live Tick #{tel.generation} -- Click Any Card to Execute -- Click Header to Toggle</span>
+          <span>[-] DRAWER A: 15.965 Hz DECADIC EPOCH, 42,240 NEURONS (5.41MB .NPAGE), PER-SENSOR STIEFEL, NL DECODER &amp; E:\ SSD TIER-2 (15 CARDS)</span>
+          <span style={{ color: "#FFB454" }}>Live Tick #{tel.generation} -- Mode: {cardCompactMode ? "Compact Ribbon" : "Full Telemetry"} -- Click Card to Execute</span>
         </div>
         {drawerAOpen && (
           <>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 6 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: cardCompactMode ? 4 : 6 }}>
               {cards15.map((c, idx) => {
                 const isSel = selectedCard === idx;
                 return (
@@ -1957,13 +2038,15 @@ export function App() {
                       background: "#0A0D12",
                       border: isSel ? "1.5px solid #FFB454" : "1px solid #2A3B4D",
                       borderRadius: 5,
-                      padding: "6px 8px",
+                      padding: cardCompactMode && !isSel ? "4px 6px" : "6px 8px",
                       cursor: "pointer"
                     }}
                   >
                     <div style={{ color: "#9FB0C2", fontSize: 9.5, fontWeight: "bold" }}>{c.title}</div>
-                    <div style={{ color: idx % 2 === 0 ? "#FFB454" : "#FFFEFB", fontSize: 11.5, fontWeight: "bold", marginTop: 2 }}>{c.primary}</div>
-                    <div style={{ color: idx === 14 ? "#E94E34" : "#FFB454", fontSize: 9.5, marginTop: 2 }}>{c.secondary}</div>
+                    <div style={{ color: idx % 2 === 0 ? "#FFB454" : "#FFFEFB", fontSize: cardCompactMode && !isSel ? 10 : 11.5, fontWeight: "bold", marginTop: 2 }}>{c.primary}</div>
+                    {(!cardCompactMode || isSel) && (
+                      <div style={{ color: idx === 14 ? "#E94E34" : "#FFB454", fontSize: 9.5, marginTop: 2 }}>{c.secondary}</div>
+                    )}
                   </div>
                 );
               })}
@@ -2739,7 +2822,7 @@ export function App() {
               {tel.episodic_search_out}
             </div>
 
-            {/* v44.0.0 QoL Suite: Laminar Mirror Slash-Command Palette, Category Filter Tabs & Voice TTS */}
+            {/* v48.0.0 QoL Suite: Laminar Mirror Slash-Command Palette, Category Filter Tabs, Instant Tool Filter & Voice TTS */}
             <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 6, alignItems: "center", background: "#0A0D12", padding: "5px 8px", borderRadius: 4, border: "1px solid #2A3B4D" }}>
               <span style={{ color: "#FFB454", fontSize: 10, fontWeight: "bold" }}>SLASH PALETTE:</span>
               {["/SYNC", "/LATTICE", "/IGNITE", "/EXECUTE_OMNI_BRAID"].map((sc) => (
@@ -2761,6 +2844,15 @@ export function App() {
                   {cat}
                 </button>
               ))}
+              <input
+                value={toolSearchQuery}
+                onChange={(e) => setToolSearchQuery(e.target.value)}
+                placeholder="Quick-filter 92 tools (e.g. T90, Haskell, DuckDB, Hamiltonian, SHM)..."
+                style={{ width: 250, background: "#05080C", color: "#00FFCC", border: "1px solid #00FFCC", borderRadius: 3, padding: "2px 7px", fontFamily: "monospace", fontSize: 9.5 }}
+              />
+              {toolSearchQuery && (
+                <button onClick={() => setToolSearchQuery("")} style={{ background: "#3A1111", color: "#FF4D4D", border: "1px solid #FF4D4D", borderRadius: 3, padding: "2px 6px", fontSize: 9, cursor: "pointer" }}>CLEAR</button>
+              )}
               <button
                 onClick={() => setVoiceTtsEnabled(!voiceTtsEnabled)}
                 style={{ marginLeft: "auto", background: voiceTtsEnabled ? "#2EA043" : "#1C2632", color: "#FFFEFB", border: "1px solid #56D364", borderRadius: 3, padding: "2px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}
@@ -2769,11 +2861,29 @@ export function App() {
               </button>
             </div>
 
+            {/* v48.0.0 Layer 1.5 GHC Haskell Exact Algebra, DuckDB Columnar Vector & Hamiltonian k=4 Episodic Model Suite (Tools 90..92) */}
+            <div style={{ background: "#090E18", border: "1.5px solid #FFD700", borderRadius: 5, padding: "7px 10px", marginBottom: 6 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 6, marginBottom: 5 }}>
+                <span style={{ color: "#FFD700", fontWeight: "bold", fontSize: 10.5 }}>
+                  [v48.0.0 LAYER 1.5 HASKELL (GHC 9.10.3), DUCKDB v1.5.6 VECTOR &amp; HAMILTONIAN k=4 EPISODIC MODEL — TOOLS 90..92 (440/440 LEAN 4 QED)]:
+                </span>
+                <span style={{ color: "#00FFCC", fontSize: 9.5, fontWeight: "bold" }}>
+                  0/1 Exact Rational Weyl Drift | 4-Timescale Dendritic Eligibility | 64-Turn Apical Ring | Zig v0.17.0 + Lean v4.35.0
+                </span>
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+                <button onClick={() => callEndpoint(`/api/v1/v48/omni_suite?q=${encodeURIComponent(cmdPrompt)}`, "v48.0.0 OMNI-SUITE (TOOLS 90 + 91 + 92)")} style={{ background: "#FFD700", color: "#050A0E", border: "none", borderRadius: 4, padding: "4px 8px", cursor: "pointer", fontFamily: "monospace", fontSize: 9.5, fontWeight: "bold" }}>RUN ALL 3 v48 ENGINES (OMNI-SUITE)</button>
+                <button onClick={() => callEndpoint(`/api/v1/v48/hamiltonian_episodic_model?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 92: HAMILTONIAN k=4 GEODESIC BEAM & 64-TURN EPISODIC RING")} style={{ background: "#1F1030", color: "#B388FF", border: "1px solid #B388FF", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 92: Hamiltonian k=4 Beam + 64-Turn Episodic Ring</button>
+                <button onClick={() => callEndpoint(`/api/v1/v48/duckdb_columnar_vector?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 91: DUCKDB v1.5.6 COLUMNAR VECTOR & SHARD ANALYTICAL ENGINE")} style={{ background: "#091F2C", color: "#00E5FF", border: "1px solid #00E5FF", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 91: DuckDB v1.5.6 Columnar Vector Engine</button>
+                <button onClick={() => callEndpoint(`/api/v1/v48/haskell_layer15_algebra?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 90: LAYER 1.5 GHC HASKELL EXACT RATIONAL ALGEBRA & DUAL CODEGEN")} style={{ background: "#0D2618", color: "#56D364", border: "1px solid #56D364", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 90: Layer 1.5 Haskell (GHC) Exact E8/Leech24 + Codegen</button>
+              </div>
+            </div>
+
             {/* v47.0.0 Autonomous Intelligence & Embodied Voice Suite (Tools 85..89) */}
             <div style={{ background: "#070E16", border: "1px solid #00FFCC", borderRadius: 5, padding: "7px 10px", marginBottom: 6 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 6, marginBottom: 5 }}>
                 <span style={{ color: "#00FFCC", fontWeight: "bold", fontSize: 10.5 }}>
-                  [v47.0.0 AUTONOMOUS INTELLIGENCE &amp; EMBODIED VOICE SUITE — TOOLS 85..89 (SH4Z v4700 TLV | 432/432 LEAN 4 QED)]:
+                  [v47.0.0 AUTONOMOUS INTELLIGENCE &amp; EMBODIED VOICE SUITE — TOOLS 85..89 (SH4Z v4700 TLV | 440/440 LEAN 4 QED)]:
                 </span>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <span style={{ color: "#FFB454", fontSize: 9.5, fontWeight: "bold" }}>16kHz Klatt Voice (.WAV):</span>
@@ -2790,8 +2900,11 @@ export function App() {
               </div>
             </div>
 
-            {/* 89-Tool Buttons (v47.0.0 Preserving All Existing Tools + Adding T85..T89 Autonomous Intelligence Suite, T83..T84 Open-Vocab & 42,240-Neuron NL, T81..T82 E8-Leech Bridge & QAT) */}
+            {/* 92-Tool Buttons (v48.0.0 Preserving All Existing Tools + Adding T90..T92 Layer 1.5 Haskell, DuckDB & Hamiltonian Beam) */}
             <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 6 }}>
+              <button onClick={() => callEndpoint(`/api/v1/v48/hamiltonian_episodic_model?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 92: HAMILTONIAN k=4 GEODESIC BEAM & 64-TURN EPISODIC RING")} style={{ background: "#1f1030", color: "#b388ff", border: "1px solid #b388ff", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 92: Hamiltonian k=4 + Episodic Ring</button>
+              <button onClick={() => callEndpoint(`/api/v1/v48/duckdb_columnar_vector?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 91: DUCKDB COLUMNAR VECTOR & SHARD ANALYTICAL ENGINE")} style={{ background: "#091f2c", color: "#00e5ff", border: "1px solid #00e5ff", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 91: DuckDB Columnar Vector</button>
+              <button onClick={() => callEndpoint(`/api/v1/v48/haskell_layer15_algebra?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 90: LAYER 1.5 GHC HASKELL EXACT RATIONAL ALGEBRA & CODEGEN")} style={{ background: "#0d2618", color: "#56d364", border: "1px solid #56d364", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 90: Layer 1.5 Haskell Algebra</button>
               <button onClick={() => callEndpoint(`/api/v1/v47/sovereign_scientist?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 89: SOVEREIGN SCIENTIST (64-STEP RK4 + LEAN 4)")} style={{ background: "#261038", color: "#ffd700", border: "1px solid #ffd700", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 89: Sovereign Scientist RK4</button>
               <button onClick={() => callEndpoint(`/api/v1/v47/embodied_sensor_voice_loop?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 88: EMBODIED 24D SENSOR + 16KHZ KLATT VOICE")} style={{ background: "#3a1c00", color: "#ffb454", border: "1px solid #ffb454", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 88: Sensor+Voice .WAV</button>
               <button onClick={() => callEndpoint(`/api/v1/v47/rag_on_leech?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 87: SOVEREIGN RAG-ON-LEECH CITATION ENGINE")} style={{ background: "#091f2c", color: "#00e5ff", border: "1px solid #00e5ff", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 87: Sovereign RAG-on-Leech</button>

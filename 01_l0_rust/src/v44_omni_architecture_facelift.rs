@@ -307,6 +307,37 @@ pub fn compute_profiler_health_grade(
     (score, grade)
 }
 
+pub fn purge_stale_hud_index_bundles() -> (usize, String) {
+    let mut purged_count: usize = 0;
+    let mut active_bundle = String::from("index.js");
+    if let Ok(html) = std::fs::read_to_string("C:\\sovereign_manifold_v31\\05_hud_cockpit\\dist\\index.html")
+        .or_else(|_| std::fs::read_to_string("05_hud_cockpit/dist/index.html"))
+    {
+        if let Some(pos) = html.find("assets/index-") {
+            let sub = html.get(pos + 7..).unwrap_or("");
+            if let Some(end_q) = sub.find('"') {
+                active_bundle = String::from(sub.get(..end_q).unwrap_or("index.js"));
+            }
+        }
+    }
+    for assets_dir in std::iter::once("C:\\sovereign_manifold_v31\\05_hud_cockpit\\dist\\assets")
+        .chain(std::iter::once("C:\\sovereign_manifold_v31\\docs\\assets"))
+    {
+        if let Ok(rd) = std::fs::read_dir(assets_dir) {
+            for entry in rd.flatten() {
+                if let Some(fname) = entry.file_name().to_str() {
+                    if fname.starts_with("index-") && fname.ends_with(".js") && fname != active_bundle {
+                        if std::fs::remove_file(entry.path()).is_ok() {
+                            purged_count += 1;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    (purged_count, active_bundle)
+}
+
 pub fn execute_tool75_v44_self_profiler(
     profile_seq: u64,
     rtx_temp_c: f64,
@@ -314,6 +345,10 @@ pub fn execute_tool75_v44_self_profiler(
     p8_temp_c: f64,
     cluster_kops: f64,
 ) -> V44SelfProfilerResult {
+    // Multiomic Velocity Active Bundle Rescue (Research Synthesis Table 1 #5):
+    // Purge stale dist/assets/index-*.js bundles not referenced by index.html
+    let (purged_bundles, active_js_bundle) = purge_stale_hud_index_bundles();
+
     // Zero fallback floor: if files are missing, report 0 bytes so health_grade downgrades!
     let e8z_bytes = std::fs::metadata("C:\\sovereign_manifold_v31\\00_control\\weights\\sovereign_harmonic_iv_v4000.e8z")
         .or_else(|_| std::fs::metadata("00_control/weights/sovereign_harmonic_iv_v4000.e8z"))
@@ -369,10 +404,12 @@ pub fn execute_tool75_v44_self_profiler(
     );
 
     let diag = format!(
-        "TOOL 75 v44.2.0 WHOLE-ARCHITECTURE SELF-PROFILER & BOTTLENECK HEALER (Run #{}): Score={}/100 (Grade={}) | .e8z={}B | Core .npage={}B ({}N) + Expansion .npage={}B ({}N) = {}B ({} Neurons, {}x Chair-44, {} Synapses) | Expansion Shards on Disk={} | Visiting Agent Ledger={} | Multi-Turn Memory Ring={} | Thermals: RTX 3050={:.1}C, Pixel 10 G5={:.1}C, Pixel 8 P8-APEX={:.1}C | Throughput={:.1}k ops/s",
+        "TOOL 75 v48.0.0 MULTIOMIC VELOCITY SELF-PROFILER & ACTIVE BUNDLE RESCUE (Run #{}): Score={}/100 (Grade={}) | ActiveBundle={} (PurgedStale={}) | .e8z={}B | Core .npage={}B ({}N) + Expansion .npage={}B ({}N) = {}B ({} Neurons, {}x Chair-44, {} Synapses) | Expansion Shards on Disk={} | Visiting Agent Ledger={} | Multi-Turn Memory Ring={} | Thermals: RTX 3050={:.1}C, Pixel 10 G5={:.1}C, Pixel 8 P8-APEX={:.1}C | Throughput={:.1}k ops/s",
         profile_seq,
         health_score,
         health_grade,
+        active_js_bundle,
+        purged_bundles,
         e8z_bytes,
         core_npage_bytes,
         core_neurons,

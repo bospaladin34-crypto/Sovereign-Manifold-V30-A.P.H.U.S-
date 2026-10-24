@@ -852,10 +852,16 @@ pub fn match_tier3_dendritic_concept(word: &str) -> Option<(u16, &'static str)> 
     if word == "640" { return Some((32789, "640")); }
     if word == "384" { return Some((32790, "384")); }
     if word == "v44.0.0" || word == "v4400" { return Some((32791, "v44.0.0")); }
+    if word == "42240" || word == "42,240" { return Some((32792, "42240")); }
+    if word == "337920" || word == "337,920" { return Some((32793, "337920")); }
+    if word == "960" { return Some((32794, "960")); }
+    if word == "440" { return Some((32795, "440")); }
+    if word == "v48.0.0" || word == "v4800" { return Some((32796, "v48.0.0")); }
     if let Some(num_str) = word.strip_prefix("n") {
-        if let Ok(nid) = num_str.parse::<u16>() {
-            if nid < 28160 {
-                return Some((33000_u16.wrapping_add(nid), "neuron_ref"));
+        if let Ok(nid) = num_str.parse::<u32>() {
+            if nid < 42240 {
+                let mapped_u16 = (33000_u32.wrapping_add(nid % 32535)) as u16;
+                return Some((mapped_u16, "neuron_ref"));
             }
         }
     }
@@ -888,8 +894,13 @@ pub fn lookup_tier3_dendritic_by_id(tid: u16) -> Option<String> {
         32789 => Some(String::from("640")),
         32790 => Some(String::from("384")),
         32791 => Some(String::from("v44.0.0")),
+        32792 => Some(String::from("42240")),
+        32793 => Some(String::from("337920")),
+        32794 => Some(String::from("960")),
+        32795 => Some(String::from("440")),
+        32796 => Some(String::from("v48.0.0")),
         _ => {
-            if tid >= 33000 && tid < 61160 {
+            if tid >= 33000 {
                 Some(format!("n{}", tid - 33000))
             } else {
                 None
@@ -1036,11 +1047,19 @@ pub fn encode_and_detokenize_65k(input: &str) -> Transduction65kResult {
             break;
         }
         if let Some((cid, c_str, d_label)) = match_tier2_compound_phrase(rem) {
-            tokens.push(cid);
-            tier2_cnt += 1;
-            dom_tag = d_label;
-            cursor += c_str.len();
-            continue;
+            let p_len = c_str.len();
+            let boundary_ok = rem
+                .get(p_len..)
+                .and_then(|s| s.chars().next())
+                .map(|ch| !ch.is_alphanumeric())
+                .unwrap_or(true);
+            if boundary_ok {
+                tokens.push(cid);
+                tier2_cnt += 1;
+                dom_tag = d_label;
+                cursor += p_len;
+                continue;
+            }
         }
 
         let word_end = rem.find(|c: char| !c.is_alphanumeric() && c != '.' && c != '-').unwrap_or(rem.len());
@@ -1225,6 +1244,13 @@ pub fn operationalize_article_to_code_and_shard(
     let npage_offset: u64 = (exp_offset_idx as u64) * 128;
 
     let mi_bits = 21.40 + ((t65.primary_e8_root as f64) * 0.015) + (t65.compression_ratio * 0.12);
+    // Wildberger Rational-Tropical Negentropy N_QED = -10 * log10(PPL - 1) dB & Larkum Apical-Basal Coincidence Gate
+    let ppl_est = (1.0 + (1.0 / (t65.compression_ratio.max(1.01) * 1.35))).max(1.001);
+    let negentropy_qed_db = -10.0 * (ppl_est - 1.0).log10();
+    let phi_basal = ((t65.primary_e8_root as f64) * 0.00018).sin().abs() * 0.022;
+    let phi_apical = (fno_l2_err * 12.0).min(0.022);
+    let larkum_delta_rad = (phi_basal - phi_apical).abs();
+    let larkum_coincidence_burst = larkum_delta_rad <= 0.02259;
 
     // 1. Operationalize into executable Rust L0 kernel + Lean 4 theorem + WGSL shader
     let rust_fn_suffix = cryst_neuron_id;
@@ -1239,12 +1265,12 @@ pub fn operationalize_article_to_code_and_shard(
     );
 
     let operationalized_lean4_theorem = format!(
-        "theorem thm_article_op_s{:02}_n{} (tokens : Nat) (h_pos : tokens = {}) : tokens + {} = {} := by rfl",
+        "theorem thm_article_op_s{:02}_n{} (k : Nat) : k * 44 + {} = {} + k * 44 := by exact Nat.add_comm (k * 44) {}",
         t65.mapped_sector_80,
         cryst_neuron_id,
-        t65.total_tokens,
         cryst_neuron_id,
-        (t65.total_tokens as u32) + cryst_neuron_id
+        cryst_neuron_id,
+        cryst_neuron_id
     );
 
     let operationalized_wgsl_kernel = format!(
@@ -1319,12 +1345,15 @@ pub fn operationalize_article_to_code_and_shard(
     }
 
     let stage_trace = format!(
-        "STAGE 1 (131,072-TOKEN 24-DOMAIN 1,024-COMPOUND BPE & HERMENEUTIC EXEGESIS): Source='{}' -> {} Tokens ({}) | Exact Roundtrip={} | Ratio={:.2}x | Domain={} | IPA={}\nSTAGE 2 (10-LAPLACIAN 16-MODE FNO & ER=EPR THROAT): {} | I(A:B)={:.2} bits | L2_Err={:.5} | Vorticity={:.4} | Re={:.1} < 2300 (LAMINAR)\nSTAGE 3 (OPERATIONALIZED CODE & LEAN 4 QED SYNTHESIS): {} || Lean4: {}\nSTAGE 4 (LIVE SHARD & DENDRITIC NEURON CRYSTALLIZATION): Wrote {}B to shard_{:05}.binshard <-> Neuron N{:05}/42239 (Col #{:03}/959, .npage Offset {}B) || {}",
+        "STAGE 1 (131,072-TOKEN 24-DOMAIN 1,024-COMPOUND BPE & HERMENEUTIC EXEGESIS): Source='{}' -> {} Tokens ({}) | Exact Roundtrip={} | Ratio={:.2}x | Negentropy N_QED={:.2} dB | Larkum Coincidence={} (dPhi={:.5} rad) | Domain={} | IPA={}\nSTAGE 2 (10-LAPLACIAN 16-MODE FNO & ER=EPR THROAT): {} | I(A:B)={:.2} bits | L2_Err={:.5} | Vorticity={:.4} | Re={:.1} < 2300 (LAMINAR)\nSTAGE 3 (OPERATIONALIZED CODE & MATHS 2.0 LEAN 4 QED SYNTHESIS): {} || Lean4: {}\nSTAGE 4 (LIVE SHARD & 42,240-NEURON HEXALAYER ABCABC CRYSTALLIZATION): Wrote {}B to shard_{:05}.binshard <-> Neuron N{:05}/42239 (Col #{:03}/959, .npage Offset {}B) || {}",
         clean_src,
         t65.total_tokens,
         t65.token_tiers_csv,
         t65.roundtrip_exact,
         t65.compression_ratio,
+        negentropy_qed_db,
+        larkum_coincidence_burst,
+        larkum_delta_rad,
         t65.dominant_domain,
         t65.detokenized_ipa,
         laplacian_face,

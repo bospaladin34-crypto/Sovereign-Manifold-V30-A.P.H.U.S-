@@ -1,0 +1,21 @@
+cabal-version:      2.4
+name:               SovereignAlgebra
+version:            48.0.0.0
+synopsis:           ACT-Omega Net v48.0.0 Layer 1.5 Pure Algebraic Haskell & Dual Codegen Engine
+description:        Exact Rational E8(+)E8(+)E8 -> Leech_24 Conway Group Algebra, Linear-Accounted Free5W1H Routing Monad, and Single-Source Dual Zero-Square-Bracket L0 Rust + Lean 4 Codegen.
+license:            BSD-3-Clause
+author:             ACT-Omega Sovereign Manifold
+maintainer:         act-omega-net.dev
+category:           Math, Algebra, Compilers
+build-type:         Simple
+
+executable sovereign_algebra_hs
+    main-is:          Main.hs
+    other-modules:
+        Sovereign.Lattice.ExactE8Leech24
+        Sovereign.Harness.Free5W1H
+        Sovereign.Codegen.ZeroBracketRustAndLean4
+    build-depends:    base >= 4.14 && < 5
+    hs-source-dirs:   src
+    default-language: Haskell2010
+    ghc-options:      -O2 -Wall

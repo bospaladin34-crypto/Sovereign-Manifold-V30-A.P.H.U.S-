@@ -23,3 +23,7 @@
 00_control/goose_std/
 .wrangler/
 01_l0_rust/target_stage/
+
+00_control/foss_bin/
+06_algebraic_haskell/dist-newstyle/
+06_algebraic_haskell/bin/*.exe

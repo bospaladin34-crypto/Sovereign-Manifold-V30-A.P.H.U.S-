@@ -29,6 +29,8 @@ include!("../v44_worksteal_npage_shm_webgpu_lease.rs");
 include!("../v45_e8_leech_fluency_model.rs");
 include!("../v46_open_vocab_131k_42240_connectome.rs");
 include!("../v47_autonomous_leech_rag_scientist.rs");
+include!("../v48_haskell_codegen_invariants.rs");
+include!("../v48_haskell_duckdb_hamiltonian_model.rs");
 
 
 struct SwarmState {
@@ -2078,6 +2080,28 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
             continue;
         }
+        if clean_path == "/api/v1/admin/self_exit" {
+            let key_q = {
+                let k1 = extract_query_param(raw_target, "key");
+                if !k1.is_empty() { k1 } else { q_arg.clone() }
+            };
+            let auth_ok = verify_operator_vault_secret(&key_q, is_loopback);
+            if !auth_ok {
+                let trap_json = format!(
+                    "{{\"status\":\"HTTP_403_COMPACT_LOCALIZED_ELECTRON_TRAP_BLOCKED\",\"endpoint\":\"/api/v1/admin/self_exit\",\"is_loopback\":{},\"quantum_interference_cls_trap\":true,\"flat_band_group_velocity_vg\":0.0,\"psi_plus_minus_sum\":0.0,\"effective_mass\":\"INFINITE_CLS_LOCALIZED\",\"reason\":\"Destructive quantum phase cancellation (psi_+ + psi_- = 0): /api/v1/admin/self_exit requires BOTH 127.0.0.1 loopback AND valid ACT_OMEGA_OPERATOR_KEY.\"}}",
+                    is_loopback
+                );
+                write_http_str(&mut stream, "403 Forbidden", "application/json; charset=utf-8", &trap_json);
+                continue;
+            }
+            let ok_json = "{\"status\":\"AUTHORIZED_SELF_EXIT_INITIATED\",\"endpoint\":\"/api/v1/admin/self_exit\",\"is_loopback\":true,\"operator_vault_verified\":true}";
+            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", ok_json);
+            thread::spawn(|| {
+                thread::sleep(Duration::from_millis(120));
+                std::process::exit(0);
+            });
+            continue;
+        }
 
         if clean_path == "/api/v1/shm/p8_npage_bridge" || clean_path == "/api/v1/tools/t77" {
             let mut st = match state.lock() {
@@ -3629,6 +3653,35 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 st.last_term_out = diag.clone();
                 st.nl_synthesis = diag;
             }
+            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
+            continue;
+        }
+
+        // 7G. v48.0.0 Layer 1.5 Haskell Algebra, DuckDB Columnar Vector & Hamiltonian Episodic Model (Tools 90..92)
+        if clean_path.starts_with("/api/v1/v48/") {
+            let mut st = state.lock().unwrap();
+            st.gen_counter += 1;
+            st.nl_converse_runs += 1;
+            let q_in = if !q_arg.is_empty() {
+                q_arg.clone()
+            } else if !post_body.trim().is_empty() {
+                post_body.trim().to_string()
+            } else {
+                String::from("ACT-Omega Net v48.0.0 Layer 1.5 Haskell, DuckDB & Hamiltonian k=4 Episodic Model")
+            };
+            let json = if clean_path == "/api/v1/v48/haskell_layer15_algebra" {
+                execute_tool90_haskell_layer15_algebra(&q_in)
+            } else if clean_path == "/api/v1/v48/duckdb_columnar_vector" {
+                execute_tool91_duckdb_columnar_vector(&q_in)
+            } else if clean_path == "/api/v1/v48/hamiltonian_episodic_model" {
+                execute_tool92_hamiltonian_episodic_model(&q_in)
+            } else if clean_path == "/api/v1/v48/research_isomorphisms" {
+                execute_v48_research_synthesis_isomorphisms(&q_in)
+            } else {
+                execute_v48_omni_suite(&q_in)
+            };
+            st.last_card_diag = format!("EXEC({}) -> OK", clean_path);
+            st.last_term_out = format!("EXEC({}) -> OK", clean_path);
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
             continue;
         }

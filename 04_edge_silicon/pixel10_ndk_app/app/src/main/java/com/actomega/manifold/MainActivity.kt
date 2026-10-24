@@ -1781,6 +1781,34 @@ fun SovereignCockpitV326Screen() {
                     }
                 }
             }
+            Spacer(modifier = Modifier.height(4.dp))
+            // v48.0.0 5-Mode Cockpit Lens Switcher Bar (Zero Data Loss Ergonomic View Filter)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color(0xFF080D14), RoundedCornerShape(4.dp))
+                    .border(1.dp, Color(0xFF00FFCC), RoundedCornerShape(4.dp))
+                    .padding(horizontal = 4.dp, vertical = 3.dp),
+                horizontalArrangement = Arrangement.spacedBy(3.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("LENS:", color = Color(0xFF00FFCC), fontSize = 7.2.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace)
+                ToolButton603010("0:ALL", Color(0xFF002B24), Color(0xFF00FFCC), Modifier.weight(1f)) {
+                    drawerAOpen = true; drawerBOpen = true; browserOpen = true; drawer1Open = true; drawer2Open = true; drawer3Open = true; drawer4Open = true
+                }
+                ToolButton603010("1:CARDS+3D", Color(0xFF0D2130), Color(0xFF00E5FF), Modifier.weight(1f)) {
+                    drawerAOpen = true; drawerBOpen = true; browserOpen = false; drawer1Open = false; drawer2Open = false; drawer3Open = false; drawer4Open = false
+                }
+                ToolButton603010("2:SYNTH/RAG", Color(0xFF1F1030), Color(0xFFB388FF), Modifier.weight(1f)) {
+                    drawerAOpen = false; drawerBOpen = false; browserOpen = true; drawer1Open = false; drawer2Open = false; drawer3Open = false; drawer4Open = true
+                }
+                ToolButton603010("3:5W1H+SHM", Color(0xFF2B2100), Color(0xFFFFB454), Modifier.weight(1f)) {
+                    drawerAOpen = false; drawerBOpen = false; browserOpen = false; drawer1Open = true; drawer2Open = true; drawer3Open = true; drawer4Open = false
+                }
+                ToolButton603010("4:92 TOOLS", Color(0xFF261038), Color(0xFFFFD700), Modifier.weight(1f)) {
+                    drawerAOpen = false; drawerBOpen = false; browserOpen = false; drawer1Open = false; drawer2Open = false; drawer3Open = false; drawer4Open = true
+                }
+            }
         }
 
         Spacer(modifier = Modifier.height(6.dp))
@@ -2632,6 +2660,30 @@ fun SovereignCockpitV326Screen() {
                         lineHeight = 11.2.sp,
                         fontFamily = FontFamily.Monospace
                     )
+                }
+            }
+            Spacer(modifier = Modifier.height(4.dp))
+            // Row v48.0.0: Layer 1.5 Haskell GHC Exact Algebra (T90), DuckDB Vector Engine (T91), Hamiltonian k=4 Geodesic + 64-Turn Episodic Ring (T92), v48 Omni-Suite
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                ToolButton603010("T92: Hamiltonian k=4", Color(0xFF1F1030), Color(0xFFB388FF), Modifier.weight(1f)) {
+                    val qEnc = java.net.URLEncoder.encode(cmdPrompt, "UTF-8")
+                    invokeHostEndpoint("/api/v1/v48/hamiltonian_episodic_model?q=$qEnc", null, "TOOL 92: HAMILTONIAN k=4 BEAM & 64-TURN EPISODIC RING")
+                }
+                ToolButton603010("T91: DuckDB Vector", Color(0xFF091F2C), Color(0xFF00E5FF), Modifier.weight(1f)) {
+                    val qEnc = java.net.URLEncoder.encode(cmdPrompt, "UTF-8")
+                    invokeHostEndpoint("/api/v1/v48/duckdb_columnar_vector?q=$qEnc", null, "TOOL 91: DUCKDB v1.5.6 COLUMNAR VECTOR ENGINE")
+                }
+                ToolButton603010("T90: Haskell GHC", Color(0xFF0D2618), Color(0xFF56D364), Modifier.weight(1f)) {
+                    val qEnc = java.net.URLEncoder.encode(cmdPrompt, "UTF-8")
+                    invokeHostEndpoint("/api/v1/v48/haskell_layer15_algebra?q=$qEnc", null, "TOOL 90: LAYER 1.5 GHC HASKELL EXACT ALGEBRA & CODEGEN")
+                }
+                ToolButton603010("22 Isomorphisms", Color(0xFF062A24), Color(0xFF00FFCC), Modifier.weight(1f)) {
+                    val qEnc = java.net.URLEncoder.encode(cmdPrompt, "UTF-8")
+                    invokeHostEndpoint("/api/v1/v48/research_isomorphisms?q=$qEnc", null, "RESEARCH SYNTHESIS & ISOMORPHISMS 1 (22 QED)")
+                }
+                ToolButton603010("v48 Omni-Suite", Color(0xFF2B2100), Color(0xFFFFD700), Modifier.weight(1f)) {
+                    val qEnc = java.net.URLEncoder.encode(cmdPrompt, "UTF-8")
+                    invokeHostEndpoint("/api/v1/v48/omni_suite?q=$qEnc", null, "v48.0.0 OMNI-SUITE (TOOLS 90..92 + 22 ISOMORPHISMS)")
                 }
             }
             Spacer(modifier = Modifier.height(4.dp))

@@ -534,3 +534,11 @@
 {"epoch":534,"domains":24,"vocab_size":131072,"combined_neurons":42240,"holdout_ppl":1.108144,"compound_transfer_pct":98.403,"cacheline_speedup_pct":32.04,"dag_latency_ms":0.200,"m_atp":0.6787,"kops":4515.7}
 {"epoch":535,"domains":24,"vocab_size":131072,"combined_neurons":42240,"holdout_ppl":1.109131,"compound_transfer_pct":98.448,"cacheline_speedup_pct":31.96,"dag_latency_ms":0.234,"m_atp":0.6879,"kops":4513.2}
 {"epoch":536,"domains":24,"vocab_size":131072,"combined_neurons":42240,"holdout_ppl":1.108426,"compound_transfer_pct":98.491,"cacheline_speedup_pct":31.98,"dag_latency_ms":1.005,"m_atp":0.6967,"kops":4513.8}
+{"epoch":537,"domains":24,"vocab_size":131072,"combined_neurons":42240,"holdout_ppl":1.108725,"compound_transfer_pct":98.495,"cacheline_speedup_pct":33.43,"dag_latency_ms":0.269,"m_atp":0.6976,"kops":4563.3}
+{"epoch":538,"domains":24,"vocab_size":131072,"combined_neurons":42240,"holdout_ppl":1.108574,"compound_transfer_pct":98.541,"cacheline_speedup_pct":31.94,"dag_latency_ms":0.239,"m_atp":0.7071,"kops":4512.3}
+{"epoch":539,"domains":24,"vocab_size":131072,"combined_neurons":42240,"holdout_ppl":1.107728,"compound_transfer_pct":98.533,"cacheline_speedup_pct":31.94,"dag_latency_ms":0.263,"m_atp":0.7054,"kops":4512.3}
+{"epoch":540,"domains":24,"vocab_size":131072,"combined_neurons":42240,"holdout_ppl":1.107230,"compound_transfer_pct":98.523,"cacheline_speedup_pct":31.93,"dag_latency_ms":0.282,"m_atp":0.7033,"kops":4511.9}
+{"epoch":541,"domains":24,"vocab_size":131072,"combined_neurons":42240,"holdout_ppl":1.107688,"compound_transfer_pct":98.493,"cacheline_speedup_pct":33.41,"dag_latency_ms":0.474,"m_atp":0.6972,"kops":4562.7}
+{"epoch":542,"domains":24,"vocab_size":131072,"combined_neurons":42240,"holdout_ppl":1.107489,"compound_transfer_pct":98.489,"cacheline_speedup_pct":33.41,"dag_latency_ms":0.183,"m_atp":0.6964,"kops":4562.7}
+{"epoch":543,"domains":24,"vocab_size":131072,"combined_neurons":42240,"holdout_ppl":1.108232,"compound_transfer_pct":98.486,"cacheline_speedup_pct":31.96,"dag_latency_ms":0.387,"m_atp":0.6957,"kops":4512.9}
+{"epoch":544,"domains":24,"vocab_size":131072,"combined_neurons":42240,"holdout_ppl":1.109216,"compound_transfer_pct":98.487,"cacheline_speedup_pct":31.97,"dag_latency_ms":0.187,"m_atp":0.6959,"kops":4513.3}

@@ -28,27 +28,35 @@ export class SovereignEdgeShadowDO {
   constructor(state, env) {
     this.state = state;
     this.env = env;
-    this.sql = state.storage.sql;
-    this.sql.exec(
-      `CREATE TABLE IF NOT EXISTS edge_heartbeat (id INTEGER PRIMARY KEY, chain TEXT, atp REAL, core_neurons INTEGER, exp_neurons INTEGER, vocab_size INTEGER, payload_sha256 TEXT, ts INTEGER);`
-    );
-    this.sql.exec(
-      `CREATE TABLE IF NOT EXISTS shm_continuum_state (node_id TEXT PRIMARY KEY, bearer TEXT, dirty_col INTEGER, som_hex TEXT, temp_c REAL, mag_norm REAL, kops REAL, host_state TEXT, updated_at_ms INTEGER);`
-    );
+    this.sql = state && state.storage ? state.storage.sql : null;
+    try {
+      if (this.sql) {
+        this.sql.exec(
+          `CREATE TABLE IF NOT EXISTS edge_heartbeat (id INTEGER PRIMARY KEY, chain TEXT, atp REAL, core_neurons INTEGER, exp_neurons INTEGER, vocab_size INTEGER, payload_sha256 TEXT, ts INTEGER);`
+        );
+        this.sql.exec(
+          `CREATE TABLE IF NOT EXISTS shm_continuum_state (node_id TEXT PRIMARY KEY, bearer TEXT, dirty_col INTEGER, som_hex TEXT, temp_c REAL, mag_norm REAL, kops REAL, host_state TEXT, updated_at_ms INTEGER);`
+        );
+      }
+    } catch {}
 
     // Initial 8-row ring buffer cleanup on startup to prune any preexisting legacy backlog
     try {
-      this.sql.exec(`DELETE FROM edge_heartbeat WHERE id NOT IN (SELECT id FROM edge_heartbeat ORDER BY id DESC LIMIT 8);`);
+      if (this.sql) {
+        this.sql.exec(`DELETE FROM edge_heartbeat WHERE id NOT IN (SELECT id FROM edge_heartbeat ORDER BY id DESC LIMIT 8);`);
+      }
     } catch {}
 
     // In-memory heartbeat state hydration (single point-lookup, zero unbounded SELECT COUNT(*))
     this.cachedLatestHeartbeat = null;
     this.cachedHeartbeatCounter = 0;
     try {
-      const initRows = this.sql.exec(`SELECT atp, core_neurons, exp_neurons, vocab_size, payload_sha256, ts FROM edge_heartbeat ORDER BY id DESC LIMIT 8;`).toArray();
-      this.cachedHeartbeatCounter = initRows.length;
-      if (initRows.length > 0) {
-        this.cachedLatestHeartbeat = initRows[0];
+      if (this.sql) {
+        const initRows = this.sql.exec(`SELECT atp, core_neurons, exp_neurons, vocab_size, payload_sha256, ts FROM edge_heartbeat ORDER BY id DESC LIMIT 8;`).toArray();
+        this.cachedHeartbeatCounter = initRows.length;
+        if (initRows.length > 0) {
+          this.cachedLatestHeartbeat = initRows[0];
+        }
       }
     } catch {
       this.cachedHeartbeatCounter = 0;
@@ -58,49 +66,64 @@ export class SovereignEdgeShadowDO {
     this.nodeStateCache = new Map();
     this.nodeLastWriteMs = new Map();
     try {
-      const existingNodes = this.sql
-        .exec(`SELECT node_id, bearer, dirty_col, som_hex, temp_c, mag_norm, kops, host_state, updated_at_ms FROM shm_continuum_state ORDER BY node_id ASC;`)
-        .toArray();
-      for (const n of existingNodes) {
-        this.nodeStateCache.set(n.node_id, n);
-        this.nodeLastWriteMs.set(n.node_id, n.updated_at_ms || 0);
+      if (this.sql) {
+        const existingNodes = this.sql
+          .exec(`SELECT node_id, bearer, dirty_col, som_hex, temp_c, mag_norm, kops, host_state, updated_at_ms FROM shm_continuum_state ORDER BY node_id ASC;`)
+          .toArray();
+        for (const n of existingNodes) {
+          this.nodeStateCache.set(n.node_id, n);
+          this.nodeLastWriteMs.set(n.node_id, n.updated_at_ms || 0);
+        }
       }
     } catch {}
   }
 
   async alarm() {
     const now = Date.now();
-    const lastRow = this.cachedLatestHeartbeat || this.sql
-      .exec(`SELECT atp, core_neurons, exp_neurons, vocab_size FROM edge_heartbeat ORDER BY id DESC LIMIT 1;`)
-      .one();
-    if (lastRow) {
-      const atpVal = Number(lastRow.atp);
-      const coreN = Number(lastRow.core_neurons);
-      const expN = Number(lastRow.exp_neurons);
-      const vocSz = Number(lastRow.vocab_size);
-      const digest = await sha256HexWebCrypto(`ALARM:${atpVal}:${coreN}:${expN}:${vocSz}:${now}`);
-      this.sql.exec(
-        `INSERT INTO edge_heartbeat (chain, atp, core_neurons, exp_neurons, vocab_size, payload_sha256, ts) VALUES ('CHAIN_100_DO_ALARM', ?, ?, ?, ?, ?, ?);`,
-        atpVal,
-        coreN,
-        expN,
-        vocSz,
-        digest,
-        now
-      );
-      // Prune edge_heartbeat to strict 8-row ring buffer
-      this.sql.exec(`DELETE FROM edge_heartbeat WHERE id NOT IN (SELECT id FROM edge_heartbeat ORDER BY id DESC LIMIT 8);`);
-      this.cachedHeartbeatCounter = Math.min(8, this.cachedHeartbeatCounter + 1);
-      this.cachedLatestHeartbeat = {
-        atp: atpVal,
-        core_neurons: coreN,
-        exp_neurons: expN,
-        vocab_size: vocSz,
-        payload_sha256: digest,
-        ts: now
-      };
-    }
-    await this.state.storage.setAlarm(now + 900000);
+    try {
+      let lastRow = this.cachedLatestHeartbeat;
+      if (!lastRow && this.sql) {
+        try {
+          lastRow = this.sql
+            .exec(`SELECT atp, core_neurons, exp_neurons, vocab_size FROM edge_heartbeat ORDER BY id DESC LIMIT 1;`)
+            .one();
+        } catch {}
+      }
+      if (lastRow) {
+        const atpVal = Number(lastRow.atp);
+        const coreN = Number(lastRow.core_neurons);
+        const expN = Number(lastRow.exp_neurons);
+        const vocSz = Number(lastRow.vocab_size);
+        const digest = await sha256HexWebCrypto(`ALARM:${atpVal}:${coreN}:${expN}:${vocSz}:${now}`);
+        try {
+          if (this.sql) {
+            this.sql.exec(
+              `INSERT INTO edge_heartbeat (chain, atp, core_neurons, exp_neurons, vocab_size, payload_sha256, ts) VALUES ('CHAIN_100_DO_ALARM', ?, ?, ?, ?, ?, ?);`,
+              atpVal,
+              coreN,
+              expN,
+              vocSz,
+              digest,
+              now
+            );
+            // Prune edge_heartbeat to strict 8-row ring buffer
+            this.sql.exec(`DELETE FROM edge_heartbeat WHERE id NOT IN (SELECT id FROM edge_heartbeat ORDER BY id DESC LIMIT 8);`);
+          }
+        } catch {}
+        this.cachedHeartbeatCounter = Math.min(8, this.cachedHeartbeatCounter + 1);
+        this.cachedLatestHeartbeat = {
+          atp: atpVal,
+          core_neurons: coreN,
+          exp_neurons: expN,
+          vocab_size: vocSz,
+          payload_sha256: digest,
+          ts: now
+        };
+      }
+      if (this.state && this.state.storage) {
+        await this.state.storage.setAlarm(now + 900000);
+      }
+    } catch {}
   }
 
   async fetch(request) {
@@ -135,18 +158,22 @@ export class SovereignEdgeShadowDO {
       // Debounce persistent SQLite writes to <= 1 write per 60 seconds per node
       const lastWrite = this.nodeLastWriteMs.get(nodeId) || 0;
       if (now - lastWrite >= 60000) {
-        this.sql.exec(
-          `INSERT OR REPLACE INTO shm_continuum_state (node_id, bearer, dirty_col, som_hex, temp_c, mag_norm, kops, host_state, updated_at_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);`,
-          nodeId,
-          bearer,
-          dirtyCol,
-          somHex,
-          tempC,
-          magNorm,
-          kops,
-          hostState,
-          now
-        );
+        try {
+          if (this.sql) {
+            this.sql.exec(
+              `INSERT OR REPLACE INTO shm_continuum_state (node_id, bearer, dirty_col, som_hex, temp_c, mag_norm, kops, host_state, updated_at_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);`,
+              nodeId,
+              bearer,
+              dirtyCol,
+              somHex,
+              tempC,
+              magNorm,
+              kops,
+              hostState,
+              now
+            );
+          }
+        } catch {}
         this.nodeLastWriteMs.set(nodeId, now);
       }
 
@@ -177,17 +204,21 @@ export class SovereignEdgeShadowDO {
       const digest = await sha256HexWebCrypto(`SYNC:${atpParam}:${coreParam}:${expParam}:${vocabParam}:${now}`);
 
       if (atpParam !== null && coreParam !== null && expParam !== null && vocabParam !== null) {
-        this.sql.exec(
-          `INSERT INTO edge_heartbeat (chain, atp, core_neurons, exp_neurons, vocab_size, payload_sha256, ts) VALUES ('CHAIN_100', ?, ?, ?, ?, ?, ?);`,
-          atpParam,
-          coreParam,
-          expParam,
-          vocabParam,
-          digest,
-          now
-        );
-        // Prune edge_heartbeat to bounded 8-row ring buffer
-        this.sql.exec(`DELETE FROM edge_heartbeat WHERE id NOT IN (SELECT id FROM edge_heartbeat ORDER BY id DESC LIMIT 8);`);
+        try {
+          if (this.sql) {
+            this.sql.exec(
+              `INSERT INTO edge_heartbeat (chain, atp, core_neurons, exp_neurons, vocab_size, payload_sha256, ts) VALUES ('CHAIN_100', ?, ?, ?, ?, ?, ?);`,
+              atpParam,
+              coreParam,
+              expParam,
+              vocabParam,
+              digest,
+              now
+            );
+            // Prune edge_heartbeat to bounded 8-row ring buffer
+            this.sql.exec(`DELETE FROM edge_heartbeat WHERE id NOT IN (SELECT id FROM edge_heartbeat ORDER BY id DESC LIMIT 8);`);
+          }
+        } catch {}
         this.cachedHeartbeatCounter = Math.min(8, this.cachedHeartbeatCounter + 1);
         this.cachedLatestHeartbeat = {
           atp: atpParam,
@@ -198,7 +229,11 @@ export class SovereignEdgeShadowDO {
           ts: now
         };
       }
-      await this.state.storage.setAlarm(now + 900000);
+      try {
+        if (this.state && this.state.storage) {
+          await this.state.storage.setAlarm(now + 900000);
+        }
+      } catch {}
 
       const shmRows = Array.from(this.nodeStateCache.values()).sort((a, b) => a.node_id.localeCompare(b.node_id));
       const combinedNeurons = (coreParam ?? 0) + (expParam ?? 0);
@@ -250,25 +285,33 @@ export default {
     if (env && env.ACT_OMEGA_D1) {
       ctx.waitUntil(
         (async () => {
-          const lastSnap = await env.ACT_OMEGA_D1.prepare(
-            "SELECT metabolic_atp_score, total_neurons FROM npage_tier_snapshots ORDER BY snapshot_id DESC LIMIT 1;"
-          ).first();
-          if (lastSnap && lastSnap.metabolic_atp_score !== undefined && lastSnap.metabolic_atp_score !== null) {
-            const measuredAtp = Number(lastSnap.metabolic_atp_score);
-            const totalNeurons = Number(lastSnap.total_neurons || 0);
-            await env.ACT_OMEGA_D1.prepare(
-              "INSERT INTO harness_5w1h_audit_log (chain_level, metabolic_band, atp_score, why_motivation, what_tools_invoked, where_silicon_target, when_schedule_window, how_execution_kernel, recorded_at_ms) VALUES ('CHAIN_100', 'BAND_CRON_OBSERVED_D1', ?, ?, 'D1 Scheduled Verification', 'Cloudflare-D1+DurableObject', '*/15 * * * * Cron', 'SH4Z_v4900_CRON_TRIGGER', ?);"
-            )
-              .bind(measuredAtp, `Observed D1 Snapshot total_neurons=${totalNeurons}`, now)
-              .run();
-          }
+          try {
+            const lastSnap = await env.ACT_OMEGA_D1.prepare(
+              "SELECT metabolic_atp_score, total_neurons FROM npage_tier_snapshots ORDER BY snapshot_id DESC LIMIT 1;"
+            ).first();
+            if (lastSnap && lastSnap.metabolic_atp_score !== undefined && lastSnap.metabolic_atp_score !== null) {
+              const measuredAtp = Number(lastSnap.metabolic_atp_score);
+              const totalNeurons = Number(lastSnap.total_neurons || 0);
+              await env.ACT_OMEGA_D1.prepare(
+                "INSERT INTO harness_5w1h_audit_log (chain_level, metabolic_band, atp_score, why_motivation, what_tools_invoked, where_silicon_target, when_schedule_window, how_execution_kernel, recorded_at_ms) VALUES ('CHAIN_100', 'BAND_CRON_OBSERVED_D1', ?, ?, 'D1 Scheduled Verification', 'Cloudflare-D1+DurableObject', '*/15 * * * * Cron', 'SH4Z_v4900_CRON_TRIGGER', ?);"
+              )
+                .bind(measuredAtp, `Observed D1 Snapshot total_neurons=${totalNeurons}`, now)
+                .run();
+            }
+          } catch {}
         })()
       );
     }
     if (env && env.SOVEREIGN_EDGE_SHADOW_DO) {
-      const id = env.SOVEREIGN_EDGE_SHADOW_DO.idFromName("GLOBAL_SOVEREIGN_SHADOW_V4400");
-      const stub = env.SOVEREIGN_EDGE_SHADOW_DO.get(id);
-      ctx.waitUntil(stub.fetch("https://sovereign-internal/shadow/sync"));
+      ctx.waitUntil(
+        (async () => {
+          try {
+            const id = env.SOVEREIGN_EDGE_SHADOW_DO.idFromName("GLOBAL_SOVEREIGN_SHADOW_V4400");
+            const stub = env.SOVEREIGN_EDGE_SHADOW_DO.get(id);
+            await stub.fetch("https://sovereign-internal/shadow/status");
+          } catch {}
+        })()
+      );
     }
   },
 

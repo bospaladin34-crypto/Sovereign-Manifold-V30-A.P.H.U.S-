@@ -342,6 +342,33 @@ pub fn execute_tool78_webgpu_compute_lease(
 
     let (active_cnt, total_leased_kops, _total_batches, leases_json) = compute_active_webgpu_leased_kops(leases);
     let total_elastic = base_trisilicon_kops + total_leased_kops;
+
+    if action == "release" {
+        let diag = format!(
+            "TOOL 78 WEBGPU COMPUTE LEASE GRACEFULLY RELEASED (Worker='{}' | Fast-Path SendBeacon Close): Speculative Columns Col #{:03}..#{:03} instantly reclaimed by Host+Pixel 8 .npage Shared-Memory Ring | Active Browser Leases={} (+{:.1}k ops/s) | Cluster Total={:.1}k ops/s (15.965 Hz Decadic Lockstep)",
+            worker_id, assigned_col_start, assigned_col_end, active_cnt, total_leased_kops, total_elastic
+        );
+        return WebGpuLeaseResult {
+            action,
+            worker_id,
+            gpu_adapter,
+            lease_active,
+            assigned_col_start,
+            assigned_col_end,
+            worker_leased_kops,
+            worker_batches,
+            poc_verified: true,
+            poc_hash,
+            active_leases_count: active_cnt,
+            total_webgpu_leased_kops: total_leased_kops,
+            total_elastic_cluster_kops: total_elastic,
+            cadence_jitter_us: 0.0,
+            lease_ttl_ms: 15000,
+            active_leases_json: leases_json,
+            diag,
+        };
+    }
+
     let (measured_jitter_us, veenstra_r_tc) = measure_veenstra_37unit_time_crystal_jitter(now);
 
     // Persist lease event to C: and E:
@@ -358,30 +385,23 @@ pub fn execute_tool78_webgpu_compute_lease(
         let _ = std::io::Write::write_all(&mut ef, event_line.as_bytes());
     }
 
-    let diag = if action == "release" {
-        format!(
-            "TOOL 78 WEBGPU COMPUTE LEASE GRACEFULLY RELEASED (Worker='{}' | Measured Veenstra 37-Unit Jitter={:.4} us, R_TC={:.5}): Speculative Columns Col #{:03}..#{:03} instantly reclaimed by Host+Pixel 8 .npage Shared-Memory Ring | Active Browser Leases={} (+{:.1}k ops/s) | Cluster Total={:.1}k ops/s (15.965 Hz Decadic Lockstep)",
-            worker_id, measured_jitter_us, veenstra_r_tc, assigned_col_start, assigned_col_end, active_cnt, total_leased_kops, total_elastic
-        )
-    } else {
-        format!(
-            "TOOL 78 EPHEMERAL BROWSER WEBGPU COMPUTE LEASE (Action='{}' | Worker='{}' | Adapter='{}' | PoC={} | TTL=15,000ms | Measured Veenstra 37-Unit Jitter={:.4} us, R_TC={:.5}): Leased Speculative Chair-44 Cols #{:03}..#{:03} (704 Neurons, Batch #{}) contributing +{:.1}k ops/s | Active Browser Workers={} (+{:.1}k ops/s) + Base Tri-Silicon {:.1}k ops/s = {:.1}k ops/s Total Elastic Throughput!",
-            action,
-            worker_id,
-            gpu_adapter,
-            poc_hash,
-            measured_jitter_us,
-            veenstra_r_tc,
-            assigned_col_start,
-            assigned_col_end,
-            worker_batches,
-            worker_leased_kops,
-            active_cnt,
-            total_leased_kops,
-            base_trisilicon_kops,
-            total_elastic
-        )
-    };
+    let diag = format!(
+        "TOOL 78 EPHEMERAL BROWSER WEBGPU COMPUTE LEASE (Action='{}' | Worker='{}' | Adapter='{}' | PoC={} | TTL=15,000ms | Measured Veenstra 37-Unit Jitter={:.4} us, R_TC={:.5}): Leased Speculative Chair-44 Cols #{:03}..#{:03} (704 Neurons, Batch #{}) contributing +{:.1}k ops/s | Active Browser Workers={} (+{:.1}k ops/s) + Base Tri-Silicon {:.1}k ops/s = {:.1}k ops/s Total Elastic Throughput!",
+        action,
+        worker_id,
+        gpu_adapter,
+        poc_hash,
+        measured_jitter_us,
+        veenstra_r_tc,
+        assigned_col_start,
+        assigned_col_end,
+        worker_batches,
+        worker_leased_kops,
+        active_cnt,
+        total_leased_kops,
+        base_trisilicon_kops,
+        total_elastic
+    );
 
     WebGpuLeaseResult {
         action,

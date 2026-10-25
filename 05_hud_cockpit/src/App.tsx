@@ -790,11 +790,14 @@ export function App() {
       }
     }, 3000);
 
+    let unloadSent = false;
     const handleUnload = () => {
+      if (unloadSent) return;
+      unloadSent = true;
       const relUrl = `/api/v1/worksteal/webgpu_lease?action=release&worker_id=${encodeURIComponent(webgpuWorkerId)}`;
       if (navigator.sendBeacon) {
         navigator.sendBeacon(relUrl);
-        navigator.sendBeacon(`http://127.0.0.1:8097${relUrl}`);
+        return;
       }
       try {
         fetch(relUrl, { keepalive: true, cache: "no-store" });
@@ -802,12 +805,10 @@ export function App() {
         // ignore
       }
     };
-    window.addEventListener("beforeunload", handleUnload);
     window.addEventListener("pagehide", handleUnload);
     return () => {
       alive = false;
       clearInterval(iv);
-      window.removeEventListener("beforeunload", handleUnload);
       window.removeEventListener("pagehide", handleUnload);
     };
   }, [webgpuLeaseActive, webgpuWorkerId]);

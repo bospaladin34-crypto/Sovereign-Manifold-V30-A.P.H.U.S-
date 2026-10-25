@@ -607,9 +607,9 @@ export function App() {
   const [webgpuActiveWorkers, setWebgpuActiveWorkers] = useState<number>(0);
   const [webgpuBatchesCount, setWebgpuBatchesCount] = useState<number>(0);
   const [webgpuColRange, setWebgpuColRange] = useState<string>("Cols #480..495 (704 Neurons)");
-  const [webgpuPocHash, setWebgpuPocHash] = useState<string>("0xFC6EB2_CPU_E8_PLUCKER_6D_INNER_MEASURED");
+  const [webgpuPocHash, setWebgpuPocHash] = useState<string>("UNMEASURED/OFFLINE");
   const [webgpuStatusDiag, setWebgpuStatusDiag] = useState<string>(
-    "STANDBY: Click 'LEASE MY BROWSER WEBGPU TO CLUSTER' to safely contribute speculative Chair-44 columns (#480..639) via WGSL @compute without affecting 15.965 Hz Decadic cadence (0.000 us jitter). Auto-releases on tab exit."
+    "STANDBY: Click 'LEASE MY BROWSER WEBGPU TO CLUSTER' to safely contribute speculative Chair-44 columns (#480..639) via WGSL @compute without affecting 15.965 Hz Decadic cadence (Awaiting Measured Lease). Auto-releases on tab exit."
   );
 
   // Execute a real WebGPU WGSL @compute micro-batch (or SIMD Float64 fallback) and return [measuredKops, pocHash, adapterLabel]
@@ -667,25 +667,39 @@ export function App() {
     } catch {
       // Fallback to deterministic SIMD Float64 Stiefel/FNO sweep
     }
+    const hasMeasuredNorms =
+      Array.isArray(e8zCachelineNorms) &&
+      e8zCachelineNorms.length >= 2080 &&
+      e8zCachelineNorms.some((v) => typeof v === "number" && v > 0);
+    if (!hasMeasuredNorms) {
+      return [0, "UNMEASURED/OFFLINE", "UNMEASURED/OFFLINE (Missing .e8z Cacheline Norms)"];
+    }
     const arr = new Float64Array(704);
     for (let i = 0; i < 704; i++) {
-      // 6D Plücker quadratic inner product over live .e8z vector slices:
+      // 6D Plücker quadratic inner product over live measured .e8z vector slices (zero synthetic fallback constants):
       // P_ab = v_a0*v_b5 - v_a1*v_b4 + v_a2*v_b3 + v_a3*v_b2 - v_a4*v_b1 + v_a5*v_b0
       const idx_a = (i * 6) % 2080;
       const idx_b = (idx_a + 44) % 2080;
-      const v_a0 = (e8zCachelineNorms && e8zCachelineNorms[idx_a]) || (0.8520 + (i % 7) * 0.01);
-      const v_a1 = (e8zCachelineNorms && e8zCachelineNorms[(idx_a + 1) % 2080]) || (0.8942 + (i % 11) * 0.005);
-      const v_a2 = (e8zCachelineNorms && e8zCachelineNorms[(idx_a + 2) % 2080]) || (0.9014 + (i % 13) * 0.004);
-      const v_a3 = (e8zCachelineNorms && e8zCachelineNorms[(idx_a + 3) % 2080]) || (0.8865 + (i % 17) * 0.003);
-      const v_a4 = (e8zCachelineNorms && e8zCachelineNorms[(idx_a + 4) % 2080]) || (0.9112 + (i % 19) * 0.002);
-      const v_a5 = (e8zCachelineNorms && e8zCachelineNorms[(idx_a + 5) % 2080]) || (0.8754 + (i % 23) * 0.001);
+      const v_a0 = e8zCachelineNorms[idx_a];
+      const v_a1 = e8zCachelineNorms[(idx_a + 1) % 2080];
+      const v_a2 = e8zCachelineNorms[(idx_a + 2) % 2080];
+      const v_a3 = e8zCachelineNorms[(idx_a + 3) % 2080];
+      const v_a4 = e8zCachelineNorms[(idx_a + 4) % 2080];
+      const v_a5 = e8zCachelineNorms[(idx_a + 5) % 2080];
 
-      const v_b0 = (e8zCachelineNorms && e8zCachelineNorms[idx_b]) || (0.9031 + (i % 5) * 0.01);
-      const v_b1 = (e8zCachelineNorms && e8zCachelineNorms[(idx_b + 1) % 2080]) || (0.8919 + (i % 7) * 0.008);
-      const v_b2 = (e8zCachelineNorms && e8zCachelineNorms[(idx_b + 2) % 2080]) || (0.9204 + (i % 11) * 0.006);
-      const v_b3 = (e8zCachelineNorms && e8zCachelineNorms[(idx_b + 3) % 2080]) || (0.8842 + (i % 13) * 0.005);
-      const v_b4 = (e8zCachelineNorms && e8zCachelineNorms[(idx_b + 4) % 2080]) || (0.8995 + (i % 17) * 0.003);
-      const v_b5 = (e8zCachelineNorms && e8zCachelineNorms[(idx_b + 5) % 2080]) || (0.9060 + (i % 19) * 0.002);
+      const v_b0 = e8zCachelineNorms[idx_b];
+      const v_b1 = e8zCachelineNorms[(idx_b + 1) % 2080];
+      const v_b2 = e8zCachelineNorms[(idx_b + 2) % 2080];
+      const v_b3 = e8zCachelineNorms[(idx_b + 3) % 2080];
+      const v_b4 = e8zCachelineNorms[(idx_b + 4) % 2080];
+      const v_b5 = e8zCachelineNorms[(idx_b + 5) % 2080];
+
+      if (
+        !(v_a0 > 0) || !(v_a1 > 0) || !(v_a2 > 0) || !(v_a3 > 0) || !(v_a4 > 0) || !(v_a5 > 0) ||
+        !(v_b0 > 0) || !(v_b1 > 0) || !(v_b2 > 0) || !(v_b3 > 0) || !(v_b4 > 0) || !(v_b5 > 0)
+      ) {
+        return [0, "UNMEASURED/OFFLINE", "UNMEASURED/OFFLINE (Zero .e8z Cacheline Component)"];
+      }
 
       const P_ab = v_a0 * v_b5 - v_a1 * v_b4 + v_a2 * v_b3 + v_a3 * v_b2 - v_a4 * v_b1 + v_a5 * v_b0;
       arr[i] = P_ab;
@@ -716,7 +730,7 @@ export function App() {
             const d = await r.json();
             setWebgpuActiveWorkers(d.active_leases_count ?? 0);
             setWebgpuLeasedKops(d.total_webgpu_leased_kops ?? 0);
-            setWebgpuStatusDiag(d.diag ?? "WebGPU Lease Released cleanly (0.000 us cadence jitter).");
+            setWebgpuStatusDiag(d.diag ?? "WebGPU Lease Released cleanly (Awaiting Measured Jitter).");
             if (d.diag) {
               setCardDiag(d.diag);
               setTermOut(d.diag);
@@ -733,6 +747,12 @@ export function App() {
     const [kops, poc, adapter] = await runBrowserWebGpuMicroBatch();
     setWebgpuAdapterName(adapter);
     setWebgpuPocHash(poc);
+    if (poc === "UNMEASURED/OFFLINE" || kops <= 0) {
+      setWebgpuLeaseActive(false);
+      setWebgpuLeasedKops(0);
+      setWebgpuStatusDiag("UNMEASURED/OFFLINE: .e8z Cacheline Norms absent or zero — no measured Plücker value computed.");
+      return;
+    }
     setWebgpuLeaseActive(true);
     for (const b of baseUrls) {
       try {
@@ -766,6 +786,15 @@ export function App() {
     const iv = setInterval(async () => {
       if (!alive) return;
       const [kops, poc, adapter] = await runBrowserWebGpuMicroBatch();
+      if (poc === "UNMEASURED/OFFLINE" || kops <= 0) {
+        if (alive) {
+          setWebgpuPocHash("UNMEASURED/OFFLINE");
+          setWebgpuAdapterName(adapter);
+          setWebgpuLeasedKops(0);
+          setWebgpuStatusDiag("UNMEASURED/OFFLINE: .e8z Cacheline Norms absent or zero.");
+        }
+        return;
+      }
       const baseUrls = ["", "http://127.0.0.1:8097"];
       for (const b of baseUrls) {
         try {
@@ -1860,7 +1889,7 @@ export function App() {
             { id: "TELEMETRY", label: "1: TELEMETRY & SCOPES (A+B)", apply: () => { setDrawerAOpen(true); setDrawerBOpen(true); setBrowserOpen(false); setDrawer1Open(false); setDrawer2Open(false); setDrawer3Open(false); setDrawer4Open(false); } },
             { id: "SYNTHESIS", label: "2: SYNTHESIS, RAG & HASKELL", apply: () => { setDrawerAOpen(false); setDrawerBOpen(false); setBrowserOpen(true); setDrawer1Open(false); setDrawer2Open(false); setDrawer3Open(false); setDrawer4Open(true); } },
             { id: "CONNECTOME", label: "3: 5W1H, SHM & VAULTS (D1-D3)", apply: () => { setDrawerAOpen(false); setDrawerBOpen(false); setBrowserOpen(false); setDrawer1Open(true); setDrawer2Open(true); setDrawer3Open(true); setDrawer4Open(false); } },
-            { id: "TOOLS", label: "4: 92-TOOL COMMAND MATRIX", apply: () => { setDrawerAOpen(false); setDrawerBOpen(false); setBrowserOpen(false); setDrawer1Open(false); setDrawer2Open(false); setDrawer3Open(false); setDrawer4Open(true); } }
+            { id: "TOOLS", label: "4: 100-TOOL COMMAND MATRIX", apply: () => { setDrawerAOpen(false); setDrawerBOpen(false); setBrowserOpen(false); setDrawer1Open(false); setDrawer2Open(false); setDrawer3Open(false); setDrawer4Open(true); } }
           ].map((lens) => (
             <button
               key={lens.id}
@@ -1884,6 +1913,12 @@ export function App() {
             style={{ background: cardCompactMode ? "#FFB454" : "#1C2632", color: cardCompactMode ? "#050A0E" : "#FFB454", border: "1px solid #FFB454", borderRadius: 4, padding: "3px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}
           >
             15-CARD DENSITY: {cardCompactMode ? "COMPACT RIBBON" : "FULL DETAIL"}
+          </button>
+          <button
+            onClick={() => callEndpoint(`/api/v1/coordinator/dag_orchestrator?q=${encodeURIComponent(cmdPrompt)}`, "AUTOPOIETIC COORDINATOR 5-STAGE DAG + E:\\ WRITE-BACK")}
+            style={{ background: "#00FFCC", color: "#050A0E", border: "1px solid #00FFCC", borderRadius: 4, padding: "3px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}
+          >
+            COORDINATOR BUS + E:\ WRITE-BACK
           </button>
           <button
             onClick={() => callEndpoint(`/api/v1/v48/research_isomorphisms?q=${encodeURIComponent(cmdPrompt)}`, "RESEARCH SYNTHESIS & ISOMORPHISMS 1 (22 QED)")}
@@ -1917,11 +1952,15 @@ export function App() {
                 autoFocus
                 value={cmdPaletteFilter}
                 onChange={(e) => setCmdPaletteFilter(e.target.value)}
-                placeholder="Type tool number (e.g. T90, T91, T92, T89), card name, or domain (haskell, duckdb, hamiltonian, leech, npage)..."
+                placeholder="Type tool number (e.g. T100, T91, T92, Coordinator, E:\), card name, or domain (haskell, duckdb, hamiltonian, leech, npage)..."
                 style={{ width: "100%", background: "#05080C", color: "#FFFEFB", border: "1px solid #00FFCC", borderRadius: 5, padding: "7px 10px", fontFamily: "monospace", fontSize: 11.5, marginBottom: 10 }}
               />
               <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 6, maxHeight: 340, overflowY: "auto" }}>
                 {[
+                  { label: "COORDINATOR: 5-Stage Autopoietic DAG + E:\\ Codegen Write-Back", ep: `/api/v1/coordinator/dag_orchestrator?q=${encodeURIComponent(cmdPrompt)}` },
+                  { label: "COORDINATOR: Internal Message Bus Ledger (C:\\ & E:\\ JSONL)", ep: `/api/v1/coordinator/message_bus?q=${encodeURIComponent(cmdPrompt)}` },
+                  { label: "COORDINATOR: Universal E:\\ Codegen Vault Sink (Rust/Lean4/WGSL)", ep: `/api/v1/coordinator/codegen_vault_sink?q=${encodeURIComponent(cmdPrompt)}` },
+                  { label: "COORDINATOR: Autopoietic Integrator & Zero-Bracket Verifier", ep: "/api/v1/coordinator/autopoietic_integrator" },
                   { label: "CHAIN 100: Century Milestone Omni-Suite (Tools 91..100)", ep: `/api/v1/v49/chain100_omni_suite?q=${encodeURIComponent(cmdPrompt)}` },
                   { label: "Tool 100: Dzhanibekov Intermediate Axis Euler Stabilizer", ep: `/api/v1/v49/tool_100_dzhanibekov_euler_axis_stabilizer?q=${encodeURIComponent(cmdPrompt)}` },
                   { label: "Tool 99: Stanford + Together HybridLink Latent E8/BPE Agent", ep: `/api/v1/v49/tool_99_stanford_together_hybrid_link_agent?q=${encodeURIComponent(cmdPrompt)}` },
@@ -1967,24 +2006,27 @@ export function App() {
           <div style={{ background: "#0b131e", border: "2px solid #b388ff", borderRadius: "6px", padding: "10px", marginTop: "6px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px", flexWrap: "wrap", gap: "6px" }}>
               <div style={{ color: "#ffb700", fontWeight: "bold", fontSize: "11px" }}>
-                SOVEREIGN OPERATOR & GOOGLE ANTIGRAVITY (GEMINI 4 ARGON 6-SUBAGENT) VAULT + 5W1H-NEURON CONNECTOME (T65..T72)
+                SOVEREIGN OPERATOR & GOOGLE ANTIGRAVITY (GEMINI 4 ARGON 7-SUBAGENT) VAULT + 5W1H-NEURON CONNECTOME (T65..T72)
               </div>
               <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
                 <input
                   type="password"
                   value={operatorPasskey}
                   onChange={(e) => setOperatorPasskey(e.target.value)}
-                  placeholder="Operator Passkey..."
+                  placeholder="Operator Key (X-Sovereign-Operator-Key)..."
                   style={{ background: "#050a0e", color: "#ffb700", border: "1px solid #b388ff", borderRadius: "4px", padding: "3px 8px", fontFamily: "monospace", fontSize: "11px" }}
                 />
                 <button
                   onClick={async () => {
                     try {
-                      const r = await fetch(`/api/v1/auth/operator_vault_gate?key=${encodeURIComponent(operatorPasskey.trim())}`, { cache: "no-store" });
+                      const r = await fetch("/api/v1/auth/operator_vault_gate", {
+                        cache: "no-store",
+                        headers: { "X-Sovereign-Operator-Key": operatorPasskey.trim() }
+                      });
                       if (r.ok) {
                         const j = await r.json();
                         setOperatorUnlocked(Boolean(j && j.authorized));
-                        setIdeConsoleLog(j && j.authorized ? "[OPERATOR VAULT UNLOCKED] Authenticated via backend ACT_OMEGA_OPERATOR_KEY." : "[OPERATOR VAULT DENIED] Invalid or unconfigured ACT_OMEGA_OPERATOR_KEY.");
+                        setIdeConsoleLog(j && j.authorized ? "[OPERATOR VAULT UNLOCKED] Authenticated via X-Sovereign-Operator-Key header." : "[OPERATOR VAULT DENIED] Invalid or missing X-Sovereign-Operator-Key header.");
                       }
                     } catch {
                       setOperatorUnlocked(false);
@@ -2914,6 +2956,25 @@ export function App() {
                 <button onClick={() => callEndpoint(`/api/v1/v49/tool_93_bekenstein_hawking_area_horizon_guard?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 93: HOLOGRAPHIC PRINCIPLE & BEKENSTEIN-HAWKING AREA BOUND")} style={{ background: "#1C2B00", color: "#A6FF00", border: "1px solid #A6FF00", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>Tool 93: Bekenstein Horizon Guard</button>
                 <button onClick={() => callEndpoint(`/api/v1/v49/tool_92_amplituhedron_9loop_hexagon_plucker?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 92: 9-LOOP PLANAR N=4 SYM HEXAGON AMPLITUHEDRON & PLUCKER")} style={{ background: "#261038", color: "#FF9EFF", border: "1px solid #FF9EFF", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>Tool 92: Amplituhedron SYM Hexagon</button>
                 <button onClick={() => callEndpoint(`/api/v1/v49/tool_91_ds3_triangulated_cft2_gravity?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 91: RANDOM EUCLIDEAN CFT2 FROM TRIANGULATED dS3 GRAVITY")} style={{ background: "#091F2C", color: "#00E5FF", border: "1px solid #00E5FF", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>Tool 91: Triangulated dS3 Gravity</button>
+              </div>
+            </div>
+
+            {/* v48.0.0 / v49.0.0 Pillar 6: Sovereign Autopoietic Coordinator, Internal Message Bus & Universal E:\ Write-Back Pipeline */}
+            <div style={{ background: "#061414", border: "1.5px solid #56D364", borderRadius: 5, padding: "7px 10px", marginBottom: 6 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 6, marginBottom: 5 }}>
+                <span style={{ color: "#56D364", fontWeight: "bold", fontSize: 10.5 }}>
+                  [PILLAR 6: SOVEREIGN AUTOPOIETIC COORDINATOR, INTERNAL MESSAGE BUS &amp; UNIVERSAL E:\ WRITE-BACK PIPELINE]:
+                </span>
+                <span style={{ color: "#00FFCC", fontSize: 9.5, fontWeight: "bold" }}>
+                  6-Topic Pub/Sub Bus | Versioned E:\autopoietic_codegen\ Sink | Zero-Bracket &amp; Lean 4 Integrator | Closed-Loop 5-Stage DAG
+                </span>
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+                <button onClick={() => callEndpoint(`/api/v1/coordinator/dag_orchestrator?q=${encodeURIComponent(cmdPrompt)}`, "COORDINATOR: 5-STAGE CLOSED-LOOP AUTOPOIETIC DAG + E:\\ WRITE-BACK")} style={{ background: "#56D364", color: "#050A0E", border: "none", borderRadius: 4, padding: "4px 8px", cursor: "pointer", fontFamily: "monospace", fontSize: 9.5, fontWeight: "bold" }}>RUN 5-STAGE AUTOPOIETIC COORDINATOR DAG</button>
+                <button onClick={() => callEndpoint(`/api/v1/coordinator/message_bus?q=${encodeURIComponent(cmdPrompt)}`, "COORDINATOR: INTERNAL MESSAGE BUS PUB/SUB LEDGER")} style={{ background: "#091F2C", color: "#00E5FF", border: "1px solid #00E5FF", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>Coordinator: Publish &amp; Inspect Message Bus</button>
+                <button onClick={() => callEndpoint(`/api/v1/coordinator/codegen_vault_sink?kind=rust&q=${encodeURIComponent(cmdPrompt)}`, "COORDINATOR: WRITE-BACK RUST CODEGEN TO E:\\ VAULT")} style={{ background: "#3A1C00", color: "#FFB454", border: "1px solid #FFB454", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>Write-Back Rust Codegen -&gt; E:\</button>
+                <button onClick={() => callEndpoint(`/api/v1/coordinator/codegen_vault_sink?kind=lean4&q=${encodeURIComponent(cmdPrompt)}`, "COORDINATOR: WRITE-BACK LEAN 4 PROOF TO E:\\ VAULT")} style={{ background: "#1F1030", color: "#B388FF", border: "1px solid #B388FF", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>Write-Back Lean 4 Proof -&gt; E:\</button>
+                <button onClick={() => callEndpoint("/api/v1/coordinator/autopoietic_integrator", "COORDINATOR: AUTOPOIETIC INTEGRATOR & ZERO-BRACKET VERIFIER")} style={{ background: "#261038", color: "#FFD700", border: "1px solid #FFD700", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>Audit Staged E:\ Codegen (Zero-Bracket Verifier)</button>
               </div>
             </div>
 

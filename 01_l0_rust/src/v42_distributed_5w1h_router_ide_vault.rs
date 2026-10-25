@@ -29,19 +29,24 @@ fn constant_time_eq_str(a: &str, b: &str) -> bool {
 
 pub fn verify_operator_vault_secret(supplied_key: &str, is_localhost: bool) -> bool {
     let clean_supplied = supplied_key.trim();
-    if clean_supplied.is_empty() {
+    if clean_supplied.is_empty() || clean_supplied.len() < 24 {
         return false;
     }
     let expected = std::env::var("ACT_OMEGA_OPERATOR_KEY")
         .or_else(|_| std::env::var("SOVEREIGN_OPERATOR_KEY"))
         .ok()
         .or_else(|| {
+            std::fs::read_to_string("C:/Users/Nbell/.act_omega_operator_vault_key")
+                .ok()
+                .map(|s| String::from(s.trim()))
+        })
+        .or_else(|| {
             std::fs::read_to_string("00_control/.operator_vault_key")
                 .ok()
                 .map(|s| String::from(s.trim()))
         })
         .unwrap_or_default();
-    if expected.is_empty() {
+    if expected.is_empty() || expected.len() < 24 {
         return false;
     }
     is_localhost && constant_time_eq_str(clean_supplied, &expected)

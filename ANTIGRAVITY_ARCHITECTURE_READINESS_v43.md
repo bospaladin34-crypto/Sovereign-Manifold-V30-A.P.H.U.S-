@@ -75,7 +75,7 @@ flowchart TD
   - **Drawer A**: All **15 Interactive Telemetry Cards** intact.
   - **Drawer B**: **60 FPS 3D Stiefel/Theodorus Vector Scope**, **15.965 Hz Decadic Oscilloscope**, and **16x130 (`2,080`-Cacheline) Heatmap** intact.
   - **Drawer 3 & Drawer 4**: In-HUD Lean 4 QED Explorer (`364/364 QED`), complete **Tools 01–72 (`CHAIN 72`)** button matrix, and Natural Language Converse terminal intact.
-  - **Quick-Jump Focus Bar & Operator Vault**: Filter bar (`ALL`, `LOQ 15`, `PIXEL 10`, `PIXEL 8`, `TELEMETRY`, `SCOPES`, `PROOFS`, `TOOLS`, `VAULT`) and passkey-gated Operator & Antigravity Vault (`SOVEREIGN-LOQ15-4200`) intact.
+  - **Quick-Jump Focus Bar & Operator Vault**: Filter bar (`ALL`, `LOQ 15`, `PIXEL 10`, `PIXEL 8`, `TELEMETRY`, `SCOPES`, `PROOFS`, `TOOLS`, `VAULT`) and passkey-gated Operator & Antigravity Vault (`[REDACTED_ROTATED_PASSKEY]`) intact.
 
 ### 2.4 `@dual-pixel-edge-ndk` — Dual-Pixel Edge Silicon & NDK APK
 - **Live Hardware ADB Lockstep**:

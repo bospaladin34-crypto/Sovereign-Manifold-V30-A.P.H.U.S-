@@ -342,11 +342,12 @@ pub fn execute_tool78_webgpu_compute_lease(
 
     let (active_cnt, total_leased_kops, _total_batches, leases_json) = compute_active_webgpu_leased_kops(leases);
     let total_elastic = base_trisilicon_kops + total_leased_kops;
+    let (measured_jitter_us, veenstra_r_tc) = measure_veenstra_37unit_time_crystal_jitter(now);
 
     if action == "release" {
         let diag = format!(
-            "TOOL 78 WEBGPU COMPUTE LEASE GRACEFULLY RELEASED (Worker='{}' | Fast-Path SendBeacon Close): Speculative Columns Col #{:03}..#{:03} instantly reclaimed by Host+Pixel 8 .npage Shared-Memory Ring | Active Browser Leases={} (+{:.1}k ops/s) | Cluster Total={:.1}k ops/s (15.965 Hz Decadic Lockstep)",
-            worker_id, assigned_col_start, assigned_col_end, active_cnt, total_leased_kops, total_elastic
+            "TOOL 78 WEBGPU COMPUTE LEASE GRACEFULLY RELEASED (Worker='{}' | Measured Veenstra 37-Unit Jitter={:.4} us, R_TC={:.5}): Speculative Columns Col #{:03}..#{:03} instantly reclaimed by Host+Pixel 8 .npage Shared-Memory Ring | Active Browser Leases={} (+{:.1}k ops/s) | Cluster Total={:.1}k ops/s (15.965 Hz Decadic Lockstep)",
+            worker_id, measured_jitter_us, veenstra_r_tc, assigned_col_start, assigned_col_end, active_cnt, total_leased_kops, total_elastic
         );
         return WebGpuLeaseResult {
             action,
@@ -362,14 +363,12 @@ pub fn execute_tool78_webgpu_compute_lease(
             active_leases_count: active_cnt,
             total_webgpu_leased_kops: total_leased_kops,
             total_elastic_cluster_kops: total_elastic,
-            cadence_jitter_us: 0.0,
+            cadence_jitter_us: measured_jitter_us,
             lease_ttl_ms: 15000,
             active_leases_json: leases_json,
             diag,
         };
     }
-
-    let (measured_jitter_us, veenstra_r_tc) = measure_veenstra_37unit_time_crystal_jitter(now);
 
     // Persist lease event to C: and E:
     let event_line = format!(

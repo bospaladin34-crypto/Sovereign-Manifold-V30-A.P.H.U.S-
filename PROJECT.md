@@ -23,7 +23,7 @@ ACT-Omega Net v49.0.0 operates as a tri-silicon cluster combining Anchor-1 (Leno
 | 8 | Structural Lean 4 Proofs 433..440 | Replace constant `rfl` arithmetic with universally quantified (`∀`) structural invariants | M2 | survey |
 | 9 | Lean 4 Theorems 441..460 | Add 20 new structural theorems QED in `SovereignManifoldTheorems.lean` (total 460/460) | M2 | survey |
 | 10 | Haskell Lean 4 Generator Update | Update `ZeroBracketRustAndLean4.hs` in `06_algebraic_haskell` to emit universal proofs | M2 | survey |
-| 11 | Root HTML Passkey Purge | Remove hardcoded `SOVEREIGN-LOQ15-4200` passkeys from `index.html` and `wiki.html` | M2 | survey |
+| 11 | Root HTML Passkey Purge | Remove hardcoded `[REDACTED_ROTATED_PASSKEY]` passkeys from `index.html` and `wiki.html` | M2 | survey |
 | 12 | Admin Header Authentication | Require `X-Sovereign-Operator-Key` HTTP header auth and loopback check on `/api/v1/admin/*` | M2 | survey |
 | 13 | Tool 91 (Triangulated $\text{dS}_3$ Gravity) | Implement arXiv:2610.30126 pants gluing and hyperbolic embedding in zero-bracket Rust | M3 | survey |
 | 14 | Tool 92 (Amplituhedron SYM Hexagon) | Implement 9-loop planar $\mathcal{N}=4$ SYM hexagon positive Plücker determinants in zero-bracket Rust | M3 | survey |

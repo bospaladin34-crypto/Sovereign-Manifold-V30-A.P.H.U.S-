@@ -31,6 +31,7 @@ include!("../v46_open_vocab_131k_42240_connectome.rs");
 include!("../v47_autonomous_leech_rag_scientist.rs");
 include!("../v48_haskell_codegen_invariants.rs");
 include!("../v48_haskell_duckdb_hamiltonian_model.rs");
+include!("../v48_autopoietic_coordinator_bus.rs");
 
 // --- Milestone 3: v49.0.0 Tools 91..100 & CHAIN 100 Century Milestone Module ---
 #[path = "../v49_muse_clean_and_chain100_synthesis.rs"]
@@ -1067,17 +1068,27 @@ fn constant_time_compare_operator_key(supplied: &str, expected: &str) -> bool {
     diff == 0
 }
 
-/// Retrieve the expected sovereign operator key from environment or local key file.
+/// Retrieve the expected sovereign operator key from environment or external user vault file.
 fn resolve_expected_operator_key() -> String {
-    std::env::var("ACT_OMEGA_OPERATOR_KEY")
+    let raw = std::env::var("ACT_OMEGA_OPERATOR_KEY")
         .or_else(|_| std::env::var("SOVEREIGN_OPERATOR_KEY"))
         .ok()
+        .or_else(|| {
+            fs::read_to_string("C:/Users/Nbell/.act_omega_operator_vault_key")
+                .ok()
+                .map(|s| String::from(s.trim()))
+        })
         .or_else(|| {
             fs::read_to_string("00_control/.operator_vault_key")
                 .ok()
                 .map(|s| String::from(s.trim()))
         })
-        .unwrap_or_default()
+        .unwrap_or_default();
+    if raw.len() < 24 {
+        String::new()
+    } else {
+        raw
+    }
 }
 
 /// Verify administrative and operator vault requests via `X-Sovereign-Operator-Key` header.
@@ -1086,7 +1097,7 @@ fn verify_operator_header_auth(header_key: &str, is_loopback: bool) -> bool {
         return false;
     }
     let clean_supplied = header_key.trim();
-    if clean_supplied.is_empty() {
+    if clean_supplied.len() < 24 {
         return false;
     }
     let expected = resolve_expected_operator_key();
@@ -1438,6 +1449,15 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.last_card_diag = diag.clone();
             st.last_term_cmd = format!("card.execute({})", c_clamped + 1);
             st.last_term_out = diag.clone();
+            let _ = publish_coordinator_bus_envelope(
+                "TOPIC_TELEMETRY_CARD_EVENT",
+                &format!("Drawer_A_Card_{}", c_clamped + 1),
+                "Sovereign_Coordinator_Bus",
+                &diag,
+                E_BUS_LEDGER_JSONL,
+                diag.len() as u64,
+                st.decadic_sub_epoch,
+            );
             let json = format!(
                 "{{\"status\":\"CARD_EXECUTED_OTA_SYNCED\",\"card_id\":{},\"generation\":{},\"diag\":\"{}\"}}",
                 c_clamped, st.gen_counter, diag
@@ -1482,6 +1502,9 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 h_live.metabolic_atp_drive,
                 &ssd_path,
             );
+            let _ = persist_codegen_artifact_to_e_vault("browser_4stage_transducer", "rust", &op.operationalized_rust_code, st.decadic_sub_epoch);
+            let _ = persist_codegen_artifact_to_e_vault("browser_4stage_transducer", "lean4", &op.operationalized_lean4_theorem, st.decadic_sub_epoch);
+            let _ = persist_codegen_artifact_to_e_vault("browser_4stage_transducer", "wgsl", &op.operationalized_wgsl_kernel, st.decadic_sub_epoch);
             st.active_shard_id = op.crystallized_shard_id as u64;
             st.last_browser_url = target_url.clone();
             st.last_browser_trace = op.stage_trace.clone();
@@ -2192,11 +2215,10 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
         if clean_path == "/api/v1/router/distributed_5w1h_dispatch" || clean_path == "/api/v1/tools/t65" {
             let who_q = extract_query_param(raw_target, "who");
             let what_q = extract_query_param(raw_target, "what");
-            let key_q = extract_query_param(raw_target, "key");
+            let has_query_key = !extract_query_param(raw_target, "key").is_empty();
             let who = if who_q.is_empty() { "Host_LOQ15_Operator" } else { &who_q };
             let what = if what_q.is_empty() { "L0_Tensor_FNO" } else { &what_q };
-            let eff_key = if !operator_header_key.is_empty() { &operator_header_key } else { &key_q };
-            let auth_ok = verify_operator_vault_secret(eff_key, is_loopback);
+            let auth_ok = !has_query_key && verify_operator_header_auth(&operator_header_key, is_loopback);
             let json = tool_65_distributed_5w1h_router_json(who, what, auth_ok);
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
             continue;
@@ -2207,22 +2229,15 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             continue;
         }
         if clean_path == "/api/v1/auth/operator_vault_gate" || clean_path == "/api/v1/tools/t67" {
-            let key_q = {
-                let k1 = extract_query_param(raw_target, "key");
-                if !k1.is_empty() { k1 } else { q_arg.clone() }
-            };
-            let eff_key = if !operator_header_key.is_empty() { &operator_header_key } else { &key_q };
+            let has_query_key = !extract_query_param(raw_target, "key").is_empty();
+            let eff_key = if has_query_key { "" } else { &operator_header_key };
             let json = tool_67_operator_vault_gate_json(eff_key, is_loopback);
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
             continue;
         }
         if clean_path == "/api/v1/hud/embedded_ide_cockpit" || clean_path == "/api/v1/tools/t68" {
-            let key_q = {
-                let k1 = extract_query_param(raw_target, "key");
-                if !k1.is_empty() { k1 } else { q_arg.clone() }
-            };
-            let eff_key = if !operator_header_key.is_empty() { &operator_header_key } else { &key_q };
-            let auth_ok = verify_operator_vault_secret(eff_key, is_loopback);
+            let has_query_key = !extract_query_param(raw_target, "key").is_empty();
+            let auth_ok = !has_query_key && verify_operator_header_auth(&operator_header_key, is_loopback);
             let json = tool_68_embedded_ide_cockpit_json(auth_ok);
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
             continue;
@@ -3831,9 +3846,50 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             continue;
         }
 
+        // 7G-0. v48.0.0 / v49.0.0 Pillar 6: Sovereign Autopoietic Coordinator, Internal Message Bus & E:\ Write-Back Sink
+        if clean_path.starts_with("/api/v1/coordinator/") {
+            let mut st = match state.lock() {
+                Ok(g) => g,
+                Err(p) => p.into_inner(),
+            };
+            st.gen_counter += 1;
+            st.tool_chain_runs += 1;
+            st.ssd_tier2_syncs += 1;
+            let topic_q = extract_query_param(raw_target, "topic");
+            let source_q = extract_query_param(raw_target, "source");
+            let target_q = extract_query_param(raw_target, "target");
+            let kind_q = extract_query_param(raw_target, "kind");
+            let payload_q = if !q_arg.is_empty() {
+                q_arg.clone()
+            } else if !post_body.trim().is_empty() {
+                post_body.trim().to_string()
+            } else {
+                String::new()
+            };
+            let json = if clean_path == "/api/v1/coordinator/message_bus" {
+                execute_coordinator_message_bus(&topic_q, &source_q, &target_q, &payload_q, st.decadic_sub_epoch)
+            } else if clean_path == "/api/v1/coordinator/codegen_vault_sink" {
+                execute_coordinator_codegen_vault_sink(&source_q, &kind_q, &payload_q, st.decadic_sub_epoch)
+            } else if clean_path == "/api/v1/coordinator/autopoietic_integrator" {
+                execute_coordinator_autopoietic_integrator(st.decadic_sub_epoch)
+            } else {
+                execute_coordinator_dag_orchestrator(&payload_q, st.decadic_sub_epoch)
+            };
+            let diag = extract_json_str_field(&json, "diag");
+            if !diag.is_empty() {
+                st.last_card_diag = diag.clone();
+                st.last_term_out = diag;
+            }
+            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
+            continue;
+        }
+
         // 7G. v48.0.0 Layer 1.5 Haskell Algebra, DuckDB Columnar Vector & Hamiltonian Episodic Model (Tools 90..92)
         if clean_path.starts_with("/api/v1/v48/") {
-            let mut st = state.lock().unwrap();
+            let mut st = match state.lock() {
+                Ok(g) => g,
+                Err(p) => p.into_inner(),
+            };
             st.gen_counter += 1;
             st.nl_converse_runs += 1;
             let q_in = if !q_arg.is_empty() {
@@ -3854,6 +3910,15 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             } else {
                 execute_v48_omni_suite(&q_in)
             };
+            let _ = publish_coordinator_bus_envelope(
+                "TOPIC_TOOL_EXECUTION_RESULT",
+                clean_path,
+                "Sovereign_Coordinator_Bus",
+                &q_in,
+                E_BUS_LEDGER_JSONL,
+                json.len() as u64,
+                st.decadic_sub_epoch,
+            );
             st.last_card_diag = format!("EXEC({}) -> OK", clean_path);
             st.last_term_out = format!("EXEC({}) -> OK", clean_path);
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);

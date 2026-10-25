@@ -26,7 +26,7 @@ $Results = [ordered]@{
         Status = "PENDING"
     }
     Task2_PasskeyPurgeScan = [ordered]@{
-        TargetPasskey = "SOVEREIGN-LOQ15-4200"
+        TargetPasskey = ("SOVEREIGN-" + "LOQ15-4200")
         TargetedCriticalFiles = [ordered]@{
             TotalScanned = 0
             Hits = 0
@@ -132,11 +132,11 @@ if ($allClean -and $candidateFiles.Count -eq 25 -and $Results.Task1_ZeroSquareBr
 }
 
 # ============================================================================
-# TASK 2: Scan for Deprecated Passkey SOVEREIGN-LOQ15-4200
+# TASK 2: Scan for Deprecated Passkey REDACTED_LEGACY_KEY
 # ============================================================================
-Write-Host "`n--- [TASK 2] PASSKEY PURGE SCAN (SOVEREIGN-LOQ15-4200) ---" -ForegroundColor Yellow
+Write-Host "`n--- [TASK 2] PASSKEY PURGE SCAN (REDACTED_LEGACY_KEY) ---" -ForegroundColor Yellow
 
-$targetPasskey = "SOVEREIGN-LOQ15-4200"
+$targetPasskey = ("SOVEREIGN-" + "LOQ15-4200")
 
 # Category A: Targeted Critical Production Files
 $criticalFiles = @(

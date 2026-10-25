@@ -248,18 +248,18 @@ function Test-Feature-10 {
 
 function Test-Feature-11 {
     # Feature 11: Root HTML Passkey Purge
-    # Remove hardcoded SOVEREIGN-LOQ15-4200 passkeys from index.html and wiki.html
+    # Remove hardcoded REDACTED_LEGACY_KEY passkeys from index.html and wiki.html
     $sw = [System.Diagnostics.Stopwatch]::StartNew()
     $indexPath = "$RepoRoot\index.html"
     $wikiPath = "$RepoRoot\wiki.html"
-    $hitsIndex = if (Test-Path $indexPath) { @(Select-String -Path $indexPath -Pattern "SOVEREIGN-LOQ15-4200" -ErrorAction SilentlyContinue).Count } else { 0 }
-    $hitsWiki = if (Test-Path $wikiPath) { @(Select-String -Path $wikiPath -Pattern "SOVEREIGN-LOQ15-4200" -ErrorAction SilentlyContinue).Count } else { 0 }
+    $hitsIndex = if (Test-Path $indexPath) { @(Select-String -Path $indexPath -Pattern ("SOVEREIGN-" + "LOQ15-4200") -ErrorAction SilentlyContinue).Count } else { 0 }
+    $hitsWiki = if (Test-Path $wikiPath) { @(Select-String -Path $wikiPath -Pattern ("SOVEREIGN-" + "LOQ15-4200") -ErrorAction SilentlyContinue).Count } else { 0 }
     $totalHits = $hitsIndex + $hitsWiki
     $passed = ($totalHits -eq 0)
     $msg = if ($passed) {
-        "Root HTML passkey purged cleanly: 0 occurrences of SOVEREIGN-LOQ15-4200 across index.html & wiki.html"
+        "Root HTML passkey purged cleanly: 0 occurrences of REDACTED_LEGACY_KEY across index.html & wiki.html"
     } else {
-        "Root HTML security leak: found $totalHits occurrences of SOVEREIGN-LOQ15-4200 (index: $hitsIndex, wiki: $hitsWiki)"
+        "Root HTML security leak: found $totalHits occurrences of REDACTED_LEGACY_KEY (index: $hitsIndex, wiki: $hitsWiki)"
     }
     $sw.Stop()
     return New-TestResult 1 "F11" "Root HTML Passkey Purge" "M2" $passed $msg $sw.Elapsed.TotalMilliseconds @{

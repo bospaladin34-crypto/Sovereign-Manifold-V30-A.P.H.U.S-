@@ -109,7 +109,7 @@ Simulates end-to-end cluster lifecycle workflows under production conditions:
 | **F08** | Structural Lean 4 Proofs 433..440 | M2 | `F08` | `B10`, `INT05` | Universally quantified (`∀`) structural invariants (0 constant `rfl`) |
 | **F09** | Lean 4 Theorems 441..460 | M2 | `F09` | `INT05`, `SCEN04` | Total 460 theorems QED in `SovereignManifoldTheorems.lean` |
 | **F10** | Haskell Lean 4 Generator Update | M2 | `F10` | `INT05` | `ZeroBracketRustAndLean4.hs` emits universal structural proofs |
-| **F11** | Root HTML Passkey Purge | M2 | `F11` | `INT06`, `SCEN03` | 0 occurrences of `SOVEREIGN-LOQ15-4200` in `index.html` & `wiki.html` |
+| **F11** | Root HTML Passkey Purge | M2 | `F11` | `INT06`, `SCEN03` | 0 occurrences of `[REDACTED_ROTATED_PASSKEY]` in `index.html` & `wiki.html` |
 | **F12** | Admin Header Authentication | M2 | `F12` | `B01`, `B02`, `INT06` | `X-Sovereign-Operator-Key` header auth on `/api/v1/admin/*` |
 | **F13** | Tool 91 (Triangulated $\text{dS}_3$ Gravity) | M3 | `F13` | `INT02` | arXiv:2610.30126 pants gluing (genus 3, 4 pants, 42,240 neurons) |
 | **F14** | Tool 92 (Amplituhedron SYM Hexagon) | M3 | `F14` | `INT01`, `INT02` | 6-particle 9-loop Plücker determinants and CPU 6D inner product |

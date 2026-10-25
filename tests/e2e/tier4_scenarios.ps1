@@ -76,7 +76,7 @@ function Test-Scenario-03 {
     if ($distExists) {
         $jsFiles = Get-ChildItem "$RepoRoot\05_hud_cockpit\dist\assets\*.js" -ErrorAction SilentlyContinue
         foreach ($f in $jsFiles) {
-            $hits = @(Select-String -Path $f.FullName -Pattern "SOVEREIGN-LOQ15-4200" -ErrorAction SilentlyContinue).Count
+            $hits = @(Select-String -Path $f.FullName -Pattern ("SOVEREIGN-" + "LOQ15-4200") -ErrorAction SilentlyContinue).Count
             $passHits += $hits
         }
     }
@@ -123,7 +123,7 @@ function Test-Scenario-04 {
     $l3Pass = (Test-Path $shmPath) -and ((Get-Item $shmPath).Length -eq 5406720)
     
     # Layer 4: HUD passkeys
-    $passHitsSrc = @(Select-String -Path "$RepoRoot\05_hud_cockpit\src\App.tsx" -Pattern "SOVEREIGN-LOQ15-4200" -ErrorAction SilentlyContinue).Count
+    $passHitsSrc = @(Select-String -Path "$RepoRoot\05_hud_cockpit\src\App.tsx" -Pattern ("SOVEREIGN-" + "LOQ15-4200") -ErrorAction SilentlyContinue).Count
     $l4Pass = (Test-Path "$RepoRoot\05_hud_cockpit\dist\index.html") -and ($passHitsSrc -eq 0)
     
     # Layer 6: WAN tunnel

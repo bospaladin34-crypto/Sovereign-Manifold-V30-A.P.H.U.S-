@@ -1,4 +1,4 @@
-﻿{
+{
     "Timestamp":  "2026-10-25T02:12:42Z",
     "Task1_ZeroSquareBrackets":  {
                                      "TotalModulesEvaluated":  25,
@@ -235,7 +235,7 @@
                                      "Status":  "PASS"
                                  },
     "Task2_PasskeyPurgeScan":  {
-                                   "TargetPasskey":  "SOVEREIGN-LOQ15-4200",
+                                   "TargetPasskey":  "[REDACTED_ROTATED_PASSKEY]",
                                    "TargetedCriticalFiles":  {
                                                                  "TotalScanned":  8,
                                                                  "Hits":  0,

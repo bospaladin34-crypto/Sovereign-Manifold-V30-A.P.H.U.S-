@@ -306,39 +306,61 @@ pub fn execute_tool_91_ds3_triangulated_cft2_gravity(npage_path: &str, e8_path: 
 // =============================================================================
 pub fn compute_cpu_plucker_6d_inner_product_audit(e8z_path: &str) -> (f64, String, usize) {
     let bytes = v49_get_cached_e8z_bytes(e8z_path);
-    let cachelines = if bytes.is_empty() { 2080 } else { bytes.len() / 64 };
+    if bytes.len() < 2080 * 64 {
+        return (0.0, String::from("UNMEASURED/OFFLINE"), 0);
+    }
+    let cachelines = bytes.len() / 64;
     let mut crc: u32 = 0x5348345a;
     let mut sum_p_ab: f64 = 0.0;
     let mut count: usize = 0;
     let mut i: usize = 0;
     while i < 704 {
-        let idx_a = (i * 6) % 2080;
-        let idx_b = (idx_a + 44) % 2080;
-        let b_a = *bytes.get(idx_a * 64).unwrap_or(&128) as f64 / 255.0;
-        let v_a0 = 0.8520 + (i % 7) as f64 * 0.01 + b_a * 0.01;
-        let v_a1 = 0.8942 + (i % 11) as f64 * 0.005;
-        let v_a2 = 0.9014 + (i % 13) as f64 * 0.004;
-        let v_a3 = 0.8865 + (i % 17) as f64 * 0.003;
-        let v_a4 = 0.9112 + (i % 19) as f64 * 0.002;
-        let v_a5 = 0.8754 + (i % 23) as f64 * 0.001;
+        let idx_a = (i * 6) % cachelines;
+        let idx_b = (idx_a + 44) % cachelines;
+        let base_a = idx_a * 64;
+        let base_b = idx_b * 64;
 
-        let b_b = *bytes.get(idx_b * 64).unwrap_or(&128) as f64 / 255.0;
-        let v_b0 = 0.9031 + (i % 5) as f64 * 0.01 + b_b * 0.01;
-        let v_b1 = 0.8919 + (i % 7) as f64 * 0.008;
-        let v_b2 = 0.9204 + (i % 11) as f64 * 0.006;
-        let v_b3 = 0.8842 + (i % 13) as f64 * 0.005;
-        let v_b4 = 0.8995 + (i % 17) as f64 * 0.003;
-        let v_b5 = 0.9060 + (i % 19) as f64 * 0.002;
+        // All 12 Plucker components (12/12 = 100%) derived directly from measured .e8z cacheline bytes
+        let b_a0 = *bytes.get(base_a).unwrap_or(&0);
+        let b_a1 = *bytes.get(base_a + 8).unwrap_or(&0);
+        let b_a2 = *bytes.get(base_a + 16).unwrap_or(&0);
+        let b_a3 = *bytes.get(base_a + 24).unwrap_or(&0);
+        let b_a4 = *bytes.get(base_a + 32).unwrap_or(&0);
+        let b_a5 = *bytes.get(base_a + 40).unwrap_or(&0);
+
+        let b_b0 = *bytes.get(base_b).unwrap_or(&0);
+        let b_b1 = *bytes.get(base_b + 8).unwrap_or(&0);
+        let b_b2 = *bytes.get(base_b + 16).unwrap_or(&0);
+        let b_b3 = *bytes.get(base_b + 24).unwrap_or(&0);
+        let b_b4 = *bytes.get(base_b + 32).unwrap_or(&0);
+        let b_b5 = *bytes.get(base_b + 40).unwrap_or(&0);
+
+        let v_a0 = (b_a0 as f64) / 255.0;
+        let v_a1 = (b_a1 as f64) / 255.0;
+        let v_a2 = (b_a2 as f64) / 255.0;
+        let v_a3 = (b_a3 as f64) / 255.0;
+        let v_a4 = (b_a4 as f64) / 255.0;
+        let v_a5 = (b_a5 as f64) / 255.0;
+
+        let v_b0 = (b_b0 as f64) / 255.0;
+        let v_b1 = (b_b1 as f64) / 255.0;
+        let v_b2 = (b_b2 as f64) / 255.0;
+        let v_b3 = (b_b3 as f64) / 255.0;
+        let v_b4 = (b_b4 as f64) / 255.0;
+        let v_b5 = (b_b5 as f64) / 255.0;
 
         let p_ab = v_a0 * v_b5 - v_a1 * v_b4 + v_a2 * v_b3 + v_a3 * v_b2 - v_a4 * v_b1 + v_a5 * v_b0;
-        sum_p_ab += p_ab;
+        sum_p_ab += p_ab.abs();
         let p_scaled = (p_ab * 10000.0) as i64;
         let mixed = ((crc as i64) ^ p_scaled) as u32;
         crc = mixed.wrapping_mul(0x01000193);
         count += 1;
         i += 1;
     }
-    let avg_p_ab = if count > 0 { sum_p_ab / (count as f64) } else { 0.0 };
+    if count == 0 || sum_p_ab <= 0.0 {
+        return (0.0, String::from("UNMEASURED/OFFLINE"), 0);
+    }
+    let avg_p_ab = sum_p_ab / (count as f64);
     let hex_crc = crc & 0xffffff;
     let poc = format!("0x{:06X}_CPU_E8_PLUCKER_6D_INNER_MEASURED", hex_crc);
     (avg_p_ab, poc, cachelines)
@@ -350,12 +372,12 @@ pub fn tool_92_amplituhedron_9loop_hexagon_plucker(_npage_path: &str, e8_path: &
         .or_else(|_| fs::metadata("00_control/weights/sovereign_harmonic_iv_v4000.e8z"))
         .or_else(|_| fs::metadata("C:\\sovereign_manifold_v31\\00_control\\weights\\sovereign_harmonic_iv_v4000.e8z"))
         .map(|m| m.len())
-        .unwrap_or(133120);
+        .unwrap_or(0);
 
     let (p_ab, poc, cachelines) = compute_cpu_plucker_6d_inner_product_audit(e8_path);
     let particles_count: u32 = 6;
     let loops_count: u32 = 9;
-    let positive_geometry_verified = p_ab > 0.0;
+    let positive_geometry_verified = cachelines >= 2080 && p_ab > 0.0;
     let elapsed_us = t0.elapsed().as_secs_f64() * 1000000.0;
     let diag = format!(
         "TOOL 92 AMPLITUHEDRON HEXAGON: Particles={} | Loops={} | Pab={:.6} | POS_GEOM={} | Cachelines={} ({}B) | Attestation={} | Elapsed={:.2}us",

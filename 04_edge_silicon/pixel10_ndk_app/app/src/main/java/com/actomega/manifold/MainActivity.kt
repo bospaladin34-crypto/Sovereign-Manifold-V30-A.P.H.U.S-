@@ -1808,6 +1808,9 @@ fun SovereignCockpitV326Screen() {
                 ToolButton603010("4:100 TOOLS", Color(0xFF261038), Color(0xFFFFD700), Modifier.weight(1f)) {
                     drawerAOpen = false; drawerBOpen = false; browserOpen = false; drawer1Open = false; drawer2Open = false; drawer3Open = false; drawer4Open = true
                 }
+                ToolButton603010("BUS+E:", Color(0xFF062A24), Color(0xFF56D364), Modifier.weight(1f)) {
+                    invokeHostEndpoint("/api/v1/coordinator/dag_orchestrator", cmdPromptText, "COORDINATOR: 5-STAGE DAG + E:\\ WRITE-BACK")
+                }
             }
         }
 

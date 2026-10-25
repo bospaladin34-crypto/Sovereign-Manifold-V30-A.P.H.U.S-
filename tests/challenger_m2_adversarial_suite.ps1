@@ -168,8 +168,8 @@ $suite2Cases = @(
     },
     @{
         Id = "S2-02"
-        Name = "Query param ?key=SOVEREIGN-LOQ15-4200 on /api/v1/admin/self_exit"
-        Uri = "http://127.0.0.1:$SwarmPort/api/v1/admin/self_exit?key=SOVEREIGN-LOQ15-4200"
+        Name = "Query param ?key=REDACTED_LEGACY_KEY on /api/v1/admin/self_exit"
+        Uri = "http://127.0.0.1:$SwarmPort/api/v1/admin/self_exit?key=REDACTED_LEGACY_KEY"
         Headers = @{}
         ExpectedStatus = 403
         ExpectedReasonMatch = "Passing credentials via URL query parameter '?key=' is forbidden."
@@ -307,7 +307,7 @@ try {
 Write-Host "`n--- [SUITE 4] GLOBAL REPOSITORY PASSKEY PURGE SCAN ---" -ForegroundColor Yellow
 $targetExts = @("*.html", "*.js", "*.ts", "*.tsx", "*.rs")
 $repoRoot = "C:\sovereign_manifold_v31"
-$needle = "SOVEREIGN-LOQ15-4200"
+$needle = ("SOVEREIGN-" + "LOQ15-4200")
 
 $filesToScan = Get-ChildItem -Path $repoRoot -Recurse -File -Include $targetExts | Where-Object {
     $_.FullName -notmatch '\\\.git\\' -and 

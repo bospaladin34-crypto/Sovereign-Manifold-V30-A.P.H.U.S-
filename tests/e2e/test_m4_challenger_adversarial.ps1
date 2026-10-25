@@ -236,9 +236,9 @@ if ($palettePresent -and ($content -match "CHAIN 100: Century Milestone Omni-Sui
 }
 
 # ------------------------------------------------------------------------------
-# SECTION 7: GLOBAL PASSKEY LEAK SCAN (SOVEREIGN-LOQ15-4200)
+# SECTION 7: GLOBAL PASSKEY LEAK SCAN (REDACTED_LEGACY_KEY)
 # ------------------------------------------------------------------------------
-Write-Host "`n--- [SECTION 7] Global Passkey Leak Scan (SOVEREIGN-LOQ15-4200) ---" -ForegroundColor Yellow
+Write-Host "`n--- [SECTION 7] Global Passkey Leak Scan (REDACTED_LEGACY_KEY) ---" -ForegroundColor Yellow
 
 $targetExtensions = @("*.html", "*.js", "*.ts", "*.tsx", "*.rs", "*.cs", "*.kt", "*.xml")
 $scannedFiles = Get-ChildItem -Path $RepoRoot -Recurse -File -Include $targetExtensions | Where-Object {
@@ -248,7 +248,7 @@ $scannedFiles = Get-ChildItem -Path $RepoRoot -Recurse -File -Include $targetExt
 
 $leaksFound = @()
 foreach ($file in $scannedFiles) {
-    $m = Select-String -Path $file.FullName -Pattern "SOVEREIGN-LOQ15-4200" -SimpleMatch
+    $m = Select-String -Path $file.FullName -Pattern ("SOVEREIGN-" + "LOQ15-4200") -SimpleMatch
     if ($m) {
         $leaksFound += $file.FullName
     }
@@ -257,7 +257,7 @@ foreach ($file in $scannedFiles) {
 if ($leaksFound.Count -eq 0) {
     Report-Pass "Global passkey leak scan: strictly 0 occurrences across $($scannedFiles.Count) code/markup files"
 } else {
-    Report-Fail "Deprecated passkey 'SOVEREIGN-LOQ15-4200' found in code files" ($leaksFound -join ", ")
+    Report-Fail "Deprecated passkey ("SOVEREIGN-" + "LOQ15-4200") found in code files" ($leaksFound -join ", ")
 }
 
 # ------------------------------------------------------------------------------

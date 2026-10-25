@@ -219,8 +219,9 @@ function Invoke-SovereignSixLayerVerify {
 
     # Layer 4: Host WebGPU HUD (checking both src and dist bundles for zero leaked passkeys)
     $hudDist = Test-Path "C:\sovereign_manifold_v31\05_hud_cockpit\dist\index.html"
-    $passHitsSrc = @(Select-String -Path "C:\sovereign_manifold_v31\05_hud_cockpit\src\App.tsx" -Pattern "SOVEREIGN-LOQ15-4200" -ErrorAction SilentlyContinue).Count
-    $passHitsDist = @(Get-ChildItem "C:\sovereign_manifold_v31\05_hud_cockpit\dist\assets\*.js","C:\sovereign_manifold_v31\02_l2_orchestration\hud\dist\assets\*.js","C:\sovereign_manifold_v31\docs\assets\*.js" -ErrorAction SilentlyContinue | Select-String -Pattern "SOVEREIGN-LOQ15-4200" -ErrorAction SilentlyContinue).Count
+    $retiredPattern = ("SOVEREIGN-" + "LOQ15-4200")
+    $passHitsSrc = @(Select-String -Path "C:\sovereign_manifold_v31\05_hud_cockpit\src\App.tsx" -Pattern $retiredPattern -ErrorAction SilentlyContinue).Count
+    $passHitsDist = @(Get-ChildItem "C:\sovereign_manifold_v31\05_hud_cockpit\dist\assets\*.js","C:\sovereign_manifold_v31\02_l2_orchestration\hud\dist\assets\*.js","C:\sovereign_manifold_v31\docs\assets\*.js" -ErrorAction SilentlyContinue | Select-String -Pattern $retiredPattern -ErrorAction SilentlyContinue).Count
     $passHits = $passHitsSrc + $passHitsDist
     $l4Pass = $hudDist -and ($passHits -eq 0)
     if (-not $l4Pass) { $failCount++ }

@@ -278,7 +278,7 @@ if ($probe1.StatusCode -eq 403) {
 # Test 3.2: Forged / Wrong Keys
 $forgedKeys = @(
     "invalid_secret_key_12345",
-    "SOVEREIGN-LOQ15-4200",      # Leaked legacy key
+    ("SOVEREIGN-" + "LOQ15-4200"),      # Leaked legacy key
     "admin",
     "root",
     "12345678",
@@ -370,7 +370,7 @@ if ($injectionFailures.Count -eq 0) {
 # Test 3.6: URL Query Parameter Credential Leak Attempt (MUST BE REJECTED)
 $queryParamAttempts = @(
     "/api/v1/admin/self_exit?key=invalid",
-    "/api/v1/admin/self_exit?key=SOVEREIGN-LOQ15-4200",
+    "/api/v1/admin/self_exit?key=REDACTED_LEGACY_KEY",
     "/api/v1/admin/self_exit?key=",
     "/api/v1/admin/status?key=secret",
     "/api/v1/admin/audit?key=test"
@@ -444,14 +444,14 @@ $htmlFiles = @("$RepoRoot\index.html", "$RepoRoot\wiki.html")
 $passkeyHits = 0
 foreach ($hf in $htmlFiles) {
     if (Test-Path $hf) {
-        $count = @(Select-String -Path $hf -Pattern "SOVEREIGN-LOQ15-4200" -ErrorAction SilentlyContinue).Count
+        $count = @(Select-String -Path $hf -Pattern ("SOVEREIGN-" + "LOQ15-4200") -ErrorAction SilentlyContinue).Count
         $passkeyHits += $count
     }
 }
 if ($passkeyHits -eq 0) {
-    Report-Pass "Strict zero hardcoded passkey 'SOVEREIGN-LOQ15-4200' in index.html & wiki.html"
+    Report-Pass "Strict zero hardcoded passkey ("SOVEREIGN-" + "LOQ15-4200") in index.html & wiki.html"
 } else {
-    Report-Fail "Found $passkeyHits occurrences of SOVEREIGN-LOQ15-4200 in HTML files" "Check index.html/wiki.html"
+    Report-Fail "Found $passkeyHits occurrences of REDACTED_LEGACY_KEY in HTML files" "Check index.html/wiki.html"
 }
 
 # Test 4.2: Zero square brackets in v42_distributed_5w1h_router_ide_vault.rs

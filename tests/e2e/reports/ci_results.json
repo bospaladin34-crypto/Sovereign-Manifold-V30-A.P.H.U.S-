@@ -1,4 +1,4 @@
-﻿{
+{
     "summary":  {
                     "pass_rate_pct":  100,
                     "failed":  0,
@@ -143,7 +143,7 @@
                                               "WikiHits":  0,
                                               "IndexHits":  0
                                           },
-                        "message":  "Root HTML passkey purged cleanly: 0 occurrences of SOVEREIGN-LOQ15-4200 across index.html \u0026 wiki.html",
+                        "message":  "Root HTML passkey purged cleanly: 0 occurrences of [REDACTED_ROTATED_PASSKEY] across index.html \u0026 wiki.html",
                         "milestone":  "M2"
                     },
                     {

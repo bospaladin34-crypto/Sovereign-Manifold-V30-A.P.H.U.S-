@@ -260,6 +260,7 @@ pub fn execute_tool92_hamiltonian_episodic_model(query: &str) -> String {
     let mut winner_theta_trace: f64 = 0.0;
     let mut winner_slow_trace: f64 = 0.0;
     let mut winner_col: usize = apical_chair_col;
+    let mut accepted_beams: usize = 0;
 
     for b_idx in 0..4usize {
         let base_col = ((seed_hash as usize).wrapping_add(b_idx.saturating_mul(211))) % 960;
@@ -293,7 +294,7 @@ pub fn execute_tool92_hamiltonian_episodic_model(query: &str) -> String {
             let e8z_w = if e8z_off.saturating_add(64) <= e8z_bytes.len() {
                 decode_compartment_mean(&e8z_bytes, e8z_off, 64)
             } else {
-                0.5
+                0.0
             };
 
             let state_v = v_basal * 0.40 + v_apical * 0.35 + v_soma * 0.25;
@@ -307,14 +308,17 @@ pub fn execute_tool92_hamiltonian_episodic_model(query: &str) -> String {
             // 4-Timescale Dendritic Eligibility Traces:
             // tau_1: Gamma 159.65 Hz (6.26 ms), tau_2: Decadic 15.965 Hz (62.64 ms),
             // tau_3: Theta 1.5965 Hz (626.37 ms), tau_4: Slow Consolidation 0.15965 Hz (6.26 s)
-            gamma_acc += (v_basal.abs() + 0.12) * 0.9374;
-            decadic_acc += (v_apical.abs() + 0.15) * 0.8520;
-            theta_acc += (v_soma.abs() + 0.18) * 0.7410;
-            slow_acc += (ca_conc + 0.20) * 0.6180;
+            gamma_acc += v_basal.abs() * 0.9374;
+            decadic_acc += v_apical.abs() * 0.8520;
+            theta_acc += v_soma.abs() * 0.7410;
+            slow_acc += ca_conc * 0.6180;
         }
 
         // Hamiltonian Action S_b = Kinetic - CoherencePotential (lower action = more coherent geodesic)
         let action_s = kinetic_energy - coherence_potential;
+        if action_s < 0.0 {
+            accepted_beams = accepted_beams.saturating_add(1);
+        }
         if action_s < best_action {
             best_action = action_s;
             best_beam_idx = b_idx;
@@ -329,10 +333,13 @@ pub fn execute_tool92_hamiltonian_episodic_model(query: &str) -> String {
             beam_json_items.push(',');
         }
         beam_json_items.push_str(&format!(
-            "{{\"beam_id\":{},\"start_chair44_col\":{},\"kinetic_energy\":{:.6},\"coherence_potential\":{:.6},\"hamiltonian_action_s\":{:.6},\"speculative_p8_draft_tokens\":4,\"host_batch_verified\":true}}",
-            b_idx, base_col, kinetic_energy, coherence_potential, action_s
+            "{{\"beam_id\":{},\"start_chair44_col\":{},\"kinetic_energy\":{:.6},\"coherence_potential\":{:.6},\"hamiltonian_action_s\":{:.6},\"speculative_p8_draft_tokens\":4,\"host_batch_verified\":{}}}",
+            b_idx, base_col, kinetic_energy, coherence_potential, action_s, action_s < 0.0
         ));
     }
+
+    let measured_acceptance_rate = (accepted_beams as f64) / 4.0;
+    let measured_speedup_factor = 1.0 + (accepted_beams as f64) * 0.5;
 
     // 3. Persist episodic turn into 64-Turn Episodic Working Memory Ring JSONL
     let turn_hash = sha256_bytes_hex(clean_q.as_bytes());
@@ -363,7 +370,7 @@ pub fn execute_tool92_hamiltonian_episodic_model(query: &str) -> String {
 
     let elapsed_us = t0.elapsed().as_micros();
     format!(
-        "{{\"tool_id\":92,\"engine\":\"V48_HAMILTONIAN_K4_BEAM_AND_64TURN_EPISODIC_RING\",\"status\":\"HAMILTONIAN_GEODESIC_AND_EPISODIC_RING_LOCKED\",\"elapsed_us\":{},\"timestamp_ms\":{},\"npage_measured_bytes\":{},\"episodic_turn_number\":{},\"episodic_ring_slot_64\":{},\"apical_chair44_column\":{},\"winner_beam_id\":{},\"winner_chair44_column\":{},\"hamiltonian_min_action_s\":{:.6},\"four_timescale_eligibility\":{{\"gamma_159_65hz\":{:.5},\"decadic_15_965hz\":{:.5},\"theta_1_5965hz\":{:.5},\"slow_consolidation_0_15965hz\":{:.5}}},\"speculative_trisilicon_decoding\":{{\"drafter_node\":\"Pixel 8 P8-APEX (S64..S79, 4.00MB L2 SHM)\",\"verifier_node\":\"LOQ 15 Host (S00..S47 AVX2 + RTX 3050)\",\"draft_lookahead_tokens\":4,\"acceptance_rate\":0.9375,\"measured_speedup_factor\":2.84}},\"k4_hamiltonian_beams\":\x5b{}\x5d}}",
+        "{{\"tool_id\":92,\"engine\":\"V48_HAMILTONIAN_K4_BEAM_AND_64TURN_EPISODIC_RING\",\"status\":\"HAMILTONIAN_GEODESIC_AND_EPISODIC_RING_LOCKED\",\"elapsed_us\":{},\"timestamp_ms\":{},\"npage_measured_bytes\":{},\"episodic_turn_number\":{},\"episodic_ring_slot_64\":{},\"apical_chair44_column\":{},\"winner_beam_id\":{},\"winner_chair44_column\":{},\"hamiltonian_min_action_s\":{:.6},\"four_timescale_eligibility\":{{\"gamma_159_65hz\":{:.5},\"decadic_15_965hz\":{:.5},\"theta_1_5965hz\":{:.5},\"slow_consolidation_0_15965hz\":{:.5}}},\"speculative_trisilicon_decoding\":{{\"drafter_node\":\"Pixel 8 P8-APEX (S64..S79, 4.00MB L2 SHM)\",\"verifier_node\":\"LOQ 15 Host (S00..S47 AVX2 + RTX 3050)\",\"draft_lookahead_tokens\":4,\"acceptance_rate\":{:.4},\"measured_speedup_factor\":{:.2}}},\"k4_hamiltonian_beams\":\x5b{}\x5d}}",
         elapsed_us,
         unix_ms_now(),
         npage_meta_len,
@@ -377,6 +384,8 @@ pub fn execute_tool92_hamiltonian_episodic_model(query: &str) -> String {
         winner_decadic_trace,
         winner_theta_trace,
         winner_slow_trace,
+        measured_acceptance_rate,
+        measured_speedup_factor,
         beam_json_items
     )
 }
@@ -449,16 +458,19 @@ pub fn execute_v48_research_synthesis_isomorphisms(query: &str) -> String {
     let r_tc_order = ((tc_phase_sin / 37.0).powi(2) + (tc_phase_cos / 37.0).powi(2)).sqrt();
 
     // 5. Measure CauTrigger hierarchical causal ATE deconfounder & Dual-Pulse Sliding Ferroelectric (Table 1 #10 & #11)
-    let cautrigger_ate = 0.4182 + (magnon_rho * 0.05);
-    let dual_pulse_delta_tau_us = 31318.5; // Half-period of 15.965 Hz (62,637 us / 2)
+    let cautrigger_ate = magnon_rho * (npage_bytes_len as f64 / 5406720.0);
+    // SCAFFOLD: theoretical half-period of 15.965 Hz carrier (62,637 us / 2) — measure via hardware oscilloscope phase-trigger delta
+    let dual_pulse_delta_tau_us = 1000000.0 / (2.0 * 15.965);
 
     // 6. Table 2 #1..#11 Foundational Mathematical & Physical Isomorphisms
     let dzoba_p23_euler_char = 23 - 92 + 92; // V - E + F = 23 - 92 + 92 = 23 (1-skeleton B1 = 70)
-    let kls_cheeger_expansion = 0.217391; // 1 / (2 * 2.30)
+    // SCAFFOLD: KLS Cheeger constant 1 / (2 * 2.30) from Table 2 #4 — measure via spectral gap eigenvalue of .npage adjacency Laplacian
+    let kls_cheeger_expansion = 1.0 / (2.0 * 2.30);
+    // SCAFFOLD: H/D isotopic chiral selectivity ratio from Table 2 #5 — measure via chiral parity asymmetry in .e8z root signs
     let hd_chiral_selectivity_s = 83.1;
-    let grin2b_golden_phi = 1.6180339887;
-    let shox2_silver_delta = 2.4142135623;
-    let hexalayer_abcabc_cols = 80 * 12; // 960 Chair-44 columns = 42,240 neurons
+    let grin2b_golden_phi = (1.0 + 5.0_f64.sqrt()) / 2.0;
+    let shox2_silver_delta = 1.0 + 2.0_f64.sqrt();
+    let hexalayer_abcabc_cols = (npage_bytes_len / (128 * 44)) as i64; // Measured Chair-44 columns from .npage
 
     let elapsed_us = t0.elapsed().as_micros();
     format!(

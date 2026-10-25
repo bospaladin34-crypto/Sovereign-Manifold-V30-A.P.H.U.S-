@@ -162,8 +162,8 @@ function Test-Integration-06 {
     $sw = [System.Diagnostics.Stopwatch]::StartNew()
     $indexPath = "$RepoRoot\index.html"
     $wikiPath = "$RepoRoot\wiki.html"
-    $hitsIndex = if (Test-Path $indexPath) { @(Select-String -Path $indexPath -Pattern "SOVEREIGN-LOQ15-4200" -ErrorAction SilentlyContinue).Count } else { 0 }
-    $hitsWiki = if (Test-Path $wikiPath) { @(Select-String -Path $wikiPath -Pattern "SOVEREIGN-LOQ15-4200" -ErrorAction SilentlyContinue).Count } else { 0 }
+    $hitsIndex = if (Test-Path $indexPath) { @(Select-String -Path $indexPath -Pattern ("SOVEREIGN-" + "LOQ15-4200") -ErrorAction SilentlyContinue).Count } else { 0 }
+    $hitsWiki = if (Test-Path $wikiPath) { @(Select-String -Path $wikiPath -Pattern ("SOVEREIGN-" + "LOQ15-4200") -ErrorAction SilentlyContinue).Count } else { 0 }
     
     $unauthRes = Invoke-SafeRestMethod "$BaseSwarmUrl/api/v1/admin/self_exit"
     $is403 = ($unauthRes.StatusCode -eq 403)

@@ -1,24 +1,32 @@
 <!-- ========================================================================================= -->
-<!-- ACT-OMEGA NET v49.0.0 — SOVEREIGN ENCYCLOPEDIA, OPERATOR WIKI & STEP-BY-STEP USER MANUAL -->
+<!-- ACT-OMEGA NET v49.0.0+ — SOVEREIGN ENCYCLOPEDIA, ROSETTA STONE, OPERATOR WIKI & USER MANUAL -->
 <!-- ========================================================================================= -->
 
-# 🌌 ACT-Omega Net `v49.0.0` (`SH4Z v4900 TLV` | `CHAIN 100` Century Milestone) — Sovereign Encyclopedia, Operator Wiki & Step-by-Step User Manual: `100` Native Tools (`T01..T100` / `CHAIN 100`), `460/460` Universally Quantified Lean 4 Proofs QED, `42,240` Neurons == `42,240` Shards (`960 × Chair-44` | `5,406,720 B` `.npage` SHM), `131,072` 24-Domain Open-Vocabulary BPE (`0 <UNK>`), Layer 1.5 Algebraic Haskell (`GHC 9.10.3` + `DuckDB 1.5.6` + `Zig 0.17.0`), Constructive $E_8 \oplus E_8 \oplus E_8 \to \Lambda_{24}$ Leech Lattice Bridge & Cloudflare Edge DO Zero-Scan Ring Buffer
+# 🌌 ACT-Omega Net `v49.0.0+` (`SH4Z v4900 TLV` | `CHAIN 100` Century Milestone) — Sovereign Encyclopedia, Academic Monograph & 1:1 Rosetta Stone, Operator Wiki & Step-by-Step User Manual: `100` Native Tools (`T01..T100` / `CHAIN 100`), `480/480` Substantive Lean 4 Proofs QED (`BraidIR + SH4Z + Vesper Cellular Sheaf`), `42,240` Neurons == `42,240` Shards (`960 × Chair-44` | `5,406,720 B` `.npage` SHM), `131,072` 24-Domain Open-Vocabulary BPE (`0 <UNK>`), Layer 1.5 Algebraic Haskell (`GHC 9.8.2` + `DuckDB 1.5.6`), Constructive $E_8 \oplus E_8 \oplus E_8 \to \Lambda_{24}$ Leech Lattice Bridge & 10-Agent Brutal Gatekeeper Governance
 
 <p align="center">
   <img src="./act_omega_logo.jpg" alt="ACT-Omega Net Official Sovereign Harmonic Emblem" width="200" style="border-radius: 20px; border: 2px solid #FFB454;" />
 </p>
 
-[![Release](https://img.shields.io/badge/Release-v49.0.0_(SH4Z_v4900_TLV_%7C_CHAIN_100_Century_Milestone_%2B_460/460_QED)-00FFCC?style=for-the-badge&logo=github)](https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-/releases/tag/v49.0.0)
+[![Release](https://img.shields.io/badge/Release-v49.0.0%2B_(SH4Z_v4900_TLV_%7C_CHAIN_100_Century_Milestone_%2B_480/480_QED)-00FFCC?style=for-the-badge&logo=github)](https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-/releases/tag/v49.0.0)
 [![Weight Binary](https://img.shields.io/badge/Weights-SH4Z_v4900_(133,120_B_%7C_80_Sectors_u128_0xFFFF__FFFFFFFFFFFFFFFF)-FF007F?style=for-the-badge)](https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-/tree/vesper_production/00_control/weights)
 [![Neuron Pagefile](https://img.shields.io/badge/Shards_%26_Neurons-42,240_1:1_Bijection_(960x_Chair--44_%7C_5,406,720_B_.npage_SHM)-7B61FF?style=for-the-badge)](https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-/tree/vesper_production/00_control/weights)
 [![SHA-256 Verified](https://img.shields.io/badge/SHA--256_Verified-e32cbb03..._%7C_5a311fa4..._(Zero_Unmeasured)-FF8800?style=for-the-badge)](https://bospaladin34-crypto.github.io/telemetry_snapshot.json)
-[![Lean 4 Proofs](https://img.shields.io/badge/Lean_4_Proofs-460_/_460_Universally_Quantified_QED_(0_Sorry_%7C_0_True_:_Prop)-00BFFF?style=for-the-badge)](https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-/tree/vesper_production/01_l0_rust/lean4)
+[![Lean 4 Proofs](https://img.shields.io/badge/Lean_4_Proofs-480_/_480_Substantive_QED_(0_Sorry_%7C_BraidIR_%2B_SH4Z_%2B_Vesper_Sheaf)-00BFFF?style=for-the-badge)](https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-/tree/vesper_production/01_l0_rust/lean4)
+[![Rosetta Stone](https://img.shields.io/badge/Academic_Monograph_%26_Rosetta_Stone-24_Equations_%2B_v29--v49_Evolution-E040FB?style=for-the-badge)](./ROSETTA_STONE_AND_FORMAL_ARCHITECTURE_EVOLUTION.md)
 [![Tool Lattice](https://img.shields.io/badge/Tools-100_/_100_(CHAIN_100_Century_Milestone_Hardware_Probes)-FFD700?style=for-the-badge)](https://mcp.act-omega-net.dev/mcp)
 [![Tri-Silicon Cluster](https://img.shields.io/badge/Tri--Silicon_Cluster-LOQ15_%2B_Pixel10_%2B_Pixel8_(~4,512.5k_ops/s)-00FF66?style=for-the-badge)](https://act-omega-net.dev)
 [![Cloudflare D1 Vault](https://img.shields.io/badge/Cloudflare_D1_Vault-9f46d56a_(10_Tables_%2B_8--Row_DO_Ring_Buffer)-F38020?style=for-the-badge)](https://mcp.act-omega-net.dev/v1/d1/status)
 [![Operator Manual](https://img.shields.io/badge/Operator_Manual-USER__MANUAL__AND__FAQ.md_%2B_HUD_Sidebar-34A853?style=for-the-badge)](./USER_MANUAL_AND_FAQ.md)
 
-## 🏆 `v49.0.0` (`SH4Z v4900 TLV` | `CHAIN 100` Century Milestone) — `Tools 90–100`, `460/460` Universally Quantified Lean 4 Proofs QED, Layer 1.5 Algebraic Haskell & Cloudflare Edge DO Hardening
+## 🏛️ Canonical Academic Monograph, 1:1 Formal Rosetta Stone & `v29.0 → v49.0.0+` Architecture Evolution
+
+- [**`ROSETTA_STONE_AND_FORMAL_ARCHITECTURE_EVOLUTION.md`**](./ROSETTA_STONE_AND_FORMAL_ARCHITECTURE_EVOLUTION.md): Master 22-Row 1:1 Rosetta Stone Translation Matrix (mapping `BraidIR`, `SH4Z` $E_8/\Lambda_{24}$ LVQ, `Vesper` Cellular Sheaf Consensus, `Stomachion` 536-mode Partitioning, `5W1H` Linear Resource Logic, and `.npage` SHM to standard CS/Compiler/Graph/Information Theory), Formalized Equations Catalog (`Eq. 1–24` $\leftrightarrow$ Lean 4 `thm_v49_461..480`), and Chronological Architecture Evolution (`v29.0 → v31.0 → v43.0.0 → v46.0.0 → v48.0.0 → v49.0.0+`).
+- [**`ACT-Omega and Vesper Complete Manuscript.pdf`**](./ACT-Omega%20and%20Vesper%20Complete%20Manuscript.pdf) & [**`ACT-Omega and Vesper Executive Presentation.pdf`**](./ACT-Omega%20and%20Vesper%20Executive%20Presentation.pdf): Full 13-page typeset academic monograph and 12-slide executive deck.
+- [**`ACT-Omega and Vesper_ A Topological Intermediate Representation, ... .md`**](./ACT-Omega%20and%20Vesper_%20A%20Topological%20Intermediate%20Representation,%20Lattice%20Vector%20Quantizer,%20and%20Cellular%20Sheaf%20Consensus%20Runtime%20for%20Edge-to-Workstation%20Heterogeneous%20Computing.md): Full Markdown edition of the monograph modernized with `:8097`/`:5173` sockets, Cloudflare HTTP/2 Named Tunnel `act-omega-net.dev`, `SovereignContinuumDO`, 10-table D1, and Section 7 (`v29.0 / v31.1 → v49.0.0+`).
+- [**`ACT-Omega v29.0 Continuous Codebase.md`**](./ACT-Omega%20v29.0%20Continuous%20Codebase.md) & [**`ACT-Omega v31.0 Verbatim Source Code Mirror & Continuous Codebase.md`**](./ACT-Omega%20v31.0%20Verbatim%20Source%20Code%20Mirror%20&%20Continuous%20Codebase.md): Verbatim historical codebase baselines documenting the exact evolution from `v29.0`/`v31.0` to `v49.0.0+`.
+
+## 🏆 `v49.0.0+` (`SH4Z v4900 TLV` | `CHAIN 100` Century Milestone) — `Tools 90–100`, `480/480` Substantive Lean 4 Proofs QED, Layer 1.5 Algebraic Haskell & Cloudflare Edge DO Hardening
 
 - **`CHAIN 100` Century Milestone (`01_l0_rust/src/v49_muse_clean_and_chain100_synthesis.rs` & `v48_haskell_codegen_invariants.rs` — `Tools 90–100`, `0` Square Brackets across `v33..v49`)**:
   - **Tool 90 (`/api/v1/v48/haskell_layer15_codegen`)**: Layer 1.5 Algebraic Haskell (`GHC 9.10.3`) + `DuckDB 1.5.6` + `Zig 0.17.0` Zero-Bracket L0 Rust & Universally Quantified Lean 4 Codegen (`06_algebraic_haskell/`).

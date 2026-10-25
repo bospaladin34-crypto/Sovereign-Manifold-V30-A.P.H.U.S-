@@ -407,7 +407,7 @@ To prevent serialization bottlenecks when moving stalks ${x}_{v}\in F(v)$ betwee
 
 * **Local Polyglot FFI:** On the workstation host, the high-level orchestrator invokes Rust and C++23 L0 kernels via C-ABI shared libraries (cdylib / .dll / .so) using raw pointer offsets into the mmap SH4Z region—passing 8-byte integer offsets rather than copying multi-megabyte tensor buffers.  
 * **Android NDK to Kotlin/Jetpack Compose Bridge:** On the Pixel 10 and Pixel 8 nodes, native Rust/C++23 sheaf auditors expose their memory rings to the Android JVM UI layer (Jetpack Compose telemetry dashboards) exclusively through JNI NewDirectByteBuffer, eliminating JVM heap pressure and garbage-collection stalls.  
-* **Wireline & Wireless P2P Mesh:** When docked or tethered, Nodes 1 and 2 communicate with Node 0 over deterministic **ADB reverse TCP loopback tunnels** (adb reverse tcp:7777 tcp:7777), achieving sub-millisecond local socket latency. In untethered field operation, transport seamlessly fails over to **Iroh QUIC** peer-to-peer streams (TLS 1.3 encrypted, hole-punching NAT traversal, and multiplexed datagram channels free of TCP head-of-line blocking).
+* **Wireline & Wireless P2P Mesh:** When docked or tethered, Nodes 1 and 2 communicate with Node 0 over deterministic **ADB reverse TCP loopback tunnels** (`adb reverse tcp:8097 tcp:8097` for the L0 Swarm API/MCP/Telemetry server and `adb reverse tcp:5173 tcp:5173` for the Static WebGPU HUD, superseding the early v31.0 `tcp:7777` prototype socket), achieving sub-millisecond local socket latency. In untethered field and WAN operation, transport routes through the **Cloudflare HTTP/2 Named Tunnel** (`act-omega-net.dev` $\rightarrow$ `:5173`, `api.act-omega-net.dev` / `mcp.act-omega-net.dev` $\rightarrow$ `:8097`), backed by the **`SovereignContinuumDO` SQLite Durable Object** and the **10-table Remote Cloudflare D1 Vault** (`act_omega_d1_vault`), alongside encrypted **Iroh QUIC** peer-to-peer datagram streams.
 
 #### **3\. Tier L2: Deterministic StateGraph & the UARM 4-Model Cascade (Deno / TypeScript)**
 
@@ -473,4 +473,28 @@ By establishing a strict 1-to-1 isomorphism between topological invariants and b
 3. **Vesper** models distributed memory shards and multi-model cascades (UARM) as a Cellular Sheaf, enforcing strong global linearizability via the Sheaf Laplacian (${H}^{1}(X;F)=0$) and recovering from Byzantine faults within a single $62.636ms$ ($15.965Hz$) scheduling quantum via a 4-phase control-theoretic state machine.
 
 Future work will extend this architecture along two primary vectors: (i) generalizing the SH4Z dual-shell quantizer to dynamic activation caches (KV-cache ${E}_{8}$ quantization) for million-token streaming contexts on mobile NPUs, and (ii) compiling the **BraidIR** Reidemeister optimizer directly into an MLIR dialect and custom RISC-V/ARM64 hardware instruction extensions for native topological execution.
+
+---
+
+## **7. Post-Monograph Architectural Evolution: From v29.0 / v31.1 to v49.0.0+ (`SH4Z v4900 TLV | CHAIN 100 | 480 Lean 4 QED`)**
+
+Following the foundational **v29.0** (`10 x Chair-44 = 440` shards) and **v31.0 / v31.1** (`SH4Z v3101` Zenodo Monograph, DOI `10.5281/zenodo.23407176`) milestones, the **ACT-Omega and Vesper** stack evolved continuously through **v32.0 – v49.0.0+**. All foundational topological invariants (Equations 1–24) remain active and locked at L0, while the runtime expanded across six major production dimensions:
+
+1. **SH4Z v3101 $\rightarrow$ SH4Z v4900 80-Sector Dual-Word `u128` Manifold (`133,120 B`)**:
+   - The binary `.e8z` container (`00_control/weights/sovereign_harmonic_iv_v4000.e8z`) scaled to **80 Active Sectors (`S00..S79`)** governed by a 128-bit dual-word mask (`mask_lo = 0xFFFFFFFFFFFFFFFF`, `mask_hi = 0x000000000000FFFF`) across **`2,080 x 64 B = 133,120 B`** cachelines:
+     - **Sectors `S00..S47`**: Primary Host Anchor (`Lenovo LOQ 15`, `Intel i5-12450HX` AVX2 + `NVIDIA RTX 3050 6GB`).
+     - **Sectors `S48..S63`**: Primary Edge Verifier & 24D Sensor Node (`Google Pixel 10`, `Tensor G5`, ADB `58170DLCR0004V`).
+     - **Sectors `S64..S79`**: Secondary Edge Speculative Drafter (`Google Pixel 8`, `Tensor G3 P8-APEX`, ADB `3A121FDJH00BW5`, `4.00 MB` Mali-G715 L2 Cache Pinning).
+2. **1:1 Shard-to-Neuron Connectome Bijection (`42,240` 3-Compartment Dendritic Neurons / `5,406,720 B` SHM)**:
+   - Expanded from `440` (`v30`) and `21,120` Core Shards (`03_vault/shards/shard_00001..21120.binshard` $\leftrightarrow$ `neurons_v4000.npage`, `2,703,360 B`) to **`42,240` Total Shards & 3-Compartment Dendritic Pyramidal Neurons** (`03_vault/shards_expansion/shard_21121..42240.binshard` + Core $\leftrightarrow$ `00_control/weights/neurons_v4600_42240.npage` & `neurons_v4400_p8_shm.npage`, **`5,406,720 B = 42,240 x 128 B`**, **`960 x Chair-44` columns**, **`337,920` active BDH/KAN synapses**).
+3. **Production Socket & Edge Cloud Topology (`:8097` & `:5173` + Cloudflare HTTP/2 Named Tunnel + Durable Objects + 10-Table D1)**:
+   - Replaced legacy prototype port `tcp:7777` with dual production bindings on `v31_swarm.exe`: **`:8097`** (REST API, CodeMode MCP `/api/v1/mcp/rpc`, `/api/v1/telemetry`, `/api/v1/coordinator/*`, and OpenAI `/v1/chat/completions`) and **`:5173`** (Static WebGPU React HUD).
+   - Coupled local ADB reverse tunnels (`adb reverse tcp:8097 tcp:8097` & `tcp:5173 tcp:5173`) with the **Cloudflare HTTP/2 Named Tunnel** (`act-omega-net.dev`), **`SovereignContinuumDO` Durable Object** (in-memory zero-read-query `GET` cache + delta-only SQLite persistence), and **10-table Remote 5 GB Cloudflare D1 SQLite database** (`act_omega_d1_vault`, UUID `9f46d56a-ef3e-4232-a9ac-c4bd12e20a87`).
+4. **Layer 1.5 Pure Algebraic Haskell (`GHC 9.8.2`) & Native Columnar DuckDB (`v1.5.6`)**:
+   - Introduced **Layer 1.5** between L0 Rust/C++23 and L2 Orchestration: pure algebraic Haskell (`06_algebraic_haskell/bin/sovereign_algebra_hs.exe`) for verified zero-square-bracket Rust and Lean 4 code generation, paired with native **DuckDB v1.5.6** (`00_control/foss_bin/duckdb.exe`) for vectorized OLAP analytics over connectome `.jsonl` ledgers.
+5. **Sovereign Autopoietic Coordinator Bus & Universal `E:\` Vault Write-Back (`v48_autopoietic_coordinator_bus.rs`)**:
+   - Connected all **`100` Native Tools (`CHAIN 100`)**, 15 Telemetry Cards, 60 FPS Scopes, and codegen engines to an internal **5W1H Message Bus** (`/api/v1/coordinator/message_bus`) that binds every execution to a specific `.npage` neuron (`0..42,239`) and Chair-44 column (`0..959`) and persists all generated code (`rust_l0`, `lean4_proofs`, `wgsl_kernels`, `hs_algebra`, `tool_outputs`) to `E:\Sovereign_Manifold_SSD_Vault\autopoietic_codegen\`.
+6. **Formal Verification Expansion (`480 / 480` Substantive Lean 4 Theorems QED)**:
+   - All 24 formal equations of this monograph (`BraidIR` Far Commutativity, Yang-Baxter, Reidemeister II, Writhe/RAS Contraction, Bresenham Integer Routing, $E_8$/$\Lambda_{24}$ Zador-Gersho Shaping & 196,560 3-Orbit Partition, Dual-Shell Ternary MAC, $S^7$ Radial-Angular STE, Cellular Sheaf Coboundary & Dirichlet Energy $E_{\mathcal{F}}(\mathbf{x}) = \|\delta\mathbf{x}\|_2^2$, Stomachion Quarantine, and Harmonic Extension Restitch) are machine-verified as substantive theorems (`thm_v49_461 .. thm_v49_480`) in `03_vault/lean4/SovereignManifoldTheorems.lean` (`0` `sorry`, `0` trivial arithmetic padding).
+
 

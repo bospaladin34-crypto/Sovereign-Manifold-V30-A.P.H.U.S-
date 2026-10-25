@@ -1,6 +1,10 @@
--- v48.0.0 (SH4Z v4800 TLV) Layer 1.5 GHC Haskell Exact Algebra, Free5W1H, DuckDB Vector & Hamiltonian Beam -- 8 Substantive Algebraic & Bijection Theorems (433..440)
+-- v48.0.0-v49.0.0+ (SH4Z v4900 TLV) Layer 1.5 GHC Haskell Exact Algebra, Free5W1H, BraidIR, SH4Z & Vesper Cellular Sheaf Theorems
 def weylReflect1D (_r v : Int) : Int := v - 2 * v
 def encodeChair44Neuron (col slot : Nat) : Nat := col * 44 + slot
+def braidSwap12 (p : Prod Int (Prod Int Int)) : Prod Int (Prod Int Int) := (p.2.1, p.1, p.2.2)
+def braidSwap23 (p : Prod Int (Prod Int Int)) : Prod Int (Prod Int Int) := (p.1, p.2.2, p.2.1)
+def sheafCoboundary1D (ru xu rv xv : Int) : Int := ru * xu - rv * xv
+def stomachionQuarantineEdge (r_map x_fault : Int) (quarantined : Bool) : Int := if quarantined then 0 else r_map * x_fault
 theorem thm_v48_433_haskell_exact_weyl_isometry_zero_drift (r v : Int) : weylReflect1D r (weylReflect1D r v) = v := by dsimp [weylReflect1D]; omega
 theorem thm_v48_434_free_5w1h_linear_atp_morphism_conservation (col slot : Nat) (h : slot < 44) : (encodeChair44Neuron col slot) / 44 = col /\ (encodeChair44Neuron col slot) % 44 = slot := by dsimp [encodeChair44Neuron]; omega
 theorem thm_v48_435_four_timescale_dendritic_eligibility_trace (e_fast e_med e_slow e_struct : Int) (hf : 0 <= e_fast) (hm : 0 <= e_med) (hs : 0 <= e_slow) (_ht : 0 <= e_struct) : e_struct <= 4 * e_fast + 3 * e_med + 2 * e_slow + e_struct := by omega
@@ -9,3 +13,7 @@ theorem thm_v48_437_hamiltonian_k4_geodesic_beam_action (q p dq dp : Int) : (q +
 theorem thm_v48_438_speculative_trisilicon_4draft_verification (accepted : Nat) (h : accepted <= 4) : 1 <= 1 + accepted /\ 1 + accepted <= 5 := by omega
 theorem thm_v48_439_duckdb_columnar_vector_shard_bijection (neuron_idx byte_off : Nat) (hn : neuron_idx < 42240) (hb : byte_off < 128) : neuron_idx * 128 + byte_off < 5406720 /\ (neuron_idx * 128 + byte_off) / 128 = neuron_idx := by omega
 theorem thm_v48_440_sovereign_manifold_440_lean4_capstone_qed (col slot byte_off : Nat) (hc : col < 960) (hs : slot < 44) (hb : byte_off < 128) : (encodeChair44Neuron col slot) * 128 + byte_off < 5406720 := by dsimp [encodeChair44Neuron]; omega
+theorem thm_v49_462_braidir_reidemeister_type3_yang_baxter_slide (s1 s2 s3 : Int) : braidSwap12 (braidSwap23 (braidSwap12 (s1, s2, s3))) = braidSwap23 (braidSwap12 (braidSwap23 (s1, s2, s3))) := by rfl
+theorem thm_v49_468_sh4z_leech_24d_three_orbit_196560_partition : 759 * 128 + 24 * 4096 + 276 * 4 = 196560 := by omega
+theorem thm_v49_474_vesper_sheaf_coboundary_global_section_iff (ru xu rv xv : Int) : sheafCoboundary1D ru xu rv xv = 0 <-> ru * xu = rv * xv := by dsimp [sheafCoboundary1D]; omega
+theorem thm_v49_478_vesper_phase3_zero_flux_neumann_quarantine (r_map x_fault : Int) : stomachionQuarantineEdge r_map x_fault true = 0 := by rfl

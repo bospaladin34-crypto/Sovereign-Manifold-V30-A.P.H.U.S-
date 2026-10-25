@@ -3,3 +3,4 @@
 {"gen":3,"band_id":3,"band":"BAND_3_THERMAL_CONSERVATION_OFFLOAD","m_atp":0.3680,"threads":"4/12","free_ram_mb":3280,"free_vram_mb":1940,"gpu_temp_c":76.2,"what":"Tools 40, 35, 38 (Pixel 8 P8-APEX Offload + O(1) Amplituhedron LUT + AZR/SEAL)"}
 {"gen":4,"band_id":4,"band":"BAND_4_CATABOLIC_SWR_RECOVERY","m_atp":0.1840,"threads":"2/12","free_ram_mb":1840,"free_vram_mb":820,"gpu_temp_c":82.8,"what":"Tools 44, 39, 48 (Kerr Event-Horizon KV Eviction + E: SSD .npage Flush + 159.65Hz SWR)"}
 {"gen":745273,"sweep":"4_BAND_FULL","b1_atp":0.8920,"b2_atp":0.6140,"b3_atp":0.3680,"b4_atp":0.1840}
+{"gen":851245,"sweep":"4_BAND_FULL","b1_atp":0.8920,"b2_atp":0.6140,"b3_atp":0.3680,"b4_atp":0.1840}

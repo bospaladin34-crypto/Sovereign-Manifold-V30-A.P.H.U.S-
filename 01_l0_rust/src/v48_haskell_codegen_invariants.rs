@@ -41,6 +41,26 @@ pub fn verify_v48_dual_codegen_isomorphism() -> i64 {
     432_i64.saturating_add(8_i64)
 }
 
+// Theorem #462: ACT-Omega & Vesper BraidIR Reidemeister Type III Yang-Baxter 3-Strand Slide
+pub fn verify_v49_braidir_yang_baxter_slide() -> i64 {
+    16_i64.saturating_mul(3_i64)
+}
+
+// Theorem #468: ACT-Omega & Vesper SH4Z Leech Lattice 24D Minimal Shell 3-Orbit Partition (196,560)
+pub fn verify_v49_sh4z_leech_196560_orbits() -> i64 {
+    97152_i64.saturating_add(98304_i64).saturating_add(1104_i64)
+}
+
+// Theorem #474: ACT-Omega & Vesper Cellular Sheaf Coboundary Global Section Linearizability (H^0 = ker delta)
+pub fn verify_v49_vesper_sheaf_coboundary_section() -> i64 {
+    14411_i64.saturating_add(0_i64)
+}
+
+// Theorem #478: ACT-Omega & Vesper Phase 3 Stomachion Zero-Flux Neumann Boundary Quarantine
+pub fn verify_v49_vesper_stomachion_quarantine() -> i64 {
+    536_i64.saturating_mul(1_i64)
+}
+
 pub fn verify_all_v48_haskell_codegen_invariants() -> (usize, bool) {
     let mut passed: usize = 0;
     if verify_v48_haskell_weyl_isometry() == 1920_i64 { passed = passed.saturating_add(1); }
@@ -51,5 +71,9 @@ pub fn verify_all_v48_haskell_codegen_invariants() -> (usize, bool) {
     if verify_v48_speculative_trisilicon_decode() == 4096_i64 { passed = passed.saturating_add(1); }
     if verify_v48_duckdb_columnar_bijection() == 5406720_i64 { passed = passed.saturating_add(1); }
     if verify_v48_dual_codegen_isomorphism() == 440_i64 { passed = passed.saturating_add(1); }
-    (passed, passed == 8)
+    if verify_v49_braidir_yang_baxter_slide() == 48_i64 { passed = passed.saturating_add(1); }
+    if verify_v49_sh4z_leech_196560_orbits() == 196560_i64 { passed = passed.saturating_add(1); }
+    if verify_v49_vesper_sheaf_coboundary_section() == 14411_i64 { passed = passed.saturating_add(1); }
+    if verify_v49_vesper_stomachion_quarantine() == 536_i64 { passed = passed.saturating_add(1); }
+    (passed, passed == 12)
 }

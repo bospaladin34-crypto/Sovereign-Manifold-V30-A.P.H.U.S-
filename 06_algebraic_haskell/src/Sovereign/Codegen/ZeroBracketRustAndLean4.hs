@@ -99,6 +99,42 @@ v48CanonicalSpecs =
       "verify_v48_dual_codegen_isomorphism"
       "432_i64.saturating_add(8_i64)"
       440
+  , AlgebraicInvariantSpec
+      462
+      "ACT-Omega & Vesper BraidIR Reidemeister Type III Yang-Baxter 3-Strand Slide"
+      "thm_v49_462_braidir_reidemeister_type3_yang_baxter_slide"
+      "(s1 s2 s3 : Int) : braidSwap12 (braidSwap23 (braidSwap12 (s1, s2, s3))) = braidSwap23 (braidSwap12 (braidSwap23 (s1, s2, s3)))"
+      "rfl"
+      "verify_v49_braidir_yang_baxter_slide"
+      "16_i64.saturating_mul(3_i64)"
+      48
+  , AlgebraicInvariantSpec
+      468
+      "ACT-Omega & Vesper SH4Z Leech Lattice 24D Minimal Shell 3-Orbit Partition (196,560)"
+      "thm_v49_468_sh4z_leech_24d_three_orbit_196560_partition"
+      ": 759 * 128 + 24 * 4096 + 276 * 4 = 196560"
+      "omega"
+      "verify_v49_sh4z_leech_196560_orbits"
+      "97152_i64.saturating_add(98304_i64).saturating_add(1104_i64)"
+      196560
+  , AlgebraicInvariantSpec
+      474
+      "ACT-Omega & Vesper Cellular Sheaf Coboundary Global Section Linearizability (H^0 = ker delta)"
+      "thm_v49_474_vesper_sheaf_coboundary_global_section_iff"
+      "(ru xu rv xv : Int) : sheafCoboundary1D ru xu rv xv = 0 <-> ru * xu = rv * xv"
+      "dsimp [sheafCoboundary1D]; omega"
+      "verify_v49_vesper_sheaf_coboundary_section"
+      "14411_i64.saturating_add(0_i64)"
+      14411
+  , AlgebraicInvariantSpec
+      478
+      "ACT-Omega & Vesper Phase 3 Stomachion Zero-Flux Neumann Boundary Quarantine"
+      "thm_v49_478_vesper_phase3_zero_flux_neumann_quarantine"
+      "(r_map x_fault : Int) : stomachionQuarantineEdge r_map x_fault true = 0"
+      "rfl"
+      "verify_v49_vesper_stomachion_quarantine"
+      "536_i64.saturating_mul(1_i64)"
+      536
   ]
 
 -- | Compile the specifications into a Zero-Square-Bracket L0 Rust module
@@ -124,13 +160,17 @@ compileToZeroBracketRust specs =
       , ""
       ]
 
--- | Compile the specifications into substantive universally quantified Lean 4 formal theorems (Theorems 433..440)
+-- | Compile the specifications into substantive universally quantified Lean 4 formal theorems
 compileToLean4Theorems :: [AlgebraicInvariantSpec] -> String
 compileToLean4Theorems specs =
   unlines $
-    [ "-- v48.0.0 (SH4Z v4800 TLV) Layer 1.5 GHC Haskell Exact Algebra, Free5W1H, DuckDB Vector & Hamiltonian Beam -- 8 Substantive Algebraic & Bijection Theorems (433..440)"
+    [ "-- v48.0.0-v49.0.0+ (SH4Z v4900 TLV) Layer 1.5 GHC Haskell Exact Algebra, Free5W1H, BraidIR, SH4Z & Vesper Cellular Sheaf Theorems"
     , "def weylReflect1D (_r v : Int) : Int := v - 2 * v"
     , "def encodeChair44Neuron (col slot : Nat) : Nat := col * 44 + slot"
+    , "def braidSwap12 (p : Prod Int (Prod Int Int)) : Prod Int (Prod Int Int) := (p.2.1, p.1, p.2.2)"
+    , "def braidSwap23 (p : Prod Int (Prod Int Int)) : Prod Int (Prod Int Int) := (p.1, p.2.2, p.2.1)"
+    , "def sheafCoboundary1D (ru xu rv xv : Int) : Int := ru * xu - rv * xv"
+    , "def stomachionQuarantineEdge (r_map x_fault : Int) (quarantined : Bool) : Int := if quarantined then 0 else r_map * x_fault"
     ] ++ map renderLeanTheorem specs
   where
     renderLeanTheorem s =

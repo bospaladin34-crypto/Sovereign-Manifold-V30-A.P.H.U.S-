@@ -27,3 +27,5 @@
 00_control/foss_bin/
 06_algebraic_haskell/dist-newstyle/
 06_algebraic_haskell/bin/*.exe
+.agents/teamwork/
+

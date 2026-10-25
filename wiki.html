@@ -332,7 +332,7 @@
         To prevent accidental public overuse on <code>act-omega-net.dev</code> while in development, direct embedded access to <strong>Goose v1.55.0</strong>, <strong>Zed v1.24.4</strong>, and <strong>VSCodium / Cline</strong> is gated behind your Operator Passkey.
       </p>
       <div>
-        <input type="password" id="operator-passkey" class="vault-input" value="SOVEREIGN-LOQ15-4200" placeholder="Enter Operator Passkey..." />
+        <input type="password" id="operator-passkey" class="vault-input" placeholder="Enter Operator Passkey..." autocomplete="off" />
         <button class="btn-action" onclick="unlockOperatorVault()">Unlock Embedded IDEs</button>
       </div>
       <p id="vault-err" style="color: var(--red); font-size: 0.8rem; margin-top: 10px; display: none;">Invalid Operator Passkey.</p>
@@ -384,13 +384,31 @@ Ready. Goose v1.55.0 + Zed v1.24.4 + VSCodium/Cline locked to SH4Z-v4300-TriSili
       var btn = document.getElementById('btn-' + tabId);
       if (btn) { btn.classList.add('active'); }
     }
-    function unlockOperatorVault() {
+    async function unlockOperatorVault() {
       var key = document.getElementById('operator-passkey').value.trim();
-      if (key === 'SOVEREIGN-LOQ15-4200' || window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost') {
+      if (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost') {
         document.getElementById('vault-locked-view').style.display = 'none';
         document.getElementById('vault-unlocked-view').style.display = 'block';
         document.getElementById('vault-err').style.display = 'none';
-      } else {
+        return;
+      }
+      if (!key) {
+        document.getElementById('vault-err').style.display = 'block';
+        return;
+      }
+      try {
+        var res = await fetch('/api/v1/auth/operator_vault_gate', {
+          headers: { 'X-Sovereign-Operator-Key': key }
+        });
+        var data = await res.json();
+        if (data && data.authorized) {
+          document.getElementById('vault-locked-view').style.display = 'none';
+          document.getElementById('vault-unlocked-view').style.display = 'block';
+          document.getElementById('vault-err').style.display = 'none';
+        } else {
+          document.getElementById('vault-err').style.display = 'block';
+        }
+      } catch (e) {
         document.getElementById('vault-err').style.display = 'block';
       }
     }

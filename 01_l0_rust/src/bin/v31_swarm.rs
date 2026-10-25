@@ -32,6 +32,11 @@ include!("../v47_autonomous_leech_rag_scientist.rs");
 include!("../v48_haskell_codegen_invariants.rs");
 include!("../v48_haskell_duckdb_hamiltonian_model.rs");
 
+// --- Milestone 3: v49.0.0 Tools 91..100 & CHAIN 100 Century Milestone Module ---
+#[path = "../v49_muse_clean_and_chain100_synthesis.rs"]
+mod v49_muse_clean_and_chain100_synthesis;
+
+
 
 struct SwarmState {
     gen_counter: u64,
@@ -860,6 +865,10 @@ fn content_type_for(path: &str) -> &'static str {
         "image/x-icon"
     } else if path.ends_with(".wasm") {
         "application/wasm"
+    } else if path.ends_with(".woff2") {
+        "font/woff2"
+    } else if path.ends_with(".woff") {
+        "font/woff"
     } else {
         "application/octet-stream"
     }
@@ -869,6 +878,74 @@ thread_local! {
     static REQ_IS_HEAD: std::cell::Cell<bool> = std::cell::Cell::new(false);
     static REQ_CONN_CLOSE: std::cell::Cell<bool> = std::cell::Cell::new(false);
     static STREAM_WRITE_ERR: std::cell::Cell<bool> = std::cell::Cell::new(false);
+    static REQ_CACHE_CONTROL: std::cell::Cell<&'static str> = std::cell::Cell::new("no-store");
+}
+
+pub const CACHE_CONTROL_STATIC_ASSET: &str = "Cache-Control: public, max-age=86400, immutable";
+pub const CACHE_CONTROL_NO_STORE: &str = "Cache-Control: no-store";
+
+fn determine_cache_control(clean_path: &str) -> &'static str {
+    // 0. Path traversal security boundary: never allow caching on traversal attempts
+    if clean_path.contains("..") {
+        return "no-store";
+    }
+
+    // 1. Live dynamic API routes & shadow synchronization must NEVER be cached
+    if clean_path.starts_with("/api/") || clean_path.starts_with("/shadow/") {
+        return "no-store";
+    }
+
+    // 2. Normalize path: strip leading slashes and optional leading "./"
+    let norm = clean_path.trim_start_matches('/');
+    let norm_core = if norm.starts_with("./") {
+        norm.get(2..).unwrap_or(norm)
+    } else {
+        norm
+    };
+
+    if norm_core.starts_with("api/") || norm_core.starts_with("shadow/") {
+        return "no-store";
+    }
+
+    // 3. Mutable entrypoints, Service Worker, manifests, and weight buffers must NEVER be cached immutably
+    if norm_core == "sw.js"
+        || norm_core.ends_with("/sw.js")
+        || norm_core == "manifest.webmanifest"
+        || norm_core.ends_with("/manifest.webmanifest")
+        || norm_core == "llms.txt"
+        || norm_core.is_empty()
+        || norm_core == "index.html"
+        || norm_core.ends_with("/index.html")
+        || norm_core == "wiki"
+        || norm_core == "wiki.html"
+        || norm_core == "github_pages"
+        || norm_core == "github_pages/"
+        || norm_core.ends_with(".e8z")
+        || norm_core.ends_with(".npage")
+    {
+        return "no-store";
+    }
+
+    // 4. Static assets with immutable content (JS bundles, CSS, images, icons, fonts, WASM)
+    // Cache-Control: public, max-age=86400, immutable
+    if norm_core.ends_with(".js")
+        || norm_core.ends_with(".mjs")
+        || norm_core.ends_with(".css")
+        || norm_core.ends_with(".svg")
+        || norm_core.ends_with(".png")
+        || norm_core.ends_with(".jpg")
+        || norm_core.ends_with(".jpeg")
+        || norm_core.ends_with(".ico")
+        || norm_core.ends_with(".wasm")
+        || norm_core.ends_with(".woff")
+        || norm_core.ends_with(".woff2")
+        || norm_core.ends_with(".ttf")
+        || norm_core.starts_with("assets/")
+    {
+        return "public, max-age=86400, immutable";
+    }
+
+    "no-store"
 }
 
 fn write_http_str(stream: &mut TcpStream, status: &str, ctype: &str, body: &str) {
@@ -877,13 +954,15 @@ fn write_http_str(stream: &mut TcpStream, status: &str, ctype: &str, body: &str)
     let conn_hdr = if is_close {
         "Connection: close\r\n"
     } else {
-        "Connection: keep-alive\r\nKeep-Alive: timeout=15, max=24\r\n"
+        "Connection: keep-alive\r\nKeep-Alive: timeout=25, max=100\r\n"
     };
+    let cache_ctl = REQ_CACHE_CONTROL.with(|c| c.get());
     let header = format!(
-        "HTTP/1.1 {}\r\nContent-Type: {}\r\nContent-Length: {}\r\nAccess-Control-Allow-Origin: *\r\nAccess-Control-Allow-Methods: GET, POST, HEAD, PUT, DELETE, PATCH, OPTIONS\r\nAccess-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, Anthropic-Version, X-Api-Key, Mcp-Session-Id, Accept\r\nTiming-Allow-Origin: *\r\nCache-Control: no-store\r\n{}\r\n",
+        "HTTP/1.1 {}\r\nContent-Type: {}\r\nContent-Length: {}\r\nAccess-Control-Allow-Origin: *\r\nAccess-Control-Allow-Methods: GET, POST, HEAD, PUT, DELETE, PATCH, OPTIONS\r\nAccess-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, Anthropic-Version, X-Api-Key, Mcp-Session-Id, Accept\r\nTiming-Allow-Origin: *\r\nCache-Control: {}\r\n{}\r\n",
         status,
         ctype,
         body.len(),
+        cache_ctl,
         conn_hdr
     );
     if stream.write_all(header.as_bytes()).is_err() {
@@ -907,13 +986,15 @@ fn write_http_vec(stream: &mut TcpStream, status: &str, ctype: &str, body: &Vec<
     let conn_hdr = if is_close {
         "Connection: close\r\n"
     } else {
-        "Connection: keep-alive\r\nKeep-Alive: timeout=15, max=24\r\n"
+        "Connection: keep-alive\r\nKeep-Alive: timeout=25, max=100\r\n"
     };
+    let cache_ctl = REQ_CACHE_CONTROL.with(|c| c.get());
     let header = format!(
-        "HTTP/1.1 {}\r\nContent-Type: {}\r\nContent-Length: {}\r\nAccess-Control-Allow-Origin: *\r\nAccess-Control-Allow-Methods: GET, POST, HEAD, PUT, DELETE, PATCH, OPTIONS\r\nAccess-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, Anthropic-Version, X-Api-Key, Mcp-Session-Id, Accept\r\nTiming-Allow-Origin: *\r\nCache-Control: no-store\r\n{}\r\n",
+        "HTTP/1.1 {}\r\nContent-Type: {}\r\nContent-Length: {}\r\nAccess-Control-Allow-Origin: *\r\nAccess-Control-Allow-Methods: GET, POST, HEAD, PUT, DELETE, PATCH, OPTIONS\r\nAccess-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, Anthropic-Version, X-Api-Key, Mcp-Session-Id, Accept\r\nTiming-Allow-Origin: *\r\nCache-Control: {}\r\n{}\r\n",
         status,
         ctype,
         body.len(),
+        cache_ctl,
         conn_hdr
     );
     if stream.write_all(header.as_bytes()).is_err() {
@@ -965,9 +1046,59 @@ fn search_episodic_ring(ssd_path: &str, query: &str) -> String {
     )
 }
 
+/// Constant-time comparison between two strings to prevent timing side-channel attacks.
+/// Hashes both strings with SHA-256 and compares the resulting 64-character hex digests
+/// byte-by-byte in constant time, ensuring invariant latency regardless of key length or match offset.
+fn constant_time_compare_operator_key(supplied: &str, expected: &str) -> bool {
+    if supplied.is_empty() || expected.is_empty() {
+        return false;
+    }
+    let h_sup = sha256_bytes_hex(supplied.as_bytes());
+    let h_exp = sha256_bytes_hex(expected.as_bytes());
+    let b_sup = h_sup.as_bytes();
+    let b_exp = h_exp.as_bytes();
+    if b_sup.len() != b_exp.len() {
+        return false;
+    }
+    let mut diff = 0u8;
+    for (x, y) in b_sup.iter().zip(b_exp.iter()) {
+        diff |= x ^ y;
+    }
+    diff == 0
+}
+
+/// Retrieve the expected sovereign operator key from environment or local key file.
+fn resolve_expected_operator_key() -> String {
+    std::env::var("ACT_OMEGA_OPERATOR_KEY")
+        .or_else(|_| std::env::var("SOVEREIGN_OPERATOR_KEY"))
+        .ok()
+        .or_else(|| {
+            fs::read_to_string("00_control/.operator_vault_key")
+                .ok()
+                .map(|s| String::from(s.trim()))
+        })
+        .unwrap_or_default()
+}
+
+/// Verify administrative and operator vault requests via `X-Sovereign-Operator-Key` header.
+fn verify_operator_header_auth(header_key: &str, is_loopback: bool) -> bool {
+    if !is_loopback {
+        return false;
+    }
+    let clean_supplied = header_key.trim();
+    if clean_supplied.is_empty() {
+        return false;
+    }
+    let expected = resolve_expected_operator_key();
+    if expected.is_empty() {
+        return false;
+    }
+    constant_time_compare_operator_key(clean_supplied, &expected)
+}
+
 fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
-    let _ = stream.set_read_timeout(Some(Duration::from_millis(4500)));
-    let _ = stream.set_write_timeout(Some(Duration::from_millis(15000)));
+    let _ = stream.set_read_timeout(Some(Duration::from_millis(25000)));
+    let _ = stream.set_write_timeout(Some(Duration::from_millis(25000)));
     let _ = stream.set_nodelay(true);
 
     let cloned = match stream.try_clone() {
@@ -979,11 +1110,16 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
     REQ_IS_HEAD.with(|c| c.set(false));
     REQ_CONN_CLOSE.with(|c| c.set(false));
     STREAM_WRITE_ERR.with(|c| c.set(false));
+    REQ_CACHE_CONTROL.with(|c| c.set("no-store"));
 
-    for _req_num in 0..24usize {
+    for _req_num in 0..100usize {
         if REQ_CONN_CLOSE.with(|c| c.get()) || STREAM_WRITE_ERR.with(|c| c.get()) {
             break;
         }
+        // RESET REQ_CACHE_CONTROL AT THE START OF EVERY REQUEST LOOP ITERATION
+        // Enforces fresh cache-control state isolation across consecutive keep-alive transactions
+        REQ_CACHE_CONTROL.with(|c| c.set("no-store"));
+
         let mut first_line = String::new();
         match reader.read_line(&mut first_line) {
             Ok(0) => break,
@@ -997,6 +1133,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
         let mut content_len: usize = 0;
         let mut hdr_ok = true;
         let mut conn_close = false;
+        let mut operator_header_key = String::new();
         loop {
             let mut hdr_line = String::new();
             match reader.read_line(&mut hdr_line) {
@@ -1013,6 +1150,10 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                         }
                     } else if h_low.starts_with("connection:") && h_low.contains("close") {
                         conn_close = true;
+                    } else if h_low.starts_with("x-sovereign-operator-key:") {
+                        if let Some(val) = hdr_line.splitn(2, ':').nth(1) {
+                            operator_header_key = val.trim().to_string();
+                        }
                     }
                     if hdr_line == "\r\n" || hdr_line == "\n" {
                         break;
@@ -1041,9 +1182,10 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
         let raw_target = parts.next().unwrap_or("/");
 
         REQ_IS_HEAD.with(|c| c.set(method.eq_ignore_ascii_case("HEAD")));
-        REQ_CONN_CLOSE.with(|c| c.set(conn_close || _req_num >= 23));
+        REQ_CONN_CLOSE.with(|c| c.set(conn_close || _req_num >= 99));
 
         if method == "OPTIONS" {
+            REQ_CACHE_CONTROL.with(|c| c.set("no-store"));
             write_http_str(&mut stream, "200 OK", "text/plain; charset=utf-8", "OK");
             continue;
         }
@@ -1052,6 +1194,8 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             Some(idx) => raw_target.get(..idx).unwrap_or("/"),
             None => raw_target,
         };
+
+        REQ_CACHE_CONTROL.with(|c| c.set(determine_cache_control(clean_path)));
 
         let q_arg = {
             let q1 = extract_query_param(raw_target, "q");
@@ -2051,7 +2195,8 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             let key_q = extract_query_param(raw_target, "key");
             let who = if who_q.is_empty() { "Host_LOQ15_Operator" } else { &who_q };
             let what = if what_q.is_empty() { "L0_Tensor_FNO" } else { &what_q };
-            let auth_ok = verify_operator_vault_secret(&key_q, is_loopback);
+            let eff_key = if !operator_header_key.is_empty() { &operator_header_key } else { &key_q };
+            let auth_ok = verify_operator_vault_secret(eff_key, is_loopback);
             let json = tool_65_distributed_5w1h_router_json(who, what, auth_ok);
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
             continue;
@@ -2066,7 +2211,8 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 let k1 = extract_query_param(raw_target, "key");
                 if !k1.is_empty() { k1 } else { q_arg.clone() }
             };
-            let json = tool_67_operator_vault_gate_json(&key_q, is_loopback);
+            let eff_key = if !operator_header_key.is_empty() { &operator_header_key } else { &key_q };
+            let json = tool_67_operator_vault_gate_json(eff_key, is_loopback);
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
             continue;
         }
@@ -2075,31 +2221,42 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 let k1 = extract_query_param(raw_target, "key");
                 if !k1.is_empty() { k1 } else { q_arg.clone() }
             };
-            let auth_ok = verify_operator_vault_secret(&key_q, is_loopback);
+            let eff_key = if !operator_header_key.is_empty() { &operator_header_key } else { &key_q };
+            let auth_ok = verify_operator_vault_secret(eff_key, is_loopback);
             let json = tool_68_embedded_ide_cockpit_json(auth_ok);
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
             continue;
         }
-        if clean_path == "/api/v1/admin/self_exit" {
-            let key_q = {
-                let k1 = extract_query_param(raw_target, "key");
-                if !k1.is_empty() { k1 } else { q_arg.clone() }
-            };
-            let auth_ok = verify_operator_vault_secret(&key_q, is_loopback);
+        // Admin Endpoints: Require X-Sovereign-Operator-Key header, loopback, and reject URL query ?key=
+        if clean_path.starts_with("/api/v1/admin/") {
+            let has_query_key = !extract_query_param(raw_target, "key").is_empty();
+            let auth_ok = !has_query_key && verify_operator_header_auth(&operator_header_key, is_loopback);
             if !auth_ok {
+                let reason = if !is_loopback {
+                    "Administrative operations are strictly restricted to 127.0.0.1 loopback."
+                } else if has_query_key {
+                    "Passing credentials via URL query parameter '?key=' is forbidden. Use 'X-Sovereign-Operator-Key' request header."
+                } else {
+                    "Invalid or missing 'X-Sovereign-Operator-Key' request header."
+                };
                 let trap_json = format!(
-                    "{{\"status\":\"HTTP_403_COMPACT_LOCALIZED_ELECTRON_TRAP_BLOCKED\",\"endpoint\":\"/api/v1/admin/self_exit\",\"is_loopback\":{},\"quantum_interference_cls_trap\":true,\"flat_band_group_velocity_vg\":0.0,\"psi_plus_minus_sum\":0.0,\"effective_mass\":\"INFINITE_CLS_LOCALIZED\",\"reason\":\"Destructive quantum phase cancellation (psi_+ + psi_- = 0): /api/v1/admin/self_exit requires BOTH 127.0.0.1 loopback AND valid ACT_OMEGA_OPERATOR_KEY.\"}}",
-                    is_loopback
+                    "{{\"status\":\"HTTP_403_COMPACT_LOCALIZED_ELECTRON_TRAP_BLOCKED\",\"endpoint\":\"{}\",\"is_loopback\":{},\"quantum_interference_cls_trap\":true,\"flat_band_group_velocity_vg\":0.0,\"psi_plus_minus_sum\":0.0,\"effective_mass\":\"INFINITE_CLS_LOCALIZED\",\"reason\":\"Destructive quantum phase cancellation (psi_+ + psi_- = 0): /api/v1/admin/* requires BOTH 127.0.0.1 loopback AND valid X-Sovereign-Operator-Key header. {}\"}}",
+                    clean_path, is_loopback, reason
                 );
                 write_http_str(&mut stream, "403 Forbidden", "application/json; charset=utf-8", &trap_json);
                 continue;
             }
-            let ok_json = "{\"status\":\"AUTHORIZED_SELF_EXIT_INITIATED\",\"endpoint\":\"/api/v1/admin/self_exit\",\"is_loopback\":true,\"operator_vault_verified\":true}";
-            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", ok_json);
-            thread::spawn(|| {
-                thread::sleep(Duration::from_millis(120));
-                std::process::exit(0);
-            });
+            if clean_path == "/api/v1/admin/self_exit" {
+                let ok_json = "{\"status\":\"AUTHORIZED_SELF_EXIT_INITIATED\",\"endpoint\":\"/api/v1/admin/self_exit\",\"is_loopback\":true,\"operator_vault_verified\":true}";
+                write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", ok_json);
+                thread::spawn(|| {
+                    thread::sleep(Duration::from_millis(120));
+                    std::process::exit(0);
+                });
+                continue;
+            }
+            let ok_json = format!("{{\"status\":\"ADMIN_AUTHORIZED\",\"endpoint\":\"{}\",\"is_loopback\":true,\"operator_vault_verified\":true}}", clean_path);
+            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &ok_json);
             continue;
         }
 
@@ -2291,6 +2448,23 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             continue;
         }
 
+        // Dedicated Native Tools Discovery Catalog (Tools 1..100)
+        if clean_path == "/api/v1/tools" || clean_path == "/api/v1/tools/" {
+            let mut st = match state.lock() {
+                Ok(g) => g,
+                Err(p) => p.into_inner(),
+            };
+            st.gen_counter += 1;
+            let json = format!(
+                "{{\"status\":\"OK_V49_0_0_TOOLS_CATALOG\",\"version\":\"v49.0.0\",\"tools_total\":100,\"chain_milestone\":\"CHAIN 100\",\"omni_suite\":\"/api/v1/v49/chain100_omni_suite\",\"tools\":{{\"t91\":\"/api/v1/v49/tool_91_ds3_triangulated_cft2_gravity\",\"t92\":\"/api/v1/v49/tool_92_amplituhedron_9loop_hexagon_plucker\",\"t93\":\"/api/v1/v49/tool_93_bekenstein_hawking_area_horizon_guard\",\"t94\":\"/api/v1/v49/tool_94_cubic_pyramid_integral_proof\",\"t95\":\"/api/v1/v49/tool_95_bell_polytope_noncontextuality_audit\",\"t96\":\"/api/v1/v49/tool_96_bipolar_vesica_caustic_envelope\",\"t97\":\"/api/v1/v49/tool_97_hamilton_tait_nabla_quaternionic_field\",\"t98\":\"/api/v1/v49/tool_98_poincare_bendixson_destiny_atlas\",\"t99\":\"/api/v1/v49/tool_99_stanford_together_hybrid_link_agent\",\"t100\":\"/api/v1/v49/tool_100_dzhanibekov_euler_axis_stabilizer\"}},\"diag\":\"ACT-Omega Net v49.0.0 Tools Catalog: 100 Native Tools Online (CHAIN 100 Century Milestone)\"}}"
+            );
+            st.last_card_diag = format!("EXEC({}) -> OK", clean_path);
+            st.last_term_out = format!("EXEC({}) -> OK", clean_path);
+            REQ_CACHE_CONTROL.with(|c| c.set("no-store"));
+            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
+            continue;
+        }
+
         // 6I-000000a. Track 38.5: Tool 54 -- Zero-Backtick Atomic Delta Update Engine & Remote 5GB Cloudflare D1 Sync (/api/v1/devops/atomic_delta_engine)
         // 6I-0000000. v44.0.0 Tools 55..76 -- Google Antigravity (Gemini 4 Argon) Multi-Agent Orchestrator, 5W1H-Neuron Connectome Coupler & Operator IDE Vault
         if clean_path == "/api/v1/manifold/v44_omni_snapshot" || clean_path == "/api/v1/antigravity/cutover_status" || clean_path == "/api/v1/antigravity/argon_teamwork" || clean_path == "/api/v1/connectome/harness_5w1h_npage" || clean_path == "/api/v1/antigravity/rules_subagents" || clean_path == "/api/v1/hud/embedded_ide_cockpit" || clean_path == "/api/v1/auth/operator_vault_gate" || clean_path == "/api/v1/ide/symbiotic_parity_sync" || clean_path == "/api/v1/router/distributed_5w1h_dispatch" || clean_path.starts_with("/api/v1/tools/t") {
@@ -2313,13 +2487,13 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             let core_syn = core_neurons * 8;
             let comb_syn = comb_neurons * 8;
             let diag = format!(
-                "ACT-OMEGA v47.0.0 (SH4Z v4700 TLV) ANTIGRAVITY GEMINI 4 ARGON & 5W1H-NEURON CONNECTOME ({}): M_ATP={:.4} (Band #{}: {}) | Connectome: neurons_v4000.npage ({}B, {} Core Neurons, {}x Chair-44, {} Synapses) + neurons_v4400_expansion.npage ({}B, +{} Expansion Neurons, +{}x Chair-44 -> {} Combined Neurons/Shards, {}x Chair-44, {} Synapses) + .e8z ({}B, 80 Sectors S00..S79) | 24 Domains (1,024 Compounds, 131K Vocab) | Cloudflare D1=10 Tables | 432/432 Lean 4 QED ({:.1}k ops/s)",
+                "ACT-OMEGA v49.0.0 (SH4Z v4900 TLV) ANTIGRAVITY GEMINI 4 ARGON & 5W1H-NEURON CONNECTOME ({}): M_ATP={:.4} (Band #{}: {}) | Connectome: neurons_v4000.npage ({}B, {} Core Neurons, {}x Chair-44, {} Synapses) + neurons_v4400_expansion.npage ({}B, +{} Expansion Neurons, +{}x Chair-44 -> {} Combined Neurons/Shards, {}x Chair-44, {} Synapses) + .e8z ({}B, 80 Sectors S00..S79) | 24 Domains (1,024 Compounds, 131K Vocab) | Cloudflare D1=10 Tables | 432/432 Lean 4 QED ({:.1}k ops/s)",
                 clean_path, h.metabolic_atp_drive, h.metabolic_band_id, h.metabolic_regime, npage_bytes, core_neurons, core_cols, core_syn, exp_bytes, exp_neurons, exp_cols, comb_neurons, comb_cols, comb_syn, e8z_bytes, st.cluster_total_kops
             );
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"status\":\"ANTIGRAVITY_GEMINI4_ARGON_AND_5W1H_CONNECTOME_V4700_LOCKED\",\"version\":\"v47.0.0\",\"endpoint\":\"{}\",\"model\":\"Gemini-4-Argon-SH4Z-v4700\",\"npage_neurons\":{},\"npage_bytes\":{},\"expansion_neurons\":{},\"expansion_bytes\":{},\"combined_neurons\":{},\"combined_bytes\":{},\"synapses\":{},\"combined_synapses\":{},\"e8z_bytes\":{},\"sectors\":80,\"domains_total\":24,\"compounds_total\":1024,\"vocab_size\":131072,\"metabolic_atp\":{:.4},\"metabolic_band\":{},\"antigravity_subagents\":7,\"cloudflare_d1_tables\":10,\"lean4_qed\":432,\"tools_total\":89,\"diag\":\"{}\"}}",
+                "{{\"status\":\"ANTIGRAVITY_GEMINI4_ARGON_AND_5W1H_CONNECTOME_V4900_LOCKED\",\"version\":\"v49.0.0\",\"endpoint\":\"{}\",\"model\":\"Gemini-4-Argon-SH4Z-v4900\",\"npage_neurons\":{},\"npage_bytes\":{},\"expansion_neurons\":{},\"expansion_bytes\":{},\"combined_neurons\":{},\"combined_bytes\":{},\"synapses\":{},\"combined_synapses\":{},\"e8z_bytes\":{},\"sectors\":80,\"domains_total\":24,\"compounds_total\":1024,\"vocab_size\":131072,\"metabolic_atp\":{:.4},\"metabolic_band\":{},\"antigravity_subagents\":7,\"cloudflare_d1_tables\":10,\"lean4_qed\":432,\"tools_total\":100,\"diag\":\"{}\"}}",
                 clean_path, core_neurons, npage_bytes, exp_neurons, exp_bytes, comb_neurons, comb_bytes, core_syn, comb_syn, e8z_bytes, h.metabolic_atp_drive, h.metabolic_band_id, json_escape_clean(&diag)
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
@@ -3686,6 +3860,58 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             continue;
         }
 
+        // 7H. v49.0.0 Tools 91..100 & CHAIN 100 Century Milestone Synthesis (Features 13..25)
+        if clean_path.starts_with("/api/v1/v49/") {
+            {
+                let mut st = match state.lock() {
+                    Ok(g) => g,
+                    Err(p) => p.into_inner(),
+                };
+                st.gen_counter += 1;
+                st.tool_chain_runs += 1;
+            }
+            let weights_path = "C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v4600_42240.npage";
+            let e8_path = "C:\\sovereign_manifold_v31\\00_control\\weights\\sovereign_harmonic_iv_v4000.e8z";
+
+            let json = if clean_path == "/api/v1/v49/chain100_omni_suite" {
+                v49_muse_clean_and_chain100_synthesis::run_chain100_omni_suite_measured(weights_path, e8_path)
+            } else if clean_path == "/api/v1/v49/tool_91_ds3_triangulated_cft2_gravity" {
+                v49_muse_clean_and_chain100_synthesis::execute_tool_91_ds3_triangulated_cft2_gravity(weights_path, e8_path)
+            } else if clean_path == "/api/v1/v49/tool_92_amplituhedron_9loop_hexagon_plucker" {
+                v49_muse_clean_and_chain100_synthesis::execute_tool_92_amplituhedron_9loop_hexagon_plucker(weights_path, e8_path)
+            } else if clean_path == "/api/v1/v49/tool_93_bekenstein_hawking_area_horizon_guard" {
+                v49_muse_clean_and_chain100_synthesis::execute_tool_93_bekenstein_hawking_area_horizon_guard(weights_path, e8_path)
+            } else if clean_path == "/api/v1/v49/tool_94_cubic_pyramid_integral_proof" {
+                v49_muse_clean_and_chain100_synthesis::execute_tool_94_cubic_pyramid_integral_proof(weights_path, e8_path)
+            } else if clean_path == "/api/v1/v49/tool_95_bell_polytope_noncontextuality_audit" {
+                v49_muse_clean_and_chain100_synthesis::execute_tool_95_bell_polytope_noncontextuality_audit(weights_path, e8_path)
+            } else if clean_path == "/api/v1/v49/tool_96_bipolar_vesica_caustic_envelope" {
+                v49_muse_clean_and_chain100_synthesis::execute_tool_96_bipolar_vesica_caustic_envelope(weights_path, e8_path)
+            } else if clean_path == "/api/v1/v49/tool_97_hamilton_tait_nabla_quaternionic_field" {
+                v49_muse_clean_and_chain100_synthesis::execute_tool_97_hamilton_tait_nabla_quaternionic_field(weights_path, e8_path)
+            } else if clean_path == "/api/v1/v49/tool_98_poincare_bendixson_destiny_atlas" {
+                v49_muse_clean_and_chain100_synthesis::execute_tool_98_poincare_bendixson_destiny_atlas(weights_path, e8_path)
+            } else if clean_path == "/api/v1/v49/tool_99_stanford_together_hybrid_link_agent" {
+                v49_muse_clean_and_chain100_synthesis::execute_tool_99_stanford_together_hybrid_link_agent(weights_path, e8_path)
+            } else if clean_path == "/api/v1/v49/tool_100_dzhanibekov_euler_axis_stabilizer" {
+                v49_muse_clean_and_chain100_synthesis::execute_tool_100_dzhanibekov_euler_axis_stabilizer(weights_path, e8_path)
+            } else {
+                v49_muse_clean_and_chain100_synthesis::run_chain100_omni_suite_measured(weights_path, e8_path)
+            };
+
+            {
+                let mut st = match state.lock() {
+                    Ok(g) => g,
+                    Err(p) => p.into_inner(),
+                };
+                st.last_card_diag = format!("EXEC({}) -> OK", clean_path);
+                st.last_term_out = format!("EXEC({}) -> OK", clean_path);
+            }
+            REQ_CACHE_CONTROL.with(|c| c.set("no-store"));
+            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
+            continue;
+        }
+
         // 8. Dedicated Tool Endpoints for Stiefel, Acoustic SDR, RTX 3050 WGSL, Debate, Hotpatch, Codegen
         if clean_path.starts_with("/api/v1/") {
             let mut st = match state.lock() {
@@ -3755,6 +3981,22 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 continue;
             }
         }
+
+        // Prevent static 404 cache poisoning on missing /assets/* files:
+        // If a request path starts with /assets/ and the target file does not exist on disk,
+        // do NOT fall through to the SPA index.html handler with public, max-age=86400, immutable.
+        // Return HTTP 404 with no-store.
+        if clean_path.starts_with("/assets/") || clean_path.trim_start_matches('/').starts_with("assets/") {
+            REQ_CACHE_CONTROL.with(|c| c.set("no-store"));
+            write_http_str(
+                &mut stream,
+                "404 Not Found",
+                "text/plain; charset=utf-8",
+                "404 Not Found: Static asset does not exist\n",
+            );
+            continue;
+        }
+
         let index_file = format!("{}\\index.html", dist_root);
         if let Ok(bytes) = fs::read(&index_file) {
             write_http_vec(&mut stream, "200 OK", "text/html; charset=utf-8", &bytes);
@@ -3765,7 +4007,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             &mut stream,
             "200 OK",
             "text/html; charset=utf-8",
-            "<html><body style='background:#0E1116;color:#FFFEFB;font-family:monospace'><h2>ACT-Omega Net v44.0.0 (SH4Z v4400 TLV) Online at act-omega-net.dev</h2></body></html>",
+            "<html><body style='background:#0E1116;color:#FFFEFB;font-family:monospace'><h2>ACT-Omega Net v49.0.0 (CHAIN 100 Century Milestone) Online at act-omega-net.dev</h2><p>Discovery: <a href='/api/v1/tools'>/api/v1/tools</a> | <a href='/api/v1/v49/chain100_omni_suite'>/api/v1/v49/chain100_omni_suite</a> | <a href='/openapi.json'>/openapi.json</a></p></body></html>",
         );
     }
 }

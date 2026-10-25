@@ -1,0 +1,226 @@
+﻿[
+    {
+        "TestId":  "SUB-T91",
+        "Name":  "Subroute /api/v1/v49/tool_91_ds3_triangulated_cft2_gravity",
+        "Passed":  true,
+        "Details":  "HTTP 200 | JSON=True | tool_id=91 | genus=3",
+        "DurationMs":  30.33,
+        "Metadata":  {
+                         "StatusCode":  200,
+                         "LatencyMs":  30.329700000000003
+                     }
+    },
+    {
+        "TestId":  "SUB-T92",
+        "Name":  "Subroute /api/v1/v49/tool_92_amplituhedron_9loop_hexagon_plucker",
+        "Passed":  true,
+        "Details":  "HTTP 200 | JSON=True | tool_id=92 | particles_count=6",
+        "DurationMs":  1.89,
+        "Metadata":  {
+                         "StatusCode":  200,
+                         "LatencyMs":  1.8933
+                     }
+    },
+    {
+        "TestId":  "SUB-T93",
+        "Name":  "Subroute /api/v1/v49/tool_93_bekenstein_hawking_area_horizon_guard",
+        "Passed":  true,
+        "Details":  "HTTP 200 | JSON=True | tool_id=93 | shm_ring_capacity_bytes=65536",
+        "DurationMs":  2.2,
+        "Metadata":  {
+                         "StatusCode":  200,
+                         "LatencyMs":  2.1994000000000002
+                     }
+    },
+    {
+        "TestId":  "SUB-T94",
+        "Name":  "Subroute /api/v1/v49/tool_94_cubic_pyramid_integral_proof",
+        "Passed":  true,
+        "Details":  "HTTP 200 | JSON=True | tool_id=94 | congruent_pyramids=3",
+        "DurationMs":  2.42,
+        "Metadata":  {
+                         "StatusCode":  200,
+                         "LatencyMs":  2.4247
+                     }
+    },
+    {
+        "TestId":  "SUB-T95",
+        "Name":  "Subroute /api/v1/v49/tool_95_bell_polytope_noncontextuality_audit",
+        "Passed":  true,
+        "Details":  "HTTP 200 | JSON=True | tool_id=95 | polytopes_count=6",
+        "DurationMs":  1.31,
+        "Metadata":  {
+                         "StatusCode":  200,
+                         "LatencyMs":  1.3114000000000001
+                     }
+    },
+    {
+        "TestId":  "SUB-T96",
+        "Name":  "Subroute /api/v1/v49/tool_96_bipolar_vesica_caustic_envelope",
+        "Passed":  true,
+        "Details":  "HTTP 200 | JSON=True | tool_id=96 | caustic_residual=0.000000000",
+        "DurationMs":  1.57,
+        "Metadata":  {
+                         "StatusCode":  200,
+                         "LatencyMs":  1.5744
+                     }
+    },
+    {
+        "TestId":  "SUB-T97",
+        "Name":  "Subroute /api/v1/v49/tool_97_hamilton_tait_nabla_quaternionic_field",
+        "Passed":  true,
+        "Details":  "HTTP 200 | JSON=True | tool_id=97 | div_curl_f_exact=0.0",
+        "DurationMs":  1.76,
+        "Metadata":  {
+                         "StatusCode":  200,
+                         "LatencyMs":  1.7570000000000001
+                     }
+    },
+    {
+        "TestId":  "SUB-T98",
+        "Name":  "Subroute /api/v1/v49/tool_98_poincare_bendixson_destiny_atlas",
+        "Passed":  true,
+        "Details":  "HTTP 200 | JSON=True | tool_id=98 | total_columns_evaluated=960",
+        "DurationMs":  1.98,
+        "Metadata":  {
+                         "StatusCode":  200,
+                         "LatencyMs":  1.985
+                     }
+    },
+    {
+        "TestId":  "SUB-T99",
+        "Name":  "Subroute /api/v1/v49/tool_99_stanford_together_hybrid_link_agent",
+        "Passed":  true,
+        "Details":  "HTTP 200 | JSON=True | tool_id=99 | latent_e8_dimensions=256",
+        "DurationMs":  2.55,
+        "Metadata":  {
+                         "StatusCode":  200,
+                         "LatencyMs":  2.5460000000000003
+                     }
+    },
+    {
+        "TestId":  "SUB-T100",
+        "Name":  "Subroute /api/v1/v49/tool_100_dzhanibekov_euler_axis_stabilizer",
+        "Passed":  true,
+        "Details":  "HTTP 200 | JSON=True | tool_id=100 | angular_momentum_l2_norm=5.009776",
+        "DurationMs":  1.49,
+        "Metadata":  {
+                         "StatusCode":  200,
+                         "LatencyMs":  1.4883000000000002
+                     }
+    },
+    {
+        "TestId":  "ALT-ROUTE",
+        "Name":  "Probe /api/v1/v49/tool91_holographic_bound",
+        "Passed":  true,
+        "Details":  "HTTP 200 | Valid JSON=True (Clean Fallback)",
+        "DurationMs":  1.84,
+        "Metadata":  {
+
+                     }
+    },
+    {
+        "TestId":  "ALT-ROUTE",
+        "Name":  "Probe /api/v1/v49/tool92_grassmannian_amplituhedron",
+        "Passed":  true,
+        "Details":  "HTTP 200 | Valid JSON=True (Clean Fallback)",
+        "DurationMs":  1.98,
+        "Metadata":  {
+
+                     }
+    },
+    {
+        "TestId":  "ALT-ROUTE",
+        "Name":  "Probe /api/v1/v49/chain100_omni_suite?burst=adversarial\u0026threads=50",
+        "Passed":  true,
+        "Details":  "HTTP 200 | Valid JSON=True (Clean Fallback)",
+        "DurationMs":  1.36,
+        "Metadata":  {
+
+                     }
+    },
+    {
+        "TestId":  "ALT-ROUTE",
+        "Name":  "Probe /api/v1/v49/unknown_tool_probe_fallback",
+        "Passed":  true,
+        "Details":  "HTTP 200 | Valid JSON=True (Clean Fallback)",
+        "DurationMs":  1.55,
+        "Metadata":  {
+
+                     }
+    },
+    {
+        "TestId":  "BURST-R1",
+        "Name":  "50-Parallel-Burst Round 1",
+        "Passed":  true,
+        "Details":  "AvgLat=16.5ms (\u003c100ms: True) | Med=19.29ms | Max=21.82ms | Wall=32.8ms | 200s=50 | ValidJson=50/50 | Errors=0",
+        "DurationMs":  32.8,
+        "Metadata":  {
+                         "MedianLatencyMs":  19.2905,
+                         "Sub100msAvg":  true,
+                         "p95LatencyMs":  20.1749,
+                         "All200":  true,
+                         "ZeroErrors":  true,
+                         "ValidJson":  true,
+                         "AvgLatencyMs":  16.504454000000003,
+                         "MaxLatencyMs":  21.8234
+                     }
+    },
+    {
+        "TestId":  "BURST-R2",
+        "Name":  "50-Parallel-Burst Round 2",
+        "Passed":  true,
+        "Details":  "AvgLat=16.51ms (\u003c100ms: True) | Med=18.43ms | Max=20.24ms | Wall=20.81ms | 200s=50 | ValidJson=50/50 | Errors=0",
+        "DurationMs":  20.81,
+        "Metadata":  {
+                         "MedianLatencyMs":  18.4316,
+                         "Sub100msAvg":  true,
+                         "p95LatencyMs":  20.157,
+                         "All200":  true,
+                         "ZeroErrors":  true,
+                         "ValidJson":  true,
+                         "AvgLatencyMs":  16.509500000000003,
+                         "MaxLatencyMs":  20.238
+                     }
+    },
+    {
+        "TestId":  "BURST-R3",
+        "Name":  "50-Parallel-Burst Round 3",
+        "Passed":  true,
+        "Details":  "AvgLat=18.52ms (\u003c100ms: True) | Med=17.82ms | Max=24.02ms | Wall=24.28ms | 200s=50 | ValidJson=50/50 | Errors=0",
+        "DurationMs":  24.28,
+        "Metadata":  {
+                         "MedianLatencyMs":  17.819200000000002,
+                         "Sub100msAvg":  true,
+                         "p95LatencyMs":  22.8716,
+                         "All200":  true,
+                         "ZeroErrors":  true,
+                         "ValidJson":  true,
+                         "AvgLatencyMs":  18.518079999999998,
+                         "MaxLatencyMs":  24.0242
+                     }
+    },
+    {
+        "TestId":  "ZERO-BRACKET",
+        "Name":  "Zero-Square-Bracket Audit (0x5B / 0x5D)",
+        "Passed":  true,
+        "Details":  "Total Brackets=0 (0x5B=0, 0x5D=0) across 42174 bytes",
+        "DurationMs":  1,
+        "Metadata":  {
+                         "ByteLength":  42174,
+                         "BracketCount":  0
+                     }
+    },
+    {
+        "TestId":  "MUSE-AUDIT",
+        "Name":  "Muse Zero-Unmeasured-Data Invariants",
+        "Passed":  true,
+        "Details":  "Instant::now=True | fs::metadata=True | SHA-256=True | BannedClamps=False",
+        "DurationMs":  1,
+        "Metadata":  {
+                         "HasSha256":  true,
+                         "HasInstantNow":  true,
+                         "HasFsMetadata":  true
+                     }
+    }
+]

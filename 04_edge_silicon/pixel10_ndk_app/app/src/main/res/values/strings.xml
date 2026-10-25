@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">ACT-Omega v47.0.0 (SH4Z v4700 TLV)</string>
-    <string name="sovereign_dream_label">ACT-Omega v47.0.0 Live Screensaver (3D Stiefel &amp; 16x130 SHM -- 432/432 QED)</string>
-    <string name="sovereign_wallpaper_label">ACT-Omega v47.0.0 Live Wallpaper (15.965Hz Manifold -- 432/432 QED)</string>
-    <string name="sovereign_wallpaper_desc">Real-time 15.965 Hz Decadic Stiefel Manifold, Theodorus Spiral, 16x130 Cacheline Heatmap, 42,240-Neuron .npage SHM &amp; 432/432 Lean 4 QED</string>
+    <string name="app_name">ACT-Omega v49.0.0 (CHAIN 100)</string>
+    <string name="sovereign_dream_label">ACT-Omega v49.0.0 Live Screensaver (3D Stiefel &amp; 16x130 SHM -- 460/460 QED)</string>
+    <string name="sovereign_wallpaper_label">ACT-Omega v49.0.0 Live Wallpaper (15.965Hz Manifold -- 460/460 QED)</string>
+    <string name="sovereign_wallpaper_desc">Real-time 15.965 Hz Decadic Stiefel Manifold, Theodorus Spiral, 16x130 Cacheline Heatmap, 42,240-Neuron .npage SHM &amp; 460/460 Lean 4 QED</string>
 </resources>

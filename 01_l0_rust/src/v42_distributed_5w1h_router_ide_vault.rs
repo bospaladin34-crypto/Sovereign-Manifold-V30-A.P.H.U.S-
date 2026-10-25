@@ -16,12 +16,24 @@ pub struct RouteDecision5W1H {
     pub auth_vault_unlocked: bool,
 }
 
+fn constant_time_eq_str(a: &str, b: &str) -> bool {
+    if a.len() != b.len() {
+        return false;
+    }
+    let mut diff = 0u8;
+    for (x, y) in a.bytes().zip(b.bytes()) {
+        diff |= x ^ y;
+    }
+    diff == 0
+}
+
 pub fn verify_operator_vault_secret(supplied_key: &str, is_localhost: bool) -> bool {
     let clean_supplied = supplied_key.trim();
     if clean_supplied.is_empty() {
         return false;
     }
     let expected = std::env::var("ACT_OMEGA_OPERATOR_KEY")
+        .or_else(|_| std::env::var("SOVEREIGN_OPERATOR_KEY"))
         .ok()
         .or_else(|| {
             std::fs::read_to_string("00_control/.operator_vault_key")
@@ -32,7 +44,7 @@ pub fn verify_operator_vault_secret(supplied_key: &str, is_localhost: bool) -> b
     if expected.is_empty() {
         return false;
     }
-    is_localhost && (clean_supplied == expected)
+    is_localhost && constant_time_eq_str(clean_supplied, &expected)
 }
 
 pub fn dispatch_5w1h_distributed_route(

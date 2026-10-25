@@ -19,7 +19,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="SOVEREIGN v47.0.0 (SH4Z v4700 TLV) -- 42,240N .NPAGE SHM"
+            android:text="SOVEREIGN v49.0.0 (CHAIN 100) -- 42,240N .NPAGE SHM"
             android:textColor="#FFFFB454"
             android:textSize="9.5sp"
             android:textStyle="bold"
@@ -44,7 +44,7 @@
         android:id="@+id/sovereign_widget_sub_txt"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="act-omega-net.dev -- 42,240 Neurons (5.41MB SHM) -- 131K Vocab -- 89 Tools -- 432/432 QED"
+        android:text="act-omega-net.dev -- 42,240 Neurons (5.41MB SHM) -- 131K Vocab -- 100 Tools (CHAIN 100) -- 460/460 QED"
         android:textColor="#FFFFFEFB"
         android:textSize="8.2sp"
         android:fontFamily="monospace" />

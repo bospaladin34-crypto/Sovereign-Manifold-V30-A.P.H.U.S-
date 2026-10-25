@@ -1,0 +1,696 @@
+﻿{
+    "summary":  {
+                    "pass_rate_pct":  100,
+                    "failed":  0,
+                    "total":  54,
+                    "passed":  54
+                },
+    "suite":  "ACT-Omega Net v49.0.0 E2E Test Suite",
+    "timestamp":  "2026-10-25T01:01:24Z",
+    "results":  [
+                    {
+                        "id":  "F01",
+                        "passed":  true,
+                        "tier":  1,
+                        "elapsed_ms":  6.1649,
+                        "name":  "CF DO rows_read Optimization",
+                        "measured_data":  {
+                                              "RingPruningFound":  true,
+                                              "UnboundedCountFound":  false
+                                          },
+                        "message":  "CF DO rows_read optimized: 0 unbounded SELECT COUNT(*), ring buffer pruning/in-memory count active",
+                        "milestone":  "M1"
+                    },
+                    {
+                        "id":  "F02",
+                        "passed":  true,
+                        "tier":  1,
+                        "elapsed_ms":  1.4143000000000001,
+                        "name":  "CF DO SQLite Write Debounce",
+                        "measured_data":  {
+                                              "DebounceDetected":  true
+                                          },
+                        "message":  "CF DO SQLite write debounce implemented (60s throttling per node detected)",
+                        "milestone":  "M1"
+                    },
+                    {
+                        "id":  "F03",
+                        "passed":  true,
+                        "tier":  1,
+                        "elapsed_ms":  1.2677,
+                        "name":  "CF DO D1 Read Cache",
+                        "measured_data":  {
+                                              "D1CacheDetected":  true
+                                          },
+                        "message":  "CF DO D1 read cache present (30s TTL in-memory caching verified)",
+                        "milestone":  "M1"
+                    },
+                    {
+                        "id":  "F04",
+                        "passed":  true,
+                        "tier":  1,
+                        "elapsed_ms":  3.5473000000000003,
+                        "name":  "Swarm Keep-Alive Expansion",
+                        "measured_data":  {
+                                              "Timeout25sDetected":  true
+                                          },
+                        "message":  "Swarm socket read timeout raised to \u003e= 20,000ms (25,000ms configured)",
+                        "milestone":  "M1"
+                    },
+                    {
+                        "id":  "F05",
+                        "passed":  true,
+                        "tier":  1,
+                        "elapsed_ms":  22.3669,
+                        "name":  "Static Asset Edge Caching",
+                        "measured_data":  {
+                                              "CacheControlDetected":  true
+                                          },
+                        "message":  "Swarm static asset cache header verified (Cache-Control: public, max-age=86400, immutable present)",
+                        "milestone":  "M1"
+                    },
+                    {
+                        "id":  "F06",
+                        "passed":  true,
+                        "tier":  1,
+                        "elapsed_ms":  2.9527,
+                        "name":  "PlÃ¼cker 6D Inner Product Fallback",
+                        "measured_data":  {
+                                              "FakeSinCosPresent":  false,
+                                              "PluckerDetected":  true
+                                          },
+                        "message":  "PlÃ¼cker 6D quadratic relation active in CPU fallback; Math.sin synthetic loop eliminated",
+                        "milestone":  "M2"
+                    },
+                    {
+                        "id":  "F07",
+                        "passed":  true,
+                        "tier":  1,
+                        "elapsed_ms":  7.3637000000000006,
+                        "name":  "PlÃ¼cker Measured CRC Label",
+                        "measured_data":  {
+                                              "MeasuredLabelDetected":  true
+                                          },
+                        "message":  "CPU fallback digest correctly labeled with _CPU_E8_PLUCKER_6D_INNER_MEASURED",
+                        "milestone":  "M2"
+                    },
+                    {
+                        "id":  "F08",
+                        "passed":  true,
+                        "tier":  1,
+                        "elapsed_ms":  5.575,
+                        "name":  "Structural Lean 4 Proofs 433..440",
+                        "measured_data":  {
+                                              "UniversalProofDetected":  true,
+                                              "ConstantRflDetected":  false
+                                          },
+                        "message":  "Theorems 433..440 verified as universally quantified structural invariants (zero constant rfl)",
+                        "milestone":  "M2"
+                    },
+                    {
+                        "id":  "F09",
+                        "passed":  true,
+                        "tier":  1,
+                        "elapsed_ms":  7.2632,
+                        "name":  "Lean 4 Theorems 441..460",
+                        "measured_data":  {
+                                              "Thm460Present":  true,
+                                              "TheoremCount":  460
+                                          },
+                        "message":  "Lean 4 formal theorem inventory complete: 460 theorems (\u003e= 460) including thm_v49_460 capstone",
+                        "milestone":  "M2"
+                    },
+                    {
+                        "id":  "F10",
+                        "passed":  true,
+                        "tier":  1,
+                        "elapsed_ms":  1.5350000000000001,
+                        "name":  "Haskell Lean 4 Generator Update",
+                        "measured_data":  {
+                                              "NoConstantRfl":  true,
+                                              "UniversalCodegenDetected":  true
+                                          },
+                        "message":  "Haskell algebraic generator emits universal structural Lean 4 proofs (zero trivial constant rfl)",
+                        "milestone":  "M2"
+                    },
+                    {
+                        "id":  "F11",
+                        "passed":  true,
+                        "tier":  1,
+                        "elapsed_ms":  9.4086,
+                        "name":  "Root HTML Passkey Purge",
+                        "measured_data":  {
+                                              "WikiHits":  0,
+                                              "IndexHits":  0
+                                          },
+                        "message":  "Root HTML passkey purged cleanly: 0 occurrences of SOVEREIGN-LOQ15-4200 across index.html \u0026 wiki.html",
+                        "milestone":  "M2"
+                    },
+                    {
+                        "id":  "F12",
+                        "passed":  true,
+                        "tier":  1,
+                        "elapsed_ms":  65.629,
+                        "name":  "Admin Header Authentication",
+                        "measured_data":  {
+                                              "UnauthStatusCode":  403,
+                                              "HeaderAuthInCode":  true
+                                          },
+                        "message":  "Admin header authentication enforced: unauthenticated /api/v1/admin/self_exit returned HTTP 403, X-Sovereign-Operator-Key validated in swarm",
+                        "milestone":  "M2"
+                    },
+                    {
+                        "id":  "F13",
+                        "passed":  true,
+                        "tier":  1,
+                        "elapsed_ms":  53.578500000000005,
+                        "name":  "Tool 91 (Triangulated dS3 Gravity)",
+                        "measured_data":  {
+                                              "StatusCode":  200
+                                          },
+                        "message":  "Tool 91 (Triangulated dS3 Gravity) verified: genus=3, pants=4, neurons=42240, elapsed=69.50us",
+                        "milestone":  "M3"
+                    },
+                    {
+                        "id":  "F14",
+                        "passed":  true,
+                        "tier":  1,
+                        "elapsed_ms":  4.7692000000000005,
+                        "name":  "Tool 92 (Amplituhedron SYM Hexagon)",
+                        "measured_data":  {
+                                              "StatusCode":  200
+                                          },
+                        "message":  "Tool 92 (Amplituhedron Hexagon) verified: loops=9, particles=6, Plucker Pab=1.653518",
+                        "milestone":  "M3"
+                    },
+                    {
+                        "id":  "F15",
+                        "passed":  true,
+                        "tier":  1,
+                        "elapsed_ms":  3.6581,
+                        "name":  "Tool 93 (Holographic L2 SHM Bound)",
+                        "measured_data":  {
+                                              "StatusCode":  200
+                                          },
+                        "message":  "Tool 93 (Bekenstein-Hawking Guard) verified: capacity=65536B, S_max=256.000000",
+                        "milestone":  "M3"
+                    },
+                    {
+                        "id":  "F16",
+                        "passed":  true,
+                        "tier":  1,
+                        "elapsed_ms":  5.2029000000000005,
+                        "name":  "Tool 94 (3-Pyramid Cube Partition)",
+                        "measured_data":  {
+                                              "StatusCode":  200
+                                          },
+                        "message":  "Tool 94 (3-Pyramid Partition) verified: 3 congruent pyramids, identity holds=True",
+                        "milestone":  "M3"
+                    },
+                    {
+                        "id":  "F17",
+                        "passed":  true,
+                        "tier":  1,
+                        "elapsed_ms":  10.5411,
+                        "name":  "Tool 95 (Bell 6-Polytope Correlation)",
+                        "measured_data":  {
+                                              "StatusCode":  200
+                                          },
+                        "message":  "Tool 95 (Bell Polytope Audit) verified: quantum sum=0.6000 \u003c classical bound=1.0000",
+                        "milestone":  "M3"
+                    },
+                    {
+                        "id":  "F18",
+                        "passed":  true,
+                        "tier":  1,
+                        "elapsed_ms":  3.4482000000000004,
+                        "name":  "Tool 96 (Bipolar Dual-Focus Caustic)",
+                        "measured_data":  {
+                                              "StatusCode":  200
+                                          },
+                        "message":  "Tool 96 (Bipolar Vesica Caustic) verified: caustic residual=0.000000000, phase locked=True",
+                        "milestone":  "M3"
+                    },
+                    {
+                        "id":  "F19",
+                        "passed":  true,
+                        "tier":  1,
+                        "elapsed_ms":  3.7221,
+                        "name":  "Tool 97 (Quaternionic Nabla Operator)",
+                        "measured_data":  {
+                                              "StatusCode":  200
+                                          },
+                        "message":  "Tool 97 (Quaternionic Nabla) verified: div(curl F)=0.0 identically, 960 columns sampled",
+                        "milestone":  "M3"
+                    },
+                    {
+                        "id":  "F20",
+                        "passed":  true,
+                        "tier":  1,
+                        "elapsed_ms":  3.0088000000000004,
+                        "name":  "Tool 98 (PoincarÃ©-Bendixson Atlas)",
+                        "measured_data":  {
+                                              "StatusCode":  200
+                                          },
+                        "message":  "Tool 98 (PoincarÃ©-Bendixson Atlas) verified: 960 columns classified, dominant destiny=ATTRACTING_NODE",
+                        "milestone":  "M3"
+                    },
+                    {
+                        "id":  "F21",
+                        "passed":  true,
+                        "tier":  1,
+                        "elapsed_ms":  4.0784,
+                        "name":  "Tool 99 (Stanford/Together HybridLink)",
+                        "measured_data":  {
+                                              "StatusCode":  200
+                                          },
+                        "message":  "Tool 99 (HybridLink Agent) verified: 256D E8 to 65K BPE, savings=42.79%",
+                        "milestone":  "M3"
+                    },
+                    {
+                        "id":  "F22",
+                        "passed":  true,
+                        "tier":  1,
+                        "elapsed_ms":  3.8196000000000003,
+                        "name":  "Tool 100 (Dzhanibekov Intermediate Axis)",
+                        "measured_data":  {
+                                              "StatusCode":  200
+                                          },
+                        "message":  "Tool 100 (Dzhanibekov Capstone) verified: CHAIN 100 Century Milestone Complete, L2 norm=5.009776",
+                        "milestone":  "M3"
+                    },
+                    {
+                        "id":  "F23",
+                        "passed":  true,
+                        "tier":  1,
+                        "elapsed_ms":  31.0222,
+                        "name":  "Zero-Square-Bracket Rust Module",
+                        "measured_data":  {
+                                              "ByteLength":  42174,
+                                              "BracketCount":  0
+                                          },
+                        "message":  "v49 module verified: exactly 0 square brackets (0x5B / 0x5D) across 42174 bytes",
+                        "milestone":  "M3"
+                    },
+                    {
+                        "id":  "F24",
+                        "passed":  true,
+                        "tier":  1,
+                        "elapsed_ms":  3.0672,
+                        "name":  "CHAIN 100 Omni-Suite Endpoint",
+                        "measured_data":  {
+                                              "StatusCode":  200
+                                          },
+                        "message":  "CHAIN 100 Omni-Suite endpoint active and returned 200 OK with measured suite payload",
+                        "milestone":  "M3"
+                    },
+                    {
+                        "id":  "F25",
+                        "passed":  true,
+                        "tier":  1,
+                        "elapsed_ms":  1.4212,
+                        "name":  "Muse Zero-Unmeasured-Data Compliance",
+                        "measured_data":  {
+                                              "V49Exists":  true
+                                          },
+                        "message":  "v49 module strictly compliant with Muse Zero-Unmeasured Mandate (Instant::now(), fs::metadata verified)",
+                        "milestone":  "M3"
+                    },
+                    {
+                        "id":  "F26",
+                        "passed":  true,
+                        "tier":  1,
+                        "elapsed_ms":  25.0363,
+                        "name":  "HUD Cockpit 100% Preservation",
+                        "measured_data":  {
+                                              "CardsPreserved":  true,
+                                              "HeatmapPreserved":  true,
+                                              "ScopesPreserved":  true,
+                                              "Chain100Drawer4":  true
+                                          },
+                        "message":  "HUD Cockpit 100% preserved (Drawer A 15 cards, Drawer B scopes, Heatmap) and Drawer 4 expanded to CHAIN 100",
+                        "milestone":  "M4"
+                    },
+                    {
+                        "id":  "F27",
+                        "passed":  true,
+                        "tier":  1,
+                        "elapsed_ms":  2.9927,
+                        "name":  "Android App \u0026 Widget Sync",
+                        "measured_data":  {
+                                              "WidgetExists":  true,
+                                              "KtV49":  true,
+                                              "KtExists":  true
+                                          },
+                        "message":  "Android NDK App \u0026 Homescreen Widget synchronized to v49.0.0 (CHAIN 100, 460/460 Lean 4)",
+                        "milestone":  "M4"
+                    },
+                    {
+                        "id":  "F28",
+                        "passed":  true,
+                        "tier":  1,
+                        "elapsed_ms":  1.2595,
+                        "name":  "Win11 Native Tray HUD Sync",
+                        "measured_data":  {
+                                              "CsV49":  true,
+                                              "CsExists":  true,
+                                              "ExeExists":  true
+                                          },
+                        "message":  "Win11 Native Tray HUD synchronized to v49.0.0",
+                        "milestone":  "M4"
+                    },
+                    {
+                        "id":  "F29",
+                        "passed":  true,
+                        "tier":  1,
+                        "elapsed_ms":  1.0678,
+                        "name":  "PWA Service Worker Cache Busting",
+                        "measured_data":  {
+                                              "V49CacheKeyDetected":  true
+                                          },
+                        "message":  "PWA Service Worker cache key bumped to v49",
+                        "milestone":  "M4"
+                    },
+                    {
+                        "id":  "F30",
+                        "passed":  true,
+                        "tier":  1,
+                        "elapsed_ms":  3.6087000000000002,
+                        "name":  "Opaque-Box E2E Test Infra",
+                        "measured_data":  {
+                                              "InfraDocExists":  true,
+                                              "RunnerExists":  true
+                                          },
+                        "message":  "E2E Test Infrastructure verified: TEST_INFRA.md and master test runner exist",
+                        "milestone":  "M5"
+                    },
+                    {
+                        "id":  "F31",
+                        "passed":  true,
+                        "tier":  1,
+                        "elapsed_ms":  2771.3507,
+                        "name":  "6-Layer Verification Gate (L1)",
+                        "measured_data":  {
+                                              "QatOk":  true,
+                                              "TotalBrackets":  0
+                                          },
+                        "message":  "Layer 1 passed: 0 brackets across 25 modules, QAT holdout PPL=1.108674 \u003e 1.0001",
+                        "milestone":  "M5"
+                    },
+                    {
+                        "id":  "F32",
+                        "passed":  true,
+                        "tier":  1,
+                        "elapsed_ms":  1.6769,
+                        "name":  "6-Layer Verification Gate (L2)",
+                        "measured_data":  {
+                                              "Theorems":  460,
+                                              "Trivial":  0
+                                          },
+                        "message":  "Layer 2 passed: 460 theorems (\u003e= 460), 0 trivial equations",
+                        "milestone":  "M5"
+                    },
+                    {
+                        "id":  "F33",
+                        "passed":  true,
+                        "tier":  1,
+                        "elapsed_ms":  768.58440000000007,
+                        "name":  "6-Layer Verification Gate (L3-L5)",
+                        "measured_data":  {
+                                              "L4Ok":  true,
+                                              "L3Ok":  true,
+                                              "L5Ok":  true
+                                          },
+                        "message":  "Layers 3-5 passed: 42240 neurons verified, HUD dist exists, SHM size exactly 5,406,720 bytes",
+                        "milestone":  "M5"
+                    },
+                    {
+                        "id":  "F34",
+                        "passed":  true,
+                        "tier":  1,
+                        "elapsed_ms":  281.08590000000004,
+                        "name":  "6-Layer Verification Gate (L6)",
+                        "measured_data":  {
+                                              "TunnelStatusCode":  200,
+                                              "EdgeDoOk":  true
+                                          },
+                        "message":  "Layer 6 passed: Cloudflare tunnel returned 200, Edge DO returned active continuum handover",
+                        "milestone":  "M5"
+                    },
+                    {
+                        "id":  "B01",
+                        "passed":  true,
+                        "tier":  2,
+                        "elapsed_ms":  4.4315,
+                        "name":  "Admin Self-Exit Unauthenticated Rejection",
+                        "measured_data":  {
+                                              "StatusCode":  403,
+                                              "SwarmAlive":  true
+                                          },
+                        "message":  "Unauthenticated self_exit rejected with HTTP 403; host process safely remained running",
+                        "milestone":  "M2"
+                    },
+                    {
+                        "id":  "B02",
+                        "passed":  true,
+                        "tier":  2,
+                        "elapsed_ms":  2.8308,
+                        "name":  "Admin Self-Exit Invalid Header Rejection",
+                        "measured_data":  {
+                                              "StatusCode":  403
+                                          },
+                        "message":  "Forged X-Sovereign-Operator-Key header correctly rejected with HTTP 403 Forbidden",
+                        "milestone":  "M2"
+                    },
+                    {
+                        "id":  "B03",
+                        "passed":  true,
+                        "tier":  2,
+                        "elapsed_ms":  5.7802000000000007,
+                        "name":  "Zero-Square-Bracket Scanner Sensitivity",
+                        "measured_data":  {
+                                              "CleanCount":  0,
+                                              "BracketCount":  2
+                                          },
+                        "message":  "Zero-bracket byte scanner sensitivity verified (clean=0, bracketed=2 detected)",
+                        "milestone":  "M3"
+                    },
+                    {
+                        "id":  "B04",
+                        "passed":  true,
+                        "tier":  2,
+                        "elapsed_ms":  4.2940000000000005,
+                        "name":  "Tool 94 Dimension Parsing Boundary",
+                        "measured_data":  {
+                                              "StatusCode":  200
+                                          },
+                        "message":  "Tool 94 sanitized negative input to valid dimension 48 without crashing",
+                        "milestone":  "M3"
+                    },
+                    {
+                        "id":  "B05",
+                        "passed":  true,
+                        "tier":  2,
+                        "elapsed_ms":  1.3888,
+                        "name":  "Tool 97 Flatline Vector Boundary",
+                        "measured_data":  {
+                                              "StatusCode":  200
+                                          },
+                        "message":  "Tool 97 div(curl F) = 0.0 holds identically on flatline boundary",
+                        "milestone":  "M3"
+                    },
+                    {
+                        "id":  "B06",
+                        "passed":  true,
+                        "tier":  2,
+                        "elapsed_ms":  4.6297000000000006,
+                        "name":  "Tool 98 Bifurcation Boundary",
+                        "measured_data":  {
+                                              "StatusCode":  200
+                                          },
+                        "message":  "Tool 98 bifurcation boundary verified: centers=0, saddles=166",
+                        "milestone":  "M3"
+                    },
+                    {
+                        "id":  "B07",
+                        "passed":  true,
+                        "tier":  2,
+                        "elapsed_ms":  2.5991,
+                        "name":  "Tool 100 Momentum Conservation Boundary",
+                        "measured_data":  {
+                                              "StatusCode":  200
+                                          },
+                        "message":  "Tool 100 angular momentum conserved (L2 norm: 5.009776)",
+                        "milestone":  "M3"
+                    },
+                    {
+                        "id":  "B08",
+                        "passed":  true,
+                        "tier":  2,
+                        "elapsed_ms":  1.2369,
+                        "name":  "Cloudflare DO Ring Buffer Retention",
+                        "measured_data":  {
+                                              "PruneDetected":  true
+                                          },
+                        "message":  "Cloudflare DO strictly enforces bounded \u003c= 8 rows retention in edge_heartbeat",
+                        "milestone":  "M1"
+                    },
+                    {
+                        "id":  "B09",
+                        "passed":  true,
+                        "tier":  2,
+                        "elapsed_ms":  5.1772,
+                        "name":  "Swarm TCP Keep-Alive Idle Boundary",
+                        "measured_data":  {
+                                              "Passed":  true
+                                          },
+                        "message":  "Swarm TCP keep-alive read timeout is 25000ms (\u003e= 20,000ms threshold)",
+                        "milestone":  "M1"
+                    },
+                    {
+                        "id":  "B10",
+                        "passed":  true,
+                        "tier":  2,
+                        "elapsed_ms":  22.851300000000002,
+                        "name":  "Lean 4 Structural Proof Rigor Boundary",
+                        "measured_data":  {
+                                              "TrivialCount":  0
+                                          },
+                        "message":  "Zero trivial identities (N = N) detected in Lean 4 proof file",
+                        "milestone":  "M2"
+                    },
+                    {
+                        "id":  "INT01",
+                        "passed":  true,
+                        "tier":  3,
+                        "elapsed_ms":  2.5500000000000003,
+                        "name":  "PlÃ¼cker 6D TS/Rust Parity",
+                        "measured_data":  {
+                                              "RustHasPlucker":  true,
+                                              "TsHasPlucker":  true
+                                          },
+                        "message":  "Cross-language PlÃ¼cker 6D parity verified across TypeScript HUD and Rust Tool 92",
+                        "milestone":  "M2/M3"
+                    },
+                    {
+                        "id":  "INT02",
+                        "passed":  true,
+                        "tier":  3,
+                        "elapsed_ms":  9.0405,
+                        "name":  "Zero-Bracket Module \u0026 Swarm Link",
+                        "measured_data":  {
+                                              "LinkedInSwarm":  true,
+                                              "BracketCount":  0
+                                          },
+                        "message":  "v49 zero-bracket module (42174B, 0 brackets) linked cleanly into Swarm host with CHAIN 100 omni suite",
+                        "milestone":  "M3"
+                    },
+                    {
+                        "id":  "INT03",
+                        "passed":  true,
+                        "tier":  3,
+                        "elapsed_ms":  1.5688,
+                        "name":  "DO Quota Triple-Protection",
+                        "measured_data":  {
+                                              "TripleProtectionActive":  true
+                                          },
+                        "message":  "Cloudflare DO triple quota protection active (8-row ring buffer, 60s write debounce, 30s D1 read cache)",
+                        "milestone":  "M1"
+                    },
+                    {
+                        "id":  "INT04",
+                        "passed":  true,
+                        "tier":  3,
+                        "elapsed_ms":  2.289,
+                        "name":  "Swarm Tunnel Socket \u0026 Caching Resilience",
+                        "measured_data":  {
+                                              "CacheHeaderOk":  true,
+                                              "TimeoutOk":  true
+                                          },
+                        "message":  "Swarm tunnel resilience verified: 25s keep-alive read timeout + 24h static asset edge cache headers prevent socket aborts",
+                        "milestone":  "M1"
+                    },
+                    {
+                        "id":  "INT05",
+                        "passed":  true,
+                        "tier":  3,
+                        "elapsed_ms":  2.2134,
+                        "name":  "Formal Proof Generator \u0026 Kernel Pipeline",
+                        "measured_data":  {
+                                              "LeanOk":  true,
+                                              "HsOk":  true
+                                          },
+                        "message":  "Formal proof pipeline verified: Haskell generator emits structural proofs, Lean 4 kernel passes \u003e= 460 theorems QED",
+                        "milestone":  "M2"
+                    },
+                    {
+                        "id":  "INT06",
+                        "passed":  true,
+                        "tier":  3,
+                        "elapsed_ms":  5.1914000000000007,
+                        "name":  "Credential Hygiene \u0026 Header Auth Integration",
+                        "measured_data":  {
+                                              "CleanHtml":  true,
+                                              "AdminBlocked403":  true
+                                          },
+                        "message":  "Credential hygiene end-to-end verified: 0 hardcoded passkeys in HTML/wiki, admin self-exit rejects unauthenticated calls with 403",
+                        "milestone":  "M2"
+                    },
+                    {
+                        "id":  "SCEN01",
+                        "passed":  true,
+                        "tier":  4,
+                        "elapsed_ms":  756.1159,
+                        "name":  "Cluster Telemetry \u0026 Connectome Health",
+                        "measured_data":  {
+                                              "TelemetryOk":  true,
+                                              "ProfilerOk":  true
+                                          },
+                        "message":  "Cluster telemetry healthy: 42,240 neurons (21,120 Core + 21,120 Exp), health grade=LAMINAR_HEALTHY_A (94), decadic clock active",
+                        "milestone":  "M3/M5"
+                    },
+                    {
+                        "id":  "SCEN02",
+                        "passed":  true,
+                        "tier":  4,
+                        "elapsed_ms":  100.9384,
+                        "name":  "Edge Continuum Handover \u0026 DO State Sync",
+                        "measured_data":  {
+                                              "StatusCode":  200,
+                                              "Success":  true
+                                          },
+                        "message":  "Edge DO continuum handover active: status=EDGE_CONTINUUM_AND_UNPLUGGED_SHM_ACTIVE, version=v44.3.0, nodes count=5",
+                        "milestone":  "M1/M5"
+                    },
+                    {
+                        "id":  "SCEN03",
+                        "passed":  true,
+                        "tier":  4,
+                        "elapsed_ms":  18.1674,
+                        "name":  "WebGPU Cockpit Dist \u0026 Asset Integrity",
+                        "measured_data":  {
+                                              "PasskeyHits":  0,
+                                              "DistExists":  true
+                                          },
+                        "message":  "WebGPU HUD dist bundle verified: index.html exists, 0 leaked passkeys across production assets",
+                        "milestone":  "M4/M5"
+                    },
+                    {
+                        "id":  "SCEN04",
+                        "passed":  true,
+                        "tier":  4,
+                        "elapsed_ms":  3077.7719,
+                        "name":  "6-Layer Verification Lifecycle Audit",
+                        "measured_data":  {
+                                              "L3Pass":  true,
+                                              "L4Pass":  true,
+                                              "L1Pass":  true,
+                                              "L6Pass":  true,
+                                              "LayersPassedCount":  5,
+                                              "L2Pass":  true
+                                          },
+                        "message":  "6-Layer Verification Lifecycle executed: 5 core cluster layers passed threshold checks",
+                        "milestone":  "M5"
+                    }
+                ]
+}

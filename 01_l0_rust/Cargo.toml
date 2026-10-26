@@ -7,6 +7,7 @@ description = "ACT-Omega v30.0 Deterministic Topological Compute Core"
 
 [dependencies]
 bytemuck = { version = "1.18", features = ["derive"] }
+rayon = "1.10"
 
 [lib]
 crate-type = ["cdylib", "rlib"]

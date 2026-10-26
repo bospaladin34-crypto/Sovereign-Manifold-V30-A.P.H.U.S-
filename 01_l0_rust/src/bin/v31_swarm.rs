@@ -37,6 +37,10 @@ include!("../v48_autopoietic_coordinator_bus.rs");
 #[path = "../v49_muse_clean_and_chain100_synthesis.rs"]
 mod v49_muse_clean_and_chain100_synthesis;
 
+// --- Milestone 1: v50.0.0 Rayon 12-Thread AVX2 Hardware Acceleration & Multi-Physics Coordinator ---
+#[path = "../v50_rayon_avx2_tlv_simulator_coordinator.rs"]
+mod v50_rayon_avx2_tlv_simulator_coordinator;
+
 
 
 struct SwarmState {
@@ -3962,6 +3966,79 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 v49_muse_clean_and_chain100_synthesis::execute_tool_100_dzhanibekov_euler_axis_stabilizer(weights_path, e8_path)
             } else {
                 v49_muse_clean_and_chain100_synthesis::run_chain100_omni_suite_measured(weights_path, e8_path)
+            };
+
+            {
+                let mut st = match state.lock() {
+                    Ok(g) => g,
+                    Err(p) => p.into_inner(),
+                };
+                st.last_card_diag = format!("EXEC({}) -> OK", clean_path);
+                st.last_term_out = format!("EXEC({}) -> OK", clean_path);
+            }
+            REQ_CACHE_CONTROL.with(|c| c.set("no-store"));
+            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
+            continue;
+        }
+
+        // 7I. v50.0.0 Audio WAV Stream (Klatt 4-Formant Neural Prosodic Speech)
+        if clean_path == "/api/v1/v50/audio.wav" {
+            let wav_bytes = v50_rayon_avx2_tlv_simulator_coordinator::get_v50_audio_wav_bytes();
+            if !wav_bytes.is_empty() {
+                write_http_vec(&mut stream, "200 OK", "audio/wav", &wav_bytes);
+                continue;
+            }
+        }
+
+        // 7J. v50.0.0 AVX2+Rayon TLV Crystallizer, Klatt Speech, 5-Regime Multi-Physics & 8-Sink Coordinator
+        if clean_path.starts_with("/api/v1/v50/") {
+            let weights_path = "C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v4600_42240.npage";
+            let e8_path = "C:\\sovereign_manifold_v31\\00_control\\weights\\sovereign_harmonic_iv_v4000.e8z";
+            let (sub_epoch, p10_jacobian) = {
+                let mut st = match state.lock() {
+                    Ok(g) => g,
+                    Err(p) => p.into_inner(),
+                };
+                st.gen_counter += 1;
+                st.tool_chain_runs += 1;
+                let ep = st.decadic_sub_epoch;
+                let jac = ((st.mag_x * st.mag_x + st.mag_y * st.mag_y + st.mag_z * st.mag_z).sqrt().max(1.0)) as f32;
+                (ep, jac)
+            };
+
+            let json = if clean_path == "/api/v1/v50/avx2_rayon_tlv_crystallizer" {
+                v50_rayon_avx2_tlv_simulator_coordinator::execute_v50_avx2_rayon_tlv_crystallizer(weights_path, e8_path, sub_epoch)
+            } else if clean_path == "/api/v1/v50/neural_prosodic_speech" {
+                let speech_text = if !q_arg.is_empty() {
+                    q_arg.clone()
+                } else if !post_body.trim().is_empty() {
+                    post_body.trim().to_string()
+                } else {
+                    String::from("ACT-Omega Net v50.0.0 Sovereign Neural-Prosodic Speech Synthesis")
+                };
+                v50_rayon_avx2_tlv_simulator_coordinator::execute_v50_neural_prosodic_speech(&speech_text, weights_path, p10_jacobian)
+            } else if clean_path == "/api/v1/v50/physics_simulator" {
+                let regime_q = extract_query_param(raw_target, "regime");
+                let steps_q_str = extract_query_param(raw_target, "steps");
+                let dt_q_str = extract_query_param(raw_target, "dt");
+                let steps = steps_q_str.parse::<usize>().unwrap_or(100);
+                let dt = dt_q_str.parse::<f32>().unwrap_or(0.005);
+                v50_rayon_avx2_tlv_simulator_coordinator::execute_v50_physics_simulator(&regime_q, e8_path, weights_path, steps, dt)
+            } else if clean_path == "/api/v1/v50/coordinator_mesh" {
+                let sink_q = extract_query_param(raw_target, "sink");
+                let data_q = if !q_arg.is_empty() {
+                    q_arg.clone()
+                } else if !post_body.trim().is_empty() {
+                    post_body.trim().to_string()
+                } else {
+                    String::new()
+                };
+                v50_rayon_avx2_tlv_simulator_coordinator::execute_v50_coordinator_mesh(&sink_q, &data_q)
+            } else if clean_path == "/api/v1/v50/drawer1_2_bridge" {
+                let action_q = extract_query_param(raw_target, "action");
+                v50_rayon_avx2_tlv_simulator_coordinator::execute_v50_drawer1_2_bridge(&action_q)
+            } else {
+                v50_rayon_avx2_tlv_simulator_coordinator::execute_v50_avx2_rayon_tlv_crystallizer(weights_path, e8_path, sub_epoch)
             };
 
             {

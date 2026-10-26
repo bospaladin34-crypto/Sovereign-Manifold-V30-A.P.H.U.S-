@@ -11,6 +11,10 @@ const E_CODEGEN_RUST_DIR: &str = "E:\\Sovereign_Manifold_SSD_Vault\\autopoietic_
 const E_CODEGEN_LEAN4_DIR: &str = "E:\\Sovereign_Manifold_SSD_Vault\\autopoietic_codegen\\lean4_proofs";
 const E_CODEGEN_WGSL_DIR: &str = "E:\\Sovereign_Manifold_SSD_Vault\\autopoietic_codegen\\wgsl_kernels";
 const E_CODEGEN_HASKELL_DIR: &str = "E:\\Sovereign_Manifold_SSD_Vault\\autopoietic_codegen\\haskell_l15";
+const E_CODEGEN_AUDIO_DIR: &str = "E:\\Sovereign_Manifold_SSD_Vault\\autopoietic_codegen\\audio_wav";
+const E_CODEGEN_PHYSICS_DIR: &str = "E:\\Sovereign_Manifold_SSD_Vault\\autopoietic_codegen\\physics_sim_trajectories";
+const E_CODEGEN_DELTAS_DIR: &str = "E:\\Sovereign_Manifold_SSD_Vault\\autopoietic_codegen\\npage_shard_deltas";
+const E_CODEGEN_DRAWER_SDR_DIR: &str = "E:\\Sovereign_Manifold_SSD_Vault\\autopoietic_codegen\\drawer1_2_sensor_sdr_captures";
 const E_BUS_DIR: &str = "E:\\Sovereign_Manifold_SSD_Vault\\coordinator_bus";
 const E_BUS_LEDGER_JSONL: &str = "E:\\Sovereign_Manifold_SSD_Vault\\coordinator_bus\\message_bus_ledger_v4800.jsonl";
 const E_CODEGEN_MANIFEST_JSONL: &str = "E:\\Sovereign_Manifold_SSD_Vault\\coordinator_bus\\codegen_integration_manifest_v4800.jsonl";
@@ -37,11 +41,16 @@ pub struct SovereignBusEnvelope {
 fn ensure_coordinator_vault_dirs() -> bool {
     let e_root_ok = std::path::Path::new("E:\\").exists();
     let _ = std::fs::create_dir_all("C:\\sovereign_manifold_v31\\03_vault\\connectome");
+    let _ = std::fs::create_dir_all("C:\\sovereign_manifold_v31\\03_vault\\audio");
     if e_root_ok {
         let _ = std::fs::create_dir_all(E_CODEGEN_RUST_DIR);
         let _ = std::fs::create_dir_all(E_CODEGEN_LEAN4_DIR);
         let _ = std::fs::create_dir_all(E_CODEGEN_WGSL_DIR);
         let _ = std::fs::create_dir_all(E_CODEGEN_HASKELL_DIR);
+        let _ = std::fs::create_dir_all(E_CODEGEN_AUDIO_DIR);
+        let _ = std::fs::create_dir_all(E_CODEGEN_PHYSICS_DIR);
+        let _ = std::fs::create_dir_all(E_CODEGEN_DELTAS_DIR);
+        let _ = std::fs::create_dir_all(E_CODEGEN_DRAWER_SDR_DIR);
         let _ = std::fs::create_dir_all(E_BUS_DIR);
     }
     e_root_ok
@@ -156,9 +165,13 @@ pub fn persist_codegen_artifact_to_e_vault(
     let e_ok = ensure_coordinator_vault_dirs();
     let seq = (count_jsonl_lines(if e_ok { E_CODEGEN_MANIFEST_JSONL } else { C_CODEGEN_MANIFEST_JSONL }) as u64).saturating_add(1);
     let (target_dir, ext) = match artifact_kind {
-        "lean4" | "lean" => (E_CODEGEN_LEAN4_DIR, "lean"),
-        "wgsl" | "webgpu" => (E_CODEGEN_WGSL_DIR, "wgsl"),
-        "haskell" | "hs" => (E_CODEGEN_HASKELL_DIR, "hs"),
+        "lean4" | "lean" | "lean4_proofs" => (E_CODEGEN_LEAN4_DIR, "lean"),
+        "wgsl" | "webgpu" | "wgsl_kernels" => (E_CODEGEN_WGSL_DIR, "wgsl"),
+        "haskell" | "hs" | "haskell_l15" => (E_CODEGEN_HASKELL_DIR, "hs"),
+        "audio_wav" | "wav" | "audio" => (E_CODEGEN_AUDIO_DIR, "wav"),
+        "physics_sim_trajectories" | "physics" | "trajectory" => (E_CODEGEN_PHYSICS_DIR, "json"),
+        "npage_shard_deltas" | "deltas" | "npage" => (E_CODEGEN_DELTAS_DIR, "bin"),
+        "drawer1_2_sensor_sdr_captures" | "sdr" | "drawer_sensor" => (E_CODEGEN_DRAWER_SDR_DIR, "json"),
         _ => (E_CODEGEN_RUST_DIR, "rs"),
     };
 
@@ -223,6 +236,86 @@ pub fn persist_codegen_artifact_to_e_vault(
     );
 
     (file_path, measured_bytes, measured_sha256, zero_brackets_ok)
+}
+
+pub fn persist_binary_artifact_to_e_vault(
+    source_tool: &str,
+    artifact_kind: &str,
+    raw_bytes: &Vec<u8>,
+    decadic_sub_epoch: u64,
+) -> (String, u64, String) {
+    let e_ok = ensure_coordinator_vault_dirs();
+    let seq = (count_jsonl_lines(if e_ok { E_CODEGEN_MANIFEST_JSONL } else { C_CODEGEN_MANIFEST_JSONL }) as u64).saturating_add(1);
+    let (target_dir, ext) = match artifact_kind {
+        "audio_wav" | "wav" | "audio" => (E_CODEGEN_AUDIO_DIR, "wav"),
+        "physics_sim_trajectories" | "physics" | "trajectory" => (E_CODEGEN_PHYSICS_DIR, "json"),
+        "npage_shard_deltas" | "deltas" | "npage" => (E_CODEGEN_DELTAS_DIR, "bin"),
+        "drawer1_2_sensor_sdr_captures" | "sdr" | "drawer_sensor" => (E_CODEGEN_DRAWER_SDR_DIR, "json"),
+        "lean4" | "lean" | "lean4_proofs" => (E_CODEGEN_LEAN4_DIR, "lean"),
+        "wgsl" | "webgpu" | "wgsl_kernels" => (E_CODEGEN_WGSL_DIR, "wgsl"),
+        "haskell" | "hs" | "haskell_l15" => (E_CODEGEN_HASKELL_DIR, "hs"),
+        _ => (E_CODEGEN_RUST_DIR, "bin"),
+    };
+
+    let clean_tool = source_tool
+        .chars()
+        .map(|c| if c.is_ascii_alphanumeric() { c.to_ascii_lowercase() } else { '_' })
+        .collect::<String>();
+
+    let file_path = if e_ok {
+        format!("{}\\autopoietic_{}_{:05}.{}", target_dir, clean_tool, seq, ext)
+    } else {
+        format!("C:\\sovereign_manifold_v31\\03_vault\\connectome\\autopoietic_{}_{:05}.{}", clean_tool, seq, ext)
+    };
+
+    let _ = std::fs::write(&file_path, raw_bytes.as_slice());
+    let measured_bytes = std::fs::metadata(&file_path).map(|m| m.len()).unwrap_or(0);
+    let measured_sha256 = std::fs::read(&file_path)
+        .map(|b| sha256_bytes_hex(&b))
+        .unwrap_or_else(|_| String::from("UNMEASURED/OFFLINE"));
+
+    let now_ms = unix_ms_now();
+
+    let manifest_line = format!(
+        "{{\"artifact_seq\":{},\"timestamp_ms\":{},\"source_tool\":\"{}\",\"artifact_kind\":\"{}\",\"file_path\":\"{}\",\"measured_bytes\":{},\"measured_sha256\":\"{}\",\"zero_square_brackets\":true,\"e_drive_mounted\":{}}}\n",
+        seq,
+        now_ms,
+        sanitize_json_str(source_tool),
+        sanitize_json_str(artifact_kind),
+        sanitize_json_str(&file_path),
+        measured_bytes,
+        measured_sha256,
+        e_ok
+    );
+
+    if let Ok(mut fc) = std::fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(C_CODEGEN_MANIFEST_JSONL)
+    {
+        let _ = fc.write_all(manifest_line.as_bytes());
+    }
+    if e_ok {
+        if let Ok(mut fe) = std::fs::OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(E_CODEGEN_MANIFEST_JSONL)
+        {
+            let _ = fe.write_all(manifest_line.as_bytes());
+        }
+    }
+
+    let _ = publish_coordinator_bus_envelope(
+        "TOPIC_BINARY_ARTIFACT_READY",
+        source_tool,
+        "Autopoietic_E_Vault_Sink",
+        &format!("Persisted {} binary ({} B, sha256={}) to {}", artifact_kind, measured_bytes, measured_sha256, file_path),
+        &file_path,
+        measured_bytes,
+        decadic_sub_epoch,
+    );
+
+    (file_path, measured_bytes, measured_sha256)
 }
 
 // 1. /api/v1/coordinator/message_bus
@@ -408,32 +501,115 @@ pub fn execute_coordinator_autopoietic_integrator(decadic_sub_epoch: u64) -> Str
     }
 
     let mut wgsl_files_count: usize = 0;
+    let mut wgsl_total_bytes: u64 = 0;
     if let Ok(entries) = std::fs::read_dir(E_CODEGEN_WGSL_DIR) {
         for entry in entries.flatten() {
             if let Ok(meta) = entry.metadata() {
                 if meta.is_file() {
                     wgsl_files_count = wgsl_files_count.saturating_add(1);
+                    wgsl_total_bytes = wgsl_total_bytes.saturating_add(meta.len());
                 }
             }
         }
     }
+
+    let mut haskell_files_count: usize = 0;
+    let mut haskell_total_bytes: u64 = 0;
+    if let Ok(entries) = std::fs::read_dir(E_CODEGEN_HASKELL_DIR) {
+        for entry in entries.flatten() {
+            if let Ok(meta) = entry.metadata() {
+                if meta.is_file() {
+                    haskell_files_count = haskell_files_count.saturating_add(1);
+                    haskell_total_bytes = haskell_total_bytes.saturating_add(meta.len());
+                }
+            }
+        }
+    }
+
+    let mut audio_files_count: usize = 0;
+    let mut audio_total_bytes: u64 = 0;
+    if let Ok(entries) = std::fs::read_dir(E_CODEGEN_AUDIO_DIR) {
+        for entry in entries.flatten() {
+            if let Ok(meta) = entry.metadata() {
+                if meta.is_file() {
+                    audio_files_count = audio_files_count.saturating_add(1);
+                    audio_total_bytes = audio_total_bytes.saturating_add(meta.len());
+                }
+            }
+        }
+    }
+
+    let mut physics_files_count: usize = 0;
+    let mut physics_total_bytes: u64 = 0;
+    if let Ok(entries) = std::fs::read_dir(E_CODEGEN_PHYSICS_DIR) {
+        for entry in entries.flatten() {
+            if let Ok(meta) = entry.metadata() {
+                if meta.is_file() {
+                    physics_files_count = physics_files_count.saturating_add(1);
+                    physics_total_bytes = physics_total_bytes.saturating_add(meta.len());
+                }
+            }
+        }
+    }
+
+    let mut deltas_files_count: usize = 0;
+    let mut deltas_total_bytes: u64 = 0;
+    if let Ok(entries) = std::fs::read_dir(E_CODEGEN_DELTAS_DIR) {
+        for entry in entries.flatten() {
+            if let Ok(meta) = entry.metadata() {
+                if meta.is_file() {
+                    deltas_files_count = deltas_files_count.saturating_add(1);
+                    deltas_total_bytes = deltas_total_bytes.saturating_add(meta.len());
+                }
+            }
+        }
+    }
+
+    let mut drawer_sdr_files_count: usize = 0;
+    let mut drawer_sdr_total_bytes: u64 = 0;
+    if let Ok(entries) = std::fs::read_dir(E_CODEGEN_DRAWER_SDR_DIR) {
+        for entry in entries.flatten() {
+            if let Ok(meta) = entry.metadata() {
+                if meta.is_file() {
+                    drawer_sdr_files_count = drawer_sdr_files_count.saturating_add(1);
+                    drawer_sdr_total_bytes = drawer_sdr_total_bytes.saturating_add(meta.len());
+                }
+            }
+        }
+    }
+
+    let total_all_bytes = rust_total_bytes
+        .saturating_add(lean_total_bytes)
+        .saturating_add(wgsl_total_bytes)
+        .saturating_add(haskell_total_bytes)
+        .saturating_add(audio_total_bytes)
+        .saturating_add(physics_total_bytes)
+        .saturating_add(deltas_total_bytes)
+        .saturating_add(drawer_sdr_total_bytes);
 
     let env = publish_coordinator_bus_envelope(
         "TOPIC_AUTOPOIETIC_HOTSWAP_STAGE",
         "Autopoietic_Integrator_Daemon",
         "L0_Rust_And_Lean4_Verifier",
         &format!(
-            "Audited E:\\autopoietic_codegen: Rust={}/{} Zero-Bracket ({} B), Lean4={} files ({} B), WGSL={} files",
-            rust_zero_bracket_pass, rust_files_count, rust_total_bytes, lean_files_count, lean_total_bytes, wgsl_files_count
+            "Audited E:\\autopoietic_codegen 8 sinks: Rust={}/{} Zero-Bracket ({} B), Lean4={} ({} B), WGSL={} ({} B), Haskell={} ({} B), Audio={} ({} B), Physics={} ({} B), Deltas={} ({} B), SDR={} ({} B)",
+            rust_zero_bracket_pass, rust_files_count, rust_total_bytes,
+            lean_files_count, lean_total_bytes,
+            wgsl_files_count, wgsl_total_bytes,
+            haskell_files_count, haskell_total_bytes,
+            audio_files_count, audio_total_bytes,
+            physics_files_count, physics_total_bytes,
+            deltas_files_count, deltas_total_bytes,
+            drawer_sdr_files_count, drawer_sdr_total_bytes
         ),
         E_CODEGEN_RUST_DIR,
-        rust_total_bytes.saturating_add(lean_total_bytes),
+        total_all_bytes,
         decadic_sub_epoch,
     );
 
     let elapsed_us = t0.elapsed().as_micros();
     format!(
-        "{{\"status\":\"AUTOPOIETIC_INTEGRATOR_STAGE_VERIFIED\",\"version\":\"v49.0.0\",\"elapsed_us\":{},\"e_drive_mounted\":{},\"rust_staged_files\":{},\"rust_zero_bracket_verified\":{},\"rust_staged_bytes\":{},\"lean4_staged_files\":{},\"lean4_staged_bytes\":{},\"wgsl_staged_files\":{},\"bus_msg_id\":{},\"diag\":\"AUTOPOIETIC INTEGRATOR & HOT-SWAP STAGER: Audited E:\\\\autopoietic_codegen -> Rust={}/{} Zero-Bracket PASS ({} B) | Lean4={} files ({} B) | WGSL={} files | Bus Msg #{}\"}}",
+        "{{\"status\":\"AUTOPOIETIC_INTEGRATOR_STAGE_VERIFIED\",\"version\":\"v50.0.0\",\"elapsed_us\":{},\"e_drive_mounted\":{},\"rust_staged_files\":{},\"rust_zero_bracket_verified\":{},\"rust_staged_bytes\":{},\"lean4_staged_files\":{},\"lean4_staged_bytes\":{},\"wgsl_staged_files\":{},\"wgsl_staged_bytes\":{},\"haskell_staged_files\":{},\"haskell_staged_bytes\":{},\"audio_staged_files\":{},\"audio_staged_bytes\":{},\"physics_staged_files\":{},\"physics_staged_bytes\":{},\"deltas_staged_files\":{},\"deltas_staged_bytes\":{},\"drawer_sdr_staged_files\":{},\"drawer_sdr_staged_bytes\":{},\"total_sinks\":8,\"total_staged_bytes\":{},\"bus_msg_id\":{},\"diag\":\"AUTOPOIETIC INTEGRATOR 8-SINK AUDIT: Rust={}/{} Zero-Bracket PASS ({} B) | Lean4={} files ({} B) | WGSL={} files ({} B) | Haskell={} files ({} B) | Audio={} files ({} B) | Physics={} files ({} B) | Deltas={} files ({} B) | SDR={} files ({} B) | Bus Msg #{}\"}}",
         elapsed_us,
         e_ok,
         rust_files_count,
@@ -442,6 +618,18 @@ pub fn execute_coordinator_autopoietic_integrator(decadic_sub_epoch: u64) -> Str
         lean_files_count,
         lean_total_bytes,
         wgsl_files_count,
+        wgsl_total_bytes,
+        haskell_files_count,
+        haskell_total_bytes,
+        audio_files_count,
+        audio_total_bytes,
+        physics_files_count,
+        physics_total_bytes,
+        deltas_files_count,
+        deltas_total_bytes,
+        drawer_sdr_files_count,
+        drawer_sdr_total_bytes,
+        total_all_bytes,
         env.msg_id,
         rust_zero_bracket_pass,
         rust_files_count,
@@ -449,6 +637,17 @@ pub fn execute_coordinator_autopoietic_integrator(decadic_sub_epoch: u64) -> Str
         lean_files_count,
         lean_total_bytes,
         wgsl_files_count,
+        wgsl_total_bytes,
+        haskell_files_count,
+        haskell_total_bytes,
+        audio_files_count,
+        audio_total_bytes,
+        physics_files_count,
+        physics_total_bytes,
+        deltas_files_count,
+        deltas_total_bytes,
+        drawer_sdr_files_count,
+        drawer_sdr_total_bytes,
         env.msg_id
     )
 }

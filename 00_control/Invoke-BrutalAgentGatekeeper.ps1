@@ -35,8 +35,8 @@ function Run-StaticGatekeeperChecks {
         $sorryCount = ([regex]::Matches($leanText, '\bsorry\b')).Count
         $trivialEqCount = ([regex]::Matches($leanText, ':\s*(\w+)\s*=\s*\1\s*:=')).Count
         $trivialCommCount = ([regex]::Matches($leanText, '\(a\s+b\s*:\s*Nat\)\s*:\s*a\s*\+\s*b\s*=\s*b\s*\+\s*a')).Count
-        if ($thmCount -lt 500) {
-            $failures.Add("LEAN4_COUNT_LOW: Found $thmCount theorems (Req: >= 500)")
+        if ($thmCount -lt 564) {
+            $failures.Add("LEAN4_COUNT_LOW: Found $thmCount theorems (Req: >= 564)")
         }
         if ($sorryCount -gt 0) {
             $failures.Add("LEAN4_SORRY_FOUND: Found $sorryCount 'sorry' tokens (Req: 0)")
@@ -163,7 +163,7 @@ if ($FullAudit) {
 
     $failures = Run-StaticGatekeeperChecks
     if ($failures.Count -eq 0) {
-        Write-Host "  [1-5 STATIC INVARIANTS] [PASS] Zero-Bracket(v33..v50+)=0 | Lean4>=500(0 trivial) | HUD/Mobile/Agent Mirrors=LOCKED | SecretsInRepo=0" -ForegroundColor Green
+        Write-Host "  [1-5 STATIC INVARIANTS] [PASS] Zero-Bracket(v33..v50+)=0 | Lean4>=564(0 trivial) | HUD/Mobile/Agent Mirrors=LOCKED | SecretsInRepo=0" -ForegroundColor Green
     } else {
         foreach ($f in $failures) {
             Write-Host "  [STATIC FAIL] $f" -ForegroundColor Red

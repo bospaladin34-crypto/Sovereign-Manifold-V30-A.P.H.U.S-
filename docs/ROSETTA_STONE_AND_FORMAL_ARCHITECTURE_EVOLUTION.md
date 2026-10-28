@@ -1,9 +1,9 @@
-# ACT-Omega & Vesper: 1:1 Formal Rosetta Stone Translation, Mathematical Equations & Canonical Architecture Evolution (`v29.0` $\rightarrow$ `v49.0.0+ | CHAIN 100 | 480 Lean 4 QED`)
+# ACT-Omega & Vesper: 1:1 Formal Rosetta Stone Translation, Mathematical Equations & Canonical Architecture Evolution (`v29.0` $\rightarrow$ `v50.0.0 | CHAIN 135 | 564 Lean 4 QED`)
 
 **Principal Investigator & Systems Architect:** Donevin R. T. Z. Frownfelter  
 **Repository:** `bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-` (`vesper_production` / `main` / `gh-pages`)  
-**Archival Preprint Reference:** Zenodo / OSF Technical Monograph (`10.5281/zenodo.23407176`, *ACT-Omega and Vesper: A Topological Intermediate Representation, Lattice Vector Quantizer, and Cellular Sheaf Consensus Runtime for Edge-to-Workstation Heterogeneous Computing*)  
-**Current Production Release:** **ACT-Omega Net v49.0.0+ (`SH4Z v4900 TLV` | `CHAIN 100` | `42,240` Neurons | `480/480` Substantive Lean 4 QED)**
+**Archival Monograph Reference:** Zenodo (`10.5281/zenodo.23651696`, `https://doi.org/10.5281/zenodo.23651696`) / OSF (`10.17605/OSF.IO/2XQ5Z`, `https://osf.io/2xq5z/overview`)  
+**Current Production Release:** **ACT-Omega Net v50.0.0 (`SH4Z v5000 TLV` | `CHAIN 135` | `63,360` Neurons | `564/564` Substantive Lean 4 QED)**
 
 ---
 
@@ -25,16 +25,16 @@ Every domain-specific topological, geometric, and neuro-metabolic construct in *
 | **10** | **Leech Lattice Projection** | $\Lambda_{24} \subset \mathbb{R}^{24}$ ($196,560$ minimal vectors) | **24D Golay $\mathcal{G}_{24}$ / Turyn Tri-$E_8$ Vector Codebook Quantization** | Decomposes $24\text{D}$ weight macro-blocks across 3 orbits ($97,152 + 98,304 + 1,104 = 196,560$), achieving $G(\Lambda_{24}) = 0.065771$ ($+1.03\text{ dB}$ shaping gain) (`thm_v49_468`, `thm_v49_469`). |
 | **11** | **Dual-Shell + 1.58-Bit Sierpinski Weights** | $\hat{\mathbf{x}} = [(1-s)\alpha_{\text{in}} + s\alpha_{\text{out}}]\mathbf{r} + \beta_{\text{tern}}\mathbf{t}$, $\mathbf{t}\in\{-1,0,+1\}^8$ | **Bimodal Outlier Gain-Shape VQ + Multiplier-Free Ternary MAC** | Captures Gaussian bulk ($\alpha_{\text{in}}$) and heavy-tailed salience outliers ($\alpha_{\text{out}}$) while replacing float FMA with gated integer addition/subtraction (`sierpinski_158_quantizer.rs`, `thm_v49_470`, `thm_v49_471`). |
 | **12** | **Decoupled Radial-Angular STE on $S^7$** | $(\mathbf{I}_8 - \hat{\mathbf{r}}\hat{\mathbf{r}}^T)\frac{\nabla\mathcal{L}}{\|\mathbf{x}\|_2} + (\hat{\mathbf{r}}\hat{\mathbf{r}}^T)\nabla\mathcal{L}$ | **Riemannian Tangent-Space Straight-Through Estimator (QAT)** | Orthogonal decomposition of gradients into angular updates on $S^7$ and radial shell updates so weights glide across Voronoi cells without dead-zone oscillation (`thm_v49_472`). |
-| **13** | **SH4Z v3101 $\rightarrow$ v4900 TLV Container (`.e8z` / `.npage`)** | 64B-aligned `0x5A344853` ("SH4Z") mmap records | **Zero-Copy Page-Aligned Virtual Memory Serialization (`mmap` / `MapViewOfFile`)** | Maps `133,120 B` (`2,080 x 64 B` cachelines across 80 sectors) `.e8z` and `5,406,720 B` (`42,240 x 128 B`) `.npage` directly into virtual memory in $14.2\text{ ms}$ with zero heap parsing (`thm_v49_473`). |
+| **13** | **SH4Z v3101 $\rightarrow$ v5000 TLV Container (`.e8z` / `.npage`)** | 64B-aligned `0x5A344853` ("SH4Z") mmap records | **Zero-Copy Page-Aligned Virtual Memory Serialization (`mmap` / `MapViewOfFile`)** | Maps `133,120 B` (`2,080 x 64 B` cachelines across 80 sectors) `.e8z` and `8,110,080 B` (`63,360 x 128 B`) `.npage` directly into virtual memory with zero heap parsing (`thm_v49_473`). |
 | **14** | **Vesper Cellular Sheaf & Restriction Maps** | $\mathcal{F}(v) \cong \mathbb{R}^{d_v}$, $\mathcal{F}_{v \unlhd e} : \mathcal{F}(v) \to \mathcal{F}(e)$ | **Distributed State Shards & Typed Cross-FFI / Network Schema Contracts** | Models each silicon node/thread/model stage as a vertex stalk $\mathcal{F}(v)$ and each IPC/QUIC/HTTP2 channel as an edge stalk $\mathcal{F}(e)$ with linear projection matrices $\mathbf{R}_{v \unlhd e}$ (`thm_v49_474`). |
 | **15** | **Vanishing First Cohomology ($H^0 = \ker\delta$, $H^1 = 0$)** | $(\delta\mathbf{x})_e = \mathcal{F}_{u\unlhd e}(\mathbf{x}_u) - \mathcal{F}_{v\unlhd e}(\mathbf{x}_v) = \mathbf{0}$ | **Strong Global State Linearizability & Zero Split-Brain Consensus** | All communicating shards agree on shared boundary contracts ($E_{\mathcal{F}}(\mathbf{x}) = \|\delta\mathbf{x}\|_2^2 = 0$, $J_{\text{sys}} = 1.4411\text{ J}$), permitting atomic global commit (`thm_v49_474`, `thm_v49_475`). |
 | **16** | **Cohomological Obstruction ($H^1(X;\mathcal{F}) \neq 0$)** | $E_{\mathcal{F}}(\mathbf{x}) = \mathbf{x}^T L_{\mathcal{F}}\mathbf{x} > \epsilon_{\text{tol}}$ ($J_{\text{sys}} \ge 1.80\text{ J}$) | **Byzantine Fault, FFI Schema Violation, or Split-Brain Detection** | Non-zero Sheaf Laplacian Dirichlet energy flags boundary disagreement in $<0.85\text{ ms}$ and triggers the 4-phase fault-recovery circuit breaker (`thm_v49_476`). |
 | **17** | **Phase 2 RAS 30% Dampening + Sheaf Diffusion** | $\Delta\phi^{(t+1)} = 0.70\Delta\phi^{(t)}$, $\mathbf{x}^{(t+1)} = (\mathbf{I} - \eta_{\text{RAS}}L_{\mathcal{F}})\mathbf{x}^{(t)}$ | **Proportional-Derivative (PD) Backpressure Throttling & Consensus Filtering** | Contracts producer ingestion rates by $30\%$ ($\eta_{\text{RAS}}=0.30$) and diffuses boundary disagreement toward $\ker(L_{\mathcal{F}})$ (`thm_v49_465`, `thm_v49_477`). |
 | **18** | **Phase 3–4 Stomachion Quarantine & Harmonic Restitch** | $\mathcal{F}_{v\unlhd e} \leftarrow \mathbf{0}$, $\mathbf{x}_{V_{\text{fault}}}^* = \arg\min \mathbf{x}^T L_{\mathcal{F}}\mathbf{x}$ | **Zero-Flux Circuit Breaker Isolation + WAL Snapshot Dirichlet Reconstruction** | Zeroes restriction maps around faulting shards, reroutes live traffic via disjoint strand $\sigma_5^{-1}$, and reconstructs corrupted stalks from immutable $E_8$ checkpoints (`stomachion_router.rs`, `thm_v49_478`, `thm_v49_479`, `thm_v49_480`). |
-| **19** | **42,240-Neuron `.npage` Connectome (`960 x Chair-44`)** | $42,240 \times 128\text{ B} = 5,406,720\text{ B}$ ($337,920$ synapses) | **Memory-Mapped 3-Compartment Dendritic Spiking/Predictive Coding Graph** | 1:1 bijection between `42,240` `.binshard` files and `128 B` pyramidal neurons (Basal Sensory, Apical 16-mode FNO, Lateral Cortical Vote) (`v46_connectome_42240_autopoiesis_rag.rs`, `thm_v49_435`, `thm_v49_436`). |
+| **19** | **63,360-Neuron `.npage` Connectome (`1,440 x Chair-44`)** | $63,360 \times 128\text{ B} = 8,110,080\text{ B}$ ($1,013,760$ dual-shell synapses) | **Memory-Mapped 3-Compartment Dendritic Spiking/Predictive Coding Graph** | 1:1 bijection between `63,360` `.binshard` files and `128 B` pyramidal neurons across 36 Macro-Domains x 4 = 144 Sub-Domains (`neurons_v5000_63360.npage`). |
 | **20** | **5W1H Metabolic Autopoietic Harness** | $M_{\text{ATP}}(t) \in [0, 1]$ across 4 Metabolic Bands | **Hardware-Aware Dynamic QoS & Thermal/VRAM Cost-Benefit Scheduler** | Evaluates `WHO`, `WHAT`, `WHEN` ($15.965\text{ Hz}$ / $159.65\text{ Hz}$ SWR), `WHERE` (`LOQ 15` / `Pixel 10` / `Pixel 8` / `E:\` / `D1`), `WHY` ($M_{\text{ATP}}$), and `HOW` (`v37_metabolic_harness_5w1h.rs`, `v42_distributed_5w1h_router_ide_vault.rs`). |
 | **21** | **Layer 1.5 Algebraic Haskell + DuckDB + $k=4$ Hamiltonian Beam** | $S = T - V$ geodesic action over $k=4$ speculative beams | **Pure Type-Safe Compiler Frontend + Vectorized Columnar OLAP + Speculative Decoding** | GHC 9.8.2 generates verified zero-bracket Rust/Lean 4 code; DuckDB v1.5.6 executes vectorized SQL over `.jsonl` ledgers; Pixel 8 drafts $k=4$ tokens verified in parallel by LOQ 15 (`v48_haskell_duckdb_hamiltonian_model.rs`, `thm_v49_437`–`439`). |
-| **22** | **Sovereign Autopoietic Coordinator Bus & `E:\` Write-Back** | 5W1H `BusEnvelope` + SHA-256 Codegen Sink | **System-Wide Event-Sourced Message Bus & Persistent Artifact Registry** | Connects all `100` tools (`CHAIN 100`), UI cards/scopes, and codegen engines to `message_bus_ledger_v4800.jsonl` and writes all generated code to `E:\Sovereign_Manifold_SSD_Vault\autopoietic_codegen\` (`v48_autopoietic_coordinator_bus.rs`). |
+| **22** | **Sovereign Autopoietic Coordinator Bus & `E:\` Write-Back** | 5W1H `BusEnvelope` + SHA-256 Codegen Sink | **System-Wide Event-Sourced Message Bus & Persistent Artifact Registry** | Connects all `135` tools (`CHAIN 135`), UI cards/scopes, and codegen engines to `message_bus_ledger_v4800.jsonl` and writes all generated code to `E:\Sovereign_Manifold_SSD_Vault\autopoietic_codegen\` (`v48_autopoietic_coordinator_bus.rs`). |
 
 ---
 
@@ -87,14 +87,15 @@ Every foundational equation from the **ACT-Omega & Vesper Technical Monograph** 
 
 ---
 
-## 3. Canonical Architecture Timeline Evolution (`v29.0` $\rightarrow$ `v49.0.0+`)
+## 3. Canonical Architecture Timeline Evolution (`v29.0` $\rightarrow$ `v50.0.0`)
 
 ```mermaid
 flowchart LR
     V29["v29.0 – v30.191\nFoundational E8/Sierpinski\n440 Shards (10xChair-44)\nStomachion 536-Router"] --> V31["v31.0 – v31.10\nSH4Z v3101 TLV & BraidIR\nZenodo DOI 10.5281/zenodo.23407176\nTri-Silicon Cluster Online"]
     V31 --> V32_36["v32.0 – v36.0\n60-30-10 WebGPU HUD (:5173)\nPositive Geometries (Associahedron/Amplituhedron)\n3-Compartment .npage Connectome"]
     V32_36 --> V37_43["v37.0 – v43.0\n5W1H Metabolic Harness & MCP\n80-Sector u128 .e8z (133,120 B)\n21,120 Neurons & Antigravity Agents"]
-    V37_43 --> V44_49["v44.0 – v49.0.0+ (Current)\n42,240 Neurons (5.41 MB SHM)\nLayer 1.5 Haskell + DuckDB + Coordinator Bus\nCHAIN 100 | 480 Lean 4 QED | 10-Agent Gatekeepers"]
+    V37_43 --> V44_49["v44.0 – v49.0\n42,240 Neurons (5.41 MB SHM)\nLayer 1.5 Haskell + DuckDB + Coordinator Bus\nCHAIN 100 | 480 Lean 4 QED | 10-Agent Gatekeepers"]
+    V44_49 --> V50["v50.0.0 (Current)\n63,360 Neurons (8.11 MB SHM)\n1,013,760 Dual-Shell Synapses\nCHAIN 135 | 564 Lean 4 QED | 144 Sub-Domains"]
 ```
 
 | Era / Version | Schema & Binary Artifacts | Shards & Neurons | Formal Proofs (Lean 4 QED) | Key Architectural & Hardware Milestones |
@@ -105,4 +106,37 @@ flowchart LR
 | **v35.0 – v37.1** | `SH4Z v3500` $\rightarrow$ `v3710` (`58` Sectors, `103,424 B`) | `7,920` $\rightarrow$ `9,680` Neurons (`1,239,040 B` `.npage`) | `228` $\rightarrow$ `284` QED | Dedicated 3-Compartment Dendritic Pyramidal Neuron Pagefile (`.npage`), Pixel 8 `P8-APEX` non-root co-processor (`3A121FDJH00BW5`), Native TorchTPU bridge, **5W1H Metabolic Autopoietic Harness** (`Tool 45`), JSON-RPC 2.0 MCP Server (`Tool 46`), Remote 5 GB Cloudflare D1 (`act_omega_d1_vault`). |
 | **v38.0 – v43.0** | `SH4Z v3800` $\rightarrow$ `v4300` (`80` Sectors `u128`, `133,120 B`) | `10,560` $\rightarrow$ `21,120` Core Neurons (`2,703,360 B` `.npage`) | `300` $\rightarrow$ `364` QED | Dual-Word `u128` 80-sector mask (`S00..S79`, `2,080 x 64 B` cachelines), `21,120` `.binshard` 1:1 bijection (`480 x Chair-44`), Muse Zero-Mock Hardware Telemetry remediation (`Instant::now()`, real SHA-256 digests), Distributed 5W1H Router (`Tool 65`), Google Antigravity (Gemini 4 Argon) multi-agent cutover. |
 | **v44.0 – v47.0** | `SH4Z v4400` $\rightarrow$ `v4700` (`5,406,720 B` Combined `.npage`) | **`42,240` Total Neurons** (`960 x Chair-44`, `337,920` synapses) | `384` $\rightarrow$ `432` QED | Work-Stealing Scheduler & `.npage` Zero-Copy SHM (`v44`), $+21,120$ Expansion Shards (`shard_21121..42240.binshard`) for `42,240` total neurons (`5.41 MB` SHM across Host, Pixel 10, and Pixel 8), RAG-on-Leech & 5 Autonomous Synthesis Engines (`v46`–`v47`), 10-table Cloudflare D1 sync. |
-| **v48.0 – v49.0.0+ (Current)** | **`SH4Z v4900 TLV`** (`133,120 B` `.e8z` + `5,406,720 B` `.npage`) | **`42,240` Total Neurons** (`42,240` `.binshard` files) | **`480 / 480` Substantive QED** (`0` trivial padding, `0` `sorry`) | **Layer 1.5 GHC 9.8.2 Algebraic Haskell** (`06_algebraic_haskell`) + **DuckDB v1.5.6 Columnar OLAP** + $k=4$ Hamiltonian Speculative Beam Model; **Sovereign Autopoietic Coordinator Bus & Universal `E:\` Vault Write-Back** (`v48_autopoietic_coordinator_bus.rs`); **`CHAIN 100` (`100` Native Tools)**; Zero-Overhead `SovereignContinuumDO` + HTTP/2 Named Tunnel (`act-omega-net.dev`); Externalized Operator Key + **10-Agent Governance Roster (4 Brutal Gatekeepers + OS `PreToolUse` Commit/Push Hook)**. |
+| **v48.0 – v49.0** | `SH4Z v4900 TLV` (`133,120 B` `.e8z` + `5,406,720 B` `.npage`) | `42,240` Total Neurons (`42,240` `.binshard` files) | `480 / 480` Substantive QED | Layer 1.5 GHC 9.8.2 Algebraic Haskell (`06_algebraic_haskell`) + DuckDB v1.5.6 Columnar OLAP + $k=4$ Hamiltonian Speculative Beam Model; Sovereign Autopoietic Coordinator Bus (`v48_autopoietic_coordinator_bus.rs`); `CHAIN 100` (`100` Native Tools); Zero-Overhead `SovereignContinuumDO` + HTTP/2 Named Tunnel; Externalized Operator Key + 10-Agent Governance. |
+| **v50.0.0 (Current)** | **`SH4Z v5000 TLV`** (`133,120 B` `.e8z` + `8,110,080 B` `.npage`) | **`63,360` Total Neurons** (`63,360` `.binshard` files) | **`564 / 564` Substantive QED** (`0` trivial padding, `0` `sorry`) | **`63,360` 3-Compartment Neurons == `63,360` Shards (`1,440 x Chair-44`, `8.11 MB` SHM)**; **`1,013,760` Dual-Shell BDH/KAN Synapses** across **36 Macro-Domains $\times$ 4 = 144 Sub-Domains**; **`262,144` (18-Bit) Open-Vocabulary BPE (`0 <UNK>`)**; **`CHAIN 135` (`135` Native Tools)**; **Dual-Pixel Mobile NDK (`harmonic_engine.cpp` + `MainActivity.kt`) deployed to Pixel 10 & Pixel 8**; **Win11 Tray HUD (`Ω50`, `SovereignCockpitHUD.exe`)**; **Cloudflared Named Tunnel 3-Tier TCP Reset Exponential Backoff & Loopback Fallback**; **Permanent Archival DOIs: Zenodo `10.5281/zenodo.23651696` & OSF `10.17605/OSF.IO/2XQ5Z`**. |
+
+---
+
+## 📜 Canonical Monograph Citations & Permanent Archival DOIs
+
+If you use or reference the ACT-Omega and Vesper formal architecture, lattice quantization theorems, cellular sheaf consensus, or distributed heterogeneous compute cluster, please cite the permanent archival records:
+
+### Zenodo Archive
+```bibtex
+@misc{act_omega_net_zenodo_2026,
+  author       = {Bell, Nicholas and The ACT-Omega Consortium},
+  title        = {ACT-Omega and Vesper: A Topological Intermediate Representation, Lattice Vector Quantizer, and Cellular Sheaf Consensus Runtime for Edge-to-Workstation Heterogeneous Computing (v50.0.0)},
+  month        = oct,
+  year         = 2026,
+  publisher    = {Zenodo},
+  doi          = {10.5281/zenodo.23651696},
+  url          = {https://doi.org/10.5281/zenodo.23651696}
+}
+```
+
+### Open Science Framework (OSF) Registry
+```bibtex
+@misc{act_omega_net_osf_2026,
+  author       = {Bell, Nicholas},
+  title        = {ACT-Omega Net: Sovereign Harmonic Topological Intermediate Representation, Lattice Quantizer, and Tri-Silicon Manifold Cluster},
+  year         = 2026,
+  publisher    = {OSF},
+  doi          = {10.17605/OSF.IO/2XQ5Z},
+  url          = {https://osf.io/2xq5z/overview}
+}
+```
+

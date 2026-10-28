@@ -1,4 +1,7 @@
-# ACT-Omega Net v46.0.0 (SH4Z v4600 TLV) — Multi-Agent Roster & Standing Constraints (`AGENTS.md`)
+# ACT-Omega Net v50.0.0 (SH4Z v5000 TLV | CHAIN 135) — Multi-Agent Roster & Standing Constraints (`AGENTS.md`)
+
+- **Zenodo Permanent DOI**: `10.5281/zenodo.23651696` (https://doi.org/10.5281/zenodo.23651696)
+- **OSF Permanent DOI**: `10.17605/OSF.IO/2XQ5Z` (https://osf.io/2xq5z/overview)
 
 ## Standing Global Constraint (Applies to Parent Agent & All Subagents)
 > **"If it is not measured, calculated or computed, it DOES NOT ship, full stop."**

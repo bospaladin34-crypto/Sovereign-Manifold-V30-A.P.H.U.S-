@@ -3,10 +3,12 @@ credentials-file: C:/Users/Nbell/.cloudflared/9cdea4c4-831d-4ccc-983d-5f7587a982
 protocol: http2
 grace-period: 30s
 originRequest:
-  keepAliveTimeout: 10s
+  connectTimeout: 10s
+  keepAliveTimeout: 90s
   keepAliveConnections: 32
-  connectTimeout: 5s
   tcpKeepAlive: 15s
+  noHappyEyeballs: true
+  disableChunkedEncoding: false
 ingress:
   - hostname: api.act-omega-net.dev
     service: http://127.0.0.1:8097

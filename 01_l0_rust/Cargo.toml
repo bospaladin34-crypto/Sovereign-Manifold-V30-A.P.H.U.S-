@@ -32,3 +32,7 @@ path = "src/bin/test_qat_kernel.rs"
 [[bin]]
 name = "test_shard_training"
 path = "src/bin/test_shard_training.rs"
+
+[[bin]]
+name = "v50_brain_trainer"
+path = "src/v50_brain_63360_144subdomains_qat_trainer.rs"

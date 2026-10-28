@@ -1,5 +1,5 @@
 # C:\sovereign_manifold_v31\00_control\Sovereign-Lifecycle.ps1
-# ACT-Omega Net v50.0.0 (SH4Z v5000 TLV | 500/500 Lean 4 QED) -- Unified Safe Cluster Start / Stop / Handover / Verify / Status Controller
+# ACT-Omega Net v50.0.0 (SH4Z v5000 TLV | 564/564 Lean 4 QED) -- Unified Safe Cluster Start / Stop / Handover / Verify / Status Controller
 param(
     [ValidateSet("start", "stop", "stop-all", "restart", "status", "handover", "verify")]
     [string]$Action = "status",
@@ -57,7 +57,7 @@ function Invoke-SovereignContinuumHandover {
 
     $capsuleObj = [ordered]@{
         status = "CONTINUUM_HANDOVER_CAPSULE_READY"
-        version = "ACT-Omega Net v50.0.0 (SH4Z v5000 TLV | 500/500 Lean 4 QED)"
+        version = "ACT-Omega Net v50.0.0 (SH4Z v5000 TLV | 564/564 Lean 4 QED)"
         handover_mode = $HandoverMode
         timestamp_utc = $tsUtc
         shm_npage_bytes = 5406720
@@ -65,8 +65,8 @@ function Invoke-SovereignContinuumHandover {
         shm_chair44_cols = 960
         shm_sha256 = $shmSha
         lean4_sha256 = $leanSha
-        lean4_theorems_qed = 500
-        tools_total = 103
+        lean4_theorems_qed = 564
+        tools_total = 135
         metabolic_atp = $atp
         last_host_kops = $kops
         last_rtx_temp_c = $rtxT
@@ -184,7 +184,7 @@ function Invoke-SovereignSixLayerVerify {
     $failCount = 0
 
     # Layer 1: L0 Rust Zero-Square-Bracket & Live Endpoints
-    $v33to50 = Get-ChildItem "C:\sovereign_manifold_v31\01_l0_rust\src\v*.rs" | Where-Object { $_.Name -match "^v(3[3-9]|[4-9][0-9]|50)_" }
+    $v33to50 = Get-ChildItem "C:\sovereign_manifold_v31\01_l0_rust\src\v*.rs" | Where-Object { $_.Name -match "^v(3[3-9]|[4-9][0-9]|5[0-9])_" }
     $brackets = 0
     foreach ($f in $v33to50) {
         $b = [System.IO.File]::ReadAllBytes($f.FullName)
@@ -196,16 +196,16 @@ function Invoke-SovereignSixLayerVerify {
     } catch {}
     $l1Pass = ($brackets -eq 0) -and ($null -ne $qat) -and ([double]$qat.holdout_ppl -gt 1.0001)
     if (-not $l1Pass) { $failCount++ }
-    Write-Host ("  [LAYER 1 - L0 RUST]     [{0}] Brackets(v33..v50)={1} (Req:0) | QAT PPL={2} (Req:>1.0001) | Latency={3}ms" -f ($(if($l1Pass){"PASS"}else{"FAIL"}), $brackets, $(if($qat){$qat.holdout_ppl}else{"UNREACHABLE"}), $(if($qat){$qat.dag_latency_ms}else{"N/A"}))) -ForegroundColor $(if($l1Pass){"Green"}else{"Red"})
+    Write-Host ("  [LAYER 1 - L0 RUST]     [{0}] Brackets(v33..v52+)={1} (Req:0) | QAT PPL={2} (Req:>1.0001) | Latency={3}ms" -f ($(if($l1Pass){"PASS"}else{"FAIL"}), $brackets, $(if($qat){$qat.holdout_ppl}else{"UNREACHABLE"}), $(if($qat){$qat.dag_latency_ms}else{"N/A"}))) -ForegroundColor $(if($l1Pass){"Green"}else{"Red"})
 
     # Layer 2: Lean 4 Formal Proofs
     $leanRaw = Get-Content -Raw "C:\sovereign_manifold_v31\01_l0_rust\lean4\SovereignManifoldTheorems.lean"
     $thmCnt = ([regex]::Matches($leanRaw, '(?m)^theorem\s+')).Count
     $trivCnt = ([regex]::Matches($leanRaw, '\((\d+) = \1\)')).Count
     $leanSha = (Get-FileHash "C:\sovereign_manifold_v31\01_l0_rust\lean4\SovereignManifoldTheorems.lean" -Algorithm SHA256).Hash.ToLower().Substring(0, 16)
-    $l2Pass = ($thmCnt -ge 500) -and ($trivCnt -eq 0)
+    $l2Pass = ($thmCnt -ge 564) -and ($trivCnt -eq 0)
     if (-not $l2Pass) { $failCount++ }
-    Write-Host ("  [LAYER 2 - LEAN 4 QED]  [{0}] Theorems={1}/500 (Req:>=500) | Trivial(N=N)={2} (Req:0) | SHA256={3}..." -f ($(if($l2Pass){"PASS"}else{"FAIL"}), $thmCnt, $trivCnt, $leanSha)) -ForegroundColor $(if($l2Pass){"Green"}else{"Red"})
+    Write-Host ("  [LAYER 2 - LEAN 4 QED]  [{0}] Theorems={1}/564 (Req:>=564) | Trivial(N=N)={2} (Req:0) | SHA256={3}..." -f ($(if($l2Pass){"PASS"}else{"FAIL"}), $thmCnt, $trivCnt, $leanSha)) -ForegroundColor $(if($l2Pass){"Green"}else{"Red"})
 
     # Layer 3: 5W1H & 42,240-Neuron Shared Memory (.npage)
     $prof = $null

@@ -94,9 +94,9 @@ pub fn publish_coordinator_bus_envelope(
     let msg_id = (count_jsonl_lines(ledger_path) as u64).saturating_add(1);
     let payload_sha256 = sha256_bytes_hex(payload_summary.as_bytes());
     let seed = fnv1a_64(payload_summary).wrapping_add(msg_id);
-    let npage_neuron_id = (seed as usize) % 42240;
+    let npage_neuron_id = (seed as usize) % 63360;
     let chair44_col = npage_neuron_id / 44;
-    let sector_id = chair44_col / 12;
+    let sector_id = (chair44_col / 18) % 80;
 
     let status_str = if e_ok {
         String::from("BUS_ENVELOPE_PERSISTED_C_AND_E_VAULT")
@@ -674,7 +674,7 @@ pub fn execute_coordinator_dag_orchestrator(query: &str, decadic_sub_epoch: u64)
 
     // Stage 2 & 3: Generate & Write-Back Zero-Bracket Rust + Lean 4 Codegen to E:\Sovereign_Manifold_SSD_Vault
     let rust_snippet = format!(
-        "// Autopoietic DAG Stage 3 Codegen (Msg #{}, Epoch E{})\npub fn autopoietic_dag_invariant_e{}(x: i64) -> i64 {{\n    x.saturating_mul(42240_i64).saturating_add({}_i64)\n}}\n",
+        "// Autopoietic DAG Stage 3 Codegen (Msg #{}, Epoch E{})\npub fn autopoietic_dag_invariant_e{}(x: i64) -> i64 {{\n    x.saturating_mul(63360_i64).saturating_add({}_i64)\n}}\n",
         env1.msg_id, decadic_sub_epoch, decadic_sub_epoch, env1.npage_neuron_id
     );
     let (rs_path, rs_bytes, rs_sha256, rs_zb_ok) = persist_codegen_artifact_to_e_vault(
@@ -702,7 +702,7 @@ pub fn execute_coordinator_dag_orchestrator(query: &str, decadic_sub_epoch: u64)
     let env5 = publish_coordinator_bus_envelope(
         "TOPIC_SHARD_NPAGE_CRYSTALLIZE",
         "Autopoietic_Integrator_Stage4",
-        "Connectome_42240_Npage_And_D1",
+        "Connectome_63360_Npage_And_D1",
         &format!("Crystallized Rust ({} B) + Lean4 ({} B) into Neuron #{} (Col #{}, S{:02})", rs_bytes, lean_bytes, env1.npage_neuron_id, env1.chair44_col, env1.sector_id),
         &rs_path,
         rs_bytes.saturating_add(lean_bytes),

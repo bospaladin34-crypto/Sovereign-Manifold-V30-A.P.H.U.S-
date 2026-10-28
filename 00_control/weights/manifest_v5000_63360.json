@@ -1,0 +1,71 @@
+{
+  "manifest_schema": "ACT_OMEGA_V5000_CONNECTOME_MANIFEST",
+  "version": "50.0.0",
+  "tlv_header": "SH4Z_v5000",
+  "timestamp_unix_ms": 1793147979683,
+  "architecture": {
+    "total_neurons": 63360,
+    "core_neurons": 21120,
+    "expansion_neurons": 21120,
+    "tier3_neurons": 21120,
+    "chair44_columns": 1440,
+    "macro_domains": 36,
+    "sub_domains": 144,
+    "columns_per_subdomain": 10,
+    "neurons_per_subdomain": 440,
+    "synapses_per_neuron": 16,
+    "total_synapses": 1013760,
+    "synapses_per_subdomain": 7040,
+    "synapses_per_macrodomain": 28160,
+    "vocab_size_18bit": 262144,
+    "compound_concepts": 2048
+  },
+  "weights_manifest": {
+    "neurons_v5000_63360_npage": {
+      "path": "00_control/weights/neurons_v5000_63360.npage",
+      "bytes": 8110080,
+      "sha256": "91c42afd2adc4b55de20edb593ff95a9d831f7991db13c832f87a6f3ac4c7ef3"
+    },
+    "neurons_v5000_tier3_expansion_npage": {
+      "path": "00_control/weights/neurons_v5000_tier3_expansion.npage",
+      "bytes": 2703360,
+      "sha256": "e9782320f891121d8d74064a1aa6d6b17873c28ef78e7ea9ca0ab005fbd64537"
+    },
+    "sovereign_harmonic_iv_v5000_e8z": {
+      "path": "00_control/weights/sovereign_harmonic_iv_v5000.e8z",
+      "bytes": 133120,
+      "sha256": "a2ca34144fc3051f503d6b615e35b4e0074b260a04406c6d3b7377c4ef4e4ae5"
+    },
+    "sovereign_harmonic_iv_v5000_tier3_199680_e8z": {
+      "path": "00_control/weights/sovereign_harmonic_iv_v5000_tier3_199680.e8z",
+      "bytes": 199680,
+      "sha256": "152bb18dc3eb2d72ec287f897d2b88bfe81ae425446a7a1df32c3324297ce77d"
+    },
+    "tier3_shards": {
+      "directory": "03_vault/shards_tier3",
+      "count": 21120,
+      "each_bytes": 212,
+      "total_bytes": 4477440
+    }
+  },
+  "training_passes_metrics": {
+    "pass1_sheaf_qat": {
+      "pre_energy": 61965329002402580000000,
+      "post_energy": 15323484600341200000000,
+      "reduction_ratio": 4.043814485970302,
+      "quantization_snr_db": 1.233730441040665
+    },
+    "pass2_npage_verification": {
+      "viviani_conserved": 63360,
+      "canary_verified": 63360,
+      "plucker_verified": 63360,
+      "cache_shield_mask": 3
+    },
+    "pass3_contrastive_routing": {
+      "pre_cross_entropy": 4.971321760281202,
+      "post_cross_entropy": 3.15557311368413,
+      "holdout_perplexity": 23.466482200342465,
+      "mutual_information_bits": 0.0865337927447758
+    }
+  }
+}

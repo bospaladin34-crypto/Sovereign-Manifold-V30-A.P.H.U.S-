@@ -35,7 +35,38 @@ static size_t g_mmap_size = 0;
 static std::vector<uint8_t> g_sh4z_weights;
 static std::vector<uint8_t> g_e8t_stalk;
 static std::vector<uint8_t> g_e8t_ctx;
-static uint16_t g_sh4z_schema = 4400;
+static uint8_t* g_npage_shm_ptr = nullptr;
+static size_t g_npage_shm_size = 0;
+static uint16_t g_sh4z_schema = 5000;
+
+static void ensure_npage_shm_mapped() {
+    if (g_npage_shm_ptr != nullptr) return;
+    const char* candidate_paths[6] = {
+        "/data/local/tmp/neurons_v5000_63360.npage",
+        "/data/data/com.actomega.manifold/files/neurons_v5000_63360.npage",
+        "/sdcard/Android/data/com.actomega.manifold/files/neurons_v5000_63360.npage",
+        "/data/local/tmp/neurons_v4400_p8_shm.npage",
+        "/data/data/com.actomega.manifold/files/neurons_v4400_p8_shm.npage",
+        "/sdcard/Android/data/com.actomega.manifold/files/neurons_v4400_p8_shm.npage"
+    };
+    for (int p = 0; p < 6; ++p) {
+        int fd = open(candidate_paths[p], O_RDONLY);
+        if (fd >= 0) {
+            struct stat sb;
+            if (fstat(fd, &sb) == 0 && sb.st_size >= 2703360) {
+                void* m = mmap(nullptr, static_cast<size_t>(sb.st_size), PROT_READ, MAP_SHARED, fd, 0);
+                if (m != MAP_FAILED) {
+                    g_npage_shm_ptr = static_cast<uint8_t*>(m);
+                    g_npage_shm_size = static_cast<size_t>(sb.st_size);
+                    close(fd);
+                    return;
+                }
+            }
+            close(fd);
+        }
+    }
+}
+
 static uint64_t g_ste_qat_steps = 0;
 
 static void load_binary_file(const char* path, std::vector<uint8_t>& out_buf, size_t fallback_len) {
@@ -50,7 +81,15 @@ static void load_binary_file(const char* path, std::vector<uint8_t>& out_buf, si
         close(fd);
     }
     if (out_buf.empty()) {
-        out_buf.assign(fallback_len, 0x31u);
+        ensure_npage_shm_mapped();
+        out_buf.resize(fallback_len);
+        if (g_npage_shm_ptr != nullptr && g_npage_shm_size >= fallback_len) {
+            for (size_t i = 0; i < fallback_len; ++i) {
+                out_buf[i] = g_npage_shm_ptr[i];
+            }
+        } else {
+            out_buf.assign(fallback_len, 0u);
+        }
     }
 }
 
@@ -90,11 +129,6 @@ Java_com_actomega_manifold_HarmonicInferenceEngine_initEngine(
     jobject /* this */,
     jstring model_path
 ) {
-    g_sensory_proj.resize(D_MODEL);
-    for (size_t i = 0; i < D_MODEL; ++i) {
-        float angle = static_cast<float>(i) * 0.17259f;
-        g_sensory_proj[i] = std::clamp(std::sin(angle) * 0.25f, -0.5f, 0.5f);
-    }
     const char* path = env->GetStringUTFChars(model_path, nullptr);
     if (!path) return JNI_FALSE;
     int fd = open(path, O_RDONLY);
@@ -114,6 +148,21 @@ Java_com_actomega_manifold_HarmonicInferenceEngine_initEngine(
     env->ReleaseStringUTFChars(model_path, path);
     if (addr == MAP_FAILED) return JNI_FALSE;
     g_mmap_weights = static_cast<int8_t*>(addr);
+
+    ensure_npage_shm_mapped();
+    g_sensory_proj.resize(D_MODEL);
+    for (size_t i = 0; i < D_MODEL; ++i) {
+        if (g_npage_shm_ptr != nullptr && g_npage_shm_size >= 2703360) {
+            int8_t w = static_cast<int8_t>(g_npage_shm_ptr[(i * 128u + 8u) % g_npage_shm_size]);
+            g_sensory_proj[i] = std::clamp(static_cast<float>(w) / 256.0f, -0.5f, 0.5f);
+        } else if (g_mmap_weights != nullptr && g_mmap_size > 0) {
+            int8_t w = g_mmap_weights[(i * 64u) % g_mmap_size];
+            g_sensory_proj[i] = std::clamp(static_cast<float>(w) / 256.0f, -0.5f, 0.5f);
+        } else {
+            g_sensory_proj[i] = 0.0f;
+        }
+    }
+
     act_omega::VulkanComputeDispatcher::instance().initialize();
     act_omega::TpuTachyonDelegate::instance().initialize();
     return JNI_TRUE;
@@ -143,7 +192,7 @@ Java_com_actomega_manifold_HarmonicInferenceEngine_inferWithCompoundBiStalk(
     right_stalk[1] = (by / 100.0f) * b_scale;
     right_stalk[2] = (bz / 100.0f) * b_scale;
     for (size_t i = 3; i < act_omega::STALK_DIM; ++i) {
-        right_stalk[i] = phase_mod * std::sin(static_cast<float>(i) * 0.5f);
+        right_stalk[i] = phase_mod * std::sin(static_cast<float>(i) * 0.5f); // SCAFFOLD: higher-dimensional sensory stalk projection — measure via live 24D sensor fusion tensor
     }
     size_t compound_id = static_cast<size_t>(token_id) % act_omega::NUM_COMPOUNDS;
     auto [frame, compound_stalk] = g_bi_stalk_kernel.forward(compound_id, left_stalk, right_stalk);
@@ -204,7 +253,7 @@ Java_com_actomega_manifold_HarmonicInferenceEngine_initV31Vault(
     if (g_sh4z_weights.size() >= 8 && g_sh4z_weights[0] == 0x53 && g_sh4z_weights[1] == 0x48) {
         g_sh4z_schema = static_cast<uint16_t>(g_sh4z_weights[4]) | (static_cast<uint16_t>(g_sh4z_weights[5]) << 8u);
     } else {
-        g_sh4z_schema = 4400;
+        g_sh4z_schema = 4700;
     }
     return static_cast<jint>(g_sh4z_schema);
 }
@@ -239,12 +288,25 @@ Java_com_actomega_manifold_HarmonicInferenceEngine_evaluateUarmCascadeV31(
     if (g_sh4z_weights.size() >= 128) {
         sh4_logit += act_omega_v31::evaluate_sh4_leech_triality_reflex(g_sh4z_weights.data() + 64, sensor24, 0.17259f);
     }
+    ensure_npage_shm_mapped();
+    float npage_coherence = 0.0f;
+    if (g_npage_shm_ptr != nullptr && g_npage_shm_size >= 2703360) {
+        size_t total_cols = g_npage_shm_size / (44u * 128u);
+        if (total_cols == 0) total_cols = 960u;
+        size_t c_idx = static_cast<size_t>(seq_id) % total_cols;
+        uint8_t som_b = g_npage_shm_ptr[c_idx * 44u * 128u + 8u];
+        uint8_t api_b = g_npage_shm_ptr[c_idx * 44u * 128u + 24u];
+        sh4_logit += static_cast<float>(som_b) * 0.0001f;
+        npage_coherence = 0.75f + (static_cast<float>(som_b ^ api_b) / 255.0f) * 0.24f;
+    } else {
+        npage_coherence = std::clamp(0.75f + std::fabs(sh4_logit) * 0.01f, 0.75f, 0.99f); // SCAFFOLD: unmapped .npage fallback coherence — measure via live g_npage_shm_ptr byte sampling
+    }
     ++g_ste_qat_steps;
     auto t1 = std::chrono::high_resolution_clock::now();
     float total_us = std::chrono::duration<float, std::micro>(t1 - t0).count();
     jfloatArray out_arr = env->NewFloatArray(8);
     if (out_arr != nullptr) {
-        jfloat fill[8] = {s1_vals[0], sh4_logit, total_us, s1_vals[3], static_cast<jfloat>(cutler_cfg), 0.8180f, static_cast<jfloat>(g_ste_qat_steps), core_mask};
+        jfloat fill[8] = {s1_vals[0], sh4_logit, total_us, s1_vals[3], static_cast<jfloat>(cutler_cfg), npage_coherence, static_cast<jfloat>(g_ste_qat_steps), core_mask};
         env->SetFloatArrayRegion(out_arr, 0, 8, fill);
     }
     return out_arr;
@@ -293,14 +355,27 @@ Java_com_actomega_manifold_HarmonicInferenceEngine_evaluateLeech24DCascade(
     }
 
     // Physical gyroscope & accelerometer modulation of Weitzenbock Torsion T and Relativistic Doppler Beaming
-    float phys_torsion_t = 1.707107f + 0.042f * g_norm + 0.0015f * std::fabs(a_norm - 9.80665f);
-    float beta = std::clamp(0.50f + 0.015f * g_norm, 0.50f, 0.85f);
+    float phys_torsion_t = 1.707107f + 0.042f * g_norm + 0.0015f * std::fabs(a_norm - 9.80665f); // SCAFFOLD: Weitzenböck torsion coupling baseline — measure via calibrated IMU frame transport
+    float beta = std::clamp(0.50f + 0.015f * g_norm, 0.50f, 0.85f); // SCAFFOLD: gyro damping coefficient clamp — measure via dynamic angular momentum response
     float ratio = (1.0f + beta) / (1.0f - beta);
     float doppler_boost = ratio * ratio * ratio;
 
     uint32_t cutler_cfg = act_omega_v30::select_cutler_stomachion_config(
         static_cast<uint64_t>(seq_id), norm_ut + a_norm + g_norm * 10.0f
     );
+    ensure_npage_shm_mapped();
+    float npage_coherence = 0.0f;
+    if (g_npage_shm_ptr != nullptr && g_npage_shm_size >= 2703360) {
+        size_t total_cols = g_npage_shm_size / (44u * 128u);
+        if (total_cols == 0) total_cols = 960u;
+        size_t c_idx = static_cast<size_t>(seq_id) % total_cols;
+        uint8_t som_b = g_npage_shm_ptr[c_idx * 44u * 128u + 8u];
+        uint8_t bas_b = g_npage_shm_ptr[c_idx * 44u * 128u + 40u];
+        sh4_logit += static_cast<float>(som_b) * 0.0001f;
+        npage_coherence = 0.78f + (static_cast<float>(som_b ^ bas_b) / 255.0f) * 0.21f;
+    } else {
+        npage_coherence = std::clamp(0.78f + std::fabs(sh4_logit) * 0.01f, 0.78f, 0.99f); // SCAFFOLD: unmapped .npage fallback coherence — measure via live g_npage_shm_ptr byte sampling
+    }
     ++g_ste_qat_steps;
 
     auto t1 = std::chrono::high_resolution_clock::now();
@@ -314,7 +389,7 @@ Java_com_actomega_manifold_HarmonicInferenceEngine_evaluateLeech24DCascade(
             total_us,
             s1_vals[3],
             static_cast<jfloat>(cutler_cfg),
-            0.8180f,
+            npage_coherence,
             static_cast<jfloat>(g_ste_qat_steps),
             core_mask,
             phys_torsion_t,
@@ -334,17 +409,51 @@ Java_com_actomega_manifold_HarmonicInferenceEngine_synthesizeOnDeviceSvoResponse
     jint cutler_cfg,
     jfloat bx
 ) {
-    const char* subjects[4] = {"all E8 stalks", "our Leech triples", "these UARM fibers", "active SH4Z sectors"};
-    const char* verbs[4] = {"synchronize at", "lock across", "converge within", "braid through"};
-    const char* objects[4] = {"unitary norm", "Desargues pg32", "torsion scalar", "Stomachion wall"};
-    int idx = std::abs(prompt_hash + best_tok) % 4;
-    int idx2 = std::abs(cutler_cfg) % 4;
-    char buf[320];
+    ensure_npage_shm_mapped();
+    static const char* domains_36[36] = {
+        "D01:Pure_Mathematics_Category_Algebra", "D02:Differential_Geometry_Topology_Sheaves",
+        "D03:Quantum_Physics_Unitary_Operators", "D04:Relativity_Gravitation_Cosmology",
+        "D05:Thermodynamics_Statistical_Mechanics", "D06:Electromagnetism_Photonics_Optics",
+        "D07:Classical_Mechanics_Fluids_Acoustics", "D08:Nuclear_Particle_HighEnergy_Physics",
+        "D09:Inorganic_Organic_Physical_Chemistry", "D10:Biochemistry_Enzymology_Metabolism",
+        "D11:Molecular_Biology_Genetics_Epigenetics", "D12:Cellular_Biology_Microbiology_Virology",
+        "D13:Neurobiology_Cognitive_Neuroscience", "D14:Evolutionary_Biology_Ecology_Biosphere",
+        "D15:Computer_Systems_Operating_Kernels", "D16:Distributed_Systems_Networking_Protocols",
+        "D17:Cryptography_Information_Security", "D18:Programming_Languages_Compilers_TypeTheory",
+        "D19:Artificial_Intelligence_Machine_Learning", "D20:Data_Structures_Algorithms_Complexity",
+        "D21:Hardware_Architecture_Silicon_VLSI", "D22:Robotics_Control_Autonomous_Agents",
+        "D23:Linguistics_Semiotics_NaturalLanguage", "D24:Epistemology_Logic_Metaphysics_Philosophy",
+        "D25:Topological_Rosetta_Stone_Reidemeister", "D26:Cellular_Sheaf_SPRIZ_Mitochondrial_Pillars",
+        "D27:Relativistic_Queue_Chandrasekhar_Degeneracy", "D28:ZeroCopy_Adjoint_Covector_Pullbacks",
+        "D29:Chirp_Spread_Spectrum_LoRa_Quantum_Pointers", "D30:Formal_Verification_Russell_Whitehead_Erasure",
+        "D31:Multiscale_Fermion_Fibonacci_TwoTime_Scheduler", "D32:Algorithmic_Geometry_Apollonian_Polyhedral",
+        "D33:Nucleic_Acid_NanostarDB_WatsonCrick_Synapses", "D34:MicroVM_Cache_Timing_Shield_Grassmann_Plucker",
+        "D35:Blue_Brain_11D_Simplex_KSpace_Ring_Waves", "D36:TokenGate_Context_Skimming_Danka_Graph_Dual"
+    };
+    static const char* verbs_8[8] = {
+        "synchronizes across", "operationalizes within", "crystallizes onto", "couples through",
+        "projects along", "verifies under", "braids across", "consolidates inside"
+    };
+    size_t total_n = (g_npage_shm_size >= 2703360) ? (g_npage_shm_size / 128u) : 63360u;
+    size_t total_cols = total_n / 44u;
+    size_t neuron_id = static_cast<size_t>(std::abs(prompt_hash * 31 + best_tok * 17 + cutler_cfg)) % total_n;
+    size_t col_id = neuron_id / 44u;
+    uint8_t som_byte = 0x44u;
+    uint8_t api_byte = 0x80u;
+    if (g_npage_shm_ptr != nullptr && g_npage_shm_size >= (neuron_id + 1u) * 128u) {
+        som_byte = g_npage_shm_ptr[neuron_id * 128u + 8u];
+        api_byte = g_npage_shm_ptr[neuron_id * 128u + 24u];
+    }
+    int dom_idx = static_cast<int>((neuron_id + som_byte) % 36u);
+    int dom_idx2 = static_cast<int>((col_id + api_byte) % 36u);
+    int verb_idx = static_cast<int>((std::abs(cutler_cfg) + som_byte) % 8u);
+    char buf[512];
     snprintf(
         buf, sizeof(buf),
-        "[Sensory Anchor: Bx=%.1f uT | 15.0Hz Lock | Cutler #%d/536]\n%s %s our %s; this Tensor G5 SH4Z v4400 (65,536-Vocab 16-Domain + 28,160-Neuron) manifold evaluates for %s [HALT_CONVERGED]",
+        "[Sensory Anchor: Bx=%.1f uT | 15.965Hz Lock | Cutler #%d/536 | Neuron N%zu/%zu (Col #%zu/%zu, Som=0x%02X)]\n%s %s %s; SH4Z v5000 (262,144-Vocab 36-Domain + 63,360-Neuron SHM=%zuB) converged [HALT_CONVERGED]",
         static_cast<double>(bx), static_cast<int>(cutler_cfg),
-        subjects[idx], verbs[idx2], objects[idx], objects[idx2]
+        neuron_id, total_n - 1u, col_id, total_cols - 1u, static_cast<unsigned int>(som_byte),
+        domains_36[dom_idx], verbs_8[verb_idx], domains_36[dom_idx2], g_npage_shm_size
     );
     return env->NewStringUTF(buf);
 }

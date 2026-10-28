@@ -51,10 +51,10 @@ classifyBand atp
 -- | Build a 4-stage Tri-Silicon 5W1H routing morphism bound to Chair-44 columns in .npage
 buildCanonical5W1HProgram :: Int -> Free5W1H (Rational, MetabolicBand, Int)
 buildCanonical5W1HProgram seedCol =
-  let col0 = seedCol `mod` 960
-      col1 = (seedCol * 7 + 13) `mod` 960
-      col2 = (seedCol * 19 + 29) `mod` 960
-      col3 = (seedCol * 31 + 43) `mod` 960
+  let col0 = seedCol `mod` 1440
+      col1 = (seedCol * 7 + 13) `mod` 1440
+      col2 = (seedCol * 19 + 29) `mod` 1440
+      col3 = (seedCol * 31 + 43) `mod` 1440
       s0 = RouteStep Edge1Pixel10G5  "INGEST_24D_SENSOR_STREAM" (15965 % 1000) col0 (3 % 200) (2 % 100) "NEON_24D_E8_QUANTIZE"
       s1 = RouteStep Edge2Pixel8Apex "DRAFT_SPECULATIVE_LEECH"  (15965 % 1000) col1 (4 % 200) (3 % 100) "MALI_G715_L2_NPAGE_SHM"
       s2 = RouteStep Anchor1Loq15    "VERIFY_HAMILTONIAN_BEAM"  (15965 % 1000) col2 (5 % 200) (4 % 100) "AVX2_RTX3050_LEECH_COT"

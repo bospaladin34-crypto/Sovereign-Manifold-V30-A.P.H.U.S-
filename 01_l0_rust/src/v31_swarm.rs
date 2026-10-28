@@ -29,6 +29,42 @@ include!("../v44_worksteal_npage_shm_webgpu_lease.rs");
 include!("../v45_e8_leech_fluency_model.rs");
 include!("../v46_open_vocab_131k_42240_connectome.rs");
 include!("../v47_autonomous_leech_rag_scientist.rs");
+include!("../v48_haskell_codegen_invariants.rs");
+include!("../v48_haskell_duckdb_hamiltonian_model.rs");
+include!("../v48_autopoietic_coordinator_bus.rs");
+
+// --- Milestone 3: v49.0.0 Tools 91..100 & CHAIN 100 Century Milestone Module ---
+#[path = "../v49_muse_clean_and_chain100_synthesis.rs"]
+mod v49_muse_clean_and_chain100_synthesis;
+
+// --- Milestone 1: v50.0.0 Rayon 12-Thread AVX2 Hardware Acceleration & Multi-Physics Coordinator ---
+#[path = "../v50_rayon_avx2_tlv_simulator_coordinator.rs"]
+mod v50_rayon_avx2_tlv_simulator_coordinator;
+
+// --- Milestone 3: Monograph Core Tools 104..106 ---
+#[path = "../v50_monograph_braidir_sh4z_vesper_core.rs"]
+pub mod v50_monograph_braidir_sh4z_vesper_core;
+
+// --- Milestone 3: Batch 1 Tools 107..116 ---
+#[path = "../v50_rosetta_spriz_flux_fibonacci_batch1.rs"]
+pub mod v50_rosetta_spriz_flux_fibonacci_batch1;
+
+// --- Milestone 3: Batch 2 Tools 117..126 ---
+#[path = "../v51_npage_v2_sae_nanostar_grassmann_batch2.rs"]
+pub mod v51_npage_v2_sae_nanostar_grassmann_batch2;
+
+// --- Milestone 3: Batch 3 Tools 127..130 ---
+#[path = "../v52_brain11d_quantum_wave_tokengate_batch3.rs"]
+pub mod v52_brain11d_quantum_wave_tokengate_batch3;
+
+// --- Milestone 3: Batch 4 Tools 131..134 ---
+#[path = "../v52_1_reimann_directed_flag_complex_npage.rs"]
+pub mod v52_1_reimann_directed_flag_complex_npage;
+
+// --- Milestone 3: Tool 135 Brain Scale-Up & QAT Trainer ---
+#[path = "../v50_brain_63360_144subdomains_qat_trainer.rs"]
+pub mod v50_brain_63360_144subdomains_qat_trainer;
+
 
 
 struct SwarmState {
@@ -858,6 +894,10 @@ fn content_type_for(path: &str) -> &'static str {
         "image/x-icon"
     } else if path.ends_with(".wasm") {
         "application/wasm"
+    } else if path.ends_with(".woff2") {
+        "font/woff2"
+    } else if path.ends_with(".woff") {
+        "font/woff"
     } else {
         "application/octet-stream"
     }
@@ -867,6 +907,74 @@ thread_local! {
     static REQ_IS_HEAD: std::cell::Cell<bool> = std::cell::Cell::new(false);
     static REQ_CONN_CLOSE: std::cell::Cell<bool> = std::cell::Cell::new(false);
     static STREAM_WRITE_ERR: std::cell::Cell<bool> = std::cell::Cell::new(false);
+    static REQ_CACHE_CONTROL: std::cell::Cell<&'static str> = std::cell::Cell::new("no-store");
+}
+
+pub const CACHE_CONTROL_STATIC_ASSET: &str = "Cache-Control: public, max-age=86400, immutable";
+pub const CACHE_CONTROL_NO_STORE: &str = "Cache-Control: no-store";
+
+fn determine_cache_control(clean_path: &str) -> &'static str {
+    // 0. Path traversal security boundary: never allow caching on traversal attempts
+    if clean_path.contains("..") {
+        return "no-store";
+    }
+
+    // 1. Live dynamic API routes & shadow synchronization must NEVER be cached
+    if clean_path.starts_with("/api/") || clean_path.starts_with("/shadow/") {
+        return "no-store";
+    }
+
+    // 2. Normalize path: strip leading slashes and optional leading "./"
+    let norm = clean_path.trim_start_matches('/');
+    let norm_core = if norm.starts_with("./") {
+        norm.get(2..).unwrap_or(norm)
+    } else {
+        norm
+    };
+
+    if norm_core.starts_with("api/") || norm_core.starts_with("shadow/") {
+        return "no-store";
+    }
+
+    // 3. Mutable entrypoints, Service Worker, manifests, and weight buffers must NEVER be cached immutably
+    if norm_core == "sw.js"
+        || norm_core.ends_with("/sw.js")
+        || norm_core == "manifest.webmanifest"
+        || norm_core.ends_with("/manifest.webmanifest")
+        || norm_core == "llms.txt"
+        || norm_core.is_empty()
+        || norm_core == "index.html"
+        || norm_core.ends_with("/index.html")
+        || norm_core == "wiki"
+        || norm_core == "wiki.html"
+        || norm_core == "github_pages"
+        || norm_core == "github_pages/"
+        || norm_core.ends_with(".e8z")
+        || norm_core.ends_with(".npage")
+    {
+        return "no-store";
+    }
+
+    // 4. Static assets with immutable content (JS bundles, CSS, images, icons, fonts, WASM)
+    // Cache-Control: public, max-age=86400, immutable
+    if norm_core.ends_with(".js")
+        || norm_core.ends_with(".mjs")
+        || norm_core.ends_with(".css")
+        || norm_core.ends_with(".svg")
+        || norm_core.ends_with(".png")
+        || norm_core.ends_with(".jpg")
+        || norm_core.ends_with(".jpeg")
+        || norm_core.ends_with(".ico")
+        || norm_core.ends_with(".wasm")
+        || norm_core.ends_with(".woff")
+        || norm_core.ends_with(".woff2")
+        || norm_core.ends_with(".ttf")
+        || norm_core.starts_with("assets/")
+    {
+        return "public, max-age=86400, immutable";
+    }
+
+    "no-store"
 }
 
 fn write_http_str(stream: &mut TcpStream, status: &str, ctype: &str, body: &str) {
@@ -875,13 +983,15 @@ fn write_http_str(stream: &mut TcpStream, status: &str, ctype: &str, body: &str)
     let conn_hdr = if is_close {
         "Connection: close\r\n"
     } else {
-        "Connection: keep-alive\r\nKeep-Alive: timeout=15, max=24\r\n"
+        "Connection: keep-alive\r\nKeep-Alive: timeout=25, max=100\r\n"
     };
+    let cache_ctl = REQ_CACHE_CONTROL.with(|c| c.get());
     let header = format!(
-        "HTTP/1.1 {}\r\nContent-Type: {}\r\nContent-Length: {}\r\nAccess-Control-Allow-Origin: *\r\nAccess-Control-Allow-Methods: GET, POST, HEAD, PUT, DELETE, PATCH, OPTIONS\r\nAccess-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, Anthropic-Version, X-Api-Key, Mcp-Session-Id, Accept\r\nTiming-Allow-Origin: *\r\nCache-Control: no-store\r\n{}\r\n",
+        "HTTP/1.1 {}\r\nContent-Type: {}\r\nContent-Length: {}\r\nAccess-Control-Allow-Origin: *\r\nAccess-Control-Allow-Methods: GET, POST, HEAD, PUT, DELETE, PATCH, OPTIONS\r\nAccess-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, Anthropic-Version, X-Api-Key, Mcp-Session-Id, Accept\r\nTiming-Allow-Origin: *\r\nCache-Control: {}\r\n{}\r\n",
         status,
         ctype,
         body.len(),
+        cache_ctl,
         conn_hdr
     );
     if stream.write_all(header.as_bytes()).is_err() {
@@ -905,13 +1015,15 @@ fn write_http_vec(stream: &mut TcpStream, status: &str, ctype: &str, body: &Vec<
     let conn_hdr = if is_close {
         "Connection: close\r\n"
     } else {
-        "Connection: keep-alive\r\nKeep-Alive: timeout=15, max=24\r\n"
+        "Connection: keep-alive\r\nKeep-Alive: timeout=25, max=100\r\n"
     };
+    let cache_ctl = REQ_CACHE_CONTROL.with(|c| c.get());
     let header = format!(
-        "HTTP/1.1 {}\r\nContent-Type: {}\r\nContent-Length: {}\r\nAccess-Control-Allow-Origin: *\r\nAccess-Control-Allow-Methods: GET, POST, HEAD, PUT, DELETE, PATCH, OPTIONS\r\nAccess-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, Anthropic-Version, X-Api-Key, Mcp-Session-Id, Accept\r\nTiming-Allow-Origin: *\r\nCache-Control: no-store\r\n{}\r\n",
+        "HTTP/1.1 {}\r\nContent-Type: {}\r\nContent-Length: {}\r\nAccess-Control-Allow-Origin: *\r\nAccess-Control-Allow-Methods: GET, POST, HEAD, PUT, DELETE, PATCH, OPTIONS\r\nAccess-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, Anthropic-Version, X-Api-Key, Mcp-Session-Id, Accept\r\nTiming-Allow-Origin: *\r\nCache-Control: {}\r\n{}\r\n",
         status,
         ctype,
         body.len(),
+        cache_ctl,
         conn_hdr
     );
     if stream.write_all(header.as_bytes()).is_err() {
@@ -963,9 +1075,557 @@ fn search_episodic_ring(ssd_path: &str, query: &str) -> String {
     )
 }
 
+/// Constant-time comparison between two strings to prevent timing side-channel attacks.
+/// Hashes both strings with SHA-256 and compares the resulting 64-character hex digests
+/// byte-by-byte in constant time, ensuring invariant latency regardless of key length or match offset.
+fn constant_time_compare_operator_key(supplied: &str, expected: &str) -> bool {
+    if supplied.is_empty() || expected.is_empty() {
+        return false;
+    }
+    let h_sup = sha256_bytes_hex(supplied.as_bytes());
+    let h_exp = sha256_bytes_hex(expected.as_bytes());
+    let b_sup = h_sup.as_bytes();
+    let b_exp = h_exp.as_bytes();
+    if b_sup.len() != b_exp.len() {
+        return false;
+    }
+    let mut diff = 0u8;
+    for (x, y) in b_sup.iter().zip(b_exp.iter()) {
+        diff |= x ^ y;
+    }
+    diff == 0
+}
+
+/// Retrieve the expected sovereign operator key from environment or external user vault file.
+fn resolve_expected_operator_key() -> String {
+    let raw = std::env::var("ACT_OMEGA_OPERATOR_KEY")
+        .or_else(|_| std::env::var("SOVEREIGN_OPERATOR_KEY"))
+        .ok()
+        .or_else(|| {
+            fs::read_to_string("C:/Users/Nbell/.act_omega_operator_vault_key")
+                .ok()
+                .map(|s| String::from(s.trim()))
+        })
+        .or_else(|| {
+            fs::read_to_string("00_control/.operator_vault_key")
+                .ok()
+                .map(|s| String::from(s.trim()))
+        })
+        .unwrap_or_default();
+    if raw.len() < 24 {
+        String::new()
+    } else {
+        raw
+    }
+}
+
+/// Verify administrative and operator vault requests via `X-Sovereign-Operator-Key` header.
+fn verify_operator_header_auth(header_key: &str, is_loopback: bool) -> bool {
+    if !is_loopback {
+        return false;
+    }
+    let clean_supplied = header_key.trim();
+    if clean_supplied.len() < 24 {
+        return false;
+    }
+    let expected = resolve_expected_operator_key();
+    if expected.is_empty() {
+        return false;
+    }
+    constant_time_compare_operator_key(clean_supplied, &expected)
+}
+
+// ----------------------------------------------------------------------------
+// CHAIN 135 SERIALIZATION & DISPATCH HELPERS (TOOLS 104..135)
+// ----------------------------------------------------------------------------
+
+fn tool_report_to_json(r: &v50_rosetta_spriz_flux_fibonacci_batch1::SovereignToolExecutionReport) -> String {
+    format!(
+        "{{\"tool_id\":{},\"tool_name\":\"{}\",\"rosetta_cs_equivalent\":\"{}\",\"primary_metric\":{},\"secondary_metric\":{},\"invariant_satisfied\":{},\"latency_us\":{},\"proof_digest\":\"{}\"}}",
+        r.tool_id, r.tool_name, r.rosetta_cs_equivalent, r.primary_metric, r.secondary_metric, r.invariant_satisfied, r.latency_us, r.proof_digest
+    )
+}
+
+fn batch2_report_to_json(r: &v51_npage_v2_sae_nanostar_grassmann_batch2::SovereignBatch2ToolReport) -> String {
+    format!(
+        "{{\"tool_id\":{},\"tool_name\":\"{}\",\"rosetta_cs_and_npage_role\":\"{}\",\"primary_metric\":{},\"secondary_metric\":{},\"invariant_satisfied\":{},\"latency_us\":{},\"proof_digest\":\"{}\"}}",
+        r.tool_id, r.tool_name, r.rosetta_cs_and_npage_role, r.primary_metric, r.secondary_metric, r.invariant_satisfied, r.latency_us, r.proof_digest
+    )
+}
+
+fn batch3_report_to_json(r: &v52_brain11d_quantum_wave_tokengate_batch3::SovereignBatch3ToolReport) -> String {
+    format!(
+        "{{\"tool_id\":{},\"tool_name\":\"{}\",\"rosetta_cs_and_npage_role\":\"{}\",\"primary_metric\":{},\"secondary_metric\":{},\"invariant_satisfied\":{},\"latency_us\":{},\"proof_digest\":\"{}\"}}",
+        r.tool_id, r.tool_name, r.rosetta_cs_and_npage_role, r.primary_metric, r.secondary_metric, r.invariant_satisfied, r.latency_us, r.proof_digest
+    )
+}
+
+fn reimann_report_to_json(r: &v52_1_reimann_directed_flag_complex_npage::SovereignReimannTopologyReport) -> String {
+    format!(
+        "{{\"tool_id\":{},\"tool_name\":\"{}\",\"rosetta_cs_and_npage_role\":\"{}\",\"primary_metric\":{},\"secondary_metric\":{},\"invariant_satisfied\":{},\"latency_us\":{},\"proof_digest\":\"{}\"}}",
+        r.tool_id, r.tool_name, r.rosetta_cs_and_npage_role, r.primary_metric, r.secondary_metric, r.invariant_satisfied, r.latency_us, r.proof_digest
+    )
+}
+
+fn dispatch_monograph_tools(clean_path: &str, _raw_target: &str, _post_body: &str) -> Option<String> {
+    if clean_path == "/api/v1/monograph/braidir_yang_baxter_bresenham_compiler" || clean_path == "/api/v1/tool/104" {
+        let braid_words: Vec<i32> = Vec::from_iter(
+            std::iter::once(1)
+                .chain(std::iter::once(-1))
+                .chain(std::iter::once(2))
+                .chain(std::iter::once(3))
+                .chain(std::iter::once(2))
+                .chain(std::iter::once(4))
+                .chain(std::iter::once(-4))
+        );
+        let rep = v50_monograph_braidir_sh4z_vesper_core::tool_104_braidir_yang_baxter_bresenham_compiler(
+            &braid_words, 12, 5, 18.5
+        );
+        return Some(rep.to_json());
+    }
+    if clean_path == "/api/v1/monograph/sh4z_dual_shell_lvq_quantizer" || clean_path == "/api/v1/tool/105" {
+        let mut lvq_vec: Vec<u8> = Vec::with_capacity(64);
+        lvq_vec.push(0x5A); lvq_vec.push(0x34); lvq_vec.push(0x48); lvq_vec.push(0x53);
+        for idx in 4..64 {
+            lvq_vec.push(((idx * 37 + 13) % 256) as u8);
+        }
+        let rep = v50_monograph_braidir_sh4z_vesper_core::tool_105_sh4z_dual_shell_lvq_quantizer(
+            &lvq_vec, 0.05
+        );
+        return Some(rep.to_json());
+    }
+    if clean_path == "/api/v1/monograph/vesper_4phase_cellular_sheaf_runtime" || clean_path == "/api/v1/tool/106" {
+        let mut stalks: Vec<f64> = Vec::with_capacity(16);
+        for i in 0..16 {
+            stalks.push(100.0 + ((i as f64) * 0.39269908169872414).sin() * 5.0);
+        }
+        let rep = v50_monograph_braidir_sh4z_vesper_core::tool_106_vesper_4phase_cellular_sheaf_runtime(
+            &stalks, 0.05, 50
+        );
+        return Some(rep.to_json());
+    }
+    if clean_path.starts_with("/api/v1/monograph/") {
+        let reps = v50_monograph_braidir_sh4z_vesper_core::execute_monograph_core_suite();
+        let mut s = String::from("{\"suite\":\"monograph_core\",\"count\":");
+        s.push_str(&reps.len().to_string());
+        s.push_str(",\"tools\":");
+        s.push('\x5b');
+        let mut first = true;
+        for r in reps.iter() {
+            if !first { s.push(','); }
+            first = false;
+            s.push_str(&r.to_json());
+        }
+        s.push('\x5d');
+        s.push('}');
+        return Some(s);
+    }
+    None
+}
+
+fn dispatch_batch1_tools(clean_path: &str, _raw_target: &str, _post_body: &str) -> Option<String> {
+    if clean_path == "/api/v1/rosetta/topological_rosetta_stone_verifier" || clean_path == "/api/v1/tool/107" {
+        let braid_ops: Vec<i32> = Vec::from_iter(std::iter::once(1).chain(std::iter::once(2)).chain(std::iter::once(-2)).chain(std::iter::once(3)).chain(std::iter::once(-3)).chain(std::iter::once(-1)).chain(std::iter::once(4)));
+        let sheaf_stalks: Vec<i64> = Vec::from_iter(std::iter::repeat(1024_i64).take(4));
+        let rep = v50_rosetta_spriz_flux_fibonacci_batch1::tool_107_topological_rosetta_stone_verifier(&braid_ops, &sheaf_stalks);
+        return Some(tool_report_to_json(&rep));
+    }
+    if clean_path == "/api/v1/bio/spriz_intermembrane_pillar_spacer" || clean_path == "/api/v1/tool/108" {
+        let rep = v50_rosetta_spriz_flux_fibonacci_batch1::tool_108_spriz_intermembrane_pillar_spacer(262_144, 163_840, 21.5, 20.0);
+        return Some(tool_report_to_json(&rep));
+    }
+    if clean_path == "/api/v1/astro/chandrasekhar_relativistic_degeneracy_breaker" || clean_path == "/api/v1/tool/109" {
+        let rep = v50_rosetta_spriz_flux_fibonacci_batch1::tool_109_chandrasekhar_relativistic_degeneracy_breaker(1.18, 2.0);
+        return Some(tool_report_to_json(&rep));
+    }
+    if clean_path == "/api/v1/algebra/adjoint_transpose_covector_pullback" || clean_path == "/api/v1/tool/110" {
+        let mat_a: Vec<i64> = Vec::from_iter(std::iter::once(2).chain(std::iter::once(1)).chain(std::iter::once(0)).chain(std::iter::once(1)));
+        let vec_x: Vec<i64> = Vec::from_iter(std::iter::once(3).chain(std::iter::once(5)));
+        let cov_y: Vec<i64> = Vec::from_iter(std::iter::once(7).chain(std::iter::once(11)));
+        let rep = v50_rosetta_spriz_flux_fibonacci_batch1::tool_110_adjoint_transpose_covector_pullback(&mat_a, 2, 2, &vec_x, &cov_y);
+        return Some(tool_report_to_json(&rep));
+    }
+    if clean_path == "/api/v1/mesh/lora_css_von_neumann_pointer_witness" || clean_path == "/api/v1/tool/111" {
+        let rep = v50_rosetta_spriz_flux_fibonacci_batch1::tool_111_lora_css_von_neumann_pointer_witness(9, 125_000.0, 0.8, 0.6);
+        return Some(tool_report_to_json(&rep));
+    }
+    if clean_path == "/api/v1/quantum/aist_flux_quanta_photon_counter" || clean_path == "/api/v1/tool/112" {
+        let hotspots: Vec<u32> = Vec::from_iter(std::iter::once(1).chain(std::iter::once(3)).chain(std::iter::once(2)).chain(std::iter::once(5)).chain(std::iter::once(4)));
+        let rep = v50_rosetta_spriz_flux_fibonacci_batch1::tool_112_aist_flux_quanta_photon_counter(&hotspots, 10.0);
+        return Some(tool_report_to_json(&rep));
+    }
+    if clean_path == "/api/v1/logic/principia_54_26_proof_erasure_auditor" || clean_path == "/api/v1/tool/113" {
+        let rep = v50_rosetta_spriz_flux_fibonacci_batch1::tool_113_principia_54_26_proof_erasure_auditor(27_410, 64);
+        return Some(tool_report_to_json(&rep));
+    }
+    if clean_path == "/api/v1/physics/xfel_multiscale_fermi_propagator" || clean_path == "/api/v1/tool/114" {
+        let rep = v50_rosetta_spriz_flux_fibonacci_batch1::tool_114_xfel_multiscale_fermi_propagator(1_000_000.0, 4.2);
+        return Some(tool_report_to_json(&rep));
+    }
+    if clean_path == "/api/v1/quantum/fibonacci_two_time_dimension_scheduler" || clean_path == "/api/v1/tool/115" {
+        let rep = v50_rosetta_spriz_flux_fibonacci_batch1::tool_115_fibonacci_two_time_dimension_scheduler(8, 62.636);
+        return Some(tool_report_to_json(&rep));
+    }
+    if clean_path == "/api/v1/geometry/hilbert_apollonian_polyhedral_atlas" || clean_path == "/api/v1/tool/116" {
+        let rep = v50_rosetta_spriz_flux_fibonacci_batch1::tool_116_hilbert_apollonian_polyhedral_atlas(8, 1_337, 2.0, 2.0, 3.0);
+        return Some(tool_report_to_json(&rep));
+    }
+    if clean_path == "/api/v1/v50/chain116_suite" || clean_path == "/api/v1/rosetta/suite" {
+        let real_e8z: Vec<u8> = (0..64u8).map(|k| k.wrapping_mul(37).wrapping_add(11)).collect();
+        let reps = v50_rosetta_spriz_flux_fibonacci_batch1::execute_v50_chain_116_full_suite(&real_e8z);
+        let mut s = String::from("{\"suite\":\"batch1_chain116\",\"count\":");
+        s.push_str(&reps.len().to_string());
+        s.push_str(",\"tools\":");
+        s.push('\x5b');
+        let mut first = true;
+        for r in reps.iter() {
+            if !first { s.push(','); }
+            first = false;
+            s.push_str(&tool_report_to_json(r));
+        }
+        s.push('\x5d');
+        s.push('}');
+        return Some(s);
+    }
+    None
+}
+
+fn dispatch_batch2_tools(clean_path: &str, _raw_target: &str, _post_body: &str) -> Option<String> {
+    if clean_path == "/api/v1/compiler/cloudflare_tsrs_ast_schema_contract_verifier"
+        || clean_path == "/api/v1/compiler/cloudflare_tsrs_rust_ast_npage_bridge"
+        || clean_path == "/api/v1/tool/117"
+    {
+        let mut field_sizes: Vec<u32> = Vec::with_capacity(30);
+        for _ in 0..21 { field_sizes.push(4); }
+        field_sizes.push(8); field_sizes.push(4); field_sizes.push(4); field_sizes.push(8);
+        field_sizes.push(4); field_sizes.push(4); field_sizes.push(4); field_sizes.push(4); field_sizes.push(4);
+        let rep = v51_npage_v2_sae_nanostar_grassmann_batch2::tool_117_cloudflare_tsrs_rust_ast_npage_bridge(
+            &field_sizes, 128
+        );
+        return Some(batch2_report_to_json(&rep));
+    }
+    if clean_path == "/api/v1/security/openai_microvm_constant_time_cache_shield"
+        || clean_path == "/api/v1/security/microvm_cache_timing_covert_channel_shield"
+        || clean_path == "/api/v1/tool/118"
+    {
+        let words: Vec<u64> = (0..16u64).map(|k| k.wrapping_mul(0x9E3779B97F4A7C15)).collect();
+        let rep = v51_npage_v2_sae_nanostar_grassmann_batch2::tool_118_microvm_cache_timing_covert_channel_shield(
+            &words, 7, 18.0, 4.0, 12.0
+        );
+        return Some(batch2_report_to_json(&rep));
+    }
+    if clean_path == "/api/v1/bio/kinesin_8nm_cacheline_zeeman_valley_stepper"
+        || clean_path == "/api/v1/bio/spatial_transcriptomics_nvfp4_kinesin_npage"
+        || clean_path == "/api/v1/tool/119"
+    {
+        let tx_x: Vec<f64> = Vec::from_iter((0..8).map(|i| (i as f64) * 1.5));
+        let tx_y: Vec<f64> = Vec::from_iter((0..8).map(|i| (i as f64) * 1.2));
+        let rep = v51_npage_v2_sae_nanostar_grassmann_batch2::tool_119_spatial_transcriptomics_nvfp4_kinesin_npage(
+            &tx_x, &tx_y, 3.0, 3.0, 8.0, 256
+        );
+        return Some(batch2_report_to_json(&rep));
+    }
+    if clean_path == "/api/v1/interp/sae_monosemantic_feature_circuit_binder"
+        || clean_path == "/api/v1/interp/deepmind_upenn_sae_residual_npage_inspector"
+        || clean_path == "/api/v1/tool/120"
+    {
+        let res_vec: Vec<f64> = Vec::from_iter((0..16).map(|i| ((i as f64) + 1.0) * 0.25));
+        let enc_vec: Vec<f64> = Vec::from_iter(std::iter::repeat(0.25_f64).take(16));
+        let rep = v51_npage_v2_sae_nanostar_grassmann_batch2::tool_120_deepmind_upenn_sae_residual_npage_inspector(
+            &res_vec, &enc_vec, 0.05, 0.10
+        );
+        return Some(batch2_report_to_json(&rep));
+    }
+    if clean_path == "/api/v1/bio/dna_nanostar_8arm_sticky_end_linker"
+        || clean_path == "/api/v1/bio/nanostardb_dendritic_junction_npage_schema"
+        || clean_path == "/api/v1/tool/121"
+    {
+        let sticky_a: u64 = 0xA5C3_F00F_5A3C_0FF0;
+        let sticky_b: u64 = !sticky_a;
+        let rep = v51_npage_v2_sae_nanostar_grassmann_batch2::tool_121_nanostardb_dendritic_junction_npage_schema(
+            sticky_a, sticky_b, 8
+        );
+        return Some(batch2_report_to_json(&rep));
+    }
+    if clean_path == "/api/v1/spatial/cellspa_voronoi_dep32_expert_router"
+        || clean_path == "/api/v1/spatial/vllm_dep32_deepseek_v41_flash_npage_pager"
+        || clean_path == "/api/v1/tool/122"
+    {
+        let rep = v51_npage_v2_sae_nanostar_grassmann_batch2::tool_122_vllm_dep32_deepseek_v41_flash_npage_pager(
+            63_360, 64, 2
+        );
+        return Some(batch2_report_to_json(&rep));
+    }
+    if clean_path == "/api/v1/vortex/toroidal_mod9_doubling_axis_auditor"
+        || clean_path == "/api/v1/vortex/toroidal_mod9_rodin_npage_bank_interleaver"
+        || clean_path == "/api/v1/tool/123"
+    {
+        let rep = v51_npage_v2_sae_nanostar_grassmann_batch2::tool_123_toroidal_mod9_rodin_npage_bank_interleaver(
+            63_360
+        );
+        return Some(batch2_report_to_json(&rep));
+    }
+    if clean_path == "/api/v1/number/pandigital_polydivisible_canary_verifier"
+        || clean_path == "/api/v1/number/polydivisible_pandigital_npage_prefix_canary"
+        || clean_path == "/api/v1/tool/124"
+    {
+        let rep = v51_npage_v2_sae_nanostar_grassmann_batch2::tool_124_polydivisible_pandigital_npage_prefix_canary(
+            v51_npage_v2_sae_nanostar_grassmann_batch2::NPAGE_V5100_POLYDIVISIBLE_CANARY
+        );
+        return Some(batch2_report_to_json(&rep));
+    }
+    if clean_path == "/api/v1/geometry/viviani_archimedes_npage_partition_auditor"
+        || clean_path == "/api/v1/geometry/vdw_zeeman_viviani_3compartment_npage_allocator"
+        || clean_path == "/api/v1/tool/125"
+    {
+        let rep = v51_npage_v2_sae_nanostar_grassmann_batch2::tool_125_vdw_zeeman_viviani_3compartment_npage_allocator(
+            100.0, 48.0, 25.0, 14.2, 2.5
+        );
+        return Some(batch2_report_to_json(&rep));
+    }
+    if clean_path == "/api/v1/geometry/grassmann_exterior_plucker_bivector_solver"
+        || clean_path == "/api/v1/geometry/grassmann_archimedes_npage_bivector_compactor"
+        || clean_path == "/api/v1/tool/126"
+    {
+        let rep = v51_npage_v2_sae_nanostar_grassmann_batch2::tool_126_grassmann_archimedes_npage_bivector_compactor(
+            3, 5, 7, 11, 2, 13, 17, 19, 6.0
+        );
+        return Some(batch2_report_to_json(&rep));
+    }
+    if clean_path == "/api/v1/v51/chain126_suite" || clean_path == "/api/v1/batch2/suite" {
+        let reps = v51_npage_v2_sae_nanostar_grassmann_batch2::execute_v51_chain_126_batch2_suite();
+        let mut s = String::from("{\"suite\":\"batch2_chain126\",\"count\":");
+        s.push_str(&reps.len().to_string());
+        s.push_str(",\"tools\":");
+        s.push('\x5b');
+        let mut first = true;
+        for r in reps.iter() {
+            if !first { s.push(','); }
+            first = false;
+            s.push_str(&batch2_report_to_json(r));
+        }
+        s.push('\x5d');
+        s.push('}');
+        return Some(s);
+    }
+    None
+}
+
+fn dispatch_batch3_tools(clean_path: &str, _raw_target: &str, _post_body: &str) -> Option<String> {
+    if clean_path == "/api/v1/topology/blue_brain_11d_simplex_clique_cavity_engine"
+        || clean_path == "/api/v1/topology/blue_brain_11d_directed_simplex_clique_npage_cavity"
+        || clean_path == "/api/v1/tool/127"
+    {
+        let face_counts: Vec<i64> = Vec::from_iter(
+            std::iter::once(12)
+                .chain(std::iter::once(66))
+                .chain(std::iter::once(220))
+                .chain(std::iter::once(495))
+                .chain(std::iter::once(792))
+                .chain(std::iter::once(924))
+                .chain(std::iter::once(792))
+                .chain(std::iter::once(495))
+                .chain(std::iter::once(220))
+                .chain(std::iter::once(66))
+                .chain(std::iter::once(12))
+                .chain(std::iter::once(1)),
+        );
+        let in_degrees: Vec<u32> = Vec::from_iter(0..12u32);
+        let rep = v52_brain11d_quantum_wave_tokengate_batch3::tool_127_blue_brain_11d_directed_simplex_clique_npage_cavity(
+            &face_counts, &in_degrees
+        );
+        return Some(batch3_report_to_json(&rep));
+    }
+    if clean_path == "/api/v1/quantum/kspace_ring_helmholtz_wave_packet_solver"
+        || clean_path == "/api/v1/quantum/quantum_art_spectral_wave_kspace_ring_solver"
+        || clean_path == "/api/v1/tool/128"
+    {
+        let rep = v52_brain11d_quantum_wave_tokengate_batch3::tool_128_quantum_art_spectral_wave_kspace_ring_solver(
+            10, 5.0, 0.65, 1.25
+        );
+        return Some(batch3_report_to_json(&rep));
+    }
+    if clean_path == "/api/v1/attention/tokengate_11x_prefill_npage_skimmer"
+        || clean_path == "/api/v1/attention/stanford_berkeley_tokengate_npage_prefill_skimmer"
+        || clean_path == "/api/v1/tool/129"
+    {
+        let rep = v52_brain11d_quantum_wave_tokengate_batch3::tool_129_stanford_berkeley_tokengate_npage_prefill_skimmer(
+            44, 4, 128_000, 12_800, 256
+        );
+        return Some(batch3_report_to_json(&rep));
+    }
+    if clean_path == "/api/v1/graph/tivadar_danka_adjacency_matrix_walk_duality"
+        || clean_path == "/api/v1/graph/danka_graph_linear_algebra_duality_npage_walk"
+        || clean_path == "/api/v1/tool/130"
+    {
+        let danka_3x3: Vec<f64> = Vec::from_iter(
+            std::iter::once(0.5)
+                .chain(std::iter::once(1.0))
+                .chain(std::iter::once(0.0))
+                .chain(std::iter::once(0.2))
+                .chain(std::iter::once(0.0))
+                .chain(std::iter::once(2.2))
+                .chain(std::iter::once(1.8))
+                .chain(std::iter::once(2.0))
+                .chain(std::iter::once(0.0)),
+        );
+        let rep = v52_brain11d_quantum_wave_tokengate_batch3::tool_130_danka_graph_linear_algebra_duality_npage_walk(
+            &danka_3x3
+        );
+        return Some(batch3_report_to_json(&rep));
+    }
+    if clean_path == "/api/v1/v52/chain130_suite" || clean_path == "/api/v1/batch3/suite" {
+        let reps = v52_brain11d_quantum_wave_tokengate_batch3::execute_v52_chain_130_batch3_suite();
+        let mut s = String::from("{\"suite\":\"batch3_chain130\",\"count\":");
+        s.push_str(&reps.len().to_string());
+        s.push_str(",\"tools\":");
+        s.push('\x5b');
+        let mut first = true;
+        for r in reps.iter() {
+            if !first { s.push(','); }
+            first = false;
+            s.push_str(&batch3_report_to_json(r));
+        }
+        s.push('\x5d');
+        s.push('}');
+        return Some(s);
+    }
+    None
+}
+
+fn dispatch_batch4_tools(clean_path: &str, _raw_target: &str, _post_body: &str) -> Option<String> {
+    if clean_path == "/api/v1/topology/reimann_eq2_directionality_simplex_discriminator"
+        || clean_path == "/api/v1/topology/reimann_eq2_net_directionality_discriminator"
+        || clean_path == "/api/v1/tool/131"
+    {
+        let in_deg_12: Vec<i64> = Vec::from_iter(0..12i64);
+        let out_deg_12: Vec<i64> = Vec::from_iter((0..12i64).map(|k| 11 - k));
+        let rep = v52_1_reimann_directed_flag_complex_npage::tool_131_reimann_eq2_net_directionality_discriminator(
+            &in_deg_12, &out_deg_12
+        );
+        return Some(reimann_report_to_json(&rep));
+    }
+    if clean_path == "/api/v1/topology/presink_sink_shared_ancestor_correlator"
+        || clean_path == "/api/v1/topology/reimann_within_simplex_presink_sink_correlator"
+        || clean_path == "/api/v1/tool/132"
+    {
+        let activations_12: Vec<f64> = Vec::from_iter((0..12).map(|k| 0.50 + (k as f64) * 0.04));
+        let rep = v52_1_reimann_directed_flag_complex_npage::tool_132_reimann_within_simplex_presink_sink_correlator(
+            11, &activations_12
+        );
+        return Some(reimann_report_to_json(&rep));
+    }
+    if clean_path == "/api/v1/topology/functional_tr_sandcastle_betti_swr_trigger"
+        || clean_path == "/api/v1/topology/reimann_transmission_response_sandcastle_tracker"
+        || clean_path == "/api/v1/tool/133"
+    {
+        let pre_spikes: Vec<f64> = Vec::from_iter(
+            std::iter::once(50.5)
+                .chain(std::iter::once(51.2))
+                .chain(std::iter::once(52.8))
+                .chain(std::iter::once(54.0)),
+        );
+        let post_spikes: Vec<f64> = Vec::from_iter(
+            std::iter::once(56.0)
+                .chain(std::iter::once(58.4))
+                .chain(std::iter::once(60.1))
+                .chain(std::iter::once(61.5)),
+        );
+        let rep = v52_1_reimann_directed_flag_complex_npage::tool_133_reimann_transmission_response_sandcastle_tracker(
+            &pre_spikes, &post_spikes, 50.0, 5.22, 10.44, 48, 31, 12, 29
+        );
+        return Some(reimann_report_to_json(&rep));
+    }
+    if clean_path == "/api/v1/topology/flagser_zero_alloc_bitmask_simplex_enumerator"
+        || clean_path == "/api/v1/topology/flagser_zero_alloc_bitset_simplex_enumerator"
+        || clean_path == "/api/v1/tool/134"
+    {
+        let masks_12: Vec<u64> =
+            Vec::from_iter((0..12u32).map(|i| ((1u64 << 12) - 1) & !((1u64 << (i + 1)) - 1)));
+        let rep = v52_1_reimann_directed_flag_complex_npage::tool_134_flagser_zero_alloc_bitset_simplex_enumerator(
+            &masks_12
+        );
+        return Some(reimann_report_to_json(&rep));
+    }
+    if clean_path == "/api/v1/v52_1/reimann_suite" || clean_path == "/api/v1/batch4/suite" {
+        let reps = v52_1_reimann_directed_flag_complex_npage::execute_v52_1_reimann_blue_brain_suite();
+        let mut s = String::from("{\"suite\":\"batch4_reimann\",\"count\":");
+        s.push_str(&reps.len().to_string());
+        s.push_str(",\"tools\":");
+        s.push('\x5b');
+        let mut first = true;
+        for r in reps.iter() {
+            if !first { s.push(','); }
+            first = false;
+            s.push_str(&reimann_report_to_json(r));
+        }
+        s.push('\x5d');
+        s.push('}');
+        return Some(s);
+    }
+    None
+}
+
+fn dispatch_tool135(clean_path: &str, raw_target: &str, post_body: &str) -> Option<String> {
+    if clean_path == "/api/v1/brain/sovereign_63360_144subdomain_qat_trainer"
+        || clean_path == "/api/v1/tool/135"
+        || clean_path.starts_with("/api/v1/brain/")
+    {
+        let action_q = extract_query_param(raw_target, "action");
+        let query_q = extract_query_param(raw_target, "query");
+        let action = if !action_q.is_empty() {
+            action_q
+        } else if clean_path.ends_with("/route") {
+            String::from("route")
+        } else if clean_path.ends_with("/train") {
+            String::from("train")
+        } else if clean_path.ends_with("/pass1") {
+            String::from("pass1")
+        } else if clean_path.ends_with("/pass2") {
+            String::from("pass2")
+        } else {
+            String::from("inspect")
+        };
+        let query = if !query_q.is_empty() {
+            query_q
+        } else if !post_body.trim().is_empty() {
+            post_body.trim().to_string()
+        } else {
+            String::new()
+        };
+        let rep = v50_brain_63360_144subdomains_qat_trainer::handle_sovereign_63360_qat_trainer_api(&action, &query);
+        return Some(rep);
+    }
+    None
+}
+
+fn dispatch_chain135_suite() -> String {
+    let rep_mono = v50_monograph_braidir_sh4z_vesper_core::execute_monograph_core_suite();
+    let real_e8z: Vec<u8> = (0..64u8).map(|k| k.wrapping_mul(37).wrapping_add(11)).collect();
+    let rep_b1 = v50_rosetta_spriz_flux_fibonacci_batch1::execute_v50_chain_116_full_suite(&real_e8z);
+    let rep_b2 = v51_npage_v2_sae_nanostar_grassmann_batch2::execute_v51_chain_126_batch2_suite();
+    let rep_b3 = v52_brain11d_quantum_wave_tokengate_batch3::execute_v52_chain_130_batch3_suite();
+    let rep_b4 = v52_1_reimann_directed_flag_complex_npage::execute_v52_1_reimann_blue_brain_suite();
+    let brain_status = v50_brain_63360_144subdomains_qat_trainer::handle_sovereign_63360_qat_trainer_api("inspect", "");
+
+    let total_new_tools = rep_mono.len() + rep_b1.len() + rep_b2.len() + rep_b3.len() + rep_b4.len() + 1;
+    let total_chain = 103 + total_new_tools;
+
+    format!(
+        "{{\"status\":\"CHAIN_135_CONTIGUOUS_OK\",\"total_chain_tools\":{},\"monograph_core_tools\":{},\"batch1_tools\":{},\"batch2_tools\":{},\"batch3_tools\":{},\"batch4_tools\":{},\"tool135_brain_trainer\":true,\"brain_inspection\":{}}}",
+        total_chain,
+        rep_mono.len(),
+        rep_b1.len(),
+        rep_b2.len(),
+        rep_b3.len(),
+        rep_b4.len(),
+        brain_status.trim()
+    )
+}
+
 fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
-    let _ = stream.set_read_timeout(Some(Duration::from_millis(4500)));
-    let _ = stream.set_write_timeout(Some(Duration::from_millis(15000)));
+    let _ = stream.set_read_timeout(Some(Duration::from_millis(25000)));
+    let _ = stream.set_write_timeout(Some(Duration::from_millis(25000)));
     let _ = stream.set_nodelay(true);
 
     let cloned = match stream.try_clone() {
@@ -977,11 +1637,16 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
     REQ_IS_HEAD.with(|c| c.set(false));
     REQ_CONN_CLOSE.with(|c| c.set(false));
     STREAM_WRITE_ERR.with(|c| c.set(false));
+    REQ_CACHE_CONTROL.with(|c| c.set("no-store"));
 
-    for _req_num in 0..24usize {
+    for _req_num in 0..100usize {
         if REQ_CONN_CLOSE.with(|c| c.get()) || STREAM_WRITE_ERR.with(|c| c.get()) {
             break;
         }
+        // RESET REQ_CACHE_CONTROL AT THE START OF EVERY REQUEST LOOP ITERATION
+        // Enforces fresh cache-control state isolation across consecutive keep-alive transactions
+        REQ_CACHE_CONTROL.with(|c| c.set("no-store"));
+
         let mut first_line = String::new();
         match reader.read_line(&mut first_line) {
             Ok(0) => break,
@@ -995,6 +1660,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
         let mut content_len: usize = 0;
         let mut hdr_ok = true;
         let mut conn_close = false;
+        let mut operator_header_key = String::new();
         loop {
             let mut hdr_line = String::new();
             match reader.read_line(&mut hdr_line) {
@@ -1011,6 +1677,10 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                         }
                     } else if h_low.starts_with("connection:") && h_low.contains("close") {
                         conn_close = true;
+                    } else if h_low.starts_with("x-sovereign-operator-key:") {
+                        if let Some(val) = hdr_line.splitn(2, ':').nth(1) {
+                            operator_header_key = val.trim().to_string();
+                        }
                     }
                     if hdr_line == "\r\n" || hdr_line == "\n" {
                         break;
@@ -1039,9 +1709,10 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
         let raw_target = parts.next().unwrap_or("/");
 
         REQ_IS_HEAD.with(|c| c.set(method.eq_ignore_ascii_case("HEAD")));
-        REQ_CONN_CLOSE.with(|c| c.set(conn_close || _req_num >= 23));
+        REQ_CONN_CLOSE.with(|c| c.set(conn_close || _req_num >= 99));
 
         if method == "OPTIONS" {
+            REQ_CACHE_CONTROL.with(|c| c.set("no-store"));
             write_http_str(&mut stream, "200 OK", "text/plain; charset=utf-8", "OK");
             continue;
         }
@@ -1050,6 +1721,8 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             Some(idx) => raw_target.get(..idx).unwrap_or("/"),
             None => raw_target,
         };
+
+        REQ_CACHE_CONTROL.with(|c| c.set(determine_cache_control(clean_path)));
 
         let q_arg = {
             let q1 = extract_query_param(raw_target, "q");
@@ -1292,6 +1965,15 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.last_card_diag = diag.clone();
             st.last_term_cmd = format!("card.execute({})", c_clamped + 1);
             st.last_term_out = diag.clone();
+            let _ = publish_coordinator_bus_envelope(
+                "TOPIC_TELEMETRY_CARD_EVENT",
+                &format!("Drawer_A_Card_{}", c_clamped + 1),
+                "Sovereign_Coordinator_Bus",
+                &diag,
+                E_BUS_LEDGER_JSONL,
+                diag.len() as u64,
+                st.decadic_sub_epoch,
+            );
             let json = format!(
                 "{{\"status\":\"CARD_EXECUTED_OTA_SYNCED\",\"card_id\":{},\"generation\":{},\"diag\":\"{}\"}}",
                 c_clamped, st.gen_counter, diag
@@ -1336,6 +2018,9 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 h_live.metabolic_atp_drive,
                 &ssd_path,
             );
+            let _ = persist_codegen_artifact_to_e_vault("browser_4stage_transducer", "rust", &op.operationalized_rust_code, st.decadic_sub_epoch);
+            let _ = persist_codegen_artifact_to_e_vault("browser_4stage_transducer", "lean4", &op.operationalized_lean4_theorem, st.decadic_sub_epoch);
+            let _ = persist_codegen_artifact_to_e_vault("browser_4stage_transducer", "wgsl", &op.operationalized_wgsl_kernel, st.decadic_sub_epoch);
             st.active_shard_id = op.crystallized_shard_id as u64;
             st.last_browser_url = target_url.clone();
             st.last_browser_trace = op.stage_trace.clone();
@@ -2046,10 +2731,10 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
         if clean_path == "/api/v1/router/distributed_5w1h_dispatch" || clean_path == "/api/v1/tools/t65" {
             let who_q = extract_query_param(raw_target, "who");
             let what_q = extract_query_param(raw_target, "what");
-            let key_q = extract_query_param(raw_target, "key");
+            let has_query_key = !extract_query_param(raw_target, "key").is_empty();
             let who = if who_q.is_empty() { "Host_LOQ15_Operator" } else { &who_q };
             let what = if what_q.is_empty() { "L0_Tensor_FNO" } else { &what_q };
-            let auth_ok = verify_operator_vault_secret(&key_q, is_loopback);
+            let auth_ok = !has_query_key && verify_operator_header_auth(&operator_header_key, is_loopback);
             let json = tool_65_distributed_5w1h_router_json(who, what, auth_ok);
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
             continue;
@@ -2060,22 +2745,49 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             continue;
         }
         if clean_path == "/api/v1/auth/operator_vault_gate" || clean_path == "/api/v1/tools/t67" {
-            let key_q = {
-                let k1 = extract_query_param(raw_target, "key");
-                if !k1.is_empty() { k1 } else { q_arg.clone() }
-            };
-            let json = tool_67_operator_vault_gate_json(&key_q, is_loopback);
+            let has_query_key = !extract_query_param(raw_target, "key").is_empty();
+            let eff_key = if has_query_key { "" } else { &operator_header_key };
+            let json = tool_67_operator_vault_gate_json(eff_key, is_loopback);
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
             continue;
         }
         if clean_path == "/api/v1/hud/embedded_ide_cockpit" || clean_path == "/api/v1/tools/t68" {
-            let key_q = {
-                let k1 = extract_query_param(raw_target, "key");
-                if !k1.is_empty() { k1 } else { q_arg.clone() }
-            };
-            let auth_ok = verify_operator_vault_secret(&key_q, is_loopback);
+            let has_query_key = !extract_query_param(raw_target, "key").is_empty();
+            let auth_ok = !has_query_key && verify_operator_header_auth(&operator_header_key, is_loopback);
             let json = tool_68_embedded_ide_cockpit_json(auth_ok);
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
+            continue;
+        }
+        // Admin Endpoints: Require X-Sovereign-Operator-Key header, loopback, and reject URL query ?key=
+        if clean_path.starts_with("/api/v1/admin/") {
+            let has_query_key = !extract_query_param(raw_target, "key").is_empty();
+            let auth_ok = !has_query_key && verify_operator_header_auth(&operator_header_key, is_loopback);
+            if !auth_ok {
+                let reason = if !is_loopback {
+                    "Administrative operations are strictly restricted to 127.0.0.1 loopback."
+                } else if has_query_key {
+                    "Passing credentials via URL query parameter '?key=' is forbidden. Use 'X-Sovereign-Operator-Key' request header."
+                } else {
+                    "Invalid or missing 'X-Sovereign-Operator-Key' request header."
+                };
+                let trap_json = format!(
+                    "{{\"status\":\"HTTP_403_COMPACT_LOCALIZED_ELECTRON_TRAP_BLOCKED\",\"endpoint\":\"{}\",\"is_loopback\":{},\"quantum_interference_cls_trap\":true,\"flat_band_group_velocity_vg\":0.0,\"psi_plus_minus_sum\":0.0,\"effective_mass\":\"INFINITE_CLS_LOCALIZED\",\"reason\":\"Destructive quantum phase cancellation (psi_+ + psi_- = 0): /api/v1/admin/* requires BOTH 127.0.0.1 loopback AND valid X-Sovereign-Operator-Key header. {}\"}}",
+                    clean_path, is_loopback, reason
+                );
+                write_http_str(&mut stream, "403 Forbidden", "application/json; charset=utf-8", &trap_json);
+                continue;
+            }
+            if clean_path == "/api/v1/admin/self_exit" {
+                let ok_json = "{\"status\":\"AUTHORIZED_SELF_EXIT_INITIATED\",\"endpoint\":\"/api/v1/admin/self_exit\",\"is_loopback\":true,\"operator_vault_verified\":true}";
+                write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", ok_json);
+                thread::spawn(|| {
+                    thread::sleep(Duration::from_millis(120));
+                    std::process::exit(0);
+                });
+                continue;
+            }
+            let ok_json = format!("{{\"status\":\"ADMIN_AUTHORIZED\",\"endpoint\":\"{}\",\"is_loopback\":true,\"operator_vault_verified\":true}}", clean_path);
+            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &ok_json);
             continue;
         }
 
@@ -2267,6 +2979,23 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             continue;
         }
 
+        // Dedicated Native Tools Discovery Catalog (Tools 1..100)
+        if clean_path == "/api/v1/tools" || clean_path == "/api/v1/tools/" {
+            let mut st = match state.lock() {
+                Ok(g) => g,
+                Err(p) => p.into_inner(),
+            };
+            st.gen_counter += 1;
+            let json = format!(
+                "{{\"status\":\"OK_V49_0_0_TOOLS_CATALOG\",\"version\":\"v49.0.0\",\"tools_total\":100,\"chain_milestone\":\"CHAIN 100\",\"omni_suite\":\"/api/v1/v49/chain100_omni_suite\",\"tools\":{{\"t91\":\"/api/v1/v49/tool_91_ds3_triangulated_cft2_gravity\",\"t92\":\"/api/v1/v49/tool_92_amplituhedron_9loop_hexagon_plucker\",\"t93\":\"/api/v1/v49/tool_93_bekenstein_hawking_area_horizon_guard\",\"t94\":\"/api/v1/v49/tool_94_cubic_pyramid_integral_proof\",\"t95\":\"/api/v1/v49/tool_95_bell_polytope_noncontextuality_audit\",\"t96\":\"/api/v1/v49/tool_96_bipolar_vesica_caustic_envelope\",\"t97\":\"/api/v1/v49/tool_97_hamilton_tait_nabla_quaternionic_field\",\"t98\":\"/api/v1/v49/tool_98_poincare_bendixson_destiny_atlas\",\"t99\":\"/api/v1/v49/tool_99_stanford_together_hybrid_link_agent\",\"t100\":\"/api/v1/v49/tool_100_dzhanibekov_euler_axis_stabilizer\"}},\"diag\":\"ACT-Omega Net v49.0.0 Tools Catalog: 100 Native Tools Online (CHAIN 100 Century Milestone)\"}}"
+            );
+            st.last_card_diag = format!("EXEC({}) -> OK", clean_path);
+            st.last_term_out = format!("EXEC({}) -> OK", clean_path);
+            REQ_CACHE_CONTROL.with(|c| c.set("no-store"));
+            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
+            continue;
+        }
+
         // 6I-000000a. Track 38.5: Tool 54 -- Zero-Backtick Atomic Delta Update Engine & Remote 5GB Cloudflare D1 Sync (/api/v1/devops/atomic_delta_engine)
         // 6I-0000000. v44.0.0 Tools 55..76 -- Google Antigravity (Gemini 4 Argon) Multi-Agent Orchestrator, 5W1H-Neuron Connectome Coupler & Operator IDE Vault
         if clean_path == "/api/v1/manifold/v44_omni_snapshot" || clean_path == "/api/v1/antigravity/cutover_status" || clean_path == "/api/v1/antigravity/argon_teamwork" || clean_path == "/api/v1/connectome/harness_5w1h_npage" || clean_path == "/api/v1/antigravity/rules_subagents" || clean_path == "/api/v1/hud/embedded_ide_cockpit" || clean_path == "/api/v1/auth/operator_vault_gate" || clean_path == "/api/v1/ide/symbiotic_parity_sync" || clean_path == "/api/v1/router/distributed_5w1h_dispatch" || clean_path.starts_with("/api/v1/tools/t") {
@@ -2289,13 +3018,13 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             let core_syn = core_neurons * 8;
             let comb_syn = comb_neurons * 8;
             let diag = format!(
-                "ACT-OMEGA v47.0.0 (SH4Z v4700 TLV) ANTIGRAVITY GEMINI 4 ARGON & 5W1H-NEURON CONNECTOME ({}): M_ATP={:.4} (Band #{}: {}) | Connectome: neurons_v4000.npage ({}B, {} Core Neurons, {}x Chair-44, {} Synapses) + neurons_v4400_expansion.npage ({}B, +{} Expansion Neurons, +{}x Chair-44 -> {} Combined Neurons/Shards, {}x Chair-44, {} Synapses) + .e8z ({}B, 80 Sectors S00..S79) | 24 Domains (1,024 Compounds, 131K Vocab) | Cloudflare D1=10 Tables | 432/432 Lean 4 QED ({:.1}k ops/s)",
+                "ACT-OMEGA v49.0.0 (SH4Z v4900 TLV) ANTIGRAVITY GEMINI 4 ARGON & 5W1H-NEURON CONNECTOME ({}): M_ATP={:.4} (Band #{}: {}) | Connectome: neurons_v4000.npage ({}B, {} Core Neurons, {}x Chair-44, {} Synapses) + neurons_v4400_expansion.npage ({}B, +{} Expansion Neurons, +{}x Chair-44 -> {} Combined Neurons/Shards, {}x Chair-44, {} Synapses) + .e8z ({}B, 80 Sectors S00..S79) | 24 Domains (1,024 Compounds, 131K Vocab) | Cloudflare D1=10 Tables | 432/432 Lean 4 QED ({:.1}k ops/s)",
                 clean_path, h.metabolic_atp_drive, h.metabolic_band_id, h.metabolic_regime, npage_bytes, core_neurons, core_cols, core_syn, exp_bytes, exp_neurons, exp_cols, comb_neurons, comb_cols, comb_syn, e8z_bytes, st.cluster_total_kops
             );
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"status\":\"ANTIGRAVITY_GEMINI4_ARGON_AND_5W1H_CONNECTOME_V4700_LOCKED\",\"version\":\"v47.0.0\",\"endpoint\":\"{}\",\"model\":\"Gemini-4-Argon-SH4Z-v4700\",\"npage_neurons\":{},\"npage_bytes\":{},\"expansion_neurons\":{},\"expansion_bytes\":{},\"combined_neurons\":{},\"combined_bytes\":{},\"synapses\":{},\"combined_synapses\":{},\"e8z_bytes\":{},\"sectors\":80,\"domains_total\":24,\"compounds_total\":1024,\"vocab_size\":131072,\"metabolic_atp\":{:.4},\"metabolic_band\":{},\"antigravity_subagents\":7,\"cloudflare_d1_tables\":10,\"lean4_qed\":432,\"tools_total\":89,\"diag\":\"{}\"}}",
+                "{{\"status\":\"ANTIGRAVITY_GEMINI4_ARGON_AND_5W1H_CONNECTOME_V4900_LOCKED\",\"version\":\"v49.0.0\",\"endpoint\":\"{}\",\"model\":\"Gemini-4-Argon-SH4Z-v4900\",\"npage_neurons\":{},\"npage_bytes\":{},\"expansion_neurons\":{},\"expansion_bytes\":{},\"combined_neurons\":{},\"combined_bytes\":{},\"synapses\":{},\"combined_synapses\":{},\"e8z_bytes\":{},\"sectors\":80,\"domains_total\":24,\"compounds_total\":1024,\"vocab_size\":131072,\"metabolic_atp\":{:.4},\"metabolic_band\":{},\"antigravity_subagents\":7,\"cloudflare_d1_tables\":10,\"lean4_qed\":432,\"tools_total\":100,\"diag\":\"{}\"}}",
                 clean_path, core_neurons, npage_bytes, exp_neurons, exp_bytes, comb_neurons, comb_bytes, core_syn, comb_syn, e8z_bytes, h.metabolic_atp_drive, h.metabolic_band_id, json_escape_clean(&diag)
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
@@ -3633,6 +4362,255 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             continue;
         }
 
+        // 7G-0. v48.0.0 / v49.0.0 Pillar 6: Sovereign Autopoietic Coordinator, Internal Message Bus & E:\ Write-Back Sink
+        if clean_path.starts_with("/api/v1/coordinator/") {
+            let mut st = match state.lock() {
+                Ok(g) => g,
+                Err(p) => p.into_inner(),
+            };
+            st.gen_counter += 1;
+            st.tool_chain_runs += 1;
+            st.ssd_tier2_syncs += 1;
+            let topic_q = extract_query_param(raw_target, "topic");
+            let source_q = extract_query_param(raw_target, "source");
+            let target_q = extract_query_param(raw_target, "target");
+            let kind_q = extract_query_param(raw_target, "kind");
+            let payload_q = if !q_arg.is_empty() {
+                q_arg.clone()
+            } else if !post_body.trim().is_empty() {
+                post_body.trim().to_string()
+            } else {
+                String::new()
+            };
+            let json = if clean_path == "/api/v1/coordinator/message_bus" {
+                execute_coordinator_message_bus(&topic_q, &source_q, &target_q, &payload_q, st.decadic_sub_epoch)
+            } else if clean_path == "/api/v1/coordinator/codegen_vault_sink" {
+                execute_coordinator_codegen_vault_sink(&source_q, &kind_q, &payload_q, st.decadic_sub_epoch)
+            } else if clean_path == "/api/v1/coordinator/autopoietic_integrator" {
+                execute_coordinator_autopoietic_integrator(st.decadic_sub_epoch)
+            } else {
+                execute_coordinator_dag_orchestrator(&payload_q, st.decadic_sub_epoch)
+            };
+            let diag = extract_json_str_field(&json, "diag");
+            if !diag.is_empty() {
+                st.last_card_diag = diag.clone();
+                st.last_term_out = diag;
+            }
+            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
+            continue;
+        }
+
+        // 7G. v48.0.0 Layer 1.5 Haskell Algebra, DuckDB Columnar Vector & Hamiltonian Episodic Model (Tools 90..92)
+        if clean_path.starts_with("/api/v1/v48/") {
+            let mut st = match state.lock() {
+                Ok(g) => g,
+                Err(p) => p.into_inner(),
+            };
+            st.gen_counter += 1;
+            st.nl_converse_runs += 1;
+            let q_in = if !q_arg.is_empty() {
+                q_arg.clone()
+            } else if !post_body.trim().is_empty() {
+                post_body.trim().to_string()
+            } else {
+                String::from("ACT-Omega Net v48.0.0 Layer 1.5 Haskell, DuckDB & Hamiltonian k=4 Episodic Model")
+            };
+            let json = if clean_path == "/api/v1/v48/haskell_layer15_algebra" {
+                execute_tool90_haskell_layer15_algebra(&q_in)
+            } else if clean_path == "/api/v1/v48/duckdb_columnar_vector" {
+                execute_tool91_duckdb_columnar_vector(&q_in)
+            } else if clean_path == "/api/v1/v48/hamiltonian_episodic_model" {
+                execute_tool92_hamiltonian_episodic_model(&q_in)
+            } else if clean_path == "/api/v1/v48/research_isomorphisms" {
+                execute_v48_research_synthesis_isomorphisms(&q_in)
+            } else {
+                execute_v48_omni_suite(&q_in)
+            };
+            let _ = publish_coordinator_bus_envelope(
+                "TOPIC_TOOL_EXECUTION_RESULT",
+                clean_path,
+                "Sovereign_Coordinator_Bus",
+                &q_in,
+                E_BUS_LEDGER_JSONL,
+                json.len() as u64,
+                st.decadic_sub_epoch,
+            );
+            st.last_card_diag = format!("EXEC({}) -> OK", clean_path);
+            st.last_term_out = format!("EXEC({}) -> OK", clean_path);
+            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
+            continue;
+        }
+
+        // 7H. v49.0.0 Tools 91..100 & CHAIN 100 Century Milestone Synthesis (Features 13..25)
+        if clean_path.starts_with("/api/v1/v49/") {
+            {
+                let mut st = match state.lock() {
+                    Ok(g) => g,
+                    Err(p) => p.into_inner(),
+                };
+                st.gen_counter += 1;
+                st.tool_chain_runs += 1;
+            }
+            let weights_path = "C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v4600_42240.npage";
+            let e8_path = "C:\\sovereign_manifold_v31\\00_control\\weights\\sovereign_harmonic_iv_v4000.e8z";
+
+            let json = if clean_path == "/api/v1/v49/chain100_omni_suite" {
+                v49_muse_clean_and_chain100_synthesis::run_chain100_omni_suite_measured(weights_path, e8_path)
+            } else if clean_path == "/api/v1/v49/tool_91_ds3_triangulated_cft2_gravity" {
+                v49_muse_clean_and_chain100_synthesis::execute_tool_91_ds3_triangulated_cft2_gravity(weights_path, e8_path)
+            } else if clean_path == "/api/v1/v49/tool_92_amplituhedron_9loop_hexagon_plucker" {
+                v49_muse_clean_and_chain100_synthesis::execute_tool_92_amplituhedron_9loop_hexagon_plucker(weights_path, e8_path)
+            } else if clean_path == "/api/v1/v49/tool_93_bekenstein_hawking_area_horizon_guard" {
+                v49_muse_clean_and_chain100_synthesis::execute_tool_93_bekenstein_hawking_area_horizon_guard(weights_path, e8_path)
+            } else if clean_path == "/api/v1/v49/tool_94_cubic_pyramid_integral_proof" {
+                v49_muse_clean_and_chain100_synthesis::execute_tool_94_cubic_pyramid_integral_proof(weights_path, e8_path)
+            } else if clean_path == "/api/v1/v49/tool_95_bell_polytope_noncontextuality_audit" {
+                v49_muse_clean_and_chain100_synthesis::execute_tool_95_bell_polytope_noncontextuality_audit(weights_path, e8_path)
+            } else if clean_path == "/api/v1/v49/tool_96_bipolar_vesica_caustic_envelope" {
+                v49_muse_clean_and_chain100_synthesis::execute_tool_96_bipolar_vesica_caustic_envelope(weights_path, e8_path)
+            } else if clean_path == "/api/v1/v49/tool_97_hamilton_tait_nabla_quaternionic_field" {
+                v49_muse_clean_and_chain100_synthesis::execute_tool_97_hamilton_tait_nabla_quaternionic_field(weights_path, e8_path)
+            } else if clean_path == "/api/v1/v49/tool_98_poincare_bendixson_destiny_atlas" {
+                v49_muse_clean_and_chain100_synthesis::execute_tool_98_poincare_bendixson_destiny_atlas(weights_path, e8_path)
+            } else if clean_path == "/api/v1/v49/tool_99_stanford_together_hybrid_link_agent" {
+                v49_muse_clean_and_chain100_synthesis::execute_tool_99_stanford_together_hybrid_link_agent(weights_path, e8_path)
+            } else if clean_path == "/api/v1/v49/tool_100_dzhanibekov_euler_axis_stabilizer" {
+                v49_muse_clean_and_chain100_synthesis::execute_tool_100_dzhanibekov_euler_axis_stabilizer(weights_path, e8_path)
+            } else {
+                v49_muse_clean_and_chain100_synthesis::run_chain100_omni_suite_measured(weights_path, e8_path)
+            };
+
+            {
+                let mut st = match state.lock() {
+                    Ok(g) => g,
+                    Err(p) => p.into_inner(),
+                };
+                st.last_card_diag = format!("EXEC({}) -> OK", clean_path);
+                st.last_term_out = format!("EXEC({}) -> OK", clean_path);
+            }
+            REQ_CACHE_CONTROL.with(|c| c.set("no-store"));
+            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
+            continue;
+        }
+
+        // 7I. v50.0.0 Audio WAV Stream (Klatt 4-Formant Neural Prosodic Speech)
+        if clean_path == "/api/v1/v50/audio.wav" {
+            let wav_bytes = v50_rayon_avx2_tlv_simulator_coordinator::get_v50_audio_wav_bytes();
+            if !wav_bytes.is_empty() {
+                write_http_vec(&mut stream, "200 OK", "audio/wav", &wav_bytes);
+                continue;
+            }
+        }
+
+        // 7J. v50.0.0 AVX2+Rayon TLV Crystallizer, Klatt Speech, 5-Regime Multi-Physics & 8-Sink Coordinator
+        if clean_path.starts_with("/api/v1/v50/") {
+            let weights_path = "C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v4600_42240.npage";
+            let e8_path = "C:\\sovereign_manifold_v31\\00_control\\weights\\sovereign_harmonic_iv_v4000.e8z";
+            let (sub_epoch, p10_jacobian) = {
+                let mut st = match state.lock() {
+                    Ok(g) => g,
+                    Err(p) => p.into_inner(),
+                };
+                st.gen_counter += 1;
+                st.tool_chain_runs += 1;
+                let ep = st.decadic_sub_epoch;
+                let jac = ((st.mag_x * st.mag_x + st.mag_y * st.mag_y + st.mag_z * st.mag_z).sqrt().max(1.0)) as f32;
+                (ep, jac)
+            };
+
+            let json = if clean_path == "/api/v1/v50/avx2_rayon_tlv_crystallizer" {
+                v50_rayon_avx2_tlv_simulator_coordinator::execute_v50_avx2_rayon_tlv_crystallizer(weights_path, e8_path, sub_epoch)
+            } else if clean_path == "/api/v1/v50/neural_prosodic_speech" {
+                let speech_text = if !q_arg.is_empty() {
+                    q_arg.clone()
+                } else if !post_body.trim().is_empty() {
+                    post_body.trim().to_string()
+                } else {
+                    String::from("ACT-Omega Net v50.0.0 Sovereign Neural-Prosodic Speech Synthesis")
+                };
+                v50_rayon_avx2_tlv_simulator_coordinator::execute_v50_neural_prosodic_speech(&speech_text, weights_path, p10_jacobian)
+            } else if clean_path == "/api/v1/v50/physics_simulator" {
+                let regime_q = extract_query_param(raw_target, "regime");
+                let steps_q_str = extract_query_param(raw_target, "steps");
+                let dt_q_str = extract_query_param(raw_target, "dt");
+                let steps = steps_q_str.parse::<usize>().unwrap_or(100);
+                let dt = dt_q_str.parse::<f32>().unwrap_or(0.005);
+                v50_rayon_avx2_tlv_simulator_coordinator::execute_v50_physics_simulator(&regime_q, e8_path, weights_path, steps, dt)
+            } else if clean_path == "/api/v1/v50/coordinator_mesh" {
+                let sink_q = extract_query_param(raw_target, "sink");
+                let data_q = if !q_arg.is_empty() {
+                    q_arg.clone()
+                } else if !post_body.trim().is_empty() {
+                    post_body.trim().to_string()
+                } else {
+                    String::new()
+                };
+                v50_rayon_avx2_tlv_simulator_coordinator::execute_v50_coordinator_mesh(&sink_q, &data_q)
+            } else if clean_path == "/api/v1/v50/drawer1_2_bridge" {
+                let action_q = extract_query_param(raw_target, "action");
+                v50_rayon_avx2_tlv_simulator_coordinator::execute_v50_drawer1_2_bridge(&action_q)
+            } else {
+                v50_rayon_avx2_tlv_simulator_coordinator::execute_v50_avx2_rayon_tlv_crystallizer(weights_path, e8_path, sub_epoch)
+            };
+
+            {
+                let mut st = match state.lock() {
+                    Ok(g) => g,
+                    Err(p) => p.into_inner(),
+                };
+                st.last_card_diag = format!("EXEC({}) -> OK", clean_path);
+                st.last_term_out = format!("EXEC({}) -> OK", clean_path);
+            }
+            REQ_CACHE_CONTROL.with(|c| c.set("no-store"));
+            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
+            continue;
+        }
+
+        // 7K. CHAIN 135: Monograph Core (Tools 104..106), Batches 1..4 (Tools 107..134), & Brain Trainer (Tool 135)
+        let chain135_json = if clean_path == "/api/v1/chain135/suite" || clean_path == "/api/v1/chain135_suite" {
+            Some(dispatch_chain135_suite())
+        } else if let Some(j) = dispatch_monograph_tools(clean_path, raw_target, &post_body) {
+            Some(j)
+        } else if let Some(j) = dispatch_batch1_tools(clean_path, raw_target, &post_body) {
+            Some(j)
+        } else if let Some(j) = dispatch_batch2_tools(clean_path, raw_target, &post_body) {
+            Some(j)
+        } else if let Some(j) = dispatch_batch3_tools(clean_path, raw_target, &post_body) {
+            Some(j)
+        } else if let Some(j) = dispatch_batch4_tools(clean_path, raw_target, &post_body) {
+            Some(j)
+        } else if let Some(j) = dispatch_tool135(clean_path, raw_target, &post_body) {
+            Some(j)
+        } else {
+            None
+        };
+
+        if let Some(json) = chain135_json {
+            let sub_epoch = {
+                let mut st = match state.lock() {
+                    Ok(g) => g,
+                    Err(p) => p.into_inner(),
+                };
+                st.gen_counter += 1;
+                st.tool_chain_runs += 1;
+                st.last_card_diag = format!("EXEC({}) -> OK (CHAIN 135)", clean_path);
+                st.last_term_out = format!("EXEC({}) -> OK (CHAIN 135)", clean_path);
+                st.decadic_sub_epoch
+            };
+            let _ = publish_coordinator_bus_envelope(
+                "TOPIC_TOOL_EXECUTION_RESULT",
+                clean_path,
+                "Sovereign_Coordinator_Bus",
+                if !q_arg.is_empty() { &q_arg } else { clean_path },
+                E_BUS_LEDGER_JSONL,
+                json.len() as u64,
+                sub_epoch,
+            );
+            REQ_CACHE_CONTROL.with(|c| c.set("no-store"));
+            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
+            continue;
+        }
+
         // 8. Dedicated Tool Endpoints for Stiefel, Acoustic SDR, RTX 3050 WGSL, Debate, Hotpatch, Codegen
         if clean_path.starts_with("/api/v1/") {
             let mut st = match state.lock() {
@@ -3702,6 +4680,22 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 continue;
             }
         }
+
+        // Prevent static 404 cache poisoning on missing /assets/* files:
+        // If a request path starts with /assets/ and the target file does not exist on disk,
+        // do NOT fall through to the SPA index.html handler with public, max-age=86400, immutable.
+        // Return HTTP 404 with no-store.
+        if clean_path.starts_with("/assets/") || clean_path.trim_start_matches('/').starts_with("assets/") {
+            REQ_CACHE_CONTROL.with(|c| c.set("no-store"));
+            write_http_str(
+                &mut stream,
+                "404 Not Found",
+                "text/plain; charset=utf-8",
+                "404 Not Found: Static asset does not exist\n",
+            );
+            continue;
+        }
+
         let index_file = format!("{}\\index.html", dist_root);
         if let Ok(bytes) = fs::read(&index_file) {
             write_http_vec(&mut stream, "200 OK", "text/html; charset=utf-8", &bytes);
@@ -3712,8 +4706,20 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             &mut stream,
             "200 OK",
             "text/html; charset=utf-8",
-            "<html><body style='background:#0E1116;color:#FFFEFB;font-family:monospace'><h2>ACT-Omega Net v44.0.0 (SH4Z v4400 TLV) Online at act-omega-net.dev</h2></body></html>",
+            "<html><body style='background:#0E1116;color:#FFFEFB;font-family:monospace'><h2>ACT-Omega Net v49.0.0 (CHAIN 100 Century Milestone) Online at act-omega-net.dev</h2><p>Discovery: <a href='/api/v1/tools'>/api/v1/tools</a> | <a href='/api/v1/v49/chain100_omni_suite'>/api/v1/v49/chain100_omni_suite</a> | <a href='/openapi.json'>/openapi.json</a></p></body></html>",
         );
+    }
+
+    drop(reader);
+    let _ = stream.flush();
+    let _ = stream.shutdown(std::net::Shutdown::Write);
+    let _ = stream.set_read_timeout(Some(Duration::from_millis(25)));
+    let mut drain_buf = Vec::with_capacity(1024);
+    drain_buf.resize(1024, 0u8);
+    while let Ok(n) = stream.read(drain_buf.as_mut_slice()) {
+        if n == 0 {
+            break;
+        }
     }
 }
 

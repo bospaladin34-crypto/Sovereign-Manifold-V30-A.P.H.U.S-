@@ -6,6 +6,16 @@
 // ZERO SQUARE BRACKETS ENFORCED (0x5B / 0x5D FORBIDDEN IN SOURCE)
 // =============================================================================
 
+// v50 Architectural Scale-Up Constants
+pub const VOCAB_262K_TOTAL: usize = 262144;
+pub const NEURONS_63K_TOTAL: u32 = 63360;
+pub const CHAIR44_1440_COLS: u32 = 1440;
+pub const SYNAPSES_1M_TOTAL: u32 = 1013760;
+pub const NPAGE_63K_BYTES: u64 = 8110080;
+pub const MACRO_DOMAINS_36: u32 = 36;
+pub const SUB_DOMAINS_144: u32 = 144;
+
+// Backward-compatibility aliases for v46 callers
 pub const VOCAB_131K_TOTAL: usize = 131072;
 pub const NEURONS_42K_TOTAL: u32 = 42240;
 pub const CHAIR44_960_COLS: u32 = 960;

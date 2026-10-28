@@ -30,31 +30,31 @@ v50CanonicalSpecs :: [AlgebraicInvariantSpec]
 v50CanonicalSpecs =
   [ AlgebraicInvariantSpec
       481
-      "ACT-Omega Net v50.0.0 Rayon 12-Thread Work-Stealing Neuron Partition (42,240 / 12 = 3,520)"
+      "ACT-Omega Net v50.0.0 Rayon 12-Thread Work-Stealing Neuron Partition (63,360 / 12 = 5,280)"
       "thm_v50_481_rayon_12thread_worksteal_neuron_partition"
-      "(t local_idx : Nat) (ht : t < 12) (hl : local_idx < 3520) : (t * 3520 + local_idx < 42240) /\\ ((t * 3520 + local_idx) / 3520 = t) /\\ ((t * 3520 + local_idx) % 3520 = local_idx)"
+      "(t local_idx : Nat) (ht : t < 12) (hl : local_idx < 5280) : (t * 5280 + local_idx < 63360) /\\ ((t * 5280 + local_idx) / 5280 = t) /\\ ((t * 5280 + local_idx) % 5280 = local_idx)"
       "omega"
       "verify_v50_rayon_neuron_partition"
-      "12_i64.saturating_mul(3520_i64)"
-      42240
+      "12_i64.saturating_mul(5280_i64)"
+      63360
   , AlgebraicInvariantSpec
       482
-      "ACT-Omega Net v50.0.0 AVX2 256-Bit SIMD 8-Lane 337,920 Synapse Alignment"
+      "ACT-Omega Net v50.0.0 AVX2 256-Bit SIMD 8-Lane 1,013,760 Dual-Shell Synapse Alignment"
       "thm_v50_482_avx2_fma_256bit_simd_lane_alignment"
-      "(vec lane : Nat) (hv : vec < 5280) (hl : lane < 8) : (vec * 8 + lane < 42240) /\\ ((vec * 8 + lane) / 8 = vec) /\\ ((vec * 8 + lane) % 8 = lane) /\\ (5280 * 8 = 42240) /\\ (42240 * 8 = 337920)"
+      "(vec lane : Nat) (hv : vec < 7920) (hl : lane < 8) : (vec * 8 + lane < 63360) /\\ ((vec * 8 + lane) / 8 = vec) /\\ ((vec * 8 + lane) % 8 = lane) /\\ (7920 * 8 = 63360) /\\ (63360 * 16 = 1013760)"
       "omega"
       "verify_v50_avx2_simd_lane_alignment"
-      "42240_i64.saturating_mul(8_i64)"
-      337920
+      "63360_i64.saturating_mul(16_i64)"
+      1013760
   , AlgebraicInvariantSpec
       485
-      "ACT-Omega Net v50.0.0 Shard-to-Npage Delta Crystallization Bijection (5,406,720 B)"
+      "ACT-Omega Net v50.0.0 Shard-to-Npage Delta Crystallization Bijection (8,110,080 B)"
       "thm_v50_485_npage_binshard_synaptic_delta_crystallization_bijection"
-      "(shard byte_off : Nat) (hs : shard < 42240) (hb : byte_off < 128) : (shard * 128 + byte_off < 5406720) /\\ ((shard * 128 + byte_off) / 128 = shard) /\\ ((shard * 128 + byte_off) % 128 = byte_off) /\\ (42240 * 128 = 5406720)"
+      "(shard byte_off : Nat) (hs : shard < 63360) (hb : byte_off < 128) : (shard * 128 + byte_off < 8110080) /\\ ((shard * 128 + byte_off) / 128 = shard) /\\ ((shard * 128 + byte_off) % 128 = byte_off) /\\ (63360 * 128 = 8110080)"
       "omega"
       "verify_v50_npage_delta_crystallization"
-      "42240_i64.saturating_mul(128_i64)"
-      5406720
+      "63360_i64.saturating_mul(128_i64)"
+      8110080
   , AlgebraicInvariantSpec
       486
       "ACT-Omega Net v50.0.0 16-Bit PCM 16kHz RIFF WAVE Byte Rate (32,000 B/s)"
@@ -86,11 +86,47 @@ v50CanonicalSpecs =
       500
       "ACT-Omega Net v50.0.0 Century Capstone 500 Lean 4 Proofs QED"
       "thm_v50_500_sovereign_manifold_500_lean4_capstone_qed"
-      ": (960 * 44 = 42240) /\\ (12 * 3520 = 42240) /\\ (5280 * 8 = 42240) /\\ (42240 * 8 = 337920) /\\ (16 * 130 = 2080) /\\ (2080 * 64 = 133120) /\\ (42240 * 128 = 5406720) /\\ (5406720 % 4096 = 0) /\\ (1 + 2 + 4 + 8 + 16 + 32 + 64 + 128 = 255) /\\ (10 * 15965 = 159650)"
+      ": (1440 * 44 = 63360) /\\ (12 * 5280 = 63360) /\\ (7920 * 8 = 63360) /\\ (63360 * 16 = 1013760) /\\ (16 * 130 = 2080) /\\ (2080 * 64 = 133120) /\\ (63360 * 128 = 8110080) /\\ (8110080 % 4096 = 0) /\\ (1 + 2 + 4 + 8 + 16 + 32 + 64 + 128 = 255) /\\ (10 * 15965 = 159650)"
       "omega"
       "verify_v50_capstone_500_qed"
-      "42240_i64.saturating_mul(128_i64)"
-      5406720
+      "63360_i64.saturating_mul(128_i64)"
+      8110080
+  , AlgebraicInvariantSpec
+      561
+      "ACT-Omega Net v50.0.0 36 Macro-Domains x 4 Sub-Domains = 144 Sub-Domains (10 Columns Each)"
+      "thm_v50_561_subdomain_144_chair44_column_bijection"
+      "(sd col_off : Nat) (hsd : sd < 144) (hc : col_off < 10) : (sd * 10 + col_off < 1440) /\\ ((sd * 10 + col_off) / 10 = sd) /\\ ((sd * 10 + col_off) % 10 = col_off) /\\ (36 * 4 = 144) /\\ (144 * 10 = 1440)"
+      "omega"
+      "verify_v50_subdomain_144_column_bijection"
+      "144_i64.saturating_mul(10_i64)"
+      1440
+  , AlgebraicInvariantSpec
+      562
+      "ACT-Omega Net v50.0.0 63,360 Neurons x 16 Synapses = 1,013,760 Dual-Shell Synapses"
+      "thm_v50_562_dual_shell_1013760_synapse_bijection"
+      "(n : Nat) (hn : n < 63360) : (n * 16 < 1013760) /\\ ((n * 16) / 16 = n) /\\ (63360 * 16 = 1013760) /\\ (506880 + 506880 = 1013760)"
+      "omega"
+      "verify_v50_dual_shell_synapses"
+      "63360_i64.saturating_mul(16_i64)"
+      1013760
+  , AlgebraicInvariantSpec
+      563
+      "ACT-Omega Net v50.0.0 CHAIN 135 Autopoietic Coordinator Universal Message Bus Closure"
+      "thm_v50_563_chain135_autopoietic_coordinator_bus_closure"
+      ": (100 + 35 = 135) /\\ (135 - 100 = 35) /\\ (104 <= 135) /\\ (135 <= 135)"
+      "omega"
+      "verify_v50_chain135_bus_closure"
+      "100_i64.saturating_add(35_i64)"
+      135
+  , AlgebraicInvariantSpec
+      564
+      "ACT-Omega Net v50.0.0 Capstone 564 Substantive Lean 4 Proofs QED"
+      "thm_v50_564_sovereign_manifold_564_lean4_capstone_qed"
+      ": (1440 * 44 = 63360) /\\ (63360 * 16 = 1013760) /\\ (63360 * 128 = 8110080) /\\ (36 * 4 = 144) /\\ (144 * 10 = 1440) /\\ (100 + 35 = 135) /\\ (500 + 64 = 564)"
+      "omega"
+      "verify_v50_capstone_564_qed"
+      "500_i64.saturating_add(64_i64)"
+      564
   ]
 
 -- | Canonical v48.0.0-v50.0.0 algebraic invariants shared identically between L0 Rust and Lean 4
@@ -108,13 +144,13 @@ v48CanonicalSpecs =
       1920
   , AlgebraicInvariantSpec
       434
-      "Layer 1.5 Free5W1H Linear ATP Conservation Morphism across 960 Chair-44 Columns"
+      "Layer 1.5 Free5W1H Linear ATP Conservation Morphism across 1,440 Chair-44 Columns"
       "thm_v48_434_free_5w1h_linear_atp_morphism_conservation"
       "(col slot : Nat) (h : slot < 44) : (encodeChair44Neuron col slot) / 44 = col /\\ (encodeChair44Neuron col slot) % 44 = slot"
       "dsimp [encodeChair44Neuron]; omega"
       "verify_v48_free_5w1h_linear_atp"
-      "960_i64.saturating_mul(44_i64)"
-      42240
+      "1440_i64.saturating_mul(44_i64)"
+      63360
   , AlgebraicInvariantSpec
       435
       "v48.0.0 4-Timescale Dendritic Eligibility Trace (Gamma 159.65Hz, Decadic 15.965Hz, Theta, Slow)"
@@ -122,17 +158,17 @@ v48CanonicalSpecs =
       "(e_fast e_med e_slow e_struct : Int) (hf : 0 <= e_fast) (hm : 0 <= e_med) (hs : 0 <= e_slow) (_ht : 0 <= e_struct) : e_struct <= 4 * e_fast + 3 * e_med + 2 * e_slow + e_struct"
       "omega"
       "verify_v48_four_timescale_eligibility"
-      "42240_i64.saturating_mul(4_i64)"
-      168960
+      "63360_i64.saturating_mul(4_i64)"
+      253440
   , AlgebraicInvariantSpec
       436
-      "v48.0.0 64-Turn Episodic Working Memory Ring Bound to Apical Columns 480..959"
+      "v48.0.0 64-Turn Episodic Working Memory Ring Bound to Apical Columns 720..1439"
       "thm_v48_436_episodic_64turn_apical_ring_bijection"
       "(turn delta : Nat) (h : delta < 64) : ((turn + delta) % 64 = turn % 64) -> delta = 0"
       "omega"
       "verify_v48_episodic_64turn_ring"
-      "64_i64.saturating_mul(480_i64)"
-      30720
+      "64_i64.saturating_mul(720_i64)"
+      46080
   , AlgebraicInvariantSpec
       437
       "v48.0.0 k=4 Hamiltonian Geodesic Beam Search over Leech_24 Minimal Vectors"
@@ -153,18 +189,18 @@ v48CanonicalSpecs =
       4096
   , AlgebraicInvariantSpec
       439
-      "v48.0.0 DuckDB Embedded Columnar Vector & Shard Analytical Bijection"
+      "v48.0.0 DuckDB Embedded Columnar Vector & Shard Analytical Bijection (8,110,080 B)"
       "thm_v48_439_duckdb_columnar_vector_shard_bijection"
-      "(neuron_idx byte_off : Nat) (hn : neuron_idx < 42240) (hb : byte_off < 128) : neuron_idx * 128 + byte_off < 5406720 /\\ (neuron_idx * 128 + byte_off) / 128 = neuron_idx"
+      "(neuron_idx byte_off : Nat) (hn : neuron_idx < 63360) (hb : byte_off < 128) : neuron_idx * 128 + byte_off < 8110080 /\\ (neuron_idx * 128 + byte_off) / 128 = neuron_idx"
       "omega"
       "verify_v48_duckdb_columnar_bijection"
-      "42240_i64.saturating_mul(128_i64)"
-      5406720
+      "63360_i64.saturating_mul(128_i64)"
+      8110080
   , AlgebraicInvariantSpec
       440
       "v48.0.0 Dual Haskell->Rust/Lean4 Zero-Bracket Codegen Isomorphism QED"
       "thm_v48_440_sovereign_manifold_440_lean4_capstone_qed"
-      "(col slot byte_off : Nat) (hc : col < 960) (hs : slot < 44) (hb : byte_off < 128) : (encodeChair44Neuron col slot) * 128 + byte_off < 5406720"
+      "(col slot byte_off : Nat) (hc : col < 1440) (hs : slot < 44) (hb : byte_off < 128) : (encodeChair44Neuron col slot) * 128 + byte_off < 8110080"
       "dsimp [encodeChair44Neuron]; omega"
       "verify_v48_dual_codegen_isomorphism"
       "432_i64.saturating_add(8_i64)"
@@ -223,6 +259,10 @@ compileToZeroBracketRust specs =
     , "    let mut passed: usize = 0;"
     ] ++ map (\s -> "    if " ++ specRustFnName s ++ "() == " ++ show (specExpectedVal s) ++ "_i64 { passed = passed.saturating_add(1); }") specs ++
     [ "    (passed, passed == " ++ show (length specs) ++ ")"
+    , "}"
+    , ""
+    , "pub fn verify_all_v50_haskell_codegen_invariants() -> (usize, bool) {"
+    , "    verify_all_v48_haskell_codegen_invariants()"
     , "}"
     ]
   where

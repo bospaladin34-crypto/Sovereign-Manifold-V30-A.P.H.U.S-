@@ -14,7 +14,7 @@ import Sovereign.Codegen.ZeroBracketRustAndLean4
 -- | Deterministic projection of an arbitrary query string into 24 exact Rationals
 queryToRationalVec24 :: String -> (RationalVec24, Int)
 queryToRationalVec24 q =
-  let chars = if null q then "ACT-Omega Net v48.0.0 Layer 1.5 Haskell" else q
+  let chars = if null q then "ACT-Omega Net v50.0.0 Layer 1.5 Haskell" else q
       codes = map (fromIntegral . ord) chars :: [Integer]
       total = sum codes
       len   = fromIntegral (length codes) :: Integer
@@ -52,12 +52,12 @@ main = do
   args <- getArgs
   case args of
     ["--emit-rust", outPath] -> do
-      let rustCode = compileToZeroBracketRust v48CanonicalSpecs
+      let rustCode = compileToZeroBracketRust allCanonicalSpecs
       if hasSquareBrackets rustCode
         then error "FATAL: Generated Rust code violated Zero-Square-Bracket invariant!"
         else writeFile outPath rustCode >> putStrLn ("WROTE_ZERO_BRACKET_RUST:" ++ outPath)
     ["--emit-lean", outPath] -> do
-      let leanCode = compileToLean4Theorems v48CanonicalSpecs
+      let leanCode = compileToLean4Theorems allCanonicalSpecs
       writeFile outPath leanCode >> putStrLn ("WROTE_LEAN4_THEOREMS:" ++ outPath)
     _ -> do
       let queryStr = case args of
@@ -70,9 +70,9 @@ main = do
           initAtp = 88 % 100
           (steps, finalAtp, costAtp, gainAtp, atpDrift, (_, band, hopCount)) =
             interpret5W1HLinearAtp initAtp prog
-          rustCode = compileToZeroBracketRust v48CanonicalSpecs
+          rustCode = compileToZeroBracketRust allCanonicalSpecs
           zeroBracketOk = not (hasSquareBrackets rustCode)
-          chairCol = msg12 `mod` 960
+          chairCol = msg12 `mod` 1440
           neuronStart = chairCol * 44
           neuronEnd = neuronStart + 43
           e8Str = "[" ++ intercalate ", " (map showRat e8Vec) ++ "]"
@@ -108,7 +108,7 @@ main = do
         , "\"free_5w1h_metabolic_band\":\"" ++ show band ++ "\","
         , "\"free_5w1h_chair44_column\":" ++ show chairCol ++ ","
         , "\"free_5w1h_neuron_span\":\"" ++ show neuronStart ++ ".." ++ show neuronEnd ++ "\","
-        , "\"dual_codegen_specs_count\":" ++ show (length v48CanonicalSpecs) ++ ","
+        , "\"dual_codegen_specs_count\":" ++ show (length allCanonicalSpecs) ++ ","
         , "\"dual_codegen_zero_square_brackets_verified\":" ++ (if zeroBracketOk then "true" else "false") ++ ","
         , "\"free_5w1h_steps\":" ++ stepsJson
         , "}"

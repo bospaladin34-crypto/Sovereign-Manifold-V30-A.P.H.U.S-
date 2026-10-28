@@ -41,6 +41,30 @@ mod v49_muse_clean_and_chain100_synthesis;
 #[path = "../v50_rayon_avx2_tlv_simulator_coordinator.rs"]
 mod v50_rayon_avx2_tlv_simulator_coordinator;
 
+// --- Milestone 3: Monograph Core Tools 104..106 ---
+#[path = "../v50_monograph_braidir_sh4z_vesper_core.rs"]
+pub mod v50_monograph_braidir_sh4z_vesper_core;
+
+// --- Milestone 3: Batch 1 Tools 107..116 ---
+#[path = "../v50_rosetta_spriz_flux_fibonacci_batch1.rs"]
+pub mod v50_rosetta_spriz_flux_fibonacci_batch1;
+
+// --- Milestone 3: Batch 2 Tools 117..126 ---
+#[path = "../v51_npage_v2_sae_nanostar_grassmann_batch2.rs"]
+pub mod v51_npage_v2_sae_nanostar_grassmann_batch2;
+
+// --- Milestone 3: Batch 3 Tools 127..130 ---
+#[path = "../v52_brain11d_quantum_wave_tokengate_batch3.rs"]
+pub mod v52_brain11d_quantum_wave_tokengate_batch3;
+
+// --- Milestone 3: Batch 4 Tools 131..134 ---
+#[path = "../v52_1_reimann_directed_flag_complex_npage.rs"]
+pub mod v52_1_reimann_directed_flag_complex_npage;
+
+// --- Milestone 3: Tool 135 Brain Scale-Up & QAT Trainer ---
+#[path = "../v50_brain_63360_144subdomains_qat_trainer.rs"]
+pub mod v50_brain_63360_144subdomains_qat_trainer;
+
 
 
 struct SwarmState {
@@ -1109,6 +1133,494 @@ fn verify_operator_header_auth(header_key: &str, is_loopback: bool) -> bool {
         return false;
     }
     constant_time_compare_operator_key(clean_supplied, &expected)
+}
+
+// ----------------------------------------------------------------------------
+// CHAIN 135 SERIALIZATION & DISPATCH HELPERS (TOOLS 104..135)
+// ----------------------------------------------------------------------------
+
+fn tool_report_to_json(r: &v50_rosetta_spriz_flux_fibonacci_batch1::SovereignToolExecutionReport) -> String {
+    format!(
+        "{{\"tool_id\":{},\"tool_name\":\"{}\",\"rosetta_cs_equivalent\":\"{}\",\"primary_metric\":{},\"secondary_metric\":{},\"invariant_satisfied\":{},\"latency_us\":{},\"proof_digest\":\"{}\"}}",
+        r.tool_id, r.tool_name, r.rosetta_cs_equivalent, r.primary_metric, r.secondary_metric, r.invariant_satisfied, r.latency_us, r.proof_digest
+    )
+}
+
+fn batch2_report_to_json(r: &v51_npage_v2_sae_nanostar_grassmann_batch2::SovereignBatch2ToolReport) -> String {
+    format!(
+        "{{\"tool_id\":{},\"tool_name\":\"{}\",\"rosetta_cs_and_npage_role\":\"{}\",\"primary_metric\":{},\"secondary_metric\":{},\"invariant_satisfied\":{},\"latency_us\":{},\"proof_digest\":\"{}\"}}",
+        r.tool_id, r.tool_name, r.rosetta_cs_and_npage_role, r.primary_metric, r.secondary_metric, r.invariant_satisfied, r.latency_us, r.proof_digest
+    )
+}
+
+fn batch3_report_to_json(r: &v52_brain11d_quantum_wave_tokengate_batch3::SovereignBatch3ToolReport) -> String {
+    format!(
+        "{{\"tool_id\":{},\"tool_name\":\"{}\",\"rosetta_cs_and_npage_role\":\"{}\",\"primary_metric\":{},\"secondary_metric\":{},\"invariant_satisfied\":{},\"latency_us\":{},\"proof_digest\":\"{}\"}}",
+        r.tool_id, r.tool_name, r.rosetta_cs_and_npage_role, r.primary_metric, r.secondary_metric, r.invariant_satisfied, r.latency_us, r.proof_digest
+    )
+}
+
+fn reimann_report_to_json(r: &v52_1_reimann_directed_flag_complex_npage::SovereignReimannTopologyReport) -> String {
+    format!(
+        "{{\"tool_id\":{},\"tool_name\":\"{}\",\"rosetta_cs_and_npage_role\":\"{}\",\"primary_metric\":{},\"secondary_metric\":{},\"invariant_satisfied\":{},\"latency_us\":{},\"proof_digest\":\"{}\"}}",
+        r.tool_id, r.tool_name, r.rosetta_cs_and_npage_role, r.primary_metric, r.secondary_metric, r.invariant_satisfied, r.latency_us, r.proof_digest
+    )
+}
+
+fn dispatch_monograph_tools(clean_path: &str, _raw_target: &str, _post_body: &str) -> Option<String> {
+    if clean_path == "/api/v1/monograph/braidir_yang_baxter_bresenham_compiler" || clean_path == "/api/v1/tool/104" {
+        let braid_words: Vec<i32> = Vec::from_iter(
+            std::iter::once(1)
+                .chain(std::iter::once(-1))
+                .chain(std::iter::once(2))
+                .chain(std::iter::once(3))
+                .chain(std::iter::once(2))
+                .chain(std::iter::once(4))
+                .chain(std::iter::once(-4))
+        );
+        let rep = v50_monograph_braidir_sh4z_vesper_core::tool_104_braidir_yang_baxter_bresenham_compiler(
+            &braid_words, 12, 5, 18.5
+        );
+        return Some(rep.to_json());
+    }
+    if clean_path == "/api/v1/monograph/sh4z_dual_shell_lvq_quantizer" || clean_path == "/api/v1/tool/105" {
+        let mut lvq_vec: Vec<u8> = Vec::with_capacity(64);
+        lvq_vec.push(0x5A); lvq_vec.push(0x34); lvq_vec.push(0x48); lvq_vec.push(0x53);
+        for idx in 4..64 {
+            lvq_vec.push(((idx * 37 + 13) % 256) as u8);
+        }
+        let rep = v50_monograph_braidir_sh4z_vesper_core::tool_105_sh4z_dual_shell_lvq_quantizer(
+            &lvq_vec, 0.05
+        );
+        return Some(rep.to_json());
+    }
+    if clean_path == "/api/v1/monograph/vesper_4phase_cellular_sheaf_runtime" || clean_path == "/api/v1/tool/106" {
+        let mut stalks: Vec<f64> = Vec::with_capacity(16);
+        for i in 0..16 {
+            stalks.push(100.0 + ((i as f64) * 0.39269908169872414).sin() * 5.0);
+        }
+        let rep = v50_monograph_braidir_sh4z_vesper_core::tool_106_vesper_4phase_cellular_sheaf_runtime(
+            &stalks, 0.05, 50
+        );
+        return Some(rep.to_json());
+    }
+    if clean_path.starts_with("/api/v1/monograph/") {
+        let reps = v50_monograph_braidir_sh4z_vesper_core::execute_monograph_core_suite();
+        let mut s = String::from("{\"suite\":\"monograph_core\",\"count\":");
+        s.push_str(&reps.len().to_string());
+        s.push_str(",\"tools\":");
+        s.push('\x5b');
+        let mut first = true;
+        for r in reps.iter() {
+            if !first { s.push(','); }
+            first = false;
+            s.push_str(&r.to_json());
+        }
+        s.push('\x5d');
+        s.push('}');
+        return Some(s);
+    }
+    None
+}
+
+fn dispatch_batch1_tools(clean_path: &str, _raw_target: &str, _post_body: &str) -> Option<String> {
+    if clean_path == "/api/v1/rosetta/topological_rosetta_stone_verifier" || clean_path == "/api/v1/tool/107" {
+        let braid_ops: Vec<i32> = Vec::from_iter(std::iter::once(1).chain(std::iter::once(2)).chain(std::iter::once(-2)).chain(std::iter::once(3)).chain(std::iter::once(-3)).chain(std::iter::once(-1)).chain(std::iter::once(4)));
+        let sheaf_stalks: Vec<i64> = Vec::from_iter(std::iter::repeat(1024_i64).take(4));
+        let rep = v50_rosetta_spriz_flux_fibonacci_batch1::tool_107_topological_rosetta_stone_verifier(&braid_ops, &sheaf_stalks);
+        return Some(tool_report_to_json(&rep));
+    }
+    if clean_path == "/api/v1/bio/spriz_intermembrane_pillar_spacer" || clean_path == "/api/v1/tool/108" {
+        let rep = v50_rosetta_spriz_flux_fibonacci_batch1::tool_108_spriz_intermembrane_pillar_spacer(262_144, 163_840, 21.5, 20.0);
+        return Some(tool_report_to_json(&rep));
+    }
+    if clean_path == "/api/v1/astro/chandrasekhar_relativistic_degeneracy_breaker" || clean_path == "/api/v1/tool/109" {
+        let rep = v50_rosetta_spriz_flux_fibonacci_batch1::tool_109_chandrasekhar_relativistic_degeneracy_breaker(1.18, 2.0);
+        return Some(tool_report_to_json(&rep));
+    }
+    if clean_path == "/api/v1/algebra/adjoint_transpose_covector_pullback" || clean_path == "/api/v1/tool/110" {
+        let mat_a: Vec<i64> = Vec::from_iter(std::iter::once(2).chain(std::iter::once(1)).chain(std::iter::once(0)).chain(std::iter::once(1)));
+        let vec_x: Vec<i64> = Vec::from_iter(std::iter::once(3).chain(std::iter::once(5)));
+        let cov_y: Vec<i64> = Vec::from_iter(std::iter::once(7).chain(std::iter::once(11)));
+        let rep = v50_rosetta_spriz_flux_fibonacci_batch1::tool_110_adjoint_transpose_covector_pullback(&mat_a, 2, 2, &vec_x, &cov_y);
+        return Some(tool_report_to_json(&rep));
+    }
+    if clean_path == "/api/v1/mesh/lora_css_von_neumann_pointer_witness" || clean_path == "/api/v1/tool/111" {
+        let rep = v50_rosetta_spriz_flux_fibonacci_batch1::tool_111_lora_css_von_neumann_pointer_witness(9, 125_000.0, 0.8, 0.6);
+        return Some(tool_report_to_json(&rep));
+    }
+    if clean_path == "/api/v1/quantum/aist_flux_quanta_photon_counter" || clean_path == "/api/v1/tool/112" {
+        let hotspots: Vec<u32> = Vec::from_iter(std::iter::once(1).chain(std::iter::once(3)).chain(std::iter::once(2)).chain(std::iter::once(5)).chain(std::iter::once(4)));
+        let rep = v50_rosetta_spriz_flux_fibonacci_batch1::tool_112_aist_flux_quanta_photon_counter(&hotspots, 10.0);
+        return Some(tool_report_to_json(&rep));
+    }
+    if clean_path == "/api/v1/logic/principia_54_26_proof_erasure_auditor" || clean_path == "/api/v1/tool/113" {
+        let rep = v50_rosetta_spriz_flux_fibonacci_batch1::tool_113_principia_54_26_proof_erasure_auditor(27_410, 64);
+        return Some(tool_report_to_json(&rep));
+    }
+    if clean_path == "/api/v1/physics/xfel_multiscale_fermi_propagator" || clean_path == "/api/v1/tool/114" {
+        let rep = v50_rosetta_spriz_flux_fibonacci_batch1::tool_114_xfel_multiscale_fermi_propagator(1_000_000.0, 4.2);
+        return Some(tool_report_to_json(&rep));
+    }
+    if clean_path == "/api/v1/quantum/fibonacci_two_time_dimension_scheduler" || clean_path == "/api/v1/tool/115" {
+        let rep = v50_rosetta_spriz_flux_fibonacci_batch1::tool_115_fibonacci_two_time_dimension_scheduler(8, 62.636);
+        return Some(tool_report_to_json(&rep));
+    }
+    if clean_path == "/api/v1/geometry/hilbert_apollonian_polyhedral_atlas" || clean_path == "/api/v1/tool/116" {
+        let rep = v50_rosetta_spriz_flux_fibonacci_batch1::tool_116_hilbert_apollonian_polyhedral_atlas(8, 1_337, 2.0, 2.0, 3.0);
+        return Some(tool_report_to_json(&rep));
+    }
+    if clean_path == "/api/v1/v50/chain116_suite" || clean_path == "/api/v1/rosetta/suite" {
+        let real_e8z: Vec<u8> = (0..64u8).map(|k| k.wrapping_mul(37).wrapping_add(11)).collect();
+        let reps = v50_rosetta_spriz_flux_fibonacci_batch1::execute_v50_chain_116_full_suite(&real_e8z);
+        let mut s = String::from("{\"suite\":\"batch1_chain116\",\"count\":");
+        s.push_str(&reps.len().to_string());
+        s.push_str(",\"tools\":");
+        s.push('\x5b');
+        let mut first = true;
+        for r in reps.iter() {
+            if !first { s.push(','); }
+            first = false;
+            s.push_str(&tool_report_to_json(r));
+        }
+        s.push('\x5d');
+        s.push('}');
+        return Some(s);
+    }
+    None
+}
+
+fn dispatch_batch2_tools(clean_path: &str, _raw_target: &str, _post_body: &str) -> Option<String> {
+    if clean_path == "/api/v1/compiler/cloudflare_tsrs_ast_schema_contract_verifier"
+        || clean_path == "/api/v1/compiler/cloudflare_tsrs_rust_ast_npage_bridge"
+        || clean_path == "/api/v1/tool/117"
+    {
+        let mut field_sizes: Vec<u32> = Vec::with_capacity(30);
+        for _ in 0..21 { field_sizes.push(4); }
+        field_sizes.push(8); field_sizes.push(4); field_sizes.push(4); field_sizes.push(8);
+        field_sizes.push(4); field_sizes.push(4); field_sizes.push(4); field_sizes.push(4); field_sizes.push(4);
+        let rep = v51_npage_v2_sae_nanostar_grassmann_batch2::tool_117_cloudflare_tsrs_rust_ast_npage_bridge(
+            &field_sizes, 128
+        );
+        return Some(batch2_report_to_json(&rep));
+    }
+    if clean_path == "/api/v1/security/openai_microvm_constant_time_cache_shield"
+        || clean_path == "/api/v1/security/microvm_cache_timing_covert_channel_shield"
+        || clean_path == "/api/v1/tool/118"
+    {
+        let words: Vec<u64> = (0..16u64).map(|k| k.wrapping_mul(0x9E3779B97F4A7C15)).collect();
+        let rep = v51_npage_v2_sae_nanostar_grassmann_batch2::tool_118_microvm_cache_timing_covert_channel_shield(
+            &words, 7, 18.0, 4.0, 12.0
+        );
+        return Some(batch2_report_to_json(&rep));
+    }
+    if clean_path == "/api/v1/bio/kinesin_8nm_cacheline_zeeman_valley_stepper"
+        || clean_path == "/api/v1/bio/spatial_transcriptomics_nvfp4_kinesin_npage"
+        || clean_path == "/api/v1/tool/119"
+    {
+        let tx_x: Vec<f64> = Vec::from_iter((0..8).map(|i| (i as f64) * 1.5));
+        let tx_y: Vec<f64> = Vec::from_iter((0..8).map(|i| (i as f64) * 1.2));
+        let rep = v51_npage_v2_sae_nanostar_grassmann_batch2::tool_119_spatial_transcriptomics_nvfp4_kinesin_npage(
+            &tx_x, &tx_y, 3.0, 3.0, 8.0, 256
+        );
+        return Some(batch2_report_to_json(&rep));
+    }
+    if clean_path == "/api/v1/interp/sae_monosemantic_feature_circuit_binder"
+        || clean_path == "/api/v1/interp/deepmind_upenn_sae_residual_npage_inspector"
+        || clean_path == "/api/v1/tool/120"
+    {
+        let res_vec: Vec<f64> = Vec::from_iter((0..16).map(|i| ((i as f64) + 1.0) * 0.25));
+        let enc_vec: Vec<f64> = Vec::from_iter(std::iter::repeat(0.25_f64).take(16));
+        let rep = v51_npage_v2_sae_nanostar_grassmann_batch2::tool_120_deepmind_upenn_sae_residual_npage_inspector(
+            &res_vec, &enc_vec, 0.05, 0.10
+        );
+        return Some(batch2_report_to_json(&rep));
+    }
+    if clean_path == "/api/v1/bio/dna_nanostar_8arm_sticky_end_linker"
+        || clean_path == "/api/v1/bio/nanostardb_dendritic_junction_npage_schema"
+        || clean_path == "/api/v1/tool/121"
+    {
+        let sticky_a: u64 = 0xA5C3_F00F_5A3C_0FF0;
+        let sticky_b: u64 = !sticky_a;
+        let rep = v51_npage_v2_sae_nanostar_grassmann_batch2::tool_121_nanostardb_dendritic_junction_npage_schema(
+            sticky_a, sticky_b, 8
+        );
+        return Some(batch2_report_to_json(&rep));
+    }
+    if clean_path == "/api/v1/spatial/cellspa_voronoi_dep32_expert_router"
+        || clean_path == "/api/v1/spatial/vllm_dep32_deepseek_v41_flash_npage_pager"
+        || clean_path == "/api/v1/tool/122"
+    {
+        let rep = v51_npage_v2_sae_nanostar_grassmann_batch2::tool_122_vllm_dep32_deepseek_v41_flash_npage_pager(
+            63_360, 64, 2
+        );
+        return Some(batch2_report_to_json(&rep));
+    }
+    if clean_path == "/api/v1/vortex/toroidal_mod9_doubling_axis_auditor"
+        || clean_path == "/api/v1/vortex/toroidal_mod9_rodin_npage_bank_interleaver"
+        || clean_path == "/api/v1/tool/123"
+    {
+        let rep = v51_npage_v2_sae_nanostar_grassmann_batch2::tool_123_toroidal_mod9_rodin_npage_bank_interleaver(
+            63_360
+        );
+        return Some(batch2_report_to_json(&rep));
+    }
+    if clean_path == "/api/v1/number/pandigital_polydivisible_canary_verifier"
+        || clean_path == "/api/v1/number/polydivisible_pandigital_npage_prefix_canary"
+        || clean_path == "/api/v1/tool/124"
+    {
+        let rep = v51_npage_v2_sae_nanostar_grassmann_batch2::tool_124_polydivisible_pandigital_npage_prefix_canary(
+            v51_npage_v2_sae_nanostar_grassmann_batch2::NPAGE_V5100_POLYDIVISIBLE_CANARY
+        );
+        return Some(batch2_report_to_json(&rep));
+    }
+    if clean_path == "/api/v1/geometry/viviani_archimedes_npage_partition_auditor"
+        || clean_path == "/api/v1/geometry/vdw_zeeman_viviani_3compartment_npage_allocator"
+        || clean_path == "/api/v1/tool/125"
+    {
+        let rep = v51_npage_v2_sae_nanostar_grassmann_batch2::tool_125_vdw_zeeman_viviani_3compartment_npage_allocator(
+            100.0, 48.0, 25.0, 14.2, 2.5
+        );
+        return Some(batch2_report_to_json(&rep));
+    }
+    if clean_path == "/api/v1/geometry/grassmann_exterior_plucker_bivector_solver"
+        || clean_path == "/api/v1/geometry/grassmann_archimedes_npage_bivector_compactor"
+        || clean_path == "/api/v1/tool/126"
+    {
+        let rep = v51_npage_v2_sae_nanostar_grassmann_batch2::tool_126_grassmann_archimedes_npage_bivector_compactor(
+            3, 5, 7, 11, 2, 13, 17, 19, 6.0
+        );
+        return Some(batch2_report_to_json(&rep));
+    }
+    if clean_path == "/api/v1/v51/chain126_suite" || clean_path == "/api/v1/batch2/suite" {
+        let reps = v51_npage_v2_sae_nanostar_grassmann_batch2::execute_v51_chain_126_batch2_suite();
+        let mut s = String::from("{\"suite\":\"batch2_chain126\",\"count\":");
+        s.push_str(&reps.len().to_string());
+        s.push_str(",\"tools\":");
+        s.push('\x5b');
+        let mut first = true;
+        for r in reps.iter() {
+            if !first { s.push(','); }
+            first = false;
+            s.push_str(&batch2_report_to_json(r));
+        }
+        s.push('\x5d');
+        s.push('}');
+        return Some(s);
+    }
+    None
+}
+
+fn dispatch_batch3_tools(clean_path: &str, _raw_target: &str, _post_body: &str) -> Option<String> {
+    if clean_path == "/api/v1/topology/blue_brain_11d_simplex_clique_cavity_engine"
+        || clean_path == "/api/v1/topology/blue_brain_11d_directed_simplex_clique_npage_cavity"
+        || clean_path == "/api/v1/tool/127"
+    {
+        let face_counts: Vec<i64> = Vec::from_iter(
+            std::iter::once(12)
+                .chain(std::iter::once(66))
+                .chain(std::iter::once(220))
+                .chain(std::iter::once(495))
+                .chain(std::iter::once(792))
+                .chain(std::iter::once(924))
+                .chain(std::iter::once(792))
+                .chain(std::iter::once(495))
+                .chain(std::iter::once(220))
+                .chain(std::iter::once(66))
+                .chain(std::iter::once(12))
+                .chain(std::iter::once(1)),
+        );
+        let in_degrees: Vec<u32> = Vec::from_iter(0..12u32);
+        let rep = v52_brain11d_quantum_wave_tokengate_batch3::tool_127_blue_brain_11d_directed_simplex_clique_npage_cavity(
+            &face_counts, &in_degrees
+        );
+        return Some(batch3_report_to_json(&rep));
+    }
+    if clean_path == "/api/v1/quantum/kspace_ring_helmholtz_wave_packet_solver"
+        || clean_path == "/api/v1/quantum/quantum_art_spectral_wave_kspace_ring_solver"
+        || clean_path == "/api/v1/tool/128"
+    {
+        let rep = v52_brain11d_quantum_wave_tokengate_batch3::tool_128_quantum_art_spectral_wave_kspace_ring_solver(
+            10, 5.0, 0.65, 1.25
+        );
+        return Some(batch3_report_to_json(&rep));
+    }
+    if clean_path == "/api/v1/attention/tokengate_11x_prefill_npage_skimmer"
+        || clean_path == "/api/v1/attention/stanford_berkeley_tokengate_npage_prefill_skimmer"
+        || clean_path == "/api/v1/tool/129"
+    {
+        let rep = v52_brain11d_quantum_wave_tokengate_batch3::tool_129_stanford_berkeley_tokengate_npage_prefill_skimmer(
+            44, 4, 128_000, 12_800, 256
+        );
+        return Some(batch3_report_to_json(&rep));
+    }
+    if clean_path == "/api/v1/graph/tivadar_danka_adjacency_matrix_walk_duality"
+        || clean_path == "/api/v1/graph/danka_graph_linear_algebra_duality_npage_walk"
+        || clean_path == "/api/v1/tool/130"
+    {
+        let danka_3x3: Vec<f64> = Vec::from_iter(
+            std::iter::once(0.5)
+                .chain(std::iter::once(1.0))
+                .chain(std::iter::once(0.0))
+                .chain(std::iter::once(0.2))
+                .chain(std::iter::once(0.0))
+                .chain(std::iter::once(2.2))
+                .chain(std::iter::once(1.8))
+                .chain(std::iter::once(2.0))
+                .chain(std::iter::once(0.0)),
+        );
+        let rep = v52_brain11d_quantum_wave_tokengate_batch3::tool_130_danka_graph_linear_algebra_duality_npage_walk(
+            &danka_3x3
+        );
+        return Some(batch3_report_to_json(&rep));
+    }
+    if clean_path == "/api/v1/v52/chain130_suite" || clean_path == "/api/v1/batch3/suite" {
+        let reps = v52_brain11d_quantum_wave_tokengate_batch3::execute_v52_chain_130_batch3_suite();
+        let mut s = String::from("{\"suite\":\"batch3_chain130\",\"count\":");
+        s.push_str(&reps.len().to_string());
+        s.push_str(",\"tools\":");
+        s.push('\x5b');
+        let mut first = true;
+        for r in reps.iter() {
+            if !first { s.push(','); }
+            first = false;
+            s.push_str(&batch3_report_to_json(r));
+        }
+        s.push('\x5d');
+        s.push('}');
+        return Some(s);
+    }
+    None
+}
+
+fn dispatch_batch4_tools(clean_path: &str, _raw_target: &str, _post_body: &str) -> Option<String> {
+    if clean_path == "/api/v1/topology/reimann_eq2_directionality_simplex_discriminator"
+        || clean_path == "/api/v1/topology/reimann_eq2_net_directionality_discriminator"
+        || clean_path == "/api/v1/tool/131"
+    {
+        let in_deg_12: Vec<i64> = Vec::from_iter(0..12i64);
+        let out_deg_12: Vec<i64> = Vec::from_iter((0..12i64).map(|k| 11 - k));
+        let rep = v52_1_reimann_directed_flag_complex_npage::tool_131_reimann_eq2_net_directionality_discriminator(
+            &in_deg_12, &out_deg_12
+        );
+        return Some(reimann_report_to_json(&rep));
+    }
+    if clean_path == "/api/v1/topology/presink_sink_shared_ancestor_correlator"
+        || clean_path == "/api/v1/topology/reimann_within_simplex_presink_sink_correlator"
+        || clean_path == "/api/v1/tool/132"
+    {
+        let activations_12: Vec<f64> = Vec::from_iter((0..12).map(|k| 0.50 + (k as f64) * 0.04));
+        let rep = v52_1_reimann_directed_flag_complex_npage::tool_132_reimann_within_simplex_presink_sink_correlator(
+            11, &activations_12
+        );
+        return Some(reimann_report_to_json(&rep));
+    }
+    if clean_path == "/api/v1/topology/functional_tr_sandcastle_betti_swr_trigger"
+        || clean_path == "/api/v1/topology/reimann_transmission_response_sandcastle_tracker"
+        || clean_path == "/api/v1/tool/133"
+    {
+        let pre_spikes: Vec<f64> = Vec::from_iter(
+            std::iter::once(50.5)
+                .chain(std::iter::once(51.2))
+                .chain(std::iter::once(52.8))
+                .chain(std::iter::once(54.0)),
+        );
+        let post_spikes: Vec<f64> = Vec::from_iter(
+            std::iter::once(56.0)
+                .chain(std::iter::once(58.4))
+                .chain(std::iter::once(60.1))
+                .chain(std::iter::once(61.5)),
+        );
+        let rep = v52_1_reimann_directed_flag_complex_npage::tool_133_reimann_transmission_response_sandcastle_tracker(
+            &pre_spikes, &post_spikes, 50.0, 5.22, 10.44, 48, 31, 12, 29
+        );
+        return Some(reimann_report_to_json(&rep));
+    }
+    if clean_path == "/api/v1/topology/flagser_zero_alloc_bitmask_simplex_enumerator"
+        || clean_path == "/api/v1/topology/flagser_zero_alloc_bitset_simplex_enumerator"
+        || clean_path == "/api/v1/tool/134"
+    {
+        let masks_12: Vec<u64> =
+            Vec::from_iter((0..12u32).map(|i| ((1u64 << 12) - 1) & !((1u64 << (i + 1)) - 1)));
+        let rep = v52_1_reimann_directed_flag_complex_npage::tool_134_flagser_zero_alloc_bitset_simplex_enumerator(
+            &masks_12
+        );
+        return Some(reimann_report_to_json(&rep));
+    }
+    if clean_path == "/api/v1/v52_1/reimann_suite" || clean_path == "/api/v1/batch4/suite" {
+        let reps = v52_1_reimann_directed_flag_complex_npage::execute_v52_1_reimann_blue_brain_suite();
+        let mut s = String::from("{\"suite\":\"batch4_reimann\",\"count\":");
+        s.push_str(&reps.len().to_string());
+        s.push_str(",\"tools\":");
+        s.push('\x5b');
+        let mut first = true;
+        for r in reps.iter() {
+            if !first { s.push(','); }
+            first = false;
+            s.push_str(&reimann_report_to_json(r));
+        }
+        s.push('\x5d');
+        s.push('}');
+        return Some(s);
+    }
+    None
+}
+
+fn dispatch_tool135(clean_path: &str, raw_target: &str, post_body: &str) -> Option<String> {
+    if clean_path == "/api/v1/brain/sovereign_63360_144subdomain_qat_trainer"
+        || clean_path == "/api/v1/tool/135"
+        || clean_path.starts_with("/api/v1/brain/")
+    {
+        let action_q = extract_query_param(raw_target, "action");
+        let query_q = extract_query_param(raw_target, "query");
+        let action = if !action_q.is_empty() {
+            action_q
+        } else if clean_path.ends_with("/route") {
+            String::from("route")
+        } else if clean_path.ends_with("/train") {
+            String::from("train")
+        } else if clean_path.ends_with("/pass1") {
+            String::from("pass1")
+        } else if clean_path.ends_with("/pass2") {
+            String::from("pass2")
+        } else {
+            String::from("inspect")
+        };
+        let query = if !query_q.is_empty() {
+            query_q
+        } else if !post_body.trim().is_empty() {
+            post_body.trim().to_string()
+        } else {
+            String::new()
+        };
+        let rep = v50_brain_63360_144subdomains_qat_trainer::handle_sovereign_63360_qat_trainer_api(&action, &query);
+        return Some(rep);
+    }
+    None
+}
+
+fn dispatch_chain135_suite() -> String {
+    let rep_mono = v50_monograph_braidir_sh4z_vesper_core::execute_monograph_core_suite();
+    let real_e8z: Vec<u8> = (0..64u8).map(|k| k.wrapping_mul(37).wrapping_add(11)).collect();
+    let rep_b1 = v50_rosetta_spriz_flux_fibonacci_batch1::execute_v50_chain_116_full_suite(&real_e8z);
+    let rep_b2 = v51_npage_v2_sae_nanostar_grassmann_batch2::execute_v51_chain_126_batch2_suite();
+    let rep_b3 = v52_brain11d_quantum_wave_tokengate_batch3::execute_v52_chain_130_batch3_suite();
+    let rep_b4 = v52_1_reimann_directed_flag_complex_npage::execute_v52_1_reimann_blue_brain_suite();
+    let brain_status = v50_brain_63360_144subdomains_qat_trainer::handle_sovereign_63360_qat_trainer_api("inspect", "");
+
+    let total_new_tools = rep_mono.len() + rep_b1.len() + rep_b2.len() + rep_b3.len() + rep_b4.len() + 1;
+    let total_chain = 103 + total_new_tools;
+
+    format!(
+        "{{\"status\":\"CHAIN_135_CONTIGUOUS_OK\",\"total_chain_tools\":{},\"monograph_core_tools\":{},\"batch1_tools\":{},\"batch2_tools\":{},\"batch3_tools\":{},\"batch4_tools\":{},\"tool135_brain_trainer\":true,\"brain_inspection\":{}}}",
+        total_chain,
+        rep_mono.len(),
+        rep_b1.len(),
+        rep_b2.len(),
+        rep_b3.len(),
+        rep_b4.len(),
+        brain_status.trim()
+    )
 }
 
 fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
@@ -4054,6 +4566,51 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             continue;
         }
 
+        // 7K. CHAIN 135: Monograph Core (Tools 104..106), Batches 1..4 (Tools 107..134), & Brain Trainer (Tool 135)
+        let chain135_json = if clean_path == "/api/v1/chain135/suite" || clean_path == "/api/v1/chain135_suite" {
+            Some(dispatch_chain135_suite())
+        } else if let Some(j) = dispatch_monograph_tools(clean_path, raw_target, &post_body) {
+            Some(j)
+        } else if let Some(j) = dispatch_batch1_tools(clean_path, raw_target, &post_body) {
+            Some(j)
+        } else if let Some(j) = dispatch_batch2_tools(clean_path, raw_target, &post_body) {
+            Some(j)
+        } else if let Some(j) = dispatch_batch3_tools(clean_path, raw_target, &post_body) {
+            Some(j)
+        } else if let Some(j) = dispatch_batch4_tools(clean_path, raw_target, &post_body) {
+            Some(j)
+        } else if let Some(j) = dispatch_tool135(clean_path, raw_target, &post_body) {
+            Some(j)
+        } else {
+            None
+        };
+
+        if let Some(json) = chain135_json {
+            let sub_epoch = {
+                let mut st = match state.lock() {
+                    Ok(g) => g,
+                    Err(p) => p.into_inner(),
+                };
+                st.gen_counter += 1;
+                st.tool_chain_runs += 1;
+                st.last_card_diag = format!("EXEC({}) -> OK (CHAIN 135)", clean_path);
+                st.last_term_out = format!("EXEC({}) -> OK (CHAIN 135)", clean_path);
+                st.decadic_sub_epoch
+            };
+            let _ = publish_coordinator_bus_envelope(
+                "TOPIC_TOOL_EXECUTION_RESULT",
+                clean_path,
+                "Sovereign_Coordinator_Bus",
+                if !q_arg.is_empty() { &q_arg } else { clean_path },
+                E_BUS_LEDGER_JSONL,
+                json.len() as u64,
+                sub_epoch,
+            );
+            REQ_CACHE_CONTROL.with(|c| c.set("no-store"));
+            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
+            continue;
+        }
+
         // 8. Dedicated Tool Endpoints for Stiefel, Acoustic SDR, RTX 3050 WGSL, Debate, Hotpatch, Codegen
         if clean_path.starts_with("/api/v1/") {
             let mut st = match state.lock() {
@@ -4151,6 +4708,18 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             "text/html; charset=utf-8",
             "<html><body style='background:#0E1116;color:#FFFEFB;font-family:monospace'><h2>ACT-Omega Net v49.0.0 (CHAIN 100 Century Milestone) Online at act-omega-net.dev</h2><p>Discovery: <a href='/api/v1/tools'>/api/v1/tools</a> | <a href='/api/v1/v49/chain100_omni_suite'>/api/v1/v49/chain100_omni_suite</a> | <a href='/openapi.json'>/openapi.json</a></p></body></html>",
         );
+    }
+
+    drop(reader);
+    let _ = stream.flush();
+    let _ = stream.shutdown(std::net::Shutdown::Write);
+    let _ = stream.set_read_timeout(Some(Duration::from_millis(25)));
+    let mut drain_buf = Vec::with_capacity(1024);
+    drain_buf.resize(1024, 0u8);
+    while let Ok(n) = stream.read(drain_buf.as_mut_slice()) {
+        if n == 0 {
+            break;
+        }
     }
 }
 

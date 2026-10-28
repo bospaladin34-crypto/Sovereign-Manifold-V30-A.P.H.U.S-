@@ -23,11 +23,13 @@ let gD1TelemetryCache = {
   latestAudit: []
 };
 const D1_CACHE_TTL_MS = 30000;
+let gWorkerSqliteErrCount = 0;
 
 export class SovereignEdgeShadowDO {
   constructor(state, env) {
     this.state = state;
     this.env = env;
+    this.sqlite_err_count = 0;
     this.sql = state && state.storage ? state.storage.sql : null;
     try {
       if (this.sql) {
@@ -38,14 +40,18 @@ export class SovereignEdgeShadowDO {
           `CREATE TABLE IF NOT EXISTS shm_continuum_state (node_id TEXT PRIMARY KEY, bearer TEXT, dirty_col INTEGER, som_hex TEXT, temp_c REAL, mag_norm REAL, kops REAL, host_state TEXT, updated_at_ms INTEGER);`
         );
       }
-    } catch {}
+    } catch {
+      this.sqlite_err_count = (this.sqlite_err_count || 0) + 1;
+    }
 
     // Initial 8-row ring buffer cleanup on startup to prune any preexisting legacy backlog
     try {
       if (this.sql) {
         this.sql.exec(`DELETE FROM edge_heartbeat WHERE id NOT IN (SELECT id FROM edge_heartbeat ORDER BY id DESC LIMIT 8);`);
       }
-    } catch {}
+    } catch {
+      this.sqlite_err_count = (this.sqlite_err_count || 0) + 1;
+    }
 
     // In-memory heartbeat state hydration (single point-lookup, zero unbounded SELECT COUNT(*))
     this.cachedLatestHeartbeat = null;
@@ -59,6 +65,7 @@ export class SovereignEdgeShadowDO {
         }
       }
     } catch {
+      this.sqlite_err_count = (this.sqlite_err_count || 0) + 1;
       this.cachedHeartbeatCounter = 0;
     }
 
@@ -75,7 +82,9 @@ export class SovereignEdgeShadowDO {
           this.nodeLastWriteMs.set(n.node_id, n.updated_at_ms || 0);
         }
       }
-    } catch {}
+    } catch {
+      this.sqlite_err_count = (this.sqlite_err_count || 0) + 1;
+    }
   }
 
   async alarm() {
@@ -87,7 +96,9 @@ export class SovereignEdgeShadowDO {
           lastRow = this.sql
             .exec(`SELECT atp, core_neurons, exp_neurons, vocab_size FROM edge_heartbeat ORDER BY id DESC LIMIT 1;`)
             .one();
-        } catch {}
+        } catch {
+          this.sqlite_err_count = (this.sqlite_err_count || 0) + 1;
+        }
       }
       if (lastRow) {
         const atpVal = Number(lastRow.atp);
@@ -109,7 +120,9 @@ export class SovereignEdgeShadowDO {
             // Prune edge_heartbeat to strict 8-row ring buffer
             this.sql.exec(`DELETE FROM edge_heartbeat WHERE id NOT IN (SELECT id FROM edge_heartbeat ORDER BY id DESC LIMIT 8);`);
           }
-        } catch {}
+        } catch {
+          this.sqlite_err_count = (this.sqlite_err_count || 0) + 1;
+        }
         this.cachedHeartbeatCounter = Math.min(8, this.cachedHeartbeatCounter + 1);
         this.cachedLatestHeartbeat = {
           atp: atpVal,
@@ -123,7 +136,9 @@ export class SovereignEdgeShadowDO {
       if (this.state && this.state.storage) {
         await this.state.storage.setAlarm(now + 900000);
       }
-    } catch {}
+    } catch {
+      this.sqlite_err_count = (this.sqlite_err_count || 0) + 1;
+    }
   }
 
   async fetch(request) {
@@ -173,7 +188,9 @@ export class SovereignEdgeShadowDO {
               now
             );
           }
-        } catch {}
+        } catch {
+          this.sqlite_err_count = (this.sqlite_err_count || 0) + 1;
+        }
         this.nodeLastWriteMs.set(nodeId, now);
       }
 
@@ -188,6 +205,7 @@ export class SovereignEdgeShadowDO {
         tools_total: 100,
         updated_node: nodeId,
         heartbeats_stored: this.cachedHeartbeatCounter,
+        sqlite_err_count: this.sqlite_err_count || 0,
         continuum_nodes: rows,
         timestamp_ms: now
       }, {
@@ -218,7 +236,9 @@ export class SovereignEdgeShadowDO {
             // Prune edge_heartbeat to bounded 8-row ring buffer
             this.sql.exec(`DELETE FROM edge_heartbeat WHERE id NOT IN (SELECT id FROM edge_heartbeat ORDER BY id DESC LIMIT 8);`);
           }
-        } catch {}
+        } catch {
+          this.sqlite_err_count = (this.sqlite_err_count || 0) + 1;
+        }
         this.cachedHeartbeatCounter = Math.min(8, this.cachedHeartbeatCounter + 1);
         this.cachedLatestHeartbeat = {
           atp: atpParam,
@@ -233,7 +253,9 @@ export class SovereignEdgeShadowDO {
         if (this.state && this.state.storage) {
           await this.state.storage.setAlarm(now + 900000);
         }
-      } catch {}
+      } catch {
+        this.sqlite_err_count = (this.sqlite_err_count || 0) + 1;
+      }
 
       const shmRows = Array.from(this.nodeStateCache.values()).sort((a, b) => a.node_id.localeCompare(b.node_id));
       const combinedNeurons = (coreParam ?? 0) + (expParam ?? 0);
@@ -254,6 +276,7 @@ export class SovereignEdgeShadowDO {
         measured_atp: atpParam,
         payload_sha256: digest,
         heartbeats_stored: this.cachedHeartbeatCounter,
+        sqlite_err_count: this.sqlite_err_count || 0,
         continuum_nodes: shmRows,
         next_alarm_ms: now + 900000,
         timestamp_ms: now
@@ -271,6 +294,7 @@ export class SovereignEdgeShadowDO {
       lean4_theorems_qed: "460/460",
       tools_total: 100,
       latest_heartbeat: this.cachedLatestHeartbeat,
+      sqlite_err_count: this.sqlite_err_count || 0,
       continuum_nodes: shmRows,
       timestamp_ms: now
     }, {
@@ -298,7 +322,9 @@ export default {
                 .bind(measuredAtp, `Observed D1 Snapshot total_neurons=${totalNeurons}`, now)
                 .run();
             }
-          } catch {}
+          } catch {
+            gWorkerSqliteErrCount++;
+          }
         })()
       );
     }
@@ -309,7 +335,9 @@ export default {
             const id = env.SOVEREIGN_EDGE_SHADOW_DO.idFromName("GLOBAL_SOVEREIGN_SHADOW_V4400");
             const stub = env.SOVEREIGN_EDGE_SHADOW_DO.get(id);
             await stub.fetch("https://sovereign-internal/shadow/status");
-          } catch {}
+          } catch {
+            gWorkerSqliteErrCount++;
+          }
         })()
       );
     }
@@ -342,7 +370,8 @@ export default {
           const r = await stub.fetch(`https://sovereign-internal${doPath}`);
           doRelay = await r.json();
         } catch (e) {
-          doRelay = { error: String(e) };
+          gWorkerSqliteErrCount++;
+          doRelay = { error: String(e), sqlite_err_count: gWorkerSqliteErrCount };
         }
       }
 
@@ -361,18 +390,24 @@ export default {
           latestSnap = await env.ACT_OMEGA_D1.prepare(
             "SELECT snapshot_id, schema_version, total_neurons, total_bytes, active_synapses, metabolic_atp_score, rtx3050_temp_c, recorded_at_ms FROM npage_tier_snapshots ORDER BY recorded_at_ms DESC LIMIT 1;"
           ).first();
-        } catch {}
+        } catch {
+          gWorkerSqliteErrCount++;
+        }
         try {
           latestOmni = await env.ACT_OMEGA_D1.prepare(
             "SELECT snapshot_id, version_tag, total_neurons, npage_bytes, bpe_vocab_size, compound_domains, lean4_theorems_qed, health_score, rtx_temp_c, p10_temp_c, p8_temp_c, cluster_kops, recorded_at_ms FROM v44_omni_manifold_snapshots ORDER BY recorded_at_ms DESC LIMIT 1;"
           ).first();
-        } catch {}
+        } catch {
+          gWorkerSqliteErrCount++;
+        }
         try {
           const aRes = await env.ACT_OMEGA_D1.prepare(
             "SELECT artifact_name, byte_length, sha256_digest, measured_shards, measured_neurons FROM v41_measured_sha256_audit ORDER BY artifact_name ASC;"
           ).all();
           latestAudit = aRes.results || [];
-        } catch {}
+        } catch {
+          gWorkerSqliteErrCount++;
+        }
 
         gD1TelemetryCache = {
           timestamp_ms: now,
@@ -442,6 +477,7 @@ export default {
         shm_neurons: shmNeurons,
         metabolic_atp_score: latestSnap && latestSnap.metabolic_atp_score != null ? Number(latestSnap.metabolic_atp_score) : null,
         lean4_theorems_qed: latestOmni && latestOmni.lean4_theorems_qed != null ? Number(latestOmni.lean4_theorems_qed) : 460,
+        sqlite_err_count: ((doRelay && typeof doRelay.sqlite_err_count === "number") ? doRelay.sqlite_err_count : 0) + gWorkerSqliteErrCount,
         response_sha256: responseDigest,
         d1_latest_snapshot: latestSnap,
         d1_latest_omni: latestOmni,
@@ -482,7 +518,8 @@ export default {
           const doRes = await stub.fetch(`https://sovereign-internal/shadow/sync${qs}`);
           doSummary = await doRes.json();
         } catch (e) {
-          doSummary = { active: false, error: String(e) };
+          gWorkerSqliteErrCount++;
+          doSummary = { active: false, error: String(e), sqlite_err_count: gWorkerSqliteErrCount };
         }
       }
       if (env && env.ACT_OMEGA_D1) {
@@ -567,7 +604,8 @@ export default {
             latest_visiting_agents: visitRows.results || []
           };
         } catch (err) {
-          d1Summary = { tables_queried: 10, live_d1_connected: false, error: String(err) };
+          gWorkerSqliteErrCount++;
+          d1Summary = { tables_queried: 10, live_d1_connected: false, error: String(err), sqlite_err_count: gWorkerSqliteErrCount };
         }
       }
 
@@ -582,6 +620,7 @@ export default {
         d1_database: "act_omega_d1_vault",
         d1_uuid: "9f46d56a-ef3e-4232-a9ac-c4bd12e20a87",
         d1_tables_count: 10,
+        sqlite_err_count: gWorkerSqliteErrCount,
         workers_vpc_tunnel: "sovereign-loq15-vpc-binding",
         cron_schedule: "*/15 * * * *",
         p8_npage_shm_bytes: liveNpageBytes,

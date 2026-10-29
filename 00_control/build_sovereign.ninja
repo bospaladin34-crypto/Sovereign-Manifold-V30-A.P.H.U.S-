@@ -1,0 +1,27 @@
+# ACT-Omega Net v50.0.0 (SH4Z v5000 TLV | CHAIN 145)
+# Ninja 1.13.2 Polyglot Build DAG Orchestrator
+# Unifies Zig 0.17.0 AVX2 SIMD, Windows SDK 10.0.26100.0 DXC 1.8 HLSL->DXIL, and LLVM 22.1.8 llvm-mca
+
+ninja_required_version = 1.10
+
+zig_bin = C:\Users\Nbell\AppData\Local\Microsoft\WinGet\Links\zig.exe
+dxc_bin = C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64\dxc.exe
+mca_bin = C:\Program Files\LLVM\bin\llvm-mca.exe
+
+rule zig_avx2_obj
+  command = "$zig_bin" build-obj $in -O ReleaseFast -mcpu=alderlake -femit-bin=$out -femit-asm=00_control/zig_simd/sovereign_e8_avx2.s
+  description = ZIG_AVX2_SIMD $out
+
+rule dxc_cs66_dxil
+  command = "$dxc_bin" -T cs_6_6 -E main $in -Fo $out
+  description = WIN_SDK_DXC_CS66 $out
+
+rule llvm_mca_audit
+  command = cmd /c ""$mca_bin" -mcpu=alderlake $in > $out 2>&1"
+  description = LLVM_MCA_ALDERLAKE $out
+
+build 00_control/zig_simd/sovereign_e8_avx2.obj | 00_control/zig_simd/sovereign_e8_avx2.s: zig_avx2_obj 00_control/zig_simd/sovereign_e8_avx2.zig
+build 00_control/dxc_shaders/sovereign_e8_dp4a.dxil: dxc_cs66_dxil 00_control/dxc_shaders/sovereign_e8_dp4a.hlsl
+build 00_control/zig_simd/llvm_mca_alderlake_report.txt: llvm_mca_audit 00_control/zig_simd/sovereign_e8_avx2.s
+
+default 00_control/zig_simd/sovereign_e8_avx2.obj 00_control/dxc_shaders/sovereign_e8_dp4a.dxil 00_control/zig_simd/llvm_mca_alderlake_report.txt

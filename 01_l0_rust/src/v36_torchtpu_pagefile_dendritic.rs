@@ -79,25 +79,33 @@ pub fn evaluate_neuron_pagefile_inspector(
     sub_epoch: u64,
     gen_counter: u64,
 ) -> NeuronPagefileTelemetry {
-    let core_bytes = std::fs::metadata("C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v4000.npage")
-        .or_else(|_| std::fs::metadata("00_control/weights/neurons_v4000.npage"))
+    let v50_bytes = std::fs::metadata("C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v5000_63360.npage")
+        .or_else(|_| std::fs::metadata("00_control/weights/neurons_v5000_63360.npage"))
         .map(|m| m.len())
         .unwrap_or(0);
-    let exp_bytes = std::fs::metadata("C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v4400_expansion.npage")
-        .or_else(|_| std::fs::metadata("00_control/weights/neurons_v4400_expansion.npage"))
-        .map(|m| m.len())
-        .unwrap_or(0);
-    let total_pagefile_bytes = core_bytes + exp_bytes;
-    let total_n: u64 = core_bytes / 128;
+    let total_pagefile_bytes = if v50_bytes > 0 {
+        v50_bytes
+    } else {
+        let core_bytes = std::fs::metadata("C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v4000.npage")
+            .or_else(|_| std::fs::metadata("00_control/weights/neurons_v4000.npage"))
+            .map(|m| m.len())
+            .unwrap_or(0);
+        let exp_bytes = std::fs::metadata("C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v4400_expansion.npage")
+            .or_else(|_| std::fs::metadata("00_control/weights/neurons_v4400_expansion.npage"))
+            .map(|m| m.len())
+            .unwrap_or(0);
+        core_bytes + exp_bytes
+    };
     let combined_n: u64 = (total_pagefile_bytes / 128).max(1);
     let cols: u64 = combined_n / 44;
     let n_id: u64 = neuron_query_id % combined_n;
     let col_id: u64 = n_id / 44;
-    let (target_file, byte_off) = if n_id < total_n {
-        ("C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v4000.npage", n_id * 128)
+    let target_file = if v50_bytes > 0 {
+        "C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v5000_63360.npage"
     } else {
-        ("C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v4400_expansion.npage", (n_id.saturating_sub(total_n)) * 128)
+        "C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v4000.npage"
     };
+    let byte_off = n_id * 128;
 
     // Read actual 128-byte neuron record from disk at byte_off
     let mut rec_b0: u8 = 0;
@@ -138,7 +146,7 @@ pub fn evaluate_neuron_pagefile_inspector(
     let lateral_c: f64 = (x_ravi + y_ravi) * 42.0_f64;
 
     let nmda_bursts: u64 = (rec_b0 as u64) + (rec_b1 as u64) + gen_counter;
-    let active_syn: u64 = combined_n * 8;
+    let active_syn: u64 = combined_n * 16;
 
     let cauchy_err: f64 = 0.0000002_f64;
     let sparse_x: f64 = 618.0_f64;

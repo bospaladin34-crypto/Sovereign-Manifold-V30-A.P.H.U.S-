@@ -1,0 +1,174 @@
+warning: found a return instruction in the input assembly sequence.
+note: program counter updates are ignored.
+Iterations:        100
+Instructions:      6400
+Total Cycles:      3514
+Total uOps:        7200
+
+Dispatch Width:    6
+uOps Per Cycle:    2.05
+IPC:               1.82
+Block RThroughput: 12.0
+
+
+Instruction Info:
+[1]: #uOps
+[2]: Latency
+[3]: RThroughput
+[4]: MayLoad
+[5]: MayStore
+[6]: HasSideEffects (U)
+
+[1]    [2]    [3]    [4]    [5]    [6]    Instructions:
+ 2      1     0.50           *            push	rbp
+ 0      1     0.00                        mov	rbp, rsp
+ 1      8     0.33    *                   vmovups	ymm0, ymmword ptr [rcx]
+ 1      8     0.33    *                   vmovups	ymm1, ymmword ptr [rdx]
+ 1      3     0.50                        vsubps	ymm2, ymm0, ymm1
+ 1      4     0.50                        vmulps	ymm2, ymm2, ymm2
+ 1      4     0.50                        vfmadd231ps	ymm2, ymm0, ymm1
+ 1      1     0.50                        vmovshdup	xmm0, xmm2
+ 1      3     0.50                        vaddss	xmm0, xmm2, xmm0
+ 1      1     0.50                        vshufpd	xmm1, xmm2, xmm2, 1
+ 1      3     0.50                        vaddss	xmm0, xmm1, xmm0
+ 1      1     0.50                        vshufps	xmm1, xmm2, xmm2, 255
+ 1      3     0.50                        vaddss	xmm0, xmm1, xmm0
+ 1      3     1.00                        vextractf128	xmm1, ymm2, 1
+ 1      3     0.50                        vaddss	xmm0, xmm1, xmm0
+ 1      1     0.50                        vmovshdup	xmm2, xmm1
+ 1      3     0.50                        vaddss	xmm0, xmm2, xmm0
+ 1      1     0.50                        vshufpd	xmm2, xmm1, xmm1, 1
+ 1      3     0.50                        vaddss	xmm0, xmm2, xmm0
+ 1      1     0.50                        vshufps	xmm1, xmm1, xmm1, 255
+ 1      3     0.50                        vaddss	xmm0, xmm1, xmm0
+ 1      5     0.33    *                   pop	rbp
+ 0      0     0.00                  U     vzeroupper
+ 2      7     0.50                  U     ret
+ 2      1     0.50           *            push	rbp
+ 0      1     0.00                        mov	rbp, rsp
+ 2      11    1.00    *                   vpmovsxbw	ymm0, xmmword ptr [rcx]
+ 2      11    1.00    *                   vpmovsxbw	ymm1, xmmword ptr [rcx + 16]
+ 2      11    1.00    *                   vpmovsxbw	ymm2, xmmword ptr [rcx + 32]
+ 2      11    1.00    *                   vpmovsxbw	ymm3, xmmword ptr [rcx + 48]
+ 2      11    1.00    *                   vpmovsxbw	ymm4, xmmword ptr [rdx]
+ 1      5     0.50                        vpmullw	ymm0, ymm4, ymm0
+ 2      11    1.00    *                   vpmovsxbw	ymm4, xmmword ptr [rdx + 16]
+ 1      5     0.50                        vpmullw	ymm1, ymm4, ymm1
+ 1      1     0.33                        vpaddw	ymm0, ymm0, ymm1
+ 2      11    1.00    *                   vpmovsxbw	ymm1, xmmword ptr [rdx + 32]
+ 2      11    1.00    *                   vpmovsxbw	ymm4, xmmword ptr [rdx + 48]
+ 1      5     0.50                        vpmullw	ymm1, ymm1, ymm2
+ 1      5     0.50                        vpmullw	ymm2, ymm4, ymm3
+ 1      1     0.33                        vpaddw	ymm1, ymm1, ymm2
+ 1      3     1.00                        vextracti128	xmm2, ymm0, 1
+ 1      1     0.33                        vpaddw	xmm0, xmm0, xmm2
+ 1      1     0.50                        vpshufd	xmm2, xmm0, 238
+ 1      1     0.33                        vpaddw	xmm0, xmm0, xmm2
+ 1      1     0.50                        vpshufd	xmm2, xmm0, 85
+ 1      1     0.33                        vpaddw	xmm0, xmm0, xmm2
+ 1      1     0.50                        vpsrld	xmm2, xmm0, 16
+ 1      1     0.33                        vpaddw	xmm0, xmm0, xmm2
+ 1      3     1.00                        vmovd	eax, xmm0
+ 1      1     0.33                        movsx	ecx, ax
+ 1      3     1.00                        vextracti128	xmm0, ymm1, 1
+ 1      1     0.33                        vpaddw	xmm0, xmm1, xmm0
+ 1      1     0.50                        vpshufd	xmm1, xmm0, 238
+ 1      1     0.33                        vpaddw	xmm0, xmm0, xmm1
+ 1      1     0.50                        vpshufd	xmm1, xmm0, 85
+ 1      1     0.33                        vpaddw	xmm0, xmm0, xmm1
+ 1      1     0.50                        vpsrld	xmm1, xmm0, 16
+ 1      1     0.33                        vpaddw	xmm0, xmm0, xmm1
+ 1      3     1.00                        vmovd	eax, xmm0
+ 1      1     0.50                        cwde
+ 1      1     0.20                        add	eax, ecx
+ 1      5     0.33    *                   pop	rbp
+ 0      0     0.00                  U     vzeroupper
+ 2      7     0.50                  U     ret
+
+
+Resources:
+[0]   - ADLPPort00
+[1]   - ADLPPort01
+[2]   - ADLPPort02
+[3]   - ADLPPort03
+[4]   - ADLPPort04
+[5]   - ADLPPort05
+[6]   - ADLPPort06
+[7]   - ADLPPort07
+[8]   - ADLPPort08
+[9]   - ADLPPort09
+[10]  - ADLPPort10
+[11]  - ADLPPort11
+[12]  - ADLPPortInvalid
+
+
+Resource pressure per iteration:
+[0]    [1]    [2]    [3]    [4]    [5]    [6]    [7]    [8]    [9]    [10]   [11]   [12]   
+12.06  17.94  4.66   4.67   1.00   20.01  2.01   1.00   1.00   1.00   4.67   1.98    -     
+
+Resource pressure by instruction:
+[0]    [1]    [2]    [3]    [4]    [5]    [6]    [7]    [8]    [9]    [10]   [11]   [12]   Instructions:
+ -      -      -      -      -      -      -      -     1.00   1.00    -      -      -     push	rbp
+ -      -      -      -      -      -      -      -      -      -      -      -      -     mov	rbp, rsp
+ -      -     0.32   0.33    -      -      -      -      -      -     0.35    -      -     vmovups	ymm0, ymmword ptr [rcx]
+ -      -     0.34   0.34    -      -      -      -      -      -     0.32    -      -     vmovups	ymm1, ymmword ptr [rdx]
+ -     1.00    -      -      -      -      -      -      -      -      -      -      -     vsubps	ymm2, ymm0, ymm1
+1.00    -      -      -      -      -      -      -      -      -      -      -      -     vmulps	ymm2, ymm2, ymm2
+ -     1.00    -      -      -      -      -      -      -      -      -      -      -     vfmadd231ps	ymm2, ymm0, ymm1
+ -     0.99    -      -      -     0.01    -      -      -      -      -      -      -     vmovshdup	xmm0, xmm2
+ -     0.99    -      -      -     0.01    -      -      -      -      -      -      -     vaddss	xmm0, xmm2, xmm0
+ -     0.01    -      -      -     0.99    -      -      -      -      -      -      -     vshufpd	xmm1, xmm2, xmm2, 1
+ -     1.00    -      -      -      -      -      -      -      -      -      -      -     vaddss	xmm0, xmm1, xmm0
+ -     1.00    -      -      -      -      -      -      -      -      -      -      -     vshufps	xmm1, xmm2, xmm2, 255
+ -     0.99    -      -      -     0.01    -      -      -      -      -      -      -     vaddss	xmm0, xmm1, xmm0
+ -      -      -      -      -     1.00    -      -      -      -      -      -      -     vextractf128	xmm1, ymm2, 1
+ -     0.97    -      -      -     0.03    -      -      -      -      -      -      -     vaddss	xmm0, xmm1, xmm0
+ -     1.00    -      -      -      -      -      -      -      -      -      -      -     vmovshdup	xmm2, xmm1
+ -     0.03    -      -      -     0.97    -      -      -      -      -      -      -     vaddss	xmm0, xmm2, xmm0
+ -      -      -      -      -     1.00    -      -      -      -      -      -      -     vshufpd	xmm2, xmm1, xmm1, 1
+ -     0.04    -      -      -     0.96    -      -      -      -      -      -      -     vaddss	xmm0, xmm2, xmm0
+ -     0.01    -      -      -     0.99    -      -      -      -      -      -      -     vshufps	xmm1, xmm1, xmm1, 255
+ -     0.99    -      -      -     0.01    -      -      -      -      -      -      -     vaddss	xmm0, xmm1, xmm0
+ -      -     0.34   0.31    -      -      -      -      -      -     0.35    -      -     pop	rbp
+ -      -      -      -      -      -      -      -      -      -      -      -      -     vzeroupper
+0.01    -     0.32   0.34    -      -     0.99    -      -      -     0.34    -      -     ret
+ -      -      -      -     1.00    -      -     1.00    -      -      -      -      -     push	rbp
+ -      -      -      -      -      -      -      -      -      -      -      -      -     mov	rbp, rsp
+ -      -     0.33   0.35    -     1.00    -      -      -      -     0.32    -      -     vpmovsxbw	ymm0, xmmword ptr [rcx]
+ -      -     0.35   0.32    -     1.00    -      -      -      -     0.33    -      -     vpmovsxbw	ymm1, xmmword ptr [rcx + 16]
+ -      -     0.32   0.33    -     1.00    -      -      -      -     0.35    -      -     vpmovsxbw	ymm2, xmmword ptr [rcx + 32]
+ -      -     0.33   0.36    -     1.00    -      -      -      -     0.31    -      -     vpmovsxbw	ymm3, xmmword ptr [rcx + 48]
+ -      -     0.35   0.33    -     1.00    -      -      -      -     0.32    -      -     vpmovsxbw	ymm4, xmmword ptr [rdx]
+0.98   0.02    -      -      -      -      -      -      -      -      -      -      -     vpmullw	ymm0, ymm4, ymm0
+ -      -     0.33   0.32    -     1.00    -      -      -      -     0.35    -      -     vpmovsxbw	ymm4, xmmword ptr [rdx + 16]
+0.03   0.97    -      -      -      -      -      -      -      -      -      -      -     vpmullw	ymm1, ymm4, ymm1
+0.02   0.96    -      -      -     0.02    -      -      -      -      -      -      -     vpaddw	ymm0, ymm0, ymm1
+ -      -     0.33   0.34    -     1.00    -      -      -      -     0.33    -      -     vpmovsxbw	ymm1, xmmword ptr [rdx + 32]
+ -      -     0.34   0.33    -     1.00    -      -      -      -     0.33    -      -     vpmovsxbw	ymm4, xmmword ptr [rdx + 48]
+0.98   0.02    -      -      -      -      -      -      -      -      -      -      -     vpmullw	ymm1, ymm1, ymm2
+1.00    -      -      -      -      -      -      -      -      -      -      -      -     vpmullw	ymm2, ymm4, ymm3
+1.00    -      -      -      -      -      -      -      -      -      -      -      -     vpaddw	ymm1, ymm1, ymm2
+ -      -      -      -      -     1.00    -      -      -      -      -      -      -     vextracti128	xmm2, ymm0, 1
+1.00    -      -      -      -      -      -      -      -      -      -      -      -     vpaddw	xmm0, xmm0, xmm2
+ -     1.00    -      -      -      -      -      -      -      -      -      -      -     vpshufd	xmm2, xmm0, 238
+1.00    -      -      -      -      -      -      -      -      -      -      -      -     vpaddw	xmm0, xmm0, xmm2
+ -     0.01    -      -      -     0.99    -      -      -      -      -      -      -     vpshufd	xmm2, xmm0, 85
+0.01   0.99    -      -      -      -      -      -      -      -      -      -      -     vpaddw	xmm0, xmm0, xmm2
+1.00    -      -      -      -      -      -      -      -      -      -      -      -     vpsrld	xmm2, xmm0, 16
+0.03   0.97    -      -      -      -      -      -      -      -      -      -      -     vpaddw	xmm0, xmm0, xmm2
+1.00    -      -      -      -      -      -      -      -      -      -      -      -     vmovd	eax, xmm0
+ -      -      -      -      -      -      -      -      -      -      -     1.00    -     movsx	ecx, ax
+ -      -      -      -      -     1.00    -      -      -      -      -      -      -     vextracti128	xmm0, ymm1, 1
+0.99   0.01    -      -      -      -      -      -      -      -      -      -      -     vpaddw	xmm0, xmm1, xmm0
+ -     0.01    -      -      -     0.99    -      -      -      -      -      -      -     vpshufd	xmm1, xmm0, 238
+0.03    -      -      -      -     0.97    -      -      -      -      -      -      -     vpaddw	xmm0, xmm0, xmm1
+ -      -      -      -      -     1.00    -      -      -      -      -      -      -     vpshufd	xmm1, xmm0, 85
+0.01   0.99    -      -      -      -      -      -      -      -      -      -      -     vpaddw	xmm0, xmm0, xmm1
+0.97   0.03    -      -      -      -      -      -      -      -      -      -      -     vpsrld	xmm1, xmm0, 16
+ -     0.96    -      -      -     0.04    -      -      -      -      -      -      -     vpaddw	xmm0, xmm0, xmm1
+1.00    -      -      -      -      -      -      -      -      -      -      -      -     vmovd	eax, xmm0
+ -     0.98    -      -      -     0.02    -      -      -      -      -      -      -     cwde
+ -      -      -      -      -      -     0.02    -      -      -      -     0.98    -     add	eax, ecx
+ -      -     0.34   0.33    -      -      -      -      -      -     0.33    -      -     pop	rbp
+ -      -      -      -      -      -      -      -      -      -      -      -      -     vzeroupper
+ -      -     0.32   0.34    -      -     1.00    -      -      -     0.34    -      -     ret

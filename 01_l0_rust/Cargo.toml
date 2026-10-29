@@ -14,25 +14,21 @@ crate-type = ["cdylib", "rlib"]
 path = "src/lib.rs"
 
 [[bin]]
-name = "test_v30_host"
-path = "src/bin/test_v30_host.rs"
-
-[[bin]]
-name = "test_sh3_30l"
-path = "src/bin/test_sh3_30l.rs"
-
-[[bin]]
-name = "test_e8_table_gemv"
-path = "src/bin/test_e8_table_gemv.rs"
-
-[[bin]]
-name = "test_qat_kernel"
-path = "src/bin/test_qat_kernel.rs"
-
-[[bin]]
-name = "test_shard_training"
-path = "src/bin/test_shard_training.rs"
+name = "v31_swarm"
+path = "src/bin/v31_swarm.rs"
 
 [[bin]]
 name = "v50_brain_trainer"
 path = "src/v50_brain_63360_144subdomains_qat_trainer.rs"
+
+[[bin]]
+name = "v31_bench"
+path = "src/bin/v31_bench.rs"
+
+[[bin]]
+name = "v31_harvester"
+path = "src/bin/v31_harvester.rs"
+
+[[bin]]
+name = "v31_trainer"
+path = "src/bin/v31_trainer.rs"

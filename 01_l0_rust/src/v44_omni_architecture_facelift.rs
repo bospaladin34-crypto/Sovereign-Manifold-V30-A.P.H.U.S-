@@ -350,20 +350,20 @@ pub fn execute_tool75_v44_self_profiler(
     let (purged_bundles, active_js_bundle) = purge_stale_hud_index_bundles();
 
     // Zero fallback floor: if files are missing, report 0 bytes so health_grade downgrades!
-    let e8z_bytes = std::fs::metadata("C:\\sovereign_manifold_v31\\00_control\\weights\\sovereign_harmonic_iv_v4000.e8z")
-        .or_else(|_| std::fs::metadata("00_control/weights/sovereign_harmonic_iv_v4000.e8z"))
+    let e8z_bytes = std::fs::metadata("C:\\sovereign_manifold_v31\\00_control\\weights\\sovereign_harmonic_iv_v5000.e8z")
+        .or_else(|_| std::fs::metadata("00_control/weights/sovereign_harmonic_iv_v5000.e8z"))
         .map(|m| m.len())
         .unwrap_or(0);
     let core_npage_bytes = std::fs::metadata("C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v4000.npage")
         .or_else(|_| std::fs::metadata("00_control/weights/neurons_v4000.npage"))
         .map(|m| m.len())
         .unwrap_or(0);
-    let full_42k_bytes = std::fs::metadata("C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v4600_42240.npage")
-        .or_else(|_| std::fs::metadata("00_control/weights/neurons_v4600_42240.npage"))
+    let full_63k_bytes = std::fs::metadata("C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v5000_63360.npage")
+        .or_else(|_| std::fs::metadata("00_control/weights/neurons_v5000_63360.npage"))
         .map(|m| m.len())
         .unwrap_or(0);
-    let exp_npage_bytes = if full_42k_bytes > core_npage_bytes {
-        full_42k_bytes - core_npage_bytes
+    let exp_npage_bytes = if full_63k_bytes > core_npage_bytes {
+        full_63k_bytes - core_npage_bytes
     } else {
         std::fs::metadata("C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v4400_expansion.npage")
             .or_else(|_| std::fs::metadata("00_control/weights/neurons_v4400_expansion.npage"))
@@ -376,15 +376,17 @@ pub fn execute_tool75_v44_self_profiler(
     let exp_neurons = (exp_npage_bytes / 128) as u32;
     let combined_neurons = core_neurons + exp_neurons;
     let total_chair44_cols = combined_neurons / 44;
-    let total_synapses = combined_neurons * 8;
+    let total_synapses = combined_neurons * 16;
 
     let mut exp_shards_cnt: usize = 0;
-    if let Ok(rd) = std::fs::read_dir("C:\\sovereign_manifold_v31\\03_vault\\shards_expansion")
-        .or_else(|_| std::fs::read_dir("03_vault/shards_expansion"))
+    for dir_path in std::iter::once("C:\\sovereign_manifold_v31\\03_vault\\shards_expansion")
+        .chain(std::iter::once("C:\\sovereign_manifold_v31\\03_vault\\shards_tier3"))
     {
-        for entry in rd.flatten() {
-            if entry.path().is_file() {
-                exp_shards_cnt += 1;
+        if let Ok(rd) = std::fs::read_dir(dir_path) {
+            for entry in rd.flatten() {
+                if entry.path().is_file() {
+                    exp_shards_cnt += 1;
+                }
             }
         }
     }
@@ -404,7 +406,7 @@ pub fn execute_tool75_v44_self_profiler(
     );
 
     let diag = format!(
-        "TOOL 75 v48.0.0 MULTIOMIC VELOCITY SELF-PROFILER & ACTIVE BUNDLE RESCUE (Run #{}): Score={}/100 (Grade={}) | ActiveBundle={} (PurgedStale={}) | .e8z={}B | Core .npage={}B ({}N) + Expansion .npage={}B ({}N) = {}B ({} Neurons, {}x Chair-44, {} Synapses) | Expansion Shards on Disk={} | Visiting Agent Ledger={} | Multi-Turn Memory Ring={} | Thermals: RTX 3050={:.1}C, Pixel 10 G5={:.1}C, Pixel 8 P8-APEX={:.1}C | Throughput={:.1}k ops/s",
+        "TOOL 75 v50.0.0 MULTIOMIC VELOCITY SELF-PROFILER & ACTIVE BUNDLE RESCUE (Run #{}): Score={}/100 (Grade={}) | ActiveBundle={} (PurgedStale={}) | .e8z={}B | Core .npage={}B ({}N) + Expansion+Tier3 .npage={}B ({}N) = {}B ({} Neurons, {}x Chair-44, {} Synapses) | Expansion+Tier3 Shards on Disk={} | Visiting Agent Ledger={} | Multi-Turn Memory Ring={} | Thermals: RTX 3050={:.1}C, Pixel 10 G5={:.1}C, Pixel 8 P8-APEX={:.1}C | Throughput={:.1}k ops/s",
         profile_seq,
         health_score,
         health_grade,

@@ -13,7 +13,7 @@ $swarmExe    = "C:\sovereign_manifold_v31\01_l0_rust\target\release\v31_swarm.ex
 $cfExe       = "C:\sovereign_manifold_v31\00_control\cloudflared.exe"
 $cfCfg       = "C:\sovereign_manifold_v31\00_control\cloudflare_named_config.yml"
 $trayHudExe  = "C:\sovereign_manifold_v31\SovereignCockpitHUD.exe"
-$shmPath     = "C:\sovereign_manifold_v31\00_control\weights\neurons_v4400_p8_shm.npage"
+$shmPath     = "C:\sovereign_manifold_v31\00_control\weights\neurons_v5000_63360.npage"
 $capsulePath = "C:\sovereign_manifold_v31\03_vault\connectome\continuum_handover_capsule.json"
 $p10Serial   = "58170DLCR0004V"
 $p8Serial    = "3A121FDJH00BW5"
@@ -26,15 +26,15 @@ function Ensure-PhoneUnpluggedShm {
     adb -s $Serial reverse tcp:8097 tcp:8097 | Out-Null
     adb -s $Serial reverse tcp:5173 tcp:5173 | Out-Null
 
-    $tmpCheck = (adb -s $Serial shell "ls -l /data/local/tmp/neurons_v4400_p8_shm.npage 2>/dev/null") -join " "
-    if ($tmpCheck -notmatch "5406720") {
-        adb -s $Serial push $shmPath "/data/local/tmp/neurons_v4400_p8_shm.npage" | Out-Null
+    $tmpCheck = (adb -s $Serial shell "ls -l /data/local/tmp/neurons_v5000_63360.npage 2>/dev/null") -join " "
+    if ($tmpCheck -notmatch "8110080") {
+        adb -s $Serial push $shmPath "/data/local/tmp/neurons_v5000_63360.npage" | Out-Null
     }
 
     adb -s $Serial shell "mkdir -p /sdcard/Android/data/com.actomega.manifold/files" | Out-Null
-    $extCheck = (adb -s $Serial shell "ls -l /sdcard/Android/data/com.actomega.manifold/files/neurons_v4400_p8_shm.npage 2>/dev/null") -join " "
-    if ($extCheck -notmatch "5406720") {
-        adb -s $Serial shell "cp /data/local/tmp/neurons_v4400_p8_shm.npage /sdcard/Android/data/com.actomega.manifold/files/neurons_v4400_p8_shm.npage" | Out-Null
+    $extCheck = (adb -s $Serial shell "ls -l /sdcard/Android/data/com.actomega.manifold/files/neurons_v5000_63360.npage 2>/dev/null") -join " "
+    if ($extCheck -notmatch "8110080") {
+        adb -s $Serial shell "cp /data/local/tmp/neurons_v5000_63360.npage /sdcard/Android/data/com.actomega.manifold/files/neurons_v5000_63360.npage" | Out-Null
     }
     return $true
 }
@@ -60,9 +60,9 @@ function Invoke-SovereignContinuumHandover {
         version = "ACT-Omega Net v50.0.0 (SH4Z v5000 TLV | 564/564 Lean 4 QED)"
         handover_mode = $HandoverMode
         timestamp_utc = $tsUtc
-        shm_npage_bytes = 5406720
-        shm_neurons_total = 42240
-        shm_chair44_cols = 960
+        shm_npage_bytes = 8110080
+        shm_neurons_total = 63360
+        shm_chair44_cols = 1440
         shm_sha256 = $shmSha
         lean4_sha256 = $leanSha
         lean4_theorems_qed = 564
@@ -82,7 +82,7 @@ function Invoke-SovereignContinuumHandover {
     if (Test-Path "E:\Sovereign_Manifold_SSD_Vault\connectome") {
         Copy-Item $capsulePath "E:\Sovereign_Manifold_SSD_Vault\connectome\continuum_handover_capsule.json" -Force
     }
-    Write-Host "  [1/3] Saved Continuum Capsule (5,406,720B SHM SHA256=$($shmSha.Substring(0,16))...) to Vault & E:\ SSD" -ForegroundColor Green
+    Write-Host "  [1/3] Saved Continuum Capsule (8,110,080B SHM SHA256=$($shmSha.Substring(0,16))...) to Vault & E:\ SSD" -ForegroundColor Green
 
     $adbRaw = (adb devices) -join " "
     foreach ($pair in @(@($p10Serial, "Pixel 10 Roam Node"), @($p8Serial, "Pixel 8 P8-APEX Node"))) {
@@ -92,7 +92,7 @@ function Invoke-SovereignContinuumHandover {
             $null = Ensure-PhoneUnpluggedShm -Serial $ser -Label $lbl
             adb -s $ser push $capsulePath "/data/local/tmp/continuum_handover_capsule.json" | Out-Null
             adb -s $ser push $capsulePath "/sdcard/Android/data/com.actomega.manifold/files/continuum_handover_capsule.json" | Out-Null
-            Write-Host "  [2/3] Synced 5.41MB (42,240N) .npage SHM + Continuum Capsule to $lbl ($ser) [Tethered + Unplugged Storage]" -ForegroundColor Green
+            Write-Host "  [2/3] Synced 8.11MB (63,360N) .npage SHM + Continuum Capsule to $lbl ($ser) [Tethered + Unplugged Storage]" -ForegroundColor Green
         }
     }
 
@@ -144,16 +144,16 @@ function Show-SovereignStatus {
         $p10Bat = (adb -s $p10Serial shell "dumpsys battery") -join " "
         $p10T = 0.0
         if ($p10Bat -match "temperature:\s*(\d+)") { $p10T = ([double]$Matches[1] / 10.0) }
-        Write-Host "  [4] PIXEL 10 (EDGE-1) : USB-TETHERED ($p10Serial -- Tensor G5 -- Temp=${p10T}C -- 5.41MB Unplugged SHM Armed)" -ForegroundColor Green
+        Write-Host "  [4] PIXEL 10 (EDGE-1) : USB-TETHERED ($p10Serial -- Tensor G5 -- Temp=${p10T}C -- 8.11MB Unplugged SHM Armed)" -ForegroundColor Green
     } else {
-        Write-Host "  [4] PIXEL 10 (EDGE-1) : UNPLUGGED ROAMING ($p10Serial -- 5.41MB Internal .npage SHM + Wi-Fi/CF-WAN Sync)" -ForegroundColor Cyan
+        Write-Host "  [4] PIXEL 10 (EDGE-1) : UNPLUGGED ROAMING ($p10Serial -- 8.11MB Internal .npage SHM + Wi-Fi/CF-WAN Sync)" -ForegroundColor Cyan
     }
 
     if ($adbRaw -match $p8Serial) {
         $p8Bat = (adb -s $p8Serial shell "dumpsys battery") -join " "
         $p8T = 0.0
         if ($p8Bat -match "temperature:\s*(\d+)") { $p8T = ([double]$Matches[1] / 10.0) }
-        Write-Host "  [5] PIXEL 8  (EDGE-2) : PERMANENT USB ($p8Serial -- Tensor G3 P8-APEX -- Temp=${p8T}C -- 5.41MB SHM Mapped / 3.56MB L2 Pinned)" -ForegroundColor Green
+        Write-Host "  [5] PIXEL 8  (EDGE-2) : PERMANENT USB ($p8Serial -- Tensor G3 P8-APEX -- Temp=${p8T}C -- 8.11MB SHM Mapped / 3.56MB L2 Pinned)" -ForegroundColor Green
     } else {
         Write-Host "  [5] PIXEL 8  (EDGE-2) : DISCONNECTED ($p8Serial)" -ForegroundColor Yellow
     }
@@ -207,15 +207,15 @@ function Invoke-SovereignSixLayerVerify {
     if (-not $l2Pass) { $failCount++ }
     Write-Host ("  [LAYER 2 - LEAN 4 QED]  [{0}] Theorems={1}/564 (Req:>=564) | Trivial(N=N)={2} (Req:0) | SHA256={3}..." -f ($(if($l2Pass){"PASS"}else{"FAIL"}), $thmCnt, $trivCnt, $leanSha)) -ForegroundColor $(if($l2Pass){"Green"}else{"Red"})
 
-    # Layer 3: 5W1H & 42,240-Neuron Shared Memory (.npage)
+    # Layer 3: 5W1H & 63,360-Neuron Shared Memory (.npage)
     $prof = $null
     try {
         $prof = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/diagnostics/v44_self_profiler" -TimeoutSec 4
     } catch {}
     $shmBytes = if (Test-Path $shmPath) { (Get-Item $shmPath).Length } else { 0 }
-    $l3Pass = ($null -ne $prof) -and ($prof.core_neurons -eq 21120) -and ($prof.exp_neurons -eq $prof.expansion_shards_on_disk) -and ($shmBytes -eq 5406720)
+    $l3Pass = ($null -ne $prof) -and ($prof.core_neurons -eq 21120) -and ($prof.exp_neurons -eq $prof.expansion_shards_on_disk) -and ($shmBytes -eq 8110080)
     if (-not $l3Pass) { $failCount++ }
-    Write-Host ("  [LAYER 3 - CONNECTOME]  [{0}] Core={1}/21120 + Exp={2} ({3} shards) | SHM={4}B (Req:5406720B) | Grade={5} ({6})" -f ($(if($l3Pass){"PASS"}else{"FAIL"}), $(if($prof){$prof.core_neurons}else{0}), $(if($prof){$prof.exp_neurons}else{0}), $(if($prof){$prof.expansion_shards_on_disk}else{0}), $shmBytes, $(if($prof){$prof.health_grade}else{"N/A"}), $(if($prof){$prof.health_score}else{0}))) -ForegroundColor $(if($l3Pass){"Green"}else{"Red"})
+    Write-Host ("  [LAYER 3 - CONNECTOME]  [{0}] Core={1}/21120 + Exp/Tier3={2} ({3} shards = 63,360 Total) | SHM={4}B (Req:8110080B) | Grade={5} ({6})" -f ($(if($l3Pass){"PASS"}else{"FAIL"}), $(if($prof){$prof.core_neurons}else{0}), $(if($prof){$prof.exp_neurons}else{0}), $(if($prof){$prof.expansion_shards_on_disk}else{0}), $shmBytes, $(if($prof){$prof.health_grade}else{"N/A"}), $(if($prof){$prof.health_score}else{0}))) -ForegroundColor $(if($l3Pass){"Green"}else{"Red"})
 
     # Layer 4: Host WebGPU HUD (checking both src and dist bundles for zero leaked passkeys)
     $hudDist = Test-Path "C:\sovereign_manifold_v31\05_hud_cockpit\dist\index.html"
@@ -229,11 +229,11 @@ function Invoke-SovereignSixLayerVerify {
 
     # Layer 5: Dual-Pixel NDK & Unplugged SHM Persistence
     $adbRaw = (adb devices) -join " "
-    $p8ShmOk = if ($adbRaw -match $p8Serial) { ((adb -s $p8Serial shell "ls -l /data/local/tmp/neurons_v4400_p8_shm.npage") -join " ") -match "5406720" } else { $false }
-    $p10ShmOk = if ($adbRaw -match $p10Serial) { ((adb -s $p10Serial shell "ls -l /sdcard/Android/data/com.actomega.manifold/files/neurons_v4400_p8_shm.npage") -join " ") -match "5406720" } else { $false }
+    $p8ShmOk = if ($adbRaw -match $p8Serial) { ((adb -s $p8Serial shell "ls -l /data/local/tmp/neurons_v5000_63360.npage") -join " ") -match "8110080" } else { $false }
+    $p10ShmOk = if ($adbRaw -match $p10Serial) { ((adb -s $p10Serial shell "ls -l /sdcard/Android/data/com.actomega.manifold/files/neurons_v5000_63360.npage") -join " ") -match "8110080" } else { $false }
     $l5Pass = $p8ShmOk -and $p10ShmOk
     if (-not $l5Pass) { $failCount++ }
-    Write-Host ("  [LAYER 5 - DUAL PIXEL]  [{0}] P8 Tethered SHM(5.41MB)={1} | P10 SHM(5.41MB)={2}" -f ($(if($l5Pass){"PASS"}else{"FAIL"}), $p8ShmOk, $p10ShmOk)) -ForegroundColor $(if($l5Pass){"Green"}else{"Red"})
+    Write-Host ("  [LAYER 5 - DUAL PIXEL]  [{0}] P8 Tethered SHM(8.11MB)={1} | P10 SHM(8.11MB)={2}" -f ($(if($l5Pass){"PASS"}else{"FAIL"}), $p8ShmOk, $p10ShmOk)) -ForegroundColor $(if($l5Pass){"Green"}else{"Red"})
 
     # Layer 6: Cloudflare Named Tunnel & Edge Continuum DO
     $wanCode = 0

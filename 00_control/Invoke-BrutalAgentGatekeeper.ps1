@@ -1,10 +1,26 @@
 param(
     [switch]$HookStdin,
-    [switch]$FullAudit
+    [switch]$FullAudit,
+    [switch]$StaticOnly,
+    [string]$RepoPath = ""
 )
 
 $ErrorActionPreference = "Stop"
-$RepoRoot = "C:\sovereign_manifold_v31"
+
+# Dynamic $RepoRoot resolution: -RepoPath -> $env:GITHUB_WORKSPACE -> $PSScriptRoot\.. -> fallback
+$RepoRoot = if ($RepoPath -and (Test-Path $RepoPath)) {
+    (Resolve-Path $RepoPath).Path
+} elseif ($env:GITHUB_WORKSPACE -and (Test-Path $env:GITHUB_WORKSPACE)) {
+    (Resolve-Path $env:GITHUB_WORKSPACE).Path
+} elseif ($PSScriptRoot -and (Test-Path (Split-Path -Parent $PSScriptRoot))) {
+    (Resolve-Path (Split-Path -Parent $PSScriptRoot)).Path
+} else {
+    "C:\sovereign_manifold_v31"
+}
+
+if (-not (Test-Path $RepoRoot)) {
+    $RepoRoot = "C:\sovereign_manifold_v31"
+}
 
 function Run-StaticGatekeeperChecks {
     $failures = New-Object System.Collections.Generic.List[string]
@@ -74,20 +90,32 @@ function Run-StaticGatekeeperChecks {
     if ($agentFiles.Count -lt 10) {
         $failures.Add("AGENT_ROSTER_INCOMPLETE: Found $($agentFiles.Count) agents in .agents/agents (Req: >= 10)")
     }
-    foreach ($af in $agentFiles) {
-        $globalAf = "C:\Users\Nbell\.gemini\config\agents\$($af.Name)"
-        if (-not (Test-Path $globalAf) -or ((Get-FileHash $af.FullName -Algorithm SHA256).Hash -ne (Get-FileHash $globalAf -Algorithm SHA256).Hash)) {
-            $failures.Add("AGENT_MIRROR_DRIFT: $($af.Name) out of sync with ~/.gemini/config/agents")
-        }
-    }
     $ruleFiles = Get-ChildItem -Path "$RepoRoot\.agents\rules\*.md" -File
     if ($ruleFiles.Count -lt 6) {
         $failures.Add("RULE_ROSTER_INCOMPLETE: Found $($ruleFiles.Count) rules in .agents/rules (Req: >= 6)")
     }
-    foreach ($rf in $ruleFiles) {
-        $globalRf = "C:\Users\Nbell\.gemini\config\rules\$($rf.Name)"
-        if (-not (Test-Path $globalRf) -or ((Get-FileHash $rf.FullName -Algorithm SHA256).Hash -ne (Get-FileHash $globalRf -Algorithm SHA256).Hash)) {
-            $failures.Add("RULE_MIRROR_DRIFT: $($rf.Name) out of sync with ~/.gemini/config/rules")
+
+    # Guard host user directory comparison so CI does not report false mirror drift
+    $globalConfigBase = if (Test-Path "C:\Users\Nbell\.gemini\config") {
+        "C:\Users\Nbell\.gemini\config"
+    } elseif ($env:USERPROFILE -and (Test-Path "$env:USERPROFILE\.gemini\config")) {
+        "$env:USERPROFILE\.gemini\config"
+    } else {
+        $null
+    }
+
+    if ($globalConfigBase) {
+        foreach ($af in $agentFiles) {
+            $globalAf = "$globalConfigBase\agents\$($af.Name)"
+            if (-not (Test-Path $globalAf) -or ((Get-FileHash $af.FullName -Algorithm SHA256).Hash -ne (Get-FileHash $globalAf -Algorithm SHA256).Hash)) {
+                $failures.Add("AGENT_MIRROR_DRIFT: $($af.Name) out of sync with ~/.gemini/config/agents")
+            }
+        }
+        foreach ($rf in $ruleFiles) {
+            $globalRf = "$globalConfigBase\rules\$($rf.Name)"
+            if (-not (Test-Path $globalRf) -or ((Get-FileHash $rf.FullName -Algorithm SHA256).Hash -ne (Get-FileHash $globalRf -Algorithm SHA256).Hash)) {
+                $failures.Add("RULE_MIRROR_DRIFT: $($rf.Name) out of sync with ~/.gemini/config/rules")
+            }
         }
     }
 
@@ -101,7 +129,9 @@ function Run-StaticGatekeeperChecks {
         "$RepoRoot\02_l2_orchestration\hud\src\App.tsx",
         "$RepoRoot\05_hud_cockpit\dist\index.html",
         "$RepoRoot\docs\index.html",
+        "$RepoRoot\docs\hud.html",
         "$RepoRoot\index.html",
+        "$RepoRoot\hud.html",
         "$RepoRoot\wiki.html"
     )
     foreach ($cf in $checkFiles) {
@@ -112,6 +142,47 @@ function Run-StaticGatekeeperChecks {
             }
             if ($activeLiteral.Length -ge 16 -and $content.Contains($activeLiteral)) {
                 $failures.Add("SECRET_LEAK_ACTIVE: Active external operator key found in $cf")
+            }
+        }
+    }
+
+    # 6. HTML External Crawler SSR Pre-Population & Asset Bundle Verification
+    $htmlFiles = @(
+        "$RepoRoot\index.html",
+        "$RepoRoot\hud.html",
+        "$RepoRoot\docs\index.html",
+        "$RepoRoot\docs\hud.html",
+        "$RepoRoot\05_hud_cockpit\dist\index.html"
+    )
+    foreach ($hf in $htmlFiles) {
+        if (-not (Test-Path $hf)) {
+            $failures.Add("HTML_MISSING: $hf not found")
+            continue
+        }
+        $hContent = [System.IO.File]::ReadAllText($hf)
+        if ($hContent -notmatch 'data-sovereign-ssr="v50\.2\.0"') {
+            $failures.Add("HTML_SSR_MISSING: $hf missing data-sovereign-ssr=`"v50.2.0`" attribute")
+        }
+        $bundleMatches = [regex]::Matches($hContent, '(?i)(?:\./)?assets/(index-[^"''\s>]+\.js)')
+        if ($bundleMatches.Count -eq 0) {
+            $failures.Add("HTML_JS_BUNDLE_REF_MISSING: No assets/index-*.js script found in $hf")
+        } else {
+            foreach ($bm in $bundleMatches) {
+                $bName = $bm.Groups[1].Value
+                $rootAsset = "$RepoRoot\assets\$bName"
+                $docsAsset = "$RepoRoot\docs\assets\$bName"
+                if (-not (Test-Path $rootAsset)) {
+                    $failures.Add("JS_BUNDLE_MISSING_ROOT: $bName referenced in $hf missing at $rootAsset")
+                }
+                if (-not (Test-Path $docsAsset)) {
+                    $failures.Add("JS_BUNDLE_MISSING_DOCS: $bName referenced in $hf missing at $docsAsset")
+                }
+                if ($hf -like "*\dist\*") {
+                    $distAsset = "$RepoRoot\05_hud_cockpit\dist\assets\$bName"
+                    if (-not (Test-Path $distAsset)) {
+                        $failures.Add("JS_BUNDLE_MISSING_DIST: $bName referenced in $hf missing at $distAsset")
+                    }
+                }
             }
         }
     }
@@ -156,6 +227,32 @@ if ($HookStdin) {
     exit 0
 }
 
+# Default to -StaticOnly when invoked without switches
+if (-not $HookStdin -and -not $FullAudit -and -not $StaticOnly) {
+    $StaticOnly = $true
+}
+
+if ($StaticOnly) {
+    Write-Host "==========================================================================" -ForegroundColor Cyan
+    Write-Host "   ACT-OMEGA BRUTAL AGENT GATEKEEPER: STATIC INVARIANTS AUDIT             " -ForegroundColor Cyan
+    Write-Host "==========================================================================" -ForegroundColor Cyan
+
+    $failures = Run-StaticGatekeeperChecks
+    if ($failures.Count -eq 0) {
+        Write-Host "  [STATIC INVARIANTS] [PASS] All 6 Static Invariants Verified (Zero-Bracket, Lean4, Mirrors, Secrets, Agents/Rules, SSR & Bundles)" -ForegroundColor Green
+        Write-Host "==========================================================================" -ForegroundColor Cyan
+        Write-Host "  [BRUTAL GATEKEEPER RESULT: PASSED (All 6 Static Invariants Verified)]" -ForegroundColor Green
+        exit 0
+    } else {
+        foreach ($f in $failures) {
+            Write-Host "  [STATIC FAIL] $f" -ForegroundColor Red
+        }
+        Write-Host "==========================================================================" -ForegroundColor Cyan
+        Write-Host "  [BRUTAL GATEKEEPER RESULT: FAILED ($($failures.Count) VIOLATIONS)]" -ForegroundColor Red
+        exit 1
+    }
+}
+
 if ($FullAudit) {
     Write-Host "==========================================================================" -ForegroundColor Cyan
     Write-Host "   ACT-OMEGA BRUTAL AGENT GATEKEEPER: 10-POINT ARCHITECTURAL AUDIT        " -ForegroundColor Cyan
@@ -163,7 +260,7 @@ if ($FullAudit) {
 
     $failures = Run-StaticGatekeeperChecks
     if ($failures.Count -eq 0) {
-        Write-Host "  [1-5 STATIC INVARIANTS] [PASS] Zero-Bracket(v33..v50+)=0 | Lean4>=564(0 trivial) | HUD/Mobile/Agent Mirrors=LOCKED | SecretsInRepo=0" -ForegroundColor Green
+        Write-Host "  [1-6 STATIC INVARIANTS] [PASS] Zero-Bracket(v33..v50+)=0 | Lean4>=564(0 trivial) | HUD/Mobile/Agent Mirrors=LOCKED | SecretsInRepo=0 | SSR & Bundles=VERIFIED" -ForegroundColor Green
     } else {
         foreach ($f in $failures) {
             Write-Host "  [STATIC FAIL] $f" -ForegroundColor Red
@@ -171,12 +268,18 @@ if ($FullAudit) {
     }
 
     # 6. Live Lean 4 Compiler Verification
-    & "C:\Users\Nbell\.elan\bin\lean.exe" "$RepoRoot\03_vault\lean4\SovereignManifoldTheorems.lean" 2>&1 | Out-Null
-    if ($LASTEXITCODE -eq 0) {
-        Write-Host "  [6 LEAN 4 COMPILER]     [PASS] lean.exe verified 03_vault/lean4/SovereignManifoldTheorems.lean (EXIT:0)" -ForegroundColor Green
+    $leanExe = if (Test-Path "C:\Users\Nbell\.elan\bin\lean.exe") { "C:\Users\Nbell\.elan\bin\lean.exe" } elseif (Get-Command lean -ErrorAction SilentlyContinue) { (Get-Command lean).Source } else { $null }
+    if ($leanExe) {
+        & $leanExe "$RepoRoot\03_vault\lean4\SovereignManifoldTheorems.lean" 2>&1 | Out-Null
+        if ($LASTEXITCODE -eq 0) {
+            Write-Host "  [6 LEAN 4 COMPILER]     [PASS] lean.exe verified 03_vault/lean4/SovereignManifoldTheorems.lean (EXIT:0)" -ForegroundColor Green
+        } else {
+            $failures.Add("LEAN4_COMPILER_FAIL: lean.exe exited with $LASTEXITCODE")
+            Write-Host "  [6 LEAN 4 COMPILER]     [FAIL] lean.exe exited with $LASTEXITCODE" -ForegroundColor Red
+        }
     } else {
-        $failures.Add("LEAN4_COMPILER_FAIL: lean.exe exited with $LASTEXITCODE")
-        Write-Host "  [6 LEAN 4 COMPILER]     [FAIL] lean.exe exited with $LASTEXITCODE" -ForegroundColor Red
+        $failures.Add("LEAN4_COMPILER_MISSING: lean.exe not found")
+        Write-Host "  [6 LEAN 4 COMPILER]     [FAIL] lean.exe not found" -ForegroundColor Red
     }
 
     # 7. Live Plucker 12/12 .e8z Measurement Probe

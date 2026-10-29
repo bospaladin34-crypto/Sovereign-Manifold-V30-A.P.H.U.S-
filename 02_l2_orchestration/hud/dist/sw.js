@@ -1,13 +1,13 @@
-const CACHE_NAME = 'act-omega-cockpit-v50';
+const CACHE_NAME = 'act-omega-cockpit-v50-2-chain145';
 const STATIC_ASSETS = [
-  '/',
-  '/index.html',
-  '/logo.svg',
-  '/icon-192.png',
-  '/icon-512.png',
-  '/act_omega_logo.jpg',
-  '/sovereign_harmonic_iv_v4000.e8z',
-  '/manifest.webmanifest'
+  './',
+  './index.html',
+  './logo.svg',
+  './icon-192.png',
+  './icon-512.png',
+  './act_omega_logo.jpg',
+  './sovereign_harmonic_iv_v5000.e8z',
+  './manifest.webmanifest'
 ];
 
 self.addEventListener('install', (event) => {
@@ -29,6 +29,16 @@ self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
+  // Bypass Service Worker CacheStorage interception & IndexedDB writes on 500ms live telemetry streams
+  if (
+    url.pathname === '/api/v1/telemetry' ||
+    url.pathname === '/api/v1/StateGraph' ||
+    url.pathname === '/api/v1/health' ||
+    url.pathname.endsWith('.e8z') ||
+    url.pathname.endsWith('.npage')
+  ) {
+    return;
+  }
   if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/v1/') || url.pathname.startsWith('/mcp')) {
     event.respondWith(
       fetch(req)
@@ -42,6 +52,6 @@ self.addEventListener('fetch', (event) => {
     return;
   }
   event.respondWith(
-    fetch(req).catch(() => caches.match(req).then((r) => r || caches.match('/index.html')))
+    fetch(req).catch(() => caches.match(req).then((r) => r || caches.match('./index.html') || caches.match('index.html') || caches.match('/index.html')))
   );
 });

@@ -1,0 +1,13 @@
+# ACT-Omega Sovereign Manifold Repository Code Owners
+* @bospaladin34-crypto
+
+# Core Architectural Directories
+/00_control/ @bospaladin34-crypto
+/01_l0_rust/ @bospaladin34-crypto
+/02_l2_orchestration/ @bospaladin34-crypto
+/03_vault/ @bospaladin34-crypto
+/04_edge_silicon/ @bospaladin34-crypto
+/05_hud_cockpit/ @bospaladin34-crypto
+/06_algebraic_haskell/ @bospaladin34-crypto
+/.github/ @bospaladin34-crypto
+/.agents/ @bospaladin34-crypto

@@ -60,17 +60,12 @@ pub struct AtomicDeltaEngineTelemetry {
 }
 
 pub fn measure_live_symbiotic_state() -> SymbioticMeasuredTelemetry {
-    let t0 = std::time::Instant::now();
-
-    let weight_path = "C:\\sovereign_manifold_v31\\00_control\\weights\\sovereign_harmonic_iv_v4000.e8z";
-    let npage_path = "C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v4000.npage";
-    let exp_npage_path = "C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v4400_expansion.npage";
+    let weight_path = "C:\\sovereign_manifold_v31\\00_control\\weights\\sovereign_harmonic_iv_v5000.e8z";
+    let npage_path = "C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v5000_63360.npage";
     let mem_path = "C:\\sovereign_manifold_v31\\03_vault\\connectome\\episodic_longterm_memory_v4300.jsonl";
 
     let weight_file_bytes = std::fs::metadata(weight_path).map(|m| m.len()).unwrap_or(0);
-    let core_npage_bytes = std::fs::metadata(npage_path).map(|m| m.len()).unwrap_or(0);
-    let exp_npage_bytes = std::fs::metadata(exp_npage_path).map(|m| m.len()).unwrap_or(0);
-    let npage_file_bytes = core_npage_bytes + exp_npage_bytes;
+    let npage_file_bytes = std::fs::metadata(npage_path).map(|m| m.len()).unwrap_or(0);
     let active_neurons = (npage_file_bytes / 128) as usize;
 
     let (episodic_memory_bytes, episodic_entries) = match std::fs::read_to_string(mem_path) {
@@ -78,30 +73,30 @@ pub fn measure_live_symbiotic_state() -> SymbioticMeasuredTelemetry {
         Err(_) => (0, 0),
     };
 
-    // Read actual header & sample bytes from .e8z on disk and run real FNV-1a + E8 dot-product pass
+    // Read actual header & sample bytes from .e8z on disk before starting the compute kernel timer
     let mut buf = Vec::with_capacity(4096);
     if let Ok(mut f) = std::fs::File::open(weight_path) {
         let _ = std::io::Read::read_to_end(&mut std::io::Read::take(&mut f, 4096), &mut buf);
     }
 
+    // Start compute timer strictly around FNV-1a + 12-thread AVX2/FMA Rayon sweep
+    let t0 = std::time::Instant::now();
     let mut fnv_hash: u64 = 0xcbf29ce484222325;
-    let mut ops_executed: u64 = 0;
     let mut accum: i64 = 0;
     for b in &buf {
         fnv_hash ^= u64::from(*b);
         fnv_hash = fnv_hash.wrapping_mul(0x00000100000001b3);
         accum = accum.wrapping_add(i64::from(*b) * 3 - 128);
-        ops_executed += 4;
     }
+    let (avx2_kops, _rms_delta, _syn_cnt) =
+        v50_rayon_avx2_tlv_simulator_coordinator::measure_v50_avx2_rayon_live_kops(fnv_hash % 10);
     if accum == i64::MIN {
-        ops_executed += 1;
+        fnv_hash ^= 1;
     }
 
     let elapsed = t0.elapsed();
     let elapsed_ns = elapsed.as_nanos().max(1);
-    let elapsed_secs = elapsed.as_secs_f64().max(1e-9);
-    // Un-floored real measured kops/s from actual disk + ALU execution
-    let measured_cluster_kops = (ops_executed as f64) / (elapsed_secs * 1000.0);
+    let measured_cluster_kops = avx2_kops;
 
     SymbioticMeasuredTelemetry {
         weight_file_bytes,
@@ -118,7 +113,7 @@ pub fn measure_live_symbiotic_state() -> SymbioticMeasuredTelemetry {
 pub fn build_symbiotic_telemetry_json() -> String {
     let m = measure_live_symbiotic_state();
     format!(
-        "{{\"version\":\"44.2.0\",\"weight_bytes\":{},\"npage_bytes\":{},\"active_neurons\":{},\"episodic_bytes\":{},\"episodic_entries\":{},\"measured_kernel_ns\":{},\"measured_cluster_kops\":{:.2},\"fnv1a_header_hash\":\"0x{:016x}\"}}",
+        "{{\"version\":\"50.0.0\",\"weight_bytes\":{},\"npage_bytes\":{},\"active_neurons\":{},\"episodic_bytes\":{},\"episodic_entries\":{},\"measured_kernel_ns\":{},\"measured_cluster_kops\":{:.2},\"fnv1a_header_hash\":\"0x{:016x}\"}}",
         m.weight_file_bytes,
         m.npage_file_bytes,
         m.active_neurons,

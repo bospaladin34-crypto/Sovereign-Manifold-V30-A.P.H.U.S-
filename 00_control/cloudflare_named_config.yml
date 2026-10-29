@@ -4,22 +4,70 @@ protocol: http2
 grace-period: 30s
 originRequest:
   connectTimeout: 10s
-  keepAliveTimeout: 90s
-  keepAliveConnections: 32
+  keepAliveTimeout: 60s
+  keepAliveConnections: 100
   tcpKeepAlive: 15s
   noHappyEyeballs: true
   disableChunkedEncoding: false
 ingress:
   - hostname: api.act-omega-net.dev
     service: http://127.0.0.1:8097
+    originRequest:
+      httpHostHeader: 127.0.0.1:8097
+      connectTimeout: 10s
+      keepAliveTimeout: 60s
+      keepAliveConnections: 100
+      tcpKeepAlive: 15s
+      noHappyEyeballs: true
+      disableChunkedEncoding: false
   - hostname: mcp.act-omega-net.dev
     service: http://127.0.0.1:8097
+    originRequest:
+      httpHostHeader: 127.0.0.1:8097
+      connectTimeout: 10s
+      keepAliveTimeout: 60s
+      keepAliveConnections: 100
+      tcpKeepAlive: 15s
+      noHappyEyeballs: true
+      disableChunkedEncoding: false
   - hostname: agent.act-omega-net.dev
     service: http://127.0.0.1:8097
+    originRequest:
+      httpHostHeader: 127.0.0.1:8097
+      connectTimeout: 10s
+      keepAliveTimeout: 60s
+      keepAliveConnections: 100
+      tcpKeepAlive: 15s
+      noHappyEyeballs: true
+      disableChunkedEncoding: false
   - hostname: hud.act-omega-net.dev
     service: http://127.0.0.1:5173
+    originRequest:
+      httpHostHeader: 127.0.0.1:5173
+      connectTimeout: 10s
+      keepAliveTimeout: 60s
+      keepAliveConnections: 100
+      tcpKeepAlive: 15s
+      noHappyEyeballs: true
+      disableChunkedEncoding: false
   - hostname: wiki.act-omega-net.dev
     service: http://127.0.0.1:5173
+    originRequest:
+      httpHostHeader: 127.0.0.1:5173
+      connectTimeout: 10s
+      keepAliveTimeout: 60s
+      keepAliveConnections: 100
+      tcpKeepAlive: 15s
+      noHappyEyeballs: true
+      disableChunkedEncoding: false
   - hostname: act-omega-net.dev
     service: http://127.0.0.1:5173
+    originRequest:
+      httpHostHeader: 127.0.0.1:5173
+      connectTimeout: 10s
+      keepAliveTimeout: 60s
+      keepAliveConnections: 100
+      tcpKeepAlive: 15s
+      noHappyEyeballs: true
+      disableChunkedEncoding: false
   - service: http_status:404

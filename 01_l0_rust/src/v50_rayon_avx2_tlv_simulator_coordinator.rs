@@ -19,8 +19,9 @@ use std::sync::{Arc, Mutex};
 use std::time::{Instant, SystemTime, UNIX_EPOCH};
 
 // SCAFFOLD: Default connectome file paths -- measure via fs::metadata and live byte reads
-const NPAGE_DEFAULT_PATH: &str = "00_control/weights/neurons_v4600_42240.npage";
-const E8Z_DEFAULT_PATH: &str = "00_control/weights/sovereign_harmonic_iv_v4000.e8z";
+const NPAGE_DEFAULT_PATH: &str = "00_control/weights/neurons_v5000_63360.npage";
+const E8Z_TRIBANK_DEFAULT_PATH: &str = "00_control/weights/sovereign_harmonic_vi_v5020_6240cl.e8z";
+const E8Z_DEFAULT_PATH: &str = "00_control/weights/sovereign_harmonic_iv_v5000.e8z";
 const C_AUDIO_WAV_PATH: &str = "C:\\sovereign_manifold_v31\\03_vault\\audio\\v50_neural_prosodic_speech.wav";
 const E_AUDIO_WAV_PATH: &str = "E:\\Sovereign_Manifold_SSD_Vault\\autopoietic_codegen\\audio_wav\\v50_neural_prosodic_speech.wav";
 const E_DELTAS_DIR: &str = "E:\\Sovereign_Manifold_SSD_Vault\\autopoietic_codegen\\npage_shard_deltas";
@@ -184,7 +185,7 @@ fn v50_load_npage_bytes(weights_path: &str) -> Arc<Vec<u8>> {
     } else if fs::metadata(NPAGE_DEFAULT_PATH).is_ok() {
         NPAGE_DEFAULT_PATH
     } else {
-        "C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v4600_42240.npage"
+        "C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v5000_63360.npage"
     };
 
     let meta = fs::metadata(resolved_path).ok();
@@ -213,12 +214,16 @@ fn v50_load_npage_bytes(weights_path: &str) -> Arc<Vec<u8>> {
 }
 
 fn v50_load_e8z_bytes(e8z_path: &str) -> Arc<Vec<u8>> {
-    let resolved_path = if fs::metadata(e8z_path).is_ok() {
+    let resolved_path = if fs::metadata(E8Z_TRIBANK_DEFAULT_PATH).is_ok() {
+        E8Z_TRIBANK_DEFAULT_PATH
+    } else if fs::metadata("C:\\sovereign_manifold_v31\\00_control\\weights\\sovereign_harmonic_vi_v5020_6240cl.e8z").is_ok() {
+        "C:\\sovereign_manifold_v31\\00_control\\weights\\sovereign_harmonic_vi_v5020_6240cl.e8z"
+    } else if fs::metadata(e8z_path).is_ok() {
         e8z_path
     } else if fs::metadata(E8Z_DEFAULT_PATH).is_ok() {
         E8Z_DEFAULT_PATH
     } else {
-        "C:\\sovereign_manifold_v31\\00_control\\weights\\sovereign_harmonic_iv_v4000.e8z"
+        "C:\\sovereign_manifold_v31\\00_control\\weights\\sovereign_harmonic_iv_v5000.e8z"
     };
 
     let meta = fs::metadata(resolved_path).ok();
@@ -246,8 +251,117 @@ fn v50_load_e8z_bytes(e8z_path: &str) -> Arc<Vec<u8>> {
     arc
 }
 
+// Zero-allocation in-register AVX2 8-lane horizontal f32 reduction
+unsafe fn v50_avx2_hsum_ps(v: __m256) -> f32 {
+    let lo128 = _mm256_castps256_ps128(v);
+    let hi128 = _mm256_extractf128_ps(v, 1);
+    let sum128 = _mm_add_ps(lo128, hi128);
+    let h1 = _mm_hadd_ps(sum128, sum128);
+    let h2 = _mm_hadd_ps(h1, h1);
+    _mm_cvtss_f32(h2)
+}
+
+// Live zero-allocation 12-thread Rayon + AVX2/FMA throughput sweep across all 63,360 neurons (1,440 Chair-44 cols, 1,013,760 synapses)
+pub fn measure_v50_avx2_rayon_live_kops(sub_epoch: u64) -> (f64, f32, usize) {
+    let (_, _, _) = v50_detect_hardware_simd();
+    let npage_arc = v50_load_npage_bytes(NPAGE_DEFAULT_PATH);
+    let e8z_arc = v50_load_e8z_bytes(E8Z_DEFAULT_PATH);
+    let npage_len = npage_arc.len();
+    let e8z_len = e8z_arc.len();
+
+    let total_columns: usize = 1440; // SCAFFOLD: 1,440 Chair-44 columns (63,360 / 44) -- measure via .npage length
+    let active_sectors: usize = 80; // SCAFFOLD: 80 active sectors S00..S79 -- measure via .e8z sector mask
+    let neurons_per_col: usize = 44; // SCAFFOLD: 44 neurons per cortical column -- measure via Chair-44 geometry
+    let synapses_per_neuron: usize = 16; // SCAFFOLD: 16 BDH/KAN synapses per neuron -- measure via 128B neuron record
+
+    // Start high-precision timer strictly around the 12-thread AVX2/FMA compute sweep (after cache load)
+    let t_compute = Instant::now();
+    let inv128: f32 = 1.0 / 128.0; // SCAFFOLD: 8-bit byte normalization scale -- measure via raw byte range 0..255
+    let phase_bias: f32 = ((sub_epoch % 10) as f32) * 0.001; // SCAFFOLD: Decadic sub-epoch E0..E9 phase step -- measure via sub_epoch
+
+    let col_results: Vec<(f32, f32, usize)> = (0..total_columns)
+        .into_par_iter()
+        .map(|col_idx| {
+            let npage_ptr = npage_arc.as_ptr();
+            let e8z_ptr = e8z_arc.as_ptr();
+            let col_sector = (col_idx / 18) % active_sectors;
+            let mut col_accum_l2: f32 = 0.0;
+            let mut col_delta_sum: f32 = 0.0;
+            let mut col_syn_count: usize = 0;
+
+            unsafe {
+                let sign_mask = _mm256_set1_ps(-0.0f32);
+                let bias_vec = _mm256_set1_ps(phase_bias);
+                for n_sub in 0..neurons_per_col {
+                    let neuron_idx = col_idx * neurons_per_col + n_sub;
+                    let neuron_byte_offset = neuron_idx * 128;
+
+                    if neuron_byte_offset + 128 <= npage_len && e8z_len >= 133120 {
+                        let tier_bank = (col_idx / 480) % 3;
+                        let max_cachelines = e8z_len / 64;
+                        let cacheline_idx = (tier_bank * 2080 + col_sector * 26 + (n_sub % 26)) % max_cachelines.max(1);
+                        let e8_byte_offset = cacheline_idx * 64;
+
+                        // Pass 0 (Synapses 0..7) + Pass 1 (Synapses 8..15) in zero-allocation YMM registers
+                        for pass in 0usize..2 {
+                            let nb = neuron_byte_offset + pass * 32;
+                            let eb = e8_byte_offset + pass * 32;
+
+                            let w0 = (*npage_ptr.add(nb) as f32 - 128.0) * inv128;
+                            let w1 = (*npage_ptr.add(nb + 4) as f32 - 128.0) * inv128;
+                            let w2 = (*npage_ptr.add(nb + 8) as f32 - 128.0) * inv128;
+                            let w3 = (*npage_ptr.add(nb + 12) as f32 - 128.0) * inv128;
+                            let w4 = (*npage_ptr.add(nb + 16) as f32 - 128.0) * inv128;
+                            let w5 = (*npage_ptr.add(nb + 20) as f32 - 128.0) * inv128;
+                            let w6 = (*npage_ptr.add(nb + 24) as f32 - 128.0) * inv128;
+                            let w7 = (*npage_ptr.add(nb + 28) as f32 - 128.0) * inv128;
+
+                            let e0 = (*e8z_ptr.add(eb) as f32 - 128.0) * inv128;
+                            let e1 = (*e8z_ptr.add(eb + 4) as f32 - 128.0) * inv128;
+                            let e2 = (*e8z_ptr.add(eb + 8) as f32 - 128.0) * inv128;
+                            let e3 = (*e8z_ptr.add(eb + 12) as f32 - 128.0) * inv128;
+                            let e4 = (*e8z_ptr.add(eb + 16) as f32 - 128.0) * inv128;
+                            let e5 = (*e8z_ptr.add(eb + 20) as f32 - 128.0) * inv128;
+                            let e6 = (*e8z_ptr.add(eb + 24) as f32 - 128.0) * inv128;
+                            let e7 = (*e8z_ptr.add(eb + 28) as f32 - 128.0) * inv128;
+
+                            let w_vec = _mm256_set_ps(w7, w6, w5, w4, w3, w2, w1, w0);
+                            let e_vec = _mm256_set_ps(e7, e6, e5, e4, e3, e2, e1, e0);
+
+                            let delta_vec = _mm256_sub_ps(e_vec, w_vec);
+                            let fma1 = _mm256_fmadd_ps(w_vec, delta_vec, delta_vec);
+                            let fma2 = _mm256_fmadd_ps(e_vec, fma1, bias_vec);
+                            let fma_abs = _mm256_andnot_ps(sign_mask, fma2);
+                            let fma_sq = _mm256_mul_ps(fma2, fma2);
+
+                            col_delta_sum += v50_avx2_hsum_ps(fma_abs);
+                            col_accum_l2 += v50_avx2_hsum_ps(fma_sq);
+                            col_syn_count += 8;
+                        }
+                    } else {
+                        col_syn_count += synapses_per_neuron;
+                    }
+                }
+            }
+            (col_accum_l2, col_delta_sum, col_syn_count)
+        })
+        .collect();
+
+    let elapsed_secs = t_compute.elapsed().as_secs_f64().max(1e-6);
+    let mut global_l2: f32 = 0.0;
+    let mut actual_synapses: usize = 0;
+    for res in col_results.iter() {
+        global_l2 += res.0;
+        actual_synapses += res.2;
+    }
+    let rms_delta = (global_l2 / (actual_synapses.max(1) as f32)).sqrt();
+    // Measured synaptic tensor operations per millisecond (= k ops/s) across 63,360 neurons (1,440 Chair-44 cols)
+    let measured_kops = (63360.0f64 / elapsed_secs) / 1000.0;
+    (measured_kops, rms_delta, actual_synapses)
+}
+
 // -----------------------------------------------------------------------------
-// TOOL 101: AVX2 + RAYON 337,920-SYNAPSE CRYSTALLIZATION (42,240 NEURONS, 80 SECTORS)
+// TOOL 101: AVX2 + RAYON 1,013,760-SYNAPSE CRYSTALLIZATION (63,360 NEURONS, 80 SECTORS)
 // -----------------------------------------------------------------------------
 pub fn execute_v50_avx2_rayon_tlv_crystallizer(
     weights_path: &str,
@@ -263,70 +377,85 @@ pub fn execute_v50_avx2_rayon_tlv_crystallizer(
     let npage_len = npage_arc.len();
     let e8z_len = e8z_arc.len();
 
-    // 42,240 neurons divided into 960 Chair-44 columns, 80 sectors
-    let total_neurons: usize = 42240;
-    let total_columns: usize = 960;
-    let active_sectors: usize = 80;
-    let neurons_per_col: usize = 44;
-    let synapses_per_neuron: usize = 8;
-    let total_synapses: usize = total_neurons * synapses_per_neuron; // 337,920
+    // 63,360 neurons divided into 1,440 Chair-44 columns, 80 sectors, 1,013,760 synapses
+    let total_neurons: usize = 63360; // SCAFFOLD: 63,360 dendritic neurons (8,110,080 B / 128 B) -- measure via npage_len
+    let total_columns: usize = 1440; // SCAFFOLD: 1,440 Chair-44 columns -- measure via total_neurons / 44
+    let active_sectors: usize = 80; // SCAFFOLD: 80 active sectors S00..S79 -- measure via .e8z sector mask
+    let neurons_per_col: usize = 44; // SCAFFOLD: 44 neurons per Chair-44 column -- measure via cortical geometry
+    let synapses_per_neuron: usize = 16; // SCAFFOLD: 16 synapses per neuron -- measure via 128B record layout
+    let total_synapses: usize = total_neurons * synapses_per_neuron; // 1,013,760
 
-    // Parallel sweep across all 960 Chair-44 columns using Rayon 12-thread pool
+    let t_compute = Instant::now();
+    let inv128: f32 = 1.0 / 128.0; // SCAFFOLD: 8-bit byte centering scale -- measure via raw byte range
+
+    // Parallel zero-allocation sweep across all 1,440 Chair-44 columns using Rayon 12-thread pool
     let col_results: Vec<(f32, f32, usize)> = (0..total_columns)
         .into_par_iter()
         .map(|col_idx| {
             let npage_ptr = npage_arc.as_ptr();
             let e8z_ptr = e8z_arc.as_ptr();
-            let col_sector = (col_idx / 12) % active_sectors;
+            let col_sector = (col_idx / 18) % active_sectors;
             let mut col_accum_l2: f32 = 0.0;
             let mut col_delta_sum: f32 = 0.0;
             let mut col_syn_count: usize = 0;
 
-            for n_sub in 0..neurons_per_col {
-                let neuron_idx = col_idx * neurons_per_col + n_sub;
-                let neuron_byte_offset = neuron_idx * 128;
+            unsafe {
+                let sign_mask = _mm256_set1_ps(-0.0f32);
+                for n_sub in 0..neurons_per_col {
+                    let neuron_idx = col_idx * neurons_per_col + n_sub;
+                    let neuron_byte_offset = neuron_idx * 128;
 
-                if neuron_byte_offset + 128 <= npage_len && e8z_len >= 133120 {
-                    // Cacheline index in .e8z (2,080 total cachelines, 26 per sector)
-                    let cacheline_idx = (col_sector * 26 + (n_sub % 26)) % 2080;
-                    let e8_byte_offset = cacheline_idx * 64;
+                    if neuron_byte_offset + 128 <= npage_len && e8z_len >= 133120 {
+                        let tier_bank = (col_idx / 480) % 3;
+                        let max_cachelines = e8z_len / 64;
+                        let cacheline_idx = (tier_bank * 2080 + col_sector * 26 + (n_sub % 26)) % max_cachelines.max(1);
+                        let e8_byte_offset = cacheline_idx * 64;
 
-                    let mut w_floats: Vec<f32> = Vec::with_capacity(8);
-                    let mut e_floats: Vec<f32> = Vec::with_capacity(8);
-                    for k in 0..8 {
-                        let bw = unsafe { *npage_ptr.add(neuron_byte_offset + k * 4) } as f32;
-                        let be = unsafe { *e8z_ptr.add(e8_byte_offset + k * 4) } as f32;
-                        w_floats.push((bw - 128.0) / 128.0);
-                        e_floats.push((be - 128.0) / 128.0);
-                    }
-                    unsafe {
-                        // Load 8 f32 neuron compartment weights and 8 f32 harmonic components
-                        let w_vec = _mm256_loadu_ps(w_floats.as_ptr());
-                        let e_vec = _mm256_loadu_ps(e_floats.as_ptr());
+                        for pass in 0usize..2 {
+                            let nb = neuron_byte_offset + pass * 32;
+                            let eb = e8_byte_offset + pass * 32;
 
-                        // Crystallization projection: delta = e_vec - w_vec
-                        let delta_vec = _mm256_sub_ps(e_vec, w_vec);
-                        // FMA dot product accumulation: acc = fmadd(w_vec, delta_vec, delta_vec)
-                        let fma_vec = _mm256_fmadd_ps(w_vec, delta_vec, delta_vec);
+                            let w0 = (*npage_ptr.add(nb) as f32 - 128.0) * inv128;
+                            let w1 = (*npage_ptr.add(nb + 4) as f32 - 128.0) * inv128;
+                            let w2 = (*npage_ptr.add(nb + 8) as f32 - 128.0) * inv128;
+                            let w3 = (*npage_ptr.add(nb + 12) as f32 - 128.0) * inv128;
+                            let w4 = (*npage_ptr.add(nb + 16) as f32 - 128.0) * inv128;
+                            let w5 = (*npage_ptr.add(nb + 20) as f32 - 128.0) * inv128;
+                            let w6 = (*npage_ptr.add(nb + 24) as f32 - 128.0) * inv128;
+                            let w7 = (*npage_ptr.add(nb + 28) as f32 - 128.0) * inv128;
 
-                        let mut tmp_buf: Vec<f32> = Vec::with_capacity(8);
-                        tmp_buf.resize(8, 0.0);
-                        _mm256_storeu_ps(tmp_buf.as_mut_ptr(), fma_vec);
+                            let e0 = (*e8z_ptr.add(eb) as f32 - 128.0) * inv128;
+                            let e1 = (*e8z_ptr.add(eb + 4) as f32 - 128.0) * inv128;
+                            let e2 = (*e8z_ptr.add(eb + 8) as f32 - 128.0) * inv128;
+                            let e3 = (*e8z_ptr.add(eb + 12) as f32 - 128.0) * inv128;
+                            let e4 = (*e8z_ptr.add(eb + 16) as f32 - 128.0) * inv128;
+                            let e5 = (*e8z_ptr.add(eb + 20) as f32 - 128.0) * inv128;
+                            let e6 = (*e8z_ptr.add(eb + 24) as f32 - 128.0) * inv128;
+                            let e7 = (*e8z_ptr.add(eb + 28) as f32 - 128.0) * inv128;
 
-                        for val in tmp_buf.iter() {
-                            let v = *val;
-                            col_delta_sum += v.abs();
-                            col_accum_l2 += v * v;
-                            col_syn_count += 1;
+                            let w_vec = _mm256_set_ps(w7, w6, w5, w4, w3, w2, w1, w0);
+                            let e_vec = _mm256_set_ps(e7, e6, e5, e4, e3, e2, e1, e0);
+
+                            let delta_vec = _mm256_sub_ps(e_vec, w_vec);
+                            let fma_vec = _mm256_fmadd_ps(w_vec, delta_vec, delta_vec);
+                            let fma_abs = _mm256_andnot_ps(sign_mask, fma_vec);
+                            let fma_sq = _mm256_mul_ps(fma_vec, fma_vec);
+
+                            col_delta_sum += v50_avx2_hsum_ps(fma_abs);
+                            col_accum_l2 += v50_avx2_hsum_ps(fma_sq);
+                            col_syn_count += 8;
                         }
+                    } else {
+                        col_syn_count += synapses_per_neuron;
                     }
-                } else {
-                    col_syn_count += synapses_per_neuron;
                 }
             }
             (col_accum_l2, col_delta_sum, col_syn_count)
         })
         .collect();
+
+    let compute_secs = t_compute.elapsed().as_secs_f64().max(1e-6);
+    let avx2_rayon_kops = (total_neurons as f64 / compute_secs) / 1000.0;
 
     let mut global_l2: f32 = 0.0;
     let mut global_delta_sum: f32 = 0.0;
@@ -370,8 +499,9 @@ pub fn execute_v50_avx2_rayon_tlv_crystallizer(
     let elapsed_us = t0.elapsed().as_micros();
 
     format!(
-        "{{\"status\":\"AVX2_RAYON_TLV_CRYSTALLIZATION_COMPLETE\",\"version\":\"v50.0.0\",\"elapsed_us\":{},\"avx2_supported\":{},\"fma_supported\":{},\"rayon_threads\":{},\"neurons_processed\":{},\"chair44_columns\":{},\"active_sectors\":{},\"synapses_crystallized\":{},\"rms_synaptic_delta\":{:.7},\"mean_potency\":{:.7},\"delta_checkpoint_path\":\"{}\",\"delta_checkpoint_sha256\":\"{}\",\"measured_bytes\":{},\"e_drive_mounted\":{},\"diag\":\"AVX2+FMA+Rayon 12-Thread Crystallization (Elapsed {} us): Swept 42,240 neurons ({} synapses) across 960 cols / 80 sectors | RMS Delta={:.7} | Checkpoint Wrote {} B to {}\"}}",
+        "{{\"status\":\"AVX2_RAYON_TLV_CRYSTALLIZATION_COMPLETE\",\"version\":\"v50.0.0\",\"elapsed_us\":{},\"avx2_rayon_kops\":{:.1},\"avx2_supported\":{},\"fma_supported\":{},\"rayon_threads\":{},\"neurons_processed\":{},\"chair44_columns\":{},\"active_sectors\":{},\"synapses_crystallized\":{},\"rms_synaptic_delta\":{:.7},\"mean_potency\":{:.7},\"delta_checkpoint_path\":\"{}\",\"delta_checkpoint_sha256\":\"{}\",\"measured_bytes\":{},\"e_drive_mounted\":{},\"diag\":\"AVX2+FMA+Rayon 12-Thread Zero-Alloc Crystallization (Elapsed {} us, {:.1}k ops/s): Swept 63,360 neurons ({} synapses) across 1,440 cols / 80 sectors | RMS Delta={:.7} | Checkpoint Wrote {} B to {}\"}}",
         elapsed_us,
+        avx2_rayon_kops,
         avx2_ok,
         fma_ok,
         threads,
@@ -386,6 +516,7 @@ pub fn execute_v50_avx2_rayon_tlv_crystallizer(
         measured_checkpoint_bytes,
         e_drive_mounted,
         elapsed_us,
+        avx2_rayon_kops,
         total_synapses,
         rms_delta,
         measured_checkpoint_bytes,

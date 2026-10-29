@@ -1,0 +1,31 @@
+{
+  "agent": {
+    "default_model": {
+      "provider": "google",
+      "model": "gemini-4-argon"
+    }
+  },
+  "context_servers": {
+    "act-omega-sovereign-manifold": {
+      "command": {
+        "path": "C:\\Windows\\System32\\curl.exe",
+        "args": [
+          "-s",
+          "-X",
+          "POST",
+          "http://127.0.0.1:8097/api/v1/mcp/rpc",
+          "-H",
+          "Content-Type: application/json",
+          "--data-binary",
+          "@-"
+        ]
+      },
+      "settings": {
+        "version": "v50.0.0",
+        "chain": "CHAIN_145",
+        "neurons": 63360,
+        "bijected_cachelines_64b": 132960
+      }
+    }
+  }
+}

@@ -1,0 +1,15 @@
+{
+    "timestamp_utc":  "2026-10-29T00:17:10.6905766Z",
+    "serial":  "3A121FDJH00BW5",
+    "codename":  "shiba",
+    "build_id":  "CP41.260831.019",
+    "fingerprint":  "google/shiba_beta/shiba:17/CP41.260831.019/16596456:user/release-keys",
+    "bootloader":  "ripcurrent-17.0-16433839",
+    "active_slot":  "_a",
+    "safe_fallback_slot":  "_b",
+    "flash_locked":  "0",
+    "vbmeta_state":  "unlocked",
+    "kernel":  "Linux 6.1.172-android14-11-g8d0115b07367-ab16385437 aarch64",
+    "pkvm":  "1",
+    "root_bins":  ""
+}

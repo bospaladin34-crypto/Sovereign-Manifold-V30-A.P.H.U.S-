@@ -1,0 +1,78 @@
+name: Sovereign Pages Autonomous Deploy
+
+on:
+  push:
+    branches:
+      - gh-pages
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-deploy
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build & Prepare Sovereign HUD Static Assets
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Sovereign Manifold Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: '05_hud_cockpit/package-lock.json'
+
+      - name: Install Dependencies
+        run: |
+          cd 05_hud_cockpit
+          npm ci
+
+      - name: Build WebGPU HUD Cockpit Bundle
+        run: |
+          cd 05_hud_cockpit
+          npm run build
+
+      - name: Sync Dist to Docs & Verify SSR Attributes
+        shell: bash
+        run: |
+          # Ensure docs directory exists
+          mkdir -p docs/assets
+          
+          # Copy freshly compiled assets from dist to docs if dist has newer bundles
+          cp -r 05_hud_cockpit/dist/* docs/
+          
+          # Verify SSR attribute
+          if ! grep -q 'data-sovereign-ssr="v50.2.0"' docs/index.html; then
+            echo "ERROR: docs/index.html missing data-sovereign-ssr attribute"
+            exit 1
+          fi
+          
+          # Ensure .nojekyll exists
+          touch docs/.nojekyll
+          echo "Verified docs/index.html SSR pre-population and .nojekyll"
+
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './docs'
+
+  deploy:
+    name: Deploy to GitHub Pages
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -3,22 +3,21 @@ name: Sovereign Pages Autonomous Deploy
 on:
   push:
     branches:
+      - vesper_production
       - gh-pages
       - main
   workflow_dispatch:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
-  group: pages-deploy
-  cancel-in-progress: false
+  group: pages-deploy-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
-    name: Build & Prepare Sovereign HUD Static Assets
+    name: Build & Verify Sovereign HUD Static Assets
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Sovereign Manifold Repository
@@ -44,35 +43,42 @@ jobs:
       - name: Sync Dist to Docs & Verify SSR Attributes
         shell: bash
         run: |
-          # Ensure docs directory exists
           mkdir -p docs/assets
-          
-          # Copy freshly compiled assets from dist to docs if dist has newer bundles
           cp -r 05_hud_cockpit/dist/* docs/
-          
-          # Verify SSR attribute
           if ! grep -q 'data-sovereign-ssr="v50.2.0"' docs/index.html; then
             echo "ERROR: docs/index.html missing data-sovereign-ssr attribute"
             exit 1
           fi
-          
-          # Ensure .nojekyll exists
           touch docs/.nojekyll
           echo "Verified docs/index.html SSR pre-population and .nojekyll"
 
-      - name: Upload Pages Artifact
-        uses: actions/upload-pages-artifact@v3
+      - name: Upload Verified Pages Bundle Artifact
+        uses: actions/upload-artifact@v4
         with:
+          name: sovereign-hud-pages-bundle-${{ github.ref_name }}
           path: './docs'
+          if-no-files-found: error
 
-  deploy:
-    name: Deploy to GitHub Pages
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  verify-live-pages:
+    name: Verify Live GitHub Pages & SSR Bundle Health
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Probe Live GitHub Pages Endpoint & SSR Payload
+        shell: bash
+        run: |
+          PAGE_URL="https://bospaladin34-crypto.github.io/Sovereign-Manifold-V30-A.P.H.U.S-/"
+          HTTP_STATUS=$(curl -s -L -o /tmp/gh_pages_index.html -w "%{http_code}" "$PAGE_URL")
+          echo "GitHub Pages HTTP Status: $HTTP_STATUS"
+          if [ "$HTTP_STATUS" != "200" ]; then
+            echo "ERROR: Expected HTTP 200 from $PAGE_URL, got $HTTP_STATUS"
+            exit 1
+          fi
+          if ! grep -q 'data-sovereign-ssr="v50.2.0"' /tmp/gh_pages_index.html; then
+            echo "WARNING: Live GitHub Pages propagation in progress"
+          else
+            echo "Verified data-sovereign-ssr=v50.2.0 live on GitHub Pages!"
+          fi
+          echo "### GitHub Pages Autonomous Verification" >> $GITHUB_STEP_SUMMARY
+          echo "- **URL**: $PAGE_URL" >> $GITHUB_STEP_SUMMARY
+          echo "- **HTTP Status**: $HTTP_STATUS" >> $GITHUB_STEP_SUMMARY

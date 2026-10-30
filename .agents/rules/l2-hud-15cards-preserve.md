@@ -3,10 +3,10 @@ trigger: glob
 globs: "05_hud_cockpit/**/*, 02_l2_orchestration/**/*, docs/**/*, index.html, wiki.html, hud.html"
 description: "Host WebGPU HUD (05_hud_cockpit & 02_l2_orchestration/hud) preservation of 15 Cards, 60 FPS Scopes, 16x130 Heatmap, 5-View Lens Switcher, honest UNMEASURED/OFFLINE fallbacks, External Operator Auth Gate, Anti-Stale Headers, and Relative Asset / SSR Snapshot Law."
 ---
-# WebGPU HUD, UI/UX Streamlining & Portal Rules (ACT-Omega Net v56.0.0 | CHAIN 210 | 624 QED)
+# WebGPU HUD, 8-Domain Functional Command Deck, GSC Lock & Portal Rules (ACT-Omega Net v56.1.0 | CHAIN 210 | 624 QED)
 
 1. **100% Preservation + Zero-Data-Loss UI/UX Streamlining**:
-   - Preserve 100% of the **15 Interactive Telemetry Cards** in Drawer A (with Compact/Full Density Toggle), the **60 FPS 3D Stiefel/Theodorus Vector Scope & 15.965 Hz Oscilloscope** in Drawer B, the **16x130 (`2,080`-Cacheline) Heatmap**, the **5-View Cockpit Lens Switcher** (`ALL`, `CARDS`, `SCOPES`, `OPS`, `TOOLS`), the **`Ctrl+K` Command Palette**, Drawer 3 (`624/624` Lean 4 QED), and Drawer 4 (`210` Native Tools / `CHAIN 210` with Taxonomic Category Tabs & Instant Search).
+   - Preserve 100% of the **15 Interactive Telemetry Cards** in Drawer A (with Compact/Full Density Toggle), the **60 FPS 3D Stiefel/Theodorus Vector Scope & 15.965 Hz Oscilloscope** in Drawer B, the **16x130 (`2,080`-Cacheline) Heatmap**, the **5-View Cockpit Lens Switcher** (`ALL`, `CARDS`, `SCOPES`, `OPS`, `TOOLS`), the **`Ctrl+K` Command Palette**, Drawer 3 (`624/624` Lean 4 QED), and Drawer 4 (**8-Domain Functional Command Deck** consolidating all `210` Native Tools (`43+29+19+26+16+13+34+30 = 210`) with 1-click `/api/v1/unified/*` domain dispatchers, domain filter tabs, instant search, and collapsible individual tool grids across `App.tsx`, `MainActivity.kt`, and `SovereignTrayAndHud.cs`).
 
 2. **Honest `"UNMEASURED/OFFLINE"` Fallback Law (Zero Synthetic Constants)**:
    - In `runBrowserWebGpuMicroBatch` and `toggleBrowserWebGpuLease` (and all HUD telemetry renderers), if `e8zCachelineNorms` is absent (`length < 12`) or any sampled component is `<= 0`, the HUD MUST immediately return `[0, "UNMEASURED/OFFLINE", ...]` and display `UNMEASURED/OFFLINE`.
@@ -42,3 +42,15 @@ description: "Host WebGPU HUD (05_hud_cockpit & 02_l2_orchestration/hud) preserv
        - Formal verification status: 624/624 Lean 4 QED theorems (zero sorry, zero axiom) and Layer 1.5 Haskell exact algebra.
        - Verified hardware IDs, ADB serials, Zenodo DOI `10.5281/zenodo.23651696`, OSF DOI `10.17605/OSF.IO/2XQ5Z`.
      - When React mounts on a client browser, it hydrates or replaces `#root`, while search crawlers, headless agents, and `curl` receive 100% crawlable architectural telemetry without executing JavaScript.
+
+7. **Permanent Google Search Console Ownership Certificate Lock (`google6edc0affb12d0455.html`) — STRICT `DO NOT REMOVE`**:
+   - **7-Target Exact Byte & SHA-256 Lock**: `google6edc0affb12d0455.html` MUST remain strictly `53` bytes (`google-site-verification: google6edc0affb12d0455.html`, SHA-256 `0241DC5EDED053A96317C9C8FF34F4DCF12C069F88B8D92636D5D795EC176B3D`) across:
+     1. `05_hud_cockpit/public/google6edc0affb12d0455.html`
+     2. `02_l2_orchestration/hud/public/google6edc0affb12d0455.html`
+     3. `05_hud_cockpit/dist/google6edc0affb12d0455.html`
+     4. `02_l2_orchestration/hud/dist/google6edc0affb12d0455.html`
+     5. `docs/google6edc0affb12d0455.html`
+     6. `google6edc0affb12d0455.html` (repo root)
+     7. `E:\Sovereign_Manifold_SSD_Vault\google6edc0affb12d0455.html`
+   - **`.gitignore` Un-Ignore Law**: Never add `05_hud_cockpit/dist/` to `.gitignore`; `05_hud_cockpit/dist/google6edc0affb12d0455.html`, `05_hud_cockpit/dist/index.html`, and `05_hud_cockpit/dist/assets/*` MUST remain tracked in Git so GitHub Actions CI (`Invoke-BrutalAgentGatekeeper.ps1 -StaticOnly`) passes on every push.
+   - **HTTP & Edge Fast-Path Lock**: Never remove the `// STRICT DO NOT REMOVE: Google Search Console Ownership Verification Certificate (google6edc0affb12d0455.html)` handlers in `01_l0_rust/src/v31_swarm.rs` (`:8097` and `:5173`) or `00_control/cloudflare_edge/worker_vpc_shadow_v3700.js`.

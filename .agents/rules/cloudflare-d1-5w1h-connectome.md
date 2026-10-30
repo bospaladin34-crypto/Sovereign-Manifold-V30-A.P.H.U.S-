@@ -2,15 +2,15 @@
 trigger: model_decision
 description: "Apply whenever working with the 5W1H Metabolic Harness, 63,360-Neuron Connectome (.npage), Cloudflare Durable Objects (worker_vpc_shadow_v3700.js), Named Tunnel, or Cloudflare D1 10-table database synchronization."
 ---
-# 5W1H Harness, 63,360-Neuron Connectome, Cloudflare Durable Objects & D1 Rules (ACT-Omega v50.0.0+ | CHAIN 135)
+# 5W1H Harness, 63,360-Neuron Connectome, Cloudflare Durable Objects, Named Tunnel & D1 Rules (ACT-Omega Net v56.1.0+ | CHAIN 210)
 
 1. **63,360-Neuron Connectome Bijection (`8,110,080 B` SHM)**:
    - `21,120` Core Shards (`03_vault\shards\shard_00001..21120.binshard`) + `21,120` Expansion Shards (`03_vault\shards_expansion\shard_21121..42240.binshard`) + `21,120` Tier-3 Scale-Up Shards (`03_vault\shards_tier3\shard_42241..63360.binshard`) == `63,360` Total 3-Compartment Dendritic Neurons (`00_control\weights\neurons_v5000_63360.npage`, `8,110,080 B = 63,360 x 128 B`, `1,440 x Chair-44` columns, `1,013,760` synapses across 36 Macro-Domains / 144 Sub-Domains).
 
 2. **Cloudflare Durable Object Zero-Overhead SQLite, Batched D1 & Anti-502 Tunnel Rules**:
-   - Active Cloudflare Worker entrypoint in `wrangler.toml` is `00_control/cloudflare_edge/worker_vpc_shadow_v3700.js` (`SovereignEdgeShadowDO` synced 1:1 to `worker_continuum_do.js`).
+   - Active Cloudflare Worker entrypoint in `wrangler.toml` is `00_control/cloudflare_edge/worker_vpc_shadow_v3700.js` (`SovereignEdgeShadowDO` synced 1:1 to `00_control/cloudflare_edge/worker_continuum_do.js` and root `worker_vpc_shadow_v3700.js`). Whenever `worker_vpc_shadow_v3700.js` is modified locally, you MUST mirror it to both copies AND run `npx wrangler deploy` so the live Cloudflare Edge (`sovereign-loq15-vpc-shadow.bospaladin34.workers.dev`) stays in lockstep (including the `/google6edc0affb12d0455.html` `53 B` route).
    - `SovereignEdgeShadowDO` MUST serve `GET` requests from in-memory caches (`0` SQLite read queries on `GET` hot path), debounce SQLite writes, and batch D1 reads via single-round-trip `env.ACT_OMEGA_D1.batch([...])`.
-   - `00_control/cloudflare_named_config.yml` enforces `protocol: http2`, `keepAliveConnections: 100`, `keepAliveTimeout: 90s`, `connectTimeout: 10s`, and explicit `httpHostHeader` routing to `127.0.0.1:5173` and `127.0.0.1:8097`.
+   - `00_control/cloudflare_named_config.yml` enforces `protocol: http2` and tunnel UUID `9cdea4c4-831d-4ccc-983d-5f7587a98206` routing `act-omega-net.dev` -> `127.0.0.1:5173` and `api.act-omega-net.dev` / `mcp.act-omega-net.dev` -> `127.0.0.1:8097`. On Wi-Fi reconnection or cluster reboot, always launch `cloudflared.exe` with exact tunnel UUID `9cdea4c4-831d-4ccc-983d-5f7587a98206` (or via `00_control\Sovereign-Lifecycle.ps1 -Action start`).
 
 3. **Remote Cloudflare D1 (`act_omega_d1_vault`, 10 Tables)**:
    - Synchronize all 10 tables in `act_omega_d1_vault` (`9f46d56a-ef3e-4232-a9ac-c4bd12e20a87`) via `npx wrangler d1 execute act_omega_d1_vault --remote --file=00_control/cloudflare_edge/sync_d1_v4900_chain100.sql`:

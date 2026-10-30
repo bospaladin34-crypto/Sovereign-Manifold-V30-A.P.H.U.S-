@@ -3,11 +3,11 @@ trigger: glob
 globs: "01_l0_rust/src/v48_*.rs, 01_l0_rust/src/bin/v31_swarm.rs, 03_vault/connectome/*.jsonl"
 description: "Sovereign Autopoietic Coordinator Bus, Universal E:\ SSD Vault Write-Back Pipeline, and DuckDB Columnar Analytical Engine rules."
 ---
-# Sovereign Autopoietic Coordinator Bus, `E:\` Write-Back & DuckDB Rules (ACT-Omega v49.0.0+ | CHAIN 100)
+# Sovereign Autopoietic Coordinator Bus, `E:\` Write-Back & DuckDB Rules (ACT-Omega Net v56.0.0 | CHAIN 210)
 
 1. **No-Siloed-Tools Law (`v48_autopoietic_coordinator_bus.rs`)**:
-   - Every tool (`Tools 1..100+`), codegen operation, and autonomous engine in `01_l0_rust/src/bin/v31_swarm.rs` must publish a 5W1H `BusEnvelope` via `publish_tool_execution_to_coordinator_bus()` or `/api/v1/coordinator/message_bus`.
-   - Each `BusEnvelope` must record a measured SHA-256 payload digest, timestamp, decadic sub-epoch (`0..9`), `.npage` neuron index (`0..42,239`), Chair-44 column (`0..959`), sector (`S00..S79`), and write to both:
+   - Every tool (`Tools 1..210` / `CHAIN 210`), codegen operation, and autonomous engine in `01_l0_rust/src/bin/v31_swarm.rs` must publish a 5W1H `BusEnvelope` via `publish_tool_execution_to_coordinator_bus()` or `/api/v1/coordinator/message_bus`.
+   - Each `BusEnvelope` must record a measured SHA-256 payload digest, timestamp, decadic sub-epoch (`0..9`), `.npage` neuron index (`0..63,359`), Chair-44 column (`0..1,439`), sector (`S00..S79`), and write to both:
      - `E:\Sovereign_Manifold_SSD_Vault\coordinator_bus\message_bus_ledger_v4800.jsonl`
      - `C:\sovereign_manifold_v31\03_vault\connectome\message_bus_ledger_v4800.jsonl`
 

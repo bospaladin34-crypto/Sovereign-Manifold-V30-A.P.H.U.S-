@@ -16,8 +16,12 @@ Write-Host "Compiling SovereignCockpitHUD.exe with csc.exe..." -ForegroundColor 
 & "C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe" /nologo /target:winexe /optimize+ /out:$target1 $src
 if ($LASTEXITCODE -ne 0) { throw "CSC compilation failed with code $LASTEXITCODE" }
 
-# Mirror binary and source
+# Mirror binary and source (using atomic rename on Windows if target2 is locked by a child WebView2/tray handle)
+if (Test-Path $target2) {
+    Move-Item -Path $target2 -Destination "$target2.old" -Force -ErrorAction SilentlyContinue
+}
 Copy-Item -Path $target1 -Destination $target2 -Force
+Remove-Item -Path "$target2.old" -Force -ErrorAction SilentlyContinue
 Copy-Item -Path $target1 -Destination $target3 -Force
 Copy-Item -Path $src -Destination $mirrorCs -Force
 

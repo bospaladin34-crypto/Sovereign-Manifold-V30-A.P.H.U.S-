@@ -78,10 +78,10 @@ jobs:
           $triv1 = ([regex]::Matches($content, ':\s*(\w+)\s*=\s*\1\s*:=')).Count
           $triv2 = ([regex]::Matches($content, '\(a\s+b\s*:\s*Nat\)\s*:\s*a\s*\+\s*b\s*=\s*b\s*\+\s*a')).Count
           $triv3 = ([regex]::Matches($content, '\((\d+)\s*=\s*\1\)')).Count
-          Write-Host "Lean 4 Theorems: $thms (Req: >= 564)" -ForegroundColor Green
+          Write-Host "Lean 4 Theorems: $thms (Req: >= 624)" -ForegroundColor Green
           Write-Host "Sorry Count: $sorry (Req: 0)" -ForegroundColor Green
           Write-Host "Trivial Padding Count: $($triv1 + $triv2 + $triv3) (Req: 0)" -ForegroundColor Green
-          if ($thms -lt 564 -or $sorry -gt 0 -or ($triv1 + $triv2 + $triv3) -gt 0) {
+          if ($thms -lt 624 -or $sorry -gt 0 -or ($triv1 + $triv2 + $triv3) -gt 0) {
               throw "Lean 4 formal theorem check failed!"
           }
           if (Get-Command lean -ErrorAction SilentlyContinue) {

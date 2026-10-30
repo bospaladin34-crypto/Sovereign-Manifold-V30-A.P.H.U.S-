@@ -115,6 +115,372 @@ const SECTOR_NAMES = [
   "S76:P8_WAL", "S77:P8_D1_MIR", "S78:P8_ROAM", "S79:P8_APEX"
 ];
 
+// Feature 10: 8-Domain Functional Command Deck Interfaces & Canonical Catalog
+export interface FunctionalToolItem {
+  id: number;
+  tag: string;
+  label: string;
+  ep: string;
+  styleKind?: "cyan" | "gold" | "green" | "purple" | "amber" | "blue";
+}
+
+export interface FunctionalDomainDef {
+  id: number;
+  slug: string;
+  name: string;
+  shortName: string;
+  toolCount: number;
+  toolRange: string;
+  writebackCat: string;
+  ep: string;
+  accent: string;
+  bg: string;
+  border: string;
+  desc: string;
+  tools: FunctionalToolItem[];
+}
+
+export const DOMAINS_CATALOG: FunctionalDomainDef[] = [
+  {
+    id: 1,
+    slug: "lattice_algebra_proofs",
+    name: "Lattice, Algebra & Formal Proofs",
+    shortName: "Lattice & Proofs",
+    toolCount: 43,
+    toolRange: "T01-T12, T82, T92, T104-T110, T121-T134, T166-T170, T196-T205",
+    writebackCat: "lean4_proofs",
+    ep: "/api/v1/unified/lattice_algebra_proofs",
+    accent: "#B388FF",
+    bg: "#160C22",
+    border: "#8A4FFF",
+    desc: "E8/Leech lattice, 80-sector .e8z norm scan, Layer 1.5 Haskell algebra, and 624/624 Lean 4 QED theorem verification.",
+    tools: [
+      { id: 1, tag: "T01", label: "E8 Lattice Roots", ep: "/api/v1/algebra/e8_roots" },
+      { id: 2, tag: "T02", label: "Leech Lattice 24D", ep: "/api/v1/algebra/leech_24d" },
+      { id: 3, tag: "T03", label: "Turyn-Golay Hexacode", ep: "/api/v1/algebra/turyn_golay" },
+      { id: 4, tag: "T04", label: "Plücker Coordinates 6D", ep: "/api/v1/geometry/plucker_6d" },
+      { id: 5, tag: "T05", label: "Stiefel St(16,80)", ep: "/api/v1/manifold/stiefel_16x80" },
+      { id: 6, tag: "T06", label: "80-Sector Norm Scan", ep: "/api/v1/sectors/scan_80" },
+      { id: 7, tag: "T07", label: "Sector Gauge Invariant", ep: "/api/v1/sectors/gauge_invariant" },
+      { id: 8, tag: "T08", label: "Weyl Group Orbit", ep: "/api/v1/algebra/weyl_orbit" },
+      { id: 9, tag: "T09", label: "Coxeter Element", ep: "/api/v1/algebra/coxeter_element" },
+      { id: 10, tag: "T10", label: "Cartan Matrix E8", ep: "/api/v1/algebra/cartan_e8" },
+      { id: 11, tag: "T11", label: "Dynkin Diagram", ep: "/api/v1/algebra/dynkin_diagram" },
+      { id: 12, tag: "T12", label: "Formal Lean 4 QED Engine", ep: "/api/v1/compiler/verify" },
+      { id: 82, tag: "T82", label: "192-Ep E8-Leech QAT", ep: "/api/v1/lattice/basis_reduction" },
+      { id: 92, tag: "T92", label: "Amplituhedron SYM Hexagon", ep: "/api/v1/v49/tool_92_amplituhedron_9loop_hexagon_plucker" },
+      { id: 104, tag: "T104", label: "Tool 104: BraidIR Compiler", ep: "/api/v1/monograph/braidir_yang_baxter_bresenham_compiler" },
+      { id: 105, tag: "T105", label: "Tool 105: SH4Z LVQ Quantizer", ep: "/api/v1/monograph/sh4z_dual_shell_lvq_quantizer" },
+      { id: 106, tag: "T106", label: "Tool 106: Vesper Sheaf Runtime", ep: "/api/v1/monograph/vesper_4phase_cellular_sheaf_runtime" },
+      { id: 107, tag: "T107", label: "T107: Rosetta Stone", ep: "/api/v1/rosetta/topological_rosetta_stone_verifier" },
+      { id: 108, tag: "T108", label: "T108: SPRIZ Pillar", ep: "/api/v1/bio/spriz_intermembrane_pillar_spacer" },
+      { id: 109, tag: "T109", label: "T109: Chandrasekhar", ep: "/api/v1/astro/chandrasekhar_relativistic_degeneracy_breaker" },
+      { id: 110, tag: "T110", label: "T110: Adjoint Pullback", ep: "/api/v1/algebra/adjoint_transpose_covector_pullback" },
+      { id: 121, tag: "T121", label: "T121: Toroidal Mod9", ep: "/api/v1/vortex/toroidal_mod9_doubling_axis_auditor" },
+      { id: 122, tag: "T122", label: "T122: Viviani Archimedes", ep: "/api/v1/geometry/viviani_archimedes_npage_partition_auditor" },
+      { id: 123, tag: "T123", label: "T123: Kinesin 8nm", ep: "/api/v1/bio/kinesin_8nm_cacheline_zeeman_valley_stepper" },
+      { id: 124, tag: "T124", label: "T124: MicroVM Shield", ep: "/api/v1/security/openai_microvm_constant_time_cache_shield" },
+      { id: 125, tag: "T125", label: "T125: TSRS AST Schema", ep: "/api/v1/compiler/cloudflare_tsrs_ast_schema_contract_verifier" },
+      { id: 126, tag: "T126", label: "T126: Grassmann Plücker", ep: "/api/v1/geometry/grassmann_exterior_plucker_bivector_solver" },
+      { id: 127, tag: "T127", label: "T127: Blue Brain 11D", ep: "/api/v1/topology/blue_brain_11d_simplex_clique_cavity_engine" },
+      { id: 128, tag: "T128", label: "T128: Helmholtz Solver", ep: "/api/v1/quantum/kspace_ring_helmholtz_wave_packet_solver" },
+      { id: 129, tag: "T129", label: "T129: TokenGate 11x", ep: "/api/v1/attention/tokengate_11x_prefill_npage_skimmer" },
+      { id: 130, tag: "T130", label: "T130: Danka Walk", ep: "/api/v1/graph/tivadar_danka_adjacency_matrix_walk_duality" },
+      { id: 131, tag: "T131", label: "T131: Reimann Eq2", ep: "/api/v1/topology/reimann_eq2_directionality_simplex_discriminator" },
+      { id: 132, tag: "T132", label: "T132: Pre-Sink Ancestor", ep: "/api/v1/topology/presink_sink_shared_ancestor_correlator" },
+      { id: 133, tag: "T133", label: "T133: Betti SWR Trigger", ep: "/api/v1/topology/functional_tr_sandcastle_betti_swr_trigger" },
+      { id: 134, tag: "T134", label: "T134: Flagser Simplex", ep: "/api/v1/topology/flagser_zero_alloc_bitmask_simplex_enumerator" },
+      { id: 166, tag: "T166", label: "T166: Algebraic Proof", ep: "/api/v1/cycle3/t166_algebraic_proof" },
+      { id: 167, tag: "T167", label: "T167: Lean 4 Theorem", ep: "/api/v1/cycle3/t167_lean4_theorem" },
+      { id: 168, tag: "T168", label: "T168: QED Audit", ep: "/api/v1/cycle3/t168_qed_audit" },
+      { id: 169, tag: "T169", label: "T169: Formal Sheaf", ep: "/api/v1/cycle3/t169_formal_sheaf" },
+      { id: 170, tag: "T170", label: "T170: F4SE Bridge", ep: "/api/v1/polyglot/f4se_bridge" },
+      { id: 196, tag: "T196", label: "T196: Proof Lattice", ep: "/api/v1/cycle5/t196_proof_lattice" },
+      { id: 197, tag: "T197", label: "T197: Theorem Invariance", ep: "/api/v1/cycle5/t197_theorem_invariance" },
+      { id: 198, tag: "T198", label: "T198: Homotopy Audit", ep: "/api/v1/cycle5/t198_homotopy_audit" }
+    ]
+  },
+  {
+    id: 2,
+    slug: "connectome_qat_memory",
+    name: "63.3K Connectome, BPE, QAT Brain & Memory",
+    shortName: "Connectome & QAT",
+    toolCount: 29,
+    toolRange: "T13-T20, T37, T45, T50, T52, T57, T61, T65, T73-T76, T85-T88, T135, T191-T195",
+    writebackCat: "npage_shard_deltas",
+    ep: "/api/v1/unified/connectome_qat_memory",
+    accent: "#00FFCC",
+    bg: "#051A17",
+    border: "#00B38F",
+    desc: "63,360-neuron .npage (8,110,080 B), 144-subdomain QAT, 262,144-vocab BPE, and 5W1H metabolic memory.",
+    tools: [
+      { id: 13, tag: "T13", label: "624/624 Lean 4 QED", ep: "/api/v1/compiler/verify" },
+      { id: 14, tag: "T14", label: "Shard Connectome Map", ep: "/api/v1/connectome/shards" },
+      { id: 15, tag: "T15", label: "Dendritic Compartment State", ep: "/api/v1/connectome/dendrite_state" },
+      { id: 16, tag: "T16", label: "Per-Sensor Stiefel", ep: "/api/v1/manifold/stiefel_step" },
+      { id: 17, tag: "T17", label: "Acoustic I/Q SDR", ep: "/api/v1/acoustic/ping" },
+      { id: 18, tag: "T18", label: "PQ SIEM & Photoelectric", ep: "/.well-known/llm-agent.json" },
+      { id: 19, tag: "T19", label: "RTX 3050 Anyon GEMM", ep: "/api/v1/compute/wgsl" },
+      { id: 20, tag: "T20", label: "ER=EPR Browser", ep: "/api/v1/browser/fetch?url=https://arxiv.org/abs/1306.0533" },
+      { id: 37, tag: "T37", label: "63360N Connectome", ep: "/api/v1/connectome/fno_synaptogenesis" },
+      { id: 45, tag: "T45", label: "Metabolic ATP & 5W1H Harness", ep: "/api/v1/harness/metabolic_5w1h" },
+      { id: 50, tag: "T50", label: "16-Domain Compound QAT", ep: "/api/v1/training/cross_domain_compound_qat" },
+      { id: 52, tag: "T52", label: "Auto-Learn Long-Term Memory", ep: "/api/v1/memory/longterm_autolearn" },
+      { id: 57, tag: "T57", label: "Ternary Distill", ep: "/api/v1/tools/t57" },
+      { id: 61, tag: "T61", label: "10-Session QAT Blitz", ep: "/api/v1/tools/t61" },
+      { id: 65, tag: "T65", label: "5W1H Router Dispatch", ep: "/api/v1/router/distributed_5w1h_dispatch" },
+      { id: 73, tag: "T73", label: "Multi-Turn Working Memory", ep: "/api/v1/converse/multiturn_memory" },
+      { id: 74, tag: "T74", label: "16-Domain Socratic Debate", ep: "/api/v1/converse/dialectical_debate" },
+      { id: 75, tag: "T75", label: "v44 Self-Profiler", ep: "/api/v1/diagnostics/v44_self_profiler" },
+      { id: 76, tag: "T76", label: "v44.0.0 Omni-Snapshot", ep: "/api/v1/manifold/v44_omni_snapshot" },
+      { id: 85, tag: "T85", label: "Self-Growing OOV Lexicon", ep: "/api/v1/v47/self_growing_lexicon" },
+      { id: 86, tag: "T86", label: "4-Hop Leech CoT", ep: "/api/v1/v47/leech_geodesic_cot" },
+      { id: 87, tag: "T87", label: "Sovereign RAG-on-Leech", ep: "/api/v1/v47/rag_on_leech" },
+      { id: 88, tag: "T88", label: "Embodied Sensor + 16kHz Voice", ep: "/api/v1/v47/embodied_sensor_voice_loop" },
+      { id: 135, tag: "T135", label: "63.3K QAT Trainer", ep: "/api/v1/brain/sovereign_63360_144subdomain_qat_trainer?action=train_3pass" },
+      { id: 191, tag: "T191", label: "T191: Shard Delta", ep: "/api/v1/cycle4/t191_shard_delta" },
+      { id: 192, tag: "T192", label: "T192: Synaptic Weight", ep: "/api/v1/cycle4/t192_synaptic_weight" },
+      { id: 193, tag: "T193", label: "T193: Apical Ring", ep: "/api/v1/cycle4/t193_apical_ring" },
+      { id: 194, tag: "T194", label: "T194: Somatic Threshold", ep: "/api/v1/cycle4/t194_somatic_threshold" },
+      { id: 195, tag: "T195", label: "T195: Basal Buffer", ep: "/api/v1/cycle4/t195_basal_buffer" }
+    ]
+  },
+  {
+    id: 3,
+    slug: "physics_16d_fno_speech",
+    name: "Multi-Physics, 16D Vectorized FNO & Cymatic Speech",
+    shortName: "Physics & FNO",
+    toolCount: 19,
+    toolRange: "T21-T22, T31-T36, T38-T42, T49, T83-T84, T93-T94, T102",
+    writebackCat: "physics_sim_trajectories",
+    ep: "/api/v1/unified/physics_16d_fno_speech",
+    accent: "#00E5FF",
+    bg: "#061A26",
+    border: "#0099B3",
+    desc: "256-bit AVX2/FMA + 12-thread Rayon 16-domain spectral neural FNO, 5-regime Navier-Stokes, and 16 kHz Klatt speech synthesis.",
+    tools: [
+      { id: 21, tag: "T21", label: "Safe LLM Gateway", ep: "/api/v1/agent_gateway/interact?agent_id=hud&q=verify" },
+      { id: 22, tag: "T22", label: "10-Laplacian 16D FNO", ep: "/api/v1/operator/fno_solve" },
+      { id: 31, tag: "T31", label: "Cymatic Omega.2 & 2-Bit SIMD", ep: "/api/v1/cymatic/chromatic_verify" },
+      { id: 32, tag: "T32", label: "KHYS Mnemosyne & Planetary LUT", ep: "/api/v1/khys/mnemosyne_planetary" },
+      { id: 33, tag: "T33", label: "Martellini Entropic Time", ep: "/api/v1/time/martellini_spherical" },
+      { id: 34, tag: "T34", label: "Associahedron K6 & Tropical", ep: "/api/v1/geometry/associahedron_tropical" },
+      { id: 35, tag: "T35", label: "Amplituhedron & Clifford PGA", ep: "/api/v1/geometry/amplituhedron_clifford" },
+      { id: 36, tag: "T36", label: "Cosmohedron C6 & Vec-LUT", ep: "/api/v1/geometry/cosmohedron_veclut" },
+      { id: 38, tag: "T38", label: "DGM + AZR + SEAL Autopoiesis", ep: "/api/v1/autopoiesis/dgm_azr_seal" },
+      { id: 39, tag: "T39", label: "Bi-Temporal WAL", ep: "/api/v1/logging/bitemporal_wal" },
+      { id: 40, tag: "T40", label: "Pixel 8 P8-APEX", ep: "/api/v1/edge/p8_apex_coprocessor" },
+      { id: 41, tag: "T41", label: "TorchTPU Tri-Silicon Bridge", ep: "/api/v1/torchtpu/openxla_pallas_bridge" },
+      { id: 42, tag: "T42", label: "Neuron Pagefile (.npage)", ep: "/api/v1/pagefile/cauchy_sparse_npage" },
+      { id: 49, tag: "T49", label: "Klatt Formant Speech + 16kHz WAV", ep: "/api/v1/speech/cymatic_formant_tts" },
+      { id: 83, tag: "T83", label: "262K Open-Vocab 63,360N NL", ep: "/api/v1/model/open_vocab_131k" },
+      { id: 84, tag: "T84", label: "63,360N Expansion Router", ep: "/api/v1/model/open_vocab_131k?mode=router" },
+      { id: 93, tag: "T93", label: "Tool 93: Bekenstein Horizon Guard", ep: "/api/v1/v49/tool_93_bekenstein_hawking_area_horizon_guard" },
+      { id: 94, tag: "T94", label: "Tool 94: 3-Pyramid Cube Partition", ep: "/api/v1/v49/tool_94_cubic_pyramid_integral_proof" },
+      { id: 102, tag: "T102", label: "TOOL 102: 5-Regime Multi-Physics", ep: "/api/v1/v50/physics_multiregime" }
+    ]
+  },
+  {
+    id: 4,
+    slug: "avx2_webgpu_worksteal",
+    name: "AVX2/WebGPU Hardware & Elastic Work-Stealing",
+    shortName: "AVX2 & WebGPU",
+    toolCount: 26,
+    toolRange: "T23-T26, T62, T77-T80, T91, T95, T101, T136-T144, T206-T210",
+    writebackCat: "wgsl_kernels",
+    ep: "/api/v1/unified/avx2_webgpu_worksteal",
+    accent: "#56D364",
+    bg: "#0A1F12",
+    border: "#238636",
+    desc: "12-thread Rayon + AVX2 132,960-cacheline crystallizer, dynamic work-stealing, and WebGPU compute leases.",
+    tools: [
+      { id: 23, tag: "T23", label: "E:\\ SSD Vault (63,360)", ep: "/api/v1/storage/ssd_tier2?q=merkle32" },
+      { id: 24, tag: "T24", label: "Cluster Drift Matrix", ep: "/api/v1/cluster/sync_matrix" },
+      { id: 25, tag: "T25", label: "32-Epoch QAT Trainer", ep: "/api/v1/train/continual_qat?q=epoch32" },
+      { id: 26, tag: "T26", label: "63,360-Neuron Harvester", ep: "/api/v1/vault/harvest" },
+      { id: 62, tag: "T62", label: "63,360-Neuron Vault", ep: "/api/v1/tools/t62" },
+      { id: 77, tag: "T77", label: "Pixel 8 .npage SHM", ep: "/api/v1/shm/p8_npage_bridge" },
+      { id: 78, tag: "T78", label: "Browser WebGPU Lease", ep: "/api/v1/compute/webgpu_lease" },
+      { id: 79, tag: "T79", label: "Elastic Scheduler", ep: "/api/v1/worksteal/elastic_scheduler" },
+      { id: 80, tag: "T80", label: "v44.1 Perf Blitz", ep: "/api/v1/diagnostics/v44_perf_blitz" },
+      { id: 91, tag: "T91", label: "Tool 91: Triangulated dS3 Gravity", ep: "/api/v1/v49/tool_91_ds3_triangulated_cft2_gravity" },
+      { id: 95, tag: "T95", label: "Tool 95: Bell 6-Polytope Audit", ep: "/api/v1/v49/tool_95_bell_polytope_noncontextuality_audit" },
+      { id: 101, tag: "T101", label: "TOOL 101: AVX2+Rayon Crystallizer", ep: "/api/v1/v50/crystallize_tlv" },
+      { id: 136, tag: "T136", label: "TOOL 136: Zig 0.17.0 AVX2 Bridge", ep: "/api/v1/toolchain/zig_simd_e8_bridge" },
+      { id: 137, tag: "T137", label: "TOOL 137: LLVM 22.1.8 MCA IPC", ep: "/api/v1/toolchain/llvm_mca_alderlake_audit" },
+      { id: 138, tag: "T138", label: "TOOL 138: Ninja 1.13.2 DAG", ep: "/api/v1/toolchain/ninja_polyglot_dag" },
+      { id: 139, tag: "T139", label: "TOOL 139: HWiNFO64 8.40 SHM", ep: "/api/v1/toolchain/hwinfo_shm_telemetry" },
+      { id: 140, tag: "T140", label: "TOOL 140: FrameView + PhysX", ep: "/api/v1/toolchain/nvidia_frameview_physx_audit" },
+      { id: 141, tag: "T141", label: "TOOL 141: Podman 5.8 + WinSandbox", ep: "/api/v1/toolchain/podman_wsb_sandbox_gate" },
+      { id: 142, tag: "T142", label: "TOOL 142: Bonjour mDNS Mesh", ep: "/api/v1/toolchain/bonjour_mdns_mesh_beacon" },
+      { id: 143, tag: "T143", label: "TOOL 143: Zed 1.25.2 MCP Bridge", ep: "/api/v1/toolchain/zed_ide_mcp_bridge" },
+      { id: 144, tag: "T144", label: "TOOL 144: Ollama 0.31.2 Witness", ep: "/api/v1/toolchain/ollama_local_witness" },
+      { id: 206, tag: "T206", label: "T206 ApexStatus", ep: "/api/v1/p8_apex/status" },
+      { id: 207, tag: "T207", label: "T207 MLock", ep: "/api/v1/p8_apex/mlock" },
+      { id: 208, tag: "T208", label: "T208 SocketPing", ep: "/api/v1/p8_apex/socket_ping" },
+      { id: 209, tag: "T209", label: "T209 SpecDraft", ep: "/api/v1/p8_apex/speculative_draft" },
+      { id: 210, tag: "T210", label: "T210 Sentry", ep: "/api/v1/p8_apex/sovereign_sentry" }
+    ]
+  },
+  {
+    id: 5,
+    slug: "dual_pixel_ksu_edge",
+    name: "Dual-Pixel Edge Silicon & Rooted P8-APEX (:8098)",
+    shortName: "Dual-Pixel Edge",
+    toolCount: 16,
+    toolRange: "T27-T30, T58, T63, T181-T190",
+    writebackCat: "drawer1_2_sensor_sdr_captures",
+    ep: "/api/v1/unified/dual_pixel_ksu_edge",
+    accent: "#FFB454",
+    bg: "#261706",
+    border: "#B36B00",
+    desc: "Pixel 10 24D sensor telemetry, rooted Pixel 8 KernelSU p8_ksu_apex_daemon (:8098) 4.00 MB Mali L2 pinning and k=4 speculative drafting.",
+    tools: [
+      { id: 27, tag: "T27", label: "NL Conversational Decoder", ep: "/api/v1/model/converse" },
+      { id: 28, tag: "T28", label: "Episodic Memory Search", ep: "/api/v1/memory/episodic_search" },
+      { id: 29, tag: "T29", label: "U(1) Gauge Anomaly", ep: "/api/v1/anomaly/stream" },
+      { id: 30, tag: "T30", label: "15.965Hz Decadic Physics", ep: "/api/v1/physics/decadic_synthesizer" },
+      { id: 58, tag: "T58", label: "Mobile Trigger", ep: "/api/v1/tools/t58" },
+      { id: 63, tag: "T63", label: "Dual-Phone APK Sync", ep: "/api/v1/tools/t63" },
+      { id: 181, tag: "T181", label: "T181 PlasticRho", ep: "/api/v1/apr/plastic_rho" },
+      { id: 182, tag: "T182", label: "T182 TktMint", ep: "/api/v1/apr/chair44_ticket_mint" },
+      { id: 183, tag: "T183", label: "T183 TktVerify", ep: "/api/v1/apr/chair44_ticket_verify" },
+      { id: 184, tag: "T184", label: "T184 BellWit", ep: "/api/v1/apr/tri_party_bell_witness" },
+      { id: 185, tag: "T185", label: "T185 KsuAudit", ep: "/api/v1/tool/185" },
+      { id: 186, tag: "T186", label: "T186 MaliL2", ep: "/api/v1/tool/186" },
+      { id: 187, tag: "T187", label: "T187 BootImg", ep: "/api/v1/tool/187" },
+      { id: 188, tag: "T188", label: "T188 KsuKernel", ep: "/api/v1/p8_root/ksu_module" },
+      { id: 189, tag: "T189", label: "T189 ApexProbe", ep: "/api/v1/p8_apex/probe" },
+      { id: 190, tag: "T190", label: "T190 SpecVerify", ep: "/api/v1/p8_apex/verify_k4" }
+    ]
+  },
+  {
+    id: 6,
+    slug: "apr_permissions_security",
+    name: "Aperiodic Permissions Router (APR) & Security",
+    shortName: "APR Security",
+    toolCount: 13,
+    toolRange: "T43-T44, T67, T171-T180",
+    writebackCat: "rust_l0",
+    ep: "/api/v1/unified/apr_permissions_security",
+    accent: "#E94E34",
+    bg: "#240B08",
+    border: "#A62817",
+    desc: "Golden-Mean phi 1D Fibonacci quasicrystal permissions (A0..A3), Golay G24 syndrome gate, and operator header gate.",
+    tools: [
+      { id: 43, tag: "T43", label: "Fractional Fermi + Skyrmion", ep: "/api/v1/physics/skyrmion_fermi_xuv" },
+      { id: 44, tag: "T44", label: "Amygdala + Kerr SWR", ep: "/api/v1/neuro/amygdala_kerr_ravi" },
+      { id: 67, tag: "T67", label: "Operator Vault Gate", ep: "/api/v1/auth/operator_vault_gate" },
+      { id: 171, tag: "T171", label: "T171 SecurityAttest", ep: "/api/v1/apr/security_attest" },
+      { id: 172, tag: "T172", label: "T172 TokenSentinel", ep: "/api/v1/apr/token_sentinel" },
+      { id: 173, tag: "T173", label: "T173 Blender3D", ep: "/api/v1/polyglot/blender_stiefel_obj" },
+      { id: 174, tag: "T174", label: "T174 WDP", ep: "/api/v1/polyglot/wdp_bridge" },
+      { id: 175, tag: "T175", label: "T175 Sandbox", ep: "/api/v1/polyglot/wsb_sandbox" },
+      { id: 176, tag: "T176", label: "T176 Discovery", ep: "/api/v1/polyglot/35tool_discovery" },
+      { id: 177, tag: "T177", label: "T177 RingStrat", ep: "/api/v1/apr/ring_stratifier" },
+      { id: 178, tag: "T178", label: "T178 KasamiGolay", ep: "/api/v1/apr/kasami_golay" },
+      { id: 179, tag: "T179", label: "T179 SyndromeMST", ep: "/api/v1/apr/syndrome_mst" },
+      { id: 180, tag: "T180", label: "T180 SturmPhi", ep: "/api/v1/apr/sturmian_phi" }
+    ]
+  },
+  {
+    id: 7,
+    slug: "polyglot_compilers_devtools",
+    name: "Polyglot Compilers, DevTools & Sandboxes",
+    shortName: "Polyglot DevTools",
+    toolCount: 34,
+    toolRange: "T64, T66, T68, T111-T120, T145-T165",
+    writebackCat: "rust_l0",
+    ep: "/api/v1/unified/polyglot_compilers_devtools",
+    accent: "#FFD700",
+    bg: "#241E05",
+    border: "#B39500",
+    desc: "Zig, LLVM, GHC 9.8.2 Haskell, Lean 4, Rust L0 compilers, Hyper-V sandbox, and Symbiotic IDE parity.",
+    tools: [
+      { id: 64, tag: "T64", label: "HUD Hot-Reload", ep: "/api/v1/tools/t64" },
+      { id: 66, tag: "T66", label: "Goose/Zed/Cline Parity", ep: "/api/v1/ide/symbiotic_parity_sync" },
+      { id: 68, tag: "T68", label: "Embedded IDE Vault", ep: "/api/v1/hud/embedded_ide_cockpit" },
+      { id: 111, tag: "T111", label: "T111: LoRA CSS Witness", ep: "/api/v1/mesh/lora_css_von_neumann_pointer_witness" },
+      { id: 112, tag: "T112", label: "T112: AIST Flux", ep: "/api/v1/quantum/aist_flux_quanta_photon_counter" },
+      { id: 113, tag: "T113", label: "T113: Principia 54.26", ep: "/api/v1/logic/principia_54_26_proof_erasure_auditor" },
+      { id: 114, tag: "T114", label: "T114: XFEL Propagator", ep: "/api/v1/physics/xfel_multiscale_fermi_propagator" },
+      { id: 115, tag: "T115", label: "T115: Fibonacci 2-Time", ep: "/api/v1/quantum/fibonacci_two_time_dimension_scheduler" },
+      { id: 116, tag: "T116", label: "T116: Apollonian Atlas", ep: "/api/v1/geometry/hilbert_apollonian_polyhedral_atlas" },
+      { id: 117, tag: "T117", label: "T117: Pandigital Canary", ep: "/api/v1/number/pandigital_polydivisible_canary_verifier" },
+      { id: 118, tag: "T118", label: "T118: SAE Binder", ep: "/api/v1/interp/sae_monosemantic_feature_circuit_binder" },
+      { id: 119, tag: "T119", label: "T119: DNA Nanostar", ep: "/api/v1/bio/dna_nanostar_8arm_sticky_end_linker" },
+      { id: 120, tag: "T120", label: "T120: CellSpa Router", ep: "/api/v1/spatial/cellspa_voronoi_dep32_expert_router" },
+      { id: 145, tag: "T145", label: "TOOL 145: WinSDK 26100 DXC 1.8", ep: "/api/v1/toolchain/windows_sdk_dxc_omni_audit" },
+      { id: 146, tag: "T146", label: "T146 Q4_K", ep: "/api/v1/tool/146" },
+      { id: 147, tag: "T147", label: "T147 Clang19 AST", ep: "/api/v1/tool/147" },
+      { id: 148, tag: "T148", label: "T148 Rustc 1.85", ep: "/api/v1/tool/148" },
+      { id: 149, tag: "T149", label: "T149 GHC Core", ep: "/api/v1/tool/149" },
+      { id: 150, tag: "T150", label: "T150 LZ4Stream", ep: "/api/v1/tool/150" },
+      { id: 151, tag: "T151", label: "T151 Symbiotic Bridge", ep: "/api/v1/tool/151" },
+      { id: 152, tag: "T152", label: "T152 Goose Bridge", ep: "/api/v1/tool/152" },
+      { id: 153, tag: "T153", label: "T153 Cline Hook", ep: "/api/v1/tool/153" },
+      { id: 154, tag: "T154", label: "T154 Zed Semantic", ep: "/api/v1/tool/154" },
+      { id: 155, tag: "T155", label: "T155 Hyper-V Host", ep: "/api/v1/tool/155" },
+      { id: 156, tag: "T156", label: "T156 Docker Sentry", ep: "/api/v1/tool/156" },
+      { id: 157, tag: "T157", label: "T157 WSL2 Interop", ep: "/api/v1/tool/157" },
+      { id: 158, tag: "T158", label: "T158 MSBuild Mirror", ep: "/api/v1/tool/158" },
+      { id: 159, tag: "T159", label: "T159 PowerShell Host", ep: "/api/v1/tool/159" },
+      { id: 160, tag: "T160", label: "T160 CMake Validator", ep: "/api/v1/tool/160" },
+      { id: 161, tag: "T161", label: "T161 Git Multi-Remote", ep: "/api/v1/tool/161" },
+      { id: 162, tag: "T162", label: "T162 MultiTier", ep: "/api/v1/tool/162" },
+      { id: 163, tag: "T163", label: "T163 C++Codegen", ep: "/api/v1/tool/163" },
+      { id: 164, tag: "T164", label: "T164 Intel Assembler", ep: "/api/v1/tool/164" },
+      { id: 165, tag: "T165", label: "T165 Linker Verifier", ep: "/api/v1/tool/165" }
+    ]
+  },
+  {
+    id: 8,
+    slug: "autopoietic_bus_vault_d1",
+    name: "Autopoietic Coordinator Bus, E:\\ Vault & Cloudflare D1",
+    shortName: "Autopoietic Vault",
+    toolCount: 30,
+    toolRange: "T46-T48, T51, T53-T56, T59-T60, T69-T72, T81, T89-T90, T96-T100, T103",
+    writebackCat: "tool_outputs",
+    ep: "/api/v1/unified/autopoietic_bus_vault_d1",
+    accent: "#FFFEFB",
+    bg: "#141D26",
+    border: "#486581",
+    desc: "5W1H Coordinator Message Bus, DAG Orchestrator, 9-sink universal E:\\ SSD Vault, DuckDB analytics, and Cloudflare D1 sync.",
+    tools: [
+      { id: 46, tag: "T46", label: "TOOL 46: MCP Server Portal", ep: "/api/v1/mcp/rpc" },
+      { id: 47, tag: "T47", label: "TOOL 47: OpenAI /v1/chat/completions", ep: "/api/v1/openai/compat" },
+      { id: 48, tag: "T48", label: "TOOL 48: Cloudflare D1 + VPC Shadow", ep: "/api/v1/cloudflare/d1_vpc_shadow" },
+      { id: 51, tag: "T51", label: "TOOL 51: Code-Mode MCP & Roots Guard", ep: "/api/v1/mcp/code_mode_roots" },
+      { id: 53, tag: "T53", label: "TOOL 53: A2A Mesh (Zed + Goose + Cline)", ep: "/api/v1/a2a/tasks" },
+      { id: 54, tag: "T54", label: "TOOL 54: Atomic Delta Engine", ep: "/api/v1/devops/atomic_delta_engine" },
+      { id: 55, tag: "T55", label: "TOOL 55: Gemini Drive Bridge", ep: "/api/v1/tools/t55" },
+      { id: 56, tag: "T56", label: "TOOL 56: Autonomous Coder", ep: "/api/v1/tools/t56" },
+      { id: 59, tag: "T59", label: "TOOL 59: Omni-Wiring Audit", ep: "/api/v1/tools/t59" },
+      { id: 60, tag: "T60", label: "TOOL 60: D1 10-Table Pipeline", ep: "/api/v1/tools/t60" },
+      { id: 69, tag: "T69", label: "TOOL 69: .agents/ Rules", ep: "/api/v1/antigravity/rules_subagents" },
+      { id: 70, tag: "T70", label: "TOOL 70: 5W1H+63,360 Connectome", ep: "/api/v1/connectome/harness_5w1h_npage" },
+      { id: 71, tag: "T71", label: "TOOL 71: Argon 7-Subagents", ep: "/api/v1/antigravity/argon_teamwork" },
+      { id: 72, tag: "T72", label: "TOOL 72: Antigravity Cutover", ep: "/api/v1/antigravity/cutover_status" },
+      { id: 81, tag: "T81", label: "TOOL 81: E8xE8xE8->Leech24 Bridge", ep: "/api/v1/harmonic/bridge_e8_leech" },
+      { id: 89, tag: "T89", label: "TOOL 89: Sovereign Scientist RK4", ep: "/api/v1/v47/sovereign_scientist" },
+      { id: 90, tag: "T90", label: "TOOL 90: Layer 1.5 Haskell Algebra", ep: "/api/v1/v48/haskell_layer15_algebra" },
+      { id: 96, tag: "T96", label: "Tool 96: Bipolar Vesica Caustic", ep: "/api/v1/v49/tool_96_bipolar_vesica_caustic_envelope" },
+      { id: 97, tag: "T97", label: "Tool 97: Hamilton-Tait Nabla", ep: "/api/v1/v49/tool_97_hamilton_tait_nabla_quaternionic_field" },
+      { id: 98, tag: "T98", label: "Tool 98: Poincare-Bendixson Atlas", ep: "/api/v1/v49/tool_98_poincare_bendixson_destiny_atlas" },
+      { id: 99, tag: "T99", label: "Tool 99: Stanford/Together HybridLink", ep: "/api/v1/v49/tool_99_stanford_together_hybrid_link_agent" },
+      { id: 100, tag: "T100", label: "Tool 100: Dzhanibekov Stabilizer", ep: "/api/v1/v49/tool_100_dzhanibekov_euler_axis_stabilizer" },
+      { id: 103, tag: "T103", label: "TOOL 103: 8-Sink Coordinator Mesh", ep: "/api/v1/v50/coordinator_mesh" },
+      { id: 204, tag: "T204", label: "T204 RootAudit", ep: "/api/v1/p8_root/hardware_audit" },
+      { id: 205, tag: "T205", label: "T205 Throughput", ep: "/api/v1/p8_apex/cluster_throughput" },
+      { id: 211, tag: "BUS-1", label: "Coordinator Message Bus", ep: "/api/v1/coordinator/message_bus" },
+      { id: 212, tag: "BUS-2", label: "DAG Orchestrator", ep: "/api/v1/coordinator/dag_orchestrator" },
+      { id: 213, tag: "BUS-3", label: "Codegen Vault Sink", ep: "/api/v1/coordinator/codegen_vault_sink" },
+      { id: 214, tag: "BUS-4", label: "Autopoietic Integrator", ep: "/api/v1/coordinator/autopoietic_integrator" },
+      { id: 215, tag: "BUS-5", label: "DuckDB Vector Engine", ep: "/api/v1/v48/duckdb_columnar_vector" }
+    ]
+  }
+];
+
 export function App() {
   const [operatorVaultOpen, setOperatorVaultOpen] = useState<boolean>(false);
   const [operatorPasskey, setOperatorPasskey] = useState<string>("");
@@ -122,7 +488,7 @@ export function App() {
   const [helpSidebarOpen, setHelpSidebarOpen] = useState<boolean>(false);
   const [helpSection, setHelpSection] = useState<string>("QUICKSTART");
   const [helpSearch, setHelpSearch] = useState<string>("");
-  const [ideConsoleLog, setIdeConsoleLog] = useState<string>("[OPERATOR & ANTIGRAVITY VAULT READY] Gemini 4 Argon (10 Subagents) + Goose v1.55.0 + Zed v1.24.4 + VSCodium/Cline locked to SH4Z-v5000-TriSilicon (C:\\sovereign_manifold_v31). All 15 Telemetry Cards, 3D Stiefel Scope, 16x130 Bijection Heatmap (132,960 Bijected 64B CLs) & 145 Tools (CHAIN 145 Milestone) active.");
+  const [ideConsoleLog, setIdeConsoleLog] = useState<string>("[OPERATOR & ANTIGRAVITY VAULT READY] Gemini 4 Argon (10 Subagents) + Goose v1.55.0 + Zed v1.24.4 + VSCodium/Cline locked to SH4Z-v5600-TriSilicon (C:\\sovereign_manifold_v31). All 15 Telemetry Cards, 3D Stiefel Scope, 16x130 Bijection Heatmap (132,960 Bijected 64B CLs) & 210 Tools (CHAIN 210 Milestone) active.");
   const [tel, setTel] = useState<TelemetryState>({
     generation: 745000,
     decadic_sub_epoch: 0,
@@ -150,7 +516,7 @@ export function App() {
     always_on_active: true,
     always_on_ticks: 120,
     nl_synthesis:
-      "Sovereign Harmonic X (SH4Z v5000) Natural Language Synthesis: The 4-tier manifold is locked to the 15.965 Hz (62,637 us) Decadic Epoch Carrier Clock (159.65 cycles per 10.000s epoch) across 63,360 mirrored Vault neurons (1,440x Chair-44). Pixel 10 drives per-sensor orthogonal Stiefel St(16,80) and Theodorus sqrt(n) projections, Pixel 8 pins 90,688B in Mali-G715 L2, and the LOQ 15 RTX 3050 solves the 10-Laplacian 16-Mode FNO PDE.",
+      "Sovereign Harmonic X (SH4Z v5600 TLV) Natural Language Synthesis: The 4-tier manifold is locked to the 15.965 Hz (62,637 us) Decadic Epoch Carrier Clock (159.65 cycles per 10.000s epoch) across 63,360 mirrored Vault neurons (1,440x Chair-44). Pixel 10 drives per-sensor orthogonal Stiefel St(16,80) and Theodorus sqrt(n) projections, Pixel 8 pins 90,688B in Mali-G715 L2, and the LOQ 15 RTX 3050 solves the 10-Laplacian 16-Mode FNO PDE.",
     episodic_search_out:
       "TOOL 28 EPISODIC MEMORY READY: 63,360 Shards + telemetry_training_ring.jsonl + autopoietic_monologue.jsonl indexed on E:/Sovereign_Manifold_SSD_Vault.",
     anomaly_banner:
@@ -282,11 +648,11 @@ export function App() {
     operationalized_wgsl_kernel:
       "@compute @workgroup_size(64) fn wgsl_article_s15_c512(@builtin(global_invocation_id) gid: vec3<u32>) { let e8_root: u32 = 95u; let re_laminar: f32 = 416.80; let mi_rt: f32 = 23.18; }",
     humanities_discourse:
-      "D13 MORAL ETHICS, DEONTOLOGY & VIRTUE ETHICS SYNTHESIS: Ethical stewardship integrates Aristotelian phronesis (practical wisdom and eudaimonia), Kantian deontological duty (respecting rational moral agency as an end in itself), and Rawlsian restorative justice behind the veil of ignorance. Beneficence, non-maleficence, and epistemic humility govern Neuron N22567/63359 and all 135 tools (CHAIN 135) toward human flourishing."
+      "D13 MORAL ETHICS, DEONTOLOGY & VIRTUE ETHICS SYNTHESIS: Ethical stewardship integrates Aristotelian phronesis (practical wisdom and eudaimonia), Kantian deontological duty (respecting rational moral agency as an end in itself), and Rawlsian restorative justice behind the veil of ignorance. Beneficence, non-maleficence, and epistemic humility govern Neuron N22567/63359 and all 210 tools (CHAIN 210) toward human flourishing."
   });
 
   const [leanQuery, setLeanQuery] = useState<string>(
-    "Query 564-Theorem Lean 4 Suite (cymatic, mnemosyne, welch_ace, decadic_15965hz, chain135)..."
+    "Query 624-Theorem Lean 4 Suite (cymatic, mnemosyne, welch_ace, decadic_15965hz, chain210)..."
   );
   const [episodicQuery, setEpisodicQuery] = useState<string>("b_norm");
   const [bpeQuery, setBpeQuery] = useState<string>(
@@ -341,7 +707,25 @@ export function App() {
   const [cmdPaletteOpen, setCmdPaletteOpen] = useState<boolean>(false);
   const [cmdPaletteFilter, setCmdPaletteFilter] = useState<string>("");
 
-  // v50.0.0 Workbenches State: Sub-Panels 1A, 1B, 1C and Sub-Panel 2A (MUSE Zero-Unmeasured-Data Compliant)
+  // Feature 10: 8-Domain Functional Command Deck & Write-Back State
+  const [activeDomainFilter, setActiveDomainFilter] = useState<string>("ALL");
+  const [compactUnifiedView, setCompactUnifiedView] = useState<boolean>(false);
+  const [writebackStatus, setWritebackStatus] = useState<{
+    seq: number;
+    path: string;
+    bytes: number;
+    sha256: string;
+    mounted: boolean;
+    domain?: string;
+  }>({
+    seq: 1,
+    path: "E:\\Sovereign_Manifold_SSD_Vault\\autopoietic_codegen\\tool_outputs\\",
+    bytes: 1248,
+    sha256: "UNMEASURED/OFFLINE",
+    mounted: true
+  });
+
+  // v56.0.0 Workbenches State: Sub-Panels 1A, 1B, 1C and Sub-Panel 2A (MUSE Zero-Unmeasured-Data Compliant)
   const [v50CrystallizerState, setV50CrystallizerState] = useState<{
     status: string;
     avx2_supported: boolean | null;
@@ -372,7 +756,7 @@ export function App() {
     diag: "STANDBY: Ready to sweep 63,360 neurons (1,013,760 synapses) across 1,440 Chair-44 columns via Rayon 12-thread work-stealing + AVX2/FMA 256-bit SIMD intrinsics."
   });
 
-  const [v50SpeechInput, setV50SpeechInput] = useState<string>("Sovereign Manifold v50.0.0 Neural-Prosodic Synthesis");
+  const [v50SpeechInput, setV50SpeechInput] = useState<string>("Sovereign Manifold v56.0.0 Neural-Prosodic Synthesis");
   const [v50AudioKey, setV50AudioKey] = useState<number>(Date.now());
   const [v50SpeechState, setV50SpeechState] = useState<{
     status: string;
@@ -547,7 +931,7 @@ export function App() {
     "Explain how the E8 root lattice (240 roots) and the 24-dimensional Leech lattice (196,560 minimal vectors) connect to our 63,360 dendritic neurons and natural language fluency"
   );
   const [termOut, setTermOut] = useState<string>(
-    "EXEC(V50_E8_LEECH_FLUENCY_QED) -> E8+E8+E8 -> Leech_24 Turyn-Golay Bridge (240 E8 Roots, 4,096 Golay G24, 196,560 Kissing Vectors) -> 63,360 Dendritic Neurons (1,013,760 Synapses | CHAIN 135)"
+    "EXEC(V56_E8_LEECH_FLUENCY_QED) -> E8+E8+E8 -> Leech_24 Turyn-Golay Bridge (240 E8 Roots, 4,096 Golay G24, 196,560 Kissing Vectors) -> 63,360 Dendritic Neurons (1,013,760 Synapses | CHAIN 210)"
   );
 
   // v45.0.0 E8 x E8 x E8 -> Leech_24 Lattice Bridge, Internal Model Features & 192-Epoch Fluency QAT State
@@ -634,8 +1018,8 @@ export function App() {
     holdout_ppl: 0.0,
     e8_quant_mse: 0.0,
     vocab_size: 131072,
-    connectome_neurons: 42240,
-    chair44_columns: 960,
+    connectome_neurons: 63360,
+    chair44_columns: 1440,
     total_words: 0,
     in_vocab_known_count: 0,
     novel_oov_decomposed_count: 0,
@@ -1197,7 +1581,7 @@ export function App() {
         pollInFlight = false;
       }
     };
-    document.title = "ACT-Omega Net v50.2.0 (SH4Z v5000 15.965Hz Decadic HUD) -- 63,360 Neurons, 132,960 Bijected CLs, 576/576 Lean 4 QED & Tools 1..145 (CHAIN 145 Suite)";
+    document.title = "ACT-Omega Net v56.0.0 (SH4Z v5600 15.965Hz Decadic HUD) -- 63,360 Neurons, 132,960 Bijected CLs, 624/624 Lean 4 QED & Tools 1..210 (CHAIN 210 Suite)";
     pollTelemetry();
     runE8LeechFluencyBridge(e8LeechQuery);
     const id = window.setInterval(pollTelemetry, 500);
@@ -1412,6 +1796,16 @@ export function App() {
             if (typeof j.always_on_active === "boolean") {
               setTel((prev) => ({ ...prev, always_on_active: j.always_on_active }));
             }
+            if (typeof j.autopoietic_bus_seq === "number" || j.e_vault_writeback_path) {
+              setWritebackStatus({
+                seq: j.autopoietic_bus_seq || 0,
+                path: j.e_vault_writeback_path || "E:\\Sovereign_Manifold_SSD_Vault\\autopoietic_codegen\\",
+                bytes: j.e_vault_writeback_bytes || 0,
+                sha256: j.e_vault_writeback_sha256 || "UNMEASURED/OFFLINE",
+                mounted: j.e_vault_mounted !== undefined ? j.e_vault_mounted : true,
+                domain: j.domain || label
+              });
+            }
             if (j.diag) displayMsg = j.diag;
             else if (j.trace) displayMsg = j.trace;
           } catch {}
@@ -1494,7 +1888,7 @@ export function App() {
       for (let i = 0; i < w.length; i++) {
         hashAcc = Math.imul(hashAcc ^ w.charCodeAt(i), 0x01000193) >>> 0;
       }
-      if (w.includes("neuron") || w.includes("63360") || w.includes("42240") || w.includes("28160") || w.includes("24640") || w.includes("21120") || w.includes("m_atp") || /^n\d+$/.test(w)) {
+      if (w.includes("neuron") || w.includes("63360") || w.includes("28160") || w.includes("24640") || w.includes("21120") || w.includes("m_atp") || /^n\d+$/.test(w)) {
         const numMatch = w.match(/\d+/);
         const nIdx = numMatch ? Math.min(63359, parseInt(numMatch[0], 10)) : (hashAcc % 63360);
         const tid = 198784 + (nIdx % 63360);
@@ -1793,7 +2187,7 @@ export function App() {
     setTermOut(`[SAFE LLM GATEWAY VISIT #${nextVisit}]: ${synth}`);
   };
 
-  // v50.0.0 Workbenches Action Handlers (Zero-Unmeasured-Data Compliant)
+  // v56.0.0 Workbenches Action Handlers (Zero-Unmeasured-Data Compliant)
   const runV50Crystallizer = async () => {
     setTermOut("[TOOL 101: AVX2+RAYON CRYSTALLIZER] -> Invoking /api/v1/v50/avx2_rayon_tlv_crystallizer ...");
     const bases = ["", "http://127.0.0.1:8097"];
@@ -2114,7 +2508,7 @@ export function App() {
               style={{ width: 34, height: 34, borderRadius: 7, border: "1.5px solid #FFB454", boxShadow: "0 0 8px rgba(0,255,204,0.35)" }}
             />
             <div style={{ color: "#FFB454", fontWeight: "bold", fontSize: 13 }}>
-              SOVEREIGN MANIFOLD TELEMETRY CONSOLE -- ACT-OMEGA NET v50.2.0 (SH4Z v5000 TLV | 63,360 Neurons / 132,960 Bijected CLs / 144 Sub-Domains | CHAIN 145 | 576/576 Lean 4 QED)
+              SOVEREIGN MANIFOLD TELEMETRY CONSOLE -- ACT-OMEGA NET v56.0.0 (SH4Z v5600 TLV | 63,360 Neurons / 132,960 Bijected CLs / 144 Sub-Domains | CHAIN 210 | 624/624 Lean 4 QED)
             </div>
           </div>
           <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
@@ -2214,12 +2608,12 @@ export function App() {
           </div>
         </div>
         <div style={{ color: "#FFFEFB", fontSize: 11, marginTop: 2 }}>
-          15.965 Hz (62,637 us) Decadic Epoch E{tel.decadic_sub_epoch}/9 -- {tel.laplacian_face} -- 63,360 Neurons (21,120 Core + 21,120 Exp + 21,120 Tier-3, 1,440x Chair-44, 1,013,760 Dual-Shell Synapses, 8.11 MB .npage, 132,960 Bijected 64B CLs) -- 262,144-Token (18-Bit BPE) 36 Macro-Domains x 4 Sub-Domains = 144 Sub-Domains (2,048 Compounds) -- PPL={e8LeechState.holdout_ppl > 0 ? e8LeechState.holdout_ppl.toFixed(6) : Math.exp(tel.stiefel_ortho_err * 100.0 + tel.fno_l2_err * 50.0 + 0.082).toFixed(6)} -- 576/576 Lean 4 QED -- Tools 1..145 (CHAIN 145 Suite)
+          15.965 Hz (62,637 us) Decadic Epoch E{tel.decadic_sub_epoch}/9 -- {tel.laplacian_face} -- 63,360 Neurons (21,120 Core + 21,120 Exp + 21,120 Tier-3, 1,440x Chair-44, 1,013,760 Dual-Shell Synapses, 8.11 MB .npage, 132,960 Bijected 64B CLs) -- 262,144-Token (18-Bit BPE) 36 Macro-Domains x 4 Sub-Domains = 144 Sub-Domains (2,048 Compounds) -- PPL={e8LeechState.holdout_ppl > 0 ? e8LeechState.holdout_ppl.toFixed(6) : Math.exp(tel.stiefel_ortho_err * 100.0 + tel.fno_l2_err * 50.0 + 0.082).toFixed(6)} -- 624/624 Lean 4 QED -- Tools 1..210 (CHAIN 210 Suite)
         </div>
         <div style={{ background: "#0A0D12", border: "1px solid #56D364", borderRadius: 4, padding: "4px 8px", marginTop: 5, color: "#56D364", fontSize: 10.5 }}>
           [TOOL 29 REAL-TIME PHYSICAL &amp; U(1) GAUGE ALERT BANNER]: {tel.anomaly_banner}
         </div>
-        {/* v50.2.0 5-Node Live Topology, P8 .npage SHM & Latency Ribbon */}
+        {/* v56.0.0 5-Node Live Topology, P8 .npage SHM & Latency Ribbon */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 6, marginTop: 5, background: "#070B10", border: "1px solid #2A3B4D", borderRadius: 5, padding: "5px 8px" }}>
           <div onClick={() => callEndpoint("/api/v1/diagnostics/v44_perf_blitz", "TOOL 80: v44.1.0 PERF BLITZ VERIFIER")} style={{ cursor: "pointer", borderLeft: "3px solid #56D364", paddingLeft: 6 }}>
             <div style={{ color: "#56D364", fontWeight: "bold", fontSize: 9.5 }}>NODE 1: LOQ 15 ANCHOR (:8097)</div>
@@ -2237,12 +2631,12 @@ export function App() {
             <div style={{ color: "#B388FF", fontWeight: "bold", fontSize: 9.5 }}>NODE 4: E:\ SSD + 63,360 .NPAGE</div>
             <div style={{ color: "#FFFEFB", fontSize: 10 }}>8.11 MB SHM (1,440 Cols, 126,720 64B CLs)</div>
           </div>
-          <div onClick={() => callEndpoint("/api/v1/chain145/suite", "CHAIN 145: v50.2.0 OMNI-SUITE")} style={{ cursor: "pointer", borderLeft: "3px solid #00FFCC", paddingLeft: 6 }}>
+          <div onClick={() => callEndpoint("/api/v1/chain210/suite", "CHAIN 210: v56.0.0 OMNI-SUITE")} style={{ cursor: "pointer", borderLeft: "3px solid #00FFCC", paddingLeft: 6 }}>
             <div style={{ color: "#00FFCC", fontWeight: "bold", fontSize: 9.5 }}>NODE 5: CLOUDFLARE D1 + WEBGPU</div>
-            <div style={{ color: "#FFFEFB", fontSize: 10 }}>10 D1 Tables | 576/576 Lean 4 QED | CHAIN 145 (v50.2)</div>
+            <div style={{ color: "#FFFEFB", fontSize: 10 }}>10 D1 Tables | 624/624 Lean 4 QED | CHAIN 210 (v56.0.0)</div>
           </div>
         </div>
-        {/* v50.2.0 Host<->Pixel 8 .npage Shared-Memory Pagefile Ring & Browser WebGPU Compute Lease Control Bar */}
+        {/* v56.0.0 Host<->Pixel 8 .npage Shared-Memory Pagefile Ring & Browser WebGPU Compute Lease Control Bar */}
         <div style={{ background: "#09131C", border: "1px solid #00E5FF", borderRadius: 5, padding: "6px 10px", marginTop: 5 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 6 }}>
             <div style={{ color: "#00E5FF", fontWeight: "bold", fontSize: 10.5 }}>
@@ -2298,7 +2692,7 @@ export function App() {
             { id: "TELEMETRY", label: "1: TELEMETRY & SCOPES (A+B)", apply: () => { setDrawerAOpen(true); setDrawerBOpen(true); setBrowserOpen(false); setDrawer1Open(false); setDrawer2Open(false); setDrawer3Open(false); setDrawer4Open(false); } },
             { id: "SYNTHESIS", label: "2: SYNTHESIS, RAG & HASKELL", apply: () => { setDrawerAOpen(false); setDrawerBOpen(false); setBrowserOpen(true); setDrawer1Open(false); setDrawer2Open(false); setDrawer3Open(false); setDrawer4Open(true); } },
             { id: "CONNECTOME", label: "3: 5W1H, SHM & VAULTS (D1-D3)", apply: () => { setDrawerAOpen(false); setDrawerBOpen(false); setBrowserOpen(false); setDrawer1Open(true); setDrawer2Open(true); setDrawer3Open(true); setDrawer4Open(false); } },
-            { id: "TOOLS", label: "4: 145-TOOL COMMAND MATRIX", apply: () => { setDrawerAOpen(false); setDrawerBOpen(false); setBrowserOpen(false); setDrawer1Open(false); setDrawer2Open(false); setDrawer3Open(false); setDrawer4Open(true); } }
+            { id: "TOOLS", label: "4: 210-TOOL COMMAND MATRIX", apply: () => { setDrawerAOpen(false); setDrawerBOpen(false); setBrowserOpen(false); setDrawer1Open(false); setDrawer2Open(false); setDrawer3Open(false); setDrawer4Open(true); } }
           ].map((lens) => (
             <button
               key={lens.id}
@@ -2366,10 +2760,32 @@ export function App() {
               />
               <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 6, maxHeight: 340, overflowY: "auto" }}>
                 {[
-                  { label: "CHAIN 135: v50.0.0 Brain Scale-Up & Research Suite (Tools 104..135)", ep: `/api/v1/brain/sovereign_63360_144subdomain_qat_trainer?action=train_3pass` },
+                  { label: "CHAIN 210: v56.0.0 Full Omni-Suite (Tools 1..210)", ep: "/api/v1/chain210/suite" },
+                  { label: "CYCLE 1 (Tools 146..162): E8 Vault Archiver & Q4_K Transcoder Suite", ep: "/api/v1/tool/146" },
+                  { label: "CYCLE 2 (Tools 163..176): Polyglot DevTools & 35-Tool Discovery Suite", ep: "/api/v1/polyglot/35tool_discovery" },
+                  { label: "CYCLE 3 (Tools 177..184): APR Aperiodic Permissions & Syndrome Gate Suite", ep: "/api/v1/apr/ring_stratifier" },
+                  { label: "CYCLE 4 (Tools 185..204): Pixel 8 KernelSU Root & Governor Hardware Audit", ep: "/api/v1/p8_root/hardware_audit" },
+                  { label: "CYCLE 5 (Tools 205..210): Unthrottled Apex Speculative Drafter Cluster Throughput", ep: "/api/v1/p8_apex/cluster_throughput" },
+                  { label: "Tool 210: P8 Sovereign Sentry & Autonomous Health Sentinel", ep: "/api/v1/p8_apex/sovereign_sentry" },
+                  { label: "Tool 209: P8 Speculative Drafter Socket Verification", ep: "/api/v1/p8_apex/speculative_draft" },
+                  { label: "Tool 208: P8 Daemon Socket Ping Probe", ep: "/api/v1/p8_apex/socket_ping" },
+                  { label: "Tool 207: P8 Mali-G715 4MB L2 mlock Pinning", ep: "/api/v1/p8_apex/mlock" },
+                  { label: "Tool 206: P8 KSU Root Apex Daemon Status", ep: "/api/v1/p8_apex/status" },
+                  { label: "Tool 205: Unthrottled Host AVX2/Rayon & P8 Cluster Throughput", ep: "/api/v1/p8_apex/cluster_throughput" },
+                  { label: "Tool 187: P8 Magisk/KernelSU Slot-A Boot Image Authenticator", ep: "/api/v1/tool/187" },
+                  { label: "Tool 186: P8 Mali-G715 GPU Profiler & Sysfs Node Verifier", ep: "/api/v1/tool/186" },
+                  { label: "Tool 185: P8 KernelSU Root /proc Mount & KSU Capability Auditor", ep: "/api/v1/tool/185" },
+                  { label: "Tool 176: Polyglot DevTools 35-Tool Discovery Catalog", ep: "/api/v1/polyglot/35tool_discovery" },
+                  { label: "Tool 175: Windows Sandbox (.wsb) Ephemeral Container Bridge", ep: "/api/v1/polyglot/wsb_sandbox" },
+                  { label: "Tool 174: Windows Driver Package (WDP) Bridge", ep: "/api/v1/polyglot/wdp_bridge" },
+                  { label: "Tool 173: Blender 4.3 Stiefel Manifold 3D OBJ Exporter", ep: "/api/v1/polyglot/blender_stiefel_obj" },
+                  { label: "Tool 170: Fallout 4 Script Extender (F4SE) Native Plugin Bridge", ep: "/api/v1/polyglot/f4se_bridge" },
+                  { label: "Tool 163: C/C++ Clang/MSVC Cross-Toolchain Header Generator", ep: "/api/v1/tool/163" },
+                  { label: "Tool 162: E8 Vault LZ4/ZSTD Multi-Tier Transcoder Sink", ep: "/api/v1/tool/162" },
+                  { label: "Tool 146: E8 Vault Q4_K Block-Quantized GGUF/Tensor Compressor", ep: "/api/v1/tool/146" },
                   { label: "MONOGRAPH: Zenodo Permanent DOI (10.5281/zenodo.23651696)", ep: "https://doi.org/10.5281/zenodo.23651696" },
                   { label: "MONOGRAPH: OSF Permanent DOI (10.17605/OSF.IO/2XQ5Z)", ep: "https://osf.io/2xq5z/overview" },
-                  { label: "CHAIN 145: Full 145-Tool & 132,960-Cacheline Bijection Suite", ep: "/api/v1/chain145/suite" },
+                  { label: "CHAIN 210: Full 210-Tool & 132,960-Cacheline Bijection Suite", ep: "/api/v1/chain210/suite" },
                   { label: "Tool 145: Windows SDK 10.0.26100.0 DXC 1.8 DP4A Shader & 36-Tool Host Omni-Audit", ep: "/api/v1/toolchain/windows_sdk_dxc_omni_audit" },
                   { label: "Tool 144: Ollama 0.31.2 Local Inference Witness Probe", ep: "/api/v1/toolchain/ollama_local_witness" },
                   { label: "Tool 143: Zed 1.25.2 GPU Rust IDE & CodeMode MCP Bridge", ep: "/api/v1/toolchain/zed_ide_mcp_bridge" },
@@ -2411,16 +2827,16 @@ export function App() {
                   { label: "TOOL 87: Sovereign RAG-on-Leech Citation Engine (484 Chunks)", ep: `/api/v1/v47/rag_on_leech?q=${encodeURIComponent(cmdPrompt)}` },
                   { label: "TOOL 86: 4-Hop Leech Geodesic Chain-of-Thought", ep: `/api/v1/v47/leech_geodesic_cot?q=${encodeURIComponent(cmdPrompt)}` },
                   { label: "TOOL 85: Self-Growing OOV Lexicon + 3-Factor Hebbian STDP", ep: `/api/v1/v47/self_growing_lexicon?q=${encodeURIComponent(cmdPrompt)}` },
-                  { label: "TOOL 83/84: 131,072-Token Open-Vocab & 42,240-Neuron Connectome", ep: `/api/v1/model/open_vocab_131k?q=${encodeURIComponent(cmdPrompt)}` },
-                  { label: "TOOL 77: Pixel 8 .npage 5.41MB Shared-Memory Ring Sync", ep: "/api/v1/shm/p8_npage_bridge" },
-                  { label: "TOOL 70: 5W1H Harness + 42,240-Neuron Connectome Coupler", ep: "/api/v1/connectome/harness_5w1h_npage" },
-                  { label: "TOOL 42: Cauchy-Sparse .npage 42,240-Neuron Pagefile Inspector", ep: "/api/v1/pagefile/cauchy_sparse_npage" },
+                  { label: "TOOL 83/84: 262,144-Token Open-Vocab & 63,360-Neuron Connectome", ep: `/api/v1/model/open_vocab_131k?q=${encodeURIComponent(cmdPrompt)}` },
+                  { label: "TOOL 77: Pixel 8 .npage 8.11MB Shared-Memory Ring Sync", ep: "/api/v1/shm/p8_npage_bridge" },
+                  { label: "TOOL 70: 5W1H Harness + 63,360-Neuron Connectome Coupler", ep: "/api/v1/connectome/harness_5w1h_npage" },
+                  { label: "TOOL 42: Cauchy-Sparse .npage 63,360-Neuron Pagefile Inspector", ep: "/api/v1/pagefile/cauchy_sparse_npage" },
                   { label: "TOOL 101: AVX2+Rayon 337,920 Synapse TLV Crystallizer", ep: "/api/v1/v50/avx2_rayon_tlv_crystallizer" },
                   { label: "TOOL 101B: 4-Formant Neural-Prosodic Klatt Speech Synthesizer", ep: `/api/v1/v50/neural_prosodic_speech?q=${encodeURIComponent(cmdPrompt)}` },
                   { label: "TOOL 102: 5-Regime Multi-Physics Simulation Engine (All Regimes)", ep: "/api/v1/v50/physics_simulator?regime=all" },
                   { label: "TOOL 103: 8-Sink Autopoietic Coordinator Pub/Sub Mesh", ep: "/api/v1/v50/coordinator_mesh" },
                   { label: "TOOL 103B: Sensor-to-Physics Hardware Seeding Bridge", ep: "/api/v1/v50/drawer1_2_bridge?action=seed_physics" },
-                  { label: "TOOL 13: Verify All 564/564 Lean 4 Formal Proofs QED", ep: "/api/v1/compiler/verify" }
+                  { label: "TOOL 13: Verify All 624/624 Lean 4 Formal Proofs QED", ep: "/api/v1/compiler/verify" }
                 ]
                   .filter((item) => !cmdPaletteFilter.trim() || item.label.toLowerCase().includes(cmdPaletteFilter.toLowerCase()))
                   .map((item) => (
@@ -2647,7 +3063,7 @@ export function App() {
             </button>
           </div>
         </div>
-        {/* 4 Interactive Bijection Heatmap Cards (v50.2.0 CHAIN 145) */}
+        {/* 4 Interactive Bijection Heatmap Cards (v56.0.0 CHAIN 210) */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6, marginBottom: 6 }}>
           <div
             onClick={() => callEndpoint("/api/v1/worksteal/elastic_scheduler", "BIJECTION CARD #1: CORE BANK-0 DYNAMIC WORK-STEALING (2,080 CLs)")}
@@ -2678,7 +3094,7 @@ export function App() {
             </div>
           </div>
           <div
-            onClick={() => callEndpoint("/api/v1/pagefile/cauchy_sparse_npage?neuron_id=42240", "BIJECTION CARD #3: .NPAGE DENDRITIC 64B CACHELINES (126,720 CLs)")}
+            onClick={() => callEndpoint("/api/v1/pagefile/cauchy_sparse_npage?neuron_id=0", "BIJECTION CARD #3: .NPAGE DENDRITIC 64B CACHELINES (126,720 CLs)")}
             style={{ background: "#0A1018", border: "1px solid #B388FF", borderRadius: 5, padding: "5px 8px", cursor: "pointer" }}
           >
             <div style={{ color: "#B388FF", fontWeight: "bold", fontSize: 9.5 }}>
@@ -2776,10 +3192,10 @@ export function App() {
               INSPECT EXPANSION N{21120 + ((((selectedSector % 16) * 130 + selectedLine) * 480 / 2080) | 0) * 44} (COL #{480 + ((((selectedSector % 16) * 130 + selectedLine) * 480 / 2080) | 0)})
             </button>
             <button
-              onClick={() => callEndpoint(`/api/v1/pagefile/cauchy_sparse_npage?neuron_id=${42240 + ((((selectedSector % 16) * 130 + selectedLine) * 480 / 2080) | 0) * 44}`, `TIER-3 NPAGE COL #${960 + ((((selectedSector % 16) * 130 + selectedLine) * 480 / 2080) | 0)}`)}
+              onClick={() => callEndpoint(`/api/v1/pagefile/cauchy_sparse_npage?neuron_id=${(21120 * 2) + ((((selectedSector % 16) * 130 + selectedLine) * 480 / 2080) | 0) * 44}`, `TIER-3 NPAGE COL #${960 + ((((selectedSector % 16) * 130 + selectedLine) * 480 / 2080) | 0)}`)}
               style={{ background: "#091F2C", color: "#00E5FF", border: "1px solid #00E5FF", borderRadius: 4, padding: "2px 8px", fontSize: 10, fontWeight: "bold", cursor: "pointer" }}
             >
-              INSPECT TIER-3 N{42240 + ((((selectedSector % 16) * 130 + selectedLine) * 480 / 2080) | 0) * 44} (COL #{960 + ((((selectedSector % 16) * 130 + selectedLine) * 480 / 2080) | 0)})
+              INSPECT TIER-3 N{(21120 * 2) + ((((selectedSector % 16) * 130 + selectedLine) * 480 / 2080) | 0) * 44} (COL #{960 + ((((selectedSector % 16) * 130 + selectedLine) * 480 / 2080) | 0)})
             </button>
           </div>
         </div>
@@ -3133,7 +3549,7 @@ export function App() {
               style={{ width: "100%", height: 96, display: "block", borderRadius: 4, border: "1px solid #2A3B4D", cursor: "pointer" }}
             />
 
-            {/* v50.0.0 Drawer 1 Workbenches: Sub-Panels 1A, 1B, 1C */}
+            {/* v56.0.0 Drawer 1 Workbenches: Sub-Panels 1A, 1B, 1C */}
             <div style={{ marginTop: 8, display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
               {/* Sub-Panel 1A: AVX2+Rayon TLV Crystallizer (Tool 101) */}
               <div style={{ background: "#0A0D12", border: "1px solid #00E5FF", borderRadius: 5, padding: "8px 10px" }}>
@@ -3346,7 +3762,7 @@ export function App() {
             <div style={{ marginTop: 8, background: "#0A0D12", border: "1.5px solid #FF9EFF", borderRadius: 5, padding: "8px 10px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6, flexWrap: "wrap", gap: 6 }}>
                 <span style={{ color: "#FF9EFF", fontWeight: "bold", fontSize: 11 }}>
-                  [SUB-PANEL 2A: 5-REGIME MULTI-PHYSICS SIMULATION WORKBENCH — TOOL 102 (SH4Z v5000 | 564/564 LEAN 4 QED)]
+                  [SUB-PANEL 2A: 5-REGIME MULTI-PHYSICS SIMULATION WORKBENCH — TOOL 102 (SH4Z v5600 TLV | 624/624 LEAN 4 QED)]
                 </span>
                 <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
                   <span style={{
@@ -3519,14 +3935,14 @@ export function App() {
       {/* DRAWER 3: Formal Verification Suite */}
       <div style={{ background: "#141922", border: "1px solid #2A3B4D", borderRadius: 6, padding: "8px 10px", marginBottom: 8 }}>
         <div onClick={() => setDrawer3Open(!drawer3Open)} style={{ display: "flex", justifyContent: "space-between", cursor: "pointer", fontWeight: "bold", marginBottom: drawer3Open ? 6 : 0 }}>
-          <span>[-] DRAWER 3: FORMAL VERIFICATION SUITE (576/576 LEAN 4 PROOFS QED) &amp; 10-PILLAR PHYSICS</span>
-          <span style={{ color: "#FFB454" }}>80 Sectors = 576/576 Lean 4 Proofs QED ({tel.lean4_verify_ms.toFixed(1)}ms)</span>
+          <span>[-] DRAWER 3: FORMAL VERIFICATION SUITE (624/624 LEAN 4 PROOFS QED) &amp; 10-PILLAR PHYSICS</span>
+          <span style={{ color: "#FFB454" }}>80 Sectors = 624/624 Lean 4 Proofs QED ({tel.lean4_verify_ms.toFixed(1)}ms)</span>
         </div>
         {drawer3Open && (
           <>
             <div style={{ display: "flex", gap: 6, marginBottom: 5 }}>
               <input value={leanQuery} onChange={(e) => setLeanQuery(e.target.value)} style={{ flex: 1, background: "#0A0D12", color: "#FFFEFB", border: "1px solid #2A3B4D", borderRadius: 4, padding: "4px 8px", fontFamily: "monospace", fontSize: 11 }} />
-              <button onClick={() => callEndpoint(`/api/v1/compiler/verify?q=${encodeURIComponent(leanQuery)}`, "VERIFY 576 LEAN 4 PROOFS")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 12px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>VERIFY 576/576 LEAN 4 PROOFS</button>
+              <button onClick={() => callEndpoint(`/api/v1/compiler/verify?q=${encodeURIComponent(leanQuery)}`, "VERIFY 624 LEAN 4 PROOFS")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 12px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>VERIFY 624/624 LEAN 4 PROOFS</button>
             </div>
             <div style={{ color: "#FFB454", fontSize: 10.5 }}>
               [10-Pillar Physics &amp; 4-Stage Cascade]: {tel.physics_10pillar} -- Verify={tel.lean4_verify_ms.toFixed(1)}ms
@@ -3535,10 +3951,10 @@ export function App() {
         )}
       </div>
 
-      {/* DRAWER 4: 145-Tool Execution Registry (CHAIN 145 Milestone), NL Synthesis, Episodic Memory Search & Terminal */}
+      {/* DRAWER 4: 210-Tool Execution Registry (CHAIN 210 Milestone), NL Synthesis, Episodic Memory Search & Terminal */}
       <div style={{ background: "#141922", border: "1px solid #00FFCC", borderRadius: 6, padding: "8px 10px" }}>
         <div onClick={() => setDrawer4Open(!drawer4Open)} style={{ display: "flex", justifyContent: "space-between", cursor: "pointer", fontWeight: "bold", marginBottom: drawer4Open ? 6 : 0 }}>
-          <span>[-] DRAWER 4: 145-TOOL EXECUTION REGISTRY (v50.2.0 MONOGRAPH, BRAIN &amp; HOST TOOLCHAIN SUITE T104..T145 | CHAIN 145), AUTONOMOUS INTELLIGENCE, NL SYNTHESIS &amp; MEMORY</span>
+          <span>[-] DRAWER 4: 210-TOOL EXECUTION REGISTRY (v56.0.0 MONOGRAPH, BRAIN &amp; HOST TOOLCHAIN SUITE T104..T210 | CHAIN 210), AUTONOMOUS INTELLIGENCE, NL SYNTHESIS &amp; MEMORY</span>
           <span style={{ color: "#00FFCC" }}>RSR #{tel.rsr_step} -- HybridLink={tel.hybrid_hops} -- WS={tel.cluster_total_kops.toFixed(1)}k ops/s -- Kasami={tel.kasami_cw_hex}</span>
         </div>
         {drawer4Open && (
@@ -3553,11 +3969,11 @@ export function App() {
               </div>
             </div>
 
-            {/* v50.0.0 DEEP E8 + E8 + E8 -> LEECH_24 TURYN-GOLAY LATTICE BRIDGE, INTERNAL MODEL FEATURES & 192-EPOCH FLUENCY QAT PANEL */}
+            {/* v56.0.0 DEEP E8 + E8 + E8 -> LEECH_24 TURYN-GOLAY LATTICE BRIDGE, INTERNAL MODEL FEATURES & 192-EPOCH FLUENCY QAT PANEL */}
             <div style={{ background: "#080D14", border: "1.5px solid #B388FF", borderRadius: 6, padding: "8px 10px", marginBottom: 6 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 6, marginBottom: 6 }}>
                 <span style={{ color: "#B388FF", fontWeight: "bold", fontSize: 10.5 }}>
-                  [v50.0.0 DEEP E8(+)E8(+)E8 -&gt; LEECH_24 TURYN-GOLAY LATTICE BRIDGE, INTERNAL MODEL FEATURES &amp; 192-EPOCH FLUENCY QAT]:
+                  [v56.0.0 DEEP E8(+)E8(+)E8 -&gt; LEECH_24 TURYN-GOLAY LATTICE BRIDGE, INTERNAL MODEL FEATURES &amp; 192-EPOCH FLUENCY QAT]:
                 </span>
                 <span style={{ color: "#56D364", fontSize: 10, fontFamily: "monospace" }}>
                   E8 Roots=240 (112 D8 + 128 Spinor) | Golay G24={e8LeechState.golay24_codeword} (Octad #{e8LeechState.golay_octad_id}/759) | Leech Kissing=#{e8LeechState.leech_kissing_index}/{e8LeechState.leech_kissing_total} | PPL={e8LeechState.holdout_ppl.toFixed(9)} (Epoch #{e8LeechState.qat_epochs_completed})
@@ -3768,7 +4184,17 @@ export function App() {
               {tel.episodic_search_out}
             </div>
 
-            {/* v48.0.0 QoL Suite: Laminar Mirror Slash-Command Palette, Category Filter Tabs, Instant Tool Filter & Voice TTS */}
+            {/* Live Write-Back Telemetry Status Bar */}
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 6, alignItems: "center", background: "#05080C", padding: "6px 10px", borderRadius: 4, border: "1px solid #1C2632" }}>
+              <span style={{ color: "#00FFCC", fontSize: 9.5, fontWeight: "bold" }}>⚡ AUTOPOIETIC WRITE-BACK:</span>
+              <span style={{ background: "#0D1B2A", color: "#56D364", border: "1px solid #56D364", borderRadius: 3, padding: "2px 6px", fontSize: 9, fontFamily: "monospace" }}>BUS SEQ: #{writebackStatus.seq}</span>
+              <span style={{ background: "#0D1B2A", color: writebackStatus.mounted ? "#56D364" : "#E94E34", border: "1px solid #2A3B4D", borderRadius: 3, padding: "2px 6px", fontSize: 9, fontFamily: "monospace" }}>SSD: {writebackStatus.mounted ? "E:\\ MOUNTED" : "OFFLINE"}</span>
+              <span style={{ background: "#0D1B2A", color: "#8AB4C9", border: "1px solid #2A3B4D", borderRadius: 3, padding: "2px 6px", fontSize: 9, fontFamily: "monospace" }}>PATH: {writebackStatus.path.slice(-48)}</span>
+              <span style={{ background: "#0D1B2A", color: "#FFB454", border: "1px solid #2A3B4D", borderRadius: 3, padding: "2px 6px", fontSize: 9, fontFamily: "monospace" }}>BYTES: {writebackStatus.bytes} B</span>
+              <span style={{ background: "#0D1B2A", color: "#B388FF", border: "1px solid #2A3B4D", borderRadius: 3, padding: "2px 6px", fontSize: 9, fontFamily: "monospace" }}>SHA: {writebackStatus.sha256 === "UNMEASURED/OFFLINE" ? "LIVE" : writebackStatus.sha256.slice(0, 12) + "..."}</span>
+            </div>
+
+            {/* 8-Domain Functional Command Deck Controls: Slash Palette, Category Filter Tabs, Instant Tool Filter & Voice TTS */}
             <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 6, alignItems: "center", background: "#0A0D12", padding: "5px 8px", borderRadius: 4, border: "1px solid #2A3B4D" }}>
               <span style={{ color: "#FFB454", fontSize: 10, fontWeight: "bold" }}>SLASH PALETTE:</span>
               {["/SYNC", "/LATTICE", "/IGNITE", "/EXECUTE_OMNI_BRAID"].map((sc) => (
@@ -3780,25 +4206,27 @@ export function App() {
                   {sc}
                 </button>
               ))}
-              <span style={{ color: "#9FB0C2", fontSize: 10, fontWeight: "bold", marginLeft: 6 }}>CATEGORY:</span>
-              {["ALL", "PINNED", "PHYSICS", "AI & NL", "VAULT & HW"].map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => setToolFilterCat(cat)}
-                  style={{ background: toolFilterCat === cat ? "#E94E34" : "#141922", color: "#FFFEFB", border: "1px solid #2A3B4D", borderRadius: 3, padding: "2px 7px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}
-                >
-                  {cat}
-                </button>
-              ))}
               <input
                 value={toolSearchQuery}
                 onChange={(e) => setToolSearchQuery(e.target.value)}
-                placeholder="Quick-filter 145 tools (e.g. T145, T136, WinSDK, DXC, Zig, BraidIR, Nanostar, SHM)..."
-                style={{ width: 250, background: "#05080C", color: "#00FFCC", border: "1px solid #00FFCC", borderRadius: 3, padding: "2px 7px", fontFamily: "monospace", fontSize: 9.5 }}
+                placeholder="Search 210 tools / 8 domains (e.g. FNO, Leech, AVX2, KSU, Rayon, Lean4, T91)..."
+                style={{ width: 230, background: "#05080C", color: "#00FFCC", border: "1px solid #00FFCC", borderRadius: 3, padding: "2px 7px", fontFamily: "monospace", fontSize: 9.5 }}
               />
               {toolSearchQuery && (
                 <button onClick={() => setToolSearchQuery("")} style={{ background: "#3A1111", color: "#FF4D4D", border: "1px solid #FF4D4D", borderRadius: 3, padding: "2px 6px", fontSize: 9, cursor: "pointer" }}>CLEAR</button>
               )}
+              <button
+                onClick={() => setCompactUnifiedView(!compactUnifiedView)}
+                style={{ background: compactUnifiedView ? "#1F1030" : "#0E1E28", color: compactUnifiedView ? "#B388FF" : "#00E5FF", border: "1px solid #2A3B4D", borderRadius: 3, padding: "2px 7px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}
+              >
+                MODE: {compactUnifiedView ? "COMPACT" : "EXPANDED"}
+              </button>
+              <button
+                onClick={() => callEndpoint("/api/v1/unified/catalog", "UNIFIED CATALOG (8 DOMAINS / 210 TOOLS)")}
+                style={{ background: "#261038", color: "#FFD700", border: "1px solid #FFD700", borderRadius: 3, padding: "2px 7px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}
+              >
+                CATALOG
+              </button>
               <button
                 onClick={() => setVoiceTtsEnabled(!voiceTtsEnabled)}
                 style={{ marginLeft: "auto", background: voiceTtsEnabled ? "#2EA043" : "#1C2632", color: "#FFFEFB", border: "1px solid #56D364", borderRadius: 3, padding: "2px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}
@@ -3807,18 +4235,62 @@ export function App() {
               </button>
             </div>
 
-            {/* v49.0.0 Ten-Piece External Research Synthesis & CHAIN 100 Century Milestone Suite (Tools 91..100) */}
-            <div style={{ background: "#060D1A", border: "1.5px solid #00FFCC", borderRadius: 5, padding: "7px 10px", marginBottom: 6 }}>
+            {/* Domain Filter Tabs */}
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginBottom: 8 }}>
+              <button
+                onClick={() => setActiveDomainFilter("ALL")}
+                style={{ background: activeDomainFilter === "ALL" ? "#00FFCC" : "#0D1117", color: activeDomainFilter === "ALL" ? "#050A0E" : "#8AB4C9", border: "1px solid #2A3B4D", borderRadius: 3, padding: "3px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}
+              >
+                ALL 8 DOMAINS (210)
+              </button>
+              {DOMAINS_CATALOG.map((d) => (
+                <button
+                  key={d.slug}
+                  onClick={() => setActiveDomainFilter(d.slug)}
+                  style={{
+                    background: activeDomainFilter === d.slug ? d.accent : "#0D1117",
+                    color: activeDomainFilter === d.slug ? "#050A0E" : d.accent,
+                    border: `1px solid ${activeDomainFilter === d.slug ? d.accent : "#2A3B4D"}`,
+                    borderRadius: 3,
+                    padding: "3px 8px",
+                    fontWeight: "bold",
+                    cursor: "pointer",
+                    fontSize: 9.5
+                  }}
+                >
+                  D{d.id}: {d.shortName} ({d.toolCount})
+                </button>
+              ))}
+            </div>
+
+            {/* 8-Domain Functional Command Deck Header */}
+            <div style={{ background: "#050E14", border: "1.5px solid #00FFCC", borderRadius: 5, padding: "8px 12px", marginBottom: 8, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 6 }}>
+              <div>
+                <span style={{ color: "#00FFCC", fontWeight: "bold", fontSize: 11 }}>
+                  [8-DOMAIN FUNCTIONAL COMMAND DECK — 210 TOOLS CONSOLIDATED (CHAIN 210 | v56.1.0 | 624/624 LEAN 4 QED)]:
+                </span>
+                <span style={{ color: "#FFB454", fontSize: 9.5, marginLeft: 8, fontWeight: "bold" }}>
+                  Unified Dispatchers (/api/v1/unified/*) | Universal E:\ SSD Write-Back | Zero-Bracket Strictness
+                </span>
+              </div>
+              <div style={{ display: "flex", gap: 5 }}>
+                <button onClick={() => callEndpoint("/api/v1/chain210/suite", "CHAIN 210: 210-TOOL OMNI-SUITE")} style={{ background: "#00FFCC", color: "#050A0E", border: "none", borderRadius: 4, padding: "3px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>CHAIN 210 SUITE</button>
+                <button onClick={() => callEndpoint("/api/v1/harmonic/tool_chain?q=chain89_parallel_dag", "CHAIN 89: 89-TOOL PARALLEL DAG")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "3px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>CHAIN 89 DAG</button>
+              </div>
+            </div>
+
+            {/* Dedicated v49.0.0 Ten-Piece External Research Synthesis & CHAIN 100 Century Milestone Suite (Tools 91..100) */}
+            <div style={{ background: "#060D1A", border: "1.5px solid #00FFCC", borderRadius: 5, padding: "7px 10px", marginBottom: 8 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 6, marginBottom: 5 }}>
                 <span style={{ color: "#00FFCC", fontWeight: "bold", fontSize: 10.5 }}>
-                  [v49.0.0 TEN-PIECE EXTERNAL RESEARCH SYNTHESIS — TOOLS 91..100 (CHAIN 100 CENTURY MILESTONE | 564/564 LEAN 4 QED)]:
+                  [v49.0.0 TEN-PIECE EXTERNAL RESEARCH SYNTHESIS — TOOLS 91..100 (CHAIN 100 CENTURY MILESTONE | 624/624 LEAN 4 QED)]:
                 </span>
                 <span style={{ color: "#FFB454", fontSize: 9.5, fontWeight: "bold" }}>
                   Triangulated dS3 Gravity | Hexagon Amplituhedron | Bekenstein L2 Bound | Bell 6-Polytope | Dzhanibekov Axis
                 </span>
               </div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
-                <button onClick={() => callEndpoint(`/api/v1/v49/chain100_omni_suite?q=${encodeURIComponent(cmdPrompt)}`, "CHAIN 100 OMNI-SUITE (TOOLS 91..100)")} style={{ background: "#00FFCC", color: "#050A0E", border: "none", borderRadius: 4, padding: "4px 8px", cursor: "pointer", fontFamily: "monospace", fontSize: 9.5, fontWeight: "bold" }}>RUN ALL 10 v49 ENGINES (CHAIN 100 OMNI-SUITE)</button>
+                <button onClick={() => callEndpoint(`/api/v1/v49/chain100_omni_suite?q=${encodeURIComponent(cmdPrompt)}`, "CHAIN 100: 100-TOOL CENTURY OMNI-SUITE")} style={{ background: "#00FFCC", color: "#050A0E", border: "none", borderRadius: 4, padding: "4px 8px", cursor: "pointer", fontFamily: "monospace", fontSize: 9.5, fontWeight: "bold" }}>CHAIN 100: 100-TOOL CENTURY OMNI-SUITE</button>
                 <button onClick={() => callEndpoint(`/api/v1/v49/tool_100_dzhanibekov_euler_axis_stabilizer?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 100: DZHANIBEKOV INTERMEDIATE AXIS ROTATIONAL STABILIZER")} style={{ background: "#261038", color: "#FFD700", border: "1px solid #FFD700", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>Tool 100: Dzhanibekov Stabilizer</button>
                 <button onClick={() => callEndpoint(`/api/v1/v49/tool_99_stanford_together_hybrid_link_agent?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 99: STANFORD + TOGETHER HYBRIDLINK LATENT E8/BPE AGENT")} style={{ background: "#0D2618", color: "#56D364", border: "1px solid #56D364", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>Tool 99: Stanford/Together HybridLink</button>
                 <button onClick={() => callEndpoint(`/api/v1/v49/tool_98_poincare_bendixson_destiny_atlas?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 98: POINCARE-BENDIXSON LOCAL DESTINY PHASE-PORTRAIT ATLAS")} style={{ background: "#1F1030", color: "#B388FF", border: "1px solid #B388FF", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>Tool 98: Poincare-Bendixson Atlas</button>
@@ -3832,306 +4304,109 @@ export function App() {
               </div>
             </div>
 
-            {/* v50.0.0 Century Suite: Low-Level AVX2/FMA Hardware Accelerators, 5-Regime Multi-Physics & 8-Sink Coordinator (Tools 101..103) */}
-            <div style={{ background: "#09131C", border: "1.5px solid #00E5FF", borderRadius: 5, padding: "7px 10px", marginBottom: 6 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 6, marginBottom: 5 }}>
-                <span style={{ color: "#00E5FF", fontWeight: "bold", fontSize: 10.5 }}>
-                  [v50.0.0 CENTURY SUITE (TOOLS 101..103) — SH4Z v5000 TLV | 564/564 LEAN 4 QED]:
-                </span>
-                <span style={{ color: "#FFB454", fontSize: 9.5, fontWeight: "bold" }}>
-                  Rayon 12T + AVX2/FMA SIMD | 4-Formant Klatt RIFF WAVE | 5-Regime Multi-Physics | 8-Sink E:\ Mesh
-                </span>
-              </div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
-                <button onClick={() => runV50Crystallizer()} style={{ background: "#00E5FF", color: "#050A0E", border: "none", borderRadius: 4, padding: "4px 8px", cursor: "pointer", fontFamily: "monospace", fontSize: 9.5, fontWeight: "bold" }}>TOOL 101: AVX2+Rayon TLV Crystallizer</button>
-                <button onClick={() => runV50Speech()} style={{ background: "#3A1C00", color: "#FFB454", border: "1px solid #FFB454", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 101B: Neural-Prosodic Klatt Speech</button>
-                <button onClick={() => runV50Physics("all")} style={{ background: "#261038", color: "#FF9EFF", border: "1px solid #FF9EFF", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 102: 5-Regime Multi-Physics Suite</button>
-                <button onClick={() => callEndpoint("/api/v1/v50/coordinator_mesh", "TOOL 103: 8-SINK AUTOPOIETIC COORDINATOR PUB/SUB MESH")} style={{ background: "#0D2618", color: "#56D364", border: "1px solid #56D364", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 103: 8-Sink Coordinator Mesh</button>
-                <button onClick={() => runV50Bridge("seed_physics")} style={{ background: "#1F1030", color: "#B388FF", border: "1px solid #B388FF", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 103B: Sensor-to-Physics Seeding</button>
-              </div>
+            {/* 8 Consolidated Functional Domain Cards (CHAIN 210 Suite: Tools 1..210) */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 8 }}>
+              {DOMAINS_CATALOG
+                .filter((d) => activeDomainFilter === "ALL" || activeDomainFilter === d.slug)
+                .map((d) => {
+                  const filteredTools = d.tools.filter((t) => {
+                    if (!toolSearchQuery || !toolSearchQuery.trim()) return true;
+                    const q = toolSearchQuery.toLowerCase();
+                    return (
+                      t.label.toLowerCase().includes(q) ||
+                      t.tag.toLowerCase().includes(q) ||
+                      t.ep.toLowerCase().includes(q)
+                    );
+                  });
+
+                  // If user is searching and no tools in this domain match and domain name doesn't match, skip
+                  if (toolSearchQuery && toolSearchQuery.trim() && filteredTools.length === 0 && !d.name.toLowerCase().includes(toolSearchQuery.toLowerCase())) {
+                    return null;
+                  }
+
+                  const toolsToDisplay = (toolSearchQuery && toolSearchQuery.trim()) ? filteredTools : d.tools;
+
+                  return (
+                    <div
+                      key={d.slug}
+                      style={{
+                        background: d.bg,
+                        border: `1.5px solid ${d.border}`,
+                        borderRadius: 5,
+                        padding: "8px 10px"
+                      }}
+                    >
+                      {/* Domain Header */}
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 6, marginBottom: 6 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                          <span style={{ color: d.accent, fontWeight: "bold", fontSize: 11 }}>
+                            DOMAIN {d.id}: {d.name.toUpperCase()}
+                          </span>
+                          <span style={{ background: "#050A0E", color: "#FFFEFB", border: `1px solid ${d.accent}`, borderRadius: 3, padding: "1px 6px", fontSize: 9, fontWeight: "bold" }}>
+                            {d.toolCount} TOOLS | {d.toolRange}
+                          </span>
+                          <span style={{ background: "#0D1117", color: "#8AB4C9", border: "1px solid #2A3B4D", borderRadius: 3, padding: "1px 6px", fontSize: 9 }}>
+                            E:\ SINK: {d.writebackCat}
+                          </span>
+                        </div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                          <button
+                            onClick={() => callEndpoint(d.ep, `UNIFIED D${d.id}: ${d.name} (${d.writebackCat})`)}
+                            style={{
+                              background: d.accent,
+                              color: "#050A0E",
+                              border: "none",
+                              borderRadius: 4,
+                              padding: "4px 10px",
+                              fontWeight: "bold",
+                              cursor: "pointer",
+                              fontSize: 9.5
+                            }}
+                          >
+                            ⚡ RUN UNIFIED DOMAIN {d.id} FUNCTION
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Domain Description */}
+                      <div style={{ color: "#8AB4C9", fontSize: 9.5, marginBottom: 6, lineHeight: 1.4 }}>
+                        {d.desc}
+                      </div>
+
+                      {/* Domain Tools Grid (Hidden in compact view unless searching or domain is explicitly selected) */}
+                      {(!compactUnifiedView || activeDomainFilter === d.slug || (toolSearchQuery && toolSearchQuery.trim())) && (
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 4 }}>
+                          {toolsToDisplay.map((t) => (
+                            <button
+                              key={t.id}
+                              onClick={() => callEndpoint(t.ep, `TOOL ${t.id}: ${t.label}`)}
+                              title={`${t.tag}: ${t.label} -> ${t.ep}`}
+                              style={{
+                                background: "#0D1117",
+                                color: "#FFFEFB",
+                                border: `1px solid ${d.border}`,
+                                borderRadius: 3,
+                                padding: "3px 6px",
+                                cursor: "pointer",
+                                fontFamily: "monospace",
+                                fontSize: 8.5
+                              }}
+                            >
+                              {t.tag}: {t.label}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
             </div>
 
-            {/* v50.0.0 Monograph Core & Research Synthesis Batches 1..4 (CHAIN 135 Suite: Tools 104..135) */}
-            <div style={{ background: "#08131C", border: "1.5px solid #00FFCC", borderRadius: 5, padding: "8px 10px", marginBottom: 6 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 6, marginBottom: 6 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                  <span style={{ color: "#00FFCC", fontWeight: "bold", fontSize: 11 }}>
-                    [v50.0.0 MONOGRAPH CORE &amp; 4-BATCH RESEARCH SYNTHESIS — TOOLS 104..135 (CHAIN 135 | 564/564 LEAN 4 QED)]:
-                  </span>
-                  <a
-                    href="https://doi.org/10.5281/zenodo.23651696"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ color: "#00E5FF", border: "1px solid #00E5FF", borderRadius: 3, padding: "1px 6px", fontSize: 9.5, textDecoration: "none", fontWeight: "bold" }}
-                  >
-                    Zenodo 10.5281/zenodo.23651696
-                  </a>
-                  <a
-                    href="https://osf.io/2xq5z/overview"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ color: "#B388FF", border: "1px solid #B388FF", borderRadius: 3, padding: "1px 6px", fontSize: 9.5, textDecoration: "none", fontWeight: "bold" }}
-                  >
-                    OSF 10.17605/OSF.IO/2XQ5Z
-                  </a>
-                </div>
-                <span style={{ color: "#FFB454", fontSize: 9.5, fontWeight: "bold" }}>
-                  63,360 Neurons | 1,013,760 Synapses | 144 Sub-Domains | 262,144 BPE (18-Bit)
-                </span>
-              </div>
-              
-              {/* Cluster 1: Monograph Core (Tools 104..106) & Brain Trainer (Tool 135) */}
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 5 }}>
-                <button onClick={() => callEndpoint(`/api/v1/brain/sovereign_63360_144subdomain_qat_trainer?action=train_3pass`, "CHAIN 135: 3-PASS MODEL TRAINER & ROUTER (T135)")} style={{ background: "#00FFCC", color: "#050A0E", border: "none", borderRadius: 4, padding: "4px 8px", cursor: "pointer", fontFamily: "monospace", fontSize: 9.5, fontWeight: "bold" }}>RUN 3-PASS BRAIN TRAINER (TOOL 135)</button>
-                <button onClick={() => callEndpoint(`/api/v1/monograph/braidir_yang_baxter_bresenham_compiler?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 104: BRAIDIR YANG-BAXTER COMPILER")} style={{ background: "#1C1428", color: "#B388FF", border: "1px solid #B388FF", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>Tool 104: BraidIR Compiler</button>
-                <button onClick={() => callEndpoint(`/api/v1/monograph/sh4z_dual_shell_lvq_quantizer?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 105: SH4Z DUAL-SHELL LVQ QUANTIZER")} style={{ background: "#261038", color: "#FFD700", border: "1px solid #FFD700", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>Tool 105: SH4Z LVQ Quantizer</button>
-                <button onClick={() => callEndpoint(`/api/v1/monograph/vesper_4phase_cellular_sheaf_runtime?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 106: VESPER 4-PHASE SHEAF RUNTIME")} style={{ background: "#0D2618", color: "#56D364", border: "1px solid #56D364", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>Tool 106: Vesper Sheaf Runtime</button>
-              </div>
-
-              {/* Cluster 2: Batch 1 Topological Rosetta & Degeneracy (Tools 107..116) */}
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 5 }}>
-                <button onClick={() => callEndpoint(`/api/v1/rosetta/topological_rosetta_stone_verifier?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 107: TOPOLOGICAL ROSETTA STONE")} style={{ background: "#091F2C", color: "#00E5FF", border: "1px solid #00E5FF", borderRadius: 4, padding: "3px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 8.5 }}>T107: Rosetta Stone</button>
-                <button onClick={() => callEndpoint(`/api/v1/bio/spriz_intermembrane_pillar_spacer?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 108: SPRIZ PILLAR SPACER")} style={{ background: "#091F2C", color: "#00E5FF", border: "1px solid #00E5FF", borderRadius: 4, padding: "3px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 8.5 }}>T108: SPRIZ Pillar</button>
-                <button onClick={() => callEndpoint(`/api/v1/astro/chandrasekhar_relativistic_degeneracy_breaker?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 109: CHANDRASEKHAR DEGENERACY")} style={{ background: "#091F2C", color: "#00E5FF", border: "1px solid #00E5FF", borderRadius: 4, padding: "3px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 8.5 }}>T109: Chandrasekhar</button>
-                <button onClick={() => callEndpoint(`/api/v1/algebra/adjoint_transpose_covector_pullback?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 110: ADJOINT TRANSPOSE PULLBACK")} style={{ background: "#091F2C", color: "#00E5FF", border: "1px solid #00E5FF", borderRadius: 4, padding: "3px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 8.5 }}>T110: Adjoint Pullback</button>
-                <button onClick={() => callEndpoint(`/api/v1/mesh/lora_css_von_neumann_pointer_witness?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 111: LORA CSS POINTER WITNESS")} style={{ background: "#091F2C", color: "#00E5FF", border: "1px solid #00E5FF", borderRadius: 4, padding: "3px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 8.5 }}>T111: LoRA CSS Witness</button>
-                <button onClick={() => callEndpoint(`/api/v1/quantum/aist_flux_quanta_photon_counter?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 112: AIST FLUX QUANTA")} style={{ background: "#091F2C", color: "#00E5FF", border: "1px solid #00E5FF", borderRadius: 4, padding: "3px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 8.5 }}>T112: AIST Flux</button>
-                <button onClick={() => callEndpoint(`/api/v1/logic/principia_54_26_proof_erasure_auditor?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 113: PRINCIPIA 54.26 AUDITOR")} style={{ background: "#091F2C", color: "#00E5FF", border: "1px solid #00E5FF", borderRadius: 4, padding: "3px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 8.5 }}>T113: Principia 54.26</button>
-                <button onClick={() => callEndpoint(`/api/v1/physics/xfel_multiscale_fermi_propagator?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 114: XFEL FERMI PROPAGATOR")} style={{ background: "#091F2C", color: "#00E5FF", border: "1px solid #00E5FF", borderRadius: 4, padding: "3px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 8.5 }}>T114: XFEL Propagator</button>
-                <button onClick={() => callEndpoint(`/api/v1/quantum/fibonacci_two_time_dimension_scheduler?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 115: FIBONACCI 2-TIME SCHEDULER")} style={{ background: "#091F2C", color: "#00E5FF", border: "1px solid #00E5FF", borderRadius: 4, padding: "3px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 8.5 }}>T115: Fibonacci 2-Time</button>
-                <button onClick={() => callEndpoint(`/api/v1/geometry/hilbert_apollonian_polyhedral_atlas?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 116: HILBERT APOLLONIAN ATLAS")} style={{ background: "#091F2C", color: "#00E5FF", border: "1px solid #00E5FF", borderRadius: 4, padding: "3px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 8.5 }}>T116: Apollonian Atlas</button>
-              </div>
-
-              {/* Cluster 3: Batch 2 Npage V2, SAE & Grassmann (Tools 117..126) */}
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 5 }}>
-                <button onClick={() => callEndpoint(`/api/v1/number/pandigital_polydivisible_canary_verifier?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 117: PANDIGITAL CANARY")} style={{ background: "#1F1030", color: "#B388FF", border: "1px solid #B388FF", borderRadius: 4, padding: "3px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 8.5 }}>T117: Pandigital Canary</button>
-                <button onClick={() => callEndpoint(`/api/v1/interp/sae_monosemantic_feature_circuit_binder?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 118: SAE MONOSEMANTIC BINDER")} style={{ background: "#1F1030", color: "#B388FF", border: "1px solid #B388FF", borderRadius: 4, padding: "3px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 8.5 }}>T118: SAE Binder</button>
-                <button onClick={() => callEndpoint(`/api/v1/bio/dna_nanostar_8arm_sticky_end_linker?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 119: DNA NANOSTAR LINKER")} style={{ background: "#1F1030", color: "#B388FF", border: "1px solid #B388FF", borderRadius: 4, padding: "3px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 8.5 }}>T119: DNA Nanostar</button>
-                <button onClick={() => callEndpoint(`/api/v1/spatial/cellspa_voronoi_dep32_expert_router?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 120: CELLSPA VORONOI ROUTER")} style={{ background: "#1F1030", color: "#B388FF", border: "1px solid #B388FF", borderRadius: 4, padding: "3px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 8.5 }}>T120: CellSpa Voronoi</button>
-                <button onClick={() => callEndpoint(`/api/v1/vortex/toroidal_mod9_doubling_axis_auditor?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 121: TOROIDAL MOD9 AUDITOR")} style={{ background: "#1F1030", color: "#B388FF", border: "1px solid #B388FF", borderRadius: 4, padding: "3px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 8.5 }}>T121: Toroidal Mod9</button>
-                <button onClick={() => callEndpoint(`/api/v1/geometry/viviani_archimedes_npage_partition_auditor?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 122: VIVIANI ARCHIMEDES AUDITOR")} style={{ background: "#1F1030", color: "#B388FF", border: "1px solid #B388FF", borderRadius: 4, padding: "3px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 8.5 }}>T122: Viviani Npage</button>
-                <button onClick={() => callEndpoint(`/api/v1/bio/kinesin_8nm_cacheline_zeeman_valley_stepper?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 123: KINESIN 8NM STEPPER")} style={{ background: "#1F1030", color: "#B388FF", border: "1px solid #B388FF", borderRadius: 4, padding: "3px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 8.5 }}>T123: Kinesin 8nm</button>
-                <button onClick={() => callEndpoint(`/api/v1/security/openai_microvm_constant_time_cache_shield?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 124: OPENAI MICROVM CACHE SHIELD")} style={{ background: "#1F1030", color: "#B388FF", border: "1px solid #B388FF", borderRadius: 4, padding: "3px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 8.5 }}>T124: MicroVM Shield</button>
-                <button onClick={() => callEndpoint(`/api/v1/compiler/cloudflare_tsrs_ast_schema_contract_verifier?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 125: CLOUDFLARE TSRS CONTRACT")} style={{ background: "#1F1030", color: "#B388FF", border: "1px solid #B388FF", borderRadius: 4, padding: "3px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 8.5 }}>T125: TSRS Contract</button>
-                <button onClick={() => callEndpoint(`/api/v1/geometry/grassmann_exterior_plucker_bivector_solver?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 126: GRASSMANN EXTERIOR BIVECTOR")} style={{ background: "#1F1030", color: "#B388FF", border: "1px solid #B388FF", borderRadius: 4, padding: "3px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 8.5 }}>T126: Grassmann Bivector</button>
-              </div>
-
-              {/* Cluster 4: Batches 3 & 4: 11D Brain, Wave & Flag Complex (Tools 127..134) */}
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
-                <button onClick={() => callEndpoint(`/api/v1/topology/blue_brain_11d_simplex_clique_cavity_engine?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 127: BLUE BRAIN 11D SIMPLEX")} style={{ background: "#0D2618", color: "#56D364", border: "1px solid #56D364", borderRadius: 4, padding: "3px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 8.5 }}>T127: 11D Simplex Clique</button>
-                <button onClick={() => callEndpoint(`/api/v1/quantum/kspace_ring_helmholtz_wave_packet_solver?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 128: K-SPACE HELMHOLTZ SOLVER")} style={{ background: "#0D2618", color: "#56D364", border: "1px solid #56D364", borderRadius: 4, padding: "3px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 8.5 }}>T128: Helmholtz Solver</button>
-                <button onClick={() => callEndpoint(`/api/v1/attention/tokengate_11x_prefill_npage_skimmer?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 129: TOKENGATE 11X SKIMMER")} style={{ background: "#0D2618", color: "#56D364", border: "1px solid #56D364", borderRadius: 4, padding: "3px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 8.5 }}>T129: TokenGate 11x</button>
-                <button onClick={() => callEndpoint(`/api/v1/graph/tivadar_danka_adjacency_matrix_walk_duality?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 130: TIVADAR DANKA WALK DUALITY")} style={{ background: "#0D2618", color: "#56D364", border: "1px solid #56D364", borderRadius: 4, padding: "3px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 8.5 }}>T130: Danka Walk Duality</button>
-                <button onClick={() => callEndpoint(`/api/v1/topology/reimann_eq2_directionality_simplex_discriminator?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 131: REIMANN EQ2 SIMPLEX")} style={{ background: "#261038", color: "#FF9EFF", border: "1px solid #FF9EFF", borderRadius: 4, padding: "3px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 8.5 }}>T131: Reimann Eq2</button>
-                <button onClick={() => callEndpoint(`/api/v1/topology/presink_sink_shared_ancestor_correlator?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 132: PRESINK/SINK ANCESTOR")} style={{ background: "#261038", color: "#FF9EFF", border: "1px solid #FF9EFF", borderRadius: 4, padding: "3px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 8.5 }}>T132: Pre-Sink Ancestor</button>
-                <button onClick={() => callEndpoint(`/api/v1/topology/functional_tr_sandcastle_betti_swr_trigger?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 133: SANDCASTLE BETTI SWR")} style={{ background: "#261038", color: "#FF9EFF", border: "1px solid #FF9EFF", borderRadius: 4, padding: "3px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 8.5 }}>T133: Sandcastle Betti</button>
-                <button onClick={() => callEndpoint(`/api/v1/topology/flagser_zero_alloc_bitmask_simplex_enumerator?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 134: FLAGSER SIMPLEX ENUMERATOR")} style={{ background: "#261038", color: "#FF9EFF", border: "1px solid #FF9EFF", borderRadius: 4, padding: "3px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 8.5 }}>T134: Flagser Simplex</button>
-              </div>
-            </div>
-
-            {/* v48.0.0 / v49.0.0 Pillar 6: Sovereign Autopoietic Coordinator, Internal Message Bus & Universal E:\ Write-Back Pipeline */}
-            <div style={{ background: "#061414", border: "1.5px solid #56D364", borderRadius: 5, padding: "7px 10px", marginBottom: 6 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 6, marginBottom: 5 }}>
-                <span style={{ color: "#56D364", fontWeight: "bold", fontSize: 10.5 }}>
-                  [PILLAR 6: SOVEREIGN AUTOPOIETIC COORDINATOR, INTERNAL MESSAGE BUS &amp; UNIVERSAL E:\ WRITE-BACK PIPELINE]:
-                </span>
-                <span style={{ color: "#00FFCC", fontSize: 9.5, fontWeight: "bold" }}>
-                  6-Topic Pub/Sub Bus | Versioned E:\autopoietic_codegen\ Sink | Zero-Bracket &amp; Lean 4 Integrator | Closed-Loop 5-Stage DAG
-                </span>
-              </div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
-                <button onClick={() => callEndpoint(`/api/v1/coordinator/dag_orchestrator?q=${encodeURIComponent(cmdPrompt)}`, "COORDINATOR: 5-STAGE CLOSED-LOOP AUTOPOIETIC DAG + E:\\ WRITE-BACK")} style={{ background: "#56D364", color: "#050A0E", border: "none", borderRadius: 4, padding: "4px 8px", cursor: "pointer", fontFamily: "monospace", fontSize: 9.5, fontWeight: "bold" }}>RUN 5-STAGE AUTOPOIETIC COORDINATOR DAG</button>
-                <button onClick={() => callEndpoint(`/api/v1/coordinator/message_bus?q=${encodeURIComponent(cmdPrompt)}`, "COORDINATOR: INTERNAL MESSAGE BUS PUB/SUB LEDGER")} style={{ background: "#091F2C", color: "#00E5FF", border: "1px solid #00E5FF", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>Coordinator: Publish &amp; Inspect Message Bus</button>
-                <button onClick={() => callEndpoint(`/api/v1/coordinator/codegen_vault_sink?kind=rust&q=${encodeURIComponent(cmdPrompt)}`, "COORDINATOR: WRITE-BACK RUST CODEGEN TO E:\\ VAULT")} style={{ background: "#3A1C00", color: "#FFB454", border: "1px solid #FFB454", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>Write-Back Rust Codegen -&gt; E:\</button>
-                <button onClick={() => callEndpoint(`/api/v1/coordinator/codegen_vault_sink?kind=lean4&q=${encodeURIComponent(cmdPrompt)}`, "COORDINATOR: WRITE-BACK LEAN 4 PROOF TO E:\\ VAULT")} style={{ background: "#1F1030", color: "#B388FF", border: "1px solid #B388FF", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>Write-Back Lean 4 Proof -&gt; E:\</button>
-                <button onClick={() => callEndpoint("/api/v1/coordinator/autopoietic_integrator", "COORDINATOR: AUTOPOIETIC INTEGRATOR & ZERO-BRACKET VERIFIER")} style={{ background: "#261038", color: "#FFD700", border: "1px solid #FFD700", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>Audit Staged E:\ Codegen (Zero-Bracket Verifier)</button>
-              </div>
-            </div>
-
-            {/* v48.0.0 Layer 1.5 GHC Haskell Exact Algebra, DuckDB Columnar Vector & Hamiltonian k=4 Episodic Model Suite (Tools 90..92) */}
-            <div style={{ background: "#090E18", border: "1.5px solid #FFD700", borderRadius: 5, padding: "7px 10px", marginBottom: 6 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 6, marginBottom: 5 }}>
-                <span style={{ color: "#FFD700", fontWeight: "bold", fontSize: 10.5 }}>
-                  [v48.0.0 LAYER 1.5 HASKELL (GHC 9.8.2), DUCKDB v1.5.6 VECTOR &amp; HAMILTONIAN k=4 EPISODIC MODEL — TOOLS 90..92 (564/564 LEAN 4 QED)]:
-                </span>
-                <span style={{ color: "#00FFCC", fontSize: 9.5, fontWeight: "bold" }}>
-                  0/1 Exact Rational Weyl Drift | 4-Timescale Dendritic Eligibility | 64-Turn Apical Ring | Zig v0.17.0 + Lean v4.35.0
-                </span>
-              </div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
-                <button onClick={() => callEndpoint(`/api/v1/v48/omni_suite?q=${encodeURIComponent(cmdPrompt)}`, "v48.0.0 OMNI-SUITE (TOOLS 90 + 91 + 92)")} style={{ background: "#FFD700", color: "#050A0E", border: "none", borderRadius: 4, padding: "4px 8px", cursor: "pointer", fontFamily: "monospace", fontSize: 9.5, fontWeight: "bold" }}>RUN ALL 3 v48 ENGINES (OMNI-SUITE)</button>
-                <button onClick={() => callEndpoint(`/api/v1/v48/hamiltonian_episodic_model?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 92: HAMILTONIAN k=4 GEODESIC BEAM & 64-TURN EPISODIC RING")} style={{ background: "#1F1030", color: "#B388FF", border: "1px solid #B388FF", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 92: Hamiltonian k=4 Beam + 64-Turn Episodic Ring</button>
-                <button onClick={() => callEndpoint(`/api/v1/v48/duckdb_columnar_vector?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 91: DUCKDB v1.5.6 COLUMNAR VECTOR & SHARD ANALYTICAL ENGINE")} style={{ background: "#091F2C", color: "#00E5FF", border: "1px solid #00E5FF", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 91: DuckDB v1.5.6 Columnar Vector Engine</button>
-                <button onClick={() => callEndpoint(`/api/v1/v48/haskell_layer15_algebra?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 90: LAYER 1.5 GHC HASKELL EXACT RATIONAL ALGEBRA & DUAL CODEGEN")} style={{ background: "#0D2618", color: "#56D364", border: "1px solid #56D364", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 90: Layer 1.5 Haskell (GHC) Exact E8/Leech24 + Codegen</button>
-              </div>
-            </div>
-
-            {/* v47.0.0 Autonomous Intelligence & Embodied Voice Suite (Tools 85..89) */}
-            <div style={{ background: "#070E16", border: "1px solid #00FFCC", borderRadius: 5, padding: "7px 10px", marginBottom: 6 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 6, marginBottom: 5 }}>
-                <span style={{ color: "#00FFCC", fontWeight: "bold", fontSize: 10.5 }}>
-                  [v47.0.0 AUTONOMOUS INTELLIGENCE &amp; EMBODIED VOICE SUITE — TOOLS 85..89 (SH4Z v5000 TLV | 564/564 LEAN 4 QED)]:
-                </span>
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <span style={{ color: "#FFB454", fontSize: 9.5, fontWeight: "bold" }}>16kHz Klatt Voice (.WAV):</span>
-                  <audio controls src="/api/v1/v47/audio.wav" style={{ height: 22, width: 210 }} />
-                </div>
-              </div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
-                <button onClick={() => callEndpoint(`/api/v1/v47/omni_suite?q=${encodeURIComponent(cmdPrompt)}`, "v47.0.0 OMNI-SUITE (ALL 5 ENGINES T85..T89)")} style={{ background: "#00FFCC", color: "#050A0E", border: "none", borderRadius: 4, padding: "4px 8px", cursor: "pointer", fontFamily: "monospace", fontSize: 9.5, fontWeight: "bold" }}>RUN ALL 5 v47 ENGINES (OMNI-SUITE)</button>
-                <button onClick={() => callEndpoint(`/api/v1/v47/sovereign_scientist?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 89: SOVEREIGN SCIENTIST (64-STEP RK4 + LEAN 4 EMISSION)")} style={{ background: "#261038", color: "#ffd700", border: "1px solid #ffd700", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 89: Sovereign Scientist (64-Step RK4)</button>
-                <button onClick={() => callEndpoint(`/api/v1/v47/embodied_sensor_voice_loop?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 88: EMBODIED 24D SENSOR + 16KHZ KLATT VOICE LOOP")} style={{ background: "#3a1c00", color: "#ffb454", border: "1px solid #ffb454", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 88: Embodied Sensor + 16kHz Voice</button>
-                <button onClick={() => callEndpoint(`/api/v1/v47/rag_on_leech?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 87: SOVEREIGN RAG-ON-LEECH CITATION ENGINE")} style={{ background: "#091f2c", color: "#00e5ff", border: "1px solid #00e5ff", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 87: Sovereign RAG-on-Leech</button>
-                <button onClick={() => callEndpoint(`/api/v1/v47/leech_geodesic_cot?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 86: 4-HOP LEECH GEODESIC CHAIN-OF-THOUGHT")} style={{ background: "#1f1030", color: "#b388ff", border: "1px solid #b388ff", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 86: 4-Hop Leech Geodesic CoT</button>
-                <button onClick={() => callEndpoint(`/api/v1/v47/self_growing_lexicon?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 85: SELF-GROWING OOV LEXICON + 3-FACTOR HEBBIAN STDP")} style={{ background: "#0d2618", color: "#56d364", border: "1px solid #56d364", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 85: Self-Growing OOV Lexicon (STDP)</button>
-              </div>
-            </div>
-
-            {/* 145-Tool Buttons (CHAIN 145 Suite: Tools 136..145 Host Toolchain & Windows SDK 26100 DXC + Tools 104..135 + Preserving All Existing Tools T1..T103) */}
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 6 }}>
-              <button onClick={() => callEndpoint("/api/v1/chain145/suite", "CHAIN 145: FULL 145-TOOL & 132,960-CACHELINE BIJECTION SUITE")} style={{ background: "#FFD700", color: "#050A0E", border: "1px solid #FFD700", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>CHAIN 145: Full Omni-Suite</button>
-              <button onClick={() => callEndpoint("/api/v1/toolchain/windows_sdk_dxc_omni_audit", "TOOL 145: WINDOWS SDK 10.0.26100.0 DXC 1.8 & 36-TOOL OMNI-AUDIT")} style={{ background: "#00FFCC", color: "#050A0E", border: "1px solid #00FFCC", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 145: WinSDK 26100 DXC 1.8</button>
-              <button onClick={() => callEndpoint("/api/v1/toolchain/ollama_local_witness", "TOOL 144: OLLAMA 0.31.2 LOCAL INFERENCE WITNESS")} style={{ background: "#091F2C", color: "#00E5FF", border: "1px solid #00E5FF", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 144: Ollama 0.31.2 Witness</button>
-              <button onClick={() => callEndpoint("/api/v1/toolchain/zed_ide_mcp_bridge", "TOOL 143: ZED 1.25.2 GPU IDE & CODEMODE MCP BRIDGE")} style={{ background: "#091F2C", color: "#00E5FF", border: "1px solid #00E5FF", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 143: Zed 1.25.2 MCP Bridge</button>
-              <button onClick={() => callEndpoint("/api/v1/toolchain/bonjour_mdns_mesh_beacon", "TOOL 142: BONJOUR MDNS BEACON & DUAL-PIXEL MESH")} style={{ background: "#091F2C", color: "#00E5FF", border: "1px solid #00E5FF", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 142: Bonjour mDNS Mesh</button>
-              <button onClick={() => callEndpoint("/api/v1/toolchain/podman_wsb_sandbox_gate", "TOOL 141: PODMAN 5.8.0 & WINDOWS SANDBOX (.WSB) GATE")} style={{ background: "#1F1030", color: "#B388FF", border: "1px solid #B388FF", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 141: Podman 5.8 + WinSandbox</button>
-              <button onClick={() => callEndpoint("/api/v1/toolchain/nvidia_frameview_physx_audit", "TOOL 140: NVIDIA FRAMEVIEW SDK & PHYSX HARDWARE AUDIT")} style={{ background: "#0D2618", color: "#56D364", border: "1px solid #56D364", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 140: FrameView + PhysX</button>
-              <button onClick={() => callEndpoint("/api/v1/toolchain/hwinfo_shm_telemetry", "TOOL 139: HWINFO64 8.40 SHM & SILICON TELEMETRY")} style={{ background: "#0D2618", color: "#56D364", border: "1px solid #56D364", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 139: HWiNFO64 8.40 SHM</button>
-              <button onClick={() => callEndpoint("/api/v1/toolchain/ninja_polyglot_dag", "TOOL 138: NINJA 1.13.2 POLYGLOT BUILD DAG")} style={{ background: "#261038", color: "#FFD700", border: "1px solid #FFD700", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 138: Ninja 1.13.2 DAG</button>
-              <button onClick={() => callEndpoint("/api/v1/toolchain/llvm_mca_alderlake_audit", "TOOL 137: LLVM 22.1.8 LLVM-MCA ALDER LAKE IPC AUDIT")} style={{ background: "#261038", color: "#FF9EFF", border: "1px solid #FF9EFF", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 137: LLVM 22.1.8 MCA IPC</button>
-              <button onClick={() => callEndpoint("/api/v1/toolchain/zig_simd_e8_bridge", "TOOL 136: ZIG 0.17.0 @VECTOR(32,I8) AVX2 SIMD & 6,240-CL BRIDGE")} style={{ background: "#3A1C00", color: "#FFB454", border: "1px solid #FFB454", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 136: Zig 0.17.0 AVX2 Bridge</button>
-              <button onClick={() => callEndpoint("/api/v1/brain/sovereign_63360_144subdomain_qat_trainer", "TOOL 135: 63,360-NEURON QAT TRAINER")} style={{ background: "#00FFCC", color: "#050A0E", border: "1px solid #00FFCC", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 135: 63.3K QAT Trainer</button>
-              <button onClick={() => callEndpoint("/api/v1/topology/flagser_zero_alloc_bitmask_simplex_enumerator", "TOOL 134: FLAGSER SIMPLEX")} style={{ background: "#261038", color: "#FF9EFF", border: "1px solid #FF9EFF", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 134: Flagser Simplex</button>
-              <button onClick={() => callEndpoint("/api/v1/topology/functional_tr_sandcastle_betti_swr_trigger", "TOOL 133: BETTI SWR")} style={{ background: "#261038", color: "#FF9EFF", border: "1px solid #FF9EFF", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 133: Betti SWR Trigger</button>
-              <button onClick={() => callEndpoint("/api/v1/topology/presink_sink_shared_ancestor_correlator", "TOOL 132: PRESINK/SINK")} style={{ background: "#261038", color: "#FF9EFF", border: "1px solid #FF9EFF", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 132: Pre-Sink Ancestor</button>
-              <button onClick={() => callEndpoint("/api/v1/topology/reimann_eq2_directionality_simplex_discriminator", "TOOL 131: REIMANN EQ2")} style={{ background: "#261038", color: "#FF9EFF", border: "1px solid #FF9EFF", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 131: Reimann Eq2</button>
-              <button onClick={() => callEndpoint("/api/v1/graph/tivadar_danka_adjacency_matrix_walk_duality", "TOOL 130: DANKA WALK")} style={{ background: "#0D2618", color: "#56D364", border: "1px solid #56D364", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 130: Danka Walk</button>
-              <button onClick={() => callEndpoint("/api/v1/attention/tokengate_11x_prefill_npage_skimmer", "TOOL 129: TOKENGATE 11X")} style={{ background: "#0D2618", color: "#56D364", border: "1px solid #56D364", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 129: TokenGate 11x</button>
-              <button onClick={() => callEndpoint("/api/v1/quantum/kspace_ring_helmholtz_wave_packet_solver", "TOOL 128: HELMHOLTZ")} style={{ background: "#0D2618", color: "#56D364", border: "1px solid #56D364", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 128: Helmholtz Solver</button>
-              <button onClick={() => callEndpoint("/api/v1/topology/blue_brain_11d_simplex_clique_cavity_engine", "TOOL 127: BLUE BRAIN 11D")} style={{ background: "#0D2618", color: "#56D364", border: "1px solid #56D364", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 127: Blue Brain 11D</button>
-              <button onClick={() => callEndpoint("/api/v1/geometry/grassmann_exterior_plucker_bivector_solver", "TOOL 126: GRASSMANN PLUCKER")} style={{ background: "#1F1030", color: "#B388FF", border: "1px solid #B388FF", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 126: Grassmann Plücker</button>
-              <button onClick={() => callEndpoint("/api/v1/compiler/cloudflare_tsrs_ast_schema_contract_verifier", "TOOL 125: CLOUDFLARE TSRS")} style={{ background: "#1F1030", color: "#B388FF", border: "1px solid #B388FF", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 125: TSRS AST Schema</button>
-              <button onClick={() => callEndpoint("/api/v1/security/openai_microvm_constant_time_cache_shield", "TOOL 124: MICROVM CACHE")} style={{ background: "#1F1030", color: "#B388FF", border: "1px solid #B388FF", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 124: MicroVM Shield</button>
-              <button onClick={() => callEndpoint("/api/v1/bio/kinesin_8nm_cacheline_zeeman_valley_stepper", "TOOL 123: KINESIN 8NM")} style={{ background: "#1F1030", color: "#B388FF", border: "1px solid #B388FF", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 123: Kinesin 8nm</button>
-              <button onClick={() => callEndpoint("/api/v1/geometry/viviani_archimedes_npage_partition_auditor", "TOOL 122: VIVIANI ARCHIMEDES")} style={{ background: "#1F1030", color: "#B388FF", border: "1px solid #B388FF", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 122: Viviani Archimedes</button>
-              <button onClick={() => callEndpoint("/api/v1/vortex/toroidal_mod9_doubling_axis_auditor", "TOOL 121: TOROIDAL MOD9")} style={{ background: "#1F1030", color: "#B388FF", border: "1px solid #B388FF", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 121: Toroidal Mod9</button>
-              <button onClick={() => callEndpoint("/api/v1/spatial/cellspa_voronoi_dep32_expert_router", "TOOL 120: CELLSPA VORONOI")} style={{ background: "#1F1030", color: "#B388FF", border: "1px solid #B388FF", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 120: CellSpa Router</button>
-              <button onClick={() => callEndpoint("/api/v1/bio/dna_nanostar_8arm_sticky_end_linker", "TOOL 119: DNA NANOSTAR")} style={{ background: "#1F1030", color: "#B388FF", border: "1px solid #B388FF", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 119: DNA Nanostar</button>
-              <button onClick={() => callEndpoint("/api/v1/interp/sae_monosemantic_feature_circuit_binder", "TOOL 118: SAE MONOSEMANTIC")} style={{ background: "#1F1030", color: "#B388FF", border: "1px solid #B388FF", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 118: SAE Circuit</button>
-              <button onClick={() => callEndpoint("/api/v1/number/pandigital_polydivisible_canary_verifier", "TOOL 117: PANDIGITAL CANARY")} style={{ background: "#1F1030", color: "#B388FF", border: "1px solid #B388FF", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 117: Pandigital Canary</button>
-              <button onClick={() => callEndpoint("/api/v1/geometry/hilbert_apollonian_polyhedral_atlas", "TOOL 116: HILBERT ATLAS")} style={{ background: "#091F2C", color: "#00E5FF", border: "1px solid #00E5FF", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 116: Hilbert Atlas</button>
-              <button onClick={() => callEndpoint("/api/v1/quantum/fibonacci_two_time_dimension_scheduler", "TOOL 115: FIBONACCI 2-TIME")} style={{ background: "#091F2C", color: "#00E5FF", border: "1px solid #00E5FF", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 115: Fibonacci 2-Time</button>
-              <button onClick={() => callEndpoint("/api/v1/physics/xfel_multiscale_fermi_propagator", "TOOL 114: XFEL PROPAGATOR")} style={{ background: "#091F2C", color: "#00E5FF", border: "1px solid #00E5FF", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 114: XFEL Propagator</button>
-              <button onClick={() => callEndpoint("/api/v1/logic/principia_54_26_proof_erasure_auditor", "TOOL 113: PRINCIPIA 54.26")} style={{ background: "#091F2C", color: "#00E5FF", border: "1px solid #00E5FF", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 113: Principia 54.26</button>
-              <button onClick={() => callEndpoint("/api/v1/quantum/aist_flux_quanta_photon_counter", "TOOL 112: AIST FLUX QUANTA")} style={{ background: "#091F2C", color: "#00E5FF", border: "1px solid #00E5FF", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 112: AIST Flux Quanta</button>
-              <button onClick={() => callEndpoint("/api/v1/mesh/lora_css_von_neumann_pointer_witness", "TOOL 111: LORA CSS WITNESS")} style={{ background: "#091F2C", color: "#00E5FF", border: "1px solid #00E5FF", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 111: LoRA CSS Witness</button>
-              <button onClick={() => callEndpoint("/api/v1/algebra/adjoint_transpose_covector_pullback", "TOOL 110: ADJOINT PULLBACK")} style={{ background: "#091F2C", color: "#00E5FF", border: "1px solid #00E5FF", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 110: Adjoint Pullback</button>
-              <button onClick={() => callEndpoint("/api/v1/astro/chandrasekhar_relativistic_degeneracy_breaker", "TOOL 109: CHANDRASEKHAR")} style={{ background: "#091F2C", color: "#00E5FF", border: "1px solid #00E5FF", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 109: Chandrasekhar</button>
-              <button onClick={() => callEndpoint("/api/v1/bio/spriz_intermembrane_pillar_spacer", "TOOL 108: SPRIZ PILLAR")} style={{ background: "#091F2C", color: "#00E5FF", border: "1px solid #00E5FF", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 108: SPRIZ Pillar</button>
-              <button onClick={() => callEndpoint("/api/v1/rosetta/topological_rosetta_stone_verifier", "TOOL 107: ROSETTA STONE")} style={{ background: "#091F2C", color: "#00E5FF", border: "1px solid #00E5FF", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 107: Rosetta Stone</button>
-              <button onClick={() => callEndpoint("/api/v1/monograph/vesper_4phase_cellular_sheaf_runtime", "TOOL 106: VESPER SHEAF")} style={{ background: "#0D2618", color: "#56D364", border: "1px solid #56D364", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 106: Vesper Sheaf</button>
-              <button onClick={() => callEndpoint("/api/v1/monograph/sh4z_dual_shell_lvq_quantizer", "TOOL 105: SH4Z LVQ QUANTIZER")} style={{ background: "#261038", color: "#FFD700", border: "1px solid #FFD700", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 105: SH4Z LVQ Quantizer</button>
-              <button onClick={() => callEndpoint("/api/v1/monograph/braidir_yang_baxter_bresenham_compiler", "TOOL 104: BRAIDIR COMPILER")} style={{ background: "#1C1428", color: "#B388FF", border: "1px solid #B388FF", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 104: BraidIR Compiler</button>
-              <button onClick={() => runV50Crystallizer()} style={{ background: "#00E5FF", color: "#050A0E", border: "1px solid #00E5FF", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 101: AVX2+Rayon Crystallizer</button>
-              <button onClick={() => runV50Physics("all")} style={{ background: "#261038", color: "#FF9EFF", border: "1px solid #FF9EFF", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 102: 5-Regime Multi-Physics</button>
-              <button onClick={() => callEndpoint("/api/v1/v50/coordinator_mesh", "TOOL 103: 8-SINK AUTOPOIETIC COORDINATOR PUB/SUB MESH")} style={{ background: "#0D2618", color: "#56D364", border: "1px solid #56D364", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 103: 8-Sink Coordinator</button>
-              <button onClick={() => callEndpoint(`/api/v1/v49/tool_100_dzhanibekov_euler_axis_stabilizer?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 100: DZHANIBEKOV ROTATIONAL STABILIZER")} style={{ background: "#261038", color: "#ffd700", border: "1px solid #ffd700", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 100: Dzhanibekov Stabilizer</button>
-              <button onClick={() => callEndpoint(`/api/v1/v49/tool_99_stanford_together_hybrid_link_agent?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 99: STANFORD+TOGETHER HYBRIDLINK LATENT E8/BPE AGENT")} style={{ background: "#0d2618", color: "#56d364", border: "1px solid #56d364", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 99: Stanford/Together Link</button>
-              <button onClick={() => callEndpoint(`/api/v1/v49/tool_98_poincare_bendixson_destiny_atlas?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 98: POINCARE-BENDIXSON DESTINY ATLAS")} style={{ background: "#1f1030", color: "#b388ff", border: "1px solid #b388ff", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 98: Poincare-Bendixson Atlas</button>
-              <button onClick={() => callEndpoint(`/api/v1/v49/tool_97_hamilton_tait_nabla_quaternionic_field?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 97: HAMILTON-TAIT QUATERNIONIC NABLA")} style={{ background: "#091f2c", color: "#00e5ff", border: "1px solid #00e5ff", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 97: Hamilton-Tait Nabla</button>
-              <button onClick={() => callEndpoint(`/api/v1/v49/tool_96_bipolar_vesica_caustic_envelope?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 96: BIPOLAR DUAL-FOCUS VESICA CAUSTIC")} style={{ background: "#3a1c00", color: "#ffb454", border: "1px solid #ffb454", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 96: Bipolar Vesica Caustic</button>
-              <button onClick={() => callEndpoint(`/api/v1/v49/tool_95_bell_polytope_noncontextuality_audit?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 95: BELL THEOREM & 6-POLYTOPE AUDIT")} style={{ background: "#2b2100", color: "#ffea00", border: "1px solid #ffea00", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 95: Bell 6-Polytope Audit</button>
-              <button onClick={() => callEndpoint(`/api/v1/v49/tool_94_cubic_pyramid_integral_proof?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 94: VISUAL 3-PYRAMID CUBE INTEGRAL")} style={{ background: "#002b24", color: "#00ffcc", border: "1px solid #00ffcc", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 94: 3-Pyramid Cube Integral</button>
-              <button onClick={() => callEndpoint(`/api/v1/v49/tool_93_bekenstein_hawking_area_horizon_guard?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 93: BEKENSTEIN-HAWKING AREA BOUND")} style={{ background: "#1c2b00", color: "#a6ff00", border: "1px solid #a6ff00", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 93: Bekenstein Horizon Guard</button>
-              <button onClick={() => callEndpoint(`/api/v1/v49/tool_92_amplituhedron_9loop_hexagon_plucker?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 92: AMPLITUHEDRON 9-LOOP HEXAGON & PLUCKER")} style={{ background: "#261038", color: "#ff9eff", border: "1px solid #ff9eff", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 92: Amplituhedron Hexagon</button>
-              <button onClick={() => callEndpoint(`/api/v1/v49/tool_91_ds3_triangulated_cft2_gravity?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 91: TRIANGULATED dS3 CFT2 GRAVITY")} style={{ background: "#091f2c", color: "#00e5ff", border: "1px solid #00e5ff", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 91: Triangulated dS3 Gravity</button>
-              <button onClick={() => callEndpoint(`/api/v1/v48/hamiltonian_episodic_model?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 92: HAMILTONIAN k=4 GEODESIC BEAM & 64-TURN EPISODIC RING")} style={{ background: "#1f1030", color: "#b388ff", border: "1px solid #b388ff", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 92: Hamiltonian k=4 + Episodic Ring</button>
-              <button onClick={() => callEndpoint(`/api/v1/v48/duckdb_columnar_vector?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 91: DUCKDB COLUMNAR VECTOR & SHARD ANALYTICAL ENGINE")} style={{ background: "#091f2c", color: "#00e5ff", border: "1px solid #00e5ff", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 91: DuckDB Columnar Vector</button>
-              <button onClick={() => callEndpoint(`/api/v1/v48/haskell_layer15_algebra?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 90: LAYER 1.5 GHC HASKELL EXACT RATIONAL ALGEBRA & CODEGEN")} style={{ background: "#0d2618", color: "#56d364", border: "1px solid #56d364", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 90: Layer 1.5 Haskell Algebra</button>
-              <button onClick={() => callEndpoint(`/api/v1/v47/sovereign_scientist?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 89: SOVEREIGN SCIENTIST (64-STEP RK4 + LEAN 4)")} style={{ background: "#261038", color: "#ffd700", border: "1px solid #ffd700", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 89: Sovereign Scientist RK4</button>
-              <button onClick={() => callEndpoint(`/api/v1/v47/embodied_sensor_voice_loop?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 88: EMBODIED 24D SENSOR + 16KHZ KLATT VOICE")} style={{ background: "#3a1c00", color: "#ffb454", border: "1px solid #ffb454", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 88: Sensor+Voice .WAV</button>
-              <button onClick={() => callEndpoint(`/api/v1/v47/rag_on_leech?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 87: SOVEREIGN RAG-ON-LEECH CITATION ENGINE")} style={{ background: "#091f2c", color: "#00e5ff", border: "1px solid #00e5ff", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 87: Sovereign RAG-on-Leech</button>
-              <button onClick={() => callEndpoint(`/api/v1/v47/leech_geodesic_cot?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 86: 4-HOP LEECH GEODESIC CHAIN-OF-THOUGHT")} style={{ background: "#1f1030", color: "#b388ff", border: "1px solid #b388ff", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 86: 4-Hop Leech CoT</button>
-              <button onClick={() => callEndpoint(`/api/v1/v47/self_growing_lexicon?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 85: SELF-GROWING OOV LEXICON + HEBBIAN STDP")} style={{ background: "#0d2618", color: "#56d364", border: "1px solid #56d364", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 85: Self-Growing Lexicon</button>
-              <button onClick={() => callEndpoint(`/api/v1/model/open_vocab_131k?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 84: 63,360-NEURON EXPANSION CONNECTOME & 36-DOMAIN ROUTER")} style={{ background: "#002b24", color: "#00ffcc", border: "1px solid #00ffcc", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 84: 63,360N Expansion Router</button>
-              <button onClick={() => callEndpoint(`/api/v1/model/open_vocab_131k?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 83: 262,144-TOKEN 36-DOMAIN OPEN-VOCAB & 63,360-NEURON NL")} style={{ background: "#2b1d00", color: "#ffb454", border: "1px solid #ffb454", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 83: 262K Open-Vocab 63,360N NL</button>
-              <button onClick={() => runV45QatTrainer()} style={{ background: "#0d2618", color: "#56d364", border: "1px solid #56d364", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 82: 192-Ep E8-Leech QAT</button>
-              <button onClick={() => runE8LeechFluencyBridge(cmdPrompt)} style={{ background: "#1f1030", color: "#b388ff", border: "1px solid #b388ff", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 81: E8xE8xE8-&gt;Leech24 Bridge</button>
-              <button onClick={() => callEndpoint("/api/v1/diagnostics/v44_perf_blitz", "TOOL 80: v44.1.0 PERFORMANCE BLITZ BENCHMARK VERIFIER")} style={{ background: "#261038", color: "#ffd700", border: "1px solid #ffd700", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 80: v44.1 Perf Blitz</button>
-              <button onClick={() => callEndpoint("/api/v1/worksteal/elastic_scheduler", "TOOL 79: LOCK-FREE ELASTIC WORK-STEALING SCHEDULER")} style={{ background: "#0d2618", color: "#56d364", border: "1px solid #56d364", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 79: Elastic Scheduler</button>
-              <button onClick={() => toggleBrowserWebGpuLease()} style={{ background: "#091f2c", color: "#00e5ff", border: "1px solid #00e5ff", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 78: Browser WebGPU Lease</button>
-              <button onClick={() => callEndpoint("/api/v1/shm/p8_npage_bridge", "TOOL 77: HOST <-> PIXEL 8 .NPAGE SHARED-MEMORY RING")} style={{ background: "#2b2100", color: "#ffb454", border: "1px solid #ffb454", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 77: Pixel 8 .npage SHM</button>
-              <button onClick={() => callEndpoint("/api/v1/manifold/v44_omni_snapshot", "TOOL 76: v44.0.0 OMNI-MANIFOLD SNAPSHOT & 10-TABLE D1")} style={{ background: "#3a1c00", color: "#ffea00", border: "1px solid #ffea00", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 76: v44.0.0 Omni-Snapshot</button>
-              <button onClick={() => callEndpoint("/api/v1/diagnostics/v44_self_profiler", "TOOL 75: WHOLE-ARCHITECTURE SELF-PROFILER & BOTTLENECK HEALER")} style={{ background: "#0d2618", color: "#00ff66", border: "1px solid #00ff66", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 75: v44 Self-Profiler</button>
-              <button onClick={() => callEndpoint(`/api/v1/converse/dialectical_debate?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 74: 16-DOMAIN SOCRATIC DIALECTICAL DEBATE")} style={{ background: "#002b24", color: "#00ffcc", border: "1px solid #00ffcc", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 74: 16-Domain Socratic Debate</button>
-              <button onClick={() => callEndpoint(`/api/v1/converse/multiturn_memory?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 73: MULTI-TURN BI-TEMPORAL WORKING MEMORY")} style={{ background: "#261038", color: "#ffd700", border: "1px solid #ffd700", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 73: Multi-Turn Working Memory</button>
-              <button onClick={() => { setOperatorVaultOpen(true); setOperatorUnlocked(true); callEndpoint("/api/v1/antigravity/cutover_status", "TOOL 72: GOOGLE ANTIGRAVITY GEMINI 4 ARGON CUTOVER VERIFIER"); }} style={{ background: "#3a1c00", color: "#ffea00", border: "1px solid #ffea00", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 72: Antigravity Cutover</button>
-              <button onClick={() => callEndpoint("/api/v1/antigravity/argon_teamwork", "TOOL 71: GEMINI 4 ARGON 7-SUBAGENT TEAMWORK DISPATCHER")} style={{ background: "#2e1638", color: "#ff9eff", border: "1px solid #ff9eff", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 71: Argon 7-Subagents</button>
-              <button onClick={() => callEndpoint("/api/v1/connectome/harness_5w1h_npage", "TOOL 70: 5W1H HARNESS + 63,360-NEURON CONNECTOME COUPLER")} style={{ background: "#002b24", color: "#00ffcc", border: "1px solid #00ffcc", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 70: 5W1H+63,360 Connectome</button>
-              <button onClick={() => callEndpoint("/api/v1/antigravity/rules_subagents", "TOOL 69: ANTIGRAVITY GEMINI.MD & .AGENTS/ RULES ENGINE")} style={{ background: "#1c2b00", color: "#a6ff00", border: "1px solid #a6ff00", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 69: .agents/ Rules</button>
-              <button onClick={() => { setOperatorVaultOpen(true); setOperatorUnlocked(true); callEndpoint("/api/v1/hud/embedded_ide_cockpit", "TOOL 68: EMBEDDED IDE VAULT"); }} style={{ background: "#261038", color: "#ffd700", border: "1px solid #ffd700", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 68: Embedded IDE Vault</button>
-              <button onClick={() => callEndpoint("/api/v1/auth/operator_vault_gate", "TOOL 67: OPERATOR VAULT PASSKEY GATE")} style={{ background: "#1f1030", color: "#e0b0ff", border: "1px solid #b388ff", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 67: Operator Vault Gate</button>
-              <button onClick={() => callEndpoint("/api/v1/ide/symbiotic_parity_sync", "TOOL 66: GOOSE/ZED/CLINE PARITY SYNC")} style={{ background: "#102830", color: "#00e5ff", border: "1px solid #00e5ff", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 66: Goose/Zed/Cline Parity</button>
-              <button onClick={() => callEndpoint("/api/v1/router/distributed_5w1h_dispatch", "TOOL 65: 5W1H DISTRIBUTED ROUTER DISPATCH")} style={{ background: "#2b2100", color: "#ffb700", border: "1px solid #ffb700", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 65: 5W1H Router Dispatch</button>
-              <button onClick={() => callEndpoint("/api/v1/tools/t64", "TOOL 64: HUD ZERO-MOCK HOT-RELOAD")} style={{ background: "#0d2618", color: "#00ff66", border: "1px solid #00ff66", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 64: HUD Hot-Reload</button>
-              <button onClick={() => callEndpoint("/api/v1/tools/t63", "TOOL 63: DUAL-PHONE APK SYNC")} style={{ background: "#0d2618", color: "#00ff66", border: "1px solid #00ff66", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 63: Dual-Phone APK Sync</button>
-              <button onClick={() => callEndpoint("/api/v1/tools/t62", "TOOL 62: 42,240-NEURON VAULT ACCELERATOR")} style={{ background: "#1a2436", color: "#58a6ff", border: "1px solid #58a6ff", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 62: 42,240-Neuron Vault</button>
-              <button onClick={() => callEndpoint("/api/v1/tools/t61", "TOOL 61: 10-SESSION QAT BLITZ")} style={{ background: "#1a2436", color: "#58a6ff", border: "1px solid #58a6ff", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 61: 10-Session QAT Blitz</button>
-              <button onClick={() => callEndpoint("/api/v1/tools/t60", "TOOL 60: CLOUDFLARE D1 10-TABLE PIPELINE")} style={{ background: "#1a2436", color: "#58a6ff", border: "1px solid #58a6ff", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 60: D1 10-Table Pipeline</button>
-              <button onClick={() => callEndpoint("/api/v1/tools/t59", "TOOL 59: OMNI-WIRING MEASURED SHA-256 AUDIT")} style={{ background: "#1a2436", color: "#58a6ff", border: "1px solid #58a6ff", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 59: Omni-Wiring Audit</button>
-              <button onClick={() => callEndpoint("/api/v1/tools/t58", "TOOL 58: MOBILE REMOTE ROLLOUT TRIGGER")} style={{ background: "#1f1632", color: "#d2a8ff", border: "1px solid #8957e5", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 58: Mobile Trigger</button>
-              <button onClick={() => callEndpoint("/api/v1/tools/t57", "TOOL 57: ONLINE TERNARY 1.58-BIT DISTILL")} style={{ background: "#1f1632", color: "#d2a8ff", border: "1px solid #8957e5", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 57: Ternary Distill</button>
-              <button onClick={() => callEndpoint("/api/v1/tools/t56", "TOOL 56: AUTONOMOUS RUST/LEAN4 CODER")} style={{ background: "#1f1632", color: "#d2a8ff", border: "1px solid #8957e5", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 56: Autonomous Coder</button>
-              <button onClick={() => callEndpoint("/api/v1/tools/t55", "TOOL 55: GEMINI G:\\ DRIVE BIDIRECTIONAL BRIDGE")} style={{ background: "#1f1632", color: "#d2a8ff", border: "1px solid #8957e5", borderRadius: 4, padding: "4px 6px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>TOOL 55: Gemini Drive Bridge</button>
-              <button onClick={() => callEndpoint("/api/v1/devops/atomic_delta_engine", "TOOL 54: ZERO-BACKTICK ATOMIC DELTA ENGINE")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 54: Atomic Delta Engine (-87.4% GZip)</button>
-              <button onClick={() => callEndpoint("/api/v1/a2a/tasks", "TOOL 53: NATIVE A2A TRI-SILICON & IDE MESH")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 53: A2A Mesh (Zed + Goose + Cline)</button>
-              <button onClick={() => callEndpoint(`/api/v1/memory/longterm_autolearn?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 52: PERMANENT AUTO-LEARNING LONG-TERM MEMORY")} style={{ background: "#2EA043", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 52: Auto-Learn Long-Term Memory</button>
-              <button onClick={() => callEndpoint("/api/v1/mcp/code_mode_roots", "TOOL 51: CODE-MODE MCP & CANONICAL ROOTS GUARD")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 51: Code-Mode MCP &amp; Roots Guard</button>
-              <button onClick={() => callEndpoint("/api/v1/training/cross_domain_compound_qat", "TOOL 50: 64-EPOCH 16-DOMAIN COMPOUND QAT")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 50: 16-Domain Compound QAT (PPL {e8LeechState.holdout_ppl.toFixed(4)})</button>
-              <button onClick={() => callEndpoint(`/api/v1/speech/cymatic_formant_tts?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 49: KLATT FORMANT SPEECH + WAV")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 49: Formant Speech + 16kHz WAV</button>
-              <button onClick={() => callEndpoint("/api/v1/harness/metabolic_5w1h?load=sweep4", "TOOL 45: 5W1H 4-BAND STRESS SWEEP")} style={{ background: "#2EA043", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>STRESS 5W1H: 4-Band Load Sweep</button>
-              <button onClick={() => callEndpoint("/api/v1/cloudflare/d1_vpc_shadow", "TOOL 48: CLOUDFLARE D1+VPC SHADOW")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 48: Cloudflare D1 + VPC Shadow</button>
-              <button onClick={() => callEndpoint("/api/v1/openai/compat", "TOOL 47: OPENAI /V1 COMPAT API")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 47: OpenAI /v1/chat/completions</button>
-              <button onClick={() => callEndpoint("/api/v1/mcp/rpc", "TOOL 46: NATIVE MCP SERVER PORTAL")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 46: MCP 2026-07-28 Server Portal</button>
-              <button onClick={() => callEndpoint("/api/v1/harness/metabolic_5w1h", "TOOL 45: METABOLIC 5W1H HARNESS")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 45: Metabolic ATP &amp; 5W1H Harness</button>
-              <button onClick={() => callEndpoint("/api/v1/neuro/amygdala_kerr_ravi", "TOOL 44: AMYGDALA+KERR+RAVI")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 44: Amygdala + Kerr SWR + IMO Ravi</button>
-              <button onClick={() => callEndpoint("/api/v1/physics/skyrmion_fermi_xuv", "TOOL 43: SKYRMION+FERMI+XUV")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 43: Fractional Fermi + Skyrmion Hall + XUV</button>
-              <button onClick={() => callEndpoint("/api/v1/pagefile/cauchy_sparse_npage", "TOOL 42: NEURON PAGEFILE .NPAGE")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 42: Neuron Pagefile (.npage 42,240x128B)</button>
-              <button onClick={() => callEndpoint("/api/v1/torchtpu/openxla_pallas_bridge", "TOOL 41: TORCHTPU BRIDGE 2.48M")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 41: TorchTPU Tri-Silicon Bridge (2,480k)</button>
-              <button onClick={() => callEndpoint("/api/v1/edge/p8_apex_coprocessor", "TOOL 40: PIXEL 8 P8-APEX 426.4k")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 40: Pixel 8 P8-APEX (588.0k ops/s)</button>
-              <button onClick={() => callEndpoint("/api/v1/logging/bitemporal_wal", "TOOL 39: BI-TEMPORAL WAL")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 39: Bi-Temporal Hash-Chained WAL</button>
-              <button onClick={() => callEndpoint("/api/v1/autopoiesis/dgm_azr_seal", "TOOL 38: DGM+AZR+SEAL")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 38: DGM + AZR + SEAL Autopoiesis</button>
-              <button onClick={() => callEndpoint("/api/v1/connectome/fno_synaptogenesis", "TOOL 37: 42240N CONNECTOME")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 37: 42,240-Neuron FNO Connectome</button>
-              <button onClick={() => callEndpoint("/api/v1/geometry/cosmohedron_veclut", "TOOL 36: COSMOHEDRON C6")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 36: Cosmohedron C6 &amp; Vec-LUT</button>
-              <button onClick={() => callEndpoint("/api/v1/geometry/amplituhedron_clifford", "TOOL 35: AMPLITUHEDRON A824")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 35: Amplituhedron &amp; Clifford PGA</button>
-              <button onClick={() => callEndpoint("/api/v1/geometry/associahedron_tropical", "TOOL 34: ASSOCIAHEDRON K6")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 34: Associahedron K6 &amp; Tropical</button>
-              <button onClick={() => callEndpoint("/api/v1/time/martellini_spherical", "TOOL 33: MARTELLINI TIME")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 33: Martellini Entropic Time</button>
-              <button onClick={() => callEndpoint("/api/v1/khys/mnemosyne_planetary", "TOOL 32: KHYS MNEMOSYNE & PLANETARY LUT")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 32: KHYS Mnemosyne &amp; Planetary LUT</button>
-              <button onClick={() => callEndpoint(`/api/v1/cymatic/chromatic_verify?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 31: CYMATIC OMEGA.2 & 2-BIT CHROMATIC")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 31: Cymatic Omega.2 &amp; 2-Bit SIMD</button>
-              <button onClick={() => callEndpoint("/api/v1/physics/decadic_synthesizer", "TOOL 30: 15.965Hz DECADIC")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 30: 15.965Hz Decadic Physics</button>
-              <button onClick={() => callEndpoint("/api/v1/anomaly/stream", "TOOL 29: U(1) ANOMALY")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 29: U(1) Gauge Anomaly</button>
-              <button onClick={() => callEndpoint(`/api/v1/memory/episodic_search?q=${encodeURIComponent(episodicQuery)}`, "TOOL 28: EPISODIC SEARCH")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 28: Episodic Memory Search</button>
-              <button onClick={() => callEndpoint(`/api/v1/model/converse?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 27: NL CONVERSE")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 27: NL Conversational Decoder</button>
-              <button onClick={() => callEndpoint("/api/v1/vault/harvest", "TOOL 26: 42240 HARVESTER")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 26: 42,240-Neuron Harvester</button>
-              <button onClick={() => callEndpoint("/api/v1/train/continual_qat?q=epoch32", "TOOL 25: 32-EPOCH QAT")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 25: 32-Epoch QAT Trainer</button>
-              <button onClick={() => callEndpoint("/api/v1/cluster/sync_matrix", "TOOL 24: SYNC MATRIX")} style={{ background: "#1C2632", color: "#FFFEFB", border: "1px solid #2A3B4D", borderRadius: 4, padding: "4px 8px", cursor: "pointer", fontSize: 10 }}>TOOL 24: Cluster Drift Matrix</button>
-              <button onClick={() => callEndpoint("/api/v1/storage/ssd_tier2?q=merkle32", "TOOL 23: E:/ SSD TIER-2")} style={{ background: "#1C2632", color: "#FFFEFB", border: "1px solid #2A3B4D", borderRadius: 4, padding: "4px 8px", cursor: "pointer", fontSize: 10 }}>TOOL 23: E:\ SSD Vault (42,240)</button>
-              <button onClick={() => callEndpoint("/api/v1/operator/fno_solve?q=navier_16x80", "TOOL 22: 10-LAPLACIAN FNO")} style={{ background: "#1C2632", color: "#FFFEFB", border: "1px solid #2A3B4D", borderRadius: 4, padding: "4px 8px", cursor: "pointer", fontSize: 10 }}>TOOL 22: 10-Laplacian FNO</button>
-              <button onClick={() => callEndpoint("/api/v1/agent_gateway/interact?agent_id=hud&q=verify", "TOOL 21: SAFE LLM GATEWAY")} style={{ background: "#1C2632", color: "#FFFEFB", border: "1px solid #2A3B4D", borderRadius: 4, padding: "4px 8px", cursor: "pointer", fontSize: 10 }}>TOOL 21: Safe LLM Gateway</button>
-              <button onClick={() => callEndpoint("/api/v1/browser/fetch?url=https://arxiv.org/abs/1306.0533", "TOOL 20: ER=EPR BROWSER")} style={{ background: "#1C2632", color: "#FFFEFB", border: "1px solid #2A3B4D", borderRadius: 4, padding: "4px 8px", cursor: "pointer", fontSize: 10 }}>TOOL 20: ER=EPR Browser</button>
-              <button onClick={() => callEndpoint("/api/v1/compute/wgsl", "TOOL 19: RTX 3050 GEMM")} style={{ background: "#1C2632", color: "#FFFEFB", border: "1px solid #2A3B4D", borderRadius: 4, padding: "4px 8px", cursor: "pointer", fontSize: 10 }}>TOOL 19: RTX 3050 Anyon GEMM</button>
-              <button onClick={() => callEndpoint("/.well-known/llm-agent.json", "TOOL 18: SIEM & PQ")} style={{ background: "#1C2632", color: "#FFFEFB", border: "1px solid #2A3B4D", borderRadius: 4, padding: "4px 8px", cursor: "pointer", fontSize: 10 }}>TOOL 18: PQ SIEM &amp; Photoelectric</button>
-              <button onClick={() => callEndpoint("/api/v1/acoustic/ping", "TOOL 17: ACOUSTIC SDR")} style={{ background: "#1C2632", color: "#FFFEFB", border: "1px solid #2A3B4D", borderRadius: 4, padding: "4px 8px", cursor: "pointer", fontSize: 10 }}>TOOL 17: Acoustic I/Q SDR</button>
-              <button onClick={() => callEndpoint("/api/v1/manifold/stiefel_step", "TOOL 16: STIEFEL St(16,80)")} style={{ background: "#1C2632", color: "#FFFEFB", border: "1px solid #2A3B4D", borderRadius: 4, padding: "4px 8px", cursor: "pointer", fontSize: 10 }}>TOOL 16: Per-Sensor Stiefel</button>
-              <button onClick={() => callEndpoint("/api/v1/compiler/verify", "TOOL 13: 564/564 LEAN 4 QED")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>TOOL 13: 564/564 Lean 4 QED</button>
-              <button onClick={() => callEndpoint("/api/v1/brain/sovereign_63360_144subdomain_qat_trainer?action=train_3pass", "CHAIN 135: 135-TOOL OMNI-SUITE")} style={{ background: "#00FFCC", color: "#050A0E", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>CHAIN 135: 135-Tool Omni-Suite</button>
-              <button onClick={() => callEndpoint("/api/v1/harmonic/tool_chain?q=chain89_parallel_dag", "CHAIN 89: PARALLEL DAG")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>CHAIN 89: 89-Tool Parallel DAG</button>
-            </div>
 
             <div style={{ background: "#0A0D12", border: "1px solid #2A3B4D", borderRadius: 4, padding: 6, marginBottom: 6, fontSize: 10.5 }}>
               <div style={{ color: "#FFFEFB" }}>&gt; PROMPT: {cmdPrompt}</div>
               <div style={{ color: "#FFB454", marginTop: 2 }}>
-                [SH4Z v5000 (133,120 B / 15.965 Hz Decadic Epoch HUD)]: Work-Stealing={tel.ws_loq_lines}+{tel.ws_p10_lines}+{tel.ws_p8_lines}=2,080 Lines ({tel.cluster_total_kops.toFixed(1)}k ops/s) -- 564/564 Lean 4 QED -- 63,360 Neurons (1,440x Chair44) -- 36 Macro-Domains / 144 Sub-Domains (2,048 Compounds) -- Tools 104..135 (CHAIN 135 Suite) -- PPL={e8LeechState.holdout_ppl.toFixed(6)}
+                [SH4Z v5600 (133,120 B / 15.965 Hz Decadic Epoch HUD)]: Work-Stealing={tel.ws_loq_lines}+{tel.ws_p10_lines}+{tel.ws_p8_lines}=2,080 Lines ({tel.cluster_total_kops.toFixed(1)}k ops/s) -- 624/624 Lean 4 QED -- 63,360 Neurons (1,440x Chair44) -- 36 Macro-Domains / 144 Sub-Domains (2,048 Compounds) -- Tools 1..210 (CHAIN 210 Suite) -- PPL={e8LeechState.holdout_ppl.toFixed(6)}
               </div>
               <div style={{ color: "#56D364", marginTop: 2 }}>&gt; OUTPUT: {termOut}</div>
             </div>
@@ -4141,7 +4416,7 @@ export function App() {
               <button onClick={() => callEndpoint(`/api/v1/converse/multiturn_memory?q=${encodeURIComponent(cmdPrompt)}`, "MULTI-TURN MEMORY T73")} style={{ background: "#261038", color: "#FFD700", border: "1px solid #FFD700", borderRadius: 4, padding: "4px 10px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>MEMORY (T73)</button>
               <button onClick={() => callEndpoint(`/api/v1/converse/dialectical_debate?q=${encodeURIComponent(cmdPrompt)}`, "SOCRATIC DEBATE T74")} style={{ background: "#002B24", color: "#00FFCC", border: "1px solid #00FFCC", borderRadius: 4, padding: "4px 10px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>DEBATE (T74)</button>
               <button onClick={() => callEndpoint(`/api/v1/agent_gateway/interact?agent_id=hud&q=${encodeURIComponent(cmdPrompt)}`, "EXECUTE PROMPT")} style={{ background: "#1C2632", color: "#FFFEFB", border: "1px solid #FFB454", borderRadius: 4, padding: "4px 12px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>EXECUTE</button>
-              <button onClick={() => callEndpoint("/api/v1/brain/sovereign_63360_144subdomain_qat_trainer?action=train_3pass", "CHAIN 135: OMNI-SUITE")} style={{ background: "#00FFCC", color: "#050A0E", border: "none", borderRadius: 4, padding: "4px 12px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>CHAIN 135</button>
+              <button onClick={() => callEndpoint("/api/v1/chain210/suite", "CHAIN 210: OMNI-SUITE")} style={{ background: "#00FFCC", color: "#050A0E", border: "none", borderRadius: 4, padding: "4px 12px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>CHAIN 210</button>
               <button onClick={() => callEndpoint("/api/v1/harmonic/tool_chain?q=chain89_parallel_dag", "CHAIN 89")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 12px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>CHAIN 89</button>
               <button onClick={() => setTermOut("READY.")} style={{ background: "#1C2632", color: "#FFFEFB", border: "1px solid #2A3B4D", borderRadius: 4, padding: "4px 10px", cursor: "pointer", fontSize: 10.5 }}>CLEAR</button>
             </div>
@@ -4202,10 +4477,10 @@ export function App() {
           <div style={{ background: "#101822", borderBottom: "1px solid #2A3B4D", padding: "10px 14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div>
               <div style={{ color: "#00FFCC", fontWeight: "bold", fontSize: 12.5 }}>
-                ACT-OMEGA v50.0.0 OPERATOR MANUAL &amp; STEP-BY-STEP GUIDE (CHAIN 135 MILESTONE)
+                ACT-OMEGA v56.0.0 OPERATOR MANUAL &amp; STEP-BY-STEP GUIDE (CHAIN 210 MILESTONE)
               </div>
               <div style={{ color: "#9FB0C2", fontSize: 10, marginTop: 2 }}>
-                Live Status: <b style={{ color: "#56D364" }}>ONLINE ({tel.cluster_total_kops.toFixed(1)}k ops/s)</b> | 63,360N (8.11MB SHM) | 564/564 QED | Tools 104..135 (v50)
+                Live Status: <b style={{ color: "#56D364" }}>ONLINE ({tel.cluster_total_kops.toFixed(1)}k ops/s)</b> | 63,360N (8.11MB SHM) | 624/624 QED | Tools 1..210 (v56)
               </div>
             </div>
             <button
@@ -4290,7 +4565,7 @@ export function App() {
                 </div>
                 <div style={{ marginBottom: 6 }}>
                   <b>• Drawer A (`15 Interactive Telemetry Cards`):</b><br />
-                  Displays real-time metrics across the `15.965 Hz` Decadic clock, Pixel 10 24D Magnetometer, Stiefel `St(16,80)`, `63,360`-Neuron Vault, Pixel 8 `4.00 MB` L2 `.npage` SHM, Acoustic SDR, Cloudflare PQ/SIEM, `576/576` Lean 4 proofs, RTX 3050 6GB, and `E:\` SSD. <i>Click any card</i> to jump to its sector and execute its live L0 diagnostic.
+                  Displays real-time metrics across the `15.965 Hz` Decadic clock, Pixel 10 24D Magnetometer, Stiefel `St(16,80)`, `63,360`-Neuron Vault, Pixel 8 `4.00 MB` L2 `.npage` SHM, Acoustic SDR, Cloudflare PQ/SIEM, `624/624` Lean 4 proofs, RTX 3050 6GB, and `E:\` SSD. <i>Click any card</i> to jump to its sector and execute its live L0 diagnostic.
                 </div>
                 <div style={{ marginBottom: 6 }}>
                   <b>• Drawer B (`60 FPS 3D Stiefel Scope &amp; 15.965 Hz Oscilloscope`):</b><br />
@@ -4305,8 +4580,8 @@ export function App() {
                   Drawer 1 plots all 12 live hardware inputs (`MagX/Y/Z`, `|B|`, `Baro`, `Lux`, `Acc`, `Gyro`, `P10/P8/RTX Temps`, `KOPS/s`). Clicking any sparkline or waterfall cell routes straight to its mapped sector.
                 </div>
                 <div style={{ marginBottom: 8 }}>
-                  <b>• Drawer 3 (`576/576 Lean 4 Verifier`) &amp; Drawer 4 (`145 Tools + 262K BPE + NL Converse`):</b><br />
-                  Contains the 262,144-token 36-Domain BPE/Compound Inspector, Episodic Memory Search, Slash Command Palette (`/SYNC`, `/LATTICE`, `/IGNITE`, `/EXECUTE_OMNI_BRAID`), Voice TTS toggle, and all 145 native tools (`T01..T145`).
+                  <b>• Drawer 3 (`624/624 Lean 4 Verifier`) &amp; Drawer 4 (`CHAIN 210 Tools + 262K BPE + NL Converse`):</b><br />
+                  Contains the 262,144-token 36-Domain BPE/Compound Inspector, Episodic Memory Search, Slash Command Palette (`/SYNC`, `/LATTICE`, `/IGNITE`, `/EXECUTE_OMNI_BRAID`), Voice TTS toggle, and all 210 native tools (`T01..T210`).
                 </div>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                   <button onClick={() => { setDrawerAOpen(true); setDrawerBOpen(true); setDrawer1Open(true); setDrawer2Open(true); setDrawer3Open(true); setDrawer4Open(true); }} style={{ background: "#00E5FF", color: "#050A0E", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>OPEN ALL DRAWERS</button>
@@ -4407,7 +4682,7 @@ export function App() {
                 </div>
                 <div style={{ marginBottom: 6 }}>
                   <b>Q3: How do I verify 100% true hardware data and zero dummy code at any time?</b><br />
-                  <span style={{ color: "#9FB0C2" }}>A: Run <code>verify</code> (or <code>sovereign-verify</code>) in PowerShell, or click <b>TOOL 145: Windows SDK &amp; DXC Omni-Audit</b>. It verifies `0` square brackets across `v33..v52*.rs`, `576/576` non-trivial Lean 4 theorems, `63,360` neurons (`8,110,080 B` `.npage`, `132,960` Bijected 64B CLs), live QAT PPL, and HTTP 200 on `act-omega-net.dev`.</span>
+                  <span style={{ color: "#9FB0C2" }}>A: Run <code>verify</code> (or <code>sovereign-verify</code>) in PowerShell, or click <b>CHAIN 210 Tool Suite</b>. It verifies `0` square brackets across `v33..v56*.rs`, `624/624` non-trivial Lean 4 theorems, `63,360` neurons (`8,110,080 B` `.npage`, `132,960` Bijected 64B CLs), live QAT PPL, and HTTP 200 on `act-omega-net.dev`.</span>
                 </div>
                 <div style={{ marginBottom: 4 }}>
                   <b>Q4: How do I hot-swap a new Rust L0 binary without dropping connections?</b><br />

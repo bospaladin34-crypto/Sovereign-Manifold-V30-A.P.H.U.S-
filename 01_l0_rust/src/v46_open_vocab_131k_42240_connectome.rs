@@ -1,7 +1,7 @@
 // =============================================================================
 // ACT-OMEGA NET v46.0.0 (SOVEREIGN HARMONIC VI / SH4Z v4600 TLV)
 // MODULE: 131,072-TOKEN (17-BIT) BPE + 24-DOMAIN (1,024-COMPOUND) LEXICON,
-//         42,240-NEURON / 42,240-SHARD (960x CHAIR-44, 5,406,720 B .NPAGE)
+//         63,360-NEURON / 63,360-SHARD (1,440x CHAIR-44, 8,110,080 B .NPAGE)
 //         CONNECTOME & COMPOSITIONAL OPEN-VOCABULARY RESPONSE GENERATOR
 // ZERO SQUARE BRACKETS ENFORCED (0x5B / 0x5D FORBIDDEN IN SOURCE)
 // =============================================================================
@@ -16,11 +16,11 @@ pub const MACRO_DOMAINS_36: u32 = 36;
 pub const SUB_DOMAINS_144: u32 = 144;
 
 // Backward-compatibility aliases for v46 callers
-pub const VOCAB_131K_TOTAL: usize = 131072;
-pub const NEURONS_42K_TOTAL: u32 = 42240;
-pub const CHAIR44_960_COLS: u32 = 960;
-pub const SYNAPSES_337K_TOTAL: u32 = 337920;
-pub const NPAGE_42K_BYTES: u64 = 5406720;
+pub const VOCAB_131K_TOTAL: usize = 262144;
+pub const NEURONS_42K_TOTAL: u32 = 63360;
+pub const CHAIR44_960_COLS: u32 = 1440;
+pub const SYNAPSES_337K_TOTAL: u32 = 1013760;
+pub const NPAGE_42K_BYTES: u64 = 8110080;
 
 pub struct OpenVocabWordAnalysis {
     pub surface_word: String,
@@ -186,7 +186,7 @@ pub fn analyze_word_morphology_131k(word: &str) -> OpenVocabWordAnalysis {
         };
     }
 
-    // 1. Check if it is a direct Neuron reference (n0..n42239) or Shard reference (s1..s42240)
+    // 1. Check if it is a direct Neuron reference (n0..n63359) or Shard reference (s1..s63360)
     if let Some(n_str) = w.strip_prefix('n') {
         if let Ok(nid) = n_str.parse::<u32>() {
             if nid < NEURONS_42K_TOTAL {
@@ -413,9 +413,9 @@ pub fn read_npage_42k_soma_potential(
     _baro_hpa: f64,
     _fno_l2: f64,
 ) -> (f64, f64, f64, f64) {
-    let nid = neuron_id_42k % NEURONS_42K_TOTAL;
+    let nid = neuron_id_42k % NEURONS_63K_TOTAL;
     let byte_off = (nid as u64) * 128;
-    let path = "C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v4600_42240.npage";
+    let path = "C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v5000_63360.npage";
     let mut rec = Vec::with_capacity(128);
     if let Ok(mut f) = std::fs::File::open(path) {
         use std::io::{Read, Seek, SeekFrom};
@@ -473,7 +473,7 @@ pub fn synthesize_open_vocabulary_response_v46(
     _cluster_kops: f64,
 ) -> OpenVocabSynthesisResult {
     let clean_prompt = if prompt_raw.trim().is_empty() {
-        "How does the 42,240-neuron manifold reason about novel out-of-vocabulary concepts across 24 domains?"
+        "How does the 63,360-neuron manifold reason about novel out-of-vocabulary concepts across 24 domains?"
     } else {
         prompt_raw.trim()
     };
@@ -577,14 +577,14 @@ pub fn synthesize_open_vocabulary_response_v46(
 
     let (dom_primary, dom_secondary) = infer_24domain_from_open_text(&lower);
 
-    // 3. Route Leech_24 projection into the 42,240-Neuron (960x Chair-44) Connectome
-    let primary_col_960 = (((leech.golay_octad_id_759 as u32) * 7 + (e8_accum % 960)) % CHAIR44_960_COLS) as u32;
-    let primary_neuron_42k = (primary_col_960 * 44 + ((neuron_accum as u32) % 44)) % NEURONS_42K_TOTAL;
-    let primary_sector_80 = (primary_col_960 / 12) % 80;
+    // 3. Route Leech_24 projection into the 63,360-Neuron (1,440x Chair-44) Connectome
+    let primary_col_960 = (((leech.golay_octad_id_759 as u32) * 7 + (e8_accum % 1440)) % CHAIR44_1440_COLS) as u32;
+    let primary_neuron_42k = (primary_col_960 * 44 + ((neuron_accum as u32) % 44)) % NEURONS_63K_TOTAL;
+    let primary_sector_80 = (primary_col_960 / 18) % 80;
     let (v_b, v_a, v_l, v_soma) = read_npage_42k_soma_potential(primary_neuron_42k, b_norm, baro_hpa, fno_l2);
 
     let e8_leech_route = format!(
-        "E8 Roots (#{}, #{}, #{}) -> Golay G24 {} (Octad #{}/759) -> Leech Kissing #{}/196,560 -> Sector S{:02} -> Chair-44 Col #{:03}/959 -> Neuron N{:05}/42239 (Shard #{:05}, V_soma={:.3})",
+        "E8 Roots (#{}, #{}, #{}) -> Golay G24 {} (Octad #{}/759) -> Leech Kissing #{}/196,560 -> Sector S{:02} -> Chair-44 Col #{:04}/1439 -> Neuron N{:05}/63359 (Shard #{:05}, V_soma={:.3})",
         leech.octet1_env_mag.root_id_240,
         leech.octet2_kin_fno.root_id_240,
         leech.octet3_sil_npage.root_id_240,
@@ -633,11 +633,11 @@ pub fn synthesize_open_vocabulary_response_v46(
 
     let domain_lens_explanation = match dom_primary {
         "D17:Molecular_Biology_Genomics_Neuro" => format!(
-            "From a molecular biology and neuro-genomic perspective ({}), the concepts of {} are governed by biochemical free-energy minimization, allosteric conformational transitions, and spike-timing-dependent cellular signaling. Just as enzymatic pathways and ion channels transduce local molecular gradients into coordinated physiological states, the manifold maps your prompt's {} novel and lexical concepts onto 3-compartment dendritic integration (Basal V={:.3}, Apical V={:.3}, Lateral V={:.3} at Neuron N{:05}/42239).",
+            "From a molecular biology and neuro-genomic perspective ({}), the concepts of {} are governed by biochemical free-energy minimization, allosteric conformational transitions, and spike-timing-dependent cellular signaling. Just as enzymatic pathways and ion channels transduce local molecular gradients into coordinated physiological states, the manifold maps your prompt's {} novel and lexical concepts onto 3-compartment dendritic integration (Basal V={:.3}, Apical V={:.3}, Lateral V={:.3} at Neuron N{:05}/63359).",
             dom_primary, subjects_csv, total_words, v_b, v_a, v_l, primary_neuron_42k
         ),
         "D18:Astrophysics_Cosmology_Orbital" => format!(
-            "Viewed through astrophysics, orbital dynamics, and relativistic cosmology ({}), {} behaves as a coupled dynamical system conserving energy-momentum and angular momentum across curved spacetime manifolds. The interplay between {} mirrors geodesic trajectories and spectral radiative transfer, anchored here to Leech Lattice Kissing Vector #{}/196,560 and Chair-44 Column #{:03}/959.",
+            "Viewed through astrophysics, orbital dynamics, and relativistic cosmology ({}), {} behaves as a coupled dynamical system conserving energy-momentum and angular momentum across curved spacetime manifolds. The interplay between {} mirrors geodesic trajectories and spectral radiative transfer, anchored here to Leech Lattice Kissing Vector #{}/196,560 and Chair-44 Column #{:04}/1439.",
             dom_primary, subjects_csv, actions_csv, leech.leech_kissing_index_196560, primary_col_960
         ),
         "D19:Chemistry_Materials_Crystallography" => format!(
@@ -645,11 +645,11 @@ pub fn synthesize_open_vocabulary_response_v46(
             dom_primary, subjects_csv, actions_csv, leech.octet1_env_mag.root_id_240, leech.octet2_kin_fno.root_id_240, leech.octet3_sil_npage.root_id_240
         ),
         "D20:Medicine_Pharmacology_Physiology" => format!(
-            "In physiological and clinical systems ({}), {} relies on multi-organ homeostatic feedback loops, autonomic balance, and dose-response kinetics across {}. The model evaluates how perturbations propagate across network pathways and restore equilibrium, coupling 5W1H metabolic ATP drive ({:.4}) with dendritic soma potential V_soma={:.3} at Neuron N{:05}/42239.",
+            "In physiological and clinical systems ({}), {} relies on multi-organ homeostatic feedback loops, autonomic balance, and dose-response kinetics across {}. The model evaluates how perturbations propagate across network pathways and restore equilibrium, coupling 5W1H metabolic ATP drive ({:.4}) with dendritic soma potential V_soma={:.3} at Neuron N{:05}/63359.",
             dom_primary, subjects_csv, actions_csv, atp_drive, v_soma, primary_neuron_42k
         ),
         "D21:Music_Theory_Psychoacoustics_Harmony" => format!(
-            "From the standpoint of harmonic theory, psychoacoustics, and polyphonic counterpoint ({}), {} emerges from frequency-ratio consonance, overtone phase alignment, and rhythmic tension-and-release across {}. The manifold's 15.965 Hz Decadic carrier clock and 16-mode Fourier spectral operator resolve these intervals into coherent harmonic progressions at Column #{:03}/959.",
+            "From the standpoint of harmonic theory, psychoacoustics, and polyphonic counterpoint ({}), {} emerges from frequency-ratio consonance, overtone phase alignment, and rhythmic tension-and-release across {}. The manifold's 15.965 Hz Decadic carrier clock and 16-mode Fourier spectral operator resolve these intervals into coherent harmonic progressions at Column #{:04}/1439.",
             dom_primary, subjects_csv, actions_csv, primary_col_960
         ),
         "D22:Ecology_EarthSystems_Climate" => format!(
@@ -657,7 +657,7 @@ pub fn synthesize_open_vocabulary_response_v46(
             dom_primary, subjects_csv, actions_csv, reynolds, fno_l2
         ),
         "D23:Systems_Robotics_Control_Cybernetics" => format!(
-            "In control theory, robotics, and cybernetic systems engineering ({}), {} requires closed-loop observability, Kalman state estimation, and Lyapunov stability across {}. By balancing proportional-integral-derivative feedback with predictive internal models, the system ensures zero-jitter trajectory tracking across Sector S{:02} and Neuron N{:05}/42239.",
+            "In control theory, robotics, and cybernetic systems engineering ({}), {} requires closed-loop observability, Kalman state estimation, and Lyapunov stability across {}. By balancing proportional-integral-derivative feedback with predictive internal models, the system ensures zero-jitter trajectory tracking across Sector S{:02} and Neuron N{:05}/63359.",
             dom_primary, subjects_csv, actions_csv, primary_sector_80, primary_neuron_42k
         ),
         "D24:Everyday_Pragmatics_Craft_Design" => format!(
@@ -665,7 +665,7 @@ pub fn synthesize_open_vocabulary_response_v46(
             subjects_csv, dom_primary, actions_csv
         ),
         _ => format!(
-            "Synthesizing across {} and {}, the core dynamics of {} ({}) emerge from the interplay between local structural rules and global contextual constraints. Even when concepts lie outside a fixed preset dictionary, decomposing their morphological stems and relational roles reveals a clear causal architecture grounded at Sector S{:02}, Column #{:03}/959, and Dendritic Neuron N{:05}/42239.",
+            "Synthesizing across {} and {}, the core dynamics of {} ({}) emerge from the interplay between local structural rules and global contextual constraints. Even when concepts lie outside a fixed preset dictionary, decomposing their morphological stems and relational roles reveals a clear causal architecture grounded at Sector S{:02}, Column #{:04}/1439, and Dendritic Neuron N{:05}/63359.",
             dom_primary, dom_secondary, subjects_csv, actions_csv, primary_sector_80, primary_col_960, primary_neuron_42k
         ),
     };
@@ -673,7 +673,7 @@ pub fn synthesize_open_vocabulary_response_v46(
     let direct_open_answer = format!("{} {}", question_framing, domain_lens_explanation);
 
     let compositional_reasoning_paragraph = format!(
-        "Open-Vocabulary 131,072-Token & 42,240-Neuron Compositional Breakdown: Your prompt ('{}') was parsed into {} total words ({} in-lexicon words, {} multi-word compounds, and {} novel/open-vocabulary words decomposed via morphological prefix+stem+suffix analysis: {}). These tokens were projected via Conway-Sloane E8 quantization and Golay G24 codeword {} onto Leech Lattice vector #{}/196,560, activating 3-Compartment Dendritic Neuron N{:05}/42239 (Shard #{:05}/42240 in 5,406,720 B .npage, V_basal={:.3}, V_apical={:.3}, V_lateral={:.3}, V_soma={:.3}).",
+        "Open-Vocabulary 262,144-Token & 63,360-Neuron Compositional Breakdown: Your prompt ('{}') was parsed into {} total words ({} in-lexicon words, {} multi-word compounds, and {} novel/open-vocabulary words decomposed via morphological prefix+stem+suffix analysis: {}). These tokens were projected via Conway-Sloane E8 quantization and Golay G24 codeword {} onto Leech Lattice vector #{}/196,560, activating 3-Compartment Dendritic Neuron N{:05}/63359 (Shard #{:05}/63360 in 8,110,080 B .npage, V_basal={:.3}, V_apical={:.3}, V_lateral={:.3}, V_soma={:.3}).",
         clean_prompt.replace('"', "'"),
         total_words,
         known_cnt,

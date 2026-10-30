@@ -51,8 +51,8 @@ function Run-StaticGatekeeperChecks {
         $sorryCount = ([regex]::Matches($leanText, '\bsorry\b')).Count
         $trivialEqCount = ([regex]::Matches($leanText, ':\s*(\w+)\s*=\s*\1\s*:=')).Count
         $trivialCommCount = ([regex]::Matches($leanText, '\(a\s+b\s*:\s*Nat\)\s*:\s*a\s*\+\s*b\s*=\s*b\s*\+\s*a')).Count
-        if ($thmCount -lt 564) {
-            $failures.Add("LEAN4_COUNT_LOW: Found $thmCount theorems (Req: >= 564)")
+        if ($thmCount -lt 624) {
+            $failures.Add("LEAN4_COUNT_LOW: Found $thmCount theorems (Req: >= 624)")
         }
         if ($sorryCount -gt 0) {
             $failures.Add("LEAN4_SORRY_FOUND: Found $sorryCount 'sorry' tokens (Req: 0)")
@@ -160,8 +160,8 @@ function Run-StaticGatekeeperChecks {
             continue
         }
         $hContent = [System.IO.File]::ReadAllText($hf)
-        if ($hContent -notmatch 'data-sovereign-ssr="v50\.2\.0"') {
-            $failures.Add("HTML_SSR_MISSING: $hf missing data-sovereign-ssr=`"v50.2.0`" attribute")
+        if ($hContent -notmatch 'data-sovereign-ssr="v56\.0\.0"') {
+            $failures.Add("HTML_SSR_MISSING: $hf missing data-sovereign-ssr=`"v56.0.0`" attribute")
         }
         $bundleMatches = [regex]::Matches($hContent, '(?i)(?:\./)?assets/(index-[^"''\s>]+\.js)')
         if ($bundleMatches.Count -eq 0) {
@@ -184,6 +184,34 @@ function Run-StaticGatekeeperChecks {
                     }
                 }
             }
+        }
+    }
+
+    # 7. Google Search Console Verification Certificate Invariant (7 Target Paths, 53 Bytes, Exact SHA-256)
+    $gscExpectedHash = "0241DC5EDED053A96317C9C8FF34F4DCF12C069F88B8D92636D5D795EC176B3D"
+    $gscTargets = @(
+        "$RepoRoot\05_hud_cockpit\public\google6edc0affb12d0455.html",
+        "$RepoRoot\02_l2_orchestration\hud\public\google6edc0affb12d0455.html",
+        "$RepoRoot\05_hud_cockpit\dist\google6edc0affb12d0455.html",
+        "$RepoRoot\02_l2_orchestration\hud\dist\google6edc0affb12d0455.html",
+        "$RepoRoot\docs\google6edc0affb12d0455.html",
+        "$RepoRoot\google6edc0affb12d0455.html"
+    )
+    if (Test-Path "E:\Sovereign_Manifold_SSD_Vault") {
+        $gscTargets += "E:\Sovereign_Manifold_SSD_Vault\google6edc0affb12d0455.html"
+    }
+    foreach ($gt in $gscTargets) {
+        if (-not (Test-Path $gt)) {
+            $failures.Add("GSC_CERT_MISSING: $gt not found")
+            continue
+        }
+        $item = Get-Item $gt
+        if ($item.Length -ne 53) {
+            $failures.Add("GSC_CERT_BAD_LENGTH: $gt length is $($item.Length) bytes (Req: 53)")
+        }
+        $h = (Get-FileHash $gt -Algorithm SHA256).Hash
+        if ($h -ne $gscExpectedHash) {
+            $failures.Add("GSC_CERT_HASH_MISMATCH: $gt SHA256=$h (Req: $gscExpectedHash)")
         }
     }
 
@@ -239,9 +267,9 @@ if ($StaticOnly) {
 
     $failures = Run-StaticGatekeeperChecks
     if ($failures.Count -eq 0) {
-        Write-Host "  [STATIC INVARIANTS] [PASS] All 6 Static Invariants Verified (Zero-Bracket, Lean4, Mirrors, Secrets, Agents/Rules, SSR & Bundles)" -ForegroundColor Green
+        Write-Host "  [STATIC INVARIANTS] [PASS] All 7 Static Invariants Verified (Zero-Bracket, Lean4, Mirrors, Secrets, Agents/Rules, SSR & Bundles, GSC Lock)" -ForegroundColor Green
         Write-Host "==========================================================================" -ForegroundColor Cyan
-        Write-Host "  [BRUTAL GATEKEEPER RESULT: PASSED (All 6 Static Invariants Verified)]" -ForegroundColor Green
+        Write-Host "  [BRUTAL GATEKEEPER RESULT: PASSED (All 7 Static Invariants Verified)]" -ForegroundColor Green
         exit 0
     } else {
         foreach ($f in $failures) {
@@ -255,12 +283,12 @@ if ($StaticOnly) {
 
 if ($FullAudit) {
     Write-Host "==========================================================================" -ForegroundColor Cyan
-    Write-Host "   ACT-OMEGA BRUTAL AGENT GATEKEEPER: 10-POINT ARCHITECTURAL AUDIT        " -ForegroundColor Cyan
+    Write-Host "   ACT-OMEGA BRUTAL AGENT GATEKEEPER: 11-POINT ARCHITECTURAL AUDIT        " -ForegroundColor Cyan
     Write-Host "==========================================================================" -ForegroundColor Cyan
 
     $failures = Run-StaticGatekeeperChecks
     if ($failures.Count -eq 0) {
-        Write-Host "  [1-6 STATIC INVARIANTS] [PASS] Zero-Bracket(v33..v50+)=0 | Lean4>=564(0 trivial) | HUD/Mobile/Agent Mirrors=LOCKED | SecretsInRepo=0 | SSR & Bundles=VERIFIED" -ForegroundColor Green
+        Write-Host "  [1-7 STATIC INVARIANTS] [PASS] Zero-Bracket(v33..v56+)=0 | Lean4>=624(0 trivial) | HUD/Mobile/Agent Mirrors=LOCKED | SecretsInRepo=0 | SSR & Bundles=VERIFIED | GSC 7-Mirror=LOCKED" -ForegroundColor Green
     } else {
         foreach ($f in $failures) {
             Write-Host "  [STATIC FAIL] $f" -ForegroundColor Red
@@ -340,12 +368,28 @@ if ($FullAudit) {
         Write-Host "  [10 COORDINATOR & E:\]  [FAIL] $_" -ForegroundColor Red
     }
 
+    # 11. Live Google Search Console Certificate HTTP Endpoints Probe (:8097 & :5173)
+    try {
+        $r8097 = (Invoke-WebRequest -Uri "http://127.0.0.1:8097/google6edc0affb12d0455.html" -UseBasicParsing -TimeoutSec 5).Content
+        $r5173 = (Invoke-WebRequest -Uri "http://127.0.0.1:5173/google6edc0affb12d0455.html" -UseBasicParsing -TimeoutSec 5).Content
+        $expectedBody = "google-site-verification: google6edc0affb12d0455.html"
+        if ($r8097.Trim() -eq $expectedBody -and $r5173.Trim() -eq $expectedBody) {
+            Write-Host "  [11 GSC HTTP ENDPOINTS] [PASS] :8097 & :5173 returned exact 53-byte GSC token" -ForegroundColor Green
+        } else {
+            $failures.Add("GSC_HTTP_BODY_MISMATCH: 8097_len=$($r8097.Length) 5173_len=$($r5173.Length)")
+            Write-Host "  [11 GSC HTTP ENDPOINTS] [FAIL] Body mismatch on :8097 or :5173" -ForegroundColor Red
+        }
+    } catch {
+        $failures.Add("GSC_HTTP_PROBE_ERR: $_")
+        Write-Host "  [11 GSC HTTP ENDPOINTS] [FAIL] $_" -ForegroundColor Red
+    }
+
     Write-Host "==========================================================================" -ForegroundColor Cyan
     if ($failures.Count -gt 0) {
         Write-Host "  [BRUTAL GATEKEEPER RESULT: FAILED ($($failures.Count) VIOLATIONS)]" -ForegroundColor Red
         exit 1
     } else {
-        Write-Host "  [BRUTAL GATEKEEPER RESULT: PASSED (10/10 INVARIANTS VERIFIED)]" -ForegroundColor Green
+        Write-Host "  [BRUTAL GATEKEEPER RESULT: PASSED (11/11 INVARIANTS VERIFIED)]" -ForegroundColor Green
         exit 0
     }
 }

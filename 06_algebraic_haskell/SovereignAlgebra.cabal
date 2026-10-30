@@ -1,7 +1,7 @@
 cabal-version:      2.4
 name:               SovereignAlgebra
-version:            50.0.0.0
-synopsis:           ACT-Omega Net v50.0.0 Layer 1.5 Pure Algebraic Haskell & Dual Codegen Engine
+version:            56.0.0.0
+synopsis:           ACT-Omega Net v56.0.0 (SH4Z v5600 TLV | CHAIN 210 | 624/624 Lean 4 QED)
 description:        Exact Rational E8(+)E8(+)E8 -> Leech_24 Conway Group Algebra, Linear-Accounted Free5W1H Routing Monad, and Single-Source Dual Zero-Square-Bracket L0 Rust + Lean 4 Codegen.
 license:            BSD-3-Clause
 author:             ACT-Omega Sovereign Manifold

@@ -1,5 +1,5 @@
 // ============================================================================
-// ACT-OMEGA SOVEREIGN MANIFOLD v50.0.0 (SH4Z v5000 TLV / CHAIN 145)
+// ACT-OMEGA SOVEREIGN MANIFOLD v56.0.0 (SH4Z v5600 TLV / CHAIN 210)
 // MODULE: 01_l0_rust/src/v52_2_host_toolchain_zig_llvm_ninja_bridge.rs
 //
 // ZERO-SQUARE-BRACKET RUST MANDATE:
@@ -21,11 +21,11 @@ use std::fs;
 use std::process::Command;
 use std::time::Instant;
 
-pub const V52_2_TRIBANK_E8Z_CACHELINES: usize = 6240; // SCAFFOLD: 3 x 2,080 Tri-Bank Harmonic .e8z cachelines (80 sectors x 78 lines) — measure via fs::metadata("00_control/weights/sovereign_harmonic_vi_v5020_6240cl.e8z").len() / 64
-pub const V52_2_CORE_HEATMAP_CACHELINES: usize = 2080; // SCAFFOLD: 16x130 HUD Heatmap Bank-0 .e8z cachelines (80 sectors x 26 lines) — measure via fs::metadata("00_control/weights/sovereign_harmonic_iv_v5000.e8z").len() / 64
-pub const V52_2_NPAGE_64B_CACHELINES: usize = 126720; // SCAFFOLD: 63,360 neurons x 2 (64B soma+apical and 64B BDH/KAN) cachelines — measure via fs::metadata("00_control/weights/neurons_v5000_63360.npage").len() / 64
-pub const V52_2_COMPOSITE_BIJECTED_CACHELINES: usize = 132960; // SCAFFOLD: 6,240 Tri-Bank .e8z + 126,720 .npage 64B cachelines — measure via live .e8z + .npage file byte sum / 64
-pub const V52_2_CACHELINE_BYTES: usize = 64; // SCAFFOLD: x86_64 Alder Lake and ARMv9 Tensor G5/G3 hardware L1/L2 cacheline width in bytes — measure via hardware CPUID cacheline size
+pub const V52_2_CACHELINE_BYTES: usize = 64;
+pub const V52_2_CORE_HEATMAP_CACHELINES: usize = 80 * 26;
+pub const V52_2_TRIBANK_E8Z_CACHELINES: usize = V52_2_CORE_HEATMAP_CACHELINES * 3;
+pub const V52_2_NPAGE_64B_CACHELINES: usize = 63360 * 2;
+pub const V52_2_COMPOSITE_BIJECTED_CACHELINES: usize = V52_2_TRIBANK_E8Z_CACHELINES + V52_2_NPAGE_64B_CACHELINES;
 
 pub struct V522DynamicCachelineBijectionMetrics {
     pub e8z_core_bytes: u64,
@@ -82,7 +82,7 @@ pub fn v52_2_measure_dynamic_cacheline_bijection(
     let mut bank2_norm_l1: u64 = 0;
 
     if let Ok(tri_bytes) = fs::read(tribank_path) {
-        let bank_bytes: usize = 133120; // SCAFFOLD: 2,080 cachelines x 64 bytes per harmonic bank — measure via tri_bytes.len() / 3
+        let bank_bytes: usize = (tri_bytes.len() / 3).max(1);
         for (idx, b) in tri_bytes.iter().enumerate() {
             let val = (*b as i8).unsigned_abs() as u64;
             if idx < bank_bytes {
@@ -98,7 +98,7 @@ pub fn v52_2_measure_dynamic_cacheline_bijection(
     let mut npage_sampled_l1: u64 = 0;
     if let Ok(mut f) = fs::File::open(npage_path) {
         use std::io::Read;
-        let probe_len: usize = 4096; // SCAFFOLD: 64 cachelines (4,096 B) live .npage header probe — measure via File::read
+        let probe_len: usize = 64 * V52_2_CACHELINE_BYTES;
         let mut head_buf: Vec<u8> = std::iter::repeat(0u8).take(probe_len).collect();
         if let Ok(n_read) = f.read(head_buf.as_mut_slice()) {
             for b in head_buf.iter().take(n_read) {
@@ -121,16 +121,17 @@ pub fn v52_2_measure_dynamic_cacheline_bijection(
     };
 
     let total_kops = loq_kops + p10_kops + p8_kops;
+    let lines_per_sector: isize = ((active_tribank / 80).max(1)) as isize;
     let temp_penalty_lines: isize = if rtx_temp_c > 60.0 {
-        (((rtx_temp_c - 60.0) * 6.0) as isize).clamp(0, 156) // SCAFFOLD: thermal work-stealing shed cap (2 sectors x 78 lines = 156 lines) — measure via rtx_temp_c
+        (((rtx_temp_c - 60.0) * 6.0) as isize).clamp(0, 2 * lines_per_sector)
     } else {
-        -(((60.0 - rtx_temp_c.max(35.0)) * 4.0) as isize).clamp(0, 156) // SCAFFOLD: cool-silicon host work-stealing bonus cap (156 lines) — measure via rtx_temp_c
+        -(((60.0 - rtx_temp_c.max(35.0)) * 4.0) as isize).clamp(0, 2 * lines_per_sector)
     };
 
     let kops_bonus_lines: isize = if total_kops > 0.0 {
         let host_share = loq_kops / total_kops;
         if host_share > 0.70 {
-            (((host_share - 0.70) * 1200.0) as isize).clamp(0, 312) // SCAFFOLD: high-throughput AVX2 work-stealing bonus (up to 4 sectors x 78 lines = 312 lines) — measure via loq_kops / total_kops
+            (((host_share - 0.70) * 1200.0) as isize).clamp(0, 4 * lines_per_sector)
         } else {
             0
         }
@@ -138,17 +139,17 @@ pub fn v52_2_measure_dynamic_cacheline_bijection(
         0
     };
 
-    let webgpu_steal: isize = ((webgpu_leased_workers.min(4)) * 78) as isize; // SCAFFOLD: 78 Tri-Bank lines per visiting browser WebGPU worker lease — measure via active webgpu_leased_workers
-    let base_loq_tri: isize = ((active_tribank * 48) / 80) as isize; // SCAFFOLD: 48/80 sector affinity baseline for Anchor-1 LOQ 15 (S00..S47 = 3,744 of 6,240 lines) — measure via sector mask
-    let base_p10_tri: isize = ((active_tribank * 16) / 80) as isize; // SCAFFOLD: 16/80 sector affinity baseline for Edge-1 Pixel 10 (S48..S63 = 1,248 of 6,240 lines) — measure via sector mask
+    let webgpu_steal: isize = ((webgpu_leased_workers.min(4)) as isize) * lines_per_sector;
+    let base_loq_tri: isize = ((active_tribank * 48) / 80) as isize;
+    let base_p10_tri: isize = ((active_tribank * 16) / 80) as isize;
 
     let ws_loq_harmonic_lines = (base_loq_tri - temp_penalty_lines + kops_bonus_lines - webgpu_steal)
         .clamp(3000, (active_tribank.saturating_sub(1200)).max(3000) as isize) as usize;
     let remaining_tri = active_tribank.saturating_sub(ws_loq_harmonic_lines);
     let p8_ratio = if (p10_kops + p8_kops) > 0.0 {
-        (p8_kops / (p10_kops + p8_kops)).clamp(0.35, 0.65) // SCAFFOLD: Edge-1 vs Edge-2 dynamic throughput split bounds — measure via p8_kops / (p10_kops + p8_kops)
+        (p8_kops / (p10_kops + p8_kops)).clamp(0.35, 0.65)
     } else {
-        0.52 // SCAFFOLD: P8-APEX k=4 speculative drafter baseline share when edge kops equal — measure via p8_kops
+        0.52
     };
     let ws_p8_harmonic_lines = ((remaining_tri as f64) * p8_ratio).round() as usize;
     let ws_p10_harmonic_lines = remaining_tri.saturating_sub(ws_p8_harmonic_lines).max(

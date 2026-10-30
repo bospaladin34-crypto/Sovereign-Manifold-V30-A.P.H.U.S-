@@ -1,5 +1,5 @@
 // ============================================================================
-// ACT-OMEGA SOVEREIGN MANIFOLD v50.0.0 (SH4Z v5000 TLV / CHAIN 135)
+// ACT-OMEGA SOVEREIGN MANIFOLD v56.0.0 (SH4Z v5600 TLV / CHAIN 210)
 // MODULE: 01_l0_rust/src/v50_monograph_braidir_sh4z_vesper_core.rs
 //
 // OFFICIAL PUBLISHED MONOGRAPH COMPUTATIONAL CORE (TOOLS 104..106):
@@ -23,8 +23,7 @@ pub const MONOGRAPH_ZENODO_DOI: &str = "10.5281/zenodo.23651696";
 pub const MONOGRAPH_OSF_DOI: &str = "10.17605/OSF.IO/2XQ5Z";
 pub const MONOGRAPH_TITLE: &str = "A Topological Intermediate Representation, Lattice Vector Quantizer, and Cellular Sheaf Consensus Runtime for Edge-to-Workstation Heterogeneous Computing {Aegis Cascade Topology}";
 
-// Physical and algorithmic constants
-// SCAFFOLD: Beta parity angle stands in for pi/8 lattice partition — measure via Conway-Sloane theta series
+// Physical and algorithmic constants (exact Conway-Sloane beta = 1.0 / (8.0 * sqrt(2)))
 pub const SH4Z_BETA_PARITY_ANGLE: f64 = 0.08838834764831845; // 1.0 / (8.0 * sqrt(2))
 pub const SH4Z_LVQ_HEADER_BYTES: usize = 16;
 pub const SH4Z_LVQ_PAYLOAD_BYTES: usize = 48;

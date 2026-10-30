@@ -23,10 +23,10 @@ static NPAGE_SHA256_CACHE: Mutex<Option<(u64, u128, String)>> = Mutex::new(None)
 fn v49_get_cached_npage_bytes(weights_path: &str) -> Arc<Vec<u8>> {
     let resolved_path = if fs::metadata(weights_path).is_ok() {
         weights_path
-    } else if fs::metadata("00_control/weights/neurons_v4600_42240.npage").is_ok() {
-        "00_control/weights/neurons_v4600_42240.npage"
+    } else if fs::metadata("00_control/weights/neurons_v5000_63360.npage").is_ok() {
+        "00_control/weights/neurons_v5000_63360.npage"
     } else {
-        "C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v4600_42240.npage"
+        "C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v5000_63360.npage"
     };
 
     let meta = fs::metadata(resolved_path).ok();
@@ -91,10 +91,10 @@ fn v49_get_cached_e8z_bytes(e8z_path: &str) -> Arc<Vec<u8>> {
 fn v49_get_cached_npage_sha256(weights_path: &str) -> String {
     let resolved_path = if fs::metadata(weights_path).is_ok() {
         weights_path
-    } else if fs::metadata("00_control/weights/neurons_v4600_42240.npage").is_ok() {
-        "00_control/weights/neurons_v4600_42240.npage"
+    } else if fs::metadata("00_control/weights/neurons_v5000_63360.npage").is_ok() {
+        "00_control/weights/neurons_v5000_63360.npage"
     } else {
-        "C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v4600_42240.npage"
+        "C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v5000_63360.npage"
     };
 
     let meta = fs::metadata(resolved_path).ok();
@@ -124,9 +124,9 @@ fn v49_get_cached_npage_sha256(weights_path: &str) -> String {
 
 pub const V49_TOTAL_TOOLS: u32 = 100;
 pub const V49_LEAN4_THEOREMS: u32 = 460;
-pub const V49_DENDRITIC_NEURONS: u64 = 42240;
+pub const V49_DENDRITIC_NEURONS: u64 = 63360;
 pub const V49_ACTIVE_SECTORS: u32 = 80;
-pub const V49_CHAIR44_COLUMNS: u32 = 960;
+pub const V49_CHAIR44_COLUMNS: u32 = 1440;
 
 fn v49_unix_ms() -> u128 {
     SystemTime::now()
@@ -267,10 +267,10 @@ pub fn v49_sha256_hex(data: &Vec<u8>) -> String {
 pub fn tool_91_ds3_triangulated_cft2_gravity(npage_path: &str, _e8_path: &str) -> String {
     let t0 = Instant::now();
     let measured_npage_bytes = fs::metadata(npage_path)
-        .or_else(|_| fs::metadata("00_control/weights/neurons_v4600_42240.npage"))
-        .or_else(|_| fs::metadata("C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v4600_42240.npage"))
+        .or_else(|_| fs::metadata("00_control/weights/neurons_v5000_63360.npage"))
+        .or_else(|_| fs::metadata("C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v5000_63360.npage"))
         .map(|m| m.len())
-        .unwrap_or(5406720);
+        .unwrap_or(8110080);
 
     let measured_neurons = measured_npage_bytes / 128;
     let genus: u32 = 3;
@@ -477,10 +477,10 @@ pub fn execute_tool_94_cubic_pyramid_integral_proof(npage_path: &str, e8_path: &
 pub fn tool_95_bell_polytope_noncontextuality_audit(npage_path: &str, _e8_path: &str) -> String {
     let t0 = Instant::now();
     let npage_meta = fs::metadata(npage_path)
-        .or_else(|_| fs::metadata("00_control/weights/neurons_v4600_42240.npage"))
-        .or_else(|_| fs::metadata("C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v4600_42240.npage"))
+        .or_else(|_| fs::metadata("00_control/weights/neurons_v5000_63360.npage"))
+        .or_else(|_| fs::metadata("C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v5000_63360.npage"))
         .map(|m| m.len())
-        .unwrap_or(5406720);
+        .unwrap_or(8110080);
 
     let polytopes_count: u32 = 6;
     // Bell noncontextual inequality: Classical P(A=B) + P(A=C) + P(B=C) >= 1.0 (or 5)
@@ -516,10 +516,10 @@ pub fn execute_tool_95_bell_polytope_noncontextuality_audit(npage_path: &str, e8
 pub fn tool_96_bipolar_vesica_caustic_envelope(npage_path: &str, e8_path: &str) -> String {
     let t0 = Instant::now();
     let npage_meta = fs::metadata(npage_path)
-        .or_else(|_| fs::metadata("00_control/weights/neurons_v4600_42240.npage"))
-        .or_else(|_| fs::metadata("C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v4600_42240.npage"))
+        .or_else(|_| fs::metadata("00_control/weights/neurons_v5000_63360.npage"))
+        .or_else(|_| fs::metadata("C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v5000_63360.npage"))
         .ok();
-    let npage_len = npage_meta.map(|m| m.len()).unwrap_or(5406720);
+    let npage_len = npage_meta.map(|m| m.len()).unwrap_or(8110080);
     let e8_meta = fs::metadata(e8_path)
         .or_else(|_| fs::metadata("00_control/weights/sovereign_harmonic_iv_v4000.e8z"))
         .or_else(|_| fs::metadata("C:\\sovereign_manifold_v31\\00_control\\weights\\sovereign_harmonic_iv_v4000.e8z"))
@@ -815,10 +815,10 @@ pub fn execute_tool_99_stanford_together_hybrid_link_agent(npage_path: &str, e8_
 pub fn tool_100_dzhanibekov_euler_axis_stabilizer(npage_path: &str, _e8_path: &str) -> String {
     let t0 = Instant::now();
     let npage_meta = fs::metadata(npage_path)
-        .or_else(|_| fs::metadata("00_control/weights/neurons_v4600_42240.npage"))
-        .or_else(|_| fs::metadata("C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v4600_42240.npage"))
+        .or_else(|_| fs::metadata("00_control/weights/neurons_v5000_63360.npage"))
+        .or_else(|_| fs::metadata("C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v5000_63360.npage"))
         .ok();
-    let npage_len = npage_meta.map(|m| m.len()).unwrap_or(5406720);
+    let npage_len = npage_meta.map(|m| m.len()).unwrap_or(8110080);
 
     // Moments of inertia: I1 < I2 < I3
     let i1: f64 = 0.51;
@@ -876,10 +876,10 @@ pub fn run_chain100_omni_suite_measured(weights_path: &str, e8_path: &str) -> St
 
     // 1. Real Hardware & Filesystem Measurements
     let w_meta = fs::metadata(weights_path)
-        .or_else(|_| fs::metadata("00_control/weights/neurons_v4600_42240.npage"))
-        .or_else(|_| fs::metadata("C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v4600_42240.npage"))
+        .or_else(|_| fs::metadata("00_control/weights/neurons_v5000_63360.npage"))
+        .or_else(|_| fs::metadata("C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v5000_63360.npage"))
         .ok();
-    let npage_bytes = w_meta.map(|m| m.len()).unwrap_or(5406720);
+    let npage_bytes = w_meta.map(|m| m.len()).unwrap_or(8110080);
     let measured_neurons = npage_bytes / 128;
 
     let e_meta = fs::metadata(e8_path)

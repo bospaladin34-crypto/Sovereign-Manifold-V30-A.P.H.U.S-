@@ -2,7 +2,7 @@
 // ACT-OMEGA NET v47.0.0 (SOVEREIGN HARMONIC VII / SH4Z v4700 TLV)
 // MODULE: 5-TASK AUTONOMOUS INTELLIGENCE & EMBODIED VOICE SUITE (TOOLS 85..89)
 //   - TOOL 85: SELF-GROWING LEXICON (AUTOMATIC OOV-TO-SHARD CRYSTALLIZATION &
-//              3-FACTOR HEBBIAN STDP CONSOLIDATION IN 42,240-NEURON .NPAGE)
+//              3-FACTOR HEBBIAN STDP CONSOLIDATION IN 63,360-NEURON .NPAGE)
 //   - TOOL 86: 4-HOP LEECH GEODESIC CHAIN-OF-THOUGHT OVER 196,560 MINIMAL VECTORS
 //   - TOOL 87: SOVEREIGN RAG-ON-LEECH LOCAL DOCUMENT INGESTION & CITATION ENGINE
 //   - TOOL 88: DUAL-PHONE 24D SENSOR-GROUNDED MULTIMODAL REASONING & 16KHZ .WAV VOICE
@@ -130,7 +130,7 @@ pub fn execute_v47_self_growing_lexicon(prompt: &str) -> String {
     };
 
     let synthesis = transduce_open_vocab_131k(clean_prompt);
-    let npage_path = "C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v4600_42240.npage";
+    let npage_path = "C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v5000_63360.npage";
     let fallback_npage = "C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v4000.npage";
     let active_npage = if std::path::Path::new(npage_path).exists() {
         npage_path
@@ -267,7 +267,7 @@ pub fn execute_v47_leech_geodesic_cot(prompt: &str) -> String {
     let mut v3: Vec<f64> = Vec::with_capacity(24);
 
     // Read real .npage compartments for 4 columns to perturb the geodesic path with measured synaptic weights
-    let npage_path = "C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v4600_42240.npage";
+    let npage_path = "C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v5000_63360.npage";
     let fallback_npage = "C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v4000.npage";
     let active_npage = if std::path::Path::new(npage_path).exists() {
         npage_path
@@ -395,7 +395,7 @@ struct RagChunkRecord {
 pub fn execute_v47_rag_on_leech(query: &str) -> String {
     let t0 = Instant::now();
     let clean_query = if query.trim().is_empty() {
-        "15.965 Hz Decadic Epoch 42240 dendritic neurons Leech lattice"
+        "15.965 Hz Decadic Epoch 63360 dendritic neurons Leech lattice"
     } else {
         query.trim()
     };
@@ -430,7 +430,7 @@ pub fn execute_v47_rag_on_leech(query: &str) -> String {
     let mut best2 = RagChunkRecord {
         source_file: "README.md",
         chunk_idx: 0,
-        excerpt: String::from("42,240 Dendritic Neurons and 80 Active Sectors"),
+        excerpt: String::from("63,360 Dendritic Neurons and 80 Active Sectors"),
         sha256: String::from("0000"),
         shard_id: 2,
         neuron_id: 1,
@@ -469,7 +469,7 @@ pub fn execute_v47_rag_on_leech(query: &str) -> String {
                     }
                     let score = (base_cos * 0.65 + 0.35 + lexical_boost).clamp(0.0, 0.9994);
                     let c_sha = sha256_bytes_hex(block.as_bytes());
-                    let neuron_id = ((indexed_chunks * 523 + block.len() * 17) % 42240) as u32;
+                    let neuron_id = ((indexed_chunks * 523 + block.len() * 17) % 63360) as u32;
                     let shard_id = neuron_id + 1;
                     let short_ex = if block.len() > 200 {
                         String::from(block.get(..200).unwrap_or(&block))

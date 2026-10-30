@@ -1,0 +1,397 @@
+﻿{
+    "summary":  {
+                    "pass_rate_pct":  100,
+                    "failed":  0,
+                    "total":  27,
+                    "passed":  27
+                },
+    "suite":  "ACT-Omega Net v56.0.0 E2E Test Suite",
+    "timestamp":  "2026-10-29T18:06:22Z",
+    "results":  [
+                    {
+                        "id":  "M0_F03",
+                        "passed":  true,
+                        "tier":  1,
+                        "elapsed_ms":  118.08120000000001,
+                        "name":  "GSC Invariant Verification",
+                        "measured_data":  {
+                                              "Http5173":  true,
+                                              "Http8097":  true,
+                                              "FilesValid":  true
+                                          },
+                        "message":  "GSC certificate invariant verified across all 7 targets and live HTTP endpoints (:8097, :5173)",
+                        "milestone":  "M0"
+                    },
+                    {
+                        "id":  "B01",
+                        "passed":  true,
+                        "tier":  2,
+                        "elapsed_ms":  149.5298,
+                        "name":  "Suite URL Decoupling Contiguity \u0026 Bounds",
+                        "measured_data":  {
+                                              "Count145":  145,
+                                              "Count210":  210,
+                                              "Count135":  135
+                                          },
+                        "message":  "Contiguity bounds verified: chain135 \u003c= 135, chain145 == 145, chain210 == 210",
+                        "milestone":  "M1"
+                    },
+                    {
+                        "id":  "B02",
+                        "passed":  true,
+                        "tier":  2,
+                        "elapsed_ms":  304.4355,
+                        "name":  "Zero-Square-Bracket Byte Scanner Boundary",
+                        "measured_data":  {
+                                              "Violations":  [
+
+                                                             ],
+                                              "TotalBytes":  937155,
+                                              "ScannedFiles":  39
+                                          },
+                        "message":  "Scanned 39 modules (937155 bytes) with 0 brackets; scanner sensitivity verified",
+                        "milestone":  "M3"
+                    },
+                    {
+                        "id":  "B03",
+                        "passed":  true,
+                        "tier":  2,
+                        "elapsed_ms":  14.2192,
+                        "name":  "Pixel 8 Stock Slot _b Invariance Boundary",
+                        "measured_data":  {
+                                              "TamperDetected":  true,
+                                              "Serial":  "3A121FDJH00BW5",
+                                              "Hash":  "84ECFA41044D301D096B31657430F693D605C88DB77969E8B604B804C8D5E55D"
+                                          },
+                        "message":  "Stock slot _b SHA-256 strictly invariant (84ECFA41044D301D096B31657430F693D605C88DB77969E8B604B804C8D5E55D) for Pixel 8 (3A121FDJH00BW5)",
+                        "milestone":  "M4"
+                    },
+                    {
+                        "id":  "B04",
+                        "passed":  true,
+                        "tier":  2,
+                        "elapsed_ms":  475.5595,
+                        "name":  "Pixel 8 Governor Adversarial Rejection",
+                        "measured_data":  {
+                                              "EmptyCode":  200,
+                                              "HostAlive":  true,
+                                              "MalformedCode":  200
+                                          },
+                        "message":  "Host survived 4 adversarial payloads without crash or process termination",
+                        "milestone":  "M4"
+                    },
+                    {
+                        "id":  "B05",
+                        "passed":  true,
+                        "tier":  2,
+                        "elapsed_ms":  1.8793000000000002,
+                        "name":  "Throughput Denominator \u0026 Synapse Boundary",
+                        "measured_data":  {
+                                              "HasExactSynapses":  true,
+                                              "HasZeroGuard":  true
+                                          },
+                        "message":  "Throughput math contains division-by-zero protection and binds to 1,013,760 actual synapses",
+                        "milestone":  "M2"
+                    },
+                    {
+                        "id":  "B06",
+                        "passed":  true,
+                        "tier":  2,
+                        "elapsed_ms":  7.6624000000000008,
+                        "name":  "Lean 4 Proof Rigor \u0026 Non-Triviality",
+                        "measured_data":  {
+                                              "TrivialCount":  0,
+                                              "Theorems":  624,
+                                              "SorryCount":  0
+                                          },
+                        "message":  "624 substantive theorems verified with 0 sorry and 0 trivial padding theorems",
+                        "milestone":  "M4"
+                    },
+                    {
+                        "id":  "B07",
+                        "passed":  true,
+                        "tier":  2,
+                        "elapsed_ms":  1.1504,
+                        "name":  "WebGPU #root SSR Snapshot Boundary",
+                        "measured_data":  {
+                                              "RootDiv2":  true,
+                                              "HasOsf":  true,
+                                              "HasZenodo":  true,
+                                              "RootDiv1":  true
+                                          },
+                        "message":  "SSR pre-populated #root snapshot and Zenodo/OSF DOIs verified across cockpit and docs",
+                        "milestone":  "M4"
+                    },
+                    {
+                        "id":  "B08",
+                        "passed":  true,
+                        "tier":  2,
+                        "elapsed_ms":  0.90560000000000007,
+                        "name":  "APR 4-Ring Capability Stratifier Bounds",
+                        "measured_data":  {
+                                              "A1":  true,
+                                              "A2":  true,
+                                              "OwnedSilicon":  true,
+                                              "A3":  true,
+                                              "A0":  true
+                                          },
+                        "message":  "All 4 rings (A0..A3) and OWNED_SILICON_ONLY privilege boundaries specified",
+                        "milestone":  "M1"
+                    },
+                    {
+                        "id":  "B09",
+                        "passed":  true,
+                        "tier":  2,
+                        "elapsed_ms":  30.1065,
+                        "name":  "Codebase Zero-Legacy Neuron Leak Scanner",
+                        "measured_data":  {
+                                              "Leaks":  [
+
+                                                        ],
+                                              "ScannedCount":  84
+                                          },
+                        "message":  "Zero legacy 42,240 references in all 84 Rust source files",
+                        "milestone":  "M1"
+                    },
+                    {
+                        "id":  "B10",
+                        "passed":  true,
+                        "tier":  2,
+                        "elapsed_ms":  21.396,
+                        "name":  "Rule Mirror Parity Boundary",
+                        "measured_data":  {
+                                              "RuleCount":  7,
+                                              "Mismatches":  [
+
+                                                             ]
+                                          },
+                        "message":  "100% SHA-256 parity verified across 7 rules",
+                        "milestone":  "M1"
+                    },
+                    {
+                        "id":  "INT01",
+                        "passed":  true,
+                        "tier":  3,
+                        "elapsed_ms":  28.526500000000002,
+                        "name":  "Suite Decoupling \u0026 Tool Dispatch Integration",
+                        "measured_data":  {
+                                              "EndpointOk":  true,
+                                              "DispatchersFound":  true
+                                          },
+                        "message":  "CHAIN 210 endpoint active and binds to all Cycle 1..5 tool dispatchers (v53..v56)",
+                        "milestone":  "M3"
+                    },
+                    {
+                        "id":  "INT02",
+                        "passed":  true,
+                        "tier":  3,
+                        "elapsed_ms":  22.373800000000003,
+                        "name":  "Throughput Pipeline Integration",
+                        "measured_data":  {
+                                              "Reduce":  true,
+                                              "NoDampener":  true,
+                                              "Synapses":  true,
+                                              "OnceLock":  true
+                                          },
+                        "message":  "Throughput pipeline integrated: OnceLock cache + Parallel tree reduce + 1,013,760 synapses + unthrottled swarm",
+                        "milestone":  "M2"
+                    },
+                    {
+                        "id":  "INT03",
+                        "passed":  true,
+                        "tier":  3,
+                        "elapsed_ms":  10.344000000000001,
+                        "name":  "APR Governance \u0026 Pixel 8 Root Integration",
+                        "measured_data":  {
+                                              "HasRule":  true,
+                                              "Status":  "MEASURED_PIXEL8_ROOT_HARDWARE_AUDIT_OK",
+                                              "HasAudit":  true
+                                          },
+                        "message":  "APR Ring A0 governance verified with active /api/v1/p8_root/hardware_audit endpoint",
+                        "milestone":  "M4"
+                    },
+                    {
+                        "id":  "INT04",
+                        "passed":  true,
+                        "tier":  3,
+                        "elapsed_ms":  1.3475000000000001,
+                        "name":  "Haskell Codegen \u0026 Lean 4 Kernel Integration",
+                        "measured_data":  {
+                                              "HsHas624":  true,
+                                              "HasHs":  true,
+                                              "LeanHas624":  true
+                                          },
+                        "message":  "Haskell 624 QED generator aligns with Lean 4 formal proof kernel (\u003e= 624 theorems)",
+                        "milestone":  "M4"
+                    },
+                    {
+                        "id":  "INT05",
+                        "passed":  true,
+                        "tier":  3,
+                        "elapsed_ms":  717.98020000000008,
+                        "name":  "Rule Parity \u0026 Gatekeeper Integration",
+                        "measured_data":  {
+                                              "StaticPassed":  true
+                                          },
+                        "message":  "All constitutional rules verified against Brutal Gatekeeper static audit without mirror drift",
+                        "milestone":  "M5"
+                    },
+                    {
+                        "id":  "INT06",
+                        "passed":  true,
+                        "tier":  3,
+                        "elapsed_ms":  1.3872,
+                        "name":  "Connectome \u0026 HUD SSR Unification",
+                        "measured_data":  {
+                                              "HasUnifiedNeurons":  true,
+                                              "HasUnifiedBanner":  true,
+                                              "HasRelativePaths":  true
+                                          },
+                        "message":  "HUD SSR snapshot embeds 63,360 unified connectome, target version banners, and relative assets",
+                        "milestone":  "M4"
+                    },
+                    {
+                        "id":  "SCEN01",
+                        "passed":  true,
+                        "tier":  4,
+                        "elapsed_ms":  16.2198,
+                        "name":  "Cluster Telemetry \u0026 Accounting Lifecycle",
+                        "measured_data":  {
+                                              "Neurons":  63360,
+                                              "Synapses":  1013760,
+                                              "Cachelines":  132960
+                                          },
+                        "message":  "Cluster telemetry active: 63,360 neurons / 1,013,760 synapses / 132,960 bijected cachelines",
+                        "milestone":  "M2"
+                    },
+                    {
+                        "id":  "SCEN02",
+                        "passed":  true,
+                        "tier":  4,
+                        "elapsed_ms":  19.4754,
+                        "name":  "Pixel 8 Root Hardware Audit \u0026 Governor",
+                        "measured_data":  {
+                                              "GovStatus":  "MEASURED_PIXEL8_GOVERNOR_OK",
+                                              "AuditStatus":  "MEASURED_PIXEL8_ROOT_HARDWARE_AUDIT_OK"
+                                          },
+                        "message":  "Rooted Pixel 8 audit \u0026 governor endpoints responsive (Audit: MEASURED_PIXEL8_ROOT_HARDWARE_AUDIT_OK, Gov: MEASURED_PIXEL8_GOVERNOR_OK)",
+                        "milestone":  "M4"
+                    },
+                    {
+                        "id":  "SCEN03",
+                        "passed":  true,
+                        "tier":  4,
+                        "elapsed_ms":  5.0428000000000006,
+                        "name":  "Production HUD Bundle \u0026 SSR Verification",
+                        "measured_data":  {
+                                              "HasDist":  true,
+                                              "AllAssetsExist":  true,
+                                              "HasDocs":  true,
+                                              "MissingAssets":  [
+
+                                                                ]
+                                          },
+                        "message":  "Production HUD dist bundle verified: relative assets present without 404 references",
+                        "milestone":  "M4"
+                    },
+                    {
+                        "id":  "SCEN04",
+                        "passed":  true,
+                        "tier":  4,
+                        "elapsed_ms":  626.93090000000007,
+                        "name":  "6-Layer Gatekeeper Lifecycle Verification",
+                        "measured_data":  {
+                                              "StaticPassed":  true
+                                          },
+                        "message":  "Full Brutal Gatekeeper static audit passed with 0 errors across all checks",
+                        "milestone":  "M5"
+                    },
+                    {
+                        "id":  "F01_v56_1",
+                        "passed":  true,
+                        "tier":  1,
+                        "elapsed_ms":  37.9054,
+                        "name":  "GSC Certificate Ingestion",
+                        "measured_data":  {
+                                              "HudDist":  "OK_53B",
+                                              "SSDVault":  "OK_53B",
+                                              "DriveBridge":  "OK_53B",
+                                              "L2HudPublic":  "OK_53B",
+                                              "HudPublic":  "OK_53B",
+                                              "RepoRoot":  "OK_53B",
+                                              "L2HudDist":  "OK_53B",
+                                              "Docs":  "OK_53B"
+                                          },
+                        "message":  "google6edc0affb12d0455.html verified with exact 53 bytes across all 8 deployment targets",
+                        "milestone":  "M0"
+                    },
+                    {
+                        "id":  "F02_v56_1",
+                        "passed":  true,
+                        "tier":  1,
+                        "elapsed_ms":  5.6209000000000007,
+                        "name":  "GSC L0 Rust \u0026 Edge Worker Handlers",
+                        "measured_data":  {
+                                              "Port8097Ok":  true,
+                                              "Port5173Ok":  true,
+                                              "SwarmMarker":  true,
+                                              "WorkerMarker":  true
+                                          },
+                        "message":  "GSC route handlers verified in Rust \u0026 Edge Worker; live :8097 responded 200 OK (53 B)",
+                        "milestone":  "M0"
+                    },
+                    {
+                        "id":  "F03_v56_1",
+                        "passed":  true,
+                        "tier":  1,
+                        "elapsed_ms":  1.3019,
+                        "name":  "GSC Invariant Script Checks",
+                        "measured_data":  {
+                                              "Runner":  true,
+                                              "Gatekeeper":  true,
+                                              "Lifecycle":  true
+                                          },
+                        "message":  "GSC invariant checks active in Gatekeeper, Lifecycle, and E2E runner scripts",
+                        "milestone":  "M0"
+                    },
+                    {
+                        "id":  "B01_v56_1",
+                        "passed":  true,
+                        "tier":  2,
+                        "elapsed_ms":  4.9561,
+                        "name":  "GSC Certificate Exact Byte Length",
+                        "measured_data":  {
+                                              "TokenMatch":  true,
+                                              "Length":  53
+                                          },
+                        "message":  "GSC certificate strictly immutable at exact 53 bytes; tamper detection verified",
+                        "milestone":  "M0"
+                    },
+                    {
+                        "id":  "B10_v56_1",
+                        "passed":  true,
+                        "tier":  2,
+                        "elapsed_ms":  0.48040000000000005,
+                        "name":  "Cloudflare Edge GSC Handler Boundary",
+                        "measured_data":  {
+                                              "WorkerRoute":  true
+                                          },
+                        "message":  "Cloudflare Edge Worker contains dedicated GSC verification route handler",
+                        "milestone":  "M0"
+                    },
+                    {
+                        "id":  "INT01_v56_1",
+                        "passed":  true,
+                        "tier":  3,
+                        "elapsed_ms":  16.4988,
+                        "name":  "GSC Multi-Ingress Integration",
+                        "measured_data":  {
+                                              "SingleHash":  true,
+                                              "TargetCount":  7,
+                                              "SwarmMarker":  true
+                                          },
+                        "message":  "GSC certificate identical across 7 detected deployment targets (0 byte drift, SHA verified)",
+                        "milestone":  "M0"
+                    }
+                ]
+}

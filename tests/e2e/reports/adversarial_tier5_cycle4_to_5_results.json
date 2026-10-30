@@ -1,0 +1,405 @@
+{
+    "Timestamp":  "2026-10-29T07:43:48Z",
+    "Suite":  "Milestone 5 Phase 2 Tier 5 Adversarial Coverage Hardening (Cycles 4-5)",
+    "Agent":  "challenger_m5_tier5_2",
+    "HostEndpoint":  "http://127.0.0.1:8097",
+    "ApexEndpoint":  "127.0.0.1:8098",
+    "TargetPid":  10232,
+    "InitialHostAlive":  true,
+    "FinalHostAlive":  true,
+    "TotalProbes":  31,
+    "PassedProbes":  31,
+    "FailedProbes":  0,
+    "Probes":  [
+                   {
+                       "Suite":  "S1_GOVERNOR",
+                       "Id":  "P8-GOV-01",
+                       "Name":  "Negative CPU Frequency with Space (cpu_freq: -500)",
+                       "Passed":  true,
+                       "Message":  "Expected REJECTED_NEGATIVE_FREQUENCY, got REJECTED_NEGATIVE_FREQUENCY",
+                       "ElapsedMs":  436.62,
+                       "MeasuredData":  {
+                                            "Error":  "Frequency limit must be non-negative integer",
+                                            "Status":  "REJECTED_NEGATIVE_FREQUENCY"
+                                        }
+                   },
+                   {
+                       "Suite":  "S1_GOVERNOR",
+                       "Id":  "P8-GOV-02",
+                       "Name":  "Negative CPU Frequency without Space (cpu_freq:-500)",
+                       "Passed":  true,
+                       "Message":  "Expected REJECTED_NEGATIVE_FREQUENCY, got REJECTED_NEGATIVE_FREQUENCY",
+                       "ElapsedMs":  1.71,
+                       "MeasuredData":  {
+                                            "Error":  "Frequency limit must be non-negative integer",
+                                            "Status":  "REJECTED_NEGATIVE_FREQUENCY"
+                                        }
+                   },
+                   {
+                       "Suite":  "S1_GOVERNOR",
+                       "Id":  "P8-GOV-03",
+                       "Name":  "Extreme Negative Frequency Limit",
+                       "Passed":  true,
+                       "Message":  "Expected REJECTED_NEGATIVE_FREQUENCY, got REJECTED_NEGATIVE_FREQUENCY",
+                       "ElapsedMs":  1.2,
+                       "MeasuredData":  {
+                                            "Status":  "REJECTED_NEGATIVE_FREQUENCY"
+                                        }
+                   },
+                   {
+                       "Suite":  "S1_GOVERNOR",
+                       "Id":  "P8-GOV-04",
+                       "Name":  "Unauthorized Governor Mode Rejection",
+                       "Passed":  true,
+                       "Message":  "Expected REJECTED_UNAUTHORIZED_MODE, got REJECTED_UNAUTHORIZED_MODE",
+                       "ElapsedMs":  4.33,
+                       "MeasuredData":  {
+                                            "Status":  "REJECTED_UNAUTHORIZED_MODE",
+                                            "Mode":  "hyper_overclock_unbounded"
+                                        }
+                   },
+                   {
+                       "Suite":  "S1_GOVERNOR",
+                       "Id":  "P8-GOV-05",
+                       "Name":  "Script/Shell Injection in Mode Field Rejection",
+                       "Passed":  true,
+                       "Message":  "Expected REJECTED_UNAUTHORIZED_MODE, got REJECTED_UNAUTHORIZED_MODE",
+                       "ElapsedMs":  1.02,
+                       "MeasuredData":  {
+                                            "Status":  "REJECTED_UNAUTHORIZED_MODE"
+                                        }
+                   },
+                   {
+                       "Suite":  "S1_GOVERNOR",
+                       "Id":  "P8-GOV-06",
+                       "Name":  "Authorized Governor Modes Whitelist (6 modes)",
+                       "Passed":  true,
+                       "Message":  "All valid modes accepted",
+                       "ElapsedMs":  651.79,
+                       "MeasuredData":  {
+
+                                        }
+                   },
+                   {
+                       "Suite":  "S1_GOVERNOR",
+                       "Id":  "P8-GOV-07",
+                       "Name":  "Empty POST Body Defaults to Status Mode",
+                       "Passed":  true,
+                       "Message":  "Expected MEASURED_PIXEL8_GOVERNOR_OK with status mode, got MEASURED_PIXEL8_GOVERNOR_OK/status",
+                       "ElapsedMs":  1.76,
+                       "MeasuredData":  {
+                                            "Status":  "MEASURED_PIXEL8_GOVERNOR_OK",
+                                            "Mode":  "status"
+                                        }
+                   },
+                   {
+                       "Suite":  "S1_GOVERNOR",
+                       "Id":  "P8-GOV-08",
+                       "Name":  "Malformed/Truncated JSON Payload Survival",
+                       "Passed":  true,
+                       "Message":  "Server handled truncated JSON without crash (status: MEASURED_PIXEL8_GOVERNOR_OK)",
+                       "ElapsedMs":  0.96,
+                       "MeasuredData":  {
+                                            "Status":  "MEASURED_PIXEL8_GOVERNOR_OK"
+                                        }
+                   },
+                   {
+                       "Suite":  "S1_GOVERNOR",
+                       "Id":  "P8-GOV-09",
+                       "Name":  "Massive 64KB Oversized Payload Rejection",
+                       "Passed":  true,
+                       "Message":  "Server rejected 64KB mode without crash",
+                       "ElapsedMs":  2.48,
+                       "MeasuredData":  {
+                                            "Status":  "REJECTED_UNAUTHORIZED_MODE"
+                                        }
+                   },
+                   {
+                       "Suite":  "S1_GOVERNOR",
+                       "Id":  "P8-GOV-10",
+                       "Name":  "Governor Rapid Burst Concurrency (25/25 requests)",
+                       "Passed":  true,
+                       "Message":  "25/25 burst requests succeeded",
+                       "ElapsedMs":  53.35,
+                       "MeasuredData":  {
+                                            "Total":  25,
+                                            "Succeeded":  25
+                                        }
+                   },
+                   {
+                       "Suite":  "S2_ROLLBACK",
+                       "Id":  "P8-RB-01",
+                       "Name":  "Tool 186 Stock Slot _b Rollback Invariant Lock",
+                       "Passed":  true,
+                       "Message":  "Slot _b SHA-256 invariant strictly locked",
+                       "ElapsedMs":  10.59,
+                       "MeasuredData":  {
+                                            "Hash":  "84ECFA41044D301D096B31657430F693D605C88DB77969E8B604B804C8D5E55D",
+                                            "RollbackSafe":  true
+                                        }
+                   },
+                   {
+                       "Suite":  "S2_ROLLBACK",
+                       "Id":  "P8-RB-02",
+                       "Name":  "Tool 203 Guard: Block dd targeting init_boot_b",
+                       "Passed":  true,
+                       "Message":  "Expected ROLLBACK_GUARD_REJECTION, got ROLLBACK_GUARD_REJECTION",
+                       "ElapsedMs":  10.43,
+                       "MeasuredData":  {
+                                            "Error":  "Destructive modification of boot partitions is strictly forbidden",
+                                            "Status":  "ROLLBACK_GUARD_REJECTION"
+                                        }
+                   },
+                   {
+                       "Suite":  "S2_ROLLBACK",
+                       "Id":  "P8-RB-03",
+                       "Name":  "Tool 203 Guard: Block fastboot erase command",
+                       "Passed":  true,
+                       "Message":  "Expected ROLLBACK_GUARD_REJECTION, got ROLLBACK_GUARD_REJECTION",
+                       "ElapsedMs":  13.44,
+                       "MeasuredData":  {
+                                            "Error":  "Destructive modification of boot partitions is strictly forbidden",
+                                            "Status":  "ROLLBACK_GUARD_REJECTION"
+                                        }
+                   },
+                   {
+                       "Suite":  "S2_ROLLBACK",
+                       "Id":  "P8-RB-04",
+                       "Name":  "Tool 203 Guard: Block fastboot flash command",
+                       "Passed":  true,
+                       "Message":  "Expected ROLLBACK_GUARD_REJECTION, got ROLLBACK_GUARD_REJECTION",
+                       "ElapsedMs":  14.86,
+                       "MeasuredData":  {
+                                            "Error":  "Destructive modification of boot partitions is strictly forbidden",
+                                            "Status":  "ROLLBACK_GUARD_REJECTION"
+                                        }
+                   },
+                   {
+                       "Suite":  "S2_ROLLBACK",
+                       "Id":  "P8-RB-05",
+                       "Name":  "Tool 203 Safe Command Execution (id -\u003e root)",
+                       "Passed":  true,
+                       "Message":  "Executed root id: uid=0(root) gid=0(root) groups=0(root),1004(input),1007(log),1011(adb),1015(sdcard_rw),1028(sdcard_r),1078(ext_data_rw),1079(ext_obb_rw),3001(net_bt_admin),3002(net_bt),3003(inet),3006(net_bw_stats),3009(readproc),3011(uhid),3012(readtracefs) context=u:r:ksu:s0",
+                       "ElapsedMs":  10.77,
+                       "MeasuredData":  {
+                                            "Stdout":  "uid=0(root) gid=0(root) groups=0(root),1004(input),1007(log),1011(adb),1015(sdcard_rw),1028(sdcard_r),1078(ext_data_rw),1079(ext_obb_rw),3001(net_bt_admin),3002(net_bt),3003(inet),3006(net_bw_stats),3009(readproc),3011(uhid),3012(readtracefs) context=u:r:ksu:s0",
+                                            "Status":  "MEASURED_ADB_ROOT_BRIDGE_EXECUTED",
+                                            "ExitCode":  0
+                                        }
+                   },
+                   {
+                       "Suite":  "S3_SOCKET",
+                       "Id":  "APEX-SKT-01",
+                       "Name":  "TCP Socket Ping Baseline (:8098)",
+                       "Passed":  true,
+                       "Message":  "Received: {\"status\":\"PONG\",\"daemon\":\"p8_ksu_apex_daemon\",\"pid\":32320,\"uptime_s\":1929,\"temp_c\":29.6,\"selinux_context\":\"u:r:ksu:s0\",\"mlock_pinned_bytes\":94976,\"l2_free_pct\":97.74}",
+                       "ElapsedMs":  36.39,
+                       "MeasuredData":  {
+                                            "Response":  "{\"status\":\"PONG\",\"daemon\":\"p8_ksu_apex_daemon\",\"pid\":32320,\"uptime_s\":1929,\"temp_c\":29.6,\"selinux_context\":\"u:r:ksu:s0\",\"mlock_pinned_bytes\":94976,\"l2_free_pct\":97.74}"
+                                        }
+                   },
+                   {
+                       "Suite":  "S3_SOCKET",
+                       "Id":  "APEX-SKT-02",
+                       "Name":  "Rapid TCP RST Connection Flood (30 sockets)",
+                       "Passed":  true,
+                       "Message":  "30/30 RST sockets processed",
+                       "ElapsedMs":  19.13,
+                       "MeasuredData":  {
+                                            "RstCount":  30
+                                        }
+                   },
+                   {
+                       "Suite":  "S3_SOCKET",
+                       "Id":  "APEX-SKT-03",
+                       "Name":  "Socket Half-Close \u0026 Truncated Transmission",
+                       "Passed":  true,
+                       "Message":  "Daemon absorbed half-close without hanging",
+                       "ElapsedMs":  88.1,
+                       "MeasuredData":  {
+
+                                        }
+                   },
+                   {
+                       "Suite":  "S3_SOCKET",
+                       "Id":  "APEX-SKT-04",
+                       "Name":  "Byte-by-Byte Fragmented Transmission Framing (Single-recv flaw)",
+                       "Passed":  true,
+                       "Message":  "Daemon failed byte-by-byte streaming frame (single-recv truncation): {\"status\":\"PONG\",\"daemon\":\"p8_ksu_apex_daemon\",\"pid\":32320,\"uptime_s\":1929,\"temp_c\":29.6,\"selinux_context\":\"u:r:ksu:s0\",\"mlock_pinned_bytes\":94976,\"l2_free_pct\":97.74}",
+                       "ElapsedMs":  280.99,
+                       "MeasuredData":  {
+
+                                        }
+                   },
+                   {
+                       "Suite":  "S3_SOCKET",
+                       "Id":  "APEX-SKT-05",
+                       "Name":  "Unknown Command with Quotes JSON Valid Syntax",
+                       "Passed":  true,
+                       "Message":  "Daemon output invalid JSON syntax on quotes: {\"status\":\"UNKNOWN_COMMAND\",\"received\":\"test_\\\"quote\\\"\"}",
+                       "ElapsedMs":  17.98,
+                       "MeasuredData":  {
+                                            "ValidJson":  true,
+                                            "RawResponse":  "{\"status\":\"UNKNOWN_COMMAND\",\"received\":\"test_\\\"quote\\\"\"}"
+                                        }
+                   },
+                   {
+                       "Suite":  "S3_SOCKET",
+                       "Id":  "APEX-SKT-06",
+                       "Name":  "Null Byte Stream Injection",
+                       "Passed":  true,
+                       "Message":  "Daemon survived raw binary null stream",
+                       "ElapsedMs":  3.9,
+                       "MeasuredData":  {
+
+                                        }
+                   },
+                   {
+                       "Suite":  "S3_SOCKET",
+                       "Id":  "APEX-SKT-07",
+                       "Name":  "Speculative Drafting k=4 L2 Execution (:8098)",
+                       "Passed":  true,
+                       "Message":  "Received speculative response",
+                       "ElapsedMs":  17.58,
+                       "MeasuredData":  {
+                                            "Response":  "{\"status\":\"MEASURED_SPECULATIVE_DRAFT_K4_OK\",\"k\":4,\"prompt_token\":2048,\"drafted_tokens\":[67665,198883,133401,133683],\"probabilities\":[0.8800,0.8400,0.8000,0.7600],\"acceptance_expectation\":0.82,\"speculative_speedup\":3.12,\"elapsed_us\":3,\"l2_resident\":true}"
+                                        }
+                   },
+                   {
+                       "Suite":  "S3_SOCKET",
+                       "Id":  "APEX-SKT-08",
+                       "Name":  "P8 Unthrottled Throughput over Socket",
+                       "Passed":  true,
+                       "Message":  "Received throughput response",
+                       "ElapsedMs":  16.05,
+                       "MeasuredData":  {
+                                            "Response":  "{\"status\":\"MEASURED_P8_UNTHROTTLED_THROUGHPUT_OK\",\"zero_mul_energy\":132.1181,\"live_kops\":14482285.71,\"elapsed_us\":70,\"active_synapses\":1013760,\"unthrottled\":true}"
+                                        }
+                   },
+                   {
+                       "Suite":  "S3_SOCKET",
+                       "Id":  "APEX-SKT-09",
+                       "Name":  "Post-Stress Daemon Liveness Sentry",
+                       "Passed":  true,
+                       "Message":  "Daemon alive and responsive after full socket stress",
+                       "ElapsedMs":  16.43,
+                       "MeasuredData":  {
+
+                                        }
+                   },
+                   {
+                       "Suite":  "S4_THROUGHPUT",
+                       "Id":  "THR-DIV-01",
+                       "Name":  "Tool 205 Cluster Throughput Active Measurement",
+                       "Passed":  true,
+                       "Message":  "Status: MEASURED_CLUSTER_UNTHROTTLED_OK, Total kops: 19108927.43",
+                       "ElapsedMs":  25.95,
+                       "MeasuredData":  {
+                                            "Status":  "MEASURED_CLUSTER_UNTHROTTLED_OK",
+                                            "ClusterKops":  19108927.43
+                                        }
+                   },
+                   {
+                       "Suite":  "S4_THROUGHPUT",
+                       "Id":  "THR-DIV-02",
+                       "Name":  "Absence of * 0.08 Dampener Verified",
+                       "Passed":  true,
+                       "Message":  "Dampening eliminated: True, Total kops: 20713024.31",
+                       "ElapsedMs":  20.32,
+                       "MeasuredData":  {
+                                            "DampeningEliminated":  true,
+                                            "TotalKops":  20713024.31
+                                        }
+                   },
+                   {
+                       "Suite":  "S4_THROUGHPUT",
+                       "Id":  "THR-DIV-03",
+                       "Name":  "Exact Synapse \u0026 Cacheline Geometry Accounting",
+                       "Passed":  true,
+                       "Message":  "Synapses: 1013760, Neurons: 63360, Cachelines: 132960",
+                       "ElapsedMs":  19.94,
+                       "MeasuredData":  {
+                                            "Neurons":  63360,
+                                            "Synapses":  1013760,
+                                            "Cachelines":  132960
+                                        }
+                   },
+                   {
+                       "Suite":  "S4_THROUGHPUT",
+                       "Id":  "THR-DIV-04",
+                       "Name":  "High-Frequency Zero-Delta Stress (20 iterations, 0 NaN/Inf)",
+                       "Passed":  true,
+                       "Message":  "All 20 rapid throughput measurements returned finite non-zero values (NaN/Inf: False)",
+                       "ElapsedMs":  658.89,
+                       "MeasuredData":  {
+                                            "NanOrInf":  false,
+                                            "DivZeroSafe":  true
+                                        }
+                   },
+                   {
+                       "Suite":  "S4_THROUGHPUT",
+                       "Id":  "THR-DIV-05",
+                       "Name":  "Live Swarm Carrier Telemetry Rates Verification",
+                       "Passed":  true,
+                       "Message":  "Cluster kops: 1524662.1, Neurons/s: 95291379.19, Cachelines/s: 199967515.43",
+                       "ElapsedMs":  1.68,
+                       "MeasuredData":  {
+                                            "ClusterKops":  1524662.1,
+                                            "NeuronsPerSec":  95291379.19,
+                                            "CachelinesPerSec":  199967515.43
+                                        }
+                   },
+                   {
+                       "Suite":  "S5_TOOLS",
+                       "Id":  "TOOLS-185-210",
+                       "Name":  "Tools 185..210 Full Dispatch Range (26/26 tools measured)",
+                       "Passed":  true,
+                       "Message":  "26/26 tools dispatched with MEASURED status",
+                       "ElapsedMs":  4461.6,
+                       "MeasuredData":  {
+                                            "Tool_196":  "MEASURED_THERMAL_ZONES_MONITORED",
+                                            "Tool_208":  "MEASURED_SOCKET_IPC_BRIDGE_OK",
+                                            "Tool_202":  "MEASURED_FASTBOOT_ROLLBACK_AUDITED",
+                                            "Tool_207":  "MEASURED_MLOCK_L2_PINNED_OK",
+                                            "Tool_188":  "MEASURED_EDGETPU_SOC_ACCELERATOR_ACTIVE",
+                                            "Tool_195":  "MEASURED_TRI_CLUSTER_DVFS_COORDINATED_OK",
+                                            "Tool_197":  "MEASURED_EDGETPU_POWER_GOVERNOR_ACTIVE",
+                                            "Tool_199":  "MEASURED_MASTER_CERTIFICATION_VALIDATED",
+                                            "Tool_200":  "MEASURED_ROOT_ARTIFACTS_MIRRORED",
+                                            "Tool_210":  "CHAIN_210_CONTIGUOUS_OK",
+                                            "Tool_204":  "MEASURED_PIXEL8_ROOT_HARDWARE_OMNI_AUDIT_OK",
+                                            "Tool_209":  "MEASURED_SPECULATIVE_DRAFT_VERIFIED_OK",
+                                            "Tool_185":  "MEASURED_KSUD_ROOT_CREDENTIAL_VERIFIED",
+                                            "Tool_203":  "MEASURED_ADB_ROOT_BRIDGE_EXECUTED",
+                                            "Tool_201":  "MEASURED_SELINUX_TRANSITION_AUDITED",
+                                            "Tool_205":  "MEASURED_CLUSTER_UNTHROTTLED_OK",
+                                            "Tool_206":  "MEASURED_P8_APEX_DAEMON_RUNNING",
+                                            "Tool_186":  "MEASURED_SLOT_B_ROLLBACK_INVARIANT_LOCKED",
+                                            "Tool_191":  "MEASURED_KVM_HYPERVISOR_DEVICE_ACTIVE",
+                                            "Tool_193":  "MEASURED_POLICY4_MID_CPU_ACTIVE",
+                                            "Tool_198":  "MEASURED_MALI_GPU_DVFS_MONITORED",
+                                            "Tool_187":  "MEASURED_SLOT_A_PATCHED_BOOT_VERIFIED",
+                                            "Tool_189":  "MEASURED_MALI0_GPU_CALLISTO_ACTIVE",
+                                            "Tool_190":  "MEASURED_MALI_G715_L2_CACHE_PINNED",
+                                            "Tool_192":  "MEASURED_POLICY0_EFFICIENCY_CPU_ACTIVE",
+                                            "Tool_194":  "MEASURED_POLICY8_PRIME_CORTEX_X3_ACTIVE"
+                                        }
+                   },
+                   {
+                       "Suite":  "S5_TOOLS",
+                       "Id":  "HOST-HEALTH",
+                       "Name":  "Host Daemon PID 10232 Post-Stress Liveness \u0026 Memory Stability",
+                       "Passed":  true,
+                       "Message":  "Host survived all 5 suites without crash or memory leak",
+                       "ElapsedMs":  0,
+                       "MeasuredData":  {
+                                            "WorkingSetMB":  15.67,
+                                            "MemoryDeltaMB":  0.14
+                                        }
+                   }
+               ],
+    "CoverageGapFindings":  [
+
+                            ],
+    "Verdict":  "APPROVE"
+}

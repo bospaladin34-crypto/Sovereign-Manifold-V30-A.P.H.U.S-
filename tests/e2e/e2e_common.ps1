@@ -227,7 +227,7 @@ function Export-TestResultsJson {
     )
     $exportObj = @{
         timestamp = (Get-Date -Format "yyyy-MM-ddTHH:mm:ssZ")
-        suite = "ACT-Omega Net v49.0.0 E2E Test Suite"
+        suite = "ACT-Omega Net v56.0.0 E2E Test Suite"
         summary = @{
             total = $Results.Count
             passed = ($Results | Where-Object { $_.Passed }).Count

@@ -4,6 +4,7 @@
 module Main (main) where
 
 import System.Environment (getArgs)
+import System.IO (withFile, IOMode(WriteMode), hSetEncoding, utf8, hPutStr)
 import Data.Ratio (Rational, (%), numerator, denominator)
 import Data.Char (ord)
 import Data.List (intercalate)
@@ -14,7 +15,7 @@ import Sovereign.Codegen.ZeroBracketRustAndLean4
 -- | Deterministic projection of an arbitrary query string into 24 exact Rationals
 queryToRationalVec24 :: String -> (RationalVec24, Int)
 queryToRationalVec24 q =
-  let chars = if null q then "ACT-Omega Net v50.0.0 Layer 1.5 Haskell" else q
+  let chars = if null q then "ACT-Omega Net v56.0.0 (SH4Z v5600 TLV | CHAIN 210 | 624/624 Lean 4 QED) Layer 1.5 Haskell" else q
       codes = map (fromIntegral . ord) chars :: [Integer]
       total = sum codes
       len   = fromIntegral (length codes) :: Integer
@@ -47,6 +48,10 @@ escapeJson = concatMap (\c -> case c of
   '\t' -> " "
   _    -> [c])
 
+writeUtf8File :: FilePath -> String -> IO ()
+writeUtf8File path content =
+  withFile path WriteMode (\h -> hSetEncoding h utf8 >> hPutStr h content)
+
 main :: IO ()
 main = do
   args <- getArgs
@@ -55,10 +60,10 @@ main = do
       let rustCode = compileToZeroBracketRust allCanonicalSpecs
       if hasSquareBrackets rustCode
         then error "FATAL: Generated Rust code violated Zero-Square-Bracket invariant!"
-        else writeFile outPath rustCode >> putStrLn ("WROTE_ZERO_BRACKET_RUST:" ++ outPath)
+        else writeUtf8File outPath rustCode >> putStrLn ("WROTE_ZERO_BRACKET_RUST:" ++ outPath)
     ["--emit-lean", outPath] -> do
       let leanCode = compileToLean4Theorems allCanonicalSpecs
-      writeFile outPath leanCode >> putStrLn ("WROTE_LEAN4_THEOREMS:" ++ outPath)
+      writeUtf8File outPath leanCode >> putStrLn ("WROTE_LEAN4_THEOREMS:" ++ outPath)
     _ -> do
       let queryStr = case args of
             ("--query" : rest) -> unwords rest

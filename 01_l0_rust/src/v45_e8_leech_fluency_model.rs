@@ -338,9 +338,9 @@ pub fn project_tri_e8_to_leech24(
 
     let sector_80: u32 = ((oct1.mapped_sector_base + oct2.mapped_sector_base + oct3.mapped_sector_base + ((prompt_hash % 80) as u32)) % 80) as u32;
     let col_offset_12: u32 = ((cw24 ^ (prompt_hash as u32)) % 12) as u32;
-    let chair44_col_640: u32 = (sector_80 * 12 + col_offset_12) % 960;
+    let chair44_col_640: u32 = (sector_80 * 12 + col_offset_12) % 1440;
     let neuron_offset_44: u32 = (kissing_idx % 44) as u32;
-    let neuron_id_28160: u32 = (chair44_col_640 * 44 + neuron_offset_44) % 42240;
+    let neuron_id_28160: u32 = (chair44_col_640 * 44 + neuron_offset_44) % 63360;
 
     let leech_norm_scaled: u32 = ((oct1.cartan_quadratic_norm + oct2.cartan_quadratic_norm + oct3.cartan_quadratic_norm).round() as u32).max(1);
 
@@ -390,7 +390,7 @@ pub fn evaluate_internal_model_features(
         }
     }
     if neuron_buf.len() < 128 {
-        if let Ok(mut f2) = std::fs::File::open("C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v4600_42240.npage") {
+        if let Ok(mut f2) = std::fs::File::open("C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v5000_63360.npage") {
             neuron_buf.clear();
             if f2.seek(SeekFrom::Start((nid as u64) * 128)).is_ok() {
                 let _ = Read::take(&mut f2, 128).read_to_end(&mut neuron_buf);
@@ -401,7 +401,7 @@ pub fn evaluate_internal_model_features(
     // Combine Cauchy-sparse .npage header with its 1:1 paired 256B binary shard (03_vault/shards/shard_XXXXX.binshard)
     let shard_path = format!(
         "C:\\sovereign_manifold_v31\\03_vault\\shards\\shard_{:05}.binshard",
-        (nid % 42240) + 1
+        (nid % 63360) + 1
     );
     let mut shard_buf: Vec<u8> = Vec::with_capacity(128);
     if let Ok(mut sf) = std::fs::File::open(&shard_path) {
@@ -595,7 +595,7 @@ fn extract_f64_after_key(haystack: &str, key: &str, default_val: f64) -> f64 {
     default_val
 }
 
-// Fluent, Articulate Natural Language Discourse Composer Coupled to E8 x Leech Lambda_24 & 42,240 Neurons
+// Fluent, Articulate Natural Language Discourse Composer Coupled to E8 x Leech Lambda_24 & 63,360 Neurons
 pub fn synthesize_v45_fluent_e8_leech_response(
     prompt_raw: &str,
     t65: &Transduction65kResult,
@@ -833,9 +833,9 @@ pub fn execute_v45_e8_leech_qat_training(
     let qat_epoch: u32 = existing_epochs + 1;
 
     // 1. Perform real on-disk synaptic weight updates across neurons_v4400_expansion.npage (7,040 neurons = 901,120 B)
-    // and neurons_v4600_42240.npage (expansion region N21120..N42239)
+    // and neurons_v5000_63360.npage (expansion region N21120..N42239)
     let exp_path = "C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v4400_expansion.npage";
-    let full_42k_path = "C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v4600_42240.npage";
+    let full_63k_path = "C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v5000_63360.npage";
     let mut updated_neurons_count: u32 = 0;
     let mut total_ce_loss_pre: f64 = 0.0;
     let mut total_ce_loss_post: f64 = 0.0;
@@ -967,14 +967,14 @@ pub fn execute_v45_e8_leech_qat_training(
         step += 1;
     }
 
-    // Write the updated synaptic bytes back to neurons_v4400_expansion.npage and neurons_v4600_42240.npage on disk
+    // Write the updated synaptic bytes back to neurons_v4400_expansion.npage and neurons_v5000_63360.npage on disk
     if !exp_bytes.is_empty() {
         if let Ok(mut wf) = std::fs::OpenOptions::new().write(true).open(exp_path) {
             let _ = wf.seek(SeekFrom::Start(0));
             let _ = wf.write_all(&exp_bytes);
             let _ = wf.flush();
         }
-        if let Ok(mut wf42) = std::fs::OpenOptions::new().write(true).open(full_42k_path) {
+        if let Ok(mut wf42) = std::fs::OpenOptions::new().write(true).open(full_63k_path) {
             // Write updated expansion block at offset 21,120 * 128 = 2,703,360
             if wf42.seek(SeekFrom::Start(2703360)).is_ok() {
                 let _ = wf42.write_all(&exp_bytes);
@@ -995,7 +995,7 @@ pub fn execute_v45_e8_leech_qat_training(
     let elapsed_ms = t0.elapsed().as_secs_f64() * 1000.0;
 
     let log_line = format!(
-        "{{\"qat_version\":\"v46.0.0_E8_Leech_Measured_QAT\",\"epoch\":{},\"neurons_updated_on_disk\":{},\"total_connectome_neurons\":42240,\"vocab_size\":131072,\"e8_roots_covered\":240,\"leech_kissing_vectors\":196560,\"golay_codewords\":4096,\"mean_e8_quant_err\":{:.6},\"mean_cartan_attention\":{:.6},\"mean_free_energy\":{:.6},\"ce_loss_pre\":{:.6},\"ce_loss_post\":{:.6},\"ppl_pre\":{:.6},\"holdout_ppl\":{:.6},\"fluency_transfer_pct\":{:.3},\"elapsed_ms\":{:.3}}}\n",
+        "{{\"qat_version\":\"v46.0.0_E8_Leech_Measured_QAT\",\"epoch\":{},\"neurons_updated_on_disk\":{},\"total_connectome_neurons\":63360,\"vocab_size\":131072,\"e8_roots_covered\":240,\"leech_kissing_vectors\":196560,\"golay_codewords\":4096,\"mean_e8_quant_err\":{:.6},\"mean_cartan_attention\":{:.6},\"mean_free_energy\":{:.6},\"ce_loss_pre\":{:.6},\"ce_loss_post\":{:.6},\"ppl_pre\":{:.6},\"holdout_ppl\":{:.6},\"fluency_transfer_pct\":{:.3},\"elapsed_ms\":{:.3}}}\n",
         qat_epoch,
         updated_neurons_count,
         mean_e8_err,
@@ -1018,7 +1018,7 @@ pub fn execute_v45_e8_leech_qat_training(
     }
 
     let diag = format!(
-        "E8 x LEECH LAMBDA_24 MEASURED ON-DISK QAT PASS COMPLETE (Epoch #{} in {:.2}ms): Updated {} Dendritic Neurons on disk (neurons_v4400_expansion.npage & neurons_v4600_42240.npage) | Cross-Entropy Loss: {:.5} -> {:.5} | Measured Perplexity: {:.5} -> {:.5} | Mean E8 Quant Error={:.5} | Softmax Cartan Attention={:.4} | Variational Free Energy={:.5} | Transfer={:.2}%",
+        "E8 x LEECH LAMBDA_24 MEASURED ON-DISK QAT PASS COMPLETE (Epoch #{} in {:.2}ms): Updated {} Dendritic Neurons on disk (neurons_v4400_expansion.npage & neurons_v5000_63360.npage) | Cross-Entropy Loss: {:.5} -> {:.5} | Measured Perplexity: {:.5} -> {:.5} | Mean E8 Quant Error={:.5} | Softmax Cartan Attention={:.4} | Variational Free Energy={:.5} | Transfer={:.2}%",
         qat_epoch,
         elapsed_ms,
         updated_neurons_count,
@@ -1033,7 +1033,7 @@ pub fn execute_v45_e8_leech_qat_training(
     );
 
     format!(
-        "{{\"status\":\"V46_E8_LEECH_MEASURED_QAT_COMPLETE\",\"version\":\"v46.0.0\",\"epoch\":{},\"neurons_trained\":{},\"total_connectome_neurons\":42240,\"chair44_columns\":960,\"vocab_size\":131072,\"e8_roots\":240,\"leech_kissing_number\":196560,\"golay_g24_codewords\":4096,\"mean_e8_quant_err\":{:.6},\"mean_cartan_attention\":{:.6},\"mean_free_energy\":{:.6},\"ce_loss_pre\":{:.6},\"ce_loss_post\":{:.6},\"ppl_pre\":{:.6},\"holdout_ppl\":{:.6},\"fluency_transfer_pct\":{:.3},\"elapsed_ms\":{:.3},\"diag\":\"{}\"}}",
+        "{{\"status\":\"V46_E8_LEECH_MEASURED_QAT_COMPLETE\",\"version\":\"v46.0.0\",\"epoch\":{},\"neurons_trained\":{},\"total_connectome_neurons\":63360,\"chair44_columns\":1440,\"vocab_size\":131072,\"e8_roots\":240,\"leech_kissing_number\":196560,\"golay_g24_codewords\":4096,\"mean_e8_quant_err\":{:.6},\"mean_cartan_attention\":{:.6},\"mean_free_energy\":{:.6},\"ce_loss_pre\":{:.6},\"ce_loss_post\":{:.6},\"ppl_pre\":{:.6},\"holdout_ppl\":{:.6},\"fluency_transfer_pct\":{:.3},\"elapsed_ms\":{:.3},\"diag\":\"{}\"}}",
         qat_epoch,
         updated_neurons_count,
         mean_e8_err,

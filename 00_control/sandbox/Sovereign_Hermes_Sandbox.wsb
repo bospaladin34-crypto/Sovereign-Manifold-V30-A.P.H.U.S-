@@ -15,6 +15,6 @@
     </MappedFolder>
   </MappedFolders>
   <LogonCommand>
-    <Command>cmd.exe /c echo ACT-OMEGA-V50-SANDBOX-VERIFIED &gt; C:\Users\WDAGUtilityAccount\Desktop\sovereign_sandbox_out\wsb_last_boot.txt</Command>
+    <Command>cmd.exe /c echo ACT-OMEGA-V56-SANDBOX-VERIFIED &gt; C:\Users\WDAGUtilityAccount\Desktop\sovereign_sandbox_out\wsb_last_boot.txt</Command>
   </LogonCommand>
 </Configuration>

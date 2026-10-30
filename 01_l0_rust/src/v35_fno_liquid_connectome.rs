@@ -1,9 +1,10 @@
 // =============================================================================
-// ACT-OMEGA NET v35.0.0 (SOVEREIGN AUTOPOIETIC CONNECTOME & FNO SYNAPTOGENESIS / SH4Z v3500)
-// MODULE 1: SHARD-BIJECTIVE LIQUID-CTM ARTIFICIAL NEURONS (7,920 NEURONS = 180 CORTICAL
-//           COLUMNS), FNO-COUPLED EPHAPTIC WAVE FIELD & BDH/KAN PLASTIC SYNAPTOGENESIS
-//           (63,360 ACTIVE SYNAPSES, THREE-FACTOR STDP + HOMEOSTATIC PRUNING)
+// ACT-OMEGA NET v56.1.0 (SOVEREIGN AUTOPOIETIC CONNECTOME & FNO SYNAPTOGENESIS / SH4Z v5600)
+// MODULE 1: SHARD-BIJECTIVE LIQUID-CTM ARTIFICIAL NEURONS (63,360 NEURONS = 1,440 CHAIR-44
+//           CORTICAL COLUMNS), FNO-COUPLED EPHAPTIC WAVE FIELD & BDH/KAN PLASTIC SYNAPTOGENESIS
+//           (1,013,760 ACTIVE SYNAPSES, THREE-FACTOR STDP + HOMEOSTATIC PRUNING)
 // ZERO SQUARE BRACKETS ENFORCED (ZERO SQUARE BRACKETS IN SOURCE)
+// 16 DOMAINS X 3,960 NEURONS = 63,360 NEURONS | 16 DOMAINS X 5 SECTORS = 80 SECTORS
 // =============================================================================
 
 pub struct ConnectomeSynaptogenesisTelemetry {
@@ -23,7 +24,7 @@ pub struct ConnectomeSynaptogenesisTelemetry {
 
 /// Evaluates the Closed-Form Continuous-Time Liquid Neuron (CfC, arXiv:2106.13898)
 /// coupled with Continuous Thought Machine (CTM, arXiv:2505.05522) neural synchronization
-/// and 16-Mode FNO extracellular ephaptic field guidance across 7,920 shard-bijective neurons.
+/// and 16-Mode FNO extracellular ephaptic field guidance across 63,360 shard-bijective neurons.
 pub fn evaluate_fno_liquid_connectome(
     b_norm: f64,
     baro_hpa: f64,
@@ -33,9 +34,9 @@ pub fn evaluate_fno_liquid_connectome(
     sub_epoch: u64,
     gen_counter: u64,
 ) -> ConnectomeSynaptogenesisTelemetry {
-    let base_neurons: u64 = 21120;
-    let columns: u64 = 240;
-    let base_synapses: u64 = 168960;
+    let base_neurons: u64 = 63360;
+    let columns: u64 = 1440;
+    let base_synapses: u64 = 1013760;
 
     // Martellini entropic step dTau = 0.1053605 nats drives the CfC closed-form membrane gate:
     // v(tau + dTau) = sigma(-f(I, theta) * dTau) * v(tau) + (1 - sigma(-f(I, theta) * dTau)) * A
@@ -97,7 +98,7 @@ pub fn execute_v35_connectome_slash(
     if prompt.starts_with("/connectome") || prompt.starts_with("/synaptogenesis") || prompt.starts_with("/neurons") {
         let c = evaluate_fno_liquid_connectome(b_norm, baro_hpa, acc_norm, gyro_norm, fno_l2_err, sub_epoch, gen_counter);
         Some(format!(
-            "SLASH INTERRUPT /connectome (SH4Z v3500 Tool 37): {} Liquid-CTM Neurons ({} Chair-44 Cortical Columns) | {} Active BDH/KAN Synapses (+{} sprouted, -{} pruned, net {:+}) | CTM Sync S_ij={:.4} | CfC Liquid tau={:.2} ms | 16-Mode FNO Ephaptic Gain={:.4} | STDP Trace={:.4} | Firing Rate={:.3} Hz",
+            "SLASH INTERRUPT /connectome (SH4Z v5600 Tool 37): {} Liquid-CTM Neurons ({} Chair-44 Cortical Columns) | {} Active BDH/KAN Synapses (+{} sprouted, -{} pruned, net {:+}) | CTM Sync S_ij={:.4} | CfC Liquid tau={:.2} ms | 16-Mode FNO Ephaptic Gain={:.4} | STDP Trace={:.4} | Firing Rate={:.3} Hz",
             c.active_neurons, c.cortical_columns_chair44, c.active_synapses, c.sprouted_synapses_epoch, c.pruned_synapses_epoch, c.net_synaptogenesis_delta, c.ctm_sync_order_param, c.cfc_mean_liquid_tau_ms, c.fno_ephaptic_coupling_gain, c.stdp_hebbian_trace_norm, c.mean_firing_rate_hz
         ))
     } else {

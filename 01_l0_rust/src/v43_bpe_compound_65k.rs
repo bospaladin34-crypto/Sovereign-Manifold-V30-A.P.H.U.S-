@@ -852,14 +852,14 @@ pub fn match_tier3_dendritic_concept(word: &str) -> Option<(u16, &'static str)> 
     if word == "640" { return Some((32789, "640")); }
     if word == "384" { return Some((32790, "384")); }
     if word == "v44.0.0" || word == "v4400" { return Some((32791, "v44.0.0")); }
-    if word == "42240" || word == "42,240" { return Some((32792, "42240")); }
+    if word == "63360" || word == "63,360" { return Some((32792, "63360")); }
     if word == "337920" || word == "337,920" { return Some((32793, "337920")); }
     if word == "960" { return Some((32794, "960")); }
     if word == "440" { return Some((32795, "440")); }
     if word == "v48.0.0" || word == "v4800" { return Some((32796, "v48.0.0")); }
     if let Some(num_str) = word.strip_prefix("n") {
         if let Ok(nid) = num_str.parse::<u32>() {
-            if nid < 42240 {
+            if nid < 63360 {
                 let mapped_u16 = (33000_u32.wrapping_add(nid % 32535)) as u16;
                 return Some((mapped_u16, "neuron_ref"));
             }
@@ -894,7 +894,7 @@ pub fn lookup_tier3_dendritic_by_id(tid: u16) -> Option<String> {
         32789 => Some(String::from("640")),
         32790 => Some(String::from("384")),
         32791 => Some(String::from("v44.0.0")),
-        32792 => Some(String::from("42240")),
+        32792 => Some(String::from("63360")),
         32793 => Some(String::from("337920")),
         32794 => Some(String::from("960")),
         32795 => Some(String::from("440")),
@@ -1133,11 +1133,11 @@ pub fn encode_and_detokenize_65k(input: &str) -> Transduction65kResult {
     let cym = embed_cymatic_omega2(&clean_lower);
     let root_240 = cym.root_id % 240;
     let sec_80 = ((root_240 as u32) % 80) as u32;
-    let col_640 = (((root_240 as u32) * 13 + (tokens.len() as u32) * 7) % 960) as u32;
+    let col_640 = (((root_240 as u32) * 13 + (tokens.len() as u32) * 7) % 1440) as u32;
     let neuron_28160 = col_640 * 44 + ((tokens.len() as u32) % 44);
 
     let svo_clause = format!(
-        "SVO-24D(Root E8#{:03} -> Sector S{:02} -> Col #{:03}/959 -> Neuron N{:05}/42239 | Domain={}): '{}'",
+        "SVO-24D(Root E8#{:03} -> Sector S{:02} -> Col #{:04}/1439 -> Neuron N{:05}/63359 | Domain={}): '{}'",
         root_240, sec_80, col_640, neuron_28160, dom_tag, detok_exact
     );
 
@@ -1236,7 +1236,7 @@ pub fn operationalize_article_to_code_and_shard(
     let t65 = encode_and_detokenize_65k(clean_src);
     let discourse = synthesize_humanities_and_cognitive_discourse(clean_src, &t65);
 
-    // Map into the Tier-2 Expansion Bank (N21120..N42239, Shards 21121..42240, Cols 480..959)
+    // Map into the Tier-2 Expansion Bank (N21120..N42239, 21,120 Expansion Shards, Cols 480..959)
     let exp_offset_idx = (t65.mapped_neuron_id % 21120) as u32;
     let cryst_neuron_id: u32 = 21120 + exp_offset_idx;
     let cryst_shard_id: u32 = 21121 + exp_offset_idx;
@@ -1345,7 +1345,7 @@ pub fn operationalize_article_to_code_and_shard(
     }
 
     let stage_trace = format!(
-        "STAGE 1 (131,072-TOKEN 24-DOMAIN 1,024-COMPOUND BPE & HERMENEUTIC EXEGESIS): Source='{}' -> {} Tokens ({}) | Exact Roundtrip={} | Ratio={:.2}x | Negentropy N_QED={:.2} dB | Larkum Coincidence={} (dPhi={:.5} rad) | Domain={} | IPA={}\nSTAGE 2 (10-LAPLACIAN 16-MODE FNO & ER=EPR THROAT): {} | I(A:B)={:.2} bits | L2_Err={:.5} | Vorticity={:.4} | Re={:.1} < 2300 (LAMINAR)\nSTAGE 3 (OPERATIONALIZED CODE & MATHS 2.0 LEAN 4 QED SYNTHESIS): {} || Lean4: {}\nSTAGE 4 (LIVE SHARD & 42,240-NEURON HEXALAYER ABCABC CRYSTALLIZATION): Wrote {}B to shard_{:05}.binshard <-> Neuron N{:05}/42239 (Col #{:03}/959, .npage Offset {}B) || {}",
+        "STAGE 1 (262,144-TOKEN 36-DOMAIN 2,048-COMPOUND BPE & HERMENEUTIC EXEGESIS): Source='{}' -> {} Tokens ({}) | Exact Roundtrip={} | Ratio={:.2}x | Negentropy N_QED={:.2} dB | Larkum Coincidence={} (dPhi={:.5} rad) | Domain={} | IPA={}\nSTAGE 2 (10-LAPLACIAN 16-MODE FNO & ER=EPR THROAT): {} | I(A:B)={:.2} bits | L2_Err={:.5} | Vorticity={:.4} | Re={:.1} < 2300 (LAMINAR)\nSTAGE 3 (OPERATIONALIZED CODE & MATHS 2.0 LEAN 4 QED SYNTHESIS): {} || Lean4: {}\nSTAGE 4 (LIVE SHARD & 63,360-NEURON HEXALAYER ABCABC CRYSTALLIZATION): Wrote {}B to shard_{:05}.binshard <-> Neuron N{:05}/63359 (Col #{:04}/1439, .npage Offset {}B) || {}",
         clean_src,
         t65.total_tokens,
         t65.token_tiers_csv,

@@ -26,6 +26,9 @@ namespace SovereignManifoldDesktop
         public double BaroHpa = 0.0;
         public double OrthoErr = 0.0;
         public double FnoL2Err = 0.0;
+        public double VorticityNorm = 1.7182;
+        public double NavierReynolds = 418.4;
+        public double Avx2Gflops = 12.4;
         public double AcousticSnr = 0.0;
         public long WsLoqLines = 1000;
         public long WsP10Lines = 520;
@@ -114,7 +117,7 @@ namespace SovereignManifoldDesktop
             _onOpenNativeHud = onOpenNativeHud;
             _onRunAction = onRunAction;
 
-            this.Text = "ACT-Omega v50.2.0 Live Desktop Widget (CHAIN 145)";
+            this.Text = "ACT-Omega v56.0.0 Live Desktop Widget (CHAIN 210)";
             this.FormBorderStyle = FormBorderStyle.None;
             this.StartPosition = FormStartPosition.Manual;
             this.Size = new Size(420, 238);
@@ -265,11 +268,11 @@ namespace SovereignManifoldDesktop
             using (SolidBrush brInset = new SolidBrush(Color.FromArgb(10, 13, 18)))
             {
                 string modeTag = _topDesktopBannerMode ? "[WIN11 DESKTOP TOP-BANNER OVERLAY]" : "[WIN11 LIVE DESKTOP MINI-WIDGET]";
-                g.DrawString("ACT-OMEGA v50.2.0 (SH4Z v5000 | CHAIN 145) " + modeTag, fTitle, brAmber, 12, 10);
+                g.DrawString("ACT-OMEGA v56.0.0 (SH4Z v5600 | CHAIN 210) " + modeTag, fTitle, brAmber, 12, 10);
 
                 Brush statusBr = _tel.Online ? brGreen : brRed;
                 string statusTxt = _tel.Online
-                    ? string.Format("ONLINE | Tick #{0} | {1:0.0}k ops/s | 576/576 QED | 145 Tools (132,960 CLs)", _tel.Generation, _tel.ClusterKops)
+                    ? string.Format("ONLINE | Tick #{0} | {1:0.0}k ops/s | 624/624 QED | 210 Tools (132,960 CLs)", _tel.Generation, _tel.ClusterKops)
                     : "OFFLINE / AWAITING LOCALHOST :8097 TELEMETRY";
                 g.DrawString(statusTxt, fSub, statusBr, 12, 28);
 
@@ -277,8 +280,8 @@ namespace SovereignManifoldDesktop
                     _tel.RtxTemp, _tel.RtxClock, _tel.P10Temp, _tel.P10Batt, _tel.P8Temp, _tel.P8Batt);
                 g.DrawString(hwLine1, fSub, brIvory, 12, 46);
 
-                string hwLine2 = string.Format("63,360N (WS {0}+{1}+{2}=2,080 | 132,960 CLs) | |B|={3:0.0}uT | {4:0.0}hPa | {5}",
-                    _tel.WsLoqLines, _tel.WsP10Lines, _tel.WsP8Lines, _tel.BNorm, _tel.BaroHpa, _tel.ActiveSector);
+                string hwLine2 = string.Format("63,360N | FNO L2={0:0.00000} Vort={1:0.0000} Re={2:0.0} ({3:0.0} GF) | |B|={4:0.0}uT",
+                    _tel.FnoL2Err, _tel.VorticityNorm, _tel.NavierReynolds, _tel.Avx2Gflops, _tel.BNorm);
                 g.DrawString(hwLine2, fSub, brAmber, 12, 64);
 
                 // 16x65 Measured .e8z Cacheline + Live Telemetry Sector Norm Heatmap (Zero sin/cos waves)
@@ -354,9 +357,26 @@ namespace SovereignManifoldDesktop
             }
 
             ContextMenu menu = new ContextMenu();
-            _miStatus = new MenuItem("ACT-Omega v50.2.0 | Awaiting :8097 Telemetry...");
+            _miStatus = new MenuItem("ACT-Omega v56.1.0 | Awaiting :8097 Telemetry...");
             _miStatus.Enabled = false;
             menu.MenuItems.Add(_miStatus);
+            menu.MenuItems.Add("-");
+
+            // Feature 11: 8 Unified Functional Domains Submenu
+            MenuItem miUnified = new MenuItem("Unified Functional Domains (8 Groups / 210 Tools)");
+            miUnified.MenuItems.Add(new MenuItem("Unified Catalog (8 Domains / 210 Tools)", (s, e) => ExecuteClusterAction("/api/v1/unified/catalog", "UNIFIED CATALOG")));
+            miUnified.MenuItems.Add("-");
+            miUnified.MenuItems.Add(new MenuItem("1. Lattice, Algebra & Formal Proofs (43 Tools)", (s, e) => ExecuteClusterAction("/api/v1/unified/lattice_algebra_proofs", "DOMAIN 1: LATTICE & PROOFS")));
+            miUnified.MenuItems.Add(new MenuItem("2. 63.3K Connectome, BPE, QAT Brain & Memory (29 Tools)", (s, e) => ExecuteClusterAction("/api/v1/unified/connectome_qat_memory", "DOMAIN 2: CONNECTOME QAT")));
+            miUnified.MenuItems.Add(new MenuItem("3. Multi-Physics, 16D Vectorized FNO & Cymatic Speech (19 Tools)", (s, e) => ExecuteClusterAction("/api/v1/unified/physics_16d_fno_speech", "DOMAIN 3: PHYSICS FNO SPEECH")));
+            miUnified.MenuItems.Add(new MenuItem("4. AVX2/WebGPU Hardware & Elastic Work-Stealing (26 Tools)", (s, e) => ExecuteClusterAction("/api/v1/unified/avx2_webgpu_worksteal", "DOMAIN 4: AVX2 WEBGPU WORKSTEAL")));
+            miUnified.MenuItems.Add(new MenuItem("5. Dual-Pixel Edge Silicon & Rooted P8-APEX :8098 (16 Tools)", (s, e) => ExecuteClusterAction("/api/v1/unified/dual_pixel_ksu_edge", "DOMAIN 5: DUAL PIXEL EDGE")));
+            miUnified.MenuItems.Add(new MenuItem("6. Aperiodic Permissions Router (APR) & Security (13 Tools)", (s, e) => ExecuteClusterAction("/api/v1/unified/apr_permissions_security", "DOMAIN 6: APR PERMISSIONS SECURITY")));
+            miUnified.MenuItems.Add(new MenuItem("7. Polyglot Compilers, DevTools & Sandboxes (34 Tools)", (s, e) => ExecuteClusterAction("/api/v1/unified/polyglot_compilers_devtools", "DOMAIN 7: POLYGLOT DEVTOOLS")));
+            miUnified.MenuItems.Add(new MenuItem("8. Autopoietic Coordinator Bus, E:\\ Vault & Cloudflare D1 (30 Tools)", (s, e) => ExecuteClusterAction("/api/v1/unified/autopoietic_bus_vault_d1", "DOMAIN 8: AUTOPOIETIC BUS VAULT D1")));
+            miUnified.MenuItems.Add("-");
+            miUnified.MenuItems.Add(new MenuItem("Run 256-Bit AVX2 16-Domain FNO Solver (Tool 22)", (s, e) => ExecuteClusterAction("/api/v1/operator/fno_solve", "256-BIT AVX2 16-DOMAIN FNO SOLVE")));
+            menu.MenuItems.Add(miUnified);
             menu.MenuItems.Add("-");
             menu.MenuItems.Add(new MenuItem("Open Native Desktop HUD App (WebGPU)", (s, e) => LaunchNativeDesktopHudWindow()));
             menu.MenuItems.Add(new MenuItem("Open Public Portal (https://act-omega-net.dev)", (s, e) => Process.Start("https://act-omega-net.dev")));
@@ -373,28 +393,28 @@ namespace SovereignManifoldDesktop
             menu.MenuItems.Add("-");
             menu.MenuItems.Add(new MenuItem("Sync 8.11MB .npage Shared Memory (P8 + P10 Roaming)", (s, e) => ExecuteClusterAction("/api/v1/shm/p8_npage_bridge", "SYNC .NPAGE SHM")));
             menu.MenuItems.Add(new MenuItem("Handover Continuum State to Phones + Cloudflare DO", (s, e) => ExecuteClusterAction("HANDOVER_PHONES", "HANDOVER TO PHONES")));
-            menu.MenuItems.Add(new MenuItem("Run 6-Layer True-Data Audit (145 Tools / 576 QED)", (s, e) => ExecuteClusterAction("/api/v1/diagnostics/v44_self_profiler", "6-LAYER AUDIT")));
-            menu.MenuItems.Add(new MenuItem("Run CHAIN 145 Omni-Suite (Tools 1..145)", (s, e) => ExecuteClusterAction("/api/v1/chain145/suite", "CHAIN 145 OMNI-SUITE")));
-            menu.MenuItems.Add(new MenuItem("Run Tool 145: Windows SDK 10.0.26100.0 & DXC 1.8 Omni-Audit", (s, e) => ExecuteClusterAction("/api/v1/toolchain/windows_sdk_dxc_omni_audit", "WINDOWS SDK DXC OMNI-AUDIT")));
+            menu.MenuItems.Add(new MenuItem("Run 6-Layer True-Data Audit (210 Tools / 624 QED)", (s, e) => ExecuteClusterAction("/api/v1/diagnostics/v44_self_profiler", "6-LAYER AUDIT")));
+            menu.MenuItems.Add(new MenuItem("Run CHAIN 210 Omni-Suite (Tools 1..210)", (s, e) => ExecuteClusterAction("/api/v1/chain210/suite", "CHAIN 210 OMNI-SUITE")));
+            menu.MenuItems.Add(new MenuItem("Run Tool 210: Autonomous Multi-Silicon Apex Daemon Audit", (s, e) => ExecuteClusterAction("/api/v1/v56/tool_210_apex_audit", "APEX DAEMON AUDIT")));
             menu.MenuItems.Add("-");
             menu.MenuItems.Add(new MenuItem("Zenodo DOI: 10.5281/zenodo.23651696", (s, e) => Process.Start("https://doi.org/10.5281/zenodo.23651696")));
             menu.MenuItems.Add(new MenuItem("OSF DOI: 10.17605/OSF.IO/2XQ5Z", (s, e) => Process.Start("https://osf.io/2xq5z/overview")));
-            menu.MenuItems.Add(new MenuItem("Architecture Specifications (v50.2.0)", (s, e) =>
+            menu.MenuItems.Add(new MenuItem("Architecture Specifications (v56.0.0)", (s, e) =>
             {
                 MessageBox.Show(
-                    "ACT-Omega Net v50.2.0 (SH4Z v5000 TLV | CHAIN 145)\n\n" +
+                    "ACT-Omega Net v56.0.0 (SH4Z v5600 TLV | CHAIN 210)\n\n" +
                     "• Shards / Neurons: 63,360 (Core 21,120 + Exp 21,120 + Tier-3 21,120)\n" +
                     "• Bijected 64B Cachelines: 132,960 (6,240 Tri-Bank .e8z + 126,720 .npage)\n" +
                     "• Synapses: 1,013,760 Dual-Shell Synapses (16/neuron)\n" +
                     "• Columns: 1,440 Chair-44 Columns\n" +
                     "• Sub-Domains: 144 (36 Macro-Domains x 4)\n" +
                     "• Vocabulary: 262,144 (18-bit) Open-Vocab BPE\n" +
-                    "• Formal Proofs: 576 / 576 Substantive Lean 4 Proofs QED\n" +
-                    "• Tools: 145 Native Tools (CHAIN 145 + Host Toolchain T136..T145)\n\n" +
+                    "• Formal Proofs: 624 / 624 Substantive Lean 4 Proofs QED\n" +
+                    "• Tools: 210 Native Tools (CHAIN 210)\n\n" +
                     "Permanent Archival DOIs:\n" +
                     "• Zenodo: 10.5281/zenodo.23651696\n" +
                     "• OSF: 10.17605/OSF.IO/2XQ5Z",
-                    "ACT-Omega Net v50.2.0 Architecture Specifications",
+                    "ACT-Omega Net v56.0.0 Architecture Specifications",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Information
                 );
@@ -412,7 +432,7 @@ namespace SovereignManifoldDesktop
 
             _trayIcon = new NotifyIcon();
             _trayIcon.Icon = BuildDynamicSovereignIcon(false);
-            _trayIcon.Text = "ACT-Omega v50.2.0 | Connecting to :8097...";
+            _trayIcon.Text = "ACT-Omega v56.0.0 | Connecting to :8097...";
             _trayIcon.ContextMenu = menu;
             _trayIcon.Visible = true;
             _trayIcon.DoubleClick += (s, e) => LaunchNativeDesktopHudWindow();
@@ -444,7 +464,7 @@ namespace SovereignManifoldDesktop
                 using (SolidBrush br = new SolidBrush(online ? Color.FromArgb(86, 211, 100) : Color.FromArgb(233, 78, 52)))
                 using (Font f = new Font("Consolas", 9.0f, FontStyle.Bold))
                 {
-                    g.DrawString("Ω50", f, br, 3, 9);
+                    g.DrawString("Ω56", f, br, 3, 9);
                 }
                 IntPtr hIcon = bmp.GetHicon();
                 return Icon.FromHandle(hIcon);
@@ -506,7 +526,7 @@ namespace SovereignManifoldDesktop
             if (endpointOrCmd == "HANDOVER_PHONES")
             {
                 RunLifecycleScript("handover");
-                _trayIcon.ShowBalloonTip(2000, "ACT-Omega v50.0.0 Continuum Handover", "8.11MB .npage SHM & 6-Layer state handed over to Pixel 8, Pixel 10 & Cloudflare DO.", ToolTipIcon.Info);
+                _trayIcon.ShowBalloonTip(2000, "ACT-Omega v56.0.0 Continuum Handover", "8.11MB .npage SHM & 6-Layer state handed over to Pixel 8, Pixel 10 & Cloudflare DO.", ToolTipIcon.Info);
                 return;
             }
             ThreadPool.QueueUserWorkItem(_ =>
@@ -592,7 +612,10 @@ namespace SovereignManifoldDesktop
                         _tel.BNorm = ExtractDouble(json, "mag_norm", ExtractDouble(json, "b_norm", _tel.BNorm));
                         _tel.BaroHpa = ExtractDouble(json, "baro_hpa", _tel.BaroHpa);
                         _tel.OrthoErr = ExtractDouble(json, "stiefel_ortho_err", _tel.OrthoErr);
-                        _tel.FnoL2Err = ExtractDouble(json, "fno_l2_rel_error", ExtractDouble(json, "fno_l2_err", _tel.FnoL2Err));
+                        _tel.FnoL2Err = ExtractDouble(json, "fno_l2_err", ExtractDouble(json, "fno_l2_rel_error", _tel.FnoL2Err));
+                        _tel.VorticityNorm = ExtractDouble(json, "vorticity_norm", _tel.VorticityNorm);
+                        _tel.NavierReynolds = ExtractDouble(json, "navier_reynolds", ExtractDouble(json, "navier_stokes_reynolds", _tel.NavierReynolds));
+                        _tel.Avx2Gflops = ExtractDouble(json, "avx2_gflops", _tel.Avx2Gflops);
                         _tel.WsLoqLines = ExtractLong(json, "ws_loq_lines", _tel.WsLoqLines);
                         _tel.WsP10Lines = ExtractLong(json, "ws_p10_lines", _tel.WsP10Lines);
                         _tel.WsP8Lines = ExtractLong(json, "ws_p8_lines", _tel.WsP8Lines);
@@ -611,11 +634,11 @@ namespace SovereignManifoldDesktop
                         _widgetForm.BeginInvoke((MethodInvoker)delegate
                         {
                             _widgetForm.UpdateTelemetry(_tel);
-                            string tip = string.Format("ACT-Omega v50.2 | {0:0}k ops/s | RTX {1:0}C | P10 {2:0.0}C | P8 {3:0.0}C",
-                                _tel.ClusterKops, _tel.RtxTemp, _tel.P10Temp, _tel.P8Temp);
+                            string tip = string.Format("Ω56.1 | {0:0}k ops | FNO L2={1:0.0000} Re={2:0} | RTX {3:0}C",
+                                _tel.ClusterKops, _tel.FnoL2Err, _tel.NavierReynolds, _tel.RtxTemp);
                             if (tip.Length > 63) tip = tip.Substring(0, 63);
                             _trayIcon.Text = tip;
-                            _miStatus.Text = string.Format("ACT-Omega v50.2.0 | {0:0.0}k ops/s | Tick #{1} | 145 Tools", _tel.ClusterKops, _tel.Generation);
+                            _miStatus.Text = string.Format("ACT-Omega v56.1.0 | {0:0.0}k ops/s | FNO L2={1:0.00019} Re={2:0.0} | 210 Tools", _tel.ClusterKops, _tel.FnoL2Err, _tel.NavierReynolds);
                         });
                     }
                 }

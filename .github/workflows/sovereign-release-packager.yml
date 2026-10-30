@@ -7,9 +7,9 @@ on:
   workflow_dispatch:
     inputs:
       tag_name:
-        description: 'Tag name to release (e.g. v50.2.0)'
+        description: 'Tag name to release (e.g. v56.0.0)'
         required: false
-        default: 'v50.2.0'
+        default: 'v56.0.0'
 
 permissions:
   contents: write
@@ -45,7 +45,7 @@ jobs:
       - name: Package Distribution Bundles
         shell: pwsh
         run: |
-          $ver = if ("${{ github.ref_name }}".StartsWith("v")) { "${{ github.ref_name }}" } elseif ("${{ inputs.tag_name }}") { "${{ inputs.tag_name }}" } else { "v50.2.0" }
+          $ver = if ("${{ github.ref_name }}".StartsWith("v")) { "${{ github.ref_name }}" } elseif ("${{ inputs.tag_name }}") { "${{ inputs.tag_name }}" } else { "v56.0.0" }
           New-Item -ItemType Directory -Path "release_artifacts" -Force | Out-Null
           
           Compress-Archive -Path "docs\*" -DestinationPath "release_artifacts\act-omega-hud-cockpit-$ver.zip" -Force
@@ -76,8 +76,8 @@ jobs:
         with:
           files: |
             release_artifacts/*
-          name: ACT-Omega Net ${{ github.ref_name || inputs.tag_name || 'v50.2.0' }} Production Release
-          tag_name: ${{ github.ref_name || inputs.tag_name || 'v50.2.0' }}
+          name: ACT-Omega Net ${{ github.ref_name || inputs.tag_name || 'v56.0.0' }} Production Release
+          tag_name: ${{ github.ref_name || inputs.tag_name || 'v56.0.0' }}
           draft: false
           prerelease: false
           generate_release_notes: true

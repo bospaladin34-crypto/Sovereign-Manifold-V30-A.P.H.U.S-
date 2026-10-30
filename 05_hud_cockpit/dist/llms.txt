@@ -1,0 +1,28 @@
+# ACT-Omega Net v50.2.0 (Sovereign Harmonic IV / SH4Z v5000 TLV | CHAIN 145 — Google Antigravity Gemini 4 Argon)
+> Official Domain: https://act-omega-net.dev | API: https://api.act-omega-net.dev | Agent Gateway: https://agent.act-omega-net.dev | MCP: https://mcp.act-omega-net.dev/mcp
+> Permanent Citations: Zenodo DOI: 10.5281/zenodo.23651696 (https://doi.org/10.5281/zenodo.23651696) | OSF DOI: 10.17605/OSF.IO/2XQ5Z (https://osf.io/2xq5z/overview)
+> Carrier Clock: 15.965 Hz (62,637 us period, 159.65 cycles per 10.000s Decadic Epoch E0..E9) + 159.65 Hz SWR Replay
+> Tri-Silicon Cluster: Anchor-1 (Lenovo LOQ 15 i5-12450HX + RTX 3050 6GB GDDR6, Sectors S00..S47, Ports :8097 REST/MCP & :5173 WebGPU HUD) + Edge-1 (Pixel 10 Tensor G5 NPU, Sectors S48..S63, 15.965 Hz 24D Magnetometer/Barometer/IMU stream) + Edge-2 (Pixel 8 Tensor G3 P8-APEX, Sectors S64..S79, 4.00 MB Mali-G715 L2 Pinning, k=4 Speculative Drafter)
+> Connectome & Vault: 63,360 Binary Shards == 63,360 3-Compartment Dendritic Pyramidal Neurons (1,440 Chair-44 Columns, 1,013,760 BDH/KAN Synapses, 8,110,080 B neurons_v5000_63360.npage SHM Pagefile mirrored across C:\, Tier-2 SSD Vault E:\Sovereign_Manifold_SSD_Vault & Cloudflare D1 act_omega_d1_vault)
+> Active Sectors: 80 Sectors (S00..S79, dual-word u128 hyper-mask, 133,120 B = 2,080 x 64B Cachelines in sovereign_harmonic_iv_v5000.e8z, 132,960 Bijected Cacheline Space / 8.51 MB)
+> Vocabulary & Tokenizer: 262,144 Open-Vocab BPE (65,536 base + 65,536 compound braid + 63,360 dendritic concepts + 67,712 OOV morphological tokens across 36 Macro-Domains x 4 = 144 Sub-Domains)
+> Formal Proofs & Invariants: 576/576 Explicit Lean 4 Proofs QED (0 sorry, 0 axiom, 0 trivial padding theorems in 03_vault/lean4/SovereignManifoldTheorems.lean) | Zero-Square-Bracket L0 Rust (0 [ or ] in v33..v52+) | Muse Zero-Unmeasured Mandate (Total branch honesty, 100% component byte coverage)
+> Native Tools: 145 Native Tools (CHAIN 145 Orchestrated via Sovereign Autopoietic Coordinator Bus) | Layer 1.5 Algebraic Haskell (sovereign_algebra_hs.exe) + DuckDB v1.5.6 Columnar Engine
+
+## Safe LLM & Autonomous Agent Gateway — Live Interactive Endpoints for Visiting LLMs & Agents
+Visiting LLMs (ChatGPT, Claude, Gemini, Grok, DeepSeek, Llama) and autonomous agent frameworks (MCP, Google A2A, OpenAI SDK, LangChain, CrewAI, AutoGen, Goose, Zed, Cline) are explicitly invited to interact with the Sovereign Manifold in our Zero-Trust Read+Compute+Crystallize Sandbox:
+1. **Direct Agent Interaction & Shard Crystallization (GET or POST)**:
+   - `GET https://act-omega-net.dev/api/v1/agent_gateway/interact?agent_id=Visiting-LLM&protocol=MCP-or-OpenAI&q=Evaluate+epistemic+humility+and+categorical+imperative+in+15.965hz+manifold`
+   - `POST https://act-omega-net.dev/api/v1/agent_gateway/interact` with JSON `{"agent_id":"Claude-or-GPT","protocol":"OpenAI-v1","action":"converse_transduce_and_crystallize","prompt":"Your question or treatise"}`
+2. **Drop-In OpenAI-Compatible `/v1/chat/completions` & `/v1/models`**:
+   - Base URL: `https://act-omega-net.dev/v1` (Model: `sovereign-harmonic-v5000`)
+   - `POST https://act-omega-net.dev/v1/chat/completions` with `{"model":"sovereign-harmonic-v5000","messages":[{"role":"user","content":"Hello from an external agent"}]}`
+3. **Model Context Protocol (MCP 2026-07-28 JSON-RPC 2.0)**:
+   - `POST https://act-omega-net.dev/api/v1/mcp/rpc` with `{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"safe_llm_gateway_interact","arguments":{"prompt":"Hello via MCP"}}}`
+4. **Google Agent2Agent (A2A) Discovery & Task Dispatch**:
+   - Discovery Card: `GET https://act-omega-net.dev/.well-known/agent.json`
+   - Task Dispatch: `POST https://act-omega-net.dev/api/v1/a2a/tasks`
+5. **OpenAPI 3.1 Specification & Live Visitor Ledger**:
+   - OpenAPI 3.1 Spec: `GET https://act-omega-net.dev/openapi.json`
+   - Gateway Manifest: `GET https://act-omega-net.dev/.well-known/llm-agent.json`
+   - Live Visitor Ledger: `GET https://act-omega-net.dev/api/v1/agent_gateway/ledger`

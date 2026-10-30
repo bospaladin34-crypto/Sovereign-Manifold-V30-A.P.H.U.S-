@@ -1,0 +1,568 @@
+﻿{
+    "summary":  {
+                    "pass_rate_pct":  42.5,
+                    "failed":  23,
+                    "total":  40,
+                    "passed":  17
+                },
+    "suite":  "ACT-Omega Net v56.0.0 E2E Test Suite",
+    "timestamp":  "2026-10-28T23:53:23Z",
+    "results":  [
+                    {
+                        "id":  "F01",
+                        "passed":  false,
+                        "tier":  1,
+                        "elapsed_ms":  2.0481000000000003,
+                        "name":  "APR \u0026 Root Governance Rule",
+                        "measured_data":  {
+
+                                          },
+                        "message":  "File missing: C:\\sovereign_manifold_v31\\.agents\\rules\\aperiodic-permissions-routing-and-ksud-root.md",
+                        "milestone":  "M1"
+                    },
+                    {
+                        "id":  "F02",
+                        "passed":  false,
+                        "tier":  1,
+                        "elapsed_ms":  4.0261000000000005,
+                        "name":  "HUD Preservation Rule Section 6",
+                        "measured_data":  {
+                                              "HasSec6":  false,
+                                              "HasSsrMarker":  false,
+                                              "HasRelativePathLaw":  false
+                                          },
+                        "message":  "Section 6 missing or incomplete in C:\\sovereign_manifold_v31\\.agents\\rules\\l2-hud-15cards-preserve.md (Sec6: False, Relative: False, SSR: False)",
+                        "milestone":  "M1"
+                    },
+                    {
+                        "id":  "F03",
+                        "passed":  true,
+                        "tier":  1,
+                        "elapsed_ms":  82.488,
+                        "name":  "Rule Mirror 1:1 SHA Parity",
+                        "measured_data":  {
+                                              "CheckedCount":  6,
+                                              "Mismatches":  [
+
+                                                             ]
+                                          },
+                        "message":  "All 6 rules in .agents\\rules match ~/.gemini/config/rules 1:1 SHA-256",
+                        "milestone":  "M1"
+                    },
+                    {
+                        "id":  "F04",
+                        "passed":  false,
+                        "tier":  1,
+                        "elapsed_ms":  10.1442,
+                        "name":  "Codebase Neuron Unification",
+                        "measured_data":  {
+                                              "Leaks":  [
+                                                            "v31_swarm.rs",
+                                                            "v31_swarm.rs"
+                                                        ],
+                                              "ScannedFiles":  5
+                                          },
+                        "message":  "Legacy 42,240 neuron count found in: v31_swarm.rs, v31_swarm.rs",
+                        "milestone":  "M1"
+                    },
+                    {
+                        "id":  "F05",
+                        "passed":  true,
+                        "tier":  1,
+                        "elapsed_ms":  0.4708,
+                        "name":  "Version Banner Unification",
+                        "measured_data":  {
+                                              "HasChain210":  true,
+                                              "HasSh4z5600":  true,
+                                              "HasV56":  true
+                                          },
+                        "message":  "PROJECT.md unified to ACT-Omega Net v56.0.0 (SH4Z v5600 TLV | CHAIN 210 | 624 QED)",
+                        "milestone":  "M1"
+                    },
+                    {
+                        "id":  "F06",
+                        "passed":  false,
+                        "tier":  1,
+                        "elapsed_ms":  101.2639,
+                        "name":  "Tool Suite URL Decoupling",
+                        "measured_data":  {
+                                              "Chain210":  "OK_V44_0_0",
+                                              "Chain145":  "CHAIN_145_CONTIGUOUS_OK",
+                                              "Chain135":  "CHAIN_145_CONTIGUOUS_OK"
+                                          },
+                        "message":  "Suite decoupling incomplete (135 OK: False [Got status: CHAIN_145_CONTIGUOUS_OK, count: 145]; 145 OK: True; 210 OK: False [Got status: OK_V44_0_0])",
+                        "milestone":  "M1"
+                    },
+                    {
+                        "id":  "F07",
+                        "passed":  false,
+                        "tier":  1,
+                        "elapsed_ms":  1.0202,
+                        "name":  "SIMD CPUID/Rayon OnceLock Cache",
+                        "measured_data":  {
+                                              "HasOnceLock":  false
+                                          },
+                        "message":  "HARDWARE_SIMD_CACHE OnceLock cache missing in C:\\sovereign_manifold_v31\\01_l0_rust\\src\\v50_rayon_avx2_tlv_simulator_coordinator.rs",
+                        "milestone":  "M2"
+                    },
+                    {
+                        "id":  "F08",
+                        "passed":  false,
+                        "tier":  1,
+                        "elapsed_ms":  0.86730000000000007,
+                        "name":  "Zero-Allocation Parallel Reduce",
+                        "measured_data":  {
+                                              "HasCollect":  true,
+                                              "HasReduce":  false
+                                          },
+                        "message":  "Parallel reduce missing (False) or heap .collect() still present (True)",
+                        "milestone":  "M2"
+                    },
+                    {
+                        "id":  "F09",
+                        "passed":  false,
+                        "tier":  1,
+                        "elapsed_ms":  27.2861,
+                        "name":  "Synaptic Tensor Ops Accounting",
+                        "measured_data":  {
+                                              "HasCachelinesPerSec":  false,
+                                              "HasNeuronsPerSec":  false,
+                                              "HasActualSynapses":  true
+                                          },
+                        "message":  "Accounting incomplete (Synapses: True, neurons_per_sec: False, cachelines_per_sec: False)",
+                        "milestone":  "M2"
+                    },
+                    {
+                        "id":  "F10",
+                        "passed":  false,
+                        "tier":  1,
+                        "elapsed_ms":  1.7999,
+                        "name":  "Elimination of * 0.08 Multiplier",
+                        "measured_data":  {
+                                              "HasDampenerFile2":  true,
+                                              "HasDampenerFile1":  true
+                                          },
+                        "message":  "Dampening multiplier (* 0.08) still present in v31_swarm source",
+                        "milestone":  "M2"
+                    },
+                    {
+                        "id":  "F11",
+                        "passed":  false,
+                        "tier":  1,
+                        "elapsed_ms":  5.0397,
+                        "name":  "Live Multi-Silicon Telemetry",
+                        "measured_data":  {
+                                              "HasP10":  false,
+                                              "HasP8":  false,
+                                              "EndpointSuccess":  true
+                                          },
+                        "message":  "Multi-silicon telemetry incomplete or offline (Endpoint Success: True, P10: False, P8: False)",
+                        "milestone":  "M2"
+                    },
+                    {
+                        "id":  "F12",
+                        "passed":  false,
+                        "tier":  1,
+                        "elapsed_ms":  0.2838,
+                        "name":  "Cycle 1: Streaming Archiver \u0026 Q4_K",
+                        "measured_data":  {
+
+                                          },
+                        "message":  "Module missing: C:\\sovereign_manifold_v31\\01_l0_rust\\src\\v53_e8vault_archiver_and_q4k_transcoder.rs",
+                        "milestone":  "M3"
+                    },
+                    {
+                        "id":  "F13",
+                        "passed":  false,
+                        "tier":  1,
+                        "elapsed_ms":  0.2343,
+                        "name":  "Cycle 2: Polyglot DevTools \u0026 Sandboxes",
+                        "measured_data":  {
+
+                                          },
+                        "message":  "Module missing: C:\\sovereign_manifold_v31\\01_l0_rust\\src\\v54_polyglot_devtools_hyperv_blender_f4se.rs",
+                        "milestone":  "M3"
+                    },
+                    {
+                        "id":  "F14",
+                        "passed":  false,
+                        "tier":  1,
+                        "elapsed_ms":  0.2136,
+                        "name":  "Cycle 3: Aperiodic Permissions Routing",
+                        "measured_data":  {
+
+                                          },
+                        "message":  "Module missing: C:\\sovereign_manifold_v31\\01_l0_rust\\src\\v54_5_aperiodic_permissions_router_and_syndrome_gate.rs",
+                        "milestone":  "M3"
+                    },
+                    {
+                        "id":  "F15",
+                        "passed":  false,
+                        "tier":  1,
+                        "elapsed_ms":  0.2015,
+                        "name":  "Cycle 4: Pixel 8 Root Governance",
+                        "measured_data":  {
+
+                                          },
+                        "message":  "Module missing: C:\\sovereign_manifold_v31\\01_l0_rust\\src\\v55_pixel8_ksud_root_edgetpu_mali_kvm_governor.rs",
+                        "milestone":  "M4"
+                    },
+                    {
+                        "id":  "F16",
+                        "passed":  false,
+                        "tier":  1,
+                        "elapsed_ms":  0.18760000000000002,
+                        "name":  "Cycle 5: Unthrottled Apex Daemon",
+                        "measured_data":  {
+
+                                          },
+                        "message":  "Module missing: C:\\sovereign_manifold_v31\\01_l0_rust\\src\\v56_unthrottled_throughput_and_p8_root_apex_daemon.rs",
+                        "milestone":  "M4"
+                    },
+                    {
+                        "id":  "F17",
+                        "passed":  false,
+                        "tier":  1,
+                        "elapsed_ms":  9.054,
+                        "name":  "Lean 4 Theorems Expansion (624 QED)",
+                        "measured_data":  {
+                                              "AxiomCount":  0,
+                                              "Theorems":  576,
+                                              "SorryCount":  0,
+                                              "HasParity":  true
+                                          },
+                        "message":  "Lean 4 verification failed (Theorems: 576 [Req: \u003e= 624], Parity: True, sorry: 0, axiom: 0)",
+                        "milestone":  "M4"
+                    },
+                    {
+                        "id":  "F18",
+                        "passed":  true,
+                        "tier":  1,
+                        "elapsed_ms":  0.743,
+                        "name":  "UI \u0026 Periphery Synchronization",
+                        "measured_data":  {
+                                              "Rel1":  true,
+                                              "Ssr2":  true,
+                                              "Rel2":  true,
+                                              "Ssr1":  true
+                                          },
+                        "message":  "UI pre-rendered SSR snapshot and relative asset paths verified across HUD and docs",
+                        "milestone":  "M4"
+                    },
+                    {
+                        "id":  "F19",
+                        "passed":  true,
+                        "tier":  1,
+                        "elapsed_ms":  1.2950000000000002,
+                        "name":  "Dual-Track E2E Test Suite",
+                        "measured_data":  {
+                                              "HasInfra":  true,
+                                              "HasRunner":  true
+                                          },
+                        "message":  "TEST_INFRA.md and test_runner_v56.ps1 operational covering all 20 features across 4 tiers",
+                        "milestone":  "M5"
+                    },
+                    {
+                        "id":  "F20",
+                        "passed":  true,
+                        "tier":  1,
+                        "elapsed_ms":  643.98340000000007,
+                        "name":  "Brutal Gatekeeper Verification",
+                        "measured_data":  {
+                                              "StaticPassed":  true,
+                                              "HasGatekeeper":  true
+                                          },
+                        "message":  "Brutal Gatekeeper static audit passed with exit code 0",
+                        "milestone":  "M5"
+                    },
+                    {
+                        "id":  "B01",
+                        "passed":  false,
+                        "tier":  2,
+                        "elapsed_ms":  45.561800000000005,
+                        "name":  "Suite URL Decoupling Contiguity \u0026 Bounds",
+                        "measured_data":  {
+                                              "Count145":  145,
+                                              "Count210":  null,
+                                              "Count135":  145
+                                          },
+                        "message":  "Contiguity boundary violation (135: 145/CHAIN_145_CONTIGUOUS_OK, 145: 145/CHAIN_145_CONTIGUOUS_OK, 210: /OK_V44_0_0)",
+                        "milestone":  "M1"
+                    },
+                    {
+                        "id":  "B02",
+                        "passed":  true,
+                        "tier":  2,
+                        "elapsed_ms":  246.1756,
+                        "name":  "Zero-Square-Bracket Byte Scanner Boundary",
+                        "measured_data":  {
+                                              "Violations":  [
+
+                                                             ],
+                                              "TotalBytes":  796997,
+                                              "ScannedFiles":  34
+                                          },
+                        "message":  "Scanned 34 modules (796997 bytes) with 0 brackets; scanner sensitivity verified",
+                        "milestone":  "M3"
+                    },
+                    {
+                        "id":  "B03",
+                        "passed":  true,
+                        "tier":  2,
+                        "elapsed_ms":  13.444600000000001,
+                        "name":  "Pixel 8 Stock Slot _b Invariance Boundary",
+                        "measured_data":  {
+                                              "TamperDetected":  true,
+                                              "Serial":  "3A121FDJH00BW5",
+                                              "Hash":  "84ECFA41044D301D096B31657430F693D605C88DB77969E8B604B804C8D5E55D"
+                                          },
+                        "message":  "Stock slot _b SHA-256 strictly invariant (84ECFA41044D301D096B31657430F693D605C88DB77969E8B604B804C8D5E55D) for Pixel 8 (3A121FDJH00BW5)",
+                        "milestone":  "M4"
+                    },
+                    {
+                        "id":  "B04",
+                        "passed":  true,
+                        "tier":  2,
+                        "elapsed_ms":  9.427,
+                        "name":  "Pixel 8 Governor Adversarial Rejection",
+                        "measured_data":  {
+                                              "EmptyCode":  200,
+                                              "HostAlive":  true,
+                                              "MalformedCode":  200
+                                          },
+                        "message":  "Host survived 4 adversarial payloads without crash or process termination",
+                        "milestone":  "M4"
+                    },
+                    {
+                        "id":  "B05",
+                        "passed":  true,
+                        "tier":  2,
+                        "elapsed_ms":  0.7652,
+                        "name":  "Throughput Denominator \u0026 Synapse Boundary",
+                        "measured_data":  {
+                                              "HasExactSynapses":  true,
+                                              "HasZeroGuard":  true
+                                          },
+                        "message":  "Throughput math contains division-by-zero protection and binds to 1,013,760 actual synapses",
+                        "milestone":  "M2"
+                    },
+                    {
+                        "id":  "B06",
+                        "passed":  false,
+                        "tier":  2,
+                        "elapsed_ms":  3.7452,
+                        "name":  "Lean 4 Proof Rigor \u0026 Non-Triviality",
+                        "measured_data":  {
+                                              "TrivialCount":  0,
+                                              "Theorems":  576,
+                                              "SorryCount":  0
+                                          },
+                        "message":  "Proof boundary failed (Theorems: 576 [Req: \u003e= 624], Trivial: 0, sorry: 0)",
+                        "milestone":  "M4"
+                    },
+                    {
+                        "id":  "B07",
+                        "passed":  true,
+                        "tier":  2,
+                        "elapsed_ms":  0.9402,
+                        "name":  "WebGPU #root SSR Snapshot Boundary",
+                        "measured_data":  {
+                                              "RootDiv2":  true,
+                                              "HasOsf":  true,
+                                              "HasZenodo":  true,
+                                              "RootDiv1":  true
+                                          },
+                        "message":  "SSR pre-populated #root snapshot and Zenodo/OSF DOIs verified across cockpit and docs",
+                        "milestone":  "M4"
+                    },
+                    {
+                        "id":  "B08",
+                        "passed":  false,
+                        "tier":  2,
+                        "elapsed_ms":  0.32480000000000003,
+                        "name":  "APR 4-Ring Capability Stratifier Bounds",
+                        "measured_data":  {
+
+                                          },
+                        "message":  "Rule missing: C:\\sovereign_manifold_v31\\.agents\\rules\\aperiodic-permissions-routing-and-ksud-root.md",
+                        "milestone":  "M1"
+                    },
+                    {
+                        "id":  "B09",
+                        "passed":  false,
+                        "tier":  2,
+                        "elapsed_ms":  68.385500000000008,
+                        "name":  "Codebase Zero-Legacy Neuron Leak Scanner",
+                        "measured_data":  {
+                                              "Leaks":  [
+                                                            "v31_swarm.rs",
+                                                            "v37_mcp_openai_cloudflare_d1.rs",
+                                                            "v43_bpe_compound_65k.rs",
+                                                            "v45_e8_leech_fluency_model.rs",
+                                                            "v46_open_vocab_131k_42240_connectome.rs",
+                                                            "v47_autonomous_leech_rag_scientist.rs",
+                                                            "v48_haskell_duckdb_hamiltonian_model.rs",
+                                                            "v49_muse_clean_and_chain100_synthesis.rs",
+                                                            "v50_brain_63360_144subdomains_qat_trainer.rs",
+                                                            "v51_npage_v2_sae_nanostar_grassmann_batch2.rs"
+                                                        ],
+                                              "ScannedCount":  79
+                                          },
+                        "message":  "Legacy 42,240 references detected in: v31_swarm.rs, v37_mcp_openai_cloudflare_d1.rs, v43_bpe_compound_65k.rs, v45_e8_leech_fluency_model.rs, v46_open_vocab_131k_42240_connectome.rs, v47_autonomous_leech_rag_scientist.rs, v48_haskell_duckdb_hamiltonian_model.rs, v49_muse_clean_and_chain100_synthesis.rs, v50_brain_63360_144subdomains_qat_trainer.rs, v51_npage_v2_sae_nanostar_grassmann_batch2.rs",
+                        "milestone":  "M1"
+                    },
+                    {
+                        "id":  "B10",
+                        "passed":  true,
+                        "tier":  2,
+                        "elapsed_ms":  16.0943,
+                        "name":  "Rule Mirror Parity Boundary",
+                        "measured_data":  {
+                                              "RuleCount":  6,
+                                              "Mismatches":  [
+
+                                                             ]
+                                          },
+                        "message":  "100% SHA-256 parity verified across 6 rules",
+                        "milestone":  "M1"
+                    },
+                    {
+                        "id":  "INT01",
+                        "passed":  false,
+                        "tier":  3,
+                        "elapsed_ms":  1.2882,
+                        "name":  "Suite Decoupling \u0026 Tool Dispatch Integration",
+                        "measured_data":  {
+                                              "EndpointOk":  false,
+                                              "DispatchersFound":  false
+                                          },
+                        "message":  "CHAIN 210 integration incomplete (Endpoint: False, Source Modules: False)",
+                        "milestone":  "M3"
+                    },
+                    {
+                        "id":  "INT02",
+                        "passed":  false,
+                        "tier":  3,
+                        "elapsed_ms":  1.6716,
+                        "name":  "Throughput Pipeline Integration",
+                        "measured_data":  {
+                                              "Reduce":  false,
+                                              "NoDampener":  false,
+                                              "Synapses":  true,
+                                              "OnceLock":  false
+                                          },
+                        "message":  "Throughput integration failed (OnceLock: False, Reduce: False, Synapses: True, NoDampener: False)",
+                        "milestone":  "M2"
+                    },
+                    {
+                        "id":  "INT03",
+                        "passed":  false,
+                        "tier":  3,
+                        "elapsed_ms":  3.9491,
+                        "name":  "APR Governance \u0026 Pixel 8 Root Integration",
+                        "measured_data":  {
+                                              "HasRule":  false,
+                                              "Status":  "OK_V44_0_0",
+                                              "HasAudit":  true
+                                          },
+                        "message":  "APR root governor integration pending (Rule: False, Audit endpoint: True)",
+                        "milestone":  "M4"
+                    },
+                    {
+                        "id":  "INT04",
+                        "passed":  false,
+                        "tier":  3,
+                        "elapsed_ms":  1.3843,
+                        "name":  "Haskell Codegen \u0026 Lean 4 Kernel Integration",
+                        "measured_data":  {
+                                              "HsHas624":  true,
+                                              "HasHs":  true,
+                                              "LeanHas624":  false
+                                          },
+                        "message":  "Haskell/Lean 4 integration pending (Haskell has 624: True, Lean 4 \u003e= 624: False)",
+                        "milestone":  "M4"
+                    },
+                    {
+                        "id":  "INT05",
+                        "passed":  true,
+                        "tier":  3,
+                        "elapsed_ms":  612.53730000000007,
+                        "name":  "Rule Parity \u0026 Gatekeeper Integration",
+                        "measured_data":  {
+                                              "StaticPassed":  true
+                                          },
+                        "message":  "All constitutional rules verified against Brutal Gatekeeper static audit without mirror drift",
+                        "milestone":  "M5"
+                    },
+                    {
+                        "id":  "INT06",
+                        "passed":  true,
+                        "tier":  3,
+                        "elapsed_ms":  3.0736000000000003,
+                        "name":  "Connectome \u0026 HUD SSR Unification",
+                        "measured_data":  {
+                                              "HasUnifiedNeurons":  true,
+                                              "HasUnifiedBanner":  true,
+                                              "HasRelativePaths":  true
+                                          },
+                        "message":  "HUD SSR snapshot embeds 63,360 unified connectome, target version banners, and relative assets",
+                        "milestone":  "M4"
+                    },
+                    {
+                        "id":  "SCEN01",
+                        "passed":  true,
+                        "tier":  4,
+                        "elapsed_ms":  29.2348,
+                        "name":  "Cluster Telemetry \u0026 Accounting Lifecycle",
+                        "measured_data":  {
+                                              "Neurons":  63360,
+                                              "Synapses":  1013760,
+                                              "Cachelines":  132960
+                                          },
+                        "message":  "Cluster telemetry active: 63,360 neurons / 1,013,760 synapses / 132,960 bijected cachelines",
+                        "milestone":  "M2"
+                    },
+                    {
+                        "id":  "SCEN02",
+                        "passed":  true,
+                        "tier":  4,
+                        "elapsed_ms":  2.0807,
+                        "name":  "Pixel 8 Root Hardware Audit \u0026 Governor",
+                        "measured_data":  {
+                                              "GovStatus":  "OK_V44_0_0",
+                                              "AuditStatus":  "OK_V44_0_0"
+                                          },
+                        "message":  "Rooted Pixel 8 audit \u0026 governor endpoints responsive (Audit: OK_V44_0_0, Gov: OK_V44_0_0)",
+                        "milestone":  "M4"
+                    },
+                    {
+                        "id":  "SCEN03",
+                        "passed":  true,
+                        "tier":  4,
+                        "elapsed_ms":  5.3870000000000005,
+                        "name":  "Production HUD Bundle \u0026 SSR Verification",
+                        "measured_data":  {
+                                              "HasDist":  true,
+                                              "AllAssetsExist":  true,
+                                              "HasDocs":  true,
+                                              "MissingAssets":  [
+
+                                                                ]
+                                          },
+                        "message":  "Production HUD dist bundle verified: relative assets present without 404 references",
+                        "milestone":  "M4"
+                    },
+                    {
+                        "id":  "SCEN04",
+                        "passed":  true,
+                        "tier":  4,
+                        "elapsed_ms":  637.3259,
+                        "name":  "6-Layer Gatekeeper Lifecycle Verification",
+                        "measured_data":  {
+                                              "StaticPassed":  true
+                                          },
+                        "message":  "Full Brutal Gatekeeper static audit passed with 0 errors across all checks",
+                        "milestone":  "M5"
+                    }
+                ]
+}

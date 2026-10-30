@@ -1,6 +1,8 @@
 01_l0_rust/target/
 05_hud_cockpit/node_modules/
-05_hud_cockpit/dist/
+00_control/pixel8_shiba_ksu/*.img
+00_control/pixel8_shiba_ksu/*.apk
+00_control/pixel8_shiba_ksu/ksud-aarch64-linux-android
 04_edge_silicon/pixel10_ndk_app/.gradle/
 04_edge_silicon/pixel10_ndk_app/build/
 04_edge_silicon/pixel10_ndk_app/app/build/
@@ -31,4 +33,8 @@
 06_algebraic_haskell/dist-newstyle/
 06_algebraic_haskell/bin/*.exe
 .agents/teamwork/
-
+target_stage/
+*.hi
+*.o
+*.exe.old
+04_edge_silicon/pixel10_ndk_app/app/.cxx/

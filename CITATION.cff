@@ -1,11 +1,13 @@
 cff-version: 1.2.0
-message: "If you use ACT-Omega Net v33.0.0 (Sovereign Harmonic VI / SH4Z v3300 TLV), please cite it as below."
+message: "If you use ACT-Omega Net v56.0.0 (SH4Z v5600 TLV | CHAIN 210 | 624/624 Lean 4 QED), please cite it as below."
 authors:
+  - family-names: "Bell"
+    given-names: "Nicholas"
   - family-names: "Garlock"
     given-names: "Richard"
-title: "ACT-Omega Net v33.0.0 (Sovereign Harmonic VI / SH4Z v3300 TLV): 24-Sector 4-Tier Tri-Silicon & External SSD Topological Compute Manifold"
-version: "33.0.0"
-doi: "10.5281/zenodo.19624831"
-date-released: 2026-10-19
+title: "ACT-Omega Net v56.0.0 (SH4Z v5600 TLV | CHAIN 210 | 624/624 Lean 4 QED): 80-Sector 63,360-Neuron Tri-Silicon & External SSD Topological Compute Manifold"
+version: "56.0.0"
+doi: "10.5281/zenodo.23651696"
+date-released: 2026-10-29
 url: "https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-"
 license: MIT

@@ -1,11 +1,15 @@
 {
-  "title": "ACT-Omega Net v33.0.0 (Sovereign Harmonic VI / SH4Z v3300 TLV): 24-Sector 4-Tier Tri-Silicon & External SSD Topological Compute Manifold",
-  "version": "33.0.0",
-  "publication_date": "2026-10-19",
-  "doi": "10.5281/zenodo.19624831",
+  "title": "ACT-Omega Net v56.0.0 (SH4Z v5600 TLV | CHAIN 210 | 624/624 Lean 4 QED): 80-Sector 63,360-Neuron Tri-Silicon & External SSD Topological Compute Manifold",
+  "version": "v56.0.0",
+  "publication_date": "2026-10-29",
+  "doi": "10.5281/zenodo.23651696",
   "upload_type": "software",
   "license": "MIT",
   "creators": [
+    {
+      "name": "Bell, Nicholas",
+      "affiliation": "Sovereign Manifold Research"
+    },
     {
       "name": "Garlock, Richard",
       "affiliation": "Sovereign Manifold Research"
@@ -13,8 +17,11 @@
   ],
   "keywords": [
     "ACT-Omega",
-    "Sovereign Harmonic VI",
-    "SH4Z v3300",
+    "Sovereign Harmonic VII",
+    "SH4Z v5600",
+    "CHAIN 210",
+    "624/624 Lean 4 QED",
+    "63,360 Neurons",
     "Cymatic Embedding",
     "2-Bit SIMD Chromatic",
     "KHYS-Nano Mnemosyne",

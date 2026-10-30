@@ -1,0 +1,18 @@
+{
+    "version":  "v55.5.0 (CHAIN 200 Milestone - 620/620 Lean 4 QED)",
+    "timestamp_utc":  "2026-10-29T03:00:17.8388989Z",
+    "device_serial":  "3A121FDJH00BW5",
+    "device_codename":  "shiba (Google Pixel 8 - Tensor G3 zuma)",
+    "android_build":  "CP41.260831.019 (Android 17 QPR2 Beta)",
+    "kernel_version":  "Linux 6.1.172-android14-11-g8d0115b07367-ab16385437 aarch64",
+    "root_credential":  "uid=0(root) gid=0(root) groups=0(root) context=u:r:ksu:s0",
+    "ksu_version":  "ksud 3.4.2 (uapi: 5, ksu fd: 6)",
+    "stock_init_boot_sha256":  "84ECFA41044D301D096B31657430F693D605C88DB77969E8B604B804C8D5E55D",
+    "patched_allowshell_sha":  "7BC59BA6F08639AF1C2F90E80EADCF536810746C52E6770A8D5CE5EB28A0FFF2",
+    "unlocked_accelerators":  [
+                                  "OPEN_ROOT_RW_VERIFIED: /dev/mali0 (10,86 u:object_r:gpu_device:s0)",
+                                  "OPEN_ROOT_RW_VERIFIED: /dev/kvm (10,232 u:object_r:kvm_device:s0)",
+                                  "OPEN_ROOT_RW_VERIFIED: /dev/edgetpu-soc (487,1 u:object_r:edgetpu_device:s0)",
+                                  "OPEN_ROOT_RW_VERIFIED: /dev/edgetpu-limited (487,2 u:object_r:edgetpu_device:s0)"
+                              ]
+}

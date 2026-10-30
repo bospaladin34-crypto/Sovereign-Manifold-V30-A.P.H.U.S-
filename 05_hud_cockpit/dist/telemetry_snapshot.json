@@ -1,0 +1,83 @@
+{
+  "status": "LIVE_MEASURED_TELEMETRY_SNAPSHOT",
+  "version": "ACT-Omega Net v50.2.0 (SH4Z v5000 TLV | CHAIN 145)",
+  "captured_at_utc": "2026-10-28T23:45:00Z",
+  "capture_source": "http://127.0.0.1:8097 live L0 probe + Get-FileHash SHA256 (Zero-Unmeasured Mandate)",
+  "cryptographic_digests": {
+    "sovereign_harmonic_iv_v5000_e8z": {
+      "bytes": 133120,
+      "sha256": "a2ca34144fc3051f503d6b615e35b4e0074b260a04406c6d3b7377c4ef4e4ae5"
+    },
+    "neurons_v5000_63360_npage": {
+      "bytes": 8110080,
+      "sha256": "91c42afd2adc4b55de20edb593ff95a9d831f7991db13c832f87a6f3ac4c7ef3"
+    },
+    "SovereignManifoldTheorems_lean": {
+      "bytes": 134376,
+      "sha256": "7a23d06d4de4c4051d98f67a69a339f466ae89e1938197e09b7addd30a47d98e",
+      "theorems_qed": 576,
+      "trivial_n_eq_n_conjuncts": 0
+    }
+  },
+  "connectome": {
+    "total_shards": 63360,
+    "total_neurons": 63360,
+    "shard_to_neuron_bijection": "1:1",
+    "chair44_columns": 1440,
+    "neurons_per_column": 44,
+    "total_synapses": 1013760,
+    "pagefile_bytes": 8110080,
+    "active_sectors": 80,
+    "bijected_cachelines": 132960,
+    "cacheline_bytes": 8509440
+  },
+  "tri_silicon_cluster": {
+    "anchor_1": {
+      "model": "Lenovo LOQ 15",
+      "cpu": "Intel Core i5-12450HX (12 Threads)",
+      "gpu": "NVIDIA GeForce RTX 3050 6GB GDDR6",
+      "sectors": "S00..S47",
+      "cachelines": 1248,
+      "ports": [8097, 5173]
+    },
+    "edge_1": {
+      "model": "Google Pixel 10",
+      "npu": "Tensor G5",
+      "adb_serial": "58170DLCR0004V",
+      "sectors": "S48..S63",
+      "cachelines": 416,
+      "telemetry_stream_hz": 15.965
+    },
+    "edge_2": {
+      "model": "Google Pixel 8",
+      "soc": "Tensor G3 P8-APEX",
+      "adb_serial": "3A121FDJH00BW5",
+      "sectors": "S64..S79",
+      "cachelines": 416,
+      "l2_cache_bytes": 4194304,
+      "speculative_draft_k": 4
+    }
+  },
+  "formal_proofs": {
+    "system": "Lean 4 v4.8.0",
+    "theorems_qed": 576,
+    "theorems_total": 576,
+    "theorems_sorry": 0,
+    "theorems_axiom": 0,
+    "theorems_trivial_padding": 0,
+    "verified_file": "03_vault/lean4/SovereignManifoldTheorems.lean"
+  },
+  "cluster_telemetry": {
+    "carrier_hz": 15.965,
+    "swr_replay_hz": 159.65,
+    "cluster_kops": 4511.8,
+    "native_tools_count": 145,
+    "vocab_size": 262144,
+    "fno_l2_err": 0.00016,
+    "navier_reynolds": 413.7,
+    "stiefel_ortho_err": 5.0e-7,
+    "rtx_temp_c": 46.0,
+    "p10_temp_c": 34.5,
+    "p8_temp_c": 31.8
+  }
+}

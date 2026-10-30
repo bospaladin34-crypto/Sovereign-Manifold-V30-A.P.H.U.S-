@@ -12,7 +12,7 @@
 // into Tools 117..126 (CHAIN 126) and upgrades the Sovereign Neuron Pagefile
 // (.npage v5100, 128 bytes per neuron = 84-Byte Archimedes Spherical Active Core
 // + 44-Byte Circumscribed Cylindrical Cap Metadata = 2 x 64-Byte CPU Cache Lines)
-// across all 42,240+ 3-Compartment Dendritic Neurons (5,406,720 bytes).
+// across all 63,360+ 3-Compartment Dendritic Neurons (8,110,080 bytes).
 //
 // TOOLS 117..126 (CHAIN 126):
 //   - Tool 117 (51094.png): Cloudflare `tsrs` Rust TypeScript Compiler AST Bridge
@@ -395,8 +395,8 @@ pub fn tool_120_deepmind_upenn_sae_residual_npage_inspector(
 // encoding: 00<->11, 01<->10, i.e., bitwise NOT `!seq`).
 //
 // `.npage` Synthesis:
-//   - Each 128-byte `.npage` neuron has valence k = 8 synaptic arms (42,240 x 8 =
-//     337,920 synapses). Bytes 104..111 store a 64-bit `nanostar_watson_crick_sticky_hash`
+//   - Each 128-byte `.npage` neuron has valence k = 16 synaptic arms (63,360 x 16 =
+//     1,013,760 synapses). Bytes 104..111 store a 64-bit `nanostar_watson_crick_sticky_hash`
 //     (32 base pairs = 64 bits). Two `.npage` neurons A and B can form a valid
 //     zero-crash synaptic pointer link iff their sticky-end overhangs satisfy exact
 //     Watson-Crick bitwise complementarity `sticky_a ^ sticky_b == 0xFFFF_FFFF_FFFF_FFFF`!
@@ -446,9 +446,9 @@ pub fn tool_121_nanostardb_dendritic_junction_npage_schema(
 //   - Prefill: 128K prefix cache hit scales from 4K to 64K new tokens per DP rank.
 //
 // `.npage` Synthesis:
-//   - Partitions the `42,240` `.npage` neurons (`960` Chair-44 columns) into
-//     `32` `DEP32` Paged-Expert Ranks (`42,240 / 32 = 1,320` neurons = `30` Chair-44
-//     columns = `168,960 bytes` per `DEP32` rank), with 2-token MTP speculative
+//   - Partitions the `63,360` `.npage` neurons (`1,440` Chair-44 columns) into
+//     `32` `DEP32` Paged-Expert Ranks (`63,360 / 32 = 1,980` neurons = `45` Chair-44
+//     columns = `253,440 bytes` per `DEP32` rank), with 2-token MTP speculative
 //     drafting over the `.npage` KV/synapse ring!
 pub fn tool_122_vllm_dep32_deepseek_v41_flash_npage_pager(
     total_npage_neurons: u32,
@@ -879,13 +879,13 @@ pub fn execute_v51_chain_126_batch2_suite() -> Vec<SovereignBatch2ToolReport> {
         sticky_a, sticky_b, 8,
     ));
 
-    // Tool 122: vLLM DEP32 Paged-Neuron Speculative Engine (42,240 neurons / 32 ranks = 1,320)
+    // Tool 122: vLLM DEP32 Paged-Neuron Speculative Engine (63,360 neurons / 32 ranks = 1,980)
     reports.push(tool_122_vllm_dep32_deepseek_v41_flash_npage_pager(
-        42_240, 64, 2,
+        63_360, 64, 2,
     ));
 
     // Tool 123: Toroidal Mod-9 Doubling Circuit & 18-Step Nexus Key Bank Interleaver
-    reports.push(tool_123_toroidal_mod9_rodin_npage_bank_interleaver(42_240));
+    reports.push(tool_123_toroidal_mod9_rodin_npage_bank_interleaver(63_360));
 
     // Tool 124: Pandigital Polydivisible Canary 3816547290
     reports.push(tool_124_polydivisible_pandigital_npage_prefix_canary(

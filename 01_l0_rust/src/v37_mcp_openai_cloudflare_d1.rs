@@ -63,10 +63,10 @@ pub fn evaluate_mcp_server_portal(gen_counter: u64) -> McpServerTelemetry {
 pub fn evaluate_openai_compat_surface(gen_counter: u64) -> OpenAiCompatTelemetry {
     let measured_loss = 0.08 + ((gen_counter % 64) as f64) * 0.0004;
     OpenAiCompatTelemetry {
-        model_id: "sovereign-harmonic-v4600",
+        model_id: "sovereign-harmonic-v5600",
         base_url_path: "https://act-omega-net.dev/v1/chat/completions",
-        vocab_size: 131072,
-        dendritic_neurons: 42240,
+        vocab_size: 262144,
+        dendritic_neurons: 63360,
         completion_tokens_generated: gen_counter * 32,
         holdout_ppl: measured_loss.exp(),
     }
@@ -78,9 +78,9 @@ pub fn evaluate_cloudflare_d1_vpc_shadow(gen_counter: u64) -> CloudflareD1Shadow
         d1_database_name: "act_omega_d1_vault",
         d1_free_storage_gb: 5.0_f64,
         d1_synced_wal_rows: 58400 + (gen_counter % 8192),
-        d1_synced_npage_cols: 640,
+        d1_synced_npage_cols: 1440,
         workers_vpc_tunnel_bound: true,
-        durable_object_sqlite_shadow: "SovereignEdgeShadowDO (10 D1 Tables + 480 Core + 160 Expansion Columns Synced)",
+        durable_object_sqlite_shadow: "SovereignEdgeShadowDO (10 D1 Tables + 1440 Chair-44 Columns Synced)",
         zero_502_failover_active: true,
     }
 }

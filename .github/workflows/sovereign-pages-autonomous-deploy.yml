@@ -43,14 +43,22 @@ jobs:
       - name: Sync Dist to Docs & Verify SSR Attributes
         shell: bash
         run: |
+          cp docs/sitemap.xml /tmp/ghpages_sitemap.xml || true
+          cp docs/robots.txt /tmp/ghpages_robots.txt || true
           mkdir -p docs/assets
           cp -r 05_hud_cockpit/dist/* docs/
+          if [ -f /tmp/ghpages_sitemap.xml ]; then cp /tmp/ghpages_sitemap.xml docs/sitemap.xml; fi
+          if [ -f /tmp/ghpages_robots.txt ]; then cp /tmp/ghpages_robots.txt docs/robots.txt; fi
           if ! grep -Eq 'data-sovereign-ssr="v(56|60)\.0\.0"' docs/index.html; then
             echo "ERROR: docs/index.html missing data-sovereign-ssr attribute"
             exit 1
           fi
+          if ! grep -q '<?xml version="1.0" encoding="UTF-8"?>' docs/sitemap.xml; then
+            echo "ERROR: docs/sitemap.xml is not valid XML"
+            exit 1
+          fi
           touch docs/.nojekyll
-          echo "Verified docs/index.html SSR pre-population and .nojekyll"
+          echo "Verified docs/index.html SSR pre-population, docs/sitemap.xml, and .nojekyll"
 
       - name: Upload Verified Pages Bundle Artifact
         uses: actions/upload-artifact@v4

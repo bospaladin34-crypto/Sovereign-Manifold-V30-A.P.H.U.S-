@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Allow: /wiki.html
+Allow: /llms.txt
+Allow: /openapi.json
+Allow: /.well-known/
+Disallow: /api/v1/admin/
+Disallow: /api/v1/auth/
+Disallow: /api/v1/router/
+
+Sitemap: https://act-omega-net.dev/sitemap.xml

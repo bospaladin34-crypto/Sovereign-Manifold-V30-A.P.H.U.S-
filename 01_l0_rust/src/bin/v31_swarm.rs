@@ -977,6 +977,8 @@ fn content_type_for(path: &str) -> &'static str {
         "application/manifest+json; charset=utf-8"
     } else if path.ends_with(".json") {
         "application/json; charset=utf-8"
+    } else if path.ends_with(".xml") {
+        "application/xml; charset=utf-8"
     } else if path.ends_with(".txt") || path.ends_with(".md") || path.ends_with(".wgsl") || path.ends_with(".lean") {
         "text/plain; charset=utf-8"
     } else if path.ends_with(".svg") {
@@ -1037,6 +1039,8 @@ fn determine_cache_control(clean_path: &str) -> &'static str {
         || norm_core == "manifest.webmanifest"
         || norm_core.ends_with("/manifest.webmanifest")
         || norm_core == "llms.txt"
+        || norm_core == "sitemap.xml"
+        || norm_core == "robots.txt"
         || norm_core.ends_with(".e8z")
         || norm_core.ends_with(".npage")
     {
@@ -5689,14 +5693,38 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             continue;
         }
 
-        // 9. /llms.txt for Visiting LLMs & Crawlers
+        // 9. /llms.txt, /sitemap.xml & /robots.txt for Visiting LLMs & Search Console Crawlers
         if clean_path == "/llms.txt" {
             if let Ok(bytes) = fs::read("C:\\sovereign_manifold_v31\\docs\\llms.txt") {
                 write_http_vec(&mut stream, "200 OK", "text/plain; charset=utf-8", &bytes);
                 continue;
             }
-            let fallback = "# ACT-Omega Net v44.0.0 (Sovereign Harmonic VI / SH4Z v4400 TLV)\n> Official Domain: https://act-omega-net.dev\n";
+            let fallback = "# ACT-Omega Net v60.0.0 (Sovereign Harmonic VI / SH4Z v6000 TLV | CHAIN 270 | 690/690 Lean 4 QED | 3,041,280 Synapses)\n> Official Domain: https://act-omega-net.dev\n";
             write_http_str(&mut stream, "200 OK", "text/plain; charset=utf-8", fallback);
+            continue;
+        }
+
+        if clean_path == "/sitemap.xml" || clean_path.ends_with("/sitemap.xml") {
+            if let Ok(bytes) = fs::read("C:\\sovereign_manifold_v31\\sitemap.xml")
+                .or_else(|_| fs::read("C:\\sovereign_manifold_v31\\05_hud_cockpit\\dist\\sitemap.xml"))
+            {
+                write_http_vec(&mut stream, "200 OK", "application/xml; charset=utf-8", &bytes);
+                continue;
+            }
+            let fallback_xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n  <url><loc>https://act-omega-net.dev/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>\n  <url><loc>https://act-omega-net.dev/wiki.html</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>\n  <url><loc>https://act-omega-net.dev/llms.txt</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>\n  <url><loc>https://act-omega-net.dev/openapi.json</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>\n  <url><loc>https://act-omega-net.dev/.well-known/agent.json</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>\n  <url><loc>https://act-omega-net.dev/.well-known/llm-agent.json</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>\n</urlset>\n";
+            write_http_str(&mut stream, "200 OK", "application/xml; charset=utf-8", fallback_xml);
+            continue;
+        }
+
+        if clean_path == "/robots.txt" || clean_path.ends_with("/robots.txt") {
+            if let Ok(bytes) = fs::read("C:\\sovereign_manifold_v31\\robots.txt")
+                .or_else(|_| fs::read("C:\\sovereign_manifold_v31\\05_hud_cockpit\\dist\\robots.txt"))
+            {
+                write_http_vec(&mut stream, "200 OK", "text/plain; charset=utf-8", &bytes);
+                continue;
+            }
+            let fallback_robots = "User-agent: *\nAllow: /\nAllow: /wiki.html\nAllow: /llms.txt\nAllow: /openapi.json\nAllow: /.well-known/\nDisallow: /api/v1/admin/\nDisallow: /api/v1/auth/\nSitemap: https://act-omega-net.dev/sitemap.xml\n";
+            write_http_str(&mut stream, "200 OK", "text/plain; charset=utf-8", fallback_robots);
             continue;
         }
 

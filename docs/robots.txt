@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://bospaladin34-crypto.github.io/Sovereign-Manifold-V30-A.P.H.U.S-/sitemap.xml

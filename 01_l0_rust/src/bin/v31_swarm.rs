@@ -5705,8 +5705,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
         }
 
         if clean_path == "/sitemap.xml" || clean_path.ends_with("/sitemap.xml") {
-            if let Ok(bytes) = fs::read("C:\\sovereign_manifold_v31\\sitemap.xml")
-                .or_else(|_| fs::read("C:\\sovereign_manifold_v31\\05_hud_cockpit\\dist\\sitemap.xml"))
+            if let Ok(bytes) = fs::read("C:\\sovereign_manifold_v31\\05_hud_cockpit\\dist\\sitemap.xml")
             {
                 write_http_vec(&mut stream, "200 OK", "application/xml; charset=utf-8", &bytes);
                 continue;
@@ -5717,8 +5716,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
         }
 
         if clean_path == "/robots.txt" || clean_path.ends_with("/robots.txt") {
-            if let Ok(bytes) = fs::read("C:\\sovereign_manifold_v31\\robots.txt")
-                .or_else(|_| fs::read("C:\\sovereign_manifold_v31\\05_hud_cockpit\\dist\\robots.txt"))
+            if let Ok(bytes) = fs::read("C:\\sovereign_manifold_v31\\05_hud_cockpit\\dist\\robots.txt")
             {
                 write_http_vec(&mut stream, "200 OK", "text/plain; charset=utf-8", &bytes);
                 continue;

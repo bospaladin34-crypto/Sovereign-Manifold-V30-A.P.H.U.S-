@@ -1,39 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://act-omega-net.dev/</loc>
+    <loc>https://bospaladin34-crypto.github.io/Sovereign-Manifold-V30-A.P.H.U.S-/</loc>
     <lastmod>2026-10-30</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://act-omega-net.dev/wiki.html</loc>
+    <loc>https://bospaladin34-crypto.github.io/Sovereign-Manifold-V30-A.P.H.U.S-/hud.html</loc>
     <lastmod>2026-10-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://act-omega-net.dev/llms.txt</loc>
+    <loc>https://bospaladin34-crypto.github.io/Sovereign-Manifold-V30-A.P.H.U.S-/wiki.html</loc>
     <lastmod>2026-10-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://act-omega-net.dev/openapi.json</loc>
+    <loc>https://bospaladin34-crypto.github.io/Sovereign-Manifold-V30-A.P.H.U.S-/llms.txt</loc>
+    <lastmod>2026-10-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://bospaladin34-crypto.github.io/Sovereign-Manifold-V30-A.P.H.U.S-/agent-manifest.json</loc>
     <lastmod>2026-10-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://act-omega-net.dev/.well-known/agent.json</loc>
+    <loc>https://bospaladin34-crypto.github.io/Sovereign-Manifold-V30-A.P.H.U.S-/telemetry_snapshot.json</loc>
     <lastmod>2026-10-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://act-omega-net.dev/.well-known/llm-agent.json</loc>
-    <lastmod>2026-10-30</lastmod>
-    <changefreq>weekly</changefreq>
+    <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
 </urlset>

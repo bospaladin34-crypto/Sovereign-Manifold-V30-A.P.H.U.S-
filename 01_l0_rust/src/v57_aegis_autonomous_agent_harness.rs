@@ -263,9 +263,15 @@ pub fn v57_encode_bpe_and_leech24_modalities(prompt: &str) -> (Vec<u32>, usize, 
         token_ids.push((tok_salt % (V57_BPE_VOCAB_SIZE as u64)) as u32);
     }
 
-    let primary_tid = token_ids.get(0).copied().unwrap_or(1) as u64;
-    let chair44_col = ((primary_tid.wrapping_mul(11400714819323198485u64)) % (V57_CHAIR44_COLUMNS as u64)) as usize;
-    let target_neuron = (chair44_col * 44) + ((primary_tid as usize) % 44);
+    let mut seq_hash: u64 = 0xcbf29ce484222325;
+    for (idx, tid) in token_ids.iter().enumerate() {
+        let mixed_token = (*tid as u64) ^ ((idx as u64).wrapping_add(1).wrapping_mul(0x9E3779B97F4A7C15));
+        seq_hash ^= mixed_token;
+        seq_hash = seq_hash.wrapping_mul(0x100000001b3);
+    }
+    let chair44_col = (seq_hash % (V57_CHAIR44_COLUMNS as u64)) as usize;
+    let neuron_in_col = ((seq_hash >> 16) % 44) as usize;
+    let target_neuron = (chair44_col * 44) + neuron_in_col;
 
     // Project into 24-bit Golay G24 codeword using row 0 XOR row (col % 12)
     let r0 = crate::v54_5_aperiodic_permissions_router_and_syndrome_gate::v54_5_get_golay_matrix_row(0);
@@ -760,24 +766,42 @@ pub fn v57_execute_aegis_7stage_harness(input: &str, sub_epoch: u64) -> String {
 
     // Stage 3: 262K BPE Grammar Logit Mask + Native Gemma 4 Dual .sh4z Layer Mixer
     let t_s3 = Instant::now();
-    let e4b_info_opt = v57_resolve_gemma4_tensor_offsets("E4B", "");
-    let m12b_info_opt = v57_resolve_gemma4_tensor_offsets("12B", "");
+    let e4b_layer_idx = (chair44_col.wrapping_add(sub_epoch as usize)) % 35;
+    let m12b_layer_idx = (chair44_col.wrapping_add(sub_epoch as usize)) % 40;
+    let e4b_tensor_name = format!(
+        "model.language_model.layers.{}.self_attn.q_proj.weight",
+        e4b_layer_idx
+    );
+    let m12b_tensor_name = format!(
+        "model.layers.{}.self_attn.q_proj.weight",
+        m12b_layer_idx
+    );
+    let e4b_info_opt = v57_resolve_gemma4_tensor_offsets("E4B", &e4b_tensor_name);
+    let m12b_info_opt = v57_resolve_gemma4_tensor_offsets("12B", &m12b_tensor_name);
     let e4b_stats_opt = e4b_info_opt.as_ref().and_then(|info| {
+        let max_blk = info.sh4z_block_count.saturating_sub(8).max(1);
+        let blk_shift = (target_neuron as u64) % max_blk;
+        let sh4z_off = info.sh4z_byte_offset + (blk_shift * (V57_SH4Z_BLOCK_BYTES as u64));
+        let st_off = info.safetensors_abs_start + (blk_shift * ((V57_WEIGHTS_PER_BLOCK * 2) as u64));
         v57_evaluate_sh4z_blocks(
             V57_GEMMA4_E4B_SH4Z,
-            info.sh4z_byte_offset,
+            sh4z_off,
             V57_GEMMA4_E4B_SAFETENSORS,
-            info.safetensors_abs_start,
+            st_off,
             8,
             1.0f32,
         )
     });
     let m12b_stats_opt = m12b_info_opt.as_ref().and_then(|info| {
+        let max_blk = info.sh4z_block_count.saturating_sub(8).max(1);
+        let blk_shift = (target_neuron as u64) % max_blk;
+        let sh4z_off = info.sh4z_byte_offset + (blk_shift * (V57_SH4Z_BLOCK_BYTES as u64));
+        let st_off = info.safetensors_abs_start + (blk_shift * ((V57_WEIGHTS_PER_BLOCK * 2) as u64));
         v57_evaluate_sh4z_blocks(
             V57_GEMMA4_12B_SH4Z,
-            info.sh4z_byte_offset,
+            sh4z_off,
             V57_GEMMA4_12B_SAFETENSORS,
-            info.safetensors_abs_start,
+            st_off,
             8,
             1.0f32,
         )
@@ -862,7 +886,7 @@ pub fn v57_execute_aegis_7stage_harness(input: &str, sub_epoch: u64) -> String {
     };
 
     format!(
-        "{{\"status\":\"{}\",\"harness\":\"AEGIS_HARNESS_V57_7STAGE\",\"sub_epoch\":{},\"model_routing\":\"{}\",\"connectome_scaling\":{{\"hemisphere0_neurons\":{},\"chair44_columns\":{},\"npage_bytes\":{},\"spage_bytes\":{},\"primary_cachelines\":{},\"aux_spage_cachelines\":{},\"total_synapses\":{},\"active_nonzero_synapses\":{},\"canary_verified\":{},\"bpe_vocab_size\":{},\"bpe_tokenizer_bytes\":{}}},\"stage1_5w1h_tokengate\":{{\"prompt_tokens\":{},\"tokengate_selected\":{},\"chair44_column\":{},\"target_neuron\":{},\"leech24_codeword\":\"0x{:06X}\",\"golay_syndrome\":{},\"elapsed_us\":{:.2}}},\"stage2_braidir_stomachion\":{{\"reidemeister_reduced\":true,\"plastic_rho\":{:.9},\"loq15_cachelines\":{},\"pixel10_cachelines\":{},\"pixel8_cachelines\":{},\"elapsed_us\":{:.2}}},\"stage3_gemma4_sh4z_grammar\":{{\"sh4z_vaults_active\":{},\"e4b_drafter_dot\":{:.6},\"m12b_verifier_dot\":{:.6},\"e4b_zero_sparsity_pct\":{:.2},\"m12b_zero_sparsity_pct\":{:.2},\"elapsed_us\":{:.2}}},\"stage4_apr_4ring_sandbox\":{{\"ring_level\":\"{}\",\"apr_authorized\":{},\"ticket_hmac_sha256\":\"{}\",\"elapsed_us\":{:.2}}},\"stage5_triple_oracle\":{{\"zero_bracket_violations\":{},\"lean4_qed_theorems\":{},\"muse_zero_unmeasured_ok\":{},\"triple_oracle_passed\":{},\"elapsed_us\":{:.2}}},\"stage6_vesper_self_heal\":{{\"golay_syndrome_zero\":{},\"vesper_heal_status\":\"NOMINAL_ZERO_SYNDROME\",\"elapsed_us\":{:.2}}},\"stage7_dendritic_stdp_writeback\":{{\"spage_stdp_updated\":{},\"target_neuron_updated\":{},\"hemisphere0_npage_immutable\":true,\"elapsed_us\":{:.2}}},\"total_elapsed_us\":{:.2}}}",
+        "{{\"status\":\"{}\",\"harness\":\"AEGIS_HARNESS_V57_7STAGE\",\"sub_epoch\":{},\"model_routing\":\"{}\",\"connectome_scaling\":{{\"hemisphere0_neurons\":{},\"chair44_columns\":{},\"npage_bytes\":{},\"spage_bytes\":{},\"primary_cachelines\":{},\"aux_spage_cachelines\":{},\"total_synapses\":{},\"active_nonzero_synapses\":{},\"canary_verified\":{},\"bpe_vocab_size\":{},\"bpe_tokenizer_bytes\":{}}},\"stage1_5w1h_tokengate\":{{\"prompt_tokens\":{},\"tokengate_selected\":{},\"chair44_column\":{},\"target_neuron\":{},\"leech24_codeword\":\"0x{:06X}\",\"golay_syndrome\":{},\"elapsed_us\":{:.2}}},\"stage2_braidir_stomachion\":{{\"reidemeister_reduced\":true,\"plastic_rho\":{:.9},\"loq15_cachelines\":{},\"pixel10_cachelines\":{},\"pixel8_cachelines\":{},\"elapsed_us\":{:.2}}},\"stage3_gemma4_sh4z_grammar\":{{\"sh4z_vaults_active\":{},\"e4b_layer_idx\":{},\"m12b_layer_idx\":{},\"e4b_drafter_dot\":{:.6},\"m12b_verifier_dot\":{:.6},\"e4b_zero_sparsity_pct\":{:.2},\"m12b_zero_sparsity_pct\":{:.2},\"elapsed_us\":{:.2}}},\"stage4_apr_4ring_sandbox\":{{\"ring_level\":\"{}\",\"apr_authorized\":{},\"ticket_hmac_sha256\":\"{}\",\"elapsed_us\":{:.2}}},\"stage5_triple_oracle\":{{\"zero_bracket_violations\":{},\"lean4_qed_theorems\":{},\"muse_zero_unmeasured_ok\":{},\"triple_oracle_passed\":{},\"elapsed_us\":{:.2}}},\"stage6_vesper_self_heal\":{{\"golay_syndrome_zero\":{},\"vesper_heal_status\":\"NOMINAL_ZERO_SYNDROME\",\"elapsed_us\":{:.2}}},\"stage7_dendritic_stdp_writeback\":{{\"spage_stdp_updated\":{},\"target_neuron_updated\":{},\"hemisphere0_npage_immutable\":true,\"elapsed_us\":{:.2}}},\"total_elapsed_us\":{:.2}}}",
         status,
         sub_epoch,
         model_choice,
@@ -890,6 +914,8 @@ pub fn v57_execute_aegis_7stage_harness(input: &str, sub_epoch: u64) -> String {
         pixel8_cl,
         s2_us,
         sh4z_active,
+        e4b_layer_idx,
+        m12b_layer_idx,
         e4b_dot,
         m12b_dot,
         e4b_sparsity,
@@ -984,13 +1010,19 @@ pub fn v57_run_single_autonomous_cron_tick(trigger_source: &str) -> String {
     let (domain_slug, domain_goal) = v57_domain_goal_for_tick(tick_num - 1);
 
     let harness_input = format!(
-        "{{\"goal\":\"{}\",\"ring_level\":\"RingA0\",\"model\":\"HYBRID_E4B_12B_SH4Z\"}}",
-        domain_goal
+        "{{\"goal\":\"{} (Tick {} SubEpoch {})\",\"ring_level\":\"RingA0\",\"model\":\"HYBRID_E4B_12B_SH4Z\"}}",
+        domain_goal, tick_num, sub_epoch
     );
     let harness_json = v57_execute_aegis_7stage_harness(&harness_input, sub_epoch);
     let harness_status = v57_parse_field(&harness_json, "status");
+    let chair44_col_str = v57_parse_field(&harness_json, "chair44_column");
+    let chair44_col_val = chair44_col_str.parse::<u64>().unwrap_or(0);
     let target_neuron_str = v57_parse_field(&harness_json, "target_neuron");
     let target_neuron = target_neuron_str.parse::<u64>().unwrap_or(0);
+    let e4b_layer_str = v57_parse_field(&harness_json, "e4b_layer_idx");
+    let e4b_layer_val = e4b_layer_str.parse::<u64>().unwrap_or(0);
+    let m12b_layer_str = v57_parse_field(&harness_json, "m12b_layer_idx");
+    let m12b_layer_val = m12b_layer_str.parse::<u64>().unwrap_or(0);
     let e4b_dot = v57_parse_field(&harness_json, "e4b_drafter_dot");
     let m12b_dot = v57_parse_field(&harness_json, "m12b_verifier_dot");
     let ticket_hmac = v57_parse_field(&harness_json, "ticket_hmac_sha256");
@@ -1001,7 +1033,7 @@ pub fn v57_run_single_autonomous_cron_tick(trigger_source: &str) -> String {
 
     let digest_hex = v57_sha256_hex(&harness_json.as_bytes().to_vec());
     let record_line = format!(
-        "{{\"cron_tick\":{},\"timestamp_ms\":{},\"sub_epoch\":{},\"trigger_source\":\"{}\",\"domain_id\":{},\"domain_slug\":\"{}\",\"harness_status\":\"{}\",\"target_neuron\":{},\"e4b_drafter_dot\":{},\"m12b_verifier_dot\":{},\"ticket_hmac_sha256\":\"{}\",\"cycle_sha256\":\"{}\"}}\n",
+        "{{\"cron_tick\":{},\"timestamp_ms\":{},\"sub_epoch\":{},\"trigger_source\":\"{}\",\"domain_id\":{},\"domain_slug\":\"{}\",\"harness_status\":\"{}\",\"chair44_column\":{},\"target_neuron\":{},\"e4b_layer_idx\":{},\"m12b_layer_idx\":{},\"e4b_drafter_dot\":{},\"m12b_verifier_dot\":{},\"ticket_hmac_sha256\":\"{}\",\"cycle_sha256\":\"{}\"}}\n",
         tick_num,
         now_ms,
         sub_epoch,
@@ -1009,7 +1041,10 @@ pub fn v57_run_single_autonomous_cron_tick(trigger_source: &str) -> String {
         domain_id,
         domain_slug,
         harness_status,
+        chair44_col_val,
         target_neuron,
+        e4b_layer_val,
+        m12b_layer_val,
         if e4b_dot.is_empty() { "0.0" } else { &e4b_dot },
         if m12b_dot.is_empty() { "0.0" } else { &m12b_dot },
         ticket_hmac,

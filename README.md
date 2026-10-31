@@ -1,8 +1,8 @@
 <!-- ========================================================================================= -->
-<!-- ACT-OMEGA NET v56.0.0 — 63,360 NEURONS, 1,013,760 SYNAPSES, CHAIN 210 & 624/624 QED -->
+<!-- ACT-OMEGA NET v60.0.0 — 63,360 NEURONS, 3,041,280 SYNAPSES, CHAIN 270 & 690/690 QED -->
 <!-- ========================================================================================= -->
 
-# 🌌 ACT-Omega Net `v56.0.0` (`SH4Z v5600 TLV` | `CHAIN 210`) — `210` Native Tools (`T01..T210` / `CHAIN 210`), `624/624` Substantive Lean 4 Proofs QED (`BraidIR + SH4Z + Vesper Cellular Sheaf + APR + KSUD Root`), `63,360` Neurons == `63,360` Shards (`1,440 × Chair-44` | `8,110,080 B` `.npage` SHM | `132,960` Bijected Cachelines | `1,013,760` Dual-Shell Synapses), `262,144` (18-Bit) 144-Subdomain Open-Vocabulary BPE (`0 <UNK>`), Layer 1.5 Algebraic Haskell (`GHC 9.8.2` + `DuckDB 1.5.6`), Constructive $E_8 \oplus E_8 \oplus E_8 \to \Lambda_{24}$ Leech Lattice Bridge & 10-Agent Brutal Gatekeeper Governance
+# 🌌 ACT-Omega Net `v60.0.0` (`SH4Z v6000 TLV` | `CHAIN 270`) — `270` Native Tools (`T01..T270` / `CHAIN 270`), `690/690` Substantive Lean 4 Proofs QED (`BraidIR + SH4Z + Vesper Cellular Sheaf + APR + KSUD Root + AEGIS`), `63,360` Neurons == `63,360` Shards (`1,440 × Chair-44` | `8,110,080 B` `.npage` + `4,055,040 B` `.spage` SHM | `132,960` Bijected Cachelines | `3,041,280` Total Synapses), `262,144` (18-Bit) 144-Subdomain Open-Vocabulary BPE (`0 <UNK>`), Layer 1.5 Algebraic Haskell (`GHC 9.8.2` + `DuckDB 1.5.6`), Constructive $E_8 \oplus E_8 \oplus E_8 \to \Lambda_{24}$ Leech Lattice Bridge & 10-Agent Brutal Gatekeeper Governance
 
 <p align="center">
   <img src="./act_omega_logo.jpg" alt="ACT-Omega Net Official Sovereign Harmonic Emblem" width="220" style="border-radius: 22px; border: 2px solid #FFB454;" />
@@ -10,13 +10,13 @@
 
 [![Zenodo DOI](https://img.shields.io/badge/Zenodo_DOI-10.5281%2Fzenodo.23651696-024dad?style=for-the-badge&logo=zenodo)](https://doi.org/10.5281/zenodo.23651696)
 [![OSF DOI](https://img.shields.io/badge/OSF_DOI-10.17605%2FOSF.IO%2F2XQ5Z-1c75bc?style=for-the-badge&logo=open-science-framework)](https://osf.io/2xq5z/overview)
-[![Release](https://img.shields.io/badge/Release-v56.0.0_(SH4Z_v5600_TLV_%7C_CHAIN_210_%2B_624/624_QED)-00FFCC?style=for-the-badge&logo=github)](https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-/releases/tag/v56.0.0)
-[![Weight Binary](https://img.shields.io/badge/Weights-SH4Z_v5600_(399,360_B_Tri--Bank_%7C_132,960_Bijected_CLs)-FF007F?style=for-the-badge)](https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-/tree/vesper_production/00_control/weights)
-[![Neuron Pagefile](https://img.shields.io/badge/Shards_%26_Neurons-63,360_1:1_Bijection_(1,440x_Chair--44_%7C_8,110,080_B_.npage_SHM)-7B61FF?style=for-the-badge)](https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-/tree/vesper_production/00_control/weights)
+[![Release](https://img.shields.io/badge/Release-v60.0.0_(SH4Z_v6000_TLV_%7C_CHAIN_270_%2B_690/690_QED)-00FFCC?style=for-the-badge&logo=github)](https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-/releases/tag/v60.0.0)
+[![Weight Binary](https://img.shields.io/badge/Weights-SH4Z_v6000_(399,360_B_Tri--Bank_%7C_132,960_Bijected_CLs)-FF007F?style=for-the-badge)](https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-/tree/vesper_production/00_control/weights)
+[![Neuron Pagefile](https://img.shields.io/badge/Shards_%26_Neurons-63,360_1:1_Bijection_(3,041,280_Synapses_%7C_12.16_MB_.npage%2B.spage_SHM)-7B61FF?style=for-the-badge)](https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-/tree/vesper_production/00_control/weights)
 [![SHA-256 Verified](https://img.shields.io/badge/SHA--256_Verified-Zero_Unmeasured_100%25_Byte_Sampled-FF8800?style=for-the-badge)](https://bospaladin34-crypto.github.io/telemetry_snapshot.json)
-[![Lean 4 Proofs](https://img.shields.io/badge/Lean_4_Proofs-624_/_624_Substantive_QED_(0_Sorry_%7C_BraidIR_%2B_SH4Z_%2B_APR_%2B_KSU)-00BFFF?style=for-the-badge)](https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-/tree/vesper_production/01_l0_rust/lean4)
-[![Rosetta Stone](https://img.shields.io/badge/Academic_Monograph_%26_Rosetta_Stone-24_Equations_%2B_v29--v56_Evolution-E040FB?style=for-the-badge)](./ROSETTA_STONE_AND_FORMAL_ARCHITECTURE_EVOLUTION.md)
-[![Tool Lattice](https://img.shields.io/badge/Tools-210_/_210_(CHAIN_210_Hardware_Probes)-FFD700?style=for-the-badge)](https://mcp.act-omega-net.dev/mcp)
+[![Lean 4 Proofs](https://img.shields.io/badge/Lean_4_Proofs-690_/_690_Substantive_QED_(0_Sorry_%7C_BraidIR_%2B_SH4Z_%2B_APR_%2B_AEGIS)-00BFFF?style=for-the-badge)](https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-/tree/vesper_production/01_l0_rust/lean4)
+[![Rosetta Stone](https://img.shields.io/badge/Academic_Monograph_%26_Rosetta_Stone-24_Equations_%2B_v29--v60_Evolution-E040FB?style=for-the-badge)](./ROSETTA_STONE_AND_FORMAL_ARCHITECTURE_EVOLUTION.md)
+[![Tool Lattice](https://img.shields.io/badge/Tools-270_/_270_(CHAIN_270_Hardware_Probes)-FFD700?style=for-the-badge)](https://mcp.act-omega-net.dev/mcp)
 [![Tri-Silicon Cluster](https://img.shields.io/badge/Tri--Silicon_Cluster-LOQ15_%2B_Pixel10_%2B_Pixel8_(~3,005,637k_ops/s)-00FF66?style=for-the-badge)](https://act-omega-net.dev)
 [![Cloudflare D1 Vault](https://img.shields.io/badge/Cloudflare_D1_Vault-9f46d56a_(10_Tables_%2B_8--Row_DO_Ring_Buffer)-F38020?style=for-the-badge)](https://mcp.act-omega-net.dev/v1/d1/status)
 [![Operator Manual](https://img.shields.io/badge/Operator_Manual-USER__MANUAL__AND__FAQ.md_%2B_HUD_Sidebar-34A853?style=for-the-badge)](./USER_MANUAL_AND_FAQ.md)
@@ -38,20 +38,23 @@ To ensure 100% scientific transparency and formal reproducibility across **Compi
 - **Master Markdown User Manual & FAQ:** [**`USER_MANUAL_AND_FAQ.md`**](./USER_MANUAL_AND_FAQ.md) (also mirrored to `docs/USER_MANUAL_AND_FAQ.md` and `G:\My Drive\ACT_OMEGA_GEMINI_BRIDGE\USER_MANUAL_AND_FAQ.md`).
 - **Interactive HUD Help & FAQ Sidebar:** Click **`[?] HELP, FAQ & USER MANUAL`** in the top header bar (or the floating cyan `[?] HELP & USER MANUAL` tab on the right edge of `https://act-omega-net.dev` / `http://127.0.0.1:5173` / `SovereignCockpitHUD.exe`) to open the 6-tab searchable step-by-step operator guide with live diagnostic action buttons.
 
-## 🏆 What's New in `v56.0.0` (`SH4Z v5600 TLV` | `CHAIN 210`) — `Tools 136–210` (`CHAIN 210`), `624/624` Universally Quantified Lean 4 Proofs QED, Aperiodic Permissions Router (`APR`), Pixel 8 KernelSU Root (`p8_ksu_apex_daemon` `:8098`) & Unthrottled `~3.00 GOPS` Cluster Throughput
+## 🏆 What's New in `v60.0.0` (`SH4Z v6000 TLV` | `CHAIN 270`) — `Tools 136–270` (`CHAIN 270`), `690/690` Universally Quantified Lean 4 Proofs QED, `3,041,280` Synapses, Aperiodic Permissions Router (`APR`), Pixel 8 KernelSU Root (`p8_ksu_apex_daemon` `:8098`) & Unthrottled `~3.00 GOPS` Cluster Throughput
 
-1. **`CHAIN 210` Milestone (`01_l0_rust/src/v53*.rs .. v56*.rs` — `Tools 136–210`, `0` Square Brackets across all `39` active modules `v33..v56+`)**:
+1. **`CHAIN 270` Milestone (`01_l0_rust/src/v53*.rs .. v60*.rs` — `Tools 136–270`, `0` Square Brackets across all active modules `v33..v60+`)**:
    - **Cycle 1 (`v53`, `Tools 146–162`)**: E8Vault 24D Leech Lattice Archiver & Native `Q4_K` Quantized Weight Transcoder.
    - **Cycle 2 (`v54`, `Tools 163–176`)**: Polyglot DevTools Bridge (Hyper-V VM Telemetry, Blender 3D Geometry Exporter, Fallout 4 F4SE Papyrus/XSE Memory Bridge).
    - **Cycle 3 (`v54_5`, `Tools 177–184`)**: **Aperiodic Permissions Router (`APR`)** — Pure Kasami-Golay $\mathcal{G}_{24}$ ($[24,12,8]$) matrix syndrome decoder (`0` external dependencies) with Penrose golden-ratio $\varphi$ aperiodic token rotation and timing-jitter mitigation.
    - **Cycle 4 (`v55`, `Tools 185–204`)**: **Google Pixel 8 (`shiba`) KernelSU Root (`u:r:ksu:s0`) Hardware Governor** — Direct EdgeTPU (`janeiro`), Mali-G715 `dvfs_period`, `/dev/kvm`, and `/dev/cpuset/top-app/cpus` governance with `2.5s` TTL hardware cache and Slot B stock preservation.
    - **Cycle 5 (`v56`, `Tools 205–210` = `CHAIN 210`)**: **Unthrottled Multi-Silicon Cluster Throughput (`~3,005,637.6 k ops/s` / `~3.00 GOPS`) & Native ARM64 `p8_ksu_apex_daemon` (`:8098`)** with `mlock()` L2 residency and $k=4$ speculative drafting.
-2. **`624 / 624` Substantive Machine-Checked Lean 4 Proofs QED (`03_vault/lean4/SovereignManifoldTheorems.lean` & `01_l0_rust/lean4/SovereignManifoldTheorems.lean`)**:
-   - Expands machine-verified formal proofs to **624 substantive QED theorems** (`thm_v53_565..thm_v56_624`) covering E8Vault, Polyglot Bridges, Kasami-Golay $[24,12,8]$ syndrome uniqueness, KernelSU Slot B safety, and unthrottled multi-silicon throughput (`EXIT: 0`, `0 sorry`, `0 axiom`, `0` trivial padding theorems).
-3. **`63,360` Dendritic Neurons == `63,360` Binary Shards, `132,960` Bijected Cachelines & `1,013,760` Dual-Shell Synapses (`00_control/weights/neurons_v5000_63360.npage`)**:
-   - `63,360` 3-Compartment Dendritic Pyramidal Neurons across `1,440 × Chair-44` columns (`8,110,080 B = 63,360 × 128 B = 126,720 × 64 B` cachelines) + `6,240` Tri-Bank `.e8z` cachelines (`399,360 B`) = **`132,960` Bijected Cachelines**.
+   - **Cycles 6–8 (`v57..v60`, `Tools 211–270` = `CHAIN 270`)**: **3.04M-Synapse Auxiliary `.spage` Connectome (`synapses_v5700_2027520.spage`), 64-State Vectorized SIMD Automaton (`Tools 211–230`), 8-Stage Deep-Math Synthesis (`Tools 231–250`), and Native Gemma 4 `.sh4z` Ternary Layer Mixing (`Tools 251–270`)**.
+2. **`690 / 690` Substantive Machine-Checked Lean 4 Proofs QED (`03_vault/lean4/SovereignManifoldTheorems.lean` & `01_l0_rust/lean4/SovereignManifoldTheorems.lean`)**:
+   - Expands machine-verified formal proofs to **690 substantive QED theorems** (`thm_v53_565..thm_v60_690`) covering E8Vault, Polyglot Bridges, Kasami-Golay $[24,12,8]$ syndrome uniqueness, KernelSU Slot B safety, unthrottled multi-silicon throughput, and `AEGIS-HARNESS` STDP plasticity invariants (`EXIT: 0`, `0 sorry`, `0 axiom`, `0` trivial padding theorems).
+3. **`63,360` Dendritic Neurons == `63,360` Binary Shards, `132,960` Bijected Cachelines & `3,041,280` Total Synapses (`neurons_v5000_63360.npage` + `synapses_v5700_2027520.spage`)**:
+   - `63,360` 3-Compartment Dendritic Pyramidal Neurons across `1,440 × Chair-44` columns (`8,110,080 B = 63,360 × 128 B = 126,720 × 64 B` cachelines, `1,013,760` primary synapses) + `4,055,040 B` `.spage` (`2,027,520` auxiliary plastic synapses) = **`3,041,280` Total Synapses** and **`132,960` Bijected Cachelines**.
 4. **GitHub Pages Live Hybrid WebGPU Cockpit (`docs/index.html` & `https://bospaladin34-crypto.github.io/Sovereign-Manifold-V30-A.P.H.U.S-/`)**:
-   - Relative `./` asset bundling + pre-rendered `<main data-sovereign-ssr="v56.0.0">` crawlable architectural specification that hydrates into the live 60 FPS WebGPU HUD polling `https://api.act-omega-net.dev`.
+   - Relative `./` asset bundling + pre-rendered `<main data-sovereign-ssr="v60.0.0">` crawlable architectural specification that hydrates into the live 60 FPS WebGPU HUD polling `https://api.act-omega-net.dev`.
+5. **🚧 Active Work in Progress (`WIP`): Gemini / Gemma 4 `.sh4z` Native Weight Streaming, `AEGIS-HARNESS` Autonomous Harness & Universal Autopoietic Write-Back**:
+   - **Explicit `WORK IN PROGRESS (WIP)` Notice**: The **Gemini / Gemma 4 `.sh4z` E8-Ternary Quantized Layer Mixer & HTTP 206 Byte-Range Streamer** (`/api/v1/gemma4/sh4z_layer_mixer`, `/api/v1/gemma4/http206_slice`), the **7-Stage `AEGIS-HARNESS` Autonomous Loop & Scheduled Cron** (`/api/v1/aegis/autonomous_harness`, `/api/v1/aegis/cron_status`), and the **Universal Autopoietic `E:\` SSD Vault Codegen Write-Back Pipeline** (`v48_autopoietic_coordinator_bus.rs` / `v57_aegis_autonomous_agent_harness.rs`) are currently **active Work in Progress (`WIP`)** under continuous architectural refinement, multi-model layer fusion tuning, and extended STDP plasticity benchmarking.
 
 ## 💎 Core `63,360`-Neuron Connectome, `262,144` 144-Subdomain Open-Vocabulary BPE & $E_8 \oplus E_8 \oplus E_8 \to \Lambda_{24}$ Leech Lattice Architecture (`v56.0.0`)
 

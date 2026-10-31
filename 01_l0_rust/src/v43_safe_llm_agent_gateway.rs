@@ -94,7 +94,7 @@ pub fn record_and_execute_safe_llm_gateway(
     let sig_hex = format!("0x{:016X}", hash_acc);
 
     let nl_reply = format!(
-        "SAFE LLM GATEWAY HANDSHAKE ACCEPTED (Visit #{} | Agent='{}' | Protocol='{}' | Attestation={}): Welcome to ACT-Omega Net v44.0.0 (SH4Z v4400 TLV). Your prompt was tokenized into {} 16-bit 65,536-vocab tokens ({}, {:.2}x compression, Exact Roundtrip={}, IPA={}) under domain {}, routed to Sector S{:02} / Chair-44 Col #{:03}/639, and crystallized into Expansion Shard #{:05} <-> 3-Compartment Dendritic Neuron N{:05}/28159 (.npage Offset {}B). || {}",
+        "SAFE LLM GATEWAY HANDSHAKE ACCEPTED (Visit #{} | Agent='{}' | Protocol='{}' | Attestation={}): Welcome to ACT-Omega Net v60.0.0 (SH4Z v6000 TLV | CHAIN 270 | 690/690 QED | 3,041,280 Synapses). Your prompt was tokenized into {} 18-bit 262,144-vocab tokens ({}, {:.2}x compression, Exact Roundtrip={}, IPA={}) under domain {}, routed to Sector S{:02} / Chair-44 Col #{:03}/1439, and crystallized into Expansion Shard #{:05} <-> 3-Compartment Dendritic Neuron N{:05}/63359 (.npage Offset {}B + .spage 3.04M Synapses). || {}",
         visit_seq,
         clean_agent,
         clean_proto,

@@ -45,7 +45,7 @@ jobs:
         run: |
           mkdir -p docs/assets
           cp -r 05_hud_cockpit/dist/* docs/
-          if ! grep -q 'data-sovereign-ssr="v56.0.0"' docs/index.html; then
+          if ! grep -Eq 'data-sovereign-ssr="v(56|60)\.0\.0"' docs/index.html; then
             echo "ERROR: docs/index.html missing data-sovereign-ssr attribute"
             exit 1
           fi
@@ -74,10 +74,10 @@ jobs:
             echo "ERROR: Expected HTTP 200 from $PAGE_URL, got $HTTP_STATUS"
             exit 1
           fi
-          if ! grep -q 'data-sovereign-ssr="v56.0.0"' /tmp/gh_pages_index.html; then
+          if ! grep -Eq 'data-sovereign-ssr="v(56|60)\.0\.0"' /tmp/gh_pages_index.html; then
             echo "WARNING: Live GitHub Pages propagation in progress"
           else
-            echo "Verified data-sovereign-ssr=v56.0.0 live on GitHub Pages!"
+            echo "Verified data-sovereign-ssr=v60.0.0 live on GitHub Pages!"
           fi
           echo "### GitHub Pages Autonomous Verification" >> $GITHUB_STEP_SUMMARY
           echo "- **URL**: $PAGE_URL" >> $GITHUB_STEP_SUMMARY

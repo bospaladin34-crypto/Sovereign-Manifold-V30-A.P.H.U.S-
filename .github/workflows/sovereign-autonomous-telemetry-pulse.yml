@@ -24,7 +24,7 @@ jobs:
       - name: Inspect Telemetry Snapshot & Metadata
         shell: bash
         run: |
-          echo "### Sovereign Manifold v56.0.0 Telemetry Pulse" >> $GITHUB_STEP_SUMMARY
+          echo "### Sovereign Manifold v60.0.0 Telemetry Pulse" >> $GITHUB_STEP_SUMMARY
           echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
           echo "|---|---|" >> $GITHUB_STEP_SUMMARY
           echo "| Timestamp (UTC) | $(date -u +"%Y-%m-%dT%H:%M:%SZ") |" >> $GITHUB_STEP_SUMMARY
@@ -48,7 +48,7 @@ jobs:
           fi
 
           THM_COUNT=$(grep -c "^theorem " 03_vault/lean4/SovereignManifoldTheorems.lean || true)
-          echo "| Lean 4 Theorems (QED) | $THM_COUNT / 624+ |" >> $GITHUB_STEP_SUMMARY
+          echo "| Lean 4 Theorems (QED) | $THM_COUNT / 690+ |" >> $GITHUB_STEP_SUMMARY
 
       - name: Check Live Edge Endpoint (Non-blocking)
         shell: bash

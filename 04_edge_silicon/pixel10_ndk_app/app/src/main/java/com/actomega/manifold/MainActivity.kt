@@ -69,7 +69,7 @@ import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
 
-// 60-30-10 Mature Dark Telemetry Palette (v56.0.0 Sovereign Harmonic X / CHAIN 210)
+// 60-30-10 Mature Dark Telemetry Palette (v60.0.0 Sovereign Harmonic X / CHAIN 270)
 val BgVoid60 = Color(0xFF0E1116)
 val BgPanel60 = Color(0xFF141922)
 val BgInset60 = Color(0xFF0A0D12)
@@ -101,7 +101,7 @@ data class SovereignSnap(
     val card4Status: String = "READY",
     val activeBearer: String = "B1:USB(:8097/:5173) + B3:CF-WAN",
     val rttMs: Double = 1.4,
-    val leanProofs: Int = 624,
+    val leanProofs: Int = 690,
     val totalShards: Int = 63360,
     val p8L2FreePct: Double = 89.11,
     val clusterKops: Double = 3420.0,
@@ -116,7 +116,7 @@ data class SovereignSnap(
     val navierReynolds: Double = 418.4,
     val avx2Gflops: Double = 12.4,
     val codeInspectorLine: String =
-        "pub const SH4Z_V5600_BYTES: usize = 133120; // 63,360 Shards/Neurons + 132,960 Bijected CLs + CHAIN 210 + 624/624 Lean4 QED"
+        "pub const SH4Z_V6000_BYTES: usize = 133120; // 63,360 Shards/Neurons + 3,041,280 Synapses + CHAIN 270 + 690/690 Lean4 QED"
 )
 
 object SovereignLiveBus : SensorEventListener {
@@ -189,11 +189,11 @@ object SovereignLiveBus : SensorEventListener {
     @Volatile private var stickyBearerIdx = 0
         @Volatile var lastInspectedHex = "53 48 34 5A 88 0C FF FF E8 24 7F C3 1B 4D 8E 2A"
     @Volatile var hostLastCardIdx = 0
-    @Volatile var hostLastCardDiag = "[OTA SYNC v56.0.0]: 15.965 Hz Decadic Epoch + Per-Sensor Stiefel + 63,360 Shards + 132,960 Bijected CLs + Tools 1..210 Active (CHAIN 210)."
-    @Volatile var hostLastTermOut = "EXEC(CHAIN_210_PARALLEL_DAG_QED) -> 63,360 Shards -- 132,960 Bijected CLs -- 624/624 Lean4 QED -- 210 Tools (CHAIN 210)"
+    @Volatile var hostLastCardDiag = "[OTA SYNC v60.0.0]: 15.965 Hz Decadic Epoch + Per-Sensor Stiefel + 63,360 Shards + 3,041,280 Synapses + Tools 1..270 Active (CHAIN 270)."
+    @Volatile var hostLastTermOut = "EXEC(CHAIN_270_PARALLEL_DAG_QED) -> 63,360 Shards -- 3,041,280 Synapses -- 690/690 Lean4 QED -- 270 Tools (CHAIN 270)"
     @Volatile var hostLaplacianFace = "E0(1/10 Div-Grad: div(grad f))"
     @Volatile var hostAnomalyBanner = "LAMINAR EQUILIBRIUM (U(1) Gauge Filter A'=A+grad(chi) = 0.000): 15.965 Hz Decadic Epoch Active."
-    @Volatile var hostNlSynthesis = "Sovereign Harmonic X (SH4Z v5600) Natural Language Synthesis: 15.965 Hz Decadic Epoch locked across 63,360 Shards (1,440x Chair-44, 132,960 Bijected 64B CLs), 210 Native Tools (CHAIN 210), Per-Sensor Stiefel Ortho=5.0e-7, 10-Laplacian FNO L2=0.00019, 624/624 Lean 4 Proofs QED."
+    @Volatile var hostNlSynthesis = "Sovereign Harmonic X (SH4Z v6000) Natural Language Synthesis: 15.965 Hz Decadic Epoch locked across 63,360 Shards (1,440x Chair-44, 3,041,280 Synapses, 132,960 Bijected 64B CLs), 270 Native Tools (CHAIN 270), Per-Sensor Stiefel Ortho=5.0e-7, 10-Laplacian FNO L2=0.00019, 690/690 Lean 4 Proofs QED."
     @Volatile var hostEpisodicOut = "TOOL 28 EPISODIC MEMORY READY: 63,360 Shards + JSONL Rings indexed on E:/Sovereign_Manifold_SSD_Vault." 
     @Volatile var lastInspectedTrits = "Offset=0x13C00 (80896B) -- Trits(-1/0/+1)=21/22/21 -- 1.585b Golay G24"
     private val e8zCachelineNorms = FloatArray(2080)
@@ -622,8 +622,8 @@ object SovereignLiveBus : SensorEventListener {
             ),
             TelemetryCardItem(
                 "8. FORMAL VERIFICATION & PPL",
-                "PPL MEASURED -- 624 PROOFS QED",
-                String.format(Locale.US, "624/624 Lean 4 Proofs QED -- %.2fms", hostLeanVerifyMs),
+                "PPL MEASURED -- 690 PROOFS QED",
+                String.format(Locale.US, "690/690 Lean 4 Proofs QED -- %.2fms", hostLeanVerifyMs),
                 true,
                 9,
                 "/api/v1/card/execute?card_id=7"
@@ -741,8 +741,8 @@ object SovereignLiveBus : SensorEventListener {
 
         val c3 = String.format(
             Locale.US,
-            "SH4Z v5600 (CHAIN 210) -- Gen #%d -- Lean4: 624/624 Proofs QED in %.1fms\n" +
-                "63,360 Neurons (1,440x Chair-44) -- Kasami Cw=%s -- RSR #%d -- HybridLink Hops=%d\n" +
+            "SH4Z v6000 (CHAIN 270) -- Gen #%d -- Lean4: 690/690 Proofs QED in %.1fms\n" +
+                "63,360 Neurons (3,041,280 Synapses) -- Kasami Cw=%s -- RSR #%d -- HybridLink Hops=%d\n" +
                 "LLM-Gateway (Tool 21): #%d -- FNO PDE (Tool 22): #%d (Re=%.1f) -- E:/ SSD (Tool 23): #%d",
             gen,
             hostLeanVerifyMs,
@@ -763,10 +763,10 @@ object SovereignLiveBus : SensorEventListener {
             card1Text = c1,
             card2Text = c2,
             card3Text = c3,
-            card4Status = "v56.1.0 (CHAIN 210 + 8 DOMAINS) SYNCED",
+            card4Status = "v60.0.0 (CHAIN 270 + AEGIS-HARNESS) SYNCED",
             activeBearer = bearer,
             rttMs = rtt,
-            leanProofs = 624,
+            leanProofs = 690,
             totalShards = 63360,
             p8L2FreePct = 89.11,
             clusterKops = hostClusterKops.toDouble(),
@@ -809,7 +809,7 @@ object SovereignLiveBus : SensorEventListener {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 val ch = NotificationChannel(
                     channelId,
-                    "Sovereign Manifold v56.0.0 Telemetry",
+                    "Sovereign Manifold v60.0.0 Telemetry",
                     NotificationManager.IMPORTANCE_LOW
                 )
                 nm.createNotificationChannel(ch)
@@ -829,13 +829,13 @@ object SovereignLiveBus : SensorEventListener {
             val syncPi = android.app.PendingIntent.getBroadcast(context, 4402, syncIntent, piFlags)
 
             val title = if (isPixel8ComputeNode) {
-                String.format(Locale.US, "SH4Z v5600 P8 .npage SHM (CHAIN 210) -- %.1fk ops/s", snap.clusterKops)
+                String.format(Locale.US, "SH4Z v6000 P8 .npage/.spage SHM (CHAIN 270) -- %.1fk ops/s", snap.clusterKops)
             } else {
-                String.format(Locale.US, "SH4Z v5600 P10 24D + .npage SHM (CHAIN 210) -- %.1fk ops/s", snap.clusterKops)
+                String.format(Locale.US, "SH4Z v6000 P10 24D + .npage/.spage SHM (CHAIN 270) -- %.1fk ops/s", snap.clusterKops)
             }
             val body = String.format(
                 Locale.US,
-                "Tick #%d | 63,360N (132,960 CLs) | 262K Vocab | 210 Tools | 624/624 QED | %s (%.1fms)",
+                "Tick #%d | 63,360N / 3.04M Syn | 262K Vocab | 270 Tools | 690/690 QED | %s (%.1fms)",
                 snap.gen,
                 snap.activeBearer,
                 snap.rttMs
@@ -927,11 +927,11 @@ object SovereignLiveBus : SensorEventListener {
                 snap.gen, snap.wsLoqLines, snap.wsP10Lines, snap.wsP8Lines, bNorm, snap.clusterKops
             )
             val titleLine = if (isPixel8ComputeNode) {
-                "SOVEREIGN v56.0.0 P8-APEX -- 63.3K NEURONS | 132.9K CLs | CHAIN 210 | 624 QED"
+                "SOVEREIGN v60.0.0 P8-APEX -- 63.3K NEURONS | 3.04M SYN | CHAIN 270 | 690 QED"
             } else {
-                "SOVEREIGN v56.0.0 P10-G5 -- 63.3K NEURONS | 132.9K CLs | CHAIN 210 | 624 QED"
+                "SOVEREIGN v60.0.0 P10-G5 -- 63.3K NEURONS | 3.04M SYN | CHAIN 270 | 690 QED"
             }
-            val subLine = "act-omega-net.dev -- 6,240 .e8z + 126,720 .npage CLs -- 210 Tools (CHAIN 210) -- 624/624 QED"
+            val subLine = "act-omega-net.dev -- 3.04M Synapses (.npage+.spage) -- 270 Tools (CHAIN 270) -- 690/690 QED"
 
             val piFlags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE
@@ -1307,12 +1307,12 @@ object SovereignVisualizerRenderer {
         paint.textSize = (w * 0.032f).coerceIn(22f, 38f)
         paint.color = 0xFFFFB454.toInt()
         val nodeTag = if (isP8) "PIXEL 8 P8-APEX (4.00MB L2 SHM)" else "PIXEL 10 TENSOR G5 (24D + SHM)"
-        canvas.drawText("ACT-OMEGA v56.0.0 (63.3K NEURONS | 132.9K CLs | CHAIN 210 | 624 QED) -- $nodeTag", cx, h * 0.08f, paint)
+        canvas.drawText("ACT-OMEGA v60.0.0 (63.3K NEURONS | 3.04M SYNAPSES | CHAIN 270 | 690 QED) -- $nodeTag", cx, h * 0.08f, paint)
 
         paint.textSize = (w * 0.025f).coerceIn(17f, 28f)
         paint.color = 0xFF00FFCC.toInt()
         canvas.drawText(
-            String.format(Locale.US, "15.965 Hz Decadic | 63,360 Neurons (132,960 Bijected CLs / 8.11MB .npage) | %.1fk ops/s", snap.clusterKops),
+            String.format(Locale.US, "15.965 Hz Decadic | 63,360 Neurons (3,041,280 Synapses / 12.16MB .npage+.spage) | %.1fk ops/s", snap.clusterKops),
             cx,
             h * 0.115f,
             paint
@@ -1320,7 +1320,7 @@ object SovereignVisualizerRenderer {
 
         paint.color = 0xFF9FB0C2.toInt()
         canvas.drawText(
-            String.format(Locale.US, "Tick #%d | 1,440x Chair-44 | 262,144 Vocab | 210 Tools (CHAIN 210) | 624/624 Lean 4 QED | %s", snap.gen, snap.activeBearer.take(24)),
+            String.format(Locale.US, "Tick #%d | 1,440x Chair-44 | 262,144 Vocab | 270 Tools (CHAIN 270) | 690/690 Lean 4 QED | %s", snap.gen, snap.activeBearer.take(24)),
             cx,
             h * 0.945f,
             paint
@@ -1345,7 +1345,7 @@ class SovereignDreamSettingsActivity : ComponentActivity() {
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 Text(
-                    "ACT-OMEGA v56.0.0 SCREENSAVER & LIVE WALLPAPER",
+                    "ACT-OMEGA v60.0.0 SCREENSAVER & LIVE WALLPAPER",
                     color = AccentAmber10,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
@@ -1700,7 +1700,7 @@ fun SovereignCockpitV326Screen() {
                         )
                     }
                     Text(
-                        text = "SOVEREIGN MANIFOLD TELEMETRY CONSOLE -- ACT-OMEGA NET v56.0.0 (63.3K NEURONS | 132,960 BIJECTED CLs | CHAIN 210 | 624 QED)",
+                        text = "SOVEREIGN MANIFOLD TELEMETRY CONSOLE -- ACT-OMEGA NET v60.0.0 (63.3K NEURONS | 3,041,280 SYNAPSES | CHAIN 270 | 690 QED)",
                         color = AccentAmber10,
                         fontSize = 9.2.sp,
                         fontWeight = FontWeight.Bold,
@@ -1723,7 +1723,7 @@ fun SovereignCockpitV326Screen() {
                 }
             }
             Text(
-                text = "60-30-10 Dark Telemetry HUD -- 63,360 Neurons (8.11MB .npage SHM / 132,960 Bijected 64B CLs) -- 262,144 18-Bit BPE Vocab -- 210 Tools (CHAIN 210) -- 624/624 Lean 4 Proofs QED",
+                text = "60-30-10 Dark Telemetry HUD -- 63,360 Neurons (3,041,280 Synapses / 132,960 Bijected 64B CLs) -- 262,144 18-Bit BPE Vocab -- 270 Tools (CHAIN 270) -- 690/690 Lean 4 Proofs QED",
                 color = TextIvory30,
                 fontSize = 8.2.sp,
                 fontFamily = FontFamily.Monospace
@@ -1894,7 +1894,7 @@ fun SovereignCockpitV326Screen() {
                 ToolButton603010("3:5W1H+SHM", Color(0xFF2B2100), Color(0xFFFFB454), Modifier.weight(1f)) {
                     drawerAOpen = false; drawerBOpen = false; browserOpen = false; drawer1Open = true; drawer2Open = true; drawer3Open = true; drawer4Open = false
                 }
-                ToolButton603010("4:210 TOOLS", Color(0xFF261038), Color(0xFFFFD700), Modifier.weight(1f)) {
+                ToolButton603010("4:270 TOOLS", Color(0xFF261038), Color(0xFFFFD700), Modifier.weight(1f)) {
                     drawerAOpen = false; drawerBOpen = false; browserOpen = false; drawer1Open = false; drawer2Open = false; drawer3Open = false; drawer4Open = true
                 }
                 ToolButton603010("BUS+E:", Color(0xFF062A24), Color(0xFF56D364), Modifier.weight(1f)) {
@@ -2617,12 +2617,12 @@ fun SovereignCockpitV326Screen() {
 
         Spacer(modifier = Modifier.height(6.dp))
 
-        // DRAWER 3: FORMAL VERIFICATION SUITE (624/624 LEAN 4 PROOFS QED) & 4-STAGE CASCADE
+        // DRAWER 3: FORMAL VERIFICATION SUITE (690/690 LEAN 4 PROOFS QED) & 4-STAGE CASCADE
         DrawerCard603010(
-            title = "[-] DRAWER 3: FORMAL VERIFICATION SUITE (624/624 LEAN 4 PROOFS QED) & 4-STAGE CASCADE",
+            title = "[-] DRAWER 3: FORMAL VERIFICATION SUITE (690/690 LEAN 4 PROOFS QED) & 4-STAGE CASCADE",
             accentBorder = AccentAmber10,
             titleColor = TextIvory30,
-            rightLabel = "80 Sectors = 624/624 QED",
+            rightLabel = "80 Sectors = 690/690 QED",
             isOpen = drawer3Open,
             onToggle = { drawer3Open = !drawer3Open }
         ) {
@@ -2647,8 +2647,8 @@ fun SovereignCockpitV326Screen() {
                     fontFamily = FontFamily.Monospace,
                     modifier = Modifier.weight(0.72f)
                 )
-                ToolButton603010("VERIFY 624 LEAN 4", AccentAmber10, BgVoid60, Modifier.weight(0.28f)) {
-                    invokeHostEndpoint("/api/v1/compiler/verify?q=" + java.net.URLEncoder.encode(leanQuery, "UTF-8"), null, "VERIFY 624/624 LEAN 4 QED")
+                ToolButton603010("VERIFY 690 LEAN 4", AccentAmber10, BgVoid60, Modifier.weight(0.28f)) {
+                    invokeHostEndpoint("/api/v1/compiler/verify?q=" + java.net.URLEncoder.encode(leanQuery, "UTF-8"), null, "VERIFY 690/690 LEAN 4 QED")
                 }
             }
             Spacer(modifier = Modifier.height(4.dp))
@@ -2671,12 +2671,12 @@ fun SovereignCockpitV326Screen() {
 
         Spacer(modifier = Modifier.height(6.dp))
 
-        // DRAWER 4: 210-TOOL EXECUTION REGISTRY (CHAIN 210 MILESTONE), PRESET QUERIES & TELEMETRY LOG TERMINAL (ALL BUTTONS MATCHING HOST)
+        // DRAWER 4: 270-TOOL EXECUTION REGISTRY (CHAIN 270 MILESTONE), PRESET QUERIES & TELEMETRY LOG TERMINAL (ALL BUTTONS MATCHING HOST)
         DrawerCard603010(
-            title = "[-] DRAWER 4: 210-TOOL EXECUTION REGISTRY (CHAIN 210 MILESTONE), PRESET QUERIES & TELEMETRY LOG TERMINAL",
+            title = "[-] DRAWER 4: 270-TOOL EXECUTION REGISTRY (CHAIN 270 MILESTONE | v60.0.0), AEGIS-HARNESS & TELEMETRY LOG TERMINAL",
             accentBorder = AccentRed10,
             titleColor = TextIvory30,
-            rightLabel = String.format(Locale.US, "WS=%.1fk ops/s -- 132.9K CLs", snap.clusterKops),
+            rightLabel = String.format(Locale.US, "WS=%.1fk ops/s -- 3.04M Syn", snap.clusterKops),
             isOpen = drawer4Open,
             onToggle = { drawer4Open = !drawer4Open }
         ) {
@@ -2701,12 +2701,12 @@ fun SovereignCockpitV326Screen() {
                     val qEnc = java.net.URLEncoder.encode(cmdPrompt, "UTF-8")
                     invokeHostEndpoint("/api/v1/agent_gateway/interact?agent_id=mobile_hud&q=$qEnc", null, "EXECUTE PROMPT")
                 }
-                ToolButton603010("TRANSDUCE 65K BPE", Color(0xFF002B24), Color(0xFF00FFCC), Modifier.weight(1f)) {
+                ToolButton603010("TRANSDUCE 262K BPE", Color(0xFF002B24), Color(0xFF00FFCC), Modifier.weight(1f)) {
                     val qEnc = java.net.URLEncoder.encode(cmdPrompt, "UTF-8")
-                    invokeHostEndpoint("/api/v1/tokenizer/bpe_65k?q=$qEnc", null, "65,536-TOKEN BPE+8D INSPECTOR")
+                    invokeHostEndpoint("/api/v1/tokenizer/bpe_65k?q=$qEnc", null, "262,144-TOKEN BPE INSPECTOR")
                 }
-                ToolButton603010("CHAIN 210", AccentRed10, TextIvory30, Modifier.weight(0.8f)) {
-                    invokeHostEndpoint("/api/v1/chain210/suite", null, "CHAIN 210")
+                ToolButton603010("CHAIN 270", AccentRed10, TextIvory30, Modifier.weight(0.8f)) {
+                    invokeHostEndpoint("/api/v1/chain270/suite", null, "CHAIN 270")
                 }
                 ToolButton603010("CLEAR", SlateSurface30, TextIvory30, Modifier.weight(0.6f)) {
                     toolOutput = "READY."
@@ -2746,6 +2746,7 @@ fun SovereignCockpitV326Screen() {
                         fontFamily = FontFamily.Monospace
                     )
                 }
+            }
             Spacer(modifier = Modifier.height(4.dp))
 
             // =========================================================================
@@ -2957,6 +2958,27 @@ fun SovereignCockpitV326Screen() {
                     )
                 }
             }
+            // Row v60.0.0: CHAIN 270 Omni-Suite, AEGIS-HARNESS 7-Stage Loop, Gemma 4 .sh4z Mixer, HTTP 206 Slicer & 3.04M .spage Synapses
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                ToolButton603010("CHAIN 270 Omni", Color(0xFF2B2100), Color(0xFFFFD700), Modifier.weight(1.1f)) {
+                    invokeHostEndpoint("/api/v1/chain270/suite", null, "v60.0.0 CHAIN 270 OMNI-SUITE (TOOLS 1..270)")
+                }
+                ToolButton603010("AEGIS 7-Stage", Color(0xFF002B24), Color(0xFF00FFCC), Modifier.weight(1f)) {
+                    val qEnc = java.net.URLEncoder.encode(cmdPrompt, "UTF-8")
+                    invokeHostEndpoint("/api/v1/aegis/autonomous_harness?q=$qEnc", null, "v57.0.0 AEGIS-HARNESS 7-STAGE AUTONOMOUS LOOP")
+                }
+                ToolButton603010("Gemma4 .sh4z Mix", Color(0xFF261038), Color(0xFFB388FF), Modifier.weight(1f)) {
+                    val qEnc = java.net.URLEncoder.encode(cmdPrompt, "UTF-8")
+                    invokeHostEndpoint("/api/v1/gemma4/sh4z_layer_mixer?q=$qEnc", null, "GEMMA 4 E4B+12B .SH4Z SURGICAL LAYER MIXER")
+                }
+                ToolButton603010("HTTP 206 Slice", Color(0xFF091F2C), Color(0xFF00E5FF), Modifier.weight(1f)) {
+                    invokeHostEndpoint("/api/v1/gemma4/http206_slice?offset=1048576&len=128", null, "GEMMA 4 HTTP 206 BYTE-EXACT SLICER")
+                }
+                ToolButton603010("3.04M .spage", Color(0xFF0D2618), Color(0xFF56D364), Modifier.weight(1f)) {
+                    invokeHostEndpoint("/api/v1/connectome/spage_3m_synapses", null, "3,041,280 SYNAPSES (.NPAGE + .SPAGE)")
+                }
+            }
+            Spacer(modifier = Modifier.height(4.dp))
             // Row v56.0.0: CHAIN 210 Omni-Suite & Cycles 1–5 Quick Launch (Tools 146..210)
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 ToolButton603010("CHAIN 210 Omni", Color(0xFF2B2100), Color(0xFFFFD700), Modifier.weight(1.1f)) {
@@ -3382,19 +3404,19 @@ fun SovereignCockpitV326Screen() {
             }
             Spacer(modifier = Modifier.height(4.dp))
 
-            // Row 4: TOOL 8, TOOL 5, TOOL 2, CHAIN 210
+            // Row 4: TOOL 8, TOOL 5, TOOL 2, CHAIN 270
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 ToolButton603010("TOOL 8: Self-Analyze", AccentAmber10, BgVoid60, Modifier.weight(1f)) {
                     invokeHostEndpoint("/api/v1/telemetry", null, "TOOL 8: ZERO-DUMMY AUDIT")
                 }
-                ToolButton603010("TOOL 5: Lean 4 (624)", SlateSurface30, TextIvory30, Modifier.weight(1f)) {
-                    invokeHostEndpoint("/api/v1/compiler/verify", null, "TOOL 5: 624/624 LEAN 4 PROOFS")
+                ToolButton603010("TOOL 5: Lean 4 (690)", SlateSurface30, TextIvory30, Modifier.weight(1f)) {
+                    invokeHostEndpoint("/api/v1/compiler/verify", null, "TOOL 5: 690/690 LEAN 4 PROOFS")
                 }
                 ToolButton603010("TOOL 2: Vault (63360)", SlateSurface30, TextIvory30, Modifier.weight(1f)) {
                     invokeHostEndpoint("/api/v1/StateGraph", null, "TOOL 2: 63,360-NEURON VAULT")
                 }
-                ToolButton603010("CHAIN 210: Full Verify", AccentRed10, TextIvory30, Modifier.weight(1f)) {
-                    invokeHostEndpoint("/api/v1/chain210/suite", null, "CHAIN 210: 210-TOOL VERIFY")
+                ToolButton603010("CHAIN 270: Full Verify", AccentRed10, TextIvory30, Modifier.weight(1f)) {
+                    invokeHostEndpoint("/api/v1/chain270/suite", null, "CHAIN 270: 270-TOOL VERIFY")
                 }
             }
 
@@ -3416,7 +3438,7 @@ fun SovereignCockpitV326Screen() {
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = String.format(Locale.US, "[SH4Z v5600 (132,960 Bijected 64B CLs: 6,240 .e8z + 126,720 .npage)]: Work-Stealing=2,080 Lines (%.1fk ops/s) -- 624/624 Lean 4 QED -- 63,360 Neurons (1,440x Chair44, 8.11MB SHM) -- 262,144 BPE+144-Subdomain Tokens -- 210 Tools (CHAIN 210) -- E:/ Tier-2 SSD Active", snap.clusterKops),
+                        text = String.format(Locale.US, "[SH4Z v6000 (132,960 Bijected 64B CLs + 3,041,280 Synapses: 8.11MB .npage + 4.06MB .spage)]: Work-Stealing=2,080 Lines (%.1fk ops/s) -- 690/690 Lean 4 QED -- 63,360 Neurons (1,440x Chair44) -- 262,144 BPE+144-Subdomain Tokens -- 270 Tools (CHAIN 270) -- E:/ Tier-2 SSD Active", snap.clusterKops),
                         color = AccentAmber10,
                         fontSize = 8.5.sp,
                         lineHeight = 12.sp,

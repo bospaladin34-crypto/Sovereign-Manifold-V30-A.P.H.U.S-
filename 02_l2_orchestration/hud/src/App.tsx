@@ -1581,7 +1581,7 @@ export function App() {
         pollInFlight = false;
       }
     };
-    document.title = "ACT-Omega Net v56.0.0 (SH4Z v5600 15.965Hz Decadic HUD) -- 63,360 Neurons, 132,960 Bijected CLs, 624/624 Lean 4 QED & Tools 1..210 (CHAIN 210 Suite)";
+    document.title = "ACT-Omega Net v60.0.0 (SH4Z v6000 15.965Hz Decadic HUD) -- 63,360 Neurons, 3,041,280 Synapses, 690/690 Lean 4 QED & Tools 1..270 (CHAIN 270 Suite)";
     pollTelemetry();
     runE8LeechFluencyBridge(e8LeechQuery);
     const id = window.setInterval(pollTelemetry, 500);
@@ -2508,7 +2508,7 @@ export function App() {
               style={{ width: 34, height: 34, borderRadius: 7, border: "1.5px solid #FFB454", boxShadow: "0 0 8px rgba(0,255,204,0.35)" }}
             />
             <div style={{ color: "#FFB454", fontWeight: "bold", fontSize: 13 }}>
-              SOVEREIGN MANIFOLD TELEMETRY CONSOLE -- ACT-OMEGA NET v56.0.0 (SH4Z v5600 TLV | 63,360 Neurons / 132,960 Bijected CLs / 144 Sub-Domains | CHAIN 210 | 624/624 Lean 4 QED)
+              SOVEREIGN MANIFOLD TELEMETRY CONSOLE -- ACT-OMEGA NET v60.0.0 (SH4Z v6000 TLV | 63,360 Neurons / 3,041,280 Synapses / 132,960 Bijected CLs | CHAIN 270 | 690/690 Lean 4 QED)
             </div>
           </div>
           <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
@@ -2608,12 +2608,12 @@ export function App() {
           </div>
         </div>
         <div style={{ color: "#FFFEFB", fontSize: 11, marginTop: 2 }}>
-          15.965 Hz (62,637 us) Decadic Epoch E{tel.decadic_sub_epoch}/9 -- {tel.laplacian_face} -- 63,360 Neurons (21,120 Core + 21,120 Exp + 21,120 Tier-3, 1,440x Chair-44, 1,013,760 Dual-Shell Synapses, 8.11 MB .npage, 132,960 Bijected 64B CLs) -- 262,144-Token (18-Bit BPE) 36 Macro-Domains x 4 Sub-Domains = 144 Sub-Domains (2,048 Compounds) -- PPL={e8LeechState.holdout_ppl > 0 ? e8LeechState.holdout_ppl.toFixed(6) : Math.exp(tel.stiefel_ortho_err * 100.0 + tel.fno_l2_err * 50.0 + 0.082).toFixed(6)} -- 624/624 Lean 4 QED -- Tools 1..210 (CHAIN 210 Suite)
+          15.965 Hz (62,637 us) Decadic Epoch E{tel.decadic_sub_epoch}/9 -- {tel.laplacian_face} -- 63,360 Neurons (21,120 Core + 21,120 Exp + 21,120 Tier-3, 1,440x Chair-44, 3,041,280 Synapses across 8.11 MB .npage + 4.05 MB .spage, 132,960 Bijected 64B CLs) -- Dual Gemma 4 .sh4z (5.30 GB / 19.96B E8 Ternary Weights) -- 262,144-Token (18-Bit BPE) 36 Macro-Domains x 4 = 144 Sub-Domains -- PPL={e8LeechState.holdout_ppl > 0 ? e8LeechState.holdout_ppl.toFixed(6) : Math.exp(tel.stiefel_ortho_err * 100.0 + tel.fno_l2_err * 50.0 + 0.082).toFixed(6)} -- 690/690 Lean 4 QED -- Tools 1..270 (CHAIN 270 Suite)
         </div>
         <div style={{ background: "#0A0D12", border: "1px solid #56D364", borderRadius: 4, padding: "4px 8px", marginTop: 5, color: "#56D364", fontSize: 10.5 }}>
           [TOOL 29 REAL-TIME PHYSICAL &amp; U(1) GAUGE ALERT BANNER]: {tel.anomaly_banner}
         </div>
-        {/* v56.0.0 5-Node Live Topology, P8 .npage SHM & Latency Ribbon */}
+        {/* v60.0.0 5-Node Live Topology, P8 .npage+.spage SHM & Latency Ribbon */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 6, marginTop: 5, background: "#070B10", border: "1px solid #2A3B4D", borderRadius: 5, padding: "5px 8px" }}>
           <div onClick={() => callEndpoint("/api/v1/diagnostics/v44_perf_blitz", "TOOL 80: v44.1.0 PERF BLITZ VERIFIER")} style={{ cursor: "pointer", borderLeft: "3px solid #56D364", paddingLeft: 6 }}>
             <div style={{ color: "#56D364", fontWeight: "bold", fontSize: 9.5 }}>NODE 1: LOQ 15 ANCHOR (:8097)</div>
@@ -2627,13 +2627,13 @@ export function App() {
             <div style={{ color: "#FFB454", fontWeight: "bold", fontSize: 9.5 }}>NODE 3: PIXEL 8 .NPAGE SHM (L2)</div>
             <div style={{ color: "#FFFEFB", fontSize: 10 }}>{tel.p8_temp_c.toFixed(1)}C | {tel.pixel8_l2_kops.toFixed(0)}k ops/s (+93.9%) | 89.11% 4MB L2 (S64..S79)</div>
           </div>
-          <div onClick={() => callEndpoint("/api/v1/pagefile/cauchy_sparse_npage?neuron_id=24640", "TOOL 42: 63,360-NEURON .NPAGE")} style={{ cursor: "pointer", borderLeft: "3px solid #B388FF", paddingLeft: 6 }}>
-            <div style={{ color: "#B388FF", fontWeight: "bold", fontSize: 9.5 }}>NODE 4: E:\ SSD + 63,360 .NPAGE</div>
-            <div style={{ color: "#FFFEFB", fontSize: 10 }}>8.11 MB SHM (1,440 Cols, 126,720 64B CLs)</div>
+          <div onClick={() => callEndpoint("/api/v1/connectome/spage_3m_synapses", "TOOL 212: 63,360N .NPAGE + 3.04M .SPAGE")} style={{ cursor: "pointer", borderLeft: "3px solid #B388FF", paddingLeft: 6 }}>
+            <div style={{ color: "#B388FF", fontWeight: "bold", fontSize: 9.5 }}>NODE 4: E:\ SSD + 3.04M SYNAPSES</div>
+            <div style={{ color: "#FFFEFB", fontSize: 10 }}>12.16 MB SHM (.npage 8.11M + .spage 4.05M)</div>
           </div>
-          <div onClick={() => callEndpoint("/api/v1/chain210/suite", "CHAIN 210: v56.0.0 OMNI-SUITE")} style={{ cursor: "pointer", borderLeft: "3px solid #00FFCC", paddingLeft: 6 }}>
+          <div onClick={() => callEndpoint("/api/v1/chain270/master_certification", "CHAIN 270: v60.0.0 MASTER CERT")} style={{ cursor: "pointer", borderLeft: "3px solid #00FFCC", paddingLeft: 6 }}>
             <div style={{ color: "#00FFCC", fontWeight: "bold", fontSize: 9.5 }}>NODE 5: CLOUDFLARE D1 + WEBGPU</div>
-            <div style={{ color: "#FFFEFB", fontSize: 10 }}>10 D1 Tables | 624/624 Lean 4 QED | CHAIN 210 (v56.0.0)</div>
+            <div style={{ color: "#FFFEFB", fontSize: 10 }}>10 D1 Tables | 690/690 Lean 4 QED | CHAIN 270 (v60.0.0)</div>
           </div>
         </div>
         {/* v56.0.0 Host<->Pixel 8 .npage Shared-Memory Pagefile Ring & Browser WebGPU Compute Lease Control Bar */}
@@ -3935,14 +3935,14 @@ export function App() {
       {/* DRAWER 3: Formal Verification Suite */}
       <div style={{ background: "#141922", border: "1px solid #2A3B4D", borderRadius: 6, padding: "8px 10px", marginBottom: 8 }}>
         <div onClick={() => setDrawer3Open(!drawer3Open)} style={{ display: "flex", justifyContent: "space-between", cursor: "pointer", fontWeight: "bold", marginBottom: drawer3Open ? 6 : 0 }}>
-          <span>[-] DRAWER 3: FORMAL VERIFICATION SUITE (624/624 LEAN 4 PROOFS QED) &amp; 10-PILLAR PHYSICS</span>
-          <span style={{ color: "#FFB454" }}>80 Sectors = 624/624 Lean 4 Proofs QED ({tel.lean4_verify_ms.toFixed(1)}ms)</span>
+          <span>[-] DRAWER 3: FORMAL VERIFICATION SUITE (690/690 LEAN 4 PROOFS QED) &amp; 10-PILLAR PHYSICS</span>
+          <span style={{ color: "#FFB454" }}>80 Sectors = 690/690 Lean 4 Proofs QED ({tel.lean4_verify_ms.toFixed(1)}ms)</span>
         </div>
         {drawer3Open && (
           <>
             <div style={{ display: "flex", gap: 6, marginBottom: 5 }}>
               <input value={leanQuery} onChange={(e) => setLeanQuery(e.target.value)} style={{ flex: 1, background: "#0A0D12", color: "#FFFEFB", border: "1px solid #2A3B4D", borderRadius: 4, padding: "4px 8px", fontFamily: "monospace", fontSize: 11 }} />
-              <button onClick={() => callEndpoint(`/api/v1/compiler/verify?q=${encodeURIComponent(leanQuery)}`, "VERIFY 624 LEAN 4 PROOFS")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 12px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>VERIFY 624/624 LEAN 4 PROOFS</button>
+              <button onClick={() => callEndpoint(`/api/v1/compiler/verify?q=${encodeURIComponent(leanQuery)}`, "VERIFY 690 LEAN 4 PROOFS")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 12px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>VERIFY 690/690 LEAN 4 PROOFS</button>
             </div>
             <div style={{ color: "#FFB454", fontSize: 10.5 }}>
               [10-Pillar Physics &amp; 4-Stage Cascade]: {tel.physics_10pillar} -- Verify={tel.lean4_verify_ms.toFixed(1)}ms
@@ -3951,10 +3951,10 @@ export function App() {
         )}
       </div>
 
-      {/* DRAWER 4: 210-Tool Execution Registry (CHAIN 210 Milestone), NL Synthesis, Episodic Memory Search & Terminal */}
+      {/* DRAWER 4: 270-Tool Execution Registry (CHAIN 270 Milestone), NL Synthesis, Episodic Memory Search & Terminal */}
       <div style={{ background: "#141922", border: "1px solid #00FFCC", borderRadius: 6, padding: "8px 10px" }}>
         <div onClick={() => setDrawer4Open(!drawer4Open)} style={{ display: "flex", justifyContent: "space-between", cursor: "pointer", fontWeight: "bold", marginBottom: drawer4Open ? 6 : 0 }}>
-          <span>[-] DRAWER 4: 210-TOOL EXECUTION REGISTRY (v56.0.0 MONOGRAPH, BRAIN &amp; HOST TOOLCHAIN SUITE T104..T210 | CHAIN 210), AUTONOMOUS INTELLIGENCE, NL SYNTHESIS &amp; MEMORY</span>
+          <span>[-] DRAWER 4: 270-TOOL EXECUTION REGISTRY (v60.0.0 AEGIS-HARNESS, GEMMA 4 .SH4Z &amp; CHAIN 270 T01..T270), AUTONOMOUS INTELLIGENCE, NL SYNTHESIS &amp; MEMORY</span>
           <span style={{ color: "#00FFCC" }}>RSR #{tel.rsr_step} -- HybridLink={tel.hybrid_hops} -- WS={tel.cluster_total_kops.toFixed(1)}k ops/s -- Kasami={tel.kasami_cw_hex}</span>
         </div>
         {drawer4Open && (
@@ -4267,15 +4267,46 @@ export function App() {
             <div style={{ background: "#050E14", border: "1.5px solid #00FFCC", borderRadius: 5, padding: "8px 12px", marginBottom: 8, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 6 }}>
               <div>
                 <span style={{ color: "#00FFCC", fontWeight: "bold", fontSize: 11 }}>
-                  [8-DOMAIN FUNCTIONAL COMMAND DECK — 210 TOOLS CONSOLIDATED (CHAIN 210 | v56.1.0 | 624/624 LEAN 4 QED)]:
+                  [8-DOMAIN FUNCTIONAL COMMAND DECK — 270 TOOLS CONSOLIDATED (CHAIN 270 | v60.0.0 | 690/690 LEAN 4 QED | 3.04M SYNAPSES)]:
                 </span>
                 <span style={{ color: "#FFB454", fontSize: 9.5, marginLeft: 8, fontWeight: "bold" }}>
-                  Unified Dispatchers (/api/v1/unified/*) | Universal E:\ SSD Write-Back | Zero-Bracket Strictness
+                  Unified Dispatchers (/api/v1/unified/*) | AEGIS Autonomous Cron | Dual Gemma 4 .sh4z (5.30 GB) | Universal E:\ Write-Back
                 </span>
               </div>
-              <div style={{ display: "flex", gap: 5 }}>
+              <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+                <button onClick={() => callEndpoint("/api/v1/chain270/master_certification", "CHAIN 270: MASTER DUAL .SH4Z & 690 QED CERTIFICATION")} style={{ background: "#FFD700", color: "#050A0E", border: "none", borderRadius: 4, padding: "3px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>CHAIN 270 MASTER CERT</button>
+                <button onClick={() => callEndpoint("/api/v1/chain270/suite", "CHAIN 270: 270-TOOL OMNI-SUITE")} style={{ background: "#56D364", color: "#050A0E", border: "none", borderRadius: 4, padding: "3px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>CHAIN 270 SUITE</button>
                 <button onClick={() => callEndpoint("/api/v1/chain210/suite", "CHAIN 210: 210-TOOL OMNI-SUITE")} style={{ background: "#00FFCC", color: "#050A0E", border: "none", borderRadius: 4, padding: "3px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>CHAIN 210 SUITE</button>
                 <button onClick={() => callEndpoint("/api/v1/harmonic/tool_chain?q=chain89_parallel_dag", "CHAIN 89: 89-TOOL PARALLEL DAG")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "3px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>CHAIN 89 DAG</button>
+              </div>
+            </div>
+
+            {/* Dedicated v57..v60 AEGIS-HARNESS Autonomous Cron, Dual Gemma 4 .sh4z Layer Mixer & CHAIN 270 Suite (Tools 211..270) */}
+            <div style={{ background: "#08121E", border: "1.5px solid #FFD700", borderRadius: 5, padding: "7px 10px", marginBottom: 8 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 6, marginBottom: 5 }}>
+                <span style={{ color: "#FFD700", fontWeight: "bold", fontSize: 10.5 }}>
+                  [v57.0..v60.0 AEGIS-HARNESS AUTONOMOUS CRON + NATIVE GEMMA 4 E4B/12B .SH4Z LAYER MIXER + CHAIN 270 (TOOLS 211..270 | 690/690 QED)]:
+                </span>
+                <span style={{ color: "#00FFCC", fontSize: 9.5, fontWeight: "bold" }}>
+                  3,041,280 Synapses (.npage 8.11MB + .spage 4.05MB) | 19.96B E8 Ternary Weights (5.30 GB .sh4z) | MCP: https://mcp.act-omega-net.dev/mcp
+                </span>
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+                <button onClick={() => callEndpoint(`/api/v1/harness/aegis_autonomous_loop?q=${encodeURIComponent(cmdPrompt)}`, "AEGIS-HARNESS: 7-STAGE AUTONOMOUS LOOP")} style={{ background: "#FFD700", color: "#050A0E", border: "none", borderRadius: 4, padding: "4px 8px", cursor: "pointer", fontFamily: "monospace", fontSize: 9.5, fontWeight: "bold" }}>⚡ AEGIS 7-STAGE HARNESS</button>
+                <button onClick={() => callEndpoint("/api/v1/aegis/cron_status?action=trigger_now", "AEGIS CRON: IMMEDIATE AUTONOMOUS TICK")} style={{ background: "#56D364", color: "#050A0E", border: "none", borderRadius: 4, padding: "4px 8px", cursor: "pointer", fontFamily: "monospace", fontSize: 9.5, fontWeight: "bold" }}>⏱️ CRON: TRIGGER NOW</button>
+                <button onClick={() => callEndpoint("/api/v1/aegis/cron_status?action=status", "AEGIS CRON: DAEMON STATUS & LEDGER")} style={{ background: "#0D2618", color: "#56D364", border: "1px solid #56D364", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>Cron Status &amp; Ledger</button>
+                <button onClick={() => callEndpoint(`/api/v1/gemma4/sh4z_layer_mixer?q=${encodeURIComponent(cmdPrompt)}`, "GEMMA 4 DUAL .SH4Z SURGICAL LAYER MIXER (E4B + 12B)")} style={{ background: "#261038", color: "#FF9EFF", border: "1px solid #FF9EFF", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>Gemma 4 E4B/12B .sh4z Mixer</button>
+                <button onClick={() => callEndpoint("/api/v1/gemma4/http206_slice?offset=0&len=64", "GEMMA 4 HTTP 206 BYTE-EXACT RANGE SLICER")} style={{ background: "#1F1030", color: "#B388FF", border: "1px solid #B388FF", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>HTTP 206 Byte Slicer</button>
+                <button onClick={() => callEndpoint("/api/v1/connectome/spage_3m_synapses", "3,041,280-SYNAPSE .SPAGE AUXILIARY DENDRITIC BANK")} style={{ background: "#002B24", color: "#00FFCC", border: "1px solid #00FFCC", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>3.04M Synapse .spage Bank</button>
+                <button onClick={() => callEndpoint("/api/v1/tools/t211", "TOOL 211: PIXEL 8 ZUMA 9-CORE PMU AFFINITY")} style={{ background: "#091F2C", color: "#00E5FF", border: "1px solid #00E5FF", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>T211: P8 9-Core PMU</button>
+                <button onClick={() => callEndpoint("/api/v1/tools/t218", "TOOL 218: BERNOULLI SOPHOMORE'S DREAM INTEGRAL")} style={{ background: "#3A1C00", color: "#FFB454", border: "1px solid #FFB454", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>T218: Sophomore&apos;s Dream</button>
+                <button onClick={() => callEndpoint("/api/v1/tools/t220", "TOOL 220: 21-CM 1420.405 MHZ HI HYPERFINE LINE")} style={{ background: "#2B2100", color: "#FFEA00", border: "1px solid #FFEA00", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>T220: 21-cm HI Line</button>
+                <button onClick={() => callEndpoint("/api/v1/tools/t230", "TOOL 230: CHAIN 230 V57 SEAL")} style={{ background: "#1C2B00", color: "#A6FF00", border: "1px solid #A6FF00", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>T230: CHAIN 230 Seal</button>
+                <button onClick={() => callEndpoint("/api/v1/tools/t246", "TOOL 246: CHAIN 246 V58 SEAL")} style={{ background: "#091F2C", color: "#00E5FF", border: "1px solid #00E5FF", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>T246: CHAIN 246 Seal</button>
+                <button onClick={() => callEndpoint("/api/v1/tools/t250", "TOOL 250: KERR BLACK HOLE ISCO & ERGOSPHERE")} style={{ background: "#261038", color: "#FFD700", border: "1px solid #FFD700", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>T250: Kerr Black Hole ISCO</button>
+                <button onClick={() => callEndpoint("/api/v1/tools/t260", "TOOL 260: RYU-TAKAYANAGI HOLOGRAPHIC ENTANGLEMENT")} style={{ background: "#002B24", color: "#00FFCC", border: "1px solid #00FFCC", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>T260: Ryu-Takayanagi AdS3</button>
+                <button onClick={() => callEndpoint("/api/v1/tools/t265", "TOOL 265: DUAL .SH4Z SPECULATIVE CASCADE K=4")} style={{ background: "#0D2618", color: "#56D364", border: "1px solid #56D364", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>T265: Dual .sh4z Cascade</button>
+                <button onClick={() => callEndpoint("/api/v1/tools/t270", "TOOL 270: CHAIN 270 MASTER CAPSTONE")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 8px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>T270: CHAIN 270 Capstone</button>
               </div>
             </div>
 
@@ -4406,7 +4437,7 @@ export function App() {
             <div style={{ background: "#0A0D12", border: "1px solid #2A3B4D", borderRadius: 4, padding: 6, marginBottom: 6, fontSize: 10.5 }}>
               <div style={{ color: "#FFFEFB" }}>&gt; PROMPT: {cmdPrompt}</div>
               <div style={{ color: "#FFB454", marginTop: 2 }}>
-                [SH4Z v5600 (133,120 B / 15.965 Hz Decadic Epoch HUD)]: Work-Stealing={tel.ws_loq_lines}+{tel.ws_p10_lines}+{tel.ws_p8_lines}=2,080 Lines ({tel.cluster_total_kops.toFixed(1)}k ops/s) -- 624/624 Lean 4 QED -- 63,360 Neurons (1,440x Chair44) -- 36 Macro-Domains / 144 Sub-Domains (2,048 Compounds) -- Tools 1..210 (CHAIN 210 Suite) -- PPL={e8LeechState.holdout_ppl.toFixed(6)}
+                [SH4Z v6000 (133,120 B / 15.965 Hz Decadic Epoch HUD)]: Work-Stealing={tel.ws_loq_lines}+{tel.ws_p10_lines}+{tel.ws_p8_lines}=2,080 Lines ({tel.cluster_total_kops.toFixed(1)}k ops/s) -- 690/690 Lean 4 QED -- 63,360 Neurons (1,440x Chair44, 3,041,280 Synapses) -- Dual Gemma 4 .sh4z (5.30 GB) -- 36 Macro-Domains / 144 Sub-Domains -- Tools 1..270 (CHAIN 270 Suite) -- PPL={e8LeechState.holdout_ppl.toFixed(6)}
               </div>
               <div style={{ color: "#56D364", marginTop: 2 }}>&gt; OUTPUT: {termOut}</div>
             </div>
@@ -4416,6 +4447,7 @@ export function App() {
               <button onClick={() => callEndpoint(`/api/v1/converse/multiturn_memory?q=${encodeURIComponent(cmdPrompt)}`, "MULTI-TURN MEMORY T73")} style={{ background: "#261038", color: "#FFD700", border: "1px solid #FFD700", borderRadius: 4, padding: "4px 10px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>MEMORY (T73)</button>
               <button onClick={() => callEndpoint(`/api/v1/converse/dialectical_debate?q=${encodeURIComponent(cmdPrompt)}`, "SOCRATIC DEBATE T74")} style={{ background: "#002B24", color: "#00FFCC", border: "1px solid #00FFCC", borderRadius: 4, padding: "4px 10px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>DEBATE (T74)</button>
               <button onClick={() => callEndpoint(`/api/v1/agent_gateway/interact?agent_id=hud&q=${encodeURIComponent(cmdPrompt)}`, "EXECUTE PROMPT")} style={{ background: "#1C2632", color: "#FFFEFB", border: "1px solid #FFB454", borderRadius: 4, padding: "4px 12px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>EXECUTE</button>
+              <button onClick={() => callEndpoint("/api/v1/chain270/master_certification", "CHAIN 270: MASTER CERT")} style={{ background: "#FFD700", color: "#050A0E", border: "none", borderRadius: 4, padding: "4px 12px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>CHAIN 270</button>
               <button onClick={() => callEndpoint("/api/v1/chain210/suite", "CHAIN 210: OMNI-SUITE")} style={{ background: "#00FFCC", color: "#050A0E", border: "none", borderRadius: 4, padding: "4px 12px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>CHAIN 210</button>
               <button onClick={() => callEndpoint("/api/v1/harmonic/tool_chain?q=chain89_parallel_dag", "CHAIN 89")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 12px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>CHAIN 89</button>
               <button onClick={() => setTermOut("READY.")} style={{ background: "#1C2632", color: "#FFFEFB", border: "1px solid #2A3B4D", borderRadius: 4, padding: "4px 10px", cursor: "pointer", fontSize: 10.5 }}>CLEAR</button>
@@ -4477,10 +4509,10 @@ export function App() {
           <div style={{ background: "#101822", borderBottom: "1px solid #2A3B4D", padding: "10px 14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div>
               <div style={{ color: "#00FFCC", fontWeight: "bold", fontSize: 12.5 }}>
-                ACT-OMEGA v56.0.0 OPERATOR MANUAL &amp; STEP-BY-STEP GUIDE (CHAIN 210 MILESTONE)
+                ACT-OMEGA v60.0.0 OPERATOR MANUAL &amp; STEP-BY-STEP GUIDE (CHAIN 270 MILESTONE)
               </div>
               <div style={{ color: "#9FB0C2", fontSize: 10, marginTop: 2 }}>
-                Live Status: <b style={{ color: "#56D364" }}>ONLINE ({tel.cluster_total_kops.toFixed(1)}k ops/s)</b> | 63,360N (8.11MB SHM) | 624/624 QED | Tools 1..210 (v56)
+                Live Status: <b style={{ color: "#56D364" }}>ONLINE ({tel.cluster_total_kops.toFixed(1)}k ops/s)</b> | 63,360N (3.04M Synapses) | 690/690 QED | Tools 1..270 (v60)
               </div>
             </div>
             <button

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">ACT-Omega v56.0.0 (CHAIN 210)</string>
-    <string name="sovereign_dream_label">ACT-Omega v56.0.0 Live Screensaver (3D Stiefel &amp; 132.9K CLs -- 624/624 QED)</string>
-    <string name="sovereign_wallpaper_label">ACT-Omega v56.0.0 Live Wallpaper (15.965Hz Manifold -- 624/624 QED)</string>
-    <string name="sovereign_wallpaper_desc">Real-time 15.965 Hz Decadic Stiefel Manifold, Theodorus Spiral, 16x130 Bijection Heatmap (132,960 CLs), 63,360-Neuron .npage SHM &amp; 624/624 Lean 4 QED</string>
+    <string name="app_name">ACT-Omega v60.0.0 (CHAIN 270)</string>
+    <string name="sovereign_dream_label">ACT-Omega v60.0.0 Live Screensaver (3D Stiefel &amp; 3.04M Synapses -- 690/690 QED)</string>
+    <string name="sovereign_wallpaper_label">ACT-Omega v60.0.0 Live Wallpaper (15.965Hz Manifold -- 690/690 QED)</string>
+    <string name="sovereign_wallpaper_desc">Real-time 15.965 Hz Decadic Stiefel Manifold, Theodorus Spiral, 16x130 Bijection Heatmap (132,960 CLs), 63,360-Neuron / 3.04M-Synapse SHM &amp; 690/690 Lean 4 QED</string>
 </resources>

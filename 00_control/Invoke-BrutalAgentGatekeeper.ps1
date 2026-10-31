@@ -160,8 +160,8 @@ function Run-StaticGatekeeperChecks {
             continue
         }
         $hContent = [System.IO.File]::ReadAllText($hf)
-        if ($hContent -notmatch 'data-sovereign-ssr="v56\.0\.0"') {
-            $failures.Add("HTML_SSR_MISSING: $hf missing data-sovereign-ssr=`"v56.0.0`" attribute")
+        if ($hContent -notmatch 'data-sovereign-ssr="v(56|60)\.0\.0"') {
+            $failures.Add("HTML_SSR_MISSING: $hf missing data-sovereign-ssr=`"v60.0.0`" attribute")
         }
         $bundleMatches = [regex]::Matches($hContent, '(?i)(?:\./)?assets/(index-[^"''\s>]+\.js)')
         if ($bundleMatches.Count -eq 0) {

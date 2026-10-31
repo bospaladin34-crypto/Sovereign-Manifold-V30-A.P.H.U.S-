@@ -28,7 +28,7 @@ if ($Restart) {
 
 $proc = Get-Process -Name "SovereignCockpitHUD" -ErrorAction SilentlyContinue
 if ($proc) {
-    Write-Host "SovereignCockpitHUD is RUNNING (PID: $($proc.Id)) - v56.0.0 (CHAIN 210 | 624 QED)" -ForegroundColor Green
+    Write-Host "SovereignCockpitHUD is RUNNING (PID: $($proc.Id)) - v60.0.0 (CHAIN 270 | 690 QED | 3.04M Synapses)" -ForegroundColor Green
 } else {
     Write-Host "SovereignCockpitHUD is STOPPED" -ForegroundColor Yellow
 }

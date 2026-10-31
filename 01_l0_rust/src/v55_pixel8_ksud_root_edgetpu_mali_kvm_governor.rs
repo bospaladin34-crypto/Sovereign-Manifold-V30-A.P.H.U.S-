@@ -42,8 +42,8 @@ use std::time::{Instant, SystemTime, UNIX_EPOCH};
 pub const V55_PIXEL8_DEVICE_SERIAL: &str = "3A121FDJH00BW5";
 pub const V55_PIXEL8_DEVICE_CODENAME: &str = "shiba (Google Pixel 8 - Tensor G3 zuma)";
 pub const V55_PIXEL8_ANDROID_BUILD: &str = "CP41.260831.019 (Android 17 QPR2 Beta)";
-pub const V55_STOCK_INIT_BOOT_SHA256: &str = "84ECFA41044D301D096B31657430F693D605C88DB77969E8B604B804C8D5E55D";
-pub const V55_PATCHED_ALLOWSHELL_SHA256: &str = "7BC59BA6F08639AF1C2F90E80EADCF536810746C52E6770A8D5CE5EB28A0FFF2";
+pub const V55_STOCK_INIT_BOOT_SHA256: &str = "84ECFA41044D301D096B31657430F693D605C88DB77969E8B604B804C8D5E55D"; // SCAFFOLD: reference CP41.260831.019 factory stock init_boot digest — measure via v55_get_stock_boot_hash()
+pub const V55_PATCHED_ALLOWSHELL_SHA256: &str = "7BC59BA6F08639AF1C2F90E80EADCF536810746C52E6770A8D5CE5EB28A0FFF2"; // SCAFFOLD: reference KernelSU-Next patched init_boot digest — measure via v55_get_patched_boot_hash()
 pub const V55_MALI_G715_L2_TOTAL_BYTES: usize = 4096 * 1024;
 pub const V55_MALI_G715_L2_MLOCK_BYTES: usize = (640 * 44 * 128) + 133120;
 pub const V55_EDGETPU_MAJOR: u32 = 487;
@@ -122,18 +122,40 @@ impl Clone for V55Pixel8LiveTelemetry {
 
 static V55_CACHE_TIMESTAMP_MS: AtomicU64 = AtomicU64::new(0);
 static V55_HARDWARE_CACHE: Mutex<Option<V55Pixel8LiveTelemetry>> = Mutex::new(None);
+static V55_STOCK_BOOT_HASH: Mutex<Option<String>> = Mutex::new(None);
 static V55_PATCHED_BOOT_HASH: Mutex<Option<String>> = Mutex::new(None);
 
-fn v55_get_patched_boot_hash() -> Option<String> {
+pub fn v55_get_stock_boot_hash() -> Option<String> {
+    if let Ok(guard) = V55_STOCK_BOOT_HASH.lock() {
+        if let Some(ref h) = *guard {
+            return Some(h.clone());
+        }
+    }
+    let p1 = "00_control/pixel8_shiba_ksu/stock_init_boot_cp41.260831.019.img";
+    let p2 = "C:/sovereign_manifold_v31/00_control/pixel8_shiba_ksu/stock_init_boot_cp41.260831.019.img";
+    let p3 = "E:/Sovereign_Manifold_SSD_Vault/pixel8_shiba_ksu/stock_init_boot_cp41.260831.019.img";
+    if let Ok(data) = fs::read(p1).or_else(|_| fs::read(p2)).or_else(|_| fs::read(p3)) {
+        let h = crate::v50_rayon_avx2_tlv_simulator_coordinator::v50_sha256_hex(&data).to_uppercase();
+        if let Ok(mut guard) = V55_STOCK_BOOT_HASH.lock() {
+            *guard = Some(h.clone());
+        }
+        Some(h)
+    } else {
+        None
+    }
+}
+
+pub fn v55_get_patched_boot_hash() -> Option<String> {
     if let Ok(guard) = V55_PATCHED_BOOT_HASH.lock() {
         if let Some(ref h) = *guard {
             return Some(h.clone());
         }
     }
     let p1 = "00_control/pixel8_shiba_ksu/ksunext_342_patched_init_boot_cp41.260831.019.img";
-    let p2 = "E:/Sovereign_Manifold_SSD_Vault/pixel8_shiba_ksu/ksunext_342_patched_init_boot_cp41.260831.019.img";
-    if let Ok(data) = fs::read(p1).or_else(|_| fs::read(p2)) {
-        let h = crate::v50_rayon_avx2_tlv_simulator_coordinator::v50_sha256_hex(&data);
+    let p2 = "C:/sovereign_manifold_v31/00_control/pixel8_shiba_ksu/ksunext_342_patched_init_boot_cp41.260831.019.img";
+    let p3 = "E:/Sovereign_Manifold_SSD_Vault/pixel8_shiba_ksu/ksunext_342_patched_init_boot_cp41.260831.019.img";
+    if let Ok(data) = fs::read(p1).or_else(|_| fs::read(p2)).or_else(|_| fs::read(p3)) {
+        let h = crate::v50_rayon_avx2_tlv_simulator_coordinator::v50_sha256_hex(&data).to_uppercase();
         if let Ok(mut guard) = V55_PATCHED_BOOT_HASH.lock() {
             *guard = Some(h.clone());
         }
@@ -261,15 +283,19 @@ pub fn handle_hardware_audit_api() -> String {
     let temp = tel.thermal_zone0_temp_c;
     let slot = if !tel.active_slot.is_empty() { tel.active_slot } else { String::from("_a") };
     let ctx = if !tel.selinux_context.is_empty() { tel.selinux_context } else { String::from("u:r:ksu:s0") };
+    let measured_stock_sha = v55_get_stock_boot_hash().unwrap_or_else(|| String::from("UNMEASURED/OFFLINE"));
+    let measured_patched_sha = v55_get_patched_boot_hash().unwrap_or_else(|| String::from("UNMEASURED/OFFLINE"));
+    let slot_b_verified = measured_stock_sha.eq_ignore_ascii_case(V55_STOCK_INIT_BOOT_SHA256);
 
     format!(
-        "{{\"status\":\"MEASURED_PIXEL8_ROOT_HARDWARE_AUDIT_OK\",\"device_serial\":\"{}\",\"device_codename\":\"{}\",\"android_build\":\"{}\",\"active_slot\":\"{}\",\"stock_init_boot_sha256\":\"{}\",\"slot_b_rollback_invariant_verified\":true,\"patched_init_boot_sha256\":\"{}\",\"root_credential\":\"uid=0(root) gid=0(root) groups=0(root) context={}\",\"ksu_version\":\"ksud 3.4.2 (uapi: 5, ksu fd: 6)\",\"edgetpu_soc\":\"/dev/edgetpu-soc (487,1 u:object_r:edgetpu_device:s0)\",\"edgetpu_limited\":\"/dev/edgetpu-limited (487,2 u:object_r:edgetpu_device:s0)\",\"gpu_mali0\":\"/dev/mali0 (10,86 u:object_r:gpu_device:s0)\",\"gpu_l2_cache_pinned_mb\":4.00,\"kvm\":\"/dev/kvm (10,232 u:object_r:kvm_device:s0)\",\"cpu_policy0_cur_freq_khz\":{},\"cpu_policy4_cur_freq_khz\":{},\"cpu_policy8_cur_freq_khz\":{},\"thermal_zone0_temp_celsius\":{:.1},\"unlocked_accelerators\":\x5b\"OPEN_ROOT_RW_VERIFIED: /dev/mali0 (10,86 u:object_r:gpu_device:s0)\",\"OPEN_ROOT_RW_VERIFIED: /dev/kvm (10,232 u:object_r:kvm_device:s0)\",\"OPEN_ROOT_RW_VERIFIED: /dev/edgetpu-soc (487,1 u:object_r:edgetpu_device:s0)\",\"OPEN_ROOT_RW_VERIFIED: /dev/edgetpu-limited (487,2 u:object_r:edgetpu_device:s0)\"\x5d,\"elapsed_us\":{:.2}}}",
+        "{{\"status\":\"MEASURED_PIXEL8_ROOT_HARDWARE_AUDIT_OK\",\"device_serial\":\"{}\",\"device_codename\":\"{}\",\"android_build\":\"{}\",\"active_slot\":\"{}\",\"stock_init_boot_sha256\":\"{}\",\"slot_b_rollback_invariant_verified\":{},\"patched_init_boot_sha256\":\"{}\",\"root_credential\":\"uid=0(root) gid=0(root) groups=0(root) context={}\",\"ksu_version\":\"ksud 3.4.2 (uapi: 5, ksu fd: 6)\",\"edgetpu_soc\":\"/dev/edgetpu-soc (487,1 u:object_r:edgetpu_device:s0)\",\"edgetpu_limited\":\"/dev/edgetpu-limited (487,2 u:object_r:edgetpu_device:s0)\",\"gpu_mali0\":\"/dev/mali0 (10,86 u:object_r:gpu_device:s0)\",\"gpu_l2_cache_pinned_mb\":4.00,\"kvm\":\"/dev/kvm (10,232 u:object_r:kvm_device:s0)\",\"cpu_policy0_cur_freq_khz\":{},\"cpu_policy4_cur_freq_khz\":{},\"cpu_policy8_cur_freq_khz\":{},\"thermal_zone0_temp_celsius\":{:.1},\"unlocked_accelerators\":\x5b\"OPEN_ROOT_RW_VERIFIED: /dev/mali0 (10,86 u:object_r:gpu_device:s0)\",\"OPEN_ROOT_RW_VERIFIED: /dev/kvm (10,232 u:object_r:kvm_device:s0)\",\"OPEN_ROOT_RW_VERIFIED: /dev/edgetpu-soc (487,1 u:object_r:edgetpu_device:s0)\",\"OPEN_ROOT_RW_VERIFIED: /dev/edgetpu-limited (487,2 u:object_r:edgetpu_device:s0)\"\x5d,\"elapsed_us\":{:.2}}}",
         V55_PIXEL8_DEVICE_SERIAL,
         V55_PIXEL8_DEVICE_CODENAME,
         V55_PIXEL8_ANDROID_BUILD,
         slot,
-        V55_STOCK_INIT_BOOT_SHA256,
-        V55_PATCHED_ALLOWSHELL_SHA256,
+        measured_stock_sha,
+        slot_b_verified,
+        measured_patched_sha,
         ctx,
         p0,
         p4,
@@ -364,26 +390,31 @@ pub fn v55_tool185_ksud_root_credential_and_selinux_gate(_input: &str) -> String
 // ----------------------------------------------------------------------------
 pub fn v55_tool186_stock_slot_b_rollback_invariance_sentry(_input: &str) -> String {
     let t0 = Instant::now();
-    let invariant_hash = V55_STOCK_INIT_BOOT_SHA256;
-
     let ctrl_stock_path = "00_control/pixel8_shiba_ksu/stock_init_boot_cp41.260831.019.img";
+    let abs_stock_path = "C:/sovereign_manifold_v31/00_control/pixel8_shiba_ksu/stock_init_boot_cp41.260831.019.img";
     let vault_stock_path = "E:/Sovereign_Manifold_SSD_Vault/pixel8_shiba_ksu/stock_init_boot_cp41.260831.019.img";
-    let file_meta = fs::metadata(ctrl_stock_path).or_else(|_| fs::metadata(vault_stock_path));
+    let file_meta = fs::metadata(ctrl_stock_path)
+        .or_else(|_| fs::metadata(abs_stock_path))
+        .or_else(|_| fs::metadata(vault_stock_path));
 
-    if let Ok(meta) = file_meta {
+    if let (Ok(meta), Some(measured_hash)) = (file_meta, v55_get_stock_boot_hash()) {
         let file_len = meta.len();
+        let inv_ok = measured_hash.eq_ignore_ascii_case(V55_STOCK_INIT_BOOT_SHA256);
         format!(
-            "{{\"status\":\"MEASURED_SLOT_B_ROLLBACK_INVARIANT_LOCKED\",\"tool_id\":186,\"tool\":\"stock_slot_b_rollback_invariance_sentry\",\"device_serial\":\"{}\",\"target_slot\":\"_b\",\"stock_init_boot_sha256\":\"{}\",\"stock_init_boot_bytes\":{},\"invariance_verified\":true,\"rollback_command\":\"fastboot --set-active=b\",\"rollback_safe\":true,\"elapsed_us\":{:.2}}}",
+            "{{\"status\":\"{}\",\"tool_id\":186,\"tool\":\"stock_slot_b_rollback_invariance_sentry\",\"device_serial\":\"{}\",\"target_slot\":\"_b\",\"stock_init_boot_sha256\":\"{}\",\"expected_reference_sha256\":\"{}\",\"stock_init_boot_bytes\":{},\"invariance_verified\":{},\"rollback_command\":\"fastboot --set-active=b\",\"rollback_safe\":{},\"elapsed_us\":{:.2}}}",
+            if inv_ok { "MEASURED_SLOT_B_ROLLBACK_INVARIANT_LOCKED" } else { "STOCK_BOOT_HASH_MISMATCH" },
             V55_PIXEL8_DEVICE_SERIAL,
-            invariant_hash,
+            measured_hash,
+            V55_STOCK_INIT_BOOT_SHA256,
             file_len,
+            inv_ok,
+            inv_ok,
             t0.elapsed().as_secs_f64() * 1_000_000.0
         )
     } else {
         format!(
-            "{{\"status\":\"UNMEASURED/OFFLINE\",\"tool_id\":186,\"tool\":\"stock_slot_b_rollback_invariance_sentry\",\"device_serial\":\"{}\",\"target_slot\":\"_b\",\"stock_init_boot_sha256\":\"{}\",\"stock_init_boot_bytes\":0,\"invariance_verified\":false,\"rollback_command\":\"fastboot --set-active=b\",\"rollback_safe\":false,\"elapsed_us\":{:.2}}}",
+            "{{\"status\":\"UNMEASURED/OFFLINE\",\"tool_id\":186,\"tool\":\"stock_slot_b_rollback_invariance_sentry\",\"device_serial\":\"{}\",\"target_slot\":\"_b\",\"stock_init_boot_sha256\":\"UNMEASURED/OFFLINE\",\"stock_init_boot_bytes\":0,\"invariance_verified\":false,\"rollback_command\":\"fastboot --set-active=b\",\"rollback_safe\":false,\"elapsed_us\":{:.2}}}",
             V55_PIXEL8_DEVICE_SERIAL,
-            invariant_hash,
             t0.elapsed().as_secs_f64() * 1_000_000.0
         )
     }
@@ -619,20 +650,26 @@ pub fn v55_tool199_pixel8_master_certification_artifact_verifier(_input: &str) -
 
     let cert_present = !cert_data.is_empty();
 
-    if cert_present {
+    let measured_stock = v55_get_stock_boot_hash().unwrap_or_else(|| String::from("UNMEASURED/OFFLINE"));
+    let measured_patched = v55_get_patched_boot_hash().unwrap_or_else(|| String::from("UNMEASURED/OFFLINE"));
+    let inv_ok = measured_stock.eq_ignore_ascii_case(V55_STOCK_INIT_BOOT_SHA256);
+
+    if cert_present && inv_ok {
         format!(
             "{{\"status\":\"MEASURED_MASTER_CERTIFICATION_VALIDATED\",\"tool_id\":199,\"tool\":\"pixel8_master_certification_artifact_verifier\",\"device_serial\":\"{}\",\"cert_artifact_present\":true,\"stock_init_boot_sha256\":\"{}\",\"patched_allowshell_sha\":\"{}\",\"unlocked_accelerators_count\":4,\"invariance_verified\":true,\"elapsed_us\":{:.2}}}",
             V55_PIXEL8_DEVICE_SERIAL,
-            V55_STOCK_INIT_BOOT_SHA256,
-            V55_PATCHED_ALLOWSHELL_SHA256,
+            measured_stock,
+            measured_patched,
             t0.elapsed().as_secs_f64() * 1_000_000.0
         )
     } else {
         format!(
-            "{{\"status\":\"UNMEASURED/OFFLINE\",\"tool_id\":199,\"tool\":\"pixel8_master_certification_artifact_verifier\",\"device_serial\":\"{}\",\"cert_artifact_present\":false,\"stock_init_boot_sha256\":\"{}\",\"patched_allowshell_sha\":\"{}\",\"unlocked_accelerators_count\":0,\"invariance_verified\":false,\"elapsed_us\":{:.2}}}",
+            "{{\"status\":\"UNMEASURED/OFFLINE\",\"tool_id\":199,\"tool\":\"pixel8_master_certification_artifact_verifier\",\"device_serial\":\"{}\",\"cert_artifact_present\":{},\"stock_init_boot_sha256\":\"{}\",\"patched_allowshell_sha\":\"{}\",\"unlocked_accelerators_count\":0,\"invariance_verified\":{},\"elapsed_us\":{:.2}}}",
             V55_PIXEL8_DEVICE_SERIAL,
-            V55_STOCK_INIT_BOOT_SHA256,
-            V55_PATCHED_ALLOWSHELL_SHA256,
+            cert_present,
+            measured_stock,
+            measured_patched,
+            inv_ok,
             t0.elapsed().as_secs_f64() * 1_000_000.0
         )
     }
@@ -677,11 +714,21 @@ pub fn v55_tool201_ksu_selinux_permissive_transition_auditor(_input: &str) -> St
 // ----------------------------------------------------------------------------
 pub fn v55_tool202_fastboot_dual_slot_ab_rollback_auditor(_input: &str) -> String {
     let t0 = Instant::now();
-    format!(
-        "{{\"status\":\"MEASURED_FASTBOOT_ROLLBACK_AUDITED\",\"tool_id\":202,\"tool\":\"fastboot_dual_slot_ab_rollback_auditor\",\"rollback_command\":\"fastboot --set-active=b\",\"rollback_target_slot\":\"_b\",\"stock_factory_sha256\":\"{}\",\"untouched_invariance\":true,\"zero_wipe_rollback\":true,\"elapsed_us\":{:.2}}}",
-        V55_STOCK_INIT_BOOT_SHA256,
-        t0.elapsed().as_secs_f64() * 1_000_000.0
-    )
+    if let Some(measured_stock) = v55_get_stock_boot_hash() {
+        let inv_ok = measured_stock.eq_ignore_ascii_case(V55_STOCK_INIT_BOOT_SHA256);
+        format!(
+            "{{\"status\":\"MEASURED_FASTBOOT_ROLLBACK_AUDITED\",\"tool_id\":202,\"tool\":\"fastboot_dual_slot_ab_rollback_auditor\",\"rollback_command\":\"fastboot --set-active=b\",\"rollback_target_slot\":\"_b\",\"stock_factory_sha256\":\"{}\",\"untouched_invariance\":{},\"zero_wipe_rollback\":{},\"elapsed_us\":{:.2}}}",
+            measured_stock,
+            inv_ok,
+            inv_ok,
+            t0.elapsed().as_secs_f64() * 1_000_000.0
+        )
+    } else {
+        format!(
+            "{{\"status\":\"UNMEASURED/OFFLINE\",\"tool_id\":202,\"tool\":\"fastboot_dual_slot_ab_rollback_auditor\",\"rollback_command\":\"fastboot --set-active=b\",\"rollback_target_slot\":\"_b\",\"stock_factory_sha256\":\"UNMEASURED/OFFLINE\",\"untouched_invariance\":false,\"zero_wipe_rollback\":false,\"elapsed_us\":{:.2}}}",
+            t0.elapsed().as_secs_f64() * 1_000_000.0
+        )
+    }
 }
 
 // ----------------------------------------------------------------------------

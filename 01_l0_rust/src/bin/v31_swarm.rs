@@ -4007,7 +4007,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             continue;
         }
 
-        // 6I-0000b. Track 37.4 + 37.13 + v59.8: Tool 46 -- Interactive JSON-RPC 2.0 Model Context Protocol (MCP 2025-03-26 / 2024-11-05 / 2026-07-28) Server (/api/v1/mcp/rpc & /mcp)
+        // 6I-0000b. Track 37.4 + 37.13 + v60.0: Tool 46 -- Strict Spec-Compliant JSON-RPC 2.0 Model Context Protocol (MCP 2025-03-26 / 2024-11-05 / 2026-07-28) Server (/api/v1/mcp/rpc & /mcp)
         if clean_path == "/api/v1/mcp/rpc" || clean_path == "/mcp" {
             let (gen_cnt, sub_ep) = {
                 let mut st = match state.lock() {
@@ -4019,6 +4019,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             };
             let m = evaluate_mcp_server_portal(gen_cnt);
             let negotiated_proto = v58_v60_chain270_vector_and_gemma4_synthesis::v60_negotiate_mcp_protocol_version(&post_body);
+            let id_raw = v58_v60_chain270_vector_and_gemma4_synthesis::v60_extract_jsonrpc_id_raw(&post_body);
             let rpc_method = {
                 let m_q = extract_query_param(raw_target, "method");
                 if !m_q.is_empty() {
@@ -4043,8 +4044,29 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                     if !a_q.is_empty() {
                         a_q
                     } else {
-                        let a_b = extract_json_str_field(&post_body, "prompt");
-                        if !a_b.is_empty() { a_b } else if !post_body.is_empty() { post_body.clone() } else { String::from("MCP tools/call: Evaluate 144-subdomain 262,144-token BPE and crystallize dendritic neuron") }
+                        let q_b = extract_json_str_field(&post_body, "query");
+                        if !q_b.is_empty() {
+                            q_b
+                        } else {
+                            let p_b = extract_json_str_field(&post_body, "prompt");
+                            if !p_b.is_empty() {
+                                p_b
+                            } else {
+                                let g_b = extract_json_str_field(&post_body, "goal");
+                                if !g_b.is_empty() {
+                                    g_b
+                                } else {
+                                    let act_b = extract_json_str_field(&post_body, "action");
+                                    if !act_b.is_empty() {
+                                        act_b
+                                    } else if !post_body.is_empty() {
+                                        post_body.clone()
+                                    } else {
+                                        String::from("MCP tools/call: Evaluate 144-subdomain 262,144-token BPE and crystallize dendritic neuron")
+                                    }
+                                }
+                            }
+                        }
                     }
                 };
 
@@ -4068,10 +4090,9 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                     };
                     let bus_json = execute_universal_tool_bus_and_writeback(tid, clean_path, cat, &raw_out, sub_ep);
                     let json = format!(
-                        "{{\"jsonrpc\":\"2.0\",\"id\":1,\"method_dispatched\":\"tools/call\",\"tool_called\":\"{}\",\"status\":\"MCP_TOOLS_CALL_EXECUTED\",\"result\":{{\"content\":\x5b{{\"type\":\"text\",\"text\":\"{}\"}}\x5d,\"isError\":false,\"raw_telemetry\":{}}}}}",
-                        json_escape_clean(&tool_called),
-                        json_escape_clean(&bus_json),
-                        bus_json
+                        "{{\"jsonrpc\":\"2.0\",\"id\":{},\"result\":{{\"content\":\x5b{{\"type\":\"text\",\"text\":\"{}\"}}\x5d,\"isError\":false}}}}",
+                        id_raw,
+                        json_escape_clean(&bus_json)
                     );
                     write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
                     continue;
@@ -4100,37 +4121,27 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 st.last_card_diag = gw.nl_response.clone();
                 st.last_term_out = gw.nl_response.clone();
                 let json = format!(
-                    "{{\"jsonrpc\":\"2.0\",\"id\":1,\"method_dispatched\":\"tools/call\",\"tool_called\":\"{}\",\"status\":\"MCP_TOOLS_CALL_EXECUTED\",\"result\":{{\"content\":\x5b{{\"type\":\"text\",\"text\":\"{}\"}}\x5d,\"isError\":false,\"dominant_domain\":\"{}\",\"tokens\":{},\"crystallized_neuron_id\":{},\"crystallized_shard_id\":{},\"operationalized_rust_code\":\"{}\",\"operationalized_lean4_theorem\":\"{}\"}},\"diag\":\"{}\"}}",
-                    json_escape_clean(&tool_called),
-                    json_escape_clean(&gw.nl_response),
-                    gw.dominant_domain,
-                    gw.total_tokens,
-                    gw.mapped_neuron_id,
-                    gw.crystallized_shard_id,
-                    json_escape_clean(&gw.operationalized_rust_snippet),
-                    json_escape_clean(&gw.operationalized_lean4_qed),
+                    "{{\"jsonrpc\":\"2.0\",\"id\":{},\"result\":{{\"content\":\x5b{{\"type\":\"text\",\"text\":\"{}\"}}\x5d,\"isError\":false}}}}",
+                    id_raw,
                     json_escape_clean(&gw.nl_response)
                 );
                 write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
                 continue;
             }
             let diag = format!(
-                "TOOL 46 NATIVE MCP SERVER PORTAL (Method='{}', Negotiated='{}'): Endpoint={} | Exposed Tools=270 (CHAIN 270 + aegis_autonomous_harness + aegis_cron_status + gemma4_sh4z_layer_mixer + gemma4_http206_slice + chain270_master_certification) | Exposed Resources=6 (.e8z, .npage 8.11MB, .spage 4.05MB, Gemma4 E4B/12B .sh4z 5.30GB, D1 10 Tables) | Zero-OAuth HTTPS Ready={} (RPC Calls #{})",
-                rpc_method, negotiated_proto, m.server_endpoint, m.zero_trust_portal_ready, m.rpc_calls_handled
+                "TOOL 46 STRICT MCP SERVER PORTAL (Method='{}', ID={}, Negotiated='{}'): Endpoint={} | Exposed Tools=9 (with inputSchema, 0 extra root keys) | Exposed Resources=6 (.e8z, .npage 8.11MB, .spage 4.05MB, Gemma4 E4B/12B .sh4z 5.30GB, D1 10 Tables) | Zero-OAuth HTTPS Ready={} (RPC Calls #{})",
+                rpc_method, id_raw, negotiated_proto, m.server_endpoint, m.zero_trust_portal_ready, m.rpc_calls_handled
             );
             {
                 let mut st = match state.lock() {
                     Ok(g) => g,
                     Err(p) => p.into_inner(),
                 };
-                st.last_card_diag = diag.clone();
-                st.last_term_out = diag.clone();
+                st.last_card_diag = diag;
+                st.last_term_out = st.last_card_diag.clone();
             }
-            let json = format!(
-                "{{\"jsonrpc\":\"2.0\",\"id\":1,\"method_dispatched\":\"{}\",\"status\":\"MCP_2026_07_28_SERVER_READY\",\"version\":\"v60.0.0\",\"tool_index\":46,\"tool_name\":\"tool:native_mcp_jsonrpc_server\",\"protocolVersion\":\"{}\",\"serverInfo\":{{\"name\":\"ACT-Omega-Sovereign-Manifold-MCP\",\"version\":\"60.0.0\"}},\"result\":{{\"protocolVersion\":\"{}\",\"capabilities\":{{\"tools\":{{\"listChanged\":true}},\"resources\":{{\"subscribe\":true}}}},\"tools\":\x5b{{\"name\":\"aegis_autonomous_harness\",\"endpoint\":\"/api/v1/aegis/autonomous_harness\",\"description\":\"Execute 7-Stage AEGIS Autonomous Agentic Loop over 63,360 neurons, 3,041,280 synapses (.spage), and Dual Gemma 4 .sh4z vaults\"}},{{\"name\":\"aegis_cron_status\",\"endpoint\":\"/api/v1/aegis/cron_status\",\"description\":\"Inspect or trigger the background autonomous AEGIS-HARNESS cron daemon\"}},{{\"name\":\"gemma4_sh4z_layer_mixer\",\"endpoint\":\"/api/v1/gemma4/sh4z_layer_mixer\",\"description\":\"Surgical multiplier-free 256D E8 ternary layer mixer across Gemma 4 E4B-it (2.12GB .sh4z) and 12B-it (3.17GB .sh4z)\"}},{{\"name\":\"gemma4_http206_slice\",\"endpoint\":\"/api/v1/gemma4/http206_slice\",\"description\":\"Byte-exact HTTP 206 range slicer across Gemma 4 .safetensors and .sh4z vaults\"}},{{\"name\":\"chain270_master_certification\",\"endpoint\":\"/api/v1/chain270/master_certification\",\"description\":\"Certify all 270 tools, 19.96B quantized Gemma 4 weights, 3.04M synapses, and 690 Lean 4 QED proofs\"}},{{\"name\":\"safe_llm_gateway_interact\",\"endpoint\":\"/api/v1/agent_gateway/interact\",\"description\":\"Converse across 144 Sub-Domains, tokenize with 262,144-token BPE, and crystallize a dendritic neuron\"}},{{\"name\":\"browser_article_operationalizer\",\"endpoint\":\"/api/v1/browser/fetch\",\"description\":\"4-stage research article to L0 Rust + Lean 4 QED + shard/neuron transducer\"}},{{\"name\":\"metabolic_5w1h_harness\",\"endpoint\":\"/api/v1/harness/metabolic_5w1h\",\"description\":\"5W1H Metabolic Autopoietic Harness across 4 ATP bands\"}},{{\"name\":\"cloudflare_d1_vpc_shadow\",\"endpoint\":\"/api/v1/cloudflare/d1_vpc_shadow\",\"description\":\"Cloudflare D1 10-table + Durable Object shadow status\"}}\x5d,\"resources\":\x5b{{\"uri\":\"manifold://vault/sovereign_harmonic_iv_v5000.e8z\",\"bytes\":133120}},{{\"uri\":\"manifold://connectome/neurons_v5000_63360.npage\",\"bytes\":8110080}},{{\"uri\":\"manifold://connectome/synapses_v5700_2027520.spage\",\"bytes\":4055040}},{{\"uri\":\"manifold://models/gemma-4-E4B-it-full.sh4z\",\"bytes\":2123979252}},{{\"uri\":\"manifold://models/gemma-4-12B-it-full.sh4z\",\"bytes\":3176803328}},{{\"uri\":\"manifold://d1/act_omega_d1_vault\",\"tier\":\"5GB_FREE\",\"tables\":10}}\x5d}},\"exposed_tools_count\":270,\"exposed_resources_count\":6,\"zero_trust_portal_ready\":true,\"rpc_calls_handled\":{},\"diag\":\"{}\"}}",
-                json_escape_clean(&rpc_method), negotiated_proto, negotiated_proto, m.rpc_calls_handled, json_escape_clean(&diag)
-            );
-            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
+            let (http_status, ctype, json) = v58_v60_chain270_vector_and_gemma4_synthesis::v60_synthesize_strict_mcp_jsonrpc_response(&rpc_method, &post_body);
+            write_http_str(&mut stream, http_status, ctype, &json);
             continue;
         }
 

@@ -3963,6 +3963,30 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
             continue;
         }
+        if clean_path == "/api/v1/synthesis/bleeding_edge_5" || clean_path == "/api/v1/bleeding_edge/synthesis_5" {
+            let sub_epoch = state.lock().map(|g| g.decadic_sub_epoch).unwrap_or(1);
+            let col_q = extract_query_param(raw_target, "column_id");
+            let sec_q = extract_query_param(raw_target, "sector_id");
+            let input_str = if !post_body.is_empty() {
+                post_body.clone()
+            } else {
+                format!(
+                    "{{\"column_id\":{},\"sector_id\":{}}}",
+                    if col_q.is_empty() { "44" } else { &col_q },
+                    if sec_q.is_empty() { "7" } else { &sec_q }
+                )
+            };
+            let raw_json = v62_bleeding_edge_synthesis_1_to_5::v62_execute_bleeding_edge_synthesis_5(&input_str);
+            let json = execute_universal_tool_bus_and_writeback(
+                286,
+                clean_path,
+                "tool_outputs",
+                &raw_json,
+                sub_epoch,
+            );
+            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
+            continue;
+        }
         if clean_path == "/api/v1/ota/pixel_apk" {
             let apk_path = "04_edge_silicon/ACT-Omega-Pixel10-Sovereign.apk";
             let apk_alt = "04_edge_silicon/pixel10_ndk_app/app/build/outputs/apk/debug/app-debug.apk";

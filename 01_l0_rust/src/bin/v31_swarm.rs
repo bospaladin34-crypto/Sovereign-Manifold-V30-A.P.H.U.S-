@@ -3889,6 +3889,30 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
             continue;
         }
+        if clean_path == "/api/v1/synthesis/bleeding_edge_2" || clean_path == "/api/v1/bleeding_edge/synthesis_2" {
+            let sub_epoch = state.lock().map(|g| g.decadic_sub_epoch).unwrap_or(1);
+            let col_q = extract_query_param(raw_target, "column_id");
+            let sec_q = extract_query_param(raw_target, "sector_id");
+            let input_str = if !post_body.is_empty() {
+                post_body.clone()
+            } else {
+                format!(
+                    "{{\"column_id\":{},\"sector_id\":{}}}",
+                    if col_q.is_empty() { "44" } else { &col_q },
+                    if sec_q.is_empty() { "7" } else { &sec_q }
+                )
+            };
+            let raw_json = v62_bleeding_edge_synthesis_1_to_5::v62_execute_bleeding_edge_synthesis_2(&input_str);
+            let json = execute_universal_tool_bus_and_writeback(
+                282,
+                clean_path,
+                "tool_outputs",
+                &raw_json,
+                sub_epoch,
+            );
+            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
+            continue;
+        }
         if clean_path == "/api/v1/hud/embedded_ide_cockpit" || clean_path == "/api/v1/tools/t68" {
             let has_query_key = !extract_query_param(raw_target, "key").is_empty();
             let auth_ok = !has_query_key && verify_operator_header_auth(&operator_header_key, is_loopback);

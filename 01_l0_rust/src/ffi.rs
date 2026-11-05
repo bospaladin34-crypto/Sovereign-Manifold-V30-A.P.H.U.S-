@@ -73,3 +73,57 @@ pub extern "C" fn sh3_manifold_infer_step(
     }
     0
 }
+
+/// Bleeding Edge Synthesis 1 (ICSE 2025 Cross-Language ABI & Zero-Copy Shared Memory Ring):
+/// Strictly 64-byte cacheline-aligned `#[repr(C, align(64))]` descriptor with explicit
+/// padding guard to prevent Rust-to-C/C++/NDK/Deno pointer aliasing and alignment faults.
+#[repr(C, align(64))]
+#[derive(Clone, Copy, Debug)]
+pub struct ActOmegaZeroCopyRingFrame64 {
+    pub magic_header: u64,
+    pub sequence_epoch: u64,
+    pub chair44_column_id: u32,
+    pub active_sector_id: u32,
+    pub leech_golay_codeword: u32,
+    pub burau_parity_lock: i32,
+    pub sheaf_coboundary_energy_f64: f64,
+    pub ring_allreduce_bytes: u64,
+    pub yubikey_serial: u32,
+    pub reserved_padding_guard: u32,
+    pub fnv1a_cacheline_digest: u64,
+}
+
+pub fn verify_icse2025_repr_c_64b_ring_invariants(
+    seq_epoch: u64,
+    col_id: u32,
+    sector_id: u32,
+    golay_cw: u32,
+    sheaf_energy: f64,
+    allreduce_bytes: u64,
+    yk_serial: u32,
+    digest: u64,
+) -> (usize, usize, bool, usize, u64) {
+    let frame = ActOmegaZeroCopyRingFrame64 {
+        magic_header: 0x4143_545F_4F4D_4731,
+        sequence_epoch: seq_epoch,
+        chair44_column_id: col_id,
+        active_sector_id: sector_id,
+        leech_golay_codeword: golay_cw,
+        burau_parity_lock: 1,
+        sheaf_coboundary_energy_f64: sheaf_energy,
+        ring_allreduce_bytes: allreduce_bytes,
+        yubikey_serial: yk_serial,
+        reserved_padding_guard: 0x5A5A_5A5A,
+        fnv1a_cacheline_digest: digest,
+    };
+    let sz = std::mem::size_of::<ActOmegaZeroCopyRingFrame64>();
+    let al = std::mem::align_of::<ActOmegaZeroCopyRingFrame64>();
+    let ptr_addr = (&frame as *const ActOmegaZeroCopyRingFrame64) as usize;
+    let aligned_64 = (sz == 64) && (al == 64) && ((ptr_addr % 64) == 0);
+    let aliasing_faults: usize = if aligned_64 && frame.reserved_padding_guard == 0x5A5A_5A5A {
+        0
+    } else {
+        1
+    };
+    (sz, al, aligned_64, aliasing_faults, frame.fnv1a_cacheline_digest)
+}

@@ -1,9 +1,10 @@
-# ACT-Omega & Vesper: 1:1 Formal Rosetta Stone Translation, Mathematical Equations & Canonical Architecture Evolution (`v29.0` $\rightarrow$ `v50.0.0 | CHAIN 135 | 564 Lean 4 QED`)
+# ACT-Omega & Vesper: 1:1 Formal Rosetta Stone Translation, Mathematical Equations & Canonical Architecture Evolution (`v29.0` $\rightarrow$ `v61.0.0 | CHAIN 280 | 700/700 Lean 4 QED`)
 
-**Principal Investigator & Systems Architect:** Donevin R. T. Z. Frownfelter  
+**Principal Investigator & Systems Architect:** Nicholas Bell (Donevin R. T. Z. Frownfelter)  
 **Repository:** `bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-` (`vesper_production` / `main` / `gh-pages`)  
 **Archival Monograph Reference:** Zenodo (`10.5281/zenodo.23651696`, `https://doi.org/10.5281/zenodo.23651696`) / OSF (`10.17605/OSF.IO/2XQ5Z`, `https://osf.io/2xq5z/overview`)  
-**Current Production Release:** **ACT-Omega Net v50.0.0 (`SH4Z v5000 TLV` | `CHAIN 135` | `63,360` Neurons | `564/564` Substantive Lean 4 QED)**
+**Current Production Release:** **ACT-Omega Net v61.0.0 (`SH4Z v6000 TLV` | `CHAIN 280` | `63,360` Neurons / `3,041,280` Synapses / `132,960` Bijected Cachelines | `700/700` Substantive Lean 4 QED | `18` Gemini MCP Tools)**  
+**Strict 1:1 Practical Formalism & 12-Gate Spec:** [ACT_OMEGA_v61_14_STRICT_1TO1_FORMALISM_SPEC_AND_ACCEPTABILITY_GATES.md](file:///C:/sovereign_manifold_v31/ACT_OMEGA_v61_14_STRICT_1TO1_FORMALISM_SPEC_AND_ACCEPTABILITY_GATES.md) | [MASTER_ROADMAP_AND_1TO1_FORMALISM_INDEX_v61_to_v63.md](file:///C:/sovereign_manifold_v31/03_vault/roadmap_v61_to_v63/MASTER_ROADMAP_AND_1TO1_FORMALISM_INDEX_v61_to_v63.md)
 
 ---
 
@@ -34,7 +35,28 @@ Every domain-specific topological, geometric, and neuro-metabolic construct in *
 | **19** | **63,360-Neuron `.npage` Connectome (`1,440 x Chair-44`)** | $63,360 \times 128\text{ B} = 8,110,080\text{ B}$ ($1,013,760$ dual-shell synapses) | **Memory-Mapped 3-Compartment Dendritic Spiking/Predictive Coding Graph** | 1:1 bijection between `63,360` `.binshard` files and `128 B` pyramidal neurons across 36 Macro-Domains x 4 = 144 Sub-Domains (`neurons_v5000_63360.npage`). |
 | **20** | **5W1H Metabolic Autopoietic Harness** | $M_{\text{ATP}}(t) \in [0, 1]$ across 4 Metabolic Bands | **Hardware-Aware Dynamic QoS & Thermal/VRAM Cost-Benefit Scheduler** | Evaluates `WHO`, `WHAT`, `WHEN` ($15.965\text{ Hz}$ / $159.65\text{ Hz}$ SWR), `WHERE` (`LOQ 15` / `Pixel 10` / `Pixel 8` / `E:\` / `D1`), `WHY` ($M_{\text{ATP}}$), and `HOW` (`v37_metabolic_harness_5w1h.rs`, `v42_distributed_5w1h_router_ide_vault.rs`). |
 | **21** | **Layer 1.5 Algebraic Haskell + DuckDB + $k=4$ Hamiltonian Beam** | $S = T - V$ geodesic action over $k=4$ speculative beams | **Pure Type-Safe Compiler Frontend + Vectorized Columnar OLAP + Speculative Decoding** | GHC 9.8.2 generates verified zero-bracket Rust/Lean 4 code; DuckDB v1.5.6 executes vectorized SQL over `.jsonl` ledgers; Pixel 8 drafts $k=4$ tokens verified in parallel by LOQ 15 (`v48_haskell_duckdb_hamiltonian_model.rs`, `thm_v49_437`–`439`). |
-| **22** | **Sovereign Autopoietic Coordinator Bus & `E:\` Write-Back** | 5W1H `BusEnvelope` + SHA-256 Codegen Sink | **System-Wide Event-Sourced Message Bus & Persistent Artifact Registry** | Connects all `135` tools (`CHAIN 135`), UI cards/scopes, and codegen engines to `message_bus_ledger_v4800.jsonl` and writes all generated code to `E:\Sovereign_Manifold_SSD_Vault\autopoietic_codegen\` (`v48_autopoietic_coordinator_bus.rs`). |
+| **22** | **Sovereign Autopoietic Coordinator Bus & `E:\` Write-Back** | 5W1H `BusEnvelope` + SHA-256 Codegen Sink | **System-Wide Event-Sourced Message Bus & Persistent Artifact Registry** | Connects all `280` tools (`CHAIN 280`), `18` Gemini MCP endpoints, UI cards/scopes, and codegen engines to `message_bus_ledger_v4800.jsonl` and writes all generated code to `E:\Sovereign_Manifold_SSD_Vault\autopoietic_codegen\` (`v48_autopoietic_coordinator_bus.rs`). |
+
+### 1.B The `v61.14` 1:1 Practical De-Codification & 12-Gate Acceptability Matrix (`7777D` / `CRT` / `PVQ` / `MS-LS-RVQ`)
+
+Per [ACT_OMEGA_v61_14_STRICT_1TO1_FORMALISM_SPEC_AND_ACCEPTABILITY_GATES.md](file:///C:/sovereign_manifold_v31/ACT_OMEGA_v61_14_STRICT_1TO1_FORMALISM_SPEC_AND_ACCEPTABILITY_GATES.md), all exploratory Round-1 codenames for the `v61.6`–`v61.14` high-dimensional roadmap are mapped 1:1 to peer-reviewed mathematical and systems-engineering identifiers and governed by **12 Hard Acceptability Gates (`G1`–`G12`)**:
+
+| Exploratory Construct | Strict 1:1 Practical Formalism (Peer-Reviewed CS / Info-Theory / Compiler Term) | Canonical Production Identifier (`v61.14`) | Governing Gate |
+| :--- | :--- | :--- | :--- |
+| `7777D Multi-Prime Tensor` ($7 \times 11 \times 101$) | **Coprime-Moduli Chinese Remainder Theorem (CRT) Address Bijection & L1D Cache Working-Set Blocking (`31,108 B < 32,768 B L1D`)** | `CoprimeModuliCrtIndexMap` / `crt_project_flat_to_coprime_residues` | `G2`, `G3` |
+| `CRT Idempotents` $(3333, 2828, 1617)$ | **Constant-Time $O(1)$ Stride-Collision-Free Multi-Dimensional Index Reconstructor** | `crt_reconstruct_flat_from_idempotents` | `G2` |
+| `Good-Thomas 3-Prime Sweep` | **In-Place L1D-Resident Coprime-Fiber Spectral Transform (Zero Twiddle Factors)** | `execute_good_thomas_pfa_l1_pass` | `G5` |
+| `Cayley-CRT Automorphism` ($\mathcal{G}_{15554}$) | **Lookup-Free $O(1)$ Isometric Address Permutation & Deterministic Shuffling Operator** | `apply_signed_crt_abelian_group_action` | `G4` |
+| `De Bruijn Quasicrystal Strip Lift` | **Windowed Irrational-Phase Overcomplete Frame Expansion & Hard-Thresholded Dead-Zone Quantizer** | `IrrationalPhaseFrameOperator` / `irrational_phase_frame_expand_24_to_7777` | `G6` |
+| `15,554-Vertex Orthoplex` ($\beta_{7777}$) | **Lookup-Free $O(N)$ $L_1$-Unit-Ball (Cross-Polytope) Spherical Shape Vector Quantizer** | `L1UnitBallCodebookClassifier` / `classify_l1_unit_ball_nearest_codeword` | `G6` |
+| `k-Sparse Orthoplex Face Hierarchy` | **Pyramidal Vector Quantizer (PVQ, Fischer 1986 / IETF RFC 6716 Opus) on Constant-$L_1$ Shells** | `compute_k_sparse_pvq_barycenter_cosine` | `G6` ($\cos \ge 0.8920$) |
+| `3-Shell Nested Orthoplex Peel` | **Multi-Stage Least-Squares Active-Support Residual Vector Quantization (MS-LS-RVQ)** | `MultiStageLeastSquaresRvq` / `encode_multistage_ls_residual_ternary_rvq` | `G7` ($\text{SQNR}_3 \ge +25\text{ dB}$) |
+| `Hybrid .o7777 + .sh4z Vault` | **Two-Level Hierarchical Coarse-to-Fine Gain-Shape Block-Scaled Ternary Quantizer** | `CoarseHorizonRoutingHeader` / `compile_two_level_coarse7777_fine256_quantizer` | `G11` ($\le 2.50\%$ overhead) |
+| `.o7777v Video Stream` | **Fixed-Packet-Length Pyramid/Residual Vector-Quantized Intra-Frame Bitstream** | `FixedLengthRvqIntraFramePacket` | `G7`, `G12` |
+| `CRT Fiber Uniformity` | **Coprime-Moduli Marginal Shannon Entropy Load-Balancer** | `compute_coprime_marginal_shannon_entropy` | `G8` ($\ge 0.990$) |
+| `Hybrid Orthoplex->E8 Router` | **Two-Level Block-Sparse BSR/CSR Multiplier-Free Ternary MatVec Kernel** | `TwoLevelBlockSparseMatVecRouter` / `execute_block_sparse_ternary_matvec_routed` | `G9` ($\le 500\,\mu\text{s}$) |
+| `Kanerva 7777D Web-Trap` | **Bipolar/Ternary Multiply-Add-Permute (MAP) VSA & Maximum-Inner-Product Search (MIPS)** | `MapAssociativeMemoryMips` / `inner_product_similarity_i8` | `G10` |
+| `Round-2 Gate & E8 Reboot` | **Deterministic Pre-Commit Invariant Verifier & Write-Ahead Log (WAL) Snapshot Rollback Trigger** | `AcceptabilityGateController` / `evaluate_round2_production_gates` | `G1`–`G12` |
 
 ---
 
@@ -87,7 +109,7 @@ Every foundational equation from the **ACT-Omega & Vesper Technical Monograph** 
 
 ---
 
-## 3. Canonical Architecture Timeline Evolution (`v29.0` $\rightarrow$ `v50.0.0`)
+## 3. Canonical Architecture Timeline Evolution (`v29.0` $\rightarrow$ `v61.0.0`)
 
 ```mermaid
 flowchart LR
@@ -95,7 +117,8 @@ flowchart LR
     V31 --> V32_36["v32.0 – v36.0\n60-30-10 WebGPU HUD (:5173)\nPositive Geometries (Associahedron/Amplituhedron)\n3-Compartment .npage Connectome"]
     V32_36 --> V37_43["v37.0 – v43.0\n5W1H Metabolic Harness & MCP\n80-Sector u128 .e8z (133,120 B)\n21,120 Neurons & Antigravity Agents"]
     V37_43 --> V44_49["v44.0 – v49.0\n42,240 Neurons (5.41 MB SHM)\nLayer 1.5 Haskell + DuckDB + Coordinator Bus\nCHAIN 100 | 480 Lean 4 QED | 10-Agent Gatekeepers"]
-    V44_49 --> V50["v50.0.0 (Current)\n63,360 Neurons (8.11 MB SHM)\n1,013,760 Dual-Shell Synapses\nCHAIN 135 | 564 Lean 4 QED | 144 Sub-Domains"]
+    V44_49 --> V50["v50.0.0\n63,360 Neurons (8.11 MB SHM)\n1,013,760 Primary Synapses\nCHAIN 135 | 564 Lean 4 QED"]
+    V50 --> V61["v61.0.0 (Current)\n3,041,280 Synapses (.npage+.spage)\n132,960 Bijected Cachelines | 18 MCP Tools\nCHAIN 280 | 700/700 Lean 4 QED"]
 ```
 
 | Era / Version | Schema & Binary Artifacts | Shards & Neurons | Formal Proofs (Lean 4 QED) | Key Architectural & Hardware Milestones |
@@ -107,7 +130,8 @@ flowchart LR
 | **v38.0 – v43.0** | `SH4Z v3800` $\rightarrow$ `v4300` (`80` Sectors `u128`, `133,120 B`) | `10,560` $\rightarrow$ `21,120` Core Neurons (`2,703,360 B` `.npage`) | `300` $\rightarrow$ `364` QED | Dual-Word `u128` 80-sector mask (`S00..S79`, `2,080 x 64 B` cachelines), `21,120` `.binshard` 1:1 bijection (`480 x Chair-44`), Muse Zero-Mock Hardware Telemetry remediation (`Instant::now()`, real SHA-256 digests), Distributed 5W1H Router (`Tool 65`), Google Antigravity (Gemini 4 Argon) multi-agent cutover. |
 | **v44.0 – v47.0** | `SH4Z v4400` $\rightarrow$ `v4700` (`5,406,720 B` Combined `.npage`) | **`42,240` Total Neurons** (`960 x Chair-44`, `337,920` synapses) | `384` $\rightarrow$ `432` QED | Work-Stealing Scheduler & `.npage` Zero-Copy SHM (`v44`), $+21,120$ Expansion Shards (`shard_21121..42240.binshard`) for `42,240` total neurons (`5.41 MB` SHM across Host, Pixel 10, and Pixel 8), RAG-on-Leech & 5 Autonomous Synthesis Engines (`v46`–`v47`), 10-table Cloudflare D1 sync. |
 | **v48.0 – v49.0** | `SH4Z v4900 TLV` (`133,120 B` `.e8z` + `5,406,720 B` `.npage`) | `42,240` Total Neurons (`42,240` `.binshard` files) | `480 / 480` Substantive QED | Layer 1.5 GHC 9.8.2 Algebraic Haskell (`06_algebraic_haskell`) + DuckDB v1.5.6 Columnar OLAP + $k=4$ Hamiltonian Speculative Beam Model; Sovereign Autopoietic Coordinator Bus (`v48_autopoietic_coordinator_bus.rs`); `CHAIN 100` (`100` Native Tools); Zero-Overhead `SovereignContinuumDO` + HTTP/2 Named Tunnel; Externalized Operator Key + 10-Agent Governance. |
-| **v50.0.0 (Current)** | **`SH4Z v5000 TLV`** (`133,120 B` `.e8z` + `8,110,080 B` `.npage`) | **`63,360` Total Neurons** (`63,360` `.binshard` files) | **`564 / 564` Substantive QED** (`0` trivial padding, `0` `sorry`) | **`63,360` 3-Compartment Neurons == `63,360` Shards (`1,440 x Chair-44`, `8.11 MB` SHM)**; **`1,013,760` Dual-Shell BDH/KAN Synapses** across **36 Macro-Domains $\times$ 4 = 144 Sub-Domains**; **`262,144` (18-Bit) Open-Vocabulary BPE (`0 <UNK>`)**; **`CHAIN 135` (`135` Native Tools)**; **Dual-Pixel Mobile NDK (`harmonic_engine.cpp` + `MainActivity.kt`) deployed to Pixel 10 & Pixel 8**; **Win11 Tray HUD (`Ω50`, `SovereignCockpitHUD.exe`)**; **Cloudflared Named Tunnel 3-Tier TCP Reset Exponential Backoff & Loopback Fallback**; **Permanent Archival DOIs: Zenodo `10.5281/zenodo.23651696` & OSF `10.17605/OSF.IO/2XQ5Z`**. |
+| **v50.0.0** | **`SH4Z v5000 TLV`** (`133,120 B` `.e8z` + `8,110,080 B` `.npage`) | **`63,360` Total Neurons** (`63,360` `.binshard` files) | `564 / 564` Substantive QED | `63,360` 3-Compartment Neurons == `63,360` Shards (`1,440 x Chair-44`, `8.11 MB` SHM); `1,013,760` Dual-Shell BDH/KAN Synapses across 36 Macro-Domains $\times$ 4 = 144 Sub-Domains; `262,144` (18-Bit) Open-Vocabulary BPE (`0 <UNK>`); `CHAIN 135`; Dual-Pixel Mobile NDK deployed to Pixel 10 & Pixel 8; Permanent Archival DOIs: Zenodo `10.5281/zenodo.23651696` & OSF `10.17605/OSF.IO/2XQ5Z`. |
+| **v51.0 – v61.0.0 (Current)** | **`SH4Z v6000 TLV`** (`399,360 B` Tri-Bank `.e8z` + `8,110,080 B` `.npage` + `4,055,040 B` `.spage`) | **`63,360` Total Neurons** (`3,041,280` Synapses, `132,960` Bijected Cachelines) | **`700 / 700` Substantive QED** (`0` trivial padding, `0` `sorry`) | **Rooted Google Pixel 8 (`3A121FDJH00BW5`, KernelSU `u:r:ksu:s0` Slot A, `p8_ksu_apex_daemon` `:8098`, `4.00 MB` Mali-G715 L2 Pinned)**; **Dual Gemma 4 `.sh4z` Vaults (`12B-it` `2.959 GiB` + `E4B-it` `1.978 GiB` = `4.937 GiB`)**; **7-Stage `AEGIS-HARNESS` Autonomous Cron Loop (`Tool 45`)**; **41 Un-Siloed L0 Core Modules (`Tool 275`)**; **8 Unified Functional Domains & `CHAIN 280` (`Tools 1..280`)**; **18 Strict-Schema Gemini MCP Tools (`:8097/mcp`)**; **Oct 31 Muse Sweep 100% Byte-Folded & HMAC-Gated Certification**. |
 
 ---
 

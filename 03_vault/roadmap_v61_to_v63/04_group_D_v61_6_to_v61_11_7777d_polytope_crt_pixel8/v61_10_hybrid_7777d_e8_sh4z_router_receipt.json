@@ -1,0 +1,23 @@
+{
+  "release": "ACT-Omega v61.10.1 Hybrid 7777D Orthoplex (.o7777) + 256D E8 (.sh4z) Router",
+  "timestamp_utc": "2026-11-02T19:00:11.4027793Z",
+  "orthoplex_to_e8_poles_verified": 15554,
+  "e4b_flat_7777d_snr_db": 6.40,
+  "e4b_hybrid_e8_snr_db": 6.53,
+  "e4b_snr_gain_db": 0.12,
+  "e4b_zero_sparsity_pct": 37.46,
+  "e4b_top50pct_block_energy_pct": 60.24,
+  "e4b_hybrid_sha256_prefix": "9711ff0659e27dfc",
+  "gemma12b_flat_7777d_snr_db": 3.46,
+  "gemma12b_hybrid_e8_snr_db": 4.55,
+  "gemma12b_snr_gain_db": 1.09,
+  "gemma12b_zero_sparsity_pct": 36.68,
+  "gemma12b_top50pct_block_energy_pct": 84.48,
+  "gemma12b_hybrid_sha256_prefix": "cfe57ee63835d86b",
+  "router_queries": 100000,
+  "router_million_queries_per_sec": 5.93,
+  "effective_billion_weights_per_sec": 46.12,
+  "cold_e8_blocks_skipped_pct": 87.10,
+  "routed_matvec_speedup_x": 24.04,
+  "total_elapsed_ms": 69.88
+}

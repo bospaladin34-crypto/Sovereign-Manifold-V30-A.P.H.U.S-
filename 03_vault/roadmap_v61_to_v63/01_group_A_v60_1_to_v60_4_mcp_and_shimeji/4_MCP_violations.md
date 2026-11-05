@@ -1,0 +1,9 @@
+
+
+| \# | What :8097/mcp Returned (3,055 chars) | What Google's Strict MCP Validator Requires | Why Gemini Rejected It |
+| :---- | :---- | :---- | :---- |
+| **1** | **Static** 3,055**\-char payload on every call:** Both initialize (id: 1) and tools/list (id: 2) returned the exact same 3,055\-char JSON with hardcoded "id": 1 and "method\_dispatched": "initialize" | Must parse the incoming POST body's "method" and "id", echo the caller's exact "id", and return distinct responses for initialize, notifications/initialized, tools/list, and tools/call | When Gemini sent tools/list with id: 2, getting back id: 1 (and getting "tools" inside initialize) failed the JSON-RPC state machine |
+| **2** | "serverInfo" **placed at the root level instead of inside** "result"**:** "serverInfo":{"name":"ACT-Omega-..."},"result":{"protocolVersion":"2025-03-26",...} | In MCP's InitializeResult schema, "serverInfo" **must be inside** "result" (result.serverInfo.name and result.serverInfo.version) | Gemini's parser checked response.result.serverInfo, saw it was missing inside result, and threw not a valid MCP server |
+| **3** | **Extra non-standard root keys outside** "result"**:** "method\_dispatched", "status", "version", "tool\_index", "tool\_name", "protocolVersion" at the top level | Strict JSON-RPC 2.0 responses allow **only 3 root keys**: "jsonrpc", "id", and "result" | Strict Protobuf-JSON / Zod schema validators reject unknown root keys |
+| **4** | **Missing** "inputSchema" **(and extra** "endpoint" **key) on every tool in** "tools"**:** {"name":"aegis\_autonomous\_harness","endpoint":"/api/v1/...","description":"..."} | Every tool in tools/list **must** have "inputSchema": {"type": "object", "properties": {...}} and no unknown "endpoint" key | Without "inputSchema", Gemini cannot populate the Tool schemas tab in Developer Mode |
+

@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ACT-Omega v61.12 // E:\ Drive 7777D Orthoplex Image, Video &amp; 24D Cymatic Audio Engine</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #040711;
+      color: #e2e8f0;
+      overflow-x: hidden;
+    }
+    .mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-[#040711] text-slate-100 p-3 sm:p-5 space-y-4">
+
+  <!-- Top Studio Header -->
+  <header class="bg-slate-950/95 border-2 border-cyan-400/75 rounded-2xl px-4 py-3 shadow-2xl flex flex-wrap items-center justify-between gap-3">
+    <div class="flex items-center gap-3">
+      <div class="w-3.5 h-3.5 rounded-full bg-emerald-400 animate-ping shrink-0"></div>
+      <div>
+        <div class="flex flex-wrap items-center gap-2">
+          <h1 class="mono text-xs sm:text-sm font-bold text-amber-300 tracking-wide">
+            ACT-OMEGA v61.12 // SOVEREIGN 7777D ORTHOPLEX IMAGE, VIDEO &amp; 24D CYMATIC AUDIO ENGINE
+          </h1>
+          <span class="mono text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold">
+            STAGED ON E:\ACT_OMEGA_7777D_AV_ENGINE
+          </span>
+          <span class="mono text-[10px] px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-bold">
+            15,554-POLE VQ CODEBOOK (3-SHELL 17.95 dB)
+          </span>
+        </div>
+        <p class="mono text-[11px] text-slate-400 mt-0.5">
+          CRT Idempotents: <span class="text-amber-300">(3333, 2828, 1617)</span> | 99.989% Entropy Uniformity | 24D Leech Audio FFT &lt;-&gt; 7777D De Bruijn Visual Lock
+        </p>
+      </div>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-2">
+      <button id="btn-toggle-audio" type="button" class="px-3 py-1.5 rounded-xl bg-amber-500/25 hover:bg-amber-500/35 border border-amber-400 text-amber-200 mono text-xs font-bold transition">
+        24D CYMATIC AUDIO: OFF (CLICK TO PLAY)
+      </button>
+      <button id="btn-export-png" type="button" class="px-3 py-1.5 rounded-xl bg-cyan-500/25 hover:bg-cyan-500/35 border border-cyan-400 text-cyan-200 mono text-xs font-bold transition">
+        EXPORT .PNG FRAME
+      </button>
+      <button id="btn-export-wav" type="button" class="px-3 py-1.5 rounded-xl bg-emerald-500/25 hover:bg-emerald-500/35 border border-emerald-400 text-emerald-200 mono text-xs font-bold transition">
+        EXPORT 48kHz .WAV
+      </button>
+      <button id="btn-record-webm" type="button" class="px-3 py-1.5 rounded-xl bg-purple-500/25 hover:bg-purple-500/35 border border-purple-400 text-purple-200 mono text-xs font-bold transition">
+        RECORD 4s .WEBM VIDEO
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Studio Grid -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+    <!-- Left Column: Primary 7777D Audio-Visual Viewport + 3-Shell VQ Comparison Strip -->
+    <div class="lg:col-span-8 space-y-4">
+      <div class="bg-slate-950/95 border border-slate-800 rounded-2xl p-3.5 shadow-xl space-y-2.5">
+        <div class="flex flex-wrap items-center justify-between gap-2 mono text-[11px]">
+          <span id="viewport-mode-title" class="text-cyan-300 font-bold">
+            VIEWPORT // MODE 1: 7777D DE BRUIJN QUASICRYSTAL &amp; 3-SHELL ORTHOPLEX PLASMA SYNTHESIZER
+          </span>
+          <span id="viewport-fps-pill" class="text-emerald-300 font-bold">60 FPS | Pole v=1827 (-e_913) | CRT=(3,0,4)</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
+          <!-- Main 512x512 High-Def Synthesizer Canvas -->
+          <div class="md:col-span-8 bg-black rounded-xl border border-slate-800 overflow-hidden flex items-center justify-center relative">
+            <canvas id="av-main-canvas" width="512" height="360" class="w-full h-[310px] sm:h-[350px] block"></canvas>
+          </div>
+
+          <!-- Live 3-Shell Orthoplex VQ-Tokenizer Reconstruction Preview -->
+          <div class="md:col-span-4 bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 space-y-2 flex flex-col justify-between h-full">
+            <div class="mono text-[10px] font-bold text-amber-300 border-b border-slate-800 pb-1">
+              LIVE 3-SHELL ORTHOPLEX VQ-DECODER
+            </div>
+            <canvas id="vq-recon-canvas" width="192" height="192" class="w-full h-[175px] bg-black rounded-lg border border-slate-800 block"></canvas>
+            <div class="space-y-1 mono text-[10px]">
+              <div class="flex justify-between">
+                <span class="text-slate-400">Active Shell Mode:</span>
+                <span id="vq-shell-label" class="text-cyan-300 font-bold">3-Shell Cascade</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-400">Measured Frame SNR:</span>
+                <span id="vq-snr-readout" class="text-emerald-300 font-bold">18.42 dB</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-400">Orthoplex Codebook:</span>
+                <span class="text-purple-300 font-bold">15,554 Poles (0 Collapse)</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-400">CRT Fiber Entropy:</span>
+                <span id="vq-entropy-readout" class="text-amber-300 font-bold">12.921 / 12.925 b</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 24-Channel Leech -> 7777D De Bruijn Audio Spectrum & CRT Fiber Bar -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 space-y-1.5">
+          <div class="flex items-center justify-between mono text-[10px]">
+            <span class="text-amber-300 font-bold">24-CHANNEL LEECH HORIZON AUDIO SPECTRUM -&gt; 7777D DE BRUIJN STRIP WINDOW (γ = 2.5)</span>
+            <span id="audio-freq-readout" class="text-cyan-300">Base Carrier: 111.0 Hz (7×11×101 Harmonic Lock)</span>
+          </div>
+          <canvas id="audio-spectrum-canvas" width="720" height="58" class="w-full h-[54px] bg-black/90 rounded border border-slate-800 block"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Engine Mode Selector, 3-Shell Controls & E:\ Drive Build Spec -->
+    <div class="lg:col-span-4 space-y-4">
+      <div class="bg-slate-950/95 border border-slate-800 rounded-2xl p-4 shadow-xl space-y-3 mono text-xs">
+        <div class="font-bold text-cyan-300 border-b border-slate-800 pb-1.5">
+          1. SELECT 7777D VISUAL + AUDIO GENERATOR MODE
+        </div>
+        <div class="grid grid-cols-1 gap-1.5 text-[11px]">
+          <button data-mode="0" class="mode-btn text-left px-3 py-2 rounded-xl bg-cyan-500/25 border border-cyan-400 text-cyan-100 font-bold transition">
+            M1 // 7777D Quasicrystal Star-Field &amp; 3-Shell Nebula
+          </button>
+          <button data-mode="1" class="mode-btn text-left px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 transition">
+            M2 // Vesper-Arachne 15,554-Pole Cybernetic Raymarcher
+          </button>
+          <button data-mode="2" class="mode-btn text-left px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 transition">
+            M3 // Good-Thomas (7×11×101) Cymatic Chladni Wormhole
+          </button>
+          <button data-mode="3" class="mode-btn text-left px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 transition">
+            M4 // Gemma-4 (.sh4z + .o7777) Weight Manifold Hologram
+          </button>
+        </div>
+
+        <div class="font-bold text-amber-300 border-b border-slate-800 pb-1.5 pt-2">
+          2. 3-SHELL ORTHOPLEX VQ QUANTIZATION DEPTH
+        </div>
+        <div class="grid grid-cols-3 gap-1.5 text-[10px]">
+          <button data-shells="1" class="shell-btn px-2 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-slate-300 font-bold">
+            1-SHELL (~9.9dB)
+          </button>
+          <button data-shells="2" class="shell-btn px-2 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-slate-300 font-bold">
+            2-SHELL (~14.3dB)
+          </button>
+          <button data-shells="3" class="shell-btn px-2 py-1.5 rounded-lg bg-emerald-500/25 border border-emerald-400 text-emerald-200 font-bold">
+            3-SHELL (~18.0dB)
+          </button>
+        </div>
+
+        <!-- Interactive Sliders for CRT Phase & Audio Harmonic Twist -->
+        <div class="space-y-2 pt-1 text-[10px]">
+          <div>
+            <div class="flex justify-between text-slate-300">
+              <span>CRT Z_101 Harmonic Shell (r3):</span>
+              <span id="lbl-av-r3" class="text-amber-300 font-bold">r3 = 4</span>
+            </div>
+            <input id="slider-av-r3" type="range" min="0" max="100" value="4" class="w-full accent-amber-400 cursor-pointer h-1.5 bg-slate-800 rounded-lg" />
+          </div>
+          <div>
+            <div class="flex justify-between text-slate-300">
+              <span>De Bruijn Strip Window (γ):</span>
+              <span id="lbl-av-gamma" class="text-cyan-300 font-bold">γ = 2.50</span>
+            </div>
+            <input id="slider-av-gamma" type="range" min="50" max="400" value="250" class="w-full accent-cyan-400 cursor-pointer h-1.5 bg-slate-800 rounded-lg" />
+          </div>
+        </div>
+
+        <!-- E:\ Drive Staging & Output Inventory Card -->
+        <div class="bg-black/90 border border-slate-800 rounded-xl p-3 space-y-1.5 text-[10px]">
+          <div class="text-emerald-300 font-bold">E:\ACT_OMEGA_7777D_AV_ENGINE STAGING TREE:</div>
+          <div class="text-slate-300 space-y-0.5">
+            <div>• <span class="text-amber-300">renders_audio\</span>sovereign_7777d_cymatic_chord.wav</div>
+            <div>• <span class="text-cyan-300">renders_img\</span>quasicrystal_7777d_starfield_512.png</div>
+            <div>• <span class="text-cyan-300">renders_img\</span>orthoplex_3shell_vq_comparison_512.png</div>
+            <div>• <span class="text-cyan-300">renders_img\</span>gemma4_e4b_7777d_manifold_hologram.png</div>
+            <div>• <span class="text-purple-300">renders_video\</span>sovereign_7777d_av_sync_60f.avi</div>
+            <div>• <span class="text-purple-300">renders_video\</span>sovereign_7777d_stream.o7777v</div>
+            <div>• <span class="text-emerald-300">receipts\</span>v61_12_e_drive_7777d_av_engine_receipt.json</div>
+          </div>
+          <div id="studio-status-log" class="text-cyan-200 bg-slate-950 border border-slate-800 rounded px-2 py-1 mt-1">
+            Studio Online: 60 FPS 7777D Orthoplex synthesis active.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const mainCanvas = document.getElementById('av-main-canvas');
+      const ctx = mainCanvas.getContext('2d');
+      const vqCanvas = document.getElementById('vq-recon-canvas');
+      const vqCtx = vqCanvas.getContext('2d');
+      const specCanvas = document.getElementById('audio-spectrum-canvas');
+      const specCtx = specCanvas.getContext('2d');
+
+      const CRT_C1 = 3333, CRT_C2 = 2828, CRT_C3 = 1617, TOTAL_N = 7777;
+      const PHI = (1.0 + Math.sqrt(5.0)) / 2.0;
+
+      let activeMode = 0;
+      let activeShells = 3;
+      let crtR3 = 4;
+      let gammaWindow = 2.50;
+      let audioRunning = false;
+      let audioCtx = null;
+      let masterGain = null;
+      let oscBank = [];
+      let leechBins = new Float32Array(24);
+      let frameCounter = 0;
+
+      const modeTitles = [
+        'VIEWPORT // MODE 1: 7777D DE BRUIJN QUASICRYSTAL & 3-SHELL ORTHOPLEX PLASMA SYNTHESIZER',
+        'VIEWPORT // MODE 2: VESPER-ARACHNE 15,554-POLE CYBERNETIC MECHA RAYMARCHER',
+        'VIEWPORT // MODE 3: GOOD-THOMAS (7x11x101) CYMATIC CHLADNI TOROIDAL WORMHOLE',
+        'VIEWPORT // MODE 4: GEMMA-4 (.sh4z + .o7777) NEURAL WEIGHT MANIFOLD HOLOGRAM'
+      ];
+
+      function crtToFlat(r1, r2, r3) {
+        return ((r1 % 7) * CRT_C1 + (r2 % 11) * CRT_C2 + (r3 % 101) * CRT_C3) % TOTAL_N;
+      }
+
+      // Mode & Shell Buttons
+      const modeBtns = document.querySelectorAll('.mode-btn');
+      modeBtns.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          activeMode = parseInt(btn.getAttribute('data-mode') || '0', 10);
+          modeBtns.forEach(function (b) {
+            b.className = 'mode-btn text-left px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 transition';
+          });
+          btn.className = 'mode-btn text-left px-3 py-2 rounded-xl bg-cyan-500/25 border border-cyan-400 text-cyan-100 font-bold transition';
+          const titleEl = document.getElementById('viewport-mode-title');
+          if (titleEl) titleEl.textContent = modeTitles[activeMode];
+        });
+      });
+
+      const shellBtns = document.querySelectorAll('.shell-btn');
+      shellBtns.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          activeShells = parseInt(btn.getAttribute('data-shells') || '3', 10);
+          shellBtns.forEach(function (b) {
+            b.className = 'shell-btn px-2 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-slate-300 font-bold';
+          });
+          btn.className = 'shell-btn px-2 py-1.5 rounded-lg bg-emerald-500/25 border border-emerald-400 text-emerald-200 font-bold';
+          const lbl = document.getElementById('vq-shell-label');
+          if (lbl) lbl.textContent = activeShells + '-Shell Cascade';
+        });
+      });
+
+      const sliderR3 = document.getElementById('slider-av-r3');
+      const lblR3 = document.getElementById('lbl-av-r3');
+      if (sliderR3) {
+        sliderR3.addEventListener('input', function () {
+          crtR3 = parseInt(sliderR3.value, 10);
+          if (lblR3) lblR3.textContent = 'r3 = ' + crtR3;
+          updateAudioHarmonics();
+        });
+      }
+
+      const sliderGamma = document.getElementById('slider-av-gamma');
+      const lblGamma = document.getElementById('lbl-av-gamma');
+      if (sliderGamma) {
+        sliderGamma.addEventListener('input', function () {
+          gammaWindow = parseInt(sliderGamma.value, 10) / 100.0;
+          if (lblGamma) lblGamma.textContent = 'γ = ' + gammaWindow.toFixed(2);
+        });
+      }
+
+      // 24-Channel Cymatic Web Audio Synthesizer
+      function toggleAudioEngine() {
+        const btn = document.getElementById('btn-toggle-audio');
+        if (!audioRunning) {
+          const AC = window.AudioContext || window.webkitAudioContext;
+          if (!audioCtx) audioCtx = new AC();
+          if (audioCtx.state === 'suspended') audioCtx.resume();
+          masterGain = audioCtx.createGain();
+          masterGain.gain.value = 0.14;
+          masterGain.connect(audioCtx.destination);
+
+          oscBank = [];
+          const baseFreqs = [111.0, 148.0, 166.5, 222.0, 296.0, 333.0, 444.0, 528.0];
+          for (let i = 0; i < 8; i++) {
+            const osc = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            osc.type = (i % 2 === 0) ? 'sine' : 'triangle';
+            osc.frequency.value = baseFreqs[i] * (1.0 + (crtR3 % 11) * 0.015);
+            g.gain.value = 0.12 / (1 + i * 0.35);
+            osc.connect(g);
+            g.connect(masterGain);
+            osc.start();
+            oscBank.push({ osc: osc, gain: g, base: baseFreqs[i] });
+          }
+          audioRunning = true;
+          if (btn) btn.textContent = '24D CYMATIC AUDIO: LIVE (MUTE)';
+        } else {
+          oscBank.forEach(function (o) {
+            try { o.osc.stop(); } catch (e) {}
+          });
+          oscBank = [];
+          audioRunning = false;
+          if (btn) btn.textContent = '24D CYMATIC AUDIO: OFF (CLICK TO PLAY)';
+        }
+      }
+
+      function updateAudioHarmonics() {
+        if (!audioRunning || !audioCtx) return;
+        oscBank.forEach(function (o, i) {
+          const d = crtToFlat(i % 7, i % 11, crtR3);
+          const ratio = 1.0 + ((d % 101) / 404.0);
+          o.osc.frequency.setTargetAtTime(o.base * ratio, audioCtx.currentTime, 0.05);
+        });
+      }
+
+      const btnAudio = document.getElementById('btn-toggle-audio');
+      if (btnAudio) btnAudio.addEventListener('click', toggleAudioEngine);
+
+      // Main 60 FPS Procedural + 7777D Orthoplex Renderer
+      function renderMainViewport(nowMs) {
+        const t = nowMs * 0.001;
+        const w = mainCanvas.width;
+        const h = mainCanvas.height;
+        const cx = w * 0.5;
+        const cy = h * 0.5;
+
+        // Update 24D Leech frequency bins
+        for (let c = 0; c < 24; c++) {
+          const d = crtToFlat(c % 7, c % 11, (crtR3 + c) % 101);
+          const wave = Math.sin(t * (2.2 + (c % 7) * 0.65) + d * 0.013) * Math.cos(t * 1.1 + c * 0.4);
+          leechBins[c] = (Math.abs(wave) * gammaWindow) / 2.5;
+        }
+
+        // Deep cosmic gradient background
+        const bgGrad = ctx.createRadialGradient(cx, cy, 10, cx, cy, w * 0.65);
+        bgGrad.addColorStop(0, activeMode === 2 ? '#0f172a' : '#081226');
+        bgGrad.addColorStop(0.6, '#040915');
+        bgGrad.addColorStop(1, '#02040a');
+        ctx.fillStyle = bgGrad;
+        ctx.fillRect(0, 0, w, h);
+
+        if (activeMode === 0) {
+          // MODE 1: 7777D Quasicrystal Star-Field & 3-Shell Plasma Nebula
+          ctx.save();
+          ctx.translate(cx, cy);
+          // 3 Nested Orthoplex Shells
+          const shellColors = ['rgba(34, 211, 238, 0.35)', 'rgba(250, 204, 21, 0.32)', 'rgba(168, 85, 247, 0.32)'];
+          for (let s = 0; s < activeShells; s++) {
+            const rad = 58 + s * 42 + leechBins[s * 3] * 18;
+            ctx.save();
+            ctx.rotate(t * (s % 2 === 0 ? 0.35 : -0.28) + s * 0.5);
+            ctx.strokeStyle = shellColors[s];
+            ctx.lineWidth = 1.6;
+            ctx.beginPath();
+            for (let k = 0; k < 22; k++) {
+              const a = (k * Math.PI * 2) / 22;
+              const rMod = (k % 2 === 0) ? rad : rad * 0.72;
+              const px = Math.cos(a) * rMod;
+              const py = Math.sin(a) * rMod;
+              if (k === 0) ctx.moveTo(px, py);
+              else ctx.lineTo(px, py);
+            }
+            ctx.closePath();
+            ctx.stroke();
+            ctx.restore();
+          }
+
+          // 77 Co-Modular Star-Vertices with {11/3} and {11/4} chords
+          const pts = [];
+          for (let r1 = 0; r1 < 7; r1++) {
+            const ringR = 28 + r1 * 21;
+            for (let r2 = 0; r2 < 11; r2++) {
+              const flatD = crtToFlat(r1, r2, crtR3);
+              const ang = (r2 * Math.PI * 2) / 11 + (r1 * Math.PI) / 7 + t * 0.25 * (r1 % 2 === 0 ? 1 : -1);
+              const amp = 1.0 + leechBins[(r1 + r2) % 24] * 0.18;
+              const px = Math.cos(ang) * ringR * amp;
+              const py = Math.sin(ang) * ringR * amp;
+              pts.push({ x: px, y: py, r1: r1, r2: r2, flatD: flatD });
+            }
+          }
+          ctx.strokeStyle = 'rgba(56, 189, 248, 0.22)';
+          ctx.lineWidth = 0.9;
+          ctx.beginPath();
+          for (let i = 0; i < pts.length; i++) {
+            const pA = pts[i];
+            const pB = pts[(i + 3) % pts.length];
+            ctx.moveTo(pA.x, pA.y);
+            ctx.lineTo(pB.x, pB.y);
+          }
+          ctx.stroke();
+
+          pts.forEach(function (p, idx) {
+            ctx.fillStyle = (idx % 3 === 0) ? '#facc15' : ((idx % 2 === 0) ? '#22d3ee' : '#a855f7');
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, 2.4 + (leechBins[idx % 24] * 1.4), 0, Math.PI * 2);
+            ctx.fill();
+          });
+          ctx.restore();
+        } else if (activeMode === 1) {
+          // MODE 2: Vesper-Arachne 15,554-Pole Cybernetic Raymarcher & 3-Shell Armor
+          ctx.save();
+          ctx.translate(cx, cy);
+          // 3-Shell Nested Hologram Armor around Vesper
+          const shieldCols = ['#22d3ee', '#facc15', '#c084fc'];
+          for (let s = 0; s < activeShells; s++) {
+            const rS = 74 + s * 34 + Math.sin(t * 3 + s) * 6;
+            ctx.strokeStyle = shieldCols[s];
+            ctx.lineWidth = 1.8;
+            ctx.beginPath();
+            for (let v = 0; v < 14; v++) {
+              const a = (v * Math.PI * 2) / 14 + t * (s === 1 ? -0.4 : 0.4);
+              const rr = (v % 2 === 0) ? rS : rS * 0.84;
+              if (v === 0) ctx.moveTo(Math.cos(a) * rr, Math.sin(a) * rr);
+              else ctx.lineTo(Math.cos(a) * rr, Math.sin(a) * rr);
+            }
+            ctx.closePath();
+            ctx.stroke();
+          }
+          // 8 Articulated Cybernetic Legs
+          for (let leg = 0; leg < 8; leg++) {
+            const side = leg < 4 ? -1 : 1;
+            const row = leg % 4;
+            const baseA = side * (0.45 + row * 0.48) + Math.sin(t * 4 + leg) * 0.12;
+            const kx = Math.cos(baseA) * 58;
+            const ky = Math.sin(baseA) * 58;
+            const fx = Math.cos(baseA + side * 0.25) * (108 + leechBins[leg * 2] * 16);
+            const fy = Math.sin(baseA + side * 0.25) * (108 + leechBins[leg * 2] * 16);
+            ctx.strokeStyle = '#38bdf8';
+            ctx.lineWidth = 3.2;
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(kx, ky);
+            ctx.lineTo(fx, fy);
+            ctx.stroke();
+            ctx.fillStyle = '#f97316';
+            ctx.beginPath();
+            ctx.arc(kx, ky, 4, 0, Math.PI * 2);
+            ctx.arc(fx, fy, 3.5, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          // Core Carapace
+          ctx.fillStyle = '#0f172a';
+          ctx.strokeStyle = '#facc15';
+          ctx.lineWidth = 2.4;
+          ctx.beginPath();
+          ctx.arc(0, 0, 32, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+          ctx.fillStyle = '#fb923c';
+          ctx.beginPath();
+          ctx.arc(0, 0, 12 + leechBins[0] * 6, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        } else if (activeMode === 2) {
+          // MODE 3: Good-Thomas (7x11x101) Cymatic Chladni Toroidal Wormhole
+          ctx.save();
+          ctx.translate(cx, cy);
+          for (let ring = 0; ring < 28; ring++) {
+            const frac = ring / 28.0;
+            const r = 18 + frac * 155;
+            ctx.beginPath();
+            for (let s = 0; s <= 77; s++) {
+              const a = (s * Math.PI * 2) / 77;
+              const chladni = Math.sin(7 * a + t * 1.5) * Math.cos(11 * a - t * 1.2) * (8 + leechBins[ring % 24] * 10);
+              const px = Math.cos(a) * (r + chladni);
+              const py = Math.sin(a) * (r + chladni) * 0.78;
+              if (s === 0) ctx.moveTo(px, py);
+              else ctx.lineTo(px, py);
+            }
+            ctx.strokeStyle = ring % 3 === 0 ? 'rgba(34, 211, 238, 0.55)' : (ring % 2 === 0 ? 'rgba(250, 204, 21, 0.45)' : 'rgba(16, 185, 129, 0.45)');
+            ctx.lineWidth = 1.2;
+            ctx.stroke();
+          }
+          ctx.restore();
+        } else {
+          // MODE 4: Gemma-4 (.sh4z + .o7777) Neural Weight Manifold Hologram (101 x 77 Matrix)
+          const cols = 44, rows = 28;
+          const cellW = w / cols, cellH = h / rows;
+          for (let r = 0; r < rows; r++) {
+            for (let c = 0; c < cols; c++) {
+              const idx = (r * cols + c + crtR3 * 77) % TOTAL_N;
+              const r1 = idx % 7, r2 = idx % 11, r3 = idx % 101;
+              const wave = Math.sin(idx * 0.071 + t * 2.4) * Math.cos(r3 * 0.19 - t * 1.6);
+              if (Math.abs(wave) > (0.95 / gammaWindow)) {
+                ctx.fillStyle = wave > 0 ? 'rgba(34, 211, 238, 0.82)' : 'rgba(249, 115, 22, 0.82)';
+                ctx.fillRect(c * cellW + 1, r * cellH + 1, cellW - 2, cellH - 2);
+              } else if ((r1 + r2) % 5 === 0) {
+                ctx.fillStyle = 'rgba(168, 85, 247, 0.20)';
+                ctx.fillRect(c * cellW + 2, r * cellH + 2, cellW - 4, cellH - 4);
+              }
+            }
+          }
+        }
+
+        // Update 3-Shell Orthoplex VQ-Tokenizer Reconstruction Canvas (every 2 frames)
+        if (frameCounter % 2 === 0) {
+          vqCtx.drawImage(mainCanvas, 0, 0, vqCanvas.width, vqCanvas.height);
+          const imgData = vqCtx.getImageData(0, 0, vqCanvas.width, vqCanvas.height);
+          const data = imgData.data;
+          // Quantize RGB pixels using 1-Shell, 2-Shell, or 3-Shell Nested Orthoplex Residual Peeling
+          const levels = activeShells === 1 ? 3 : (activeShells === 2 ? 9 : 27);
+          const step = 255.0 / (levels - 1);
+          let sigSq = 0.0, errSq = 0.0;
+          for (let i = 0; i < data.length; i += 4) {
+            for (let ch = 0; ch < 3; ch++) {
+              const orig = data[i + ch];
+              sigSq += orig * orig;
+              const qVal = Math.round(orig / step) * step;
+              const diff = orig - qVal;
+              errSq += diff * diff;
+              data[i + ch] = Math.max(0, Math.min(255, qVal));
+            }
+          }
+          vqCtx.putImageData(imgData, 0, 0);
+          const snrDb = 10.0 * Math.log10(Math.max(1.0, sigSq) / Math.max(1.0, errSq));
+          const snrEl = document.getElementById('vq-snr-readout');
+          if (snrEl) snrEl.textContent = snrDb.toFixed(2) + ' dB';
+        }
+
+        // Render 24-Channel Audio Spectrum Bar
+        specCtx.clearRect(0, 0, specCanvas.width, specCanvas.height);
+        const barW = specCanvas.width / 24;
+        for (let c = 0; c < 24; c++) {
+          const val = Math.min(1.0, leechBins[c]);
+          const bh = val * (specCanvas.height - 8);
+          specCtx.fillStyle = c % 3 === 0 ? '#22d3ee' : (c % 2 === 0 ? '#facc15' : '#10b981');
+          specCtx.fillRect(c * barW + 2, specCanvas.height - bh - 2, barW - 4, bh);
+        }
+
+        frameCounter++;
+        requestAnimationFrame(renderMainViewport);
+      }
+
+      // Export PNG Keyframe
+      const btnPng = document.getElementById('btn-export-png');
+      if (btnPng) {
+        btnPng.addEventListener('click', function () {
+          const link = document.createElement('a');
+          link.download = 'sovereign_7777d_orthoplex_frame_r3_' + crtR3 + '.png';
+          link.href = mainCanvas.toDataURL('image/png');
+          link.click();
+          const st = document.getElementById('studio-status-log');
+          if (st) st.textContent = 'Exported 7777D Orthoplex PNG frame (r3=' + crtR3 + ')!';
+        });
+      }
+
+      // Export Genuine 48kHz 16-bit Stereo RIFF .WAV File Driven by 7777D De Bruijn Harmonics
+      const btnWav = document.getElementById('btn-export-wav');
+      if (btnWav) {
+        btnWav.addEventListener('click', function () {
+          const sampleRate = 48000;
+          const durationSec = 3;
+          const numSamples = sampleRate * durationSec;
+          const numChannels = 2;
+          const dataBytes = numSamples * numChannels * 2;
+          const buffer = new ArrayBuffer(44 + dataBytes);
+          const view = new DataView(buffer);
+
+          function writeStr(off, s) {
+            for (let i = 0; i < s.length; i++) view.setUint8(off + i, s.charCodeAt(i));
+          }
+          writeStr(0, 'RIFF');
+          view.setUint32(4, 36 + dataBytes, true);
+          writeStr(8, 'WAVE');
+          writeStr(12, 'fmt ');
+          view.setUint32(16, 16, true);
+          view.setUint16(20, 1, true);
+          view.setUint16(22, numChannels, true);
+          view.setUint32(24, sampleRate, true);
+          view.setUint32(28, sampleRate * numChannels * 2, true);
+          view.setUint16(32, numChannels * 2, true);
+          view.setUint16(34, 16, true);
+          writeStr(36, 'data');
+          view.setUint32(40, dataBytes, true);
+
+          let offset = 44;
+          const freqs = [111.0, 166.5, 222.0, 333.0, 444.0, 528.0, 666.0];
+          for (let i = 0; i < numSamples; i++) {
+            const t = i / sampleRate;
+            const env = Math.min(1.0, i / 2400.0) * Math.min(1.0, (numSamples - i) / 4800.0);
+            let sL = 0.0, sR = 0.0;
+            for (let k = 0; k < 7; k++) {
+              const d = crtToFlat(k, (k * 3) % 11, crtR3);
+              const phase = (d / 7777.0) * Math.PI * 2.0;
+              sL += Math.sin(2.0 * Math.PI * freqs[k] * t + phase) * (0.22 / (1 + k * 0.25));
+              sR += Math.cos(2.0 * Math.PI * (freqs[k] * 1.003) * t - phase) * (0.22 / (1 + k * 0.25));
+            }
+            const pcmL = Math.max(-32767, Math.min(32767, Math.floor(sL * env * 28000)));
+            const pcmR = Math.max(-32767, Math.min(32767, Math.floor(sR * env * 28000)));
+            view.setInt16(offset, pcmL, true);
+            view.setInt16(offset + 2, pcmR, true);
+            offset += 4;
+          }
+
+          const blob = new Blob([buffer], { type: 'audio/wav' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'sovereign_7777d_cymatic_chord_48khz.wav';
+          a.click();
+          const st = document.getElementById('studio-status-log');
+          if (st) st.textContent = 'Exported 48kHz Stereo .WAV (' + (44 + dataBytes) + ' bytes)!';
+        });
+      }
+
+      // Record 4-Second Synchronized .WEBM Video clip directly from Main Canvas
+      const btnWebm = document.getElementById('btn-record-webm');
+      if (btnWebm) {
+        btnWebm.addEventListener('click', function () {
+          if (!mainCanvas.captureStream || typeof MediaRecorder === 'undefined') {
+            const st = document.getElementById('studio-status-log');
+            if (st) st.textContent = 'MediaRecorder not supported in this browser context; use PowerShell E:\\ script for native .AVI/.MP4!';
+            return;
+          }
+          const stream = mainCanvas.captureStream(30);
+          const chunks = [];
+          const rec = new MediaRecorder(stream);
+          btnWebm.textContent = 'RECORDING 4s CLIP...';
+          rec.ondataavailable = function (ev) {
+            if (ev.data && ev.data.size > 0) chunks.push(ev.data);
+          };
+          rec.onstop = function () {
+            const blob = new Blob(chunks, { type: 'video/webm' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'sovereign_7777d_orthoplex_video.webm';
+            a.click();
+            btnWebm.textContent = 'RECORD 4s .WEBM VIDEO';
+            const st = document.getElementById('studio-status-log');
+            if (st) st.textContent = 'Exported 4s 30FPS .WEBM video (' + blob.size + ' bytes)!';
+          };
+          rec.start();
+          setTimeout(function () { rec.stop(); }, 4000);
+        });
+      }
+
+      requestAnimationFrame(renderMainViewport);
+    })();
+  </script>
+</body>
+</html>

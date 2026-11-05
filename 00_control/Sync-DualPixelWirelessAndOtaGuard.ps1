@@ -121,6 +121,7 @@ if ($FlashWholeApp -and (Test-Path $apkPath)) {
             & $adb -s $tgt install -r -d $apkPath
             & $adb -s $tgt reverse tcp:8097 tcp:8097 2>$null
             & $adb -s $tgt reverse tcp:5173 tcp:5173 2>$null
+            & $adb -s $tgt shell am start -n com.actomega.manifold/.MainActivity
         }
     }
 }

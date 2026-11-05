@@ -1,4 +1,4 @@
-# ACT-Omega Net `v56.0.0` (`SH4Z v5600 TLV` | `CHAIN 210` | `624/624 Lean 4 QED`) — Complete Operator User Manual, Step-by-Step Guide & FAQ
+# ACT-Omega Net `v61.0.0` (`SH4Z v6000 TLV` | `CHAIN 280` | `700/700 Lean 4 QED` | `18 Gemini MCP Tools`) — Complete Operator User Manual, Step-by-Step Guide & FAQ
 
 > **Continuously Updated Master Manual** (`C:\sovereign_manifold_v31\USER_MANUAL_AND_FAQ.md`)
 > Mirrored automatically to:

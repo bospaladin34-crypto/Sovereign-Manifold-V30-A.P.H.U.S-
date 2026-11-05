@@ -907,10 +907,14 @@ pub fn run_chain100_omni_suite_measured(weights_path: &str, e8_path: &str) -> St
     let total_latency_ms = t_suite.elapsed().as_secs_f64() * 1000.0;
 
     format!(
-        "{{\"status\":\"CHAIN_100_CENTURY_MILESTONE_QED\",\"century_milestone\":\"CHAIN_100_CENTURY_CAPSTONE_VERIFIED\",\"version\":\"v49.0.0\",\"tools_total\":100,\"chain100_complete\":true,\"tools_verified\":100,\"dag_waves\":4,\"total_latency_ms\":{:.3},\"dendritic_neurons_total\":{},\"e8_sectors_active\":{},\"lean4_theorems_total\":{},\"weights_path\":\"{}\",\"npage_total_bytes\":{},\"npage_sha256\":\"{}\",\"e8z_total_bytes\":{},\"tool_91\":{},\"tool_92\":{},\"tool_93\":{},\"tool_94\":{},\"tool_95\":{},\"tool_96\":{},\"tool_97\":{},\"tool_98\":{},\"tool_99\":{},\"tool_100\":{},\"timestamp_ms\":{}}}",
+        "{{\"status\":\"CHAIN_100_CENTURY_MILESTONE_QED\",\"century_milestone\":\"CHAIN_100_CENTURY_CAPSTONE_VERIFIED\",\"version\":\"v49.0.0\",\"tools_total\":{},\"chain100_complete\":true,\"tools_verified\":100,\"dag_waves\":4,\"total_latency_ms\":{:.3},\"dendritic_neurons_total\":{},\"dendritic_neurons_capacity\":{},\"e8_sectors_active\":{},\"active_sectors_nominal\":{},\"chair44_columns\":{},\"lean4_theorems_total\":{},\"weights_path\":\"{}\",\"npage_total_bytes\":{},\"npage_sha256\":\"{}\",\"e8z_total_bytes\":{},\"tool_91\":{},\"tool_92\":{},\"tool_93\":{},\"tool_94\":{},\"tool_95\":{},\"tool_96\":{},\"tool_97\":{},\"tool_98\":{},\"tool_99\":{},\"tool_100\":{},\"timestamp_ms\":{}}}",
+        V49_TOTAL_TOOLS,
         total_latency_ms,
         measured_neurons,
+        V49_DENDRITIC_NEURONS,
         active_sectors,
+        V49_ACTIVE_SECTORS,
+        V49_CHAIR44_COLUMNS,
         V49_LEAN4_THEOREMS,
         v49_escape_json(weights_path),
         npage_bytes,

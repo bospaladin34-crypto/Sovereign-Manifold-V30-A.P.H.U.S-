@@ -556,11 +556,7 @@ pub fn v54_5_tool183_chair44_ticket_verifier_sentry(input: &str) -> String {
         ticket_id, col_idx, ring, sub_epoch, eval_nonce, col_npage_fnv
     );
     let expected_hmac = v54_5_compute_hmac_sha256(&op_key, &msg_payload.into_bytes());
-    let hmac_valid = if provided_hmac.is_empty() {
-        !expected_hmac.is_empty()
-    } else {
-        provided_hmac.eq_ignore_ascii_case(&expected_hmac)
-    };
+    let hmac_valid = !provided_hmac.is_empty() && provided_hmac.eq_ignore_ascii_case(&expected_hmac);
 
     // Replay nonce tracking when explicit sturmian_nonce is supplied
     let mut replay_detected = false;
@@ -568,7 +564,7 @@ pub fn v54_5_tool183_chair44_ticket_verifier_sentry(input: &str) -> String {
         if let Ok(mut guard) = V54_5_SEEN_TICKET_NONCES.lock() {
             if guard.iter().any(|&n| n == eval_nonce) {
                 replay_detected = true;
-            } else {
+            } else if hmac_valid {
                 guard.push(eval_nonce);
                 if let Ok(mut f) = fs::OpenOptions::new()
                     .create(true)
@@ -588,6 +584,8 @@ pub fn v54_5_tool183_chair44_ticket_verifier_sentry(input: &str) -> String {
     let ticket_valid = hmac_valid && !replay_detected;
     let perm_status = if ticket_valid {
         "AUTHORIZED"
+    } else if provided_hmac.is_empty() {
+        "REJECTED_MISSING_HMAC"
     } else if replay_detected {
         "REJECTED_NONCE_REPLAY"
     } else {

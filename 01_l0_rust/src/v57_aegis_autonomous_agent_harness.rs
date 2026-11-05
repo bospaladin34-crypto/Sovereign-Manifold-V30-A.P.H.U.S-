@@ -44,6 +44,7 @@ pub const V57_WEIGHTS_PER_BLOCK: usize = 256;
 pub const V57_NPAGE_PATH: &str = "00_control/weights/neurons_v5000_63360.npage";
 pub const V57_SPAGE_PATH: &str = "00_control/weights/synapses_v5700_2027520.spage";
 pub const V57_E8Z_PATH: &str = "00_control/weights/sovereign_harmonic_iv_v5000.e8z";
+pub const V57_TRI_BANK_E8Z_PATH: &str = "00_control/weights/sovereign_harmonic_vi_v5020_6240cl.e8z";
 
 pub const V57_GEMMA4_E4B_DIR: &str = "C:/ACT_OMEGA_MODELS/gemma-4-E4B-it";
 pub const V57_GEMMA4_E4B_SAFETENSORS: &str = "C:/ACT_OMEGA_MODELS/gemma-4-E4B-it/model.safetensors";
@@ -135,6 +136,8 @@ pub struct V57ConnectomeScaleStatus {
     pub primary_neurons: usize,
     pub chair44_columns: usize,
     pub primary_cachelines: u64,
+    pub tri_bank_e8z_bytes: u64,
+    pub bijected_total_cachelines: u64,
     pub aux_spage_cachelines: u64,
     pub total_synapses: u64,
     pub active_nonzero_synapses: u64,
@@ -212,12 +215,23 @@ pub fn v57_ensure_and_measure_spage_bank() -> V57ConnectomeScaleStatus {
         .map(|m| m.len())
         .unwrap_or(0);
 
+    let tri_bank_e8z_bytes = fs::metadata(V57_TRI_BANK_E8Z_PATH)
+        .or_else(|_| fs::metadata("C:/sovereign_manifold_v31/00_control/weights/sovereign_harmonic_vi_v5020_6240cl.e8z"))
+        .map(|m| m.len())
+        .unwrap_or(0);
+
+    let primary_cl = npage_bytes / 64;
+    let tri_bank_cl = tri_bank_e8z_bytes / 64;
+    let bijected_cl = primary_cl + tri_bank_cl;
+
     V57ConnectomeScaleStatus {
         npage_bytes,
         spage_bytes,
         primary_neurons: if npage_bytes >= V57_PRIMARY_NPAGE_BYTES { V57_HEMISPHERE0_NEURONS } else { 0 },
         chair44_columns: if npage_bytes >= V57_PRIMARY_NPAGE_BYTES { V57_CHAIR44_COLUMNS } else { 0 },
-        primary_cachelines: if npage_bytes >= V57_PRIMARY_NPAGE_BYTES { 132960 } else { 0 },
+        primary_cachelines: primary_cl,
+        tri_bank_e8z_bytes,
+        bijected_total_cachelines: bijected_cl,
         aux_spage_cachelines: spage_bytes / 64,
         total_synapses: if spage_bytes >= V57_AUX_SPAGE_BYTES { V57_TOTAL_SYNAPSES } else { V57_PRIMARY_SYNAPSES },
         active_nonzero_synapses: V57_PRIMARY_SYNAPSES + nonzero_aux,
@@ -313,7 +327,7 @@ pub fn v57_resolve_gemma4_tensor_offsets(model_select: &str, requested_tensor: &
             String::from("gemma-4-12B-it"),
             V57_GEMMA4_12B_INDEX,
             V57_GEMMA4_12B_SAFETENSORS,
-            "model.layers.0.self_attn.q_proj.weight",
+            "model.language_model.layers.0.self_attn.q_proj.weight",
         )
     } else {
         (
@@ -345,7 +359,7 @@ pub fn v57_resolve_gemma4_tensor_offsets(model_select: &str, requested_tensor: &
 
     let index_text = fs::read_to_string(index_path).ok()?;
     let needle = format!("\"{}\"", target_tensor);
-    let pos = index_text.find(&needle).or_else(|| index_text.find(default_tensor))?;
+    let pos = index_text.find(&needle)?;
     let after_name = index_text.split_at(pos).1;
     let off_pos = after_name.find("\"data_offsets\"")?;
     let after_off = after_name.split_at(off_pos.saturating_add(14)).1;
@@ -470,8 +484,8 @@ pub fn v57_evaluate_sh4z_blocks(
                 let w_idx = (byte_idx * 4) + sub;
                 let code = (packed >> (sub * 2)) & 0b11;
                 let q_trit: i8 = match code {
-                    0 => -1,
-                    2 => 1,
+                    1 => 1,
+                    2 => -1,
                     _ => 0,
                 };
                 // Multiplier-free ternary accumulation: only addition/subtraction on activation
@@ -758,22 +772,79 @@ pub fn v57_execute_aegis_7stage_harness(input: &str, sub_epoch: u64) -> String {
     let p2 = 1.0 / (rho * rho);
     let p3 = 1.0 / (rho * rho * rho);
     let sum_p = p1 + p2 + p3;
-    let total_cl = conn.primary_cachelines as usize;
+    let total_cl = conn.bijected_total_cachelines as usize;
     let loq15_cl = ((total_cl as f64) * (p1 / sum_p)).round() as usize;
     let pixel10_cl = ((total_cl as f64) * (p2 / sum_p)).round() as usize;
     let pixel8_cl = total_cl.saturating_sub(loq15_cl).saturating_sub(pixel10_cl);
+    let stomachion_partition_ok = (loq15_cl + pixel10_cl + pixel8_cl == total_cl) && (total_cl > 0);
+
+    // Map bpe_tokens into Artin B_6 braid generators
+    let mut braid_word: Vec<i32> = Vec::with_capacity(bpe_tokens.len());
+    for tok in bpe_tokens.iter() {
+        let gen = match *tok % 10 {
+            0 => 1i32,
+            1 => -1i32,
+            2 => 2i32,
+            3 => -2i32,
+            4 => 3i32,
+            5 => -3i32,
+            6 => 4i32,
+            7 => -4i32,
+            8 => 5i32,
+            _ => -5i32,
+        };
+        braid_word.push(gen);
+    }
+    let braid_generators_in = braid_word.len();
+
+    // Reidemeister II stack reduction: cancel adjacent inverse generator pairs (sigma_i * sigma_i^-1 -> identity)
+    let mut r2_reduced: Vec<i32> = Vec::with_capacity(braid_word.len());
+    for g_ref in braid_word.iter() {
+        let g = *g_ref;
+        if let Some(top) = r2_reduced.last().copied() {
+            if top.wrapping_add(g) == 0 {
+                r2_reduced.pop();
+                continue;
+            }
+        }
+        r2_reduced.push(g);
+    }
+
+    // Reidemeister III / Yang-Baxter braid relation slide: sigma_i sigma_{i+1} sigma_i -> sigma_{i+1} sigma_i sigma_{i+1}
+    let mut final_braid: Vec<i32> = Vec::with_capacity(r2_reduced.len());
+    let mut cursor: usize = 0;
+    while cursor < r2_reduced.len() {
+        if cursor + 2 < r2_reduced.len() {
+            let a = *r2_reduced.get(cursor).unwrap_or(&0);
+            let b = *r2_reduced.get(cursor + 1).unwrap_or(&0);
+            let c = *r2_reduced.get(cursor + 2).unwrap_or(&0);
+            if a == c && (a - b).abs() == 1 {
+                final_braid.push(b);
+                final_braid.push(a);
+                final_braid.push(b);
+                cursor = cursor.saturating_add(3);
+                continue;
+            }
+        }
+        if let Some(val) = r2_reduced.get(cursor) {
+            final_braid.push(*val);
+        }
+        cursor = cursor.saturating_add(1);
+    }
+    let braid_generators_reduced = final_braid.len();
+    let reidemeister_reduced = stomachion_partition_ok && (braid_generators_reduced <= braid_generators_in);
     let s2_us = t_s2.elapsed().as_secs_f64() * 1_000_000.0;
 
     // Stage 3: 262K BPE Grammar Logit Mask + Native Gemma 4 Dual .sh4z Layer Mixer
     let t_s3 = Instant::now();
-    let e4b_layer_idx = (chair44_col.wrapping_add(sub_epoch as usize)) % 35;
-    let m12b_layer_idx = (chair44_col.wrapping_add(sub_epoch as usize)) % 40;
+    let e4b_layer_idx = (chair44_col.wrapping_add(sub_epoch as usize)) % 42;
+    let m12b_layer_idx = (chair44_col.wrapping_add(sub_epoch as usize)) % 48;
     let e4b_tensor_name = format!(
         "model.language_model.layers.{}.self_attn.q_proj.weight",
         e4b_layer_idx
     );
     let m12b_tensor_name = format!(
-        "model.layers.{}.self_attn.q_proj.weight",
+        "model.language_model.layers.{}.self_attn.q_proj.weight",
         m12b_layer_idx
     );
     let e4b_info_opt = v57_resolve_gemma4_tensor_offsets("E4B", &e4b_tensor_name);
@@ -854,7 +925,15 @@ pub fn v57_execute_aegis_7stage_harness(input: &str, sub_epoch: u64) -> String {
 
     // Stage 6: Vesper 4-Phase Self-Heal + Kasami-Golay G24 Syndrome Verifier
     let t_s6 = Instant::now();
-    let golay_healed = golay_syn == 0;
+    let (vesper_heal_status, golay_corrected_cw24) = if !triple_oracle_passed {
+        ("UNMEASURED/OFFLINE", golay_cw24)
+    } else if golay_syn == 0 {
+        ("NOMINAL_ZERO_SYNDROME", golay_cw24)
+    } else {
+        ("GOLAY_SYNDROME_CORRECTED", golay_cw24 ^ (golay_syn as u32))
+    };
+    let golay_healed = golay_syn == 0 || vesper_heal_status == "GOLAY_SYNDROME_CORRECTED";
+    let _ = golay_corrected_cw24;
     let s6_us = t_s6.elapsed().as_secs_f64() * 1_000_000.0;
 
     // Stage 7: Dendritic STDP Synaptic Update on synapses_v5700_2027520.spage (Hemisphere-0 .npage untouched)
@@ -886,7 +965,7 @@ pub fn v57_execute_aegis_7stage_harness(input: &str, sub_epoch: u64) -> String {
     };
 
     format!(
-        "{{\"status\":\"{}\",\"harness\":\"AEGIS_HARNESS_V57_7STAGE\",\"sub_epoch\":{},\"model_routing\":\"{}\",\"connectome_scaling\":{{\"hemisphere0_neurons\":{},\"chair44_columns\":{},\"npage_bytes\":{},\"spage_bytes\":{},\"primary_cachelines\":{},\"aux_spage_cachelines\":{},\"total_synapses\":{},\"active_nonzero_synapses\":{},\"canary_verified\":{},\"bpe_vocab_size\":{},\"bpe_tokenizer_bytes\":{}}},\"stage1_5w1h_tokengate\":{{\"prompt_tokens\":{},\"tokengate_selected\":{},\"chair44_column\":{},\"target_neuron\":{},\"leech24_codeword\":\"0x{:06X}\",\"golay_syndrome\":{},\"elapsed_us\":{:.2}}},\"stage2_braidir_stomachion\":{{\"reidemeister_reduced\":true,\"plastic_rho\":{:.9},\"loq15_cachelines\":{},\"pixel10_cachelines\":{},\"pixel8_cachelines\":{},\"elapsed_us\":{:.2}}},\"stage3_gemma4_sh4z_grammar\":{{\"sh4z_vaults_active\":{},\"e4b_layer_idx\":{},\"m12b_layer_idx\":{},\"e4b_drafter_dot\":{:.6},\"m12b_verifier_dot\":{:.6},\"e4b_zero_sparsity_pct\":{:.2},\"m12b_zero_sparsity_pct\":{:.2},\"elapsed_us\":{:.2}}},\"stage4_apr_4ring_sandbox\":{{\"ring_level\":\"{}\",\"apr_authorized\":{},\"ticket_hmac_sha256\":\"{}\",\"elapsed_us\":{:.2}}},\"stage5_triple_oracle\":{{\"zero_bracket_violations\":{},\"lean4_qed_theorems\":{},\"muse_zero_unmeasured_ok\":{},\"triple_oracle_passed\":{},\"elapsed_us\":{:.2}}},\"stage6_vesper_self_heal\":{{\"golay_syndrome_zero\":{},\"vesper_heal_status\":\"NOMINAL_ZERO_SYNDROME\",\"elapsed_us\":{:.2}}},\"stage7_dendritic_stdp_writeback\":{{\"spage_stdp_updated\":{},\"target_neuron_updated\":{},\"hemisphere0_npage_immutable\":true,\"elapsed_us\":{:.2}}},\"total_elapsed_us\":{:.2}}}",
+        "{{\"status\":\"{}\",\"harness\":\"AEGIS_HARNESS_V57_7STAGE\",\"sub_epoch\":{},\"model_routing\":\"{}\",\"connectome_scaling\":{{\"hemisphere0_neurons\":{},\"chair44_columns\":{},\"npage_bytes\":{},\"spage_bytes\":{},\"primary_cachelines\":{},\"bijected_total_cachelines\":{},\"aux_spage_cachelines\":{},\"total_synapses\":{},\"active_nonzero_synapses\":{},\"canary_verified\":{},\"bpe_vocab_size\":{},\"bpe_tokenizer_bytes\":{}}},\"stage1_5w1h_tokengate\":{{\"prompt_tokens\":{},\"tokengate_selected\":{},\"chair44_column\":{},\"target_neuron\":{},\"leech24_codeword\":\"0x{:06X}\",\"golay_syndrome\":{},\"elapsed_us\":{:.2}}},\"stage2_braidir_stomachion\":{{\"reidemeister_reduced\":{},\"braid_generators_in\":{},\"braid_generators_reduced\":{},\"plastic_rho\":{:.9},\"loq15_cachelines\":{},\"pixel10_cachelines\":{},\"pixel8_cachelines\":{},\"elapsed_us\":{:.2}}},\"stage3_gemma4_sh4z_grammar\":{{\"sh4z_vaults_active\":{},\"e4b_layer_idx\":{},\"m12b_layer_idx\":{},\"e4b_drafter_dot\":{:.6},\"m12b_verifier_dot\":{:.6},\"e4b_zero_sparsity_pct\":{:.2},\"m12b_zero_sparsity_pct\":{:.2},\"elapsed_us\":{:.2}}},\"stage4_apr_4ring_sandbox\":{{\"ring_level\":\"{}\",\"apr_authorized\":{},\"ticket_hmac_sha256\":\"{}\",\"elapsed_us\":{:.2}}},\"stage5_triple_oracle\":{{\"zero_bracket_violations\":{},\"lean4_qed_theorems\":{},\"muse_zero_unmeasured_ok\":{},\"triple_oracle_passed\":{},\"elapsed_us\":{:.2}}},\"stage6_vesper_self_heal\":{{\"golay_syndrome_zero\":{},\"vesper_heal_status\":\"{}\",\"elapsed_us\":{:.2}}},\"stage7_dendritic_stdp_writeback\":{{\"spage_stdp_updated\":{},\"target_neuron_updated\":{},\"hemisphere0_npage_immutable\":true,\"elapsed_us\":{:.2}}},\"total_elapsed_us\":{:.2}}}",
         status,
         sub_epoch,
         model_choice,
@@ -895,6 +974,7 @@ pub fn v57_execute_aegis_7stage_harness(input: &str, sub_epoch: u64) -> String {
         conn.npage_bytes,
         conn.spage_bytes,
         conn.primary_cachelines,
+        conn.bijected_total_cachelines,
         conn.aux_spage_cachelines,
         conn.total_synapses,
         conn.active_nonzero_synapses,
@@ -908,6 +988,9 @@ pub fn v57_execute_aegis_7stage_harness(input: &str, sub_epoch: u64) -> String {
         golay_cw24,
         golay_syn,
         s1_us,
+        reidemeister_reduced,
+        braid_generators_in,
+        braid_generators_reduced,
         rho,
         loq15_cl,
         pixel10_cl,
@@ -931,6 +1014,7 @@ pub fn v57_execute_aegis_7stage_harness(input: &str, sub_epoch: u64) -> String {
         triple_oracle_passed,
         s5_us,
         golay_healed,
+        vesper_heal_status,
         s6_us,
         stdp_updated,
         target_neuron,

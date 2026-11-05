@@ -1,7 +1,7 @@
 {
-  "name": "ACT-Omega Net v50.2.0 (SH4Z v5000 TLV | CHAIN 145) — Sovereign Harmonic HUD",
+  "name": "ACT-Omega Net v61.0.0 (SH4Z v6000 TLV | CHAIN 280) — Sovereign Harmonic HUD",
   "short_name": "ACT-Omega HUD",
-  "description": "4-Tier Tri-Silicon Topological & Stiefel Manifold Cockpit HUD (63,360 Neurons, 80 Sectors, 145 Native Tools, 576/576 Lean 4 QED, 262,144 Open-Vocab BPE, 15.965 Hz Decadic Clock)",
+  "description": "4-Tier Tri-Silicon Topological & Stiefel Manifold Cockpit HUD (63,360 Neurons, 80 Sectors, 280 Native Tools, 700/700 Lean 4 QED, 262,144 Open-Vocab BPE, 15.965 Hz Decadic Clock)",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

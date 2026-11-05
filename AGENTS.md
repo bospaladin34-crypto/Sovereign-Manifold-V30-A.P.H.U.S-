@@ -1,4 +1,4 @@
-# ACT-Omega Net v60.0.0 (SH4Z v6000 TLV | CHAIN 270 | 690/690 Lean 4 QED | 3,041,280 Synapses) — Google Antigravity (Gemini 4 Argon) Master Constitutional Context (`GEMINI.md` / `AGENTS.md`)
+# ACT-Omega Net v61.0.0 (SH4Z v6000 TLV | CHAIN 280 | 700/700 Lean 4 QED | 3,041,280 Synapses | 18 Gemini MCP Tools) — Google Antigravity (Gemini 4 Argon) Master Constitutional Context (`GEMINI.md` / `AGENTS.md`)
 
 - **Zenodo Permanent DOI**: `10.5281/zenodo.23651696` (https://doi.org/10.5281/zenodo.23651696)
 - **OSF Permanent DOI**: `10.17605/OSF.IO/2XQ5Z` (https://osf.io/2xq5z/overview)

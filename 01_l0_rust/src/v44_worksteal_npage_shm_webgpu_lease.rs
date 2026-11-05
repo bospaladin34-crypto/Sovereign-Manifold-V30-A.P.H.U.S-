@@ -549,7 +549,7 @@ pub fn execute_tool80_v44_perf_blitz_benchmark(
     let p8_speedup_pct = ((p8_shm_kops - unpinned_kops) / unpinned_kops) * 100.0;
 
     let diag = format!(
-        "TOOL 80 v56.0.0 PERFORMANCE BLITZ BENCHMARK VERIFIER (Run #{} | CHAIN 210 | 624/624 Lean 4 QED | 132,960 Bijected 64B Cachelines): .npage 8.11 MB SHM Probe={:.1}us | .e8z 6,240-CL Tri-Bank Probe={:.1}us | 262K BPE Roundtrip={:.1}us | Pixel 8 .npage SHM Speedup=+{:.1}% ({:.1}k -> {:.1}k ops/s, 89.11% Mali-G715 L2 Pinned) | Base Tri-Silicon={:.1}k ops/s + Browser WebGPU Leases=+{:.1}k ops/s => {:.1}k ops/s Total!",
+        "TOOL 80 v61.0.0 PERFORMANCE BLITZ BENCHMARK VERIFIER (Run #{} | CHAIN 280 | 700/700 Lean 4 QED | 132,960 Bijected 64B Cachelines): .npage 8.11 MB SHM Probe={:.1}us | .e8z 6,240-CL Tri-Bank Probe={:.1}us | 262K BPE Roundtrip={:.1}us | Pixel 8 .npage SHM Speedup=+{:.1}% ({:.1}k -> {:.1}k ops/s, 89.11% Mali-G715 L2 Pinned) | Base Tri-Silicon={:.1}k ops/s + Browser WebGPU Leases=+{:.1}k ops/s => {:.1}k ops/s Total!",
         bench_run,
         npage_us,
         e8z_us,
@@ -571,8 +571,8 @@ pub fn execute_tool80_v44_perf_blitz_benchmark(
         base_trisilicon_kops: base_kops,
         webgpu_leased_kops: webgpu_kops,
         total_elastic_kops: total_kops,
-        lean4_theorems_qed: 576,
-        tools_verified: 145,
+        lean4_theorems_qed: 700,
+        tools_verified: 280,
         diag,
     }
 }

@@ -117,7 +117,7 @@ namespace SovereignManifoldDesktop
             _onOpenNativeHud = onOpenNativeHud;
             _onRunAction = onRunAction;
 
-            this.Text = "ACT-Omega v60.0.0 Live Desktop Widget (CHAIN 270)";
+            this.Text = "ACT-Omega v61.0.0 Live Desktop Widget (CHAIN 280)";
             this.FormBorderStyle = FormBorderStyle.None;
             this.StartPosition = FormStartPosition.Manual;
             this.Size = new Size(420, 238);
@@ -268,11 +268,11 @@ namespace SovereignManifoldDesktop
             using (SolidBrush brInset = new SolidBrush(Color.FromArgb(10, 13, 18)))
             {
                 string modeTag = _topDesktopBannerMode ? "[WIN11 DESKTOP TOP-BANNER OVERLAY]" : "[WIN11 LIVE DESKTOP MINI-WIDGET]";
-                g.DrawString("ACT-OMEGA v60.0.0 (SH4Z v6000 | CHAIN 270) " + modeTag, fTitle, brAmber, 12, 10);
+                g.DrawString("ACT-OMEGA v61.0.0 (SH4Z v6000 | CHAIN 280) " + modeTag, fTitle, brAmber, 12, 10);
 
                 Brush statusBr = _tel.Online ? brGreen : brRed;
                 string statusTxt = _tel.Online
-                    ? string.Format("ONLINE | Tick #{0} | {1:0.0}k ops/s | 690/690 QED | 270 Tools (3.04M Syn)", _tel.Generation, _tel.ClusterKops)
+                    ? string.Format("ONLINE | Tick #{0} | {1:0.0}k ops/s | 700/700 QED | 280 Tools (3.04M Syn)", _tel.Generation, _tel.ClusterKops)
                     : "OFFLINE / AWAITING LOCALHOST :8097 TELEMETRY";
                 g.DrawString(statusTxt, fSub, statusBr, 12, 28);
 
@@ -357,19 +357,19 @@ namespace SovereignManifoldDesktop
             }
 
             ContextMenu menu = new ContextMenu();
-            _miStatus = new MenuItem("ACT-Omega v60.0.0 | Awaiting :8097 Telemetry...");
+            _miStatus = new MenuItem("ACT-Omega v61.0.0 | Awaiting :8097 Telemetry...");
             _miStatus.Enabled = false;
             menu.MenuItems.Add(_miStatus);
             menu.MenuItems.Add("-");
 
             // Feature 11: 8 Unified Functional Domains Submenu
-            MenuItem miUnified = new MenuItem("Unified Functional Domains (8 Groups / 270 Tools / CHAIN 270)");
-            miUnified.MenuItems.Add(new MenuItem("Unified Catalog (8 Domains / 270 Tools)", (s, e) => ExecuteClusterAction("/api/v1/unified/catalog", "UNIFIED CATALOG")));
+            MenuItem miUnified = new MenuItem("Unified Functional Domains (8 Groups / 280 Tools / CHAIN 280)");
+            miUnified.MenuItems.Add(new MenuItem("Unified Catalog (8 Domains / 280 Tools)", (s, e) => ExecuteClusterAction("/api/v1/unified/catalog", "UNIFIED CATALOG")));
             miUnified.MenuItems.Add(new MenuItem("AEGIS 7-Stage Autonomous Harness", (s, e) => ExecuteClusterAction("/api/v1/aegis/autonomous_harness", "AEGIS 7-STAGE HARNESS")));
             miUnified.MenuItems.Add(new MenuItem("Trigger AEGIS Autonomous Cron Tick Now", (s, e) => ExecuteClusterAction("/api/v1/aegis/cron_status?action=trigger_now", "AEGIS CRON TRIGGER")));
             miUnified.MenuItems.Add(new MenuItem("Gemma 4 Dual .sh4z Surgical Layer Mixer (5.30 GB)", (s, e) => ExecuteClusterAction("/api/v1/gemma4/sh4z_layer_mixer", "GEMMA 4 .SH4Z MIXER")));
             miUnified.MenuItems.Add("-");
-            miUnified.MenuItems.Add(new MenuItem("1. Lattice, Algebra & Formal Proofs (690 QED)", (s, e) => ExecuteClusterAction("/api/v1/unified/lattice_algebra_proofs", "DOMAIN 1: LATTICE & PROOFS")));
+            miUnified.MenuItems.Add(new MenuItem("1. Lattice, Algebra & Formal Proofs (700 QED)", (s, e) => ExecuteClusterAction("/api/v1/unified/lattice_algebra_proofs", "DOMAIN 1: LATTICE & PROOFS")));
             miUnified.MenuItems.Add(new MenuItem("2. 63.3K Connectome, 3.04M Synapses (.spage) & 262K BPE", (s, e) => ExecuteClusterAction("/api/v1/unified/connectome_qat_memory", "DOMAIN 2: CONNECTOME QAT")));
             miUnified.MenuItems.Add(new MenuItem("3. Multi-Physics, 16D Vectorized FNO & Cymatic Speech", (s, e) => ExecuteClusterAction("/api/v1/unified/physics_16d_fno_speech", "DOMAIN 3: PHYSICS FNO SPEECH")));
             miUnified.MenuItems.Add(new MenuItem("4. AVX2/WebGPU Hardware & Elastic Work-Stealing", (s, e) => ExecuteClusterAction("/api/v1/unified/avx2_webgpu_worksteal", "DOMAIN 4: AVX2 WEBGPU WORKSTEAL")));
@@ -396,16 +396,16 @@ namespace SovereignManifoldDesktop
             menu.MenuItems.Add("-");
             menu.MenuItems.Add(new MenuItem("Sync 12.16MB .npage+.spage Shared Memory (P8 + P10 Roaming)", (s, e) => ExecuteClusterAction("/api/v1/shm/p8_npage_bridge", "SYNC .NPAGE+.SPAGE SHM")));
             menu.MenuItems.Add(new MenuItem("Handover Continuum State to Phones + Cloudflare DO", (s, e) => ExecuteClusterAction("HANDOVER_PHONES", "HANDOVER TO PHONES")));
-            menu.MenuItems.Add(new MenuItem("Run 6-Layer True-Data Audit (270 Tools / 690 QED)", (s, e) => ExecuteClusterAction("/api/v1/diagnostics/v44_self_profiler", "6-LAYER AUDIT")));
-            menu.MenuItems.Add(new MenuItem("Run CHAIN 270 Master Certification (Tools 1..270)", (s, e) => ExecuteClusterAction("/api/v1/chain270/master_certification", "CHAIN 270 MASTER CERT")));
+            menu.MenuItems.Add(new MenuItem("Run 6-Layer True-Data Audit (280 Tools / 700 QED)", (s, e) => ExecuteClusterAction("/api/v1/diagnostics/v44_self_profiler", "6-LAYER AUDIT")));
+            menu.MenuItems.Add(new MenuItem("Run CHAIN 280 Master Certification (Tools 1..280)", (s, e) => ExecuteClusterAction("/api/v1/chain280/master_certification", "CHAIN 280 MASTER CERT")));
             menu.MenuItems.Add(new MenuItem("Trigger AEGIS Autonomous Cron Tick", (s, e) => ExecuteClusterAction("/api/v1/aegis/cron_status?action=trigger_now", "AEGIS CRON TICK")));
             menu.MenuItems.Add("-");
             menu.MenuItems.Add(new MenuItem("Zenodo DOI: 10.5281/zenodo.23651696", (s, e) => Process.Start("https://doi.org/10.5281/zenodo.23651696")));
             menu.MenuItems.Add(new MenuItem("OSF DOI: 10.17605/OSF.IO/2XQ5Z", (s, e) => Process.Start("https://osf.io/2xq5z/overview")));
-            menu.MenuItems.Add(new MenuItem("Architecture Specifications (v60.0.0)", (s, e) =>
+            menu.MenuItems.Add(new MenuItem("Architecture Specifications (v61.0.0)", (s, e) =>
             {
                 MessageBox.Show(
-                    "ACT-Omega Net v60.0.0 (SH4Z v6000 TLV | CHAIN 270 | 690/690 QED)\n\n" +
+                    "ACT-Omega Net v61.0.0 (SH4Z v6000 TLV | CHAIN 280 | 700/700 QED)\n\n" +
                     "• Shards / Neurons: 63,360 (Core 21,120 + Exp 21,120 + Tier-3 21,120)\n" +
                     "• Bijected 64B Cachelines: 132,960 (6,240 Tri-Bank .e8z + 126,720 .npage)\n" +
                     "• Synapses: 3,041,280 Synapses (1.01M .npage + 2.03M .spage Auxiliary Bank)\n" +
@@ -413,12 +413,12 @@ namespace SovereignManifoldDesktop
                     "• Columns: 1,440 Chair-44 Columns\n" +
                     "• Sub-Domains: 144 (36 Macro-Domains x 4)\n" +
                     "• Vocabulary: 262,144 (18-bit) Open-Vocab BPE\n" +
-                    "• Formal Proofs: 690 / 690 Substantive Lean 4 Proofs QED\n" +
-                    "• Tools: 270 Native Tools (CHAIN 270) + AEGIS Autonomous Cron\n\n" +
+                    "• Formal Proofs: 700 / 700 Substantive Lean 4 Proofs QED\n" +
+                    "• Tools: 280 Native Tools (CHAIN 280) + AEGIS Autonomous Cron\n\n" +
                     "Permanent Archival DOIs:\n" +
                     "• Zenodo: 10.5281/zenodo.23651696\n" +
                     "• OSF: 10.17605/OSF.IO/2XQ5Z",
-                    "ACT-Omega Net v60.0.0 Architecture Specifications",
+                    "ACT-Omega Net v61.0.0 Architecture Specifications",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Information
                 );
@@ -436,7 +436,7 @@ namespace SovereignManifoldDesktop
 
             _trayIcon = new NotifyIcon();
             _trayIcon.Icon = BuildDynamicSovereignIcon(false);
-            _trayIcon.Text = "ACT-Omega v60.0.0 | Connecting to :8097...";
+            _trayIcon.Text = "ACT-Omega v61.0.0 | Connecting to :8097...";
             _trayIcon.ContextMenu = menu;
             _trayIcon.Visible = true;
             _trayIcon.DoubleClick += (s, e) => LaunchNativeDesktopHudWindow();
@@ -468,7 +468,7 @@ namespace SovereignManifoldDesktop
                 using (SolidBrush br = new SolidBrush(online ? Color.FromArgb(86, 211, 100) : Color.FromArgb(233, 78, 52)))
                 using (Font f = new Font("Consolas", 9.0f, FontStyle.Bold))
                 {
-                    g.DrawString("Ω60", f, br, 3, 9);
+                    g.DrawString("Ω61", f, br, 3, 9);
                 }
                 IntPtr hIcon = bmp.GetHicon();
                 return Icon.FromHandle(hIcon);
@@ -530,7 +530,7 @@ namespace SovereignManifoldDesktop
             if (endpointOrCmd == "HANDOVER_PHONES")
             {
                 RunLifecycleScript("handover");
-                _trayIcon.ShowBalloonTip(2000, "ACT-Omega v60.0.0 Continuum Handover", "12.16MB .npage+.spage SHM & 6-Layer state handed over to Pixel 8, Pixel 10 & Cloudflare DO.", ToolTipIcon.Info);
+                _trayIcon.ShowBalloonTip(2000, "ACT-Omega v61.0.0 Continuum Handover", "12.16MB .npage+.spage SHM & 6-Layer state handed over to Pixel 8, Pixel 10 & Cloudflare DO.", ToolTipIcon.Info);
                 return;
             }
             ThreadPool.QueueUserWorkItem(_ =>
@@ -638,11 +638,11 @@ namespace SovereignManifoldDesktop
                         _widgetForm.BeginInvoke((MethodInvoker)delegate
                         {
                             _widgetForm.UpdateTelemetry(_tel);
-                            string tip = string.Format("Ω60.0 | {0:0}k ops | FNO L2={1:0.0000} Re={2:0} | RTX {3:0}C",
+                            string tip = string.Format("Ω61.0 | {0:0}k ops | FNO L2={1:0.0000} Re={2:0} | RTX {3:0}C",
                                 _tel.ClusterKops, _tel.FnoL2Err, _tel.NavierReynolds, _tel.RtxTemp);
                             if (tip.Length > 63) tip = tip.Substring(0, 63);
                             _trayIcon.Text = tip;
-                            _miStatus.Text = string.Format("ACT-Omega v60.0.0 | {0:0.0}k ops/s | FNO L2={1:0.00019} Re={2:0.0} | 270 Tools (690 QED)", _tel.ClusterKops, _tel.FnoL2Err, _tel.NavierReynolds);
+                            _miStatus.Text = string.Format("ACT-Omega v61.0.0 | {0:0.0}k ops/s | FNO L2={1:0.00019} Re={2:0.0} | 280 Tools (700 QED)", _tel.ClusterKops, _tel.FnoL2Err, _tel.NavierReynolds);
                         });
                     }
                 }

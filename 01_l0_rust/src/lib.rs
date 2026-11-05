@@ -59,3 +59,21 @@ pub mod utcp_v31_ring;
 pub mod uarm_cascade_sh4;
 pub mod e8_compound_1024_lexicon;
 pub mod octonionic_triality_cubic;
+
+// Milestone M3 / Requirement R3: Native Gemma 4 Multimodal PLE & Speculative Cascade Engine
+pub mod v61_gemma4_multimodal_ple_speculative_cascade_and_mcp_suite;
+
+pub use v61_gemma4_multimodal_ple_speculative_cascade_and_mcp_suite::{
+    v61_escape_clean,
+    v61_json_escape,
+    v61_resolve_gemma4_bpe_tokens,
+    v61_decode_gemma4_token_ids,
+    v61_dispatch_bpe_resolve,
+    v61_ple_256d_surgical_router,
+    v61_probe_multimodal_tower,
+    v61_speculative_cascade_draft,
+    V61PleConfig,
+    V61PleRouterOutput,
+    V61MultimodalProbeOutput,
+    V61SpeculativeCascadeOutput,
+};

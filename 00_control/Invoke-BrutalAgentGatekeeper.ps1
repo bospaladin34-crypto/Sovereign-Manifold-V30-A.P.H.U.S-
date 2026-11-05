@@ -51,8 +51,8 @@ function Run-StaticGatekeeperChecks {
         $sorryCount = ([regex]::Matches($leanText, '\bsorry\b')).Count
         $trivialEqCount = ([regex]::Matches($leanText, ':\s*(\w+)\s*=\s*\1\s*:=')).Count
         $trivialCommCount = ([regex]::Matches($leanText, '\(a\s+b\s*:\s*Nat\)\s*:\s*a\s*\+\s*b\s*=\s*b\s*\+\s*a')).Count
-        if ($thmCount -lt 624) {
-            $failures.Add("LEAN4_COUNT_LOW: Found $thmCount theorems (Req: >= 624)")
+        if ($thmCount -lt 700) {
+            $failures.Add("LEAN4_COUNT_LOW: Found $thmCount theorems (Req: >= 700)")
         }
         if ($sorryCount -gt 0) {
             $failures.Add("LEAN4_SORRY_FOUND: Found $sorryCount 'sorry' tokens (Req: 0)")
@@ -160,7 +160,7 @@ function Run-StaticGatekeeperChecks {
             continue
         }
         $hContent = [System.IO.File]::ReadAllText($hf)
-        if ($hContent -notmatch 'data-sovereign-ssr="v(56|60)\.0\.0"') {
+        if ($hContent -notmatch 'data-sovereign-ssr="v(56|60|61)\.0\.0"') {
             $failures.Add("HTML_SSR_MISSING: $hf missing data-sovereign-ssr=`"v60.0.0`" attribute")
         }
         $bundleMatches = [regex]::Matches($hContent, '(?i)(?:\./)?assets/(index-[^"''\s>]+\.js)')
@@ -288,7 +288,7 @@ if ($FullAudit) {
 
     $failures = Run-StaticGatekeeperChecks
     if ($failures.Count -eq 0) {
-        Write-Host "  [1-7 STATIC INVARIANTS] [PASS] Zero-Bracket(v33..v56+)=0 | Lean4>=624(0 trivial) | HUD/Mobile/Agent Mirrors=LOCKED | SecretsInRepo=0 | SSR & Bundles=VERIFIED | GSC 7-Mirror=LOCKED" -ForegroundColor Green
+        Write-Host "  [1-7 STATIC INVARIANTS] [PASS] Zero-Bracket(v33..v61+)=0 | Lean4>=700(0 trivial) | HUD/Mobile/Agent Mirrors=LOCKED | SecretsInRepo=0 | SSR & Bundles=VERIFIED | GSC 7-Mirror=LOCKED" -ForegroundColor Green
     } else {
         foreach ($f in $failures) {
             Write-Host "  [STATIC FAIL] $f" -ForegroundColor Red

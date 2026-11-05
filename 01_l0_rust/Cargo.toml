@@ -17,9 +17,13 @@ path = "src/lib.rs"
 name = "v31_swarm"
 path = "src/bin/v31_swarm.rs"
 
+[features]
+standalone_qat_bin = []
+
 [[bin]]
 name = "v50_brain_trainer"
 path = "src/v50_brain_63360_144subdomains_qat_trainer.rs"
+required-features = ["standalone_qat_bin"]
 
 [[bin]]
 name = "v31_bench"

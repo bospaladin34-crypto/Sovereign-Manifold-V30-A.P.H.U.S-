@@ -1242,8 +1242,14 @@ pub fn dispatch_chain280_suite() -> String {
         "UNMEASURED/OFFLINE"
     };
 
+    let (yk_present, yk_serial, _yk_fw, yk_hmac, yk_fido2_fp) =
+        crate::v54_5_aperiodic_permissions_router_and_syndrome_gate::v54_5_probe_yubikey_5c_nfc_hrot(
+            "3333282816177777",
+            false,
+        );
+
     format!(
-        "{{\"status\":\"{}\",\"tool_id\":280,\"chain_milestone\":\"CHAIN 280\",\"total_chain_tools\":280,\"lean4_qed_theorems\":{},\"hemisphere0_neurons\":{},\"chair44_columns\":{},\"npage_bytes\":{},\"spage_bytes\":{},\"total_synapses\":{},\"canary_verified\":{},\"bpe_vocab_size\":262144,\"gemma4_e4b_sh4z_bytes\":{},\"gemma4_12b_sh4z_bytes\":{},\"combined_sh4z_vault_bytes\":{},\"combined_bf16_source_bytes\":{},\"total_e8_256d_blocks\":{},\"total_quantized_weights\":{},\"unified_domains\":8,\"mcp_public_endpoint\":\"https://mcp.act-omega-net.dev/mcp\",\"elapsed_us\":{:.2}}}",
+        "{{\"status\":\"{}\",\"tool_id\":280,\"chain_milestone\":\"CHAIN 280\",\"total_chain_tools\":280,\"lean4_qed_theorems\":{},\"hemisphere0_neurons\":{},\"chair44_columns\":{},\"npage_bytes\":{},\"spage_bytes\":{},\"total_synapses\":{},\"canary_verified\":{},\"bpe_vocab_size\":262144,\"gemma4_e4b_sh4z_bytes\":{},\"gemma4_12b_sh4z_bytes\":{},\"combined_sh4z_vault_bytes\":{},\"combined_bf16_source_bytes\":{},\"total_e8_256d_blocks\":{},\"total_quantized_weights\":{},\"unified_domains\":8,\"yubikey_hrot_present\":{},\"yubikey_serial\":{},\"yubikey_slot2_hmac\":\"{}\",\"fido2_ed25519_sk_fingerprint\":\"{}\",\"mcp_public_endpoint\":\"https://mcp.act-omega-net.dev/mcp\",\"elapsed_us\":{:.2}}}",
         status,
         lean_theorems,
         conn.primary_neurons,
@@ -1258,6 +1264,10 @@ pub fn dispatch_chain280_suite() -> String {
         total_bf16_bytes,
         total_blocks,
         total_weights,
+        yk_present,
+        yk_serial,
+        yk_hmac,
+        yk_fido2_fp,
         t0.elapsed().as_secs_f64() * 1_000_000.0
     )
 }

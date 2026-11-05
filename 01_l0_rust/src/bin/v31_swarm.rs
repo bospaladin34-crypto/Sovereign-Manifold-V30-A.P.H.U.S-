@@ -3827,7 +3827,36 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
         if clean_path == "/api/v1/auth/operator_vault_gate" || clean_path == "/api/v1/tools/t67" {
             let has_query_key = !extract_query_param(raw_target, "key").is_empty();
             let eff_key = if has_query_key { "" } else { &operator_header_key };
-            let json = tool_67_operator_vault_gate_json(eff_key, is_loopback);
+            let sub_epoch = state.lock().map(|g| g.decadic_sub_epoch).unwrap_or(1);
+            let raw_json = tool_67_operator_vault_gate_json(eff_key, is_loopback);
+            let json = execute_universal_tool_bus_and_writeback(
+                67,
+                clean_path,
+                "tool_outputs",
+                &raw_json,
+                sub_epoch,
+            );
+            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
+            continue;
+        }
+        if clean_path == "/api/v1/auth/yubikey_point_of_origin" || clean_path == "/api/v1/yubikey/attestation" {
+            let sub_epoch = state.lock().map(|g| g.decadic_sub_epoch).unwrap_or(1);
+            let chal_q = extract_query_param(raw_target, "challenge");
+            let input_str = if !chal_q.is_empty() {
+                format!("{{\"challenge\":\"{}\"}}", chal_q)
+            } else if !post_body.is_empty() {
+                post_body.clone()
+            } else {
+                String::from("{\"challenge\":\"3333282816177777\"}")
+            };
+            let raw_json = v54_5_aperiodic_permissions_router_and_syndrome_gate::v54_5_yubikey_point_of_origin_attestation(&input_str);
+            let json = execute_universal_tool_bus_and_writeback(
+                177,
+                clean_path,
+                "tool_outputs",
+                &raw_json,
+                sub_epoch,
+            );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
             continue;
         }

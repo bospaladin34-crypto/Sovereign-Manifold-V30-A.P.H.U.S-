@@ -153,10 +153,17 @@ pub fn tool_66_symbiotic_ide_parity_json() -> String {
 pub fn tool_67_operator_vault_gate_json(supplied_key: &str, is_localhost: bool) -> String {
     let authorized = verify_operator_vault_secret(supplied_key, is_localhost);
     let key_configured = std::env::var("ACT_OMEGA_OPERATOR_KEY").is_ok()
+        || std::path::Path::new("C:/Users/Nbell/.act_omega_operator_vault_key").exists()
         || std::path::Path::new("00_control/.operator_vault_key").exists();
+    let (yk_present, yk_serial, yk_fw, yk_hmac, yk_fido2_fp) =
+        crate::v54_5_aperiodic_permissions_router_and_syndrome_gate::v54_5_probe_yubikey_5c_nfc_hrot(
+            "3333282816177777",
+            false,
+        );
+    let signers_ready = std::path::Path::new("C:/Users/Nbell/.ssh/allowed_signers").exists();
     format!(
-        "{{\"tool\":67,\"endpoint\":\"/api/v1/auth/operator_vault_gate\",\"is_localhost\":{},\"key_configured\":{},\"authorized\":{},\"public_overuse_protection\":\"ACTIVE_ENV_SECRET_GATE\"}}",
-        is_localhost, key_configured, authorized
+        "{{\"tool\":67,\"endpoint\":\"/api/v1/auth/operator_vault_gate\",\"is_localhost\":{},\"key_configured\":{},\"authorized\":{},\"yubikey_hrot_present\":{},\"yubikey_serial\":{},\"yubikey_firmware\":\"{}\",\"yubikey_slot2_hmac\":\"{}\",\"fido2_ed25519_sk_fingerprint\":\"{}\",\"allowed_signers_ready\":{},\"public_overuse_protection\":\"ACTIVE_ENV_SECRET_AND_YUBIKEY_5C_NFC_HROT_GATE\"}}",
+        is_localhost, key_configured, authorized, yk_present, yk_serial, yk_fw, yk_hmac, yk_fido2_fp, signers_ready
     )
 }
 

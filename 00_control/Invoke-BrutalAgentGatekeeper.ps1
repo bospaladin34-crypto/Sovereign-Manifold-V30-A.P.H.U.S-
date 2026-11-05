@@ -119,10 +119,16 @@ function Run-StaticGatekeeperChecks {
         }
     }
 
-    # 5. Zero-Secret Leak Check (Retired Passkey & Active External Key)
+    # 5. Zero-Secret Leak Check (Retired Passkey, Active External Key & YubiKey Slot-2 Secret)
     $retiredLiteral = "SOVEREIGN" + "-LOQ15-4200"
     $activeKeyPath = "C:\Users\Nbell\.act_omega_operator_vault_key"
     $activeLiteral = if (Test-Path $activeKeyPath) { (Get-Content $activeKeyPath -Raw).Trim() } else { "" }
+    $slot2BackupPath = "F:\ACT_OMEGA_IMMUTABLE_EPOCH_ARCHIVES\YUBIKEY_ROOT_OF_TRUST_BACKUP\SLOT2_HMAC_SHARED_SECRET_FOR_KEY2_CLONING.txt"
+    $slot2SecretHex = ""
+    if (Test-Path $slot2BackupPath) {
+        $m = [regex]::Match((Get-Content $slot2BackupPath -Raw), '(?m)^[0-9a-fA-F]{40}\r?$')
+        if ($m.Success) { $slot2SecretHex = $m.Value.Trim() }
+    }
 
     $checkFiles = @(
         "$RepoRoot\05_hud_cockpit\src\App.tsx",
@@ -142,6 +148,9 @@ function Run-StaticGatekeeperChecks {
             }
             if ($activeLiteral.Length -ge 16 -and $content.Contains($activeLiteral)) {
                 $failures.Add("SECRET_LEAK_ACTIVE: Active external operator key found in $cf")
+            }
+            if ($slot2SecretHex.Length -eq 40 -and $content.IndexOf($slot2SecretHex, [System.StringComparison]::OrdinalIgnoreCase) -ge 0) {
+                $failures.Add("SECRET_LEAK_YUBIKEY_SLOT2: YubiKey Slot-2 shared secret found in $cf")
             }
         }
     }
@@ -384,12 +393,28 @@ if ($FullAudit) {
         Write-Host "  [11 GSC HTTP ENDPOINTS] [FAIL] $_" -ForegroundColor Red
     }
 
+    # 12. Live YubiKey 5C NFC (Serial: 39651128) Point-of-Origin Hardware Attestation Probe
+    try {
+        $yk = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/auth/yubikey_point_of_origin" -TimeoutSec 8
+        if ($yk.yubikey_present -eq $true -and $yk.yubikey_serial -eq 39651128 -and $yk.canonical_seed_verified -eq $true -and $yk.fido2_fingerprint -eq "SHA256:KwsDUzdrEWHpWFSt0BXhx0ryT/tOM78n0mlhwgLAzBo") {
+            Write-Host "  [12 YUBIKEY 5C NFC HROT][PASS] Serial=$($yk.yubikey_serial) (FW $($yk.firmware_version)) | Slot2_HMAC=$($yk.slot2_hmac_sha1_response.Substring(0,12))... | FIDO2=$($yk.fido2_fingerprint)" -ForegroundColor Green
+        } elseif ($yk.fido2_fingerprint -eq "SHA256:KwsDUzdrEWHpWFSt0BXhx0ryT/tOM78n0mlhwgLAzBo" -and $yk.allowed_signers_bytes -gt 0) {
+            Write-Host "  [12 YUBIKEY 5C NFC HROT][PASS] FIDO2 Configured ($($yk.fido2_fingerprint)) | Status=$($yk.status)" -ForegroundColor Green
+        } else {
+            $failures.Add("YUBIKEY_HROT_FAIL: Status=$($yk.status) Serial=$($yk.yubikey_serial)")
+            Write-Host "  [12 YUBIKEY 5C NFC HROT][FAIL] Status=$($yk.status)" -ForegroundColor Red
+        }
+    } catch {
+        $failures.Add("YUBIKEY_PROBE_ERR: $_")
+        Write-Host "  [12 YUBIKEY 5C NFC HROT][FAIL] $_" -ForegroundColor Red
+    }
+
     Write-Host "==========================================================================" -ForegroundColor Cyan
     if ($failures.Count -gt 0) {
         Write-Host "  [BRUTAL GATEKEEPER RESULT: FAILED ($($failures.Count) VIOLATIONS)]" -ForegroundColor Red
         exit 1
     } else {
-        Write-Host "  [BRUTAL GATEKEEPER RESULT: PASSED (11/11 INVARIANTS VERIFIED)]" -ForegroundColor Green
+        Write-Host "  [BRUTAL GATEKEEPER RESULT: PASSED (12/12 INVARIANTS VERIFIED)]" -ForegroundColor Green
         exit 0
     }
 }

@@ -330,9 +330,10 @@ pub fn dispatch_tools_211_to_270(tool_id: usize, input: &str) -> String {
             let mut mem_avail_kb: Option<u64> = None;
             let mut mem_total_kb: Option<u64> = None;
             if p8_hw.is_online {
+                let p8_target = crate::v55_pixel8_ksud_root_edgetpu_mali_kvm_governor::v55_resolve_adb_target("3A121FDJH00BW5");
                 if let Ok(out) = std::process::Command::new("adb")
                     .arg("-s")
-                    .arg("3A121FDJH00BW5")
+                    .arg(&p8_target)
                     .arg("shell")
                     .arg("cat /proc/meminfo")
                     .output()

@@ -172,6 +172,45 @@ fn v55_current_time_ms() -> u64 {
     }
 }
 
+// Resolve canonical USB serial ("3A121FDJH00BW5" or "58170DLCR0004V") to the active USB, Wireless TCP (:5555), Wireless TLS, or mDNS ADB transport
+pub fn v55_resolve_adb_target(serial: &str) -> String {
+    if let Ok(out) = Command::new("adb").arg("devices").arg("-l").output() {
+        if out.status.success() {
+            let text = String::from_utf8_lossy(&out.stdout);
+            for line in text.lines() {
+                let t = line.trim();
+                if t.starts_with(serial) && t.contains(" device ") {
+                    return serial.to_string();
+                }
+            }
+            let is_p8 = serial == "3A121FDJH00BW5";
+            for line in text.lines() {
+                let t = line.trim();
+                if !t.contains(" device ") {
+                    continue;
+                }
+                let matches_device = if is_p8 {
+                    t.contains("model:Pixel_8")
+                        || t.contains("product:shiba")
+                        || t.contains("192.168.137.8:")
+                        || t.contains(serial)
+                } else {
+                    t.contains("model:Pixel_10")
+                        || t.contains("product:frankel")
+                        || t.contains("192.168.137.10:")
+                        || t.contains(serial)
+                };
+                if matches_device {
+                    if let Some(first_tok) = t.split_whitespace().next() {
+                        return first_tok.to_string();
+                    }
+                }
+            }
+        }
+    }
+    serial.to_string()
+}
+
 // Query live Pixel 8 device via ADB and KernelSU debug su shell (with 2.5s TTL cache)
 pub fn v55_probe_live_pixel8_hardware() -> V55Pixel8LiveTelemetry {
     let now_ms = v55_current_time_ms();
@@ -187,12 +226,13 @@ pub fn v55_probe_live_pixel8_hardware() -> V55Pixel8LiveTelemetry {
         }
     }
 
+    let resolved_target = v55_resolve_adb_target(V55_PIXEL8_DEVICE_SERIAL);
     let cmd = "cat /sys/devices/system/cpu/cpufreq/policy0/scaling_cur_freq; cat /sys/devices/system/cpu/cpufreq/policy4/scaling_cur_freq; cat /sys/devices/system/cpu/cpufreq/policy8/scaling_cur_freq; cat /sys/class/thermal/thermal_zone0/temp; getprop ro.boot.slot_suffix; id";
     let adb_arg = format!("echo '{}' | ksud debug su", cmd);
 
     let output_res = Command::new("adb")
         .arg("-s")
-        .arg(V55_PIXEL8_DEVICE_SERIAL)
+        .arg(&resolved_target)
         .arg("shell")
         .arg(&adb_arg)
         .output();
@@ -766,10 +806,11 @@ pub fn v55_tool203_live_adb_ksud_debug_su_command_bridge(input: &str) -> String 
         }
     }
 
+    let resolved_target = v55_resolve_adb_target(V55_PIXEL8_DEVICE_SERIAL);
     let adb_arg = format!("echo '{}' | ksud debug su", cmd);
     let output_res = Command::new("adb")
         .arg("-s")
-        .arg(V55_PIXEL8_DEVICE_SERIAL)
+        .arg(&resolved_target)
         .arg("shell")
         .arg(&adb_arg)
         .output();

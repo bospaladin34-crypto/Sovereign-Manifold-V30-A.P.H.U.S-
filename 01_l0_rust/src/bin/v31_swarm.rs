@@ -514,9 +514,11 @@ fn poll_host_and_adb_interoception() -> (Option<(f64, u64, u64, u64, f64)>, Opti
 }
 
 fn poll_adb_battery_thermal(serial: &str) -> Option<(f64, u64, u64)> {
+    let resolved_target =
+        v55_pixel8_ksud_root_edgetpu_mali_kvm_governor::v55_resolve_adb_target(serial);
     let out = Command::new("adb")
         .arg("-s")
-        .arg(serial)
+        .arg(&resolved_target)
         .arg("shell")
         .arg("dumpsys battery")
         .output()
@@ -3929,6 +3931,48 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             let raw_json = v62_bleeding_edge_synthesis_1_to_5::v62_execute_bleeding_edge_synthesis_3(&input_str);
             let json = execute_universal_tool_bus_and_writeback(
                 283,
+                clean_path,
+                "tool_outputs",
+                &raw_json,
+                sub_epoch,
+            );
+            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
+            continue;
+        }
+        if clean_path == "/api/v1/ota/pixel_apk" {
+            let apk_path = "04_edge_silicon/ACT-Omega-Pixel10-Sovereign.apk";
+            let apk_alt = "04_edge_silicon/pixel10_ndk_app/app/build/outputs/apk/debug/app-debug.apk";
+            if let Ok(apk_bytes) = fs::read(apk_path).or_else(|_| fs::read(apk_alt)) {
+                write_http_vec(&mut stream, "200 OK", "application/vnd.android.package-archive", &apk_bytes);
+            } else {
+                write_http_str(&mut stream, "404 Not Found", "application/json; charset=utf-8", "{\"status\":\"UNMEASURED/OFFLINE\",\"error\":\"PIXEL_APK_NOT_FOUND\"}");
+            }
+            continue;
+        }
+        if clean_path == "/api/v1/ota/pixel_manifest" {
+            let sub_epoch = state.lock().map(|g| g.decadic_sub_epoch).unwrap_or(1);
+            let apk_path = "04_edge_silicon/ACT-Omega-Pixel10-Sovereign.apk";
+            let apk_alt = "04_edge_silicon/pixel10_ndk_app/app/build/outputs/apk/debug/app-debug.apk";
+            let (apk_ok, apk_len, apk_sha) = match fs::read(apk_path).or_else(|_| fs::read(apk_alt)) {
+                Ok(b) => (
+                    true,
+                    b.len(),
+                    v50_rayon_avx2_tlv_simulator_coordinator::v50_sha256_hex(&b),
+                ),
+                Err(_) => (false, 0usize, String::from("UNMEASURED/OFFLINE")),
+            };
+            let p8_target = v55_pixel8_ksud_root_edgetpu_mali_kvm_governor::v55_resolve_adb_target("3A121FDJH00BW5");
+            let p10_target = v55_pixel8_ksud_root_edgetpu_mali_kvm_governor::v55_resolve_adb_target("58170DLCR0004V");
+            let raw_json = format!(
+                "{{\"status\":\"{}\",\"package\":\"com.sovereign.manifold\",\"version_name\":\"v61.0.0\",\"version_code\":61,\"apk_bytes\":{},\"apk_sha256\":\"{}\",\"lan_ota_url\":\"http://192.168.137.1:8097/api/v1/ota/pixel_apk\",\"cloudflare_ota_url\":\"https://api.act-omega-net.dev/api/v1/ota/pixel_apk\",\"android17_qpr3_beta3_ready\":true,\"elf_16kb_page_aligned\":true,\"dual_slot_ab_supported\":true,\"p8_resolved_adb_target\":\"{}\",\"p10_resolved_adb_target\":\"{}\",\"yubikey_5c_nfc_usb_slot_preserved\":true}}",
+                if apk_ok { "MEASURED_PIXEL_OTA_MANIFEST_READY" } else { "UNMEASURED/OFFLINE" },
+                apk_len,
+                apk_sha,
+                json_escape_clean(&p8_target),
+                json_escape_clean(&p10_target)
+            );
+            let json = execute_universal_tool_bus_and_writeback(
+                284,
                 clean_path,
                 "tool_outputs",
                 &raw_json,

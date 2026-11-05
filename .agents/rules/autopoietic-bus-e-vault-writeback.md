@@ -3,10 +3,10 @@ trigger: glob
 globs: "01_l0_rust/src/v48_*.rs, 01_l0_rust/src/v56_1_*.rs, 01_l0_rust/src/v35_*.rs, 01_l0_rust/src/v31_swarm.rs, 01_l0_rust/src/bin/v31_swarm.rs, 03_vault/connectome/*.jsonl"
 description: "Sovereign Autopoietic Coordinator Bus, 9-Directory Universal E:\ SSD Vault Write-Back, 8 Unified Functional Domains, Vectorized 16-Domain AVX2/Rayon FNO, and DuckDB Analytical Engine rules."
 ---
-# Sovereign Autopoietic Coordinator Bus, 9-Sink `E:\` Write-Back, 8 Unified Domains & Vectorized 16D FNO Rules (ACT-Omega Net v56.1.0 | CHAIN 210)
+# Sovereign Autopoietic Coordinator Bus, 9-Sink `E:\` Write-Back, 8 Unified Domains & Vectorized 16D FNO Rules (ACT-Omega Net v61.0.0 | CHAIN 280 | 700/700 QED)
 
-1. **No-Siloed-Tools Law (`v48_autopoietic_coordinator_bus.rs`)**:
-   - Every individual tool (`Tools 1..210` / `CHAIN 210`) and every Unified Functional Domain dispatcher (`/api/v1/unified/{lattice_algebra_proofs,connectome_qat_memory,physics_16d_fno_speech,avx2_webgpu_worksteal,dual_pixel_ksu_edge,apr_permissions_security,polyglot_compilers_devtools,autopoietic_bus_vault_d1}`) MUST route through `execute_universal_tool_bus_and_writeback(...)` in `01_l0_rust/src/v48_autopoietic_coordinator_bus.rs`.
+1. **No-Siloed-Tools Law (`v48_autopoietic_coordinator_bus.rs`, `v57_aegis_autonomous_agent_harness.rs` & `v61_gemma4_multimodal_ple_speculative_cascade_and_mcp_suite.rs`)**:
+   - Every individual tool (`Tools 1..280` / `CHAIN 280`), all `41` un-siloed L0 core modules (`/api/v1/l0_core/execute_41_modules`), the 7-Stage `AEGIS-HARNESS` autonomous loop (`/api/v1/aegis/autonomous_harness`), Dual Gemma 4 `.sh4z` layer mixer & PLE/Multimodal/Cascade routes (`Tools 271..280`), `18` Gemini MCP tools (`:8097/mcp`), and every Unified Functional Domain dispatcher (`/api/v1/unified/{lattice_algebra_proofs,connectome_qat_memory,physics_16d_fno_speech,avx2_webgpu_worksteal,dual_pixel_ksu_edge,apr_permissions_security,polyglot_compilers_devtools,autopoietic_bus_vault_d1}`) MUST route through `execute_universal_tool_bus_and_writeback(...)` in `01_l0_rust/src/v48_autopoietic_coordinator_bus.rs`.
    - Each `BusEnvelope` must record a measured SHA-256 payload digest, timestamp, decadic sub-epoch (`0..9`), `.npage` neuron index (`0..63,359`), Chair-44 column (`0..1,439`), sector (`S00..S79`), and write to both:
      - `E:\Sovereign_Manifold_SSD_Vault\coordinator_bus\message_bus_ledger_v4800.jsonl`
      - `C:\sovereign_manifold_v31\03_vault\connectome\message_bus_ledger_v4800.jsonl`

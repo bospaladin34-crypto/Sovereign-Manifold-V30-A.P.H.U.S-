@@ -3,10 +3,10 @@ trigger: glob
 globs: "04_edge_silicon/**/*"
 description: "Dual-Phone Android NDK/Compose APK (MainActivity.kt) rules for Pixel 10 (58170DLCR0004V) and Pixel 8 (3A121FDJH00BW5)."
 ---
-# Dual-Pixel Edge Silicon & NDK APK Rules (ACT-Omega v49.0.0+ | CHAIN 100)
+# Dual-Pixel Edge Silicon & NDK APK Rules (ACT-Omega v61.0.0 | CHAIN 280 | 700/700 QED)
 
-1. **100% Mobile Cockpit & Widget Preservation**:
-   - Preserve all 15 Mobile Telemetry Cards, the 60 FPS Stiefel Scope & Oscilloscope, the `16x130` (`2,080`-Cacheline) Heatmap, the Top Lens Bar (`ALL`, `CARDS`, `SCOPES`, `TOOLS`, `BUS+E:`), and all `ToolButton603010` rows (`T01..T100` / `CHAIN 100`) in `MainActivity.kt`.
+1. **100% Mobile Cockpit & Widget Preservation (`v61.0.0`, `versionCode=61`)**:
+   - Preserve all 15 Mobile Telemetry Cards (Card #8 `700 / 700` Lean 4 QED), the 60 FPS Stiefel Scope & Oscilloscope, the `16x130` (`2,080`-Cacheline) Heatmap, the Top Lens Bar (`ALL`, `CARDS`, `SCOPES`, `TOOLS`, `BUS+E:`), and all `ToolButton603010` rows (`T01..T280` / `CHAIN 280`) in `MainActivity.kt`.
 
 2. **Strict Source Mirror Lockstep (`app/src` == `src`)**:
    - Always keep `04_edge_silicon/pixel10_ndk_app/app/src/main/java/com/actomega/manifold/MainActivity.kt` and `04_edge_silicon/pixel10_ndk_app/src/main/java/com/actomega/manifold/MainActivity.kt` in 1:1 byte-identical lockstep (same SHA-256).

@@ -3,7 +3,7 @@ trigger: glob
 globs: "01_l0_rust/src/v54_5*.rs, 01_l0_rust/src/v55*.rs, 01_l0_rust/src/v56*.rs, 04_edge_silicon/**/*, pixel8_shiba_ksu/**/*, 00_control/pixel8_shiba_ksu/**/*"
 description: "Aperiodic Permissions Routing (APR) 4-Ring Capability Stratifier (Rings A0..A3, OWNED_SILICON_ONLY) and Pixel 8 (3A121FDJH00BW5) KernelSU-Next ksud 3.4.2 root governance with untouched factory stock slot _b rollback invariance."
 ---
-# Aperiodic Permissions Routing & Pixel 8 Root Governance Rules (ACT-Omega Net v56.0.0 | CHAIN 210)
+# Aperiodic Permissions Routing & Pixel 8 Root Governance Rules (ACT-Omega Net v61.0.0 | CHAIN 280 | 700/700 QED)
 
 1. **APR 4-Ring Capability Stratifier (`OWNED_SILICON_ONLY`)**:
    - **Ring A0 — Bare-Metal Root & Hardware Accelerators (`OWNED_SILICON_ONLY`)**:

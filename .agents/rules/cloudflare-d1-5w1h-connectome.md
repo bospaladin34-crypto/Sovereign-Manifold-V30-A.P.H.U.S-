@@ -2,10 +2,10 @@
 trigger: model_decision
 description: "Apply whenever working with the 5W1H Metabolic Harness, 63,360-Neuron Connectome (.npage), Cloudflare Durable Objects (worker_vpc_shadow_v3700.js), Named Tunnel, or Cloudflare D1 10-table database synchronization."
 ---
-# 5W1H Harness, 63,360-Neuron Connectome, Cloudflare Durable Objects, Named Tunnel & D1 Rules (ACT-Omega Net v56.1.0+ | CHAIN 210)
+# 5W1H Harness, 63,360-Neuron Connectome (`3,041,280` Synapses), Cloudflare Durable Objects, Named Tunnel, 18-Tool MCP & D1 Rules (ACT-Omega Net v61.0.0 | CHAIN 280 | 700/700 QED)
 
-1. **63,360-Neuron Connectome Bijection (`8,110,080 B` SHM)**:
-   - `21,120` Core Shards (`03_vault\shards\shard_00001..21120.binshard`) + `21,120` Expansion Shards (`03_vault\shards_expansion\shard_21121..42240.binshard`) + `21,120` Tier-3 Scale-Up Shards (`03_vault\shards_tier3\shard_42241..63360.binshard`) == `63,360` Total 3-Compartment Dendritic Neurons (`00_control\weights\neurons_v5000_63360.npage`, `8,110,080 B = 63,360 x 128 B`, `1,440 x Chair-44` columns, `1,013,760` synapses across 36 Macro-Domains / 144 Sub-Domains).
+1. **63,360-Neuron Connectome Bijection (`8,110,080 B` `.npage` + `4,055,040 B` `.spage` = `3,041,280` Synapses, `132,960` Bijected Cachelines)**:
+   - `21,120` Core Shards (`03_vault\shards\shard_00001..21120.binshard`) + `21,120` Expansion Shards (`03_vault\shards_expansion\shard_21121..42240.binshard`) + `21,120` Tier-3 Scale-Up Shards (`03_vault\shards_tier3\shard_42241..63360.binshard`) == `63,360` Total 3-Compartment Dendritic Neurons (`00_control\weights\neurons_v5000_63360.npage`, `8,110,080 B = 63,360 x 128 B = 126,720 x 64 B` cachelines, `1,440 x Chair-44` columns, `1,013,760` primary synapses) + `00_control\weights\synapses_v5700_2027520.spage` (`4,055,040 B`, `2,027,520` auxiliary plastic synapses) = `3,041,280` total synapses across 36 Macro-Domains / 144 Sub-Domains, plus `6,240` Tri-Bank `.e8z` cachelines = `132,960` dynamically measured bijected cachelines.
 
 2. **Cloudflare Durable Object Zero-Overhead SQLite, Batched D1 & Anti-502 Tunnel Rules**:
    - Active Cloudflare Worker entrypoint in `wrangler.toml` is `00_control/cloudflare_edge/worker_vpc_shadow_v3700.js` (`SovereignEdgeShadowDO` synced 1:1 to `00_control/cloudflare_edge/worker_continuum_do.js` and root `worker_vpc_shadow_v3700.js`). Whenever `worker_vpc_shadow_v3700.js` is modified locally, you MUST mirror it to both copies AND run `npx wrangler deploy` so the live Cloudflare Edge (`sovereign-loq15-vpc-shadow.bospaladin34.workers.dev`) stays in lockstep (including the `/google6edc0affb12d0455.html` `53 B` route).

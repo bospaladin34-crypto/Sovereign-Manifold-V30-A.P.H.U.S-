@@ -3316,3 +3316,4 @@
 {"epoch":3316,"domains":24,"vocab_size":131072,"combined_neurons":63360,"holdout_ppl":1.107977,"compound_transfer_pct":98.564,"cacheline_speedup_pct":22789.26,"dag_latency_ms":11.318,"m_atp":0.7147,"kops":782812.7}
 {"epoch":3317,"domains":24,"vocab_size":131072,"combined_neurons":63360,"holdout_ppl":1.108425,"compound_transfer_pct":98.595,"cacheline_speedup_pct":32161.47,"dag_latency_ms":0.701,"m_atp":0.7211,"kops":1103342.3}
 {"epoch":3318,"domains":24,"vocab_size":131072,"combined_neurons":63360,"holdout_ppl":1.108921,"compound_transfer_pct":98.553,"cacheline_speedup_pct":53544.66,"dag_latency_ms":0.607,"m_atp":0.7123,"kops":1834647.5}
+{"epoch":3319,"domains":24,"vocab_size":131072,"combined_neurons":63360,"holdout_ppl":1.108746,"compound_transfer_pct":98.471,"cacheline_speedup_pct":61212.09,"dag_latency_ms":0.500,"m_atp":0.6956,"kops":2096873.4}

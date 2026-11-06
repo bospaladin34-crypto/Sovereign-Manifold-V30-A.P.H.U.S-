@@ -23,8 +23,7 @@ cmd.exe /c "taskkill /F /IM v31_swarm_prev.exe /T >nul 2>&1"
 Get-Process -Name "*v31_swarm*" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
 
 # 3. Start v31_swarm immediately via WMI
-$startup = New-CimInstance -ClassName Win32_ProcessStartup -ClientOnly
-$startup.ShowWindow = [uint16]0
+$startup = New-CimInstance -ClassName Win32_ProcessStartup -Property @{ ShowWindow = [uint16]0 } -ClientOnly
 $res = Invoke-CimMethod -ClassName Win32_Process -MethodName Create -Arguments @{
     CommandLine = "`"$prodExe`""
     CurrentDirectory = "C:\sovereign_manifold_v31"
@@ -35,4 +34,13 @@ Start-Sleep -Seconds 2
 
 # Verify process and port 8097
 $proc = Get-Process -Name "v31_swarm" -ErrorAction SilentlyContinue
-Write-Host "v31_swarm running: $($null -ne $proc)"
+$portConn = Get-NetTCPConnection -LocalPort 8097 -State Listen -ErrorAction SilentlyContinue
+Write-Host "v31_swarm running: $($null -ne $proc) (PID: $($proc.Id)) | Port :8097 Listening: $($null -ne $portConn)"
+
+# Verify CHAIN 288 Master Certification
+try {
+    $c288 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/chain288/master_certification" -TimeoutSec 5
+    Write-Host "Hot-Swap Verification: Status=$($c288.status) | Tools=$($c288.total_chain_tools) | Theorems=$($c288.lean4_qed_theorems)"
+} catch {
+    Write-Host "Hot-Swap Warning: :8097 responded with error: $($_.Exception.Message)"
+}

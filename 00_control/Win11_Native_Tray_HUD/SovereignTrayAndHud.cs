@@ -99,10 +99,14 @@ namespace SovereignManifoldDesktop
 
     public class SovereignWidgetForm : Form
     {
+        [DllImport("user32.dll")]
+        public static extern bool SetForegroundWindow(IntPtr hWnd);
+
         private TelemetryData _tel = new TelemetryData();
         private Point _dragStart;
         private bool _dragging = false;
         private bool _topDesktopBannerMode = false;
+        private Rectangle _btnVesperIkRect;
         private Rectangle _btnOpenHudRect;
         private Rectangle _btnHandoverRect;
         private Rectangle _btnVerifyRect;
@@ -111,16 +115,18 @@ namespace SovereignManifoldDesktop
         private Rectangle _heatmapRect;
         private Action _onOpenNativeHud;
         private Action<string, string> _onRunAction;
+        private Action _onLaunchVesperIk;
 
-        public SovereignWidgetForm(Action onOpenNativeHud, Action<string, string> onRunAction)
+        public SovereignWidgetForm(Action onOpenNativeHud, Action<string, string> onRunAction, Action onLaunchVesperIk)
         {
             _onOpenNativeHud = onOpenNativeHud;
             _onRunAction = onRunAction;
+            _onLaunchVesperIk = onLaunchVesperIk;
 
-            this.Text = "ACT-Omega v61.0.0 Live Desktop Widget (CHAIN 280)";
+            this.Text = "ACT-Omega v62.0.0 Live Desktop Widget (CHAIN 288)";
             this.FormBorderStyle = FormBorderStyle.None;
             this.StartPosition = FormStartPosition.Manual;
-            this.Size = new Size(420, 238);
+            this.Size = new Size(430, 295);
             Rectangle wa = Screen.PrimaryScreen.WorkingArea;
             this.Location = new Point(wa.Right - this.Width - 18, wa.Bottom - this.Height - 18);
             this.TopMost = true;
@@ -129,15 +135,15 @@ namespace SovereignManifoldDesktop
             this.Opacity = 0.94;
             this.DoubleBuffered = true;
 
-            _heatmapRect = new Rectangle(12, 92, 396, 86);
-            int bw = 76;
-            int gap = 4;
-            int by = 190;
-            _btnOpenHudRect = new Rectangle(12, by, bw, 32);
-            _btnSyncShmRect = new Rectangle(12 + (bw + gap) * 1, by, bw, 32);
-            _btnHandoverRect = new Rectangle(12 + (bw + gap) * 2, by, bw, 32);
-            _btnVerifyRect = new Rectangle(12 + (bw + gap) * 3, by, bw, 32);
-            _btnBannerModeRect = new Rectangle(12 + (bw + gap) * 4, by, bw, 32);
+            _heatmapRect = new Rectangle(12, 98, 406, 142);
+            int by = 248;
+            int bh = 34;
+            _btnVesperIkRect = new Rectangle(12, by, 76, bh);
+            _btnOpenHudRect = new Rectangle(92, by, 62, bh);
+            _btnSyncShmRect = new Rectangle(158, by, 62, bh);
+            _btnHandoverRect = new Rectangle(224, by, 62, bh);
+            _btnVerifyRect = new Rectangle(290, by, 66, bh);
+            _btnBannerModeRect = new Rectangle(360, by, 58, bh);
 
             this.MouseDown += OnMouseDownHandler;
             this.MouseMove += OnMouseMoveHandler;
@@ -160,33 +166,33 @@ namespace SovereignManifoldDesktop
             Rectangle wa = Screen.PrimaryScreen.WorkingArea;
             if (_topDesktopBannerMode)
             {
-                this.Size = new Size(640, 260);
-                this.Location = new Point((bounds.Width - this.Width) / 2, 36);
-                this.Opacity = 0.97;
-                _heatmapRect = new Rectangle(14, 98, 612, 102);
-                int bw = 118;
-                int gap = 5;
-                int by = 212;
-                _btnOpenHudRect = new Rectangle(14, by, bw, 34);
-                _btnSyncShmRect = new Rectangle(14 + (bw + gap) * 1, by, bw, 34);
-                _btnHandoverRect = new Rectangle(14 + (bw + gap) * 2, by, bw, 34);
-                _btnVerifyRect = new Rectangle(14 + (bw + gap) * 3, by, bw, 34);
-                _btnBannerModeRect = new Rectangle(14 + (bw + gap) * 4, by, bw, 34);
+                this.Size = new Size(760, 38);
+                this.Location = new Point((bounds.Width - this.Width) / 2, 8);
+                this.Opacity = 0.96;
+                _heatmapRect = Rectangle.Empty;
+                int by = 5;
+                int bh = 28;
+                _btnVesperIkRect = new Rectangle(392, by, 82, bh);
+                _btnOpenHudRect = new Rectangle(478, by, 46, bh);
+                _btnSyncShmRect = new Rectangle(528, by, 46, bh);
+                _btnHandoverRect = new Rectangle(578, by, 52, bh);
+                _btnVerifyRect = new Rectangle(634, by, 54, bh);
+                _btnBannerModeRect = new Rectangle(692, by, 60, bh);
             }
             else
             {
-                this.Size = new Size(420, 238);
+                this.Size = new Size(430, 295);
                 this.Location = new Point(wa.Right - this.Width - 18, wa.Bottom - this.Height - 18);
                 this.Opacity = 0.94;
-                _heatmapRect = new Rectangle(12, 92, 396, 86);
-                int bw = 76;
-                int gap = 4;
-                int by = 190;
-                _btnOpenHudRect = new Rectangle(12, by, bw, 32);
-                _btnSyncShmRect = new Rectangle(12 + (bw + gap) * 1, by, bw, 32);
-                _btnHandoverRect = new Rectangle(12 + (bw + gap) * 2, by, bw, 32);
-                _btnVerifyRect = new Rectangle(12 + (bw + gap) * 3, by, bw, 32);
-                _btnBannerModeRect = new Rectangle(12 + (bw + gap) * 4, by, bw, 32);
+                _heatmapRect = new Rectangle(12, 98, 406, 142);
+                int by = 248;
+                int bh = 34;
+                _btnVesperIkRect = new Rectangle(12, by, 76, bh);
+                _btnOpenHudRect = new Rectangle(92, by, 62, bh);
+                _btnSyncShmRect = new Rectangle(158, by, 62, bh);
+                _btnHandoverRect = new Rectangle(224, by, 62, bh);
+                _btnVerifyRect = new Rectangle(290, by, 66, bh);
+                _btnBannerModeRect = new Rectangle(360, by, 58, bh);
             }
             this.Invalidate();
         }
@@ -195,6 +201,11 @@ namespace SovereignManifoldDesktop
         {
             if (e.Button == MouseButtons.Left)
             {
+                if (_btnVesperIkRect.Contains(e.Location))
+                {
+                    if (_onLaunchVesperIk != null) _onLaunchVesperIk();
+                    return;
+                }
                 if (_btnOpenHudRect.Contains(e.Location))
                 {
                     if (_onOpenNativeHud != null) _onOpenNativeHud();
@@ -220,7 +231,7 @@ namespace SovereignManifoldDesktop
                     ToggleTopDesktopBannerMode();
                     return;
                 }
-                if (_heatmapRect.Contains(e.Location))
+                if (!_topDesktopBannerMode && _heatmapRect.Contains(e.Location))
                 {
                     int sec = (int)(((float)(e.Y - _heatmapRect.Y) / _heatmapRect.Height) * 80.0f);
                     int lin = (int)(((float)(e.X - _heatmapRect.X) / _heatmapRect.Width) * 130.0f);
@@ -253,84 +264,130 @@ namespace SovereignManifoldDesktop
             Graphics g = e.Graphics;
             g.SmoothingMode = SmoothingMode.AntiAlias;
 
-            using (Pen borderPen = new Pen(Color.FromArgb(255, 180, 84), 1.5f))
-            {
-                g.DrawRectangle(borderPen, 1, 1, this.Width - 3, this.Height - 3);
-            }
-
-            using (Font fTitle = new Font("Consolas", 9.5f, FontStyle.Bold))
-            using (Font fSub = new Font("Consolas", 8.2f, FontStyle.Regular))
+            using (Font fTitle = new Font("Consolas", 9.2f, FontStyle.Bold))
+            using (Font fSub = new Font("Consolas", 8.0f, FontStyle.Regular))
             using (Font fBtn = new Font("Consolas", 7.8f, FontStyle.Bold))
+            using (Font fMiniBtn = new Font("Consolas", 7.2f, FontStyle.Bold))
             using (SolidBrush brAmber = new SolidBrush(Color.FromArgb(255, 180, 84)))
             using (SolidBrush brIvory = new SolidBrush(Color.FromArgb(255, 254, 251)))
             using (SolidBrush brGreen = new SolidBrush(Color.FromArgb(86, 211, 100)))
             using (SolidBrush brRed = new SolidBrush(Color.FromArgb(233, 78, 52)))
+            using (SolidBrush brCyan = new SolidBrush(Color.FromArgb(56, 189, 248)))
             using (SolidBrush brInset = new SolidBrush(Color.FromArgb(10, 13, 18)))
             {
-                string modeTag = _topDesktopBannerMode ? "[WIN11 DESKTOP TOP-BANNER OVERLAY]" : "[WIN11 LIVE DESKTOP MINI-WIDGET]";
-                g.DrawString("ACT-OMEGA v61.0.0 (SH4Z v6000 | CHAIN 280) " + modeTag, fTitle, brAmber, 12, 10);
-
-                Brush statusBr = _tel.Online ? brGreen : brRed;
-                string statusTxt = _tel.Online
-                    ? string.Format("ONLINE | Tick #{0} | {1:0.0}k ops/s | 700/700 QED | 280 Tools (3.04M Syn)", _tel.Generation, _tel.ClusterKops)
-                    : "OFFLINE / AWAITING LOCALHOST :8097 TELEMETRY";
-                g.DrawString(statusTxt, fSub, statusBr, 12, 28);
-
-                string hwLine1 = string.Format("LOQ15 RTX 3050: {0:0}C ({1}MHz) | P10 G5: {2:0.0}C ({3}%) | P8 L2: {4:0.0}C ({5}%)",
-                    _tel.RtxTemp, _tel.RtxClock, _tel.P10Temp, _tel.P10Batt, _tel.P8Temp, _tel.P8Batt);
-                g.DrawString(hwLine1, fSub, brIvory, 12, 46);
-
-                string hwLine2 = string.Format("63,360N (3.04M Syn) | FNO L2={0:0.00000} Vort={1:0.0000} Re={2:0.0} | |B|={3:0.0}uT",
-                    _tel.FnoL2Err, _tel.VorticityNorm, _tel.NavierReynolds, _tel.BNorm);
-                g.DrawString(hwLine2, fSub, brAmber, 12, 64);
-
-                // 16x65 Measured .e8z Cacheline + Live Telemetry Sector Norm Heatmap (Zero sin/cos waves)
-                g.FillRectangle(brInset, _heatmapRect);
-                float cw = (float)_heatmapRect.Width / 65.0f;
-                float ch = (float)_heatmapRect.Height / 16.0f;
-                int pulseCol = (int)(_tel.Generation % 65);
-                for (int r = 0; r < 16; r++)
+                if (_topDesktopBannerMode)
                 {
-                    double liveSecNorm = _tel.SectorNorms[r];
-                    // Min-max contrast stretch on live sector norm (typically 0.87..0.93)
-                    double secDelta = _tel.Online && liveSecNorm > 0.0
-                        ? Math.Max(-0.15, Math.Min(0.15, (liveSecNorm - 0.895) * 3.5))
-                        : 0.0;
-                    for (int c = 0; c < 65; c++)
+                    using (Pen borderPen = new Pen(Color.FromArgb(56, 189, 248), 1.2f))
                     {
-                        int lineIdx = (r * 130) + (c * 2);
-                        double e8zNorm = (lineIdx >= 0 && lineIdx < _tel.CachelineNorms.Length) ? _tel.CachelineNorms[lineIdx] : 0.0;
-                        double norm = Math.Max(0.0, Math.Min(1.0, e8zNorm + secDelta));
-                        if (_tel.Online && c == pulseCol)
+                        g.DrawRectangle(borderPen, 0, 0, this.Width - 1, this.Height - 1);
+                    }
+
+                    // [Ω62] badge
+                    Rectangle badgeRect = new Rectangle(6, 5, 42, 28);
+                    using (SolidBrush bBg = new SolidBrush(Color.FromArgb(18, 24, 38)))
+                    using (Pen pB = new Pen(Color.FromArgb(255, 180, 84), 1.0f))
+                    using (Font fBdg = new Font("Consolas", 8.5f, FontStyle.Bold))
+                    {
+                        g.FillRectangle(bBg, badgeRect);
+                        g.DrawRectangle(pB, badgeRect);
+                        g.DrawString("Ω62", fBdg, brAmber, 12, 10);
+                    }
+
+                    // Status ticker
+                    string line1 = "ACT-OMEGA v62.0.0 (CHAIN 288 | 730/730 QED)";
+                    string line2 = string.Format("{0:0.0}k ops | RTX {1:0}C | P10 {2:0}C | P8 {3:0}C | FNO={4:0.0000}",
+                        _tel.ClusterKops, _tel.RtxTemp, _tel.P10Temp, _tel.P8Temp, _tel.FnoL2Err);
+                    g.DrawString(line1, fSub, brAmber, 54, 5);
+                    g.DrawString(line2, fSub, _tel.Online ? brIvory : brRed, 54, 19);
+
+                    // Banner buttons
+                    DrawWidgetButton(g, _btnVesperIkRect, "[VESPER IK]", Color.FromArgb(28, 18, 52), Color.FromArgb(56, 189, 248), fMiniBtn, Color.FromArgb(217, 70, 239));
+                    DrawWidgetButton(g, _btnOpenHudRect, "HUD", Color.FromArgb(255, 180, 84), Color.FromArgb(14, 17, 22), fMiniBtn);
+                    DrawWidgetButton(g, _btnSyncShmRect, "SHM", Color.FromArgb(13, 38, 24), Color.FromArgb(86, 211, 100), fMiniBtn);
+                    DrawWidgetButton(g, _btnHandoverRect, "HAND", Color.FromArgb(26, 18, 40), Color.FromArgb(179, 136, 255), fMiniBtn);
+                    DrawWidgetButton(g, _btnVerifyRect, "AUDIT", Color.FromArgb(233, 78, 52), Color.FromArgb(255, 254, 251), fMiniBtn);
+                    DrawWidgetButton(g, _btnBannerModeRect, "WIDGET", Color.FromArgb(28, 38, 50), Color.FromArgb(255, 254, 251), fMiniBtn);
+                }
+                else
+                {
+                    using (Pen borderPen = new Pen(Color.FromArgb(255, 180, 84), 1.5f))
+                    {
+                        g.DrawRectangle(borderPen, 1, 1, this.Width - 3, this.Height - 3);
+                    }
+
+                    g.DrawString("ACT-OMEGA v62.0.0 (SH4Z v6200 | CHAIN 288) [WIN11 LIVE DESKTOP MINI-WIDGET]", fTitle, brAmber, 12, 10);
+
+                    Brush statusBr = _tel.Online ? brGreen : brRed;
+                    string statusTxt = _tel.Online
+                        ? string.Format("ONLINE | Tick #{0} | {1:0.0}k ops/s | 730/730 QED | 288 Tools (3.04M Syn)", _tel.Generation, _tel.ClusterKops)
+                        : "OFFLINE / AWAITING LOCALHOST :8097 TELEMETRY";
+                    g.DrawString(statusTxt, fSub, statusBr, 12, 28);
+
+                    string hwLine1 = string.Format("LOQ15 RTX 3050: {0:0}C ({1}MHz) | P10 G5: {2:0.0}C ({3}%) | P8 L2: {4:0.0}C ({5}%)",
+                        _tel.RtxTemp, _tel.RtxClock, _tel.P10Temp, _tel.P10Batt, _tel.P8Temp, _tel.P8Batt);
+                    g.DrawString(hwLine1, fSub, brIvory, 12, 46);
+
+                    string hwLine2 = string.Format("63,360N (3.04M Syn) | FNO L2={0:0.00000} Vort={1:0.0000} Re={2:0.0} | |B|={3:0.0}uT",
+                        _tel.FnoL2Err, _tel.VorticityNorm, _tel.NavierReynolds, _tel.BNorm);
+                    g.DrawString(hwLine2, fSub, brAmber, 12, 64);
+
+                    string vesperLine = "VESPER IK: 8-Leg E8 Gait | 6 Clones | Title Perch | Click-Thru Active";
+                    g.DrawString(vesperLine, fSub, brCyan, 12, 80);
+
+                    // 16x65 Measured .e8z Cacheline + Live Telemetry Sector Norm Heatmap (Zero sin/cos waves)
+                    g.FillRectangle(brInset, _heatmapRect);
+                    float cw = (float)_heatmapRect.Width / 65.0f;
+                    float ch = (float)_heatmapRect.Height / 16.0f;
+                    int pulseCol = (int)(_tel.Generation % 65);
+                    for (int r = 0; r < 16; r++)
+                    {
+                        double liveSecNorm = _tel.SectorNorms[r];
+                        double secDelta = _tel.Online && liveSecNorm > 0.0
+                            ? Math.Max(-0.15, Math.Min(0.15, (liveSecNorm - 0.895) * 3.5))
+                            : 0.0;
+                        for (int c = 0; c < 65; c++)
                         {
-                            norm = Math.Min(1.0, norm + 0.22);
-                        }
-                        Color cellCol;
-                        if (norm > 0.78) cellCol = Color.FromArgb(233, 78, 52);      // Coral Red #E94E34 (High Activity)
-                        else if (norm > 0.58) cellCol = Color.FromArgb(255, 180, 84); // Golden Amber #FFB454 (Active)
-                        else if (norm > 0.38) cellCol = Color.FromArgb(59, 83, 107);  // Steel Cyan #3B536B (Medium)
-                        else if (norm > 0.20) cellCol = Color.FromArgb(28, 38, 50);   // Slate #1C2632 (Low)
-                        else cellCol = Color.FromArgb(19, 25, 34);                    // Deep Obsidian #131922 (Baseline)
-                        using (SolidBrush cb = new SolidBrush(cellCol))
-                        {
-                            g.FillRectangle(cb, _heatmapRect.X + c * cw, _heatmapRect.Y + r * ch, Math.Max(1.0f, cw - 0.6f), Math.Max(1.0f, ch - 0.6f));
+                            int lineIdx = (r * 130) + (c * 2);
+                            double e8zNorm = (lineIdx >= 0 && lineIdx < _tel.CachelineNorms.Length) ? _tel.CachelineNorms[lineIdx] : 0.0;
+                            double norm = Math.Max(0.0, Math.Min(1.0, e8zNorm + secDelta));
+                            if (_tel.Online && c == pulseCol)
+                            {
+                                norm = Math.Min(1.0, norm + 0.22);
+                            }
+                            Color cellCol;
+                            if (norm > 0.78) cellCol = Color.FromArgb(233, 78, 52);      // Coral Red #E94E34 (High Activity)
+                            else if (norm > 0.58) cellCol = Color.FromArgb(255, 180, 84); // Golden Amber #FFB454 (Active)
+                            else if (norm > 0.38) cellCol = Color.FromArgb(59, 83, 107);  // Steel Cyan #3B536B (Medium)
+                            else if (norm > 0.20) cellCol = Color.FromArgb(28, 38, 50);   // Slate #1C2632 (Low)
+                            else cellCol = Color.FromArgb(19, 25, 34);                    // Deep Obsidian #131922 (Baseline)
+                            using (SolidBrush cb = new SolidBrush(cellCol))
+                            {
+                                g.FillRectangle(cb, _heatmapRect.X + c * cw, _heatmapRect.Y + r * ch, Math.Max(1.0f, cw - 0.6f), Math.Max(1.0f, ch - 0.6f));
+                            }
                         }
                     }
-                }
 
-                DrawWidgetButton(g, _btnOpenHudRect, "NATIVE HUD", Color.FromArgb(255, 180, 84), Color.FromArgb(14, 17, 22), fBtn);
-                DrawWidgetButton(g, _btnSyncShmRect, "SYNC SHM", Color.FromArgb(13, 38, 24), Color.FromArgb(86, 211, 100), fBtn);
-                DrawWidgetButton(g, _btnHandoverRect, "HANDOVER", Color.FromArgb(26, 18, 40), Color.FromArgb(179, 136, 255), fBtn);
-                DrawWidgetButton(g, _btnVerifyRect, "VERIFY 6L", Color.FromArgb(233, 78, 52), Color.FromArgb(255, 254, 251), fBtn);
-                DrawWidgetButton(g, _btnBannerModeRect, _topDesktopBannerMode ? "MINI MODE" : "BANNER", Color.FromArgb(28, 38, 50), Color.FromArgb(255, 254, 251), fBtn);
+                    // Mini-Widget Buttons
+                    DrawWidgetButton(g, _btnVesperIkRect, "VESPER IK", Color.FromArgb(28, 18, 52), Color.FromArgb(56, 189, 248), fBtn, Color.FromArgb(217, 70, 239));
+                    DrawWidgetButton(g, _btnOpenHudRect, "HUD", Color.FromArgb(255, 180, 84), Color.FromArgb(14, 17, 22), fBtn);
+                    DrawWidgetButton(g, _btnSyncShmRect, "SYNC SHM", Color.FromArgb(13, 38, 24), Color.FromArgb(86, 211, 100), fBtn);
+                    DrawWidgetButton(g, _btnHandoverRect, "HANDOVER", Color.FromArgb(26, 18, 40), Color.FromArgb(179, 136, 255), fBtn);
+                    DrawWidgetButton(g, _btnVerifyRect, "VERIFY 6L", Color.FromArgb(233, 78, 52), Color.FromArgb(255, 254, 251), fBtn);
+                    DrawWidgetButton(g, _btnBannerModeRect, "BANNER", Color.FromArgb(28, 38, 50), Color.FromArgb(255, 254, 251), fBtn);
+                }
             }
         }
 
         private void DrawWidgetButton(Graphics g, Rectangle r, string label, Color bg, Color fg, Font f)
         {
+            DrawWidgetButton(g, r, label, bg, fg, f, Color.FromArgb(42, 59, 77));
+        }
+
+        private void DrawWidgetButton(Graphics g, Rectangle r, string label, Color bg, Color fg, Font f, Color borderCol)
+        {
             using (SolidBrush bBg = new SolidBrush(bg))
             using (SolidBrush bFg = new SolidBrush(fg))
-            using (Pen pBorder = new Pen(Color.FromArgb(42, 59, 77), 1.0f))
+            using (Pen pBorder = new Pen(borderCol, 1.2f))
             {
                 g.FillRectangle(bBg, r);
                 g.DrawRectangle(pBorder, r);
@@ -342,6 +399,9 @@ namespace SovereignManifoldDesktop
 
     public class SovereignTrayApplicationContext : ApplicationContext
     {
+        [DllImport("user32.dll")]
+        public static extern bool SetForegroundWindow(IntPtr hWnd);
+
         private NotifyIcon _trayIcon;
         private SovereignWidgetForm _widgetForm;
         private System.Windows.Forms.Timer _pollTimer;
@@ -350,26 +410,26 @@ namespace SovereignManifoldDesktop
 
         public SovereignTrayApplicationContext(bool autoLaunchNativeHud, bool showWidget)
         {
-            _widgetForm = new SovereignWidgetForm(LaunchNativeDesktopHudWindow, ExecuteClusterAction);
+            _widgetForm = new SovereignWidgetForm(LaunchNativeDesktopHudWindow, ExecuteClusterAction, delegate { LaunchOrToggleVesperArachneShimeji(_trayIcon); });
             if (showWidget)
             {
                 _widgetForm.Show();
             }
 
             ContextMenu menu = new ContextMenu();
-            _miStatus = new MenuItem("ACT-Omega v61.0.0 | Awaiting :8097 Telemetry...");
+            _miStatus = new MenuItem("ACT-Omega v62.0.0 | Awaiting :8097 Telemetry...");
             _miStatus.Enabled = false;
             menu.MenuItems.Add(_miStatus);
             menu.MenuItems.Add("-");
 
             // Feature 11: 8 Unified Functional Domains Submenu
-            MenuItem miUnified = new MenuItem("Unified Functional Domains (8 Groups / 280 Tools / CHAIN 280)");
-            miUnified.MenuItems.Add(new MenuItem("Unified Catalog (8 Domains / 280 Tools)", (s, e) => ExecuteClusterAction("/api/v1/unified/catalog", "UNIFIED CATALOG")));
+            MenuItem miUnified = new MenuItem("Unified Functional Domains (8 Groups / 288 Tools / CHAIN 288)");
+            miUnified.MenuItems.Add(new MenuItem("Unified Catalog (8 Domains / 288 Tools)", (s, e) => ExecuteClusterAction("/api/v1/unified/catalog", "UNIFIED CATALOG")));
             miUnified.MenuItems.Add(new MenuItem("AEGIS 7-Stage Autonomous Harness", (s, e) => ExecuteClusterAction("/api/v1/aegis/autonomous_harness", "AEGIS 7-STAGE HARNESS")));
             miUnified.MenuItems.Add(new MenuItem("Trigger AEGIS Autonomous Cron Tick Now", (s, e) => ExecuteClusterAction("/api/v1/aegis/cron_status?action=trigger_now", "AEGIS CRON TRIGGER")));
             miUnified.MenuItems.Add(new MenuItem("Gemma 4 Dual .sh4z Surgical Layer Mixer (5.30 GB)", (s, e) => ExecuteClusterAction("/api/v1/gemma4/sh4z_layer_mixer", "GEMMA 4 .SH4Z MIXER")));
             miUnified.MenuItems.Add("-");
-            miUnified.MenuItems.Add(new MenuItem("1. Lattice, Algebra & Formal Proofs (700 QED)", (s, e) => ExecuteClusterAction("/api/v1/unified/lattice_algebra_proofs", "DOMAIN 1: LATTICE & PROOFS")));
+            miUnified.MenuItems.Add(new MenuItem("1. Lattice, Algebra & Formal Proofs (730 QED)", (s, e) => ExecuteClusterAction("/api/v1/unified/lattice_algebra_proofs", "DOMAIN 1: LATTICE & PROOFS")));
             miUnified.MenuItems.Add(new MenuItem("2. 63.3K Connectome, 3.04M Synapses (.spage) & 262K BPE", (s, e) => ExecuteClusterAction("/api/v1/unified/connectome_qat_memory", "DOMAIN 2: CONNECTOME QAT")));
             miUnified.MenuItems.Add(new MenuItem("3. Multi-Physics, 16D Vectorized FNO & Cymatic Speech", (s, e) => ExecuteClusterAction("/api/v1/unified/physics_16d_fno_speech", "DOMAIN 3: PHYSICS FNO SPEECH")));
             miUnified.MenuItems.Add(new MenuItem("4. AVX2/WebGPU Hardware & Elastic Work-Stealing", (s, e) => ExecuteClusterAction("/api/v1/unified/avx2_webgpu_worksteal", "DOMAIN 4: AVX2 WEBGPU WORKSTEAL")));
@@ -381,6 +441,8 @@ namespace SovereignManifoldDesktop
             miUnified.MenuItems.Add(new MenuItem("Run 256-Bit AVX2 16-Domain FNO Solver (Tool 22)", (s, e) => ExecuteClusterAction("/api/v1/operator/fno_solve", "256-BIT AVX2 16-DOMAIN FNO SOLVE")));
             menu.MenuItems.Add(miUnified);
             menu.MenuItems.Add("-");
+
+            menu.MenuItems.Add(new MenuItem("Launch / Toggle Vesper-Arachne E8 IK Shimeji Companion", (s, e) => LaunchOrToggleVesperArachneShimeji(_trayIcon)));
             menu.MenuItems.Add(new MenuItem("Open Native Desktop HUD App (WebGPU)", (s, e) => LaunchNativeDesktopHudWindow()));
             menu.MenuItems.Add(new MenuItem("Open Public Portal (https://act-omega-net.dev)", (s, e) => Process.Start("https://act-omega-net.dev")));
             menu.MenuItems.Add(new MenuItem("Toggle Live Desktop Mini-Widget", (s, e) =>
@@ -388,7 +450,7 @@ namespace SovereignManifoldDesktop
                 if (_widgetForm.Visible) _widgetForm.Hide();
                 else _widgetForm.Show();
             }));
-            menu.MenuItems.Add(new MenuItem("Switch Widget: Corner Mini <-> Desktop Top-Banner Mode", (s, e) =>
+            menu.MenuItems.Add(new MenuItem("Switch Widget: Corner Mini (430x295) <-> Desktop Top-Banner (760x38)", (s, e) =>
             {
                 if (!_widgetForm.Visible) _widgetForm.Show();
                 _widgetForm.ToggleTopDesktopBannerMode();
@@ -396,16 +458,16 @@ namespace SovereignManifoldDesktop
             menu.MenuItems.Add("-");
             menu.MenuItems.Add(new MenuItem("Sync 12.16MB .npage+.spage Shared Memory (P8 + P10 Roaming)", (s, e) => ExecuteClusterAction("/api/v1/shm/p8_npage_bridge", "SYNC .NPAGE+.SPAGE SHM")));
             menu.MenuItems.Add(new MenuItem("Handover Continuum State to Phones + Cloudflare DO", (s, e) => ExecuteClusterAction("HANDOVER_PHONES", "HANDOVER TO PHONES")));
-            menu.MenuItems.Add(new MenuItem("Run 6-Layer True-Data Audit (280 Tools / 700 QED)", (s, e) => ExecuteClusterAction("/api/v1/diagnostics/v44_self_profiler", "6-LAYER AUDIT")));
-            menu.MenuItems.Add(new MenuItem("Run CHAIN 280 Master Certification (Tools 1..280)", (s, e) => ExecuteClusterAction("/api/v1/chain280/master_certification", "CHAIN 280 MASTER CERT")));
+            menu.MenuItems.Add(new MenuItem("Run 6-Layer True-Data Audit (288 Tools / 730 QED)", (s, e) => ExecuteClusterAction("/api/v1/diagnostics/v44_self_profiler", "6-LAYER AUDIT")));
+            menu.MenuItems.Add(new MenuItem("Run CHAIN 288 Master Certification (Tools 1..288)", (s, e) => ExecuteClusterAction("/api/v1/chain288/master_certification", "CHAIN 288 MASTER CERT")));
             menu.MenuItems.Add(new MenuItem("Trigger AEGIS Autonomous Cron Tick", (s, e) => ExecuteClusterAction("/api/v1/aegis/cron_status?action=trigger_now", "AEGIS CRON TICK")));
             menu.MenuItems.Add("-");
             menu.MenuItems.Add(new MenuItem("Zenodo DOI: 10.5281/zenodo.23651696", (s, e) => Process.Start("https://doi.org/10.5281/zenodo.23651696")));
             menu.MenuItems.Add(new MenuItem("OSF DOI: 10.17605/OSF.IO/2XQ5Z", (s, e) => Process.Start("https://osf.io/2xq5z/overview")));
-            menu.MenuItems.Add(new MenuItem("Architecture Specifications (v61.0.0)", (s, e) =>
+            menu.MenuItems.Add(new MenuItem("Architecture Specifications (v62.0.0)", (s, e) =>
             {
                 MessageBox.Show(
-                    "ACT-Omega Net v61.0.0 (SH4Z v6000 TLV | CHAIN 280 | 700/700 QED)\n\n" +
+                    "ACT-Omega Net v62.0.0 (SH4Z v6200 TLV | CHAIN 288 | 730/730 QED)\n\n" +
                     "• Shards / Neurons: 63,360 (Core 21,120 + Exp 21,120 + Tier-3 21,120)\n" +
                     "• Bijected 64B Cachelines: 132,960 (6,240 Tri-Bank .e8z + 126,720 .npage)\n" +
                     "• Synapses: 3,041,280 Synapses (1.01M .npage + 2.03M .spage Auxiliary Bank)\n" +
@@ -413,12 +475,13 @@ namespace SovereignManifoldDesktop
                     "• Columns: 1,440 Chair-44 Columns\n" +
                     "• Sub-Domains: 144 (36 Macro-Domains x 4)\n" +
                     "• Vocabulary: 262,144 (18-bit) Open-Vocab BPE\n" +
-                    "• Formal Proofs: 700 / 700 Substantive Lean 4 Proofs QED\n" +
-                    "• Tools: 280 Native Tools (CHAIN 280) + AEGIS Autonomous Cron\n\n" +
+                    "• Formal Proofs: 730 / 730 Substantive Lean 4 Proofs QED\n" +
+                    "• Tools: 288 Native Tools (CHAIN 288) + AEGIS Autonomous Cron\n" +
+                    "• Desktop Companion: Vesper-Arachne E8 IK Shimeji (Procedural IK + 6 Clones)\n\n" +
                     "Permanent Archival DOIs:\n" +
                     "• Zenodo: 10.5281/zenodo.23651696\n" +
                     "• OSF: 10.17605/OSF.IO/2XQ5Z",
-                    "ACT-Omega Net v61.0.0 Architecture Specifications",
+                    "ACT-Omega Net v62.0.0 Architecture Specifications",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Information
                 );
@@ -436,7 +499,7 @@ namespace SovereignManifoldDesktop
 
             _trayIcon = new NotifyIcon();
             _trayIcon.Icon = BuildDynamicSovereignIcon(false);
-            _trayIcon.Text = "ACT-Omega v61.0.0 | Connecting to :8097...";
+            _trayIcon.Text = "ACT-Omega v62.0.0 | Connecting to :8097...";
             _trayIcon.ContextMenu = menu;
             _trayIcon.Visible = true;
             _trayIcon.DoubleClick += (s, e) => LaunchNativeDesktopHudWindow();
@@ -451,6 +514,84 @@ namespace SovereignManifoldDesktop
             {
                 LaunchNativeDesktopHudWindow();
             }
+        }
+
+        public static void LaunchOrToggleVesperArachneShimeji(NotifyIcon trayIcon)
+        {
+            ThreadPool.QueueUserWorkItem(_ =>
+            {
+                try
+                {
+                    // 1. Asynchronously trigger endpoint on :8097
+                    try
+                    {
+                        HttpWebRequest req = (HttpWebRequest)WebRequest.Create("http://127.0.0.1:8097/api/v1/vesper_arachne/ik_swarm_companion");
+                        req.Timeout = 1500;
+                        using (HttpWebResponse resp = (HttpWebResponse)req.GetResponse())
+                        {
+                        }
+                    }
+                    catch { }
+
+                    // 2. Check if already running; if so, bring to foreground
+                    Process[] existing = Process.GetProcessesByName("VesperArachneSwarmDroneOverlay");
+                    if (existing != null && existing.Length > 0)
+                    {
+                        IntPtr hWnd = existing[0].MainWindowHandle;
+                        if (hWnd != IntPtr.Zero)
+                        {
+                            SetForegroundWindow(hWnd);
+                        }
+                        if (trayIcon != null)
+                        {
+                            trayIcon.ShowBalloonTip(1500, "Vesper-Arachne E8 IK Shimeji", "Focused active Vesper-Arachne Desktop Companion.", ToolTipIcon.Info);
+                        }
+                        return;
+                    }
+
+                    // 3. Search canonical executable paths
+                    string[] searchPaths = new string[]
+                    {
+                        @"C:\sovereign_manifold_v31\00_control\Win11_Native_Tray_HUD\VesperArachneSwarmDroneOverlay.exe",
+                        @"C:\sovereign_manifold_v31\VesperArachneSwarmDroneOverlay.exe",
+                        @"C:\ACT_OMEGA_MODELS\vesper_arachne_shimeji\VesperArachneSwarmDroneOverlay.exe"
+                    };
+
+                    string exePath = null;
+                    foreach (string p in searchPaths)
+                    {
+                        if (File.Exists(p)) { exePath = p; break; }
+                    }
+
+                    if (exePath != null)
+                    {
+                        ProcessStartInfo psi = new ProcessStartInfo();
+                        psi.FileName = exePath;
+                        psi.WorkingDirectory = Path.GetDirectoryName(exePath);
+                        psi.UseShellExecute = true;
+                        Process.Start(psi);
+
+                        if (trayIcon != null)
+                        {
+                            trayIcon.ShowBalloonTip(2000, "Vesper-Arachne E8 IK Shimeji", "Launched Desktop Companion (" + Path.GetFileName(exePath) + ").", ToolTipIcon.Info);
+                        }
+                    }
+                    else
+                    {
+                        if (trayIcon != null)
+                        {
+                            trayIcon.ShowBalloonTip(2500, "Vesper-Arachne E8 IK Shimeji", "VesperArachneSwarmDroneOverlay.exe not found. Run Build-NativeTrayHud.ps1 first.", ToolTipIcon.Warning);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    if (trayIcon != null)
+                    {
+                        trayIcon.ShowBalloonTip(2000, "Vesper-Arachne Error", ex.Message, ToolTipIcon.Error);
+                    }
+                }
+            });
         }
 
         private Icon BuildDynamicSovereignIcon(bool online)
@@ -468,7 +609,7 @@ namespace SovereignManifoldDesktop
                 using (SolidBrush br = new SolidBrush(online ? Color.FromArgb(86, 211, 100) : Color.FromArgb(233, 78, 52)))
                 using (Font f = new Font("Consolas", 9.0f, FontStyle.Bold))
                 {
-                    g.DrawString("Ω61", f, br, 3, 9);
+                    g.DrawString("Ω62", f, br, 3, 9);
                 }
                 IntPtr hIcon = bmp.GetHicon();
                 return Icon.FromHandle(hIcon);
@@ -530,7 +671,7 @@ namespace SovereignManifoldDesktop
             if (endpointOrCmd == "HANDOVER_PHONES")
             {
                 RunLifecycleScript("handover");
-                _trayIcon.ShowBalloonTip(2000, "ACT-Omega v61.0.0 Continuum Handover", "12.16MB .npage+.spage SHM & 6-Layer state handed over to Pixel 8, Pixel 10 & Cloudflare DO.", ToolTipIcon.Info);
+                _trayIcon.ShowBalloonTip(2000, "ACT-Omega v62.0.0 Continuum Handover", "12.16MB .npage+.spage SHM & 6-Layer state handed over to Pixel 8, Pixel 10 & Cloudflare DO.", ToolTipIcon.Info);
                 return;
             }
             ThreadPool.QueueUserWorkItem(_ =>
@@ -638,11 +779,11 @@ namespace SovereignManifoldDesktop
                         _widgetForm.BeginInvoke((MethodInvoker)delegate
                         {
                             _widgetForm.UpdateTelemetry(_tel);
-                            string tip = string.Format("Ω61.0 | {0:0}k ops | FNO L2={1:0.0000} Re={2:0} | RTX {3:0}C",
+                            string tip = string.Format("Ω62.0 | {0:0}k ops | FNO L2={1:0.0000} Re={2:0} | RTX {3:0}C",
                                 _tel.ClusterKops, _tel.FnoL2Err, _tel.NavierReynolds, _tel.RtxTemp);
                             if (tip.Length > 63) tip = tip.Substring(0, 63);
                             _trayIcon.Text = tip;
-                            _miStatus.Text = string.Format("ACT-Omega v61.0.0 | {0:0.0}k ops/s | FNO L2={1:0.00019} Re={2:0.0} | 280 Tools (700 QED)", _tel.ClusterKops, _tel.FnoL2Err, _tel.NavierReynolds);
+                            _miStatus.Text = string.Format("ACT-Omega v62.0.0 | {0:0.0}k ops/s | 730/730 QED | 288 Tools (3.04M Syn)", _tel.ClusterKops);
                         });
                     }
                 }

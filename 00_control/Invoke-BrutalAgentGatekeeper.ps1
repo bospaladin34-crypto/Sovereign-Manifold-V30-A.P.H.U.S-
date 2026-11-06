@@ -51,8 +51,8 @@ function Run-StaticGatekeeperChecks {
         $sorryCount = ([regex]::Matches($leanText, '\bsorry\b')).Count
         $trivialEqCount = ([regex]::Matches($leanText, ':\s*(\w+)\s*=\s*\1\s*:=')).Count
         $trivialCommCount = ([regex]::Matches($leanText, '\(a\s+b\s*:\s*Nat\)\s*:\s*a\s*\+\s*b\s*=\s*b\s*\+\s*a')).Count
-        if ($thmCount -lt 700) {
-            $failures.Add("LEAN4_COUNT_LOW: Found $thmCount theorems (Req: >= 700)")
+        if ($thmCount -lt 730) {
+            $failures.Add("LEAN4_COUNT_LOW: Found $thmCount theorems (Req: >= 730)")
         }
         if ($sorryCount -gt 0) {
             $failures.Add("LEAN4_SORRY_FOUND: Found $sorryCount 'sorry' tokens (Req: 0)")
@@ -169,8 +169,8 @@ function Run-StaticGatekeeperChecks {
             continue
         }
         $hContent = [System.IO.File]::ReadAllText($hf)
-        if ($hContent -notmatch 'data-sovereign-ssr="v(56|60|61)\.0\.0"') {
-            $failures.Add("HTML_SSR_MISSING: $hf missing data-sovereign-ssr=`"v60.0.0`" attribute")
+        if ($hContent -notmatch 'data-sovereign-ssr="v(56|60|61|62)\.0\.0"') {
+            $failures.Add("HTML_SSR_MISSING: $hf missing data-sovereign-ssr=`"v62.0.0`" attribute")
         }
         $bundleMatches = [regex]::Matches($hContent, '(?i)(?:\./)?assets/(index-[^"''\s>]+\.js)')
         if ($bundleMatches.Count -eq 0) {
@@ -292,12 +292,12 @@ if ($StaticOnly) {
 
 if ($FullAudit) {
     Write-Host "==========================================================================" -ForegroundColor Cyan
-    Write-Host "   ACT-OMEGA BRUTAL AGENT GATEKEEPER: 11-POINT ARCHITECTURAL AUDIT        " -ForegroundColor Cyan
+    Write-Host "   ACT-OMEGA BRUTAL AGENT GATEKEEPER: 13-POINT ARCHITECTURAL AUDIT        " -ForegroundColor Cyan
     Write-Host "==========================================================================" -ForegroundColor Cyan
 
     $failures = Run-StaticGatekeeperChecks
     if ($failures.Count -eq 0) {
-        Write-Host "  [1-7 STATIC INVARIANTS] [PASS] Zero-Bracket(v33..v61+)=0 | Lean4>=700(0 trivial) | HUD/Mobile/Agent Mirrors=LOCKED | SecretsInRepo=0 | SSR & Bundles=VERIFIED | GSC 7-Mirror=LOCKED" -ForegroundColor Green
+        Write-Host "  [1-7 STATIC INVARIANTS] [PASS] Zero-Bracket(v33..v62+)=0 | Lean4>=730(0 trivial) | HUD/Mobile/Agent Mirrors=LOCKED | SecretsInRepo=0 | SSR & Bundles=VERIFIED | GSC 7-Mirror=LOCKED" -ForegroundColor Green
     } else {
         foreach ($f in $failures) {
             Write-Host "  [STATIC FAIL] $f" -ForegroundColor Red
@@ -409,12 +409,26 @@ if ($FullAudit) {
         Write-Host "  [12 YUBIKEY 5C NFC HROT][FAIL] $_" -ForegroundColor Red
     }
 
+    # 13. Live CHAIN 288 Master Certification & 288-Tool Catalog Probe
+    try {
+        $c288 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/chain288/master_certification" -TimeoutSec 5
+        if ($c288.status -match "CHAIN_288" -and $c288.total_chain_tools -eq 288 -and $c288.lean4_qed_theorems -ge 730) {
+            Write-Host "  [13 CHAIN 288 MASTER]   [PASS] Tools=288 (Req:288) | Theorems=$($c288.lean4_qed_theorems) (Req:>=730) | Status=$($c288.status)" -ForegroundColor Green
+        } else {
+            $failures.Add("CHAIN288_AUDIT_FAIL: Tools=$($c288.total_chain_tools) (Req:288) Theorems=$($c288.lean4_qed_theorems) Status=$($c288.status)")
+            Write-Host "  [13 CHAIN 288 MASTER]   [FAIL] Tools=$($c288.total_chain_tools) Status=$($c288.status)" -ForegroundColor Red
+        }
+    } catch {
+        $failures.Add("CHAIN288_PROBE_ERR: $_")
+        Write-Host "  [13 CHAIN 288 MASTER]   [FAIL] $_" -ForegroundColor Red
+    }
+
     Write-Host "==========================================================================" -ForegroundColor Cyan
     if ($failures.Count -gt 0) {
         Write-Host "  [BRUTAL GATEKEEPER RESULT: FAILED ($($failures.Count) VIOLATIONS)]" -ForegroundColor Red
         exit 1
     } else {
-        Write-Host "  [BRUTAL GATEKEEPER RESULT: PASSED (12/12 INVARIANTS VERIFIED)]" -ForegroundColor Green
+        Write-Host "  [BRUTAL GATEKEEPER RESULT: PASSED (13/13 INVARIANTS VERIFIED)]" -ForegroundColor Green
         exit 0
     }
 }

@@ -9,6 +9,8 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <uses-permission android:name="android.permission.UPDATE_PACKAGES_WITHOUT_USER_ACTION" />
 
     <uses-feature
         android:name="android.software.live_wallpaper"
@@ -18,7 +20,7 @@
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher_round"
-        android:label="ACT-Omega v61.0.0 (CHAIN 280)"
+        android:label="ACT-Omega v62.0.0 (CHAIN 288)"
         android:supportsRtl="true"
         android:usesCleartextTraffic="true"
         android:theme="@android:style/Theme.DeviceDefault.NoActionBar">
@@ -86,7 +88,7 @@
         <receiver
             android:name=".SovereignManifoldWidgetProvider"
             android:exported="true"
-            android:label="ACT-Omega v61.0.0 Live 16x130 &amp; .npage/.spage SHM Widget (CHAIN 280, 700/700 QED)">
+            android:label="ACT-Omega v62.0.0 Live 16x130 &amp; .npage/.spage SHM Widget (CHAIN 288, 730/730 QED)">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
                 <action android:name="com.actomega.manifold.ACTION_REFRESH_HEATMAP" />
@@ -96,5 +98,9 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/sovereign_heatmap_widget_info" />
         </receiver>
+
+        <receiver
+            android:name=".SovereignOtaInstallReceiver"
+            android:exported="false" />
     </application>
 </manifest>

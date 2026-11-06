@@ -32,6 +32,113 @@ static V54_5_SEEN_TICKET_NONCES: Mutex<Vec<u64>> = Mutex::new(Vec::new());
 static V54_5_YUBIKEY_HROT_CACHE: Mutex<Option<(Instant, String, u32, String, String)>> = Mutex::new(None);
 
 // Helper: Probe physical YubiKey 5C NFC (Serial 39651128, Slot 2 HMAC-SHA1 + FIDO2 ed25519-sk)
+fn v54_5_b64_val(b: u8) -> Option<u8> {
+    if b >= b'A' && b <= b'Z' {
+        Some(b - b'A')
+    } else if b >= b'a' && b <= b'z' {
+        Some(b - b'a' + 26)
+    } else if b >= b'0' && b <= b'9' {
+        Some(b - b'0' + 52)
+    } else if b == b'+' {
+        Some(62)
+    } else if b == b'/' {
+        Some(63)
+    } else {
+        None
+    }
+}
+
+fn v54_5_b64_char(idx: u8) -> char {
+    let v = idx & 0x3F;
+    if v < 26 {
+        (b'A' + v) as char
+    } else if v < 52 {
+        (b'a' + (v - 26)) as char
+    } else if v < 62 {
+        (b'0' + (v - 52)) as char
+    } else if v == 62 {
+        '+'
+    } else {
+        '/'
+    }
+}
+
+fn v54_5_compute_openssh_sha256_fp(pub_str: &str) -> String {
+    let mut parts = pub_str.split_whitespace();
+    let key_type = match parts.next() {
+        Some(t) => t,
+        None => return String::from("UNMEASURED/OFFLINE"),
+    };
+    let b64_blob = match parts.next() {
+        Some(b) if !b.is_empty() && key_type.contains("ssh") => b,
+        _ => return String::from("UNMEASURED/OFFLINE"),
+    };
+
+    let mut raw_bytes: Vec<u8> = Vec::with_capacity(b64_blob.len());
+    let mut quad: u32 = 0;
+    let mut count: u32 = 0;
+    for ch in b64_blob.bytes() {
+        if ch == b'=' {
+            break;
+        }
+        if let Some(v) = v54_5_b64_val(ch) {
+            quad = (quad << 6) | (v as u32);
+            count += 1;
+            if count == 4 {
+                raw_bytes.push(((quad >> 16) & 0xFF) as u8);
+                raw_bytes.push(((quad >> 8) & 0xFF) as u8);
+                raw_bytes.push((quad & 0xFF) as u8);
+                quad = 0;
+                count = 0;
+            }
+        }
+    }
+    if count == 3 {
+        raw_bytes.push(((quad >> 10) & 0xFF) as u8);
+        raw_bytes.push(((quad >> 2) & 0xFF) as u8);
+    } else if count == 2 {
+        raw_bytes.push(((quad >> 4) & 0xFF) as u8);
+    }
+    if raw_bytes.is_empty() {
+        return String::from("UNMEASURED/OFFLINE");
+    }
+
+    let hex_digest = crate::v50_rayon_avx2_tlv_simulator_coordinator::v50_sha256_hex(&raw_bytes);
+    if hex_digest.len() != 64 {
+        return String::from("UNMEASURED/OFFLINE");
+    }
+
+    let mut sha_bytes: Vec<u8> = Vec::with_capacity(32);
+    let mut hex_iter = hex_digest.as_bytes().iter().copied();
+    while let (Some(hi), Some(lo)) = (hex_iter.next(), hex_iter.next()) {
+        let h_val = (hi as char).to_digit(16).unwrap_or(0) as u8;
+        let l_val = (lo as char).to_digit(16).unwrap_or(0) as u8;
+        sha_bytes.push((h_val << 4) | l_val);
+    }
+
+    let mut out_b64 = String::with_capacity(52);
+    out_b64.push_str("SHA256:");
+    let mut idx: usize = 0;
+    while idx < sha_bytes.len() {
+        let b0 = sha_bytes.get(idx).copied().unwrap_or(0);
+        let has_b1 = (idx + 1) < sha_bytes.len();
+        let has_b2 = (idx + 2) < sha_bytes.len();
+        let b1 = sha_bytes.get(idx + 1).copied().unwrap_or(0);
+        let b2 = sha_bytes.get(idx + 2).copied().unwrap_or(0);
+
+        out_b64.push(v54_5_b64_char(b0 >> 2));
+        out_b64.push(v54_5_b64_char(((b0 & 0x03) << 4) | (b1 >> 4)));
+        if has_b1 {
+            out_b64.push(v54_5_b64_char(((b1 & 0x0F) << 2) | (b2 >> 6)));
+        }
+        if has_b2 {
+            out_b64.push(v54_5_b64_char(b2 & 0x3F));
+        }
+        idx += 3;
+    }
+    out_b64
+}
+
 pub fn v54_5_probe_yubikey_5c_nfc_hrot(
     challenge_hex: &str,
     force_live: bool,
@@ -53,13 +160,7 @@ pub fn v54_5_probe_yubikey_5c_nfc_hrot(
     };
 
     let fido2_fp = match fs::read_to_string("C:/Users/Nbell/.ssh/id_ed25519_sk_act_omega.pub") {
-        Ok(pub_str) => {
-            if pub_str.contains("sk-ssh-ed25519@openssh.com") {
-                String::from("SHA256:KwsDUzdrEWHpWFSt0BXhx0ryT/tOM78n0mlhwgLAzBo")
-            } else {
-                String::from("UNMEASURED/OFFLINE")
-            }
-        }
+        Ok(pub_str) => v54_5_compute_openssh_sha256_fp(&pub_str),
         Err(_) => String::from("UNMEASURED/OFFLINE"),
     };
 

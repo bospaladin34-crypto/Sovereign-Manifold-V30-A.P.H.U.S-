@@ -1,5 +1,5 @@
 # 00_control\mcp_stdio_wrapper.ps1
-# ACT-Omega Net v61.0.0 Model Context Protocol (MCP) Stdio JSON-RPC 2.0 Wrapper
+# ACT-Omega Net v62.0.0 Model Context Protocol (MCP) Stdio JSON-RPC 2.0 Wrapper (CHAIN 288 | 730 QED)
 # Connects stdio-based MCP clients (Claude Desktop, Zed, Cursor, Cline, Gemini) to :8097/mcp
 # STRICT INVARIANT: All logging to stderr; stdout is reserved purely for clean JSON-RPC 2.0 lines.
 
@@ -22,7 +22,7 @@ Add-Type -AssemblyName System.Net.Http -ErrorAction SilentlyContinue
 $httpClient = [System.Net.Http.HttpClient]::new()
 $httpClient.Timeout = [TimeSpan]::FromSeconds($TimeoutSec)
 
-[Console]::Error.WriteLine("[mcp_stdio_wrapper] ACT-Omega v61.0.0 MCP Stdio Gateway online. Forwarding to $Endpoint")
+[Console]::Error.WriteLine("[mcp_stdio_wrapper] ACT-Omega v62.0.0 (CHAIN 288 | 730 QED) MCP Stdio Gateway online. Forwarding to $Endpoint")
 
 while ($true) {
     $line = [Console]::In.ReadLine()

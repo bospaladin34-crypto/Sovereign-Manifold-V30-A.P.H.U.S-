@@ -1,5 +1,5 @@
 # C:\sovereign_manifold_v31\00_control\Sovereign-Lifecycle.ps1
-# ACT-Omega Net v61.0.0 (SH4Z v6000 TLV | CHAIN 280 | 700/700 Lean 4 QED) -- Unified Safe Cluster Start / Stop / Handover / Verify / Status Controller
+# ACT-Omega Net v62.0.0 (SH4Z v6200 TLV | CHAIN 288 | 730/730 Lean 4 QED) -- Unified Safe Cluster Start / Stop / Handover / Verify / Status Controller
 param(
     [ValidateSet("start", "stop", "stop-all", "restart", "status", "handover", "verify")]
     [string]$Action = "status",
@@ -127,7 +127,7 @@ function Invoke-SovereignContinuumHandover {
 
     $capsuleObj = [ordered]@{
         status = "CONTINUUM_HANDOVER_CAPSULE_READY"
-        version = "ACT-Omega Net v61.0.0 (SH4Z v6000 TLV | 700/700 Lean 4 QED)"
+        version = "ACT-Omega Net v62.0.0 (SH4Z v6200 TLV | 730/730 Lean 4 QED)"
         handover_mode = $HandoverMode
         timestamp_utc = $tsUtc
         shm_npage_bytes = 8110080
@@ -135,8 +135,8 @@ function Invoke-SovereignContinuumHandover {
         shm_chair44_cols = 1440
         shm_sha256 = $shmSha
         lean4_sha256 = $leanSha
-        lean4_theorems_qed = 700
-        tools_total = 280
+        lean4_theorems_qed = 730
+        tools_total = 288
         metabolic_atp = $atp
         last_host_kops = $kops
         last_rtx_temp_c = $rtxT
@@ -177,7 +177,7 @@ function Invoke-SovereignContinuumHandover {
 function Show-SovereignStatus {
     Write-Host ""
     Write-Host "==========================================================================" -ForegroundColor Cyan
-    Write-Host "   ACT-OMEGA NET v61.0.0 (SH4Z v6000 | CHAIN 280) -- TRI-SILICON CLUSTER STATUS       " -ForegroundColor Cyan
+    Write-Host "   ACT-OMEGA NET v62.0.0 (SH4Z v6200 | CHAIN 288) -- TRI-SILICON CLUSTER STATUS       " -ForegroundColor Cyan
     Write-Host "==========================================================================" -ForegroundColor Cyan
 
     $isPaused = Test-Path $pauseFile
@@ -254,7 +254,7 @@ function Show-SovereignClusterStatus {
 function Invoke-SovereignSixLayerVerify {
     Write-Host ""
     Write-Host "==========================================================================" -ForegroundColor Cyan
-    Write-Host "   ACT-OMEGA v61.0.0: 6-LAYER TRUE-DATA & ANTI-502 VERIFICATION AUDIT     " -ForegroundColor Cyan
+    Write-Host "   ACT-OMEGA v62.0.0: 6-LAYER TRUE-DATA & ANTI-502 VERIFICATION AUDIT     " -ForegroundColor Cyan
     Write-Host "==========================================================================" -ForegroundColor Cyan
 
     $failCount = 0
@@ -272,16 +272,16 @@ function Invoke-SovereignSixLayerVerify {
     } catch {}
     $l1Pass = ($brackets -eq 0) -and ($null -ne $qat) -and ([double]$qat.holdout_ppl -gt 1.0001)
     if (-not $l1Pass) { $failCount++ }
-    Write-Host ("  [LAYER 1 - L0 RUST]     [{0}] Brackets(v33..v61+)={1} (Req:0) | QAT PPL={2} (Req:>1.0001) | Latency={3}ms" -f ($(if($l1Pass){"PASS"}else{"FAIL"}), $brackets, $(if($qat){$qat.holdout_ppl}else{"UNREACHABLE"}), $(if($qat){$qat.dag_latency_ms}else{"N/A"}))) -ForegroundColor $(if($l1Pass){"Green"}else{"Red"})
+    Write-Host ("  [LAYER 1 - L0 RUST]     [{0}] Brackets(v33..v62+)={1} (Req:0) | QAT PPL={2} (Req:>1.0001) | Latency={3}ms" -f ($(if($l1Pass){"PASS"}else{"FAIL"}), $brackets, $(if($qat){$qat.holdout_ppl}else{"UNREACHABLE"}), $(if($qat){$qat.dag_latency_ms}else{"N/A"}))) -ForegroundColor $(if($l1Pass){"Green"}else{"Red"})
 
     # Layer 2: Lean 4 Formal Proofs
     $leanRaw = Get-Content -Raw "C:\sovereign_manifold_v31\01_l0_rust\lean4\SovereignManifoldTheorems.lean"
     $thmCnt = ([regex]::Matches($leanRaw, '(?m)^theorem\s+')).Count
     $trivCnt = ([regex]::Matches($leanRaw, '\((\d+) = \1\)')).Count
     $leanSha = (Get-FileHash "C:\sovereign_manifold_v31\01_l0_rust\lean4\SovereignManifoldTheorems.lean" -Algorithm SHA256).Hash.ToLower().Substring(0, 16)
-    $l2Pass = ($thmCnt -ge 700) -and ($trivCnt -eq 0)
+    $l2Pass = ($thmCnt -ge 730) -and ($trivCnt -eq 0)
     if (-not $l2Pass) { $failCount++ }
-    Write-Host ("  [LAYER 2 - LEAN 4 QED]  [{0}] Theorems={1}/700 (Req:>=700) | Trivial(N=N)={2} (Req:0) | SHA256={3}..." -f ($(if($l2Pass){"PASS"}else{"FAIL"}), $thmCnt, $trivCnt, $leanSha)) -ForegroundColor $(if($l2Pass){"Green"}else{"Red"})
+    Write-Host ("  [LAYER 2 - LEAN 4 QED]  [{0}] Theorems={1}/730 (Req:>=730) | Trivial(N=N)={2} (Req:0) | SHA256={3}..." -f ($(if($l2Pass){"PASS"}else{"FAIL"}), $thmCnt, $trivCnt, $leanSha)) -ForegroundColor $(if($l2Pass){"Green"}else{"Red"})
 
     # Layer 3: 5W1H & 63,360-Neuron Shared Memory (.npage)
     $prof = $null
@@ -400,7 +400,7 @@ function Stop-SovereignClusterSafely {
     param([bool]$StopPhonesToo = $false)
     Write-Host ""
     Write-Host "==========================================================================" -ForegroundColor Yellow
-    Write-Host "   SAFE GRACEFUL SHUTDOWN: ACT-OMEGA NET v61.0.0 (SH4Z v6000 | CHAIN 280)             " -ForegroundColor Yellow
+    Write-Host "   SAFE GRACEFUL SHUTDOWN: ACT-OMEGA NET v62.0.0 (SH4Z v6200 | CHAIN 288)             " -ForegroundColor Yellow
     Write-Host "==========================================================================" -ForegroundColor Yellow
 
     # 1. Hand over state to Pixel 8, Pixel 10 & Cloudflare Edge DO before stopping Host
@@ -452,7 +452,7 @@ function Stop-SovereignClusterSafely {
 function Start-SovereignClusterSafely {
     Write-Host ""
     Write-Host "==========================================================================" -ForegroundColor Cyan
-    Write-Host "   SAFE CLUSTER IGNITION: ACT-OMEGA NET v61.0.0 (SH4Z v6000 | CHAIN 280)              " -ForegroundColor Cyan
+    Write-Host "   SAFE CLUSTER IGNITION: ACT-OMEGA NET v62.0.0 (SH4Z v6200 | CHAIN 288)              " -ForegroundColor Cyan
     Write-Host "==========================================================================" -ForegroundColor Cyan
 
     if (Test-Path $pauseFile) {

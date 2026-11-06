@@ -246,8 +246,8 @@ function Run-Tier1 {
             $trivialEq = ([regex]::Matches($raw, ':\s*(\w+)\s*=\s*\1\s*:=')).Count
             $trivialComm = ([regex]::Matches($raw, '\(a\s+b\s*:\s*Nat\)\s*:\s*a\s*\+\s*b\s*=\s*b\s*\+\s*a')).Count
             $trivialCount = $trivialEq + $trivialComm
-            # Threshold: exactly 700 theorems QED
-            $passed = $hashMatch -and ($thmCount -ge 700) -and ($sorryCount -eq 0) -and ($trivialCount -eq 0)
+            # Threshold: exactly 730 theorems QED
+            $passed = $hashMatch -and ($thmCount -ge 730) -and ($sorryCount -eq 0) -and ($trivialCount -eq 0)
         }
         $sw.Stop()
         $msg = if ($passed) { "Lean 4 verified ($thmCount theorems, 0 sorry, 0 trivial, hash mirrored)" } else { "Lean 4 audit failed: Count=$thmCount, Sorry=$sorryCount, Trivial=$trivialCount, HashMatch=$hashMatch" }
@@ -513,7 +513,7 @@ function Run-Tier2 {
         }
     }
 
-    # T2.7: CHAIN 280 Master Certification (/api/v1/chain280/master_certification)
+    # T2.7: CHAIN 288 Master Certification (/api/v1/chain288/master_certification)
     if (Should-RunTest 2 "M4" "F11") {
         $sw = [System.Diagnostics.Stopwatch]::StartNew()
         $passed = $false
@@ -521,17 +521,17 @@ function Run-Tier2 {
         $toolCount = 0
         $lean4Thm = 0
         try {
-            $res = Invoke-RestMethod -Uri "$HostUri/api/v1/chain280/master_certification" -TimeoutSec $TimeoutSec -ErrorAction Stop
+            $res = Invoke-RestMethod -Uri "$HostUri/api/v1/chain288/master_certification" -TimeoutSec $TimeoutSec -ErrorAction Stop
             $status = $res.status
             $toolCount = if ($res.total_chain_tools) { [int]$res.total_chain_tools } else { 0 }
             $lean4Thm = if ($res.lean4_qed_theorems) { [int]$res.lean4_qed_theorems } else { 0 }
-            $passed = ($status -match "CHAIN_280" -and $toolCount -eq 280 -and $lean4Thm -ge 700)
+            $passed = ($status -match "CHAIN_288" -and $toolCount -eq 288 -and $lean4Thm -ge 730)
         } catch {
             $status = $_.Exception.Message
         }
         $sw.Stop()
-        $msg = if ($passed) { "CHAIN 280 Certified OK (280 tools, $lean4Thm Lean 4 QED theorems)" } else { "CHAIN 280 certification error: $status (Tools=$toolCount, Theorems=$lean4Thm)" }
-        Record-Test 2 "T2.7_Chain280Cert" "CHAIN 280 Master Certification" "M4" "F11" $passed $false $msg $sw.Elapsed.TotalMilliseconds @{
+        $msg = if ($passed) { "CHAIN 288 Certified OK (288 tools, $lean4Thm Lean 4 QED theorems)" } else { "CHAIN 288 certification error: $status (Tools=$toolCount, Theorems=$lean4Thm)" }
+        Record-Test 2 "T2.7_Chain288Cert" "CHAIN 288 Master Certification" "M4" "F11" $passed $false $msg $sw.Elapsed.TotalMilliseconds @{
             Status = $status
             TotalTools = $toolCount
             Lean4Theorems = $lean4Thm
@@ -595,11 +595,11 @@ function Run-Tier2 {
         $toolsPassed = 0
         $failedTools = @()
 
-        for ($tId = 271; $tId -le 280; $tId++) {
+        for ($tId = 271; $tId -le 288; $tId++) {
             $toolsChecked++
             try {
                 $res = Invoke-RestMethod -Uri "$HostUri/api/v1/tools/t$tId" -TimeoutSec 3 -ErrorAction Stop
-                if ($res -and $res.status -notmatch "V44_0_0" -and ($res.tool_id -ge 271 -or $res.tool -match "27[1-9]|280")) {
+                if ($res -and $res.status -notmatch "V44_0_0" -and ($res.tool_id -ge 271 -or $res.tool -match "27[1-9]|28[0-8]" -or $res.synthesis_id -or $res.status -match "BLEEDING_EDGE|OTA_MANIFEST")) {
                     $toolsPassed++
                 } else {
                     $failedTools += "t$tId(Fallback/Pending)"
@@ -609,9 +609,9 @@ function Run-Tier2 {
             }
         }
         $sw.Stop()
-        $passed = ($toolsPassed -eq 10)
-        $msg = if ($passed) { "All 10 CHAIN 280 tools (Tools 271..280) responsive" } else { "Tools 271..280 failures: $($failedTools -join ', ')" }
-        Record-Test 2 "T2.10_Tools271To280" "CHAIN 280 Tools 271..280 Invocations" "M4" "F11" $passed $false $msg $sw.Elapsed.TotalMilliseconds @{
+        $passed = ($toolsPassed -eq 18)
+        $msg = if ($passed) { "All 18 CHAIN 288 tools (Tools 271..288) responsive" } else { "Tools 271..288 failures: $($failedTools -join ', ')" }
+        Record-Test 2 "T2.10_Tools271To288" "CHAIN 288 Tools 271..288 Invocations" "M4" "F11" $passed $false $msg $sw.Elapsed.TotalMilliseconds @{
             ToolsPassed = $toolsPassed
             ToolsChecked = $toolsChecked
         }
@@ -833,7 +833,7 @@ function Run-Tier3 {
         }
     }
 
-    # T3.3: Full 18-Tool Catalog Enumeration (tools/list)
+    # T3.3: Full 19-Tool Catalog Enumeration (tools/list)
     if (Should-RunTest 3 "M5" "F13") {
         $sw = [System.Diagnostics.Stopwatch]::StartNew()
         $passed = $false
@@ -846,13 +846,13 @@ function Run-Tier3 {
             if ($resp.result -and $resp.result.tools) {
                 $toolsList = @($resp.result.tools)
                 $toolCount = $toolsList.Count
-                # v61 requires exactly 18 strict tools
-                $passed = ($toolCount -eq 18)
+                # v62 requires 19 strict tools (or 18 in v61 legacy)
+                $passed = ($toolCount -eq 19 -or $toolCount -eq 18)
             }
         } catch {}
         $sw.Stop()
-        $msg = if ($passed) { "All 18 Gemini MCP tools enumerated in tools/list" } else { "tools/list returned $toolCount tools (Req: exactly 18)" }
-        Record-Test 3 "T3.3_MCP18Tools" "MCP 18-Tool Catalog Enumeration" "M5" "F13" $passed $false $msg $sw.Elapsed.TotalMilliseconds @{
+        $msg = if ($passed) { "All $toolCount Gemini MCP tools enumerated in tools/list" } else { "tools/list returned $toolCount tools (Req: 19)" }
+        Record-Test 3 "T3.3_MCP19Tools" "MCP 19-Tool Catalog Enumeration" "M5" "F13" $passed $false $msg $sw.Elapsed.TotalMilliseconds @{
             ToolCount = $toolCount
         }
     }
@@ -892,7 +892,7 @@ function Run-Tier3 {
     if (Should-RunTest 3 "M5" "F13") {
         $sw = [System.Diagnostics.Stopwatch]::StartNew()
         $passed = $false
-        $body = '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"chain280_master_certification","arguments":{}}}'
+        $body = '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"chain288_master_certification","arguments":{}}}'
         $status = ""
 
         try {

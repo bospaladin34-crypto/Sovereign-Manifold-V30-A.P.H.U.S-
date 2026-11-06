@@ -1,8 +1,8 @@
 <!-- ========================================================================================= -->
-<!-- ACT-OMEGA NET v61.0.0 — MODEL CARD: 63,360 NEURONS, 3.04M SYNAPSES, CHAIN 280, 700/700 LEAN 4 QED -->
+<!-- ACT-OMEGA NET v62.0.0 — MODEL CARD: 63,360 NEURONS, 3.04M SYNAPSES, CHAIN 288, 730/730 LEAN 4 QED -->
 <!-- ========================================================================================= -->
 
-# 🌌 ACT-Omega Net `v61.0.0` (`SH4Z v6000 TLV` | `CHAIN 280` | `700/700 Lean 4 QED` | `18 Gemini MCP Tools`) — Official Model Card: `63,360` Neurons == `63,360` Shards (`1,440 × Chair-44` | `8,110,080 B` `.npage` + `4,055,040 B` `.spage` SHM | `132,960` Bijected Cachelines | `3,041,280` Total Synapses), Dual Quantized Gemma 4 `.sh4z` Vaults (`E4B-it` 7.99B + `12B-it` 11.97B = `19.96B` Params), `262,144` (18-Bit) 144-Subdomain Open-Vocabulary BPE (`0 <UNK>`), `280` Native Tools (`T01..T280` / `CHAIN 280`), Constructive $E_8 \oplus E_8 \oplus E_8 \to \Lambda_{24}$ Leech Lattice Bridge, Real Synaptic-Update QAT & `700/700` Lean 4 Proofs QED
+# 🌌 ACT-Omega Net `v62.0.0` (`SH4Z v6200 TLV` | `CHAIN 288` | `730/730 Lean 4 QED` | `19 Gemini MCP Tools`) — Official Model Card: `63,360` Neurons == `63,360` Shards (`1,440 × Chair-44` | `8,110,080 B` `.npage` + `4,055,040 B` `.spage` SHM | `132,960` Bijected Cachelines | `3,041,280` Total Synapses), Dual Quantized Gemma 4 `.sh4z` Vaults (`E4B-it` 7.99B + `12B-it` 11.97B = `19.96B` Params), `262,144` (18-Bit) 144-Subdomain Open-Vocabulary BPE (`0 <UNK>`), `288` Native Tools (`T01..T288` / `CHAIN 288`), Constructive $E_8 \oplus E_8 \oplus E_8 \to \Lambda_{24}$ Leech Lattice Bridge, Real Synaptic-Update QAT & `730/730` Lean 4 Proofs QED
 
 <p align="center">
   <img src="./act_omega_logo.jpg" alt="ACT-Omega Net Official Sovereign Harmonic Emblem" width="200" style="border-radius: 20px; border: 2px solid #FFB454;" />
@@ -11,17 +11,17 @@
 [![Zenodo DOI](https://img.shields.io/badge/Zenodo_DOI-10.5281%2Fzenodo.23651696-024dad?style=for-the-badge&logo=zenodo)](https://doi.org/10.5281/zenodo.23651696)
 [![OSF DOI](https://img.shields.io/badge/OSF_DOI-10.17605%2FOSF.IO%2F2XQ5Z-1c75bc?style=for-the-badge&logo=open-science-framework)](https://osf.io/2xq5z/overview)
 [![YubiKey 5C NFC Certified](https://img.shields.io/badge/YubiKey_5C_NFC_Certified-SN_39651128_%7C_ED25519--SK_SHA256%3AKwsDUzdr...AzBo-84BD00?style=for-the-badge&logo=yubico)](https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-)
-[![Release](https://img.shields.io/badge/Release-v62.0.0_(Synthesis_1--5_%7C_CHAIN_286_%2B_725/725_QED)-00FFCC?style=for-the-badge&logo=github)](https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-/releases/tag/v61.0.0)
-[![Weight Binary](https://img.shields.io/badge/Weights-SH4Z_v6000_(399,360_B_Tri--Bank_%2B_Dual_Gemma4_.sh4z_19.96B)-FF007F?style=for-the-badge)](https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-/tree/vesper_production/00_control/weights)
+[![Release](https://img.shields.io/badge/Release-v62.0.0_(Synthesis_1--5_%7C_CHAIN_288_%2B_730/730_QED)-00FFCC?style=for-the-badge&logo=github)](https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-/releases/tag/v62.0.0)
+[![Weight Binary](https://img.shields.io/badge/Weights-SH4Z_v6200_(399,360_B_Tri--Bank_%2B_Dual_Gemma4_.sh4z_19.96B)-FF007F?style=for-the-badge)](https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-/tree/vesper_production/00_control/weights)
 [![Neuron Pagefile](https://img.shields.io/badge/Shards_%26_Neurons-63,360_1:1_Bijection_(3,041,280_Synapses_%7C_132,960_Bijected_CLs)-7B61FF?style=for-the-badge)](https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-/tree/vesper_production/00_control/weights)
 [![SHA-256 Verified](https://img.shields.io/badge/SHA--256_Verified-Zero_Unmeasured_100%25_Byte_Sampled-FF8800?style=for-the-badge)](https://bospaladin34-crypto.github.io/telemetry_snapshot.json)
-[![Lean 4 Proofs](https://img.shields.io/badge/Lean_4_Proofs-725_/_725_Substantive_QED_(0_Sorry_%7C_0_True_:_Prop)-00BFFF?style=for-the-badge)](https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-/tree/vesper_production/01_l0_rust/lean4)
-[![Tool Lattice](https://img.shields.io/badge/Tools-286_/_286_(CHAIN_280_%2B_Synthesis_1--5_%2B_OTA)-FFD700?style=for-the-badge)](https://mcp.act-omega-net.dev/mcp)
+[![Lean 4 Proofs](https://img.shields.io/badge/Lean_4_Proofs-730_/_730_Substantive_QED_(0_Sorry_%7C_0_True_:_Prop)-00BFFF?style=for-the-badge)](https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-/tree/vesper_production/01_l0_rust/lean4)
+[![Tool Lattice](https://img.shields.io/badge/Tools-288_/_288_(CHAIN_288_%7C_19_MCP_Tools)-FFD700?style=for-the-badge)](https://mcp.act-omega-net.dev/mcp)
 [![Tri-Silicon Cluster](https://img.shields.io/badge/Tri--Silicon_Cluster-LOQ15_%2B_Pixel10_%2B_Pixel8_(~3,005,637k_ops/s)-00FF66?style=for-the-badge)](https://act-omega-net.dev)
 [![Cloudflare D1 Vault](https://img.shields.io/badge/Cloudflare_D1_Vault-9f46d56a_(10_Tables_Live_SQL)-F38020?style=for-the-badge)](https://mcp.act-omega-net.dev/v1/d1/status)
 [![Operator Manual](https://img.shields.io/badge/Operator_Manual-USER__MANUAL__AND__FAQ.md_%2B_HUD_Sidebar-34A853?style=for-the-badge)](./USER_MANUAL_AND_FAQ.md)
 
-## 🔐 `v62.0.0` YubiKey 5C NFC Hardware Root-of-Trust & Bleeding Edge Synthesis 1–5 (`Tools 281–286` | `725/725 Lean 4 QED`)
+## 🔐 `v62.0.0` YubiKey 5C NFC Hardware Root-of-Trust & Bleeding Edge Synthesis 1–5 (`Tools 281–288` | `730/730 Lean 4 QED`)
 
 | Synthesis Suite / Hardware Gate | Live L0 Endpoint & Tool ID | Conserved Mathematical & Physical Invariants (`100%` Measured Byte Sampled) | Lean 4 QED Proofs |
 | :--- | :--- | :--- | :--- |
@@ -32,6 +32,8 @@
 | **Dual-Pixel Wireless & Android 17 QPR3 Beta 3 OTA** | `/api/v1/ota/pixel_manifest` & `/api/v1/ota/pixel_apk` (`Tool 284`) | Zero-cable `29,710,678 B` APK streaming + multi-path ADB resolver (`USB` -> `TCP :5555` -> `TLS` -> `mDNS`) + KernelSU `/data/adb/service.d/99_sovereign_wireless_ota_guard.sh` & inactive A/B slot root preservation | Verified Live |
 | **Bleeding Edge Synthesis 4** | `/api/v1/synthesis/bleeding_edge_4` (`Tool 285`) | UINTR `UPID`/`UITT` (`0` ring-0 traps) & NumKong Int4/Dot2 Nibble Algebra, Spectre Chiral Monotile Zero-Modes & CCMamba 1-CCWL, Spherical Poisson Bracket $\{A,B\}_{S^2}$ ($64\times$ speedup), Braided ZX & 1,000-Step Symplectic Leapfrog ($\det J = 1.0$), Babai GLVQ over $E_8$ ($\kappa(B) = 2.0 \le 15.0$, $\text{PPL} = 1.0286 \le 1.21$) | `thm_v62_4_716..720` |
 | **Bleeding Edge Synthesis 5** | `/api/v1/synthesis/bleeding_edge_5` (`Tool 286`) | Persistent Sheaf Laplacian $\Delta_q^{X,Y}$ ($\beta_0=1, \beta_1=0, \lambda_{\min} = 0.1672 \ge 10^{-5}$), Sub-Riemannian Schrödinger Bridge & 3-Body Kuramoto ($R = 1.0$), $E_8 \times \omega E_8$ Jordan Algebra $J_3(\mathbb{O}_{\mathbb{C}})$ ($1:4:9$) & $p$-Adic Bruhat-Tits Tree, PolarQuant Hadamard ($\kappa_{\text{kurt}}: 7.994 \to 1.001 < 3.50$, $\text{PPL} = 1.110 < 1.199$, `0` FLOPs), `sched_ext` (`28%` p99 win) + NDK `AHardwareBuffer` + MPQUIC BLEST ($0.5068\text{ ms} \le 1.50\text{ ms}$) | `thm_v62_5_721..725` |
+| **Vesper-Arachne Octapodal E8 IK** | `/api/v1/vesper_arachne/e8_ik` & `/api/v1/vesper_arachne/ik_swarm_companion` (`Tool 287`) | Octapodal 8-leg closed-form kinematic loop ($l_1=0.25, l_2=0.35, l_3=0.45\text{ m}$), $E_8$ 240-root manifold workspace mapping, Click-Through Companion target acquisition, and 19th MCP tool registration | `thm_v62_5_726..727` |
+| **Vesper Swarm Formations & Master Certification** | `/api/v1/chain288/master_certification` & `/api/v1/chain288/suite` (`Tool 288`) | 8-agent swarm spatial consensus, rigid rotation and translation invariance, centroid preservation ($|c_k(R v + t) - (R c_k(v) + t)| \le 10^{-6}$), and CHAIN 288 / 730 Lean 4 QED master validation | `thm_v62_5_728..730` |
 
 ## 💎 `v61.0.0` Mathematical & Neural Architecture — $E_8 \oplus E_8 \oplus E_8 \to \Lambda_{24}$ Leech Lattice, `63,360` Neurons, `3,041,280` Synapses, Dual Gemma 4 `.sh4z` Vaults (`19.96B` Params) & `CHAIN 280`
 
@@ -43,15 +45,15 @@
 | **3:1 Sector & Connectome Fibration** | `240` $E_8$ roots $\to$ `80` Sectors (`S00..S79`) $\to$ `1,440` `Chair-44` $\to$ `63,360` Neurons | 1:1 bijection with `neurons_v5000_63360.npage` (`8,110,080 B = 126,720 CLs`) + `sovereign_harmonic_vi_v5020_6240cl.e8z` (`399,360 B = 6,240 CLs`) = `132,960` Bijected Cachelines & `3,041,280` Synapses (`.npage` + `.spage`) |
 | **Dual Gemma 4 `.sh4z` Ternary Vaults & $k=4$ Cascade** | `gemma4_e4b_it_sh4z_v6000.sh4z` (`7.99B` params, `42` text + `12` audio + `16` vision layers, `256D` PLE) + `gemma4_12b_it_sh4z_v6000.sh4z` (`11.97B` params, `48` layers, `3,840D`) | Surgical layer mixing (`/api/v1/gemma4/sh4z_layer_mixer`), 256D PLE router (`Tool 272`), Multimodal Tower Probe (`Tool 273`), and $k=4$ Speculative Cascade (`Tool 274`) with `.spage` Hebbian distillation (`700/700` Lean 4 QED) |
 
-## ⚡ Executive Summary — `v61.0.0` (`SH4Z v6000 TLV` | `CHAIN 280` | `700/700 Lean 4 QED`) Model Card Specifications
+## ⚡ Executive Summary — `v62.0.0` (`SH4Z v6200 TLV` | `CHAIN 288` | `730/730 Lean 4 QED`) Model Card Specifications
 
-| Dimension / Subsystem | `v60.0.0` Baseline | `v61.0.0` (`SH4Z v6000 TLV` | `CHAIN 280` | `700/700 QED`) Production Specification |
+| Dimension / Subsystem | `v61.0.0` Baseline | `v62.0.0` (`SH4Z v6200 TLV` | `CHAIN 288` | `730/730 QED`) Production Specification |
 | :--- | :--- | :--- |
 | **Model Weights & `.sh4z` Vaults** | `sovereign_harmonic_iv_v5000.e8z` (`133,120 B`) + Tri-Bank (`399,360 B`) | **`sovereign_harmonic_iv_v5000.e8z` (`133,120 B`) + Tri-Bank `sovereign_harmonic_vi_v5020_6240cl.e8z` (`399,360 B`) + Dual Gemma 4 `.sh4z` Vaults (`E4B-it` `109,056 B` + `12B-it` `125,952 B` on `E:\`, `19.96B` total quantized parameters)** |
 | **Connectome & `.npage`/`.spage` SHM** | `63,360` Neurons (`8,110,080 B` `.npage` + `4,055,040 B` `.spage`) | **`63,360` 3-Compartment Dendritic Pyramidal Neurons == `63,360` Shards (`126,720` `.npage` CLs + `6,240` Tri-Bank `.e8z` CLs = `132,960` dynamically measured bijected cachelines, `3,041,280` total synapses across 144 Sub-Domains)** |
 | **Vocabulary, PLE & Multimodal** | `262,144` 144-Subdomain BPE | **`262,144` (18-Bit) Open-Vocab BPE (`Tool 271`) + Gemma 4 `256D` Per-Layer Embedding Surgical Router (`Tool 272`) + 12L Conformer Audio & 16L Vision Multimodal Tower Probe (`Tool 273`) + $k=4$ Speculative Cascade (`Tool 274`)** |
-| **Formal Verification** | `690 / 690` Lean 4 Proofs | **`700 / 700` Non-Trivial Machine-Checked Lean 4 CIC Proofs QED (`SovereignManifoldTheorems.lean`, `thm_v61_691..700`, `0 sorry`, `0 axiom`), synchronized with Card #8 (`700/700`) and Dual-Pixel `v61.0.0` APKs** |
-| **True-Data, Core Modules & MCP** | 270 Tools (`CHAIN 270`), 10 MCP Tools | **`280` Native Tools (`CHAIN 280`), all `41` L0 core modules un-siloed (`/api/v1/l0_core/execute_41_modules`), `18` Gemini Developer Mode JSON-RPC 2.0 MCP tools + `6` resources + `4` prompt templates, and 100% October 31st Muse sweep remediation** |
+| **Formal Verification** | `700 / 700` Lean 4 Proofs | **`730 / 730` Non-Trivial Machine-Checked Lean 4 CIC Proofs QED (`SovereignManifoldTheorems.lean`, `thm_v62_1_701..thm_v62_5_730`, `0 sorry`, `0 axiom`), synchronized with Card #8 (`730/730`) and Dual-Pixel `v62.0.0` APKs** |
+| **True-Data, Core Modules & MCP** | 280 Tools (`CHAIN 280`), 18 MCP Tools | **`288` Native Tools (`CHAIN 288`), all `41` L0 core modules un-siloed (`/api/v1/l0_core/execute_41_modules`), `19` Gemini Developer Mode JSON-RPC 2.0 MCP tools + `6` resources + `4` prompt templates, and Vesper-Arachne E8 IK companion (Tool 287) + Swarm Formations (Tool 288)** |
 | **Operator Documentation** | Dedicated [`USER_MANUAL_AND_FAQ.md`](./USER_MANUAL_AND_FAQ.md) | **Dedicated [`USER_MANUAL_AND_FAQ.md`](./USER_MANUAL_AND_FAQ.md) + Interactive 6-Tab Step-by-Step Help & FAQ Sidebar built directly into the Host HUD (`[?] HELP, FAQ & USER MANUAL`)** |
 
 

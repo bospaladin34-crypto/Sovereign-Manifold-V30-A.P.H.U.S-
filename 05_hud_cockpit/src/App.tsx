@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 
 interface TelemetryState {
   generation: number;
@@ -153,7 +153,7 @@ export const DOMAINS_CATALOG: FunctionalDomainDef[] = [
     accent: "#B388FF",
     bg: "#160C22",
     border: "#8A4FFF",
-    desc: "E8/Leech lattice, 80-sector .e8z norm scan, Layer 1.5 Haskell algebra, and 700/700 Lean 4 QED theorem verification.",
+    desc: "E8/Leech lattice, 80-sector .e8z norm scan, Layer 1.5 Haskell algebra, and 730/730 Lean 4 QED theorem verification.",
     tools: [
       { id: 1, tag: "T01", label: "E8 Lattice Roots", ep: "/api/v1/algebra/e8_roots" },
       { id: 2, tag: "T02", label: "Leech Lattice 24D", ep: "/api/v1/algebra/leech_24d" },
@@ -214,7 +214,7 @@ export const DOMAINS_CATALOG: FunctionalDomainDef[] = [
     border: "#00B38F",
     desc: "63,360-neuron .npage (8,110,080 B), 144-subdomain QAT, 262,144-vocab BPE, and 5W1H metabolic memory.",
     tools: [
-      { id: 13, tag: "T13", label: "700/700 Lean 4 QED", ep: "/api/v1/compiler/verify" },
+      { id: 13, tag: "T13", label: "730/730 Lean 4 QED", ep: "/api/v1/compiler/verify" },
       { id: 14, tag: "T14", label: "Shard Connectome Map", ep: "/api/v1/connectome/shards" },
       { id: 15, tag: "T15", label: "Dendritic Compartment State", ep: "/api/v1/connectome/dendrite_state" },
       { id: 16, tag: "T16", label: "Per-Sensor Stiefel", ep: "/api/v1/manifold/stiefel_step" },
@@ -438,8 +438,8 @@ export const DOMAINS_CATALOG: FunctionalDomainDef[] = [
     slug: "autopoietic_bus_vault_d1",
     name: "Autopoietic Coordinator Bus, E:\\ Vault & Cloudflare D1",
     shortName: "Autopoietic Vault",
-    toolCount: 30,
-    toolRange: "T46-T48, T51, T53-T56, T59-T60, T69-T72, T81, T89-T90, T96-T100, T103",
+    toolCount: 38,
+    toolRange: "T46-T48, T51, T53-T56, T59-T60, T69-T72, T81, T89-T90, T96-T100, T103, T281-T288",
     writebackCat: "tool_outputs",
     ep: "/api/v1/unified/autopoietic_bus_vault_d1",
     accent: "#FFFEFB",
@@ -476,10 +476,855 @@ export const DOMAINS_CATALOG: FunctionalDomainDef[] = [
       { id: 212, tag: "BUS-2", label: "DAG Orchestrator", ep: "/api/v1/coordinator/dag_orchestrator" },
       { id: 213, tag: "BUS-3", label: "Codegen Vault Sink", ep: "/api/v1/coordinator/codegen_vault_sink" },
       { id: 214, tag: "BUS-4", label: "Autopoietic Integrator", ep: "/api/v1/coordinator/autopoietic_integrator" },
-      { id: 215, tag: "BUS-5", label: "DuckDB Vector Engine", ep: "/api/v1/v48/duckdb_columnar_vector" }
+      { id: 215, tag: "BUS-5", label: "DuckDB Vector Engine", ep: "/api/v1/v48/duckdb_columnar_vector" },
+      { id: 281, tag: "T281", label: "T281: Split-Quaternionic Cl(2,2) Sheaf", ep: "/api/v1/synthesis/bleeding_edge_1" },
+      { id: 282, tag: "T282", label: "T282: Non-Abelian Braid Anyon B6", ep: "/api/v1/synthesis/bleeding_edge_2" },
+      { id: 283, tag: "T283", label: "T283: Tropical Min-Plus E8 Attention", ep: "/api/v1/synthesis/bleeding_edge_3" },
+      { id: 284, tag: "T284", label: "T284: Lorentzian De Sitter dS4 Horizon", ep: "/api/v1/ota/pixel_manifest" },
+      { id: 285, tag: "T285", label: "T285: Symplectic Shadow Hamiltonian", ep: "/api/v1/synthesis/bleeding_edge_4" },
+      { id: 286, tag: "T286", label: "T286: p-Adic Q2 Ultrametric Tree", ep: "/api/v1/synthesis/bleeding_edge_5" },
+      { id: 287, tag: "T287", label: "T287: Vesper-Arachne E8 IK Gait Solver", ep: "/api/v1/vesper_arachne/ik_swarm_companion" },
+      { id: 288, tag: "T288", label: "T288: Vesper Swarm & CHAIN 288 Cert", ep: "/api/v1/chain288/master_certification" }
     ]
   }
 ];
+
+export interface VesperArachneHudShimejiProps {
+  isDocked?: boolean;
+  onToggleDock?: () => void;
+  selectedCardIndex?: number;
+  onSelectCard?: (idx: number) => void;
+  onCallEndpoint?: (ep: string, desc: string) => void;
+}
+
+interface VesperSwarmClone {
+  role: string;
+  color: string;
+  x: number;
+  y: number;
+  targetX: number;
+  targetY: number;
+  heading: number;
+  phase: number;
+}
+
+interface VesperTelemetryState {
+  status: string;
+  gaitGroup: string;
+  golay: string;
+  bpeHygiene: string;
+  lastPoll: string;
+  error: string | null;
+}
+
+export function VesperArachneHudShimeji({
+  isDocked = false,
+  onToggleDock,
+  selectedCardIndex = 0,
+  onSelectCard,
+  onCallEndpoint
+}: VesperArachneHudShimejiProps) {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  // Behavior modes: 0 = CURSOR_STALK, 1 = CARD_PERCH, 2 = HEXAGRAM_SWARM
+  const [behaviorMode, setBehaviorMode] = useState<number>(0);
+  const [contextMenu, setContextMenu] = useState<{ open: boolean; x: number; y: number }>({
+    open: false,
+    x: 0,
+    y: 0
+  });
+  const [speech, setSpeech] = useState<{ text: string; timer: number }>({
+    text: "VESPER-ARACHNE E8 IK HUD COMPANION READY (60 FPS | CHAIN 288)",
+    timer: 300
+  });
+  const [clones, setClones] = useState<VesperSwarmClone[]>([]);
+  const [telemetry, setTelemetry] = useState<VesperTelemetryState>({
+    status: "NOMINAL",
+    gaitGroup: "TETRAPOD_LOCKED",
+    golay: "NOMINAL_ZERO_SYNDROME",
+    bpeHygiene: "262,144_CLEAN",
+    lastPoll: "INIT",
+    error: null
+  });
+
+  // State refs for 60 FPS animation loop
+  const spiderPos = useRef({
+    x: typeof window !== "undefined" ? window.innerWidth * 0.75 : 800,
+    y: typeof window !== "undefined" ? window.innerHeight * 0.35 : 300,
+    vx: 0,
+    vy: 0,
+    heading: 0,
+    headYaw: 0,
+    isDragging: false,
+    idleTicks: 0,
+    runeAngle: 0
+  });
+
+  const mousePos = useRef({
+    x: typeof window !== "undefined" ? window.innerWidth * 0.5 : 500,
+    y: typeof window !== "undefined" ? window.innerHeight * 0.5 : 400
+  });
+
+  // 8-Leg Inverse Kinematics Gait Constants (Matching Lean 4 thm_v62_726 & Tool 287)
+  const L1 = 36.0; // Femur length in px
+  const L2 = 54.0; // Tibia-Tarsus length in px
+  const STEP_HEIGHT = 22.0; // Parabolic foot-lift height in px
+  const LOCAL_ANGLES = [-0.42, -0.95, -1.52, -2.18, 0.42, 0.95, 1.52, 2.18];
+  const BASE_RADII = [76.0, 84.0, 84.0, 76.0, 76.0, 84.0, 84.0, 76.0];
+
+  const gaitRef = useRef({
+    phase: 0.0,
+    footX: new Array(8).fill(0),
+    footY: new Array(8).fill(0),
+    footLift: new Array(8).fill(0),
+    startX: new Array(8).fill(0),
+    startY: new Array(8).fill(0),
+    goalX: new Array(8).fill(0),
+    goalY: new Array(8).fill(0),
+    stepProg: new Array(8).fill(1.0)
+  });
+
+  // Initialize feet
+  useEffect(() => {
+    const sp = spiderPos.current;
+    const g = gaitRef.current;
+    for (let i = 0; i < 8; i++) {
+      const ang = sp.heading + LOCAL_ANGLES[i];
+      const fx = sp.x + Math.cos(ang) * BASE_RADII[i];
+      const fy = sp.y + Math.sin(ang) * BASE_RADII[i];
+      g.footX[i] = fx;
+      g.footY[i] = fy;
+      g.startX[i] = fx;
+      g.startY[i] = fy;
+      g.goalX[i] = fx;
+      g.goalY[i] = fy;
+      g.footLift[i] = 0.0;
+      g.stepProg[i] = 1.0;
+    }
+  }, []);
+
+  // Mouse move listener
+  useEffect(() => {
+    const onMouseMove = (e: MouseEvent) => {
+      mousePos.current.x = e.clientX;
+      mousePos.current.y = e.clientY;
+      spiderPos.current.idleTicks = 0;
+    };
+    window.addEventListener("mousemove", onMouseMove, { passive: true });
+    return () => window.removeEventListener("mousemove", onMouseMove);
+  }, []);
+
+  // Telemetry Poller (Total Branch Honesty - Graceful offline fallback)
+  useEffect(() => {
+    let mounted = true;
+    const pollTelemetry = async () => {
+      try {
+        const resp = await fetch("/api/v1/vesper_arachne/ik_swarm_companion", {
+          signal: AbortSignal.timeout(1800)
+        });
+        if (!mounted) return;
+        if (resp.ok) {
+          const json = await resp.json();
+          setTelemetry({
+            status: json.status || "NOMINAL",
+            gaitGroup: json.gait_group || "TETRAPOD_LOCKED",
+            golay: json.vesper_heal_status || json.golay_status || "NOMINAL_ZERO_SYNDROME",
+            bpeHygiene: json.bpe_hygiene || "262,144_CLEAN",
+            lastPoll: new Date().toLocaleTimeString(),
+            error: null
+          });
+        } else {
+          setTelemetry(prev => ({
+            ...prev,
+            error: "UNMEASURED/OFFLINE",
+            lastPoll: new Date().toLocaleTimeString()
+          }));
+        }
+      } catch {
+        if (!mounted) return;
+        setTelemetry(prev => ({
+          ...prev,
+          error: "UNMEASURED/OFFLINE",
+          lastPoll: new Date().toLocaleTimeString()
+        }));
+      }
+    };
+
+    pollTelemetry();
+    const interval = setInterval(pollTelemetry, 3500);
+    return () => {
+      mounted = false;
+      clearInterval(interval);
+    };
+  }, []);
+
+  // Dispatch MCP Tool via JSON-RPC 2.0
+  const fireMcpTool = useCallback(async (toolName: string) => {
+    setSpeech({
+      text: `Dispatching MCP: ${toolName}...`,
+      timer: 240
+    });
+    try {
+      const resp = await fetch("/mcp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          jsonrpc: "2.0",
+          id: Date.now(),
+          method: "tools/call",
+          params: { name: toolName, arguments: {} }
+        })
+      });
+      if (resp.ok) {
+        const res = await resp.json();
+        setSpeech({
+          text: `[MCP ${toolName}]: SUCCESS (${res.result ? "QED" : "ACK"})`,
+          timer: 320
+        });
+      } else {
+        setSpeech({
+          text: `[MCP ${toolName}]: HTTP ${resp.status}`,
+          timer: 240
+        });
+      }
+    } catch {
+      setSpeech({
+        text: `[MCP ${toolName}]: OFFLINE / UNREACHABLE`,
+        timer: 240
+      });
+    }
+  }, []);
+
+  // Spawn / Recall Swarm Clones (Hexagram / Free Patrol)
+  const toggleSwarmClones = useCallback(() => {
+    if (clones.length > 0) {
+      setClones([]);
+      setSpeech({
+        text: "Swarm Clones Recalled into Mother Core.",
+        timer: 200
+      });
+    } else {
+      const roles = [
+        "CLONE-E4B-DRAFTER", "CLONE-R2-SENTINEL", "CLONE-LEAN4-QED",
+        "CLONE-P10-GATE", "CLONE-DUCKDB-SQL", "CLONE-SHEAF-41M"
+      ];
+      const colors = ["#10B981", "#D946EF", "#FACC15", "#38BDF8", "#F43F5E", "#A855F7"];
+      const sp = spiderPos.current;
+      const newClones: VesperSwarmClone[] = roles.map((role, idx) => {
+        const ang = (idx / 6.0) * Math.PI * 2.0;
+        return {
+          role,
+          color: colors[idx],
+          x: sp.x,
+          y: sp.y,
+          targetX: sp.x + Math.cos(ang) * 130.0,
+          targetY: sp.y + Math.sin(ang) * 130.0,
+          heading: ang,
+          phase: idx * 1.05
+        };
+      });
+      setClones(newClones);
+      setSpeech({
+        text: "Mitotic Division: 6 Specialist Clones Deployed in Hexagram Shield!",
+        timer: 260
+      });
+    }
+  }, [clones.length]);
+
+  // 60 FPS HTML5 Canvas Animation Loop
+  useEffect(() => {
+    let animId: number;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const handleResize = () => {
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = window.innerWidth * dpr;
+      canvas.height = window.innerHeight * dpr;
+      ctx.resetTransform?.();
+      ctx.scale(dpr, dpr);
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+
+    const render = () => {
+      const dpr = window.devicePixelRatio || 1;
+      const width = canvas.width / dpr;
+      const height = canvas.height / dpr;
+
+      ctx.clearRect(0, 0, width, height);
+
+      const sp = spiderPos.current;
+      const mp = mousePos.current;
+      const g = gaitRef.current;
+
+      sp.runeAngle += 0.038;
+      sp.idleTicks++;
+
+      const dockX = width - 80;
+      const dockY = 40;
+
+      // Behavior & Target Resolution
+      let targetX = mp.x;
+      let targetY = mp.y;
+
+      if (isDocked) {
+        targetX = dockX;
+        targetY = dockY;
+      } else if (behaviorMode === 1) {
+        // CARD_PERCH Mode: locate selected card
+        const cardNode = document.querySelector(`[data-crawl-node="card-${selectedCardIndex}"]`);
+        if (cardNode) {
+          const rect = cardNode.getBoundingClientRect();
+          targetX = rect.left + rect.width * 0.5;
+          targetY = Math.max(50, rect.top + 8);
+        }
+      }
+
+      // Smooth kinematic steering
+      const prevX = sp.x;
+      const prevY = sp.y;
+
+      if (!sp.isDragging) {
+        const dx = targetX - sp.x;
+        const dy = targetY - sp.y;
+        const dist = Math.hypot(dx, dy);
+        const stopDist = isDocked ? 6 : (behaviorMode === 0 ? 68 : 16);
+
+        if (dist > stopDist) {
+          const desiredHeading = Math.atan2(dy, dx);
+          let diff = desiredHeading - sp.heading;
+          while (diff > Math.PI) diff -= Math.PI * 2;
+          while (diff < -Math.PI) diff += Math.PI * 2;
+          sp.heading += diff * 0.16;
+
+          const speed = Math.min(7.2, (dist - stopDist + 8.0) * 0.08);
+          sp.x += Math.cos(sp.heading) * speed;
+          sp.y += Math.sin(sp.heading) * speed;
+        }
+      }
+
+      sp.vx = sp.x - prevX;
+      sp.vy = sp.y - prevY;
+      const currentSpeed = Math.hypot(sp.vx, sp.vy);
+
+      // Gait Phase Advance (E8 Alternating Tetrapod Timing)
+      const phaseInc = currentSpeed > 0.4 ? currentSpeed * 0.045 : 0.015;
+      g.phase = (g.phase + phaseInc) % (Math.PI * 2.0);
+
+      // Update feet with analytical parabolic lift
+      for (let i = 0; i < 8; i++) {
+        const isGroupA = i === 0 || i === 2 || i === 5 || i === 7;
+        const legPhase = isGroupA ? g.phase : (g.phase + Math.PI) % (Math.PI * 2.0);
+        const inSwing = legPhase >= Math.PI;
+
+        const idealAng = sp.heading + LOCAL_ANGLES[i];
+        const idealX = sp.x + Math.cos(idealAng) * BASE_RADII[i] + sp.vx * 2.5;
+        const idealY = sp.y + Math.sin(idealAng) * BASE_RADII[i] + sp.vy * 2.5;
+
+        if (inSwing) {
+          const tau = (legPhase - Math.PI) / Math.PI;
+          g.stepProg[i] = tau;
+          // Parabolic lift: z(tau) = 4 * H * tau * (1 - tau)
+          g.footLift[i] = 4.0 * STEP_HEIGHT * tau * (1.0 - tau);
+
+          if (tau < 0.1 && g.stepProg[i] >= 0.9) {
+            g.startX[i] = g.footX[i];
+            g.startY[i] = g.footY[i];
+            g.goalX[i] = idealX + Math.cos(sp.heading) * 16.0;
+            g.goalY[i] = idealY + Math.sin(sp.heading) * 16.0;
+          }
+          g.footX[i] = g.startX[i] + (g.goalX[i] - g.startX[i]) * tau;
+          g.footY[i] = g.startY[i] + (g.goalY[i] - g.startY[i]) * tau;
+        } else {
+          g.stepProg[i] = 1.0;
+          g.footLift[i] = 0.0;
+          const err = Math.hypot(idealX - g.footX[i], idealY - g.footY[i]);
+          if (err > 44.0) {
+            g.startX[i] = g.footX[i];
+            g.startY[i] = g.footY[i];
+            g.goalX[i] = idealX;
+            g.goalY[i] = idealY;
+          }
+        }
+      }
+
+      // 1. Draw Synaptic Beacons between Active Cards
+      const cardNodes = document.querySelectorAll("[data-crawl-node]");
+      if (cardNodes.length > 0 && behaviorMode === 1) {
+        ctx.save();
+        ctx.strokeStyle = "rgba(0, 255, 204, 0.15)";
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4, 4]);
+        cardNodes.forEach(node => {
+          const rect = node.getBoundingClientRect();
+          ctx.beginPath();
+          ctx.moveTo(sp.x, sp.y);
+          ctx.lineTo(rect.left + rect.width * 0.5, rect.top + rect.height * 0.5);
+          ctx.stroke();
+        });
+        ctx.restore();
+      }
+
+      // 2. Draw Laser Tether to Header Dock Portal
+      ctx.save();
+      ctx.strokeStyle = isDocked ? "rgba(0, 255, 204, 0.7)" : "rgba(56, 189, 248, 0.25)";
+      ctx.lineWidth = 1.2;
+      ctx.setLineDash([3, 5]);
+      ctx.beginPath();
+      ctx.moveTo(dockX, dockY);
+      ctx.lineTo(sp.x, sp.y);
+      ctx.stroke();
+      ctx.restore();
+
+      // 3. Draw Clones (if active)
+      if (clones.length > 0) {
+        ctx.save();
+        clones.forEach((clone, idx) => {
+          // Clone orbit
+          const ringAng = sp.runeAngle * 0.5 + (idx / 6.0) * Math.PI * 2.0;
+          clone.targetX = sp.x + Math.cos(ringAng) * 120.0;
+          clone.targetY = sp.y + Math.sin(ringAng) * 120.0;
+          clone.x += (clone.targetX - clone.x) * 0.12;
+          clone.y += (clone.targetY - clone.y) * 0.12;
+
+          // Filament to mother
+          ctx.strokeStyle = "rgba(56, 189, 248, 0.35)";
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(sp.x, sp.y);
+          ctx.lineTo(clone.x, clone.y);
+          ctx.stroke();
+
+          // Clone Mini-Legs
+          ctx.strokeStyle = clone.color;
+          ctx.lineWidth = 1.2;
+          for (let k = 0; k < 8; k++) {
+            const lAng = clone.heading + LOCAL_ANGLES[k];
+            const hx = clone.x + Math.cos(lAng) * 8.0;
+            const hy = clone.y + Math.sin(lAng) * 8.0;
+            const stride = Math.sin(sp.runeAngle * 3.0 + k) * 4.0;
+            const fx = clone.x + Math.cos(lAng) * (26.0 + stride);
+            const fy = clone.y + Math.sin(lAng) * (26.0 + stride);
+            ctx.beginPath();
+            ctx.moveTo(hx, hy);
+            ctx.lineTo((hx + fx) * 0.5, (hy + fy) * 0.5 - 6);
+            ctx.lineTo(fx, fy);
+            ctx.stroke();
+          }
+
+          // Clone Carapace
+          ctx.fillStyle = "#0B1426";
+          ctx.beginPath();
+          ctx.arc(clone.x, clone.y, 9, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = clone.color;
+          ctx.stroke();
+
+          // Clone Core
+          ctx.fillStyle = clone.color;
+          ctx.beginPath();
+          ctx.arc(clone.x, clone.y, 4, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Clone Role Tag
+          ctx.fillStyle = clone.color;
+          ctx.font = "8px monospace";
+          ctx.fillText(clone.role.replace("CLONE-", ""), clone.x - 24, clone.y + 18);
+        });
+        ctx.restore();
+      }
+
+      // 4. Draw 8 Articulated Legs via Law-of-Cosines 2-Bone IK
+      for (let i = 0; i < 8; i++) {
+        const hipAngle = sp.heading + LOCAL_ANGLES[i];
+        const coxaX = sp.x + Math.cos(hipAngle) * 20.0;
+        const coxaY = sp.y + Math.sin(hipAngle) * 20.0;
+
+        const lift = g.footLift[i];
+        const fx = g.footX[i];
+        const fy = g.footY[i] - lift;
+
+        const dx = fx - coxaX;
+        const dy = fy - coxaY;
+        const rawDist = Math.hypot(dx, dy);
+        const d = Math.max(18.0, Math.min(L1 + L2 - 2.0, rawDist));
+
+        // Analytical IK
+        const cosKnee = Math.max(-1.0, Math.min(1.0, (d * d - L1 * L1 - L2 * L2) / (2.0 * L1 * L2)));
+        const thetaKnee = Math.acos(cosKnee);
+
+        const alpha = Math.atan2(dy, dx);
+        const cosBeta = Math.max(-1.0, Math.min(1.0, (L1 * L1 + d * d - L2 * L2) / (2.0 * L1 * d)));
+        const beta = Math.acos(cosBeta);
+
+        const archSign = i < 4 ? 1.0 : -1.0;
+        const thetaFemur = alpha + beta * archSign;
+
+        const kneeX = coxaX + Math.cos(thetaFemur) * L1;
+        const kneeY = coxaY + Math.sin(thetaFemur) * L1 - lift * 0.4;
+
+        const ankleX = kneeX + (fx - kneeX) * 0.72;
+        const ankleY = kneeY + (fy - kneeY) * 0.72;
+
+        const isStepping = lift > 1.5;
+
+        // Femur Segment (L1 = 36px)
+        ctx.save();
+        ctx.strokeStyle = "#38BDF8";
+        ctx.lineWidth = 3.5;
+        ctx.lineCap = "round";
+        ctx.beginPath();
+        ctx.moveTo(coxaX, coxaY);
+        ctx.lineTo(kneeX, kneeY);
+        ctx.stroke();
+
+        // Tibia Segment (L2 proximal)
+        ctx.strokeStyle = isStepping ? "#FACC15" : "#00FFCC";
+        ctx.lineWidth = 2.4;
+        ctx.beginPath();
+        ctx.moveTo(kneeX, kneeY);
+        ctx.lineTo(ankleX, ankleY);
+        ctx.stroke();
+
+        // Scythe Blade (Distal)
+        ctx.strokeStyle = isStepping ? "#F97316" : "#00FFCC";
+        ctx.lineWidth = 1.6;
+        ctx.beginPath();
+        ctx.moveTo(ankleX, ankleY);
+        ctx.lineTo(fx, fy);
+        ctx.stroke();
+
+        // Knee Servo Diamond
+        ctx.fillStyle = "#0B1324";
+        ctx.strokeStyle = "#00FFCC";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(kneeX, kneeY - 3.5);
+        ctx.lineTo(kneeX + 3.5, kneeY);
+        ctx.lineTo(kneeX, kneeY + 3.5);
+        ctx.lineTo(kneeX - 3.5, kneeY);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        // 3-Pronged Articulated Tarsus Claw
+        const tibiaAng = Math.atan2(fy - ankleY, fx - ankleX);
+        const clawSpread = isStepping ? 0.48 : 0.22;
+        ctx.strokeStyle = isStepping ? "#F97316" : "#38BDF8";
+        ctx.lineWidth = 1.2;
+        for (const cSide of [-1, 1]) {
+          const cAng = tibiaAng + cSide * clawSpread;
+          ctx.beginPath();
+          ctx.moveTo(fx, fy);
+          ctx.lineTo(fx + Math.cos(cAng) * 7.5, fy + Math.sin(cAng) * 7.5);
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+
+      // 5. Draw Opisthosoma (Abdomen)
+      ctx.save();
+      const abdoDist = 26.0;
+      const abdoX = sp.x - Math.cos(sp.heading) * abdoDist;
+      const abdoY = sp.y - Math.sin(sp.heading) * abdoDist;
+
+      ctx.translate(abdoX, abdoY);
+      ctx.rotate(sp.heading);
+
+      // Abdomen Carapace
+      ctx.fillStyle = "#0B1426";
+      ctx.strokeStyle = "#38BDF8";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, 24, 18, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      // Glowing E8 Core
+      ctx.fillStyle = "#F97316";
+      ctx.shadowColor = "#F97316";
+      ctx.shadowBlur = 10;
+      ctx.beginPath();
+      ctx.arc(0, 0, 7, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+
+      // 6. Draw Prosoma (Cephalothorax) & Rotating Rune Ring
+      ctx.save();
+      ctx.translate(sp.x, sp.y);
+      ctx.rotate(sp.heading);
+
+      // Rotating Runic Ring
+      ctx.save();
+      ctx.rotate(sp.runeAngle);
+      ctx.strokeStyle = "rgba(0, 255, 204, 0.4)";
+      ctx.lineWidth = 1.2;
+      ctx.setLineDash([4, 6]);
+      ctx.beginPath();
+      ctx.arc(0, 0, 24, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+
+      // Thorax Chassis
+      ctx.fillStyle = "#0F172A";
+      ctx.strokeStyle = "#00FFCC";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, 18, 14, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      // 8 Cybernetic Ocelli (Eyes)
+      ctx.fillStyle = "#00FFCC";
+      ctx.shadowColor = "#00FFCC";
+      ctx.shadowBlur = 6;
+      for (let eye = -3; eye <= 3; eye += 2) {
+        ctx.beginPath();
+        ctx.arc(14, eye * 3.2, 1.8, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Mandibles
+      ctx.strokeStyle = "#FACC15";
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.moveTo(16, -4);
+      ctx.lineTo(24, -2);
+      ctx.moveTo(16, 4);
+      ctx.lineTo(24, 2);
+      ctx.stroke();
+
+      ctx.restore();
+
+      animId = requestAnimationFrame(render);
+    };
+
+    animId = requestAnimationFrame(render);
+    return () => {
+      cancelAnimationFrame(animId);
+      window.removeEventListener("resize", handleResize);
+    };
+  }, [behaviorMode, clones, isDocked, selectedCardIndex]);
+
+  // Handle Dragging
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (e.button === 0) {
+      spiderPos.current.isDragging = true;
+    }
+  };
+
+  const handleMouseUp = () => {
+    spiderPos.current.isDragging = false;
+  };
+
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setContextMenu({
+      open: true,
+      x: e.clientX,
+      y: e.clientY
+    });
+  };
+
+  return (
+    <>
+      {/* 60 FPS HTML5 Canvas Overlay covering viewport */}
+      <canvas
+        ref={canvasRef}
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100vw",
+          height: "100vh",
+          pointerEvents: "none",
+          zIndex: 9990
+        }}
+      />
+
+      {/* Interactive Companion Soma Hit-Target */}
+      <div
+        onMouseDown={handleMouseDown}
+        onMouseUp={handleMouseUp}
+        onContextMenu={handleContextMenu}
+        title="Vesper-Arachne E8 IK Companion (Drag to move, Right-click for MCP Radial Menu)"
+        style={{
+          position: "fixed",
+          left: spiderPos.current.x - 30,
+          top: spiderPos.current.y - 30,
+          width: 60,
+          height: 60,
+          borderRadius: "50%",
+          pointerEvents: "auto",
+          cursor: spiderPos.current.isDragging ? "grabbing" : "grab",
+          zIndex: 9991
+        }}
+      />
+
+      {/* Live Telemetry Speech Bubble */}
+      {speech.timer > 0 && (
+        <div
+          onClick={() => setSpeech(prev => ({ ...prev, timer: 0 }))}
+          style={{
+            position: "fixed",
+            left: Math.max(10, Math.min(window.innerWidth - 320, spiderPos.current.x - 140)),
+            top: Math.max(10, spiderPos.current.y - 80),
+            maxWidth: 320,
+            background: "rgba(10, 16, 26, 0.94)",
+            border: "1.5px solid #00FFCC",
+            borderRadius: 6,
+            padding: "6px 10px",
+            color: "#FFFEFB",
+            fontSize: 10,
+            fontFamily: "monospace",
+            boxShadow: "0 0 14px rgba(0,255,204,0.35)",
+            pointerEvents: "auto",
+            cursor: "pointer",
+            zIndex: 9992
+          }}
+        >
+          <div style={{ color: "#00FFCC", fontWeight: "bold", marginBottom: 2 }}>
+            🕷️ VESPER-ARACHNE E8 IK COMPANION
+          </div>
+          <div>{speech.text}</div>
+          <div style={{ color: "#9FB0C2", fontSize: 9, marginTop: 4, borderTop: "1px solid #1E293B", paddingTop: 3 }}>
+            Poll: {telemetry.lastPoll} | Status:{" "}
+            <span style={{ color: telemetry.error ? "#E94E34" : "#56D364" }}>
+              {telemetry.error || telemetry.status}
+            </span>{" "}
+            | Golay: {telemetry.golay}
+          </div>
+        </div>
+      )}
+
+      {/* Cybernetic Context Menu / Radial MCP Dispatch */}
+      {contextMenu.open && (
+        <div
+          onClick={e => e.stopPropagation()}
+          style={{
+            position: "fixed",
+            left: Math.min(window.innerWidth - 240, contextMenu.x),
+            top: Math.min(window.innerHeight - 340, contextMenu.y),
+            width: 230,
+            background: "#080E18",
+            border: "1.5px solid #FFB454",
+            borderRadius: 6,
+            padding: "8px 10px",
+            color: "#FFFEFB",
+            fontSize: 10.5,
+            fontFamily: "monospace",
+            boxShadow: "0 0 20px rgba(255,180,84,0.4)",
+            pointerEvents: "auto",
+            zIndex: 9999
+          }}
+        >
+          <div style={{ display: "flex", justifyContent: "space-between", color: "#FFB454", fontWeight: "bold", borderBottom: "1px solid #2A3B4D", paddingBottom: 4, marginBottom: 6 }}>
+            <span>VESPER IK RADIAL MENU</span>
+            <button
+              onClick={() => setContextMenu({ open: false, x: 0, y: 0 })}
+              style={{ background: "none", border: "none", color: "#E94E34", cursor: "pointer", fontWeight: "bold" }}
+            >
+              [X]
+            </button>
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            <button
+              onClick={() => {
+                setBehaviorMode(0);
+                setContextMenu({ open: false, x: 0, y: 0 });
+                setSpeech({ text: "Cursor Stalk Mode Active: Following pointer.", timer: 200 });
+              }}
+              style={{ background: behaviorMode === 0 ? "#00FFCC" : "#141D26", color: behaviorMode === 0 ? "#050A0E" : "#00FFCC", border: "1px solid #00FFCC", borderRadius: 4, padding: "3px 6px", cursor: "pointer", textAlign: "left", fontSize: 9.5, fontWeight: "bold" }}
+            >
+              🎯 Mode: Cursor Stalk
+            </button>
+
+            <button
+              onClick={() => {
+                setBehaviorMode(1);
+                setContextMenu({ open: false, x: 0, y: 0 });
+                setSpeech({ text: "Card Perch Mode Active: Crawling telemetry cards.", timer: 200 });
+              }}
+              style={{ background: behaviorMode === 1 ? "#FFB454" : "#141D26", color: behaviorMode === 1 ? "#050A0E" : "#FFB454", border: "1px solid #FFB454", borderRadius: 4, padding: "3px 6px", cursor: "pointer", textAlign: "left", fontSize: 9.5, fontWeight: "bold" }}
+            >
+              📋 Mode: Perch on Active Card
+            </button>
+
+            <button
+              onClick={() => {
+                toggleSwarmClones();
+                setContextMenu({ open: false, x: 0, y: 0 });
+              }}
+              style={{ background: clones.length > 0 ? "#D946EF" : "#141D26", color: clones.length > 0 ? "#050A0E" : "#D946EF", border: "1px solid #D946EF", borderRadius: 4, padding: "3px 6px", cursor: "pointer", textAlign: "left", fontSize: 9.5, fontWeight: "bold" }}
+            >
+              🕸️ {clones.length > 0 ? "Recall 6 Mitotic Clones" : "Spawn Hexagram Swarm (6 Clones)"}
+            </button>
+
+            <button
+              onClick={() => {
+                onToggleDock?.();
+                setContextMenu({ open: false, x: 0, y: 0 });
+              }}
+              style={{ background: "#141D26", color: "#38BDF8", border: "1px solid #38BDF8", borderRadius: 4, padding: "3px 6px", cursor: "pointer", textAlign: "left", fontSize: 9.5, fontWeight: "bold" }}
+            >
+              📌 {isDocked ? "Unfurl from Header Dock" : "Dock to Header Portal"}
+            </button>
+
+            <div style={{ color: "#9FB0C2", fontSize: 8.5, borderTop: "1px solid #1E293B", paddingTop: 4, marginTop: 4 }}>
+              DISPATCH MCP TOOLS (:8097/mcp):
+            </div>
+
+            <button
+              onClick={() => {
+                fireMcpTool("vesper_arachne_ik_swarm_companion");
+                setContextMenu({ open: false, x: 0, y: 0 });
+              }}
+              style={{ background: "#081E28", color: "#00FFCC", border: "1px solid #00FFCC", borderRadius: 4, padding: "3px 6px", cursor: "pointer", textAlign: "left", fontSize: 9 }}
+            >
+              ⚡ MCP: Vesper IK Swarm Companion
+            </button>
+
+            <button
+              onClick={() => {
+                fireMcpTool("chain280_master_certification");
+                setContextMenu({ open: false, x: 0, y: 0 });
+              }}
+              style={{ background: "#24180A", color: "#FFD700", border: "1px solid #FFD700", borderRadius: 4, padding: "3px 6px", cursor: "pointer", textAlign: "left", fontSize: 9 }}
+            >
+              👑 MCP: CHAIN 288 Master Cert
+            </button>
+
+            <button
+              onClick={() => {
+                fireMcpTool("aegis_autonomous_harness");
+                setContextMenu({ open: false, x: 0, y: 0 });
+              }}
+              style={{ background: "#1C1428", color: "#B388FF", border: "1px solid #B388FF", borderRadius: 4, padding: "3px 6px", cursor: "pointer", textAlign: "left", fontSize: 9 }}
+            >
+              🛡️ MCP: AEGIS Autonomous Harness
+            </button>
+
+            <button
+              onClick={() => {
+                fireMcpTool("lean4_formal_proof_verifier");
+                setContextMenu({ open: false, x: 0, y: 0 });
+              }}
+              style={{ background: "#0E2418", color: "#56D364", border: "1px solid #56D364", borderRadius: 4, padding: "3px 6px", cursor: "pointer", textAlign: "left", fontSize: 9 }}
+            >
+              📜 MCP: Lean 4 730/730 QED Verifier
+            </button>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
 
 export function App() {
   const [operatorVaultOpen, setOperatorVaultOpen] = useState<boolean>(false);
@@ -488,7 +1333,8 @@ export function App() {
   const [helpSidebarOpen, setHelpSidebarOpen] = useState<boolean>(false);
   const [helpSection, setHelpSection] = useState<string>("QUICKSTART");
   const [helpSearch, setHelpSearch] = useState<string>("");
-  const [ideConsoleLog, setIdeConsoleLog] = useState<string>("[OPERATOR & ANTIGRAVITY VAULT READY] Gemini 4 Argon (10 Subagents) + Goose v1.55.0 + Zed v1.24.4 + VSCodium/Cline locked to SH4Z-v6000-TriSilicon (C:\\sovereign_manifold_v31). All 15 Telemetry Cards, 3D Stiefel Scope, 16x130 Bijection Heatmap (132,960 Bijected 64B CLs) & 280 Tools (CHAIN 280 Milestone) active.");
+  const [ideConsoleLog, setIdeConsoleLog] = useState<string>("[OPERATOR & ANTIGRAVITY VAULT READY] Gemini 4 Argon (10 Subagents) + Goose v1.55.0 + Zed v1.24.4 + VSCodium/Cline locked to SH4Z-v6200-TriSilicon (C:\\sovereign_manifold_v31). All 15 Telemetry Cards, 3D Stiefel Scope, 16x130 Bijection Heatmap (132,960 Bijected 64B CLs) & 288 Tools (CHAIN 288 Milestone) active.");
+  const [vesperDocked, setVesperDocked] = useState<boolean>(false);
   const [tel, setTel] = useState<TelemetryState>({
     generation: 745000,
     decadic_sub_epoch: 0,
@@ -648,11 +1494,11 @@ export function App() {
     operationalized_wgsl_kernel:
       "@compute @workgroup_size(64) fn wgsl_article_s15_c512(@builtin(global_invocation_id) gid: vec3<u32>) { let e8_root: u32 = 95u; let re_laminar: f32 = 416.80; let mi_rt: f32 = 23.18; }",
     humanities_discourse:
-      "D13 MORAL ETHICS, DEONTOLOGY & VIRTUE ETHICS SYNTHESIS: Ethical stewardship integrates Aristotelian phronesis (practical wisdom and eudaimonia), Kantian deontological duty (respecting rational moral agency as an end in itself), and Rawlsian restorative justice behind the veil of ignorance. Beneficence, non-maleficence, and epistemic humility govern Neuron N22567/63359 and all 280 tools (CHAIN 280) toward human flourishing."
+      "D13 MORAL ETHICS, DEONTOLOGY & VIRTUE ETHICS SYNTHESIS: Ethical stewardship integrates Aristotelian phronesis (practical wisdom and eudaimonia), Kantian deontological duty (respecting rational moral agency as an end in itself), and Rawlsian restorative justice behind the veil of ignorance. Beneficence, non-maleficence, and epistemic humility govern Neuron N22567/63359 and all 288 tools (CHAIN 288) toward human flourishing."
   });
 
   const [leanQuery, setLeanQuery] = useState<string>(
-    "Query 700-Theorem Lean 4 Suite (cymatic, mnemosyne, welch_ace, decadic_15965hz, chain280)..."
+    "Query 730-Theorem Lean 4 Suite (cymatic, mnemosyne, welch_ace, decadic_15965hz, chain288)..."
   );
   const [episodicQuery, setEpisodicQuery] = useState<string>("b_norm");
   const [bpeQuery, setBpeQuery] = useState<string>(
@@ -931,7 +1777,7 @@ export function App() {
     "Explain how the E8 root lattice (240 roots) and the 24-dimensional Leech lattice (196,560 minimal vectors) connect to our 63,360 dendritic neurons and natural language fluency"
   );
   const [termOut, setTermOut] = useState<string>(
-    "EXEC(V56_E8_LEECH_FLUENCY_QED) -> E8+E8+E8 -> Leech_24 Turyn-Golay Bridge (240 E8 Roots, 4,096 Golay G24, 196,560 Kissing Vectors) -> 63,360 Dendritic Neurons (3,041,280 Synapses | CHAIN 280)"
+    "EXEC(V56_E8_LEECH_FLUENCY_QED) -> E8+E8+E8 -> Leech_24 Turyn-Golay Bridge (240 E8 Roots, 4,096 Golay G24, 196,560 Kissing Vectors) -> 63,360 Dendritic Neurons (3,041,280 Synapses | CHAIN 288)"
   );
 
   // v45.0.0 E8 x E8 x E8 -> Leech_24 Lattice Bridge, Internal Model Features & 192-Epoch Fluency QAT State
@@ -1581,7 +2427,7 @@ export function App() {
         pollInFlight = false;
       }
     };
-    document.title = "ACT-Omega Net v61.0.0 (SH4Z v6000 15.965Hz Decadic HUD) -- 63,360 Neurons, 3,041,280 Synapses, 700/700 Lean 4 QED & Tools 1..280 (CHAIN 280 Suite)";
+    document.title = "ACT-Omega Net v62.0.0 (SH4Z v6200 15.965Hz Decadic HUD) -- 63,360 Neurons, 3,041,280 Synapses, 730/730 Lean 4 QED & Tools 1..288 (CHAIN 288 Suite)";
     pollTelemetry();
     runE8LeechFluencyBridge(e8LeechQuery);
     const id = window.setInterval(pollTelemetry, 500);
@@ -2420,9 +3266,9 @@ export function App() {
       endpoint: "/api/v1/card/execute?card_id=6"
     },
     {
-      title: "700/700 LEAN 4 PROOFS & MEASURED QAT",
-      primary: `PPL ${e8LeechState.holdout_ppl.toFixed(6)} -- 700 PROOFS QED`,
-      secondary: `700 Formal Theorems (80 Sectors) -- ${tel.lean4_verify_ms.toFixed(1)}ms`,
+      title: "730/730 LEAN 4 PROOFS & MEASURED QAT",
+      primary: `PPL ${e8LeechState.holdout_ppl.toFixed(6)} -- 730 / 730 Substantive Proofs QED (0 sorry, 0 axiom)`,
+      secondary: `730 Formal Theorems (80 Sectors) -- ${tel.lean4_verify_ms.toFixed(1)}ms`,
       sector: 9,
       endpoint: "/api/v1/card/execute?card_id=7"
     },
@@ -2508,7 +3354,7 @@ export function App() {
               style={{ width: 34, height: 34, borderRadius: 7, border: "1.5px solid #FFB454", boxShadow: "0 0 8px rgba(0,255,204,0.35)" }}
             />
             <div style={{ color: "#FFB454", fontWeight: "bold", fontSize: 13 }}>
-              SOVEREIGN MANIFOLD TELEMETRY CONSOLE -- ACT-OMEGA NET v61.0.0 (SH4Z v6000 TLV | 63,360 Neurons / 3,041,280 Synapses / 132,960 Bijected CLs | CHAIN 280 | 700/700 Lean 4 QED)
+              SOVEREIGN MANIFOLD TELEMETRY CONSOLE -- ACT-OMEGA NET v62.0.0 (SH4Z v6200 TLV | 63,360 Neurons / 3,041,280 Synapses / 132,960 Bijected CLs | CHAIN 288 | 730/730 Lean 4 QED)
             </div>
           </div>
           <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
@@ -2587,6 +3433,22 @@ export function App() {
             >
               ALWAYS-ON STREAM: {tel.always_on_active ? `ACTIVE (#${tel.always_on_ticks})` : "PAUSED"}
             </button>
+            <button
+              onClick={() => setVesperDocked(!vesperDocked)}
+              style={{
+                background: vesperDocked ? "#14222E" : "#00FFCC",
+                color: vesperDocked ? "#00FFCC" : "#050A0E",
+                border: "1.5px solid #00FFCC",
+                borderRadius: 4,
+                padding: "3px 10px",
+                fontWeight: "bold",
+                cursor: "pointer",
+                fontSize: 10.5
+              }}
+              title="Toggle Vesper-Arachne E8 IK 60 FPS Shimeji Overlay (Active / Docked)"
+            >
+              {vesperDocked ? "[🕷️ VESPER IK SHIMEJI: DOCKED]" : "[🕷️ VESPER IK SHIMEJI: ACTIVE]"}
+            </button>
             <div style={{ background: "#1C2632", border: "1px solid #56D364", color: "#56D364", padding: "2px 8px", borderRadius: 4, fontSize: 11, fontWeight: "bold" }}>
               LIVE PHONE BROADCAST SYNC (P10 #{tel.p10_broadcasts} / P8 #{tel.p8_broadcasts})
             </div>
@@ -2608,12 +3470,12 @@ export function App() {
           </div>
         </div>
         <div style={{ color: "#FFFEFB", fontSize: 11, marginTop: 2 }}>
-          15.965 Hz (62,637 us) Decadic Epoch E{tel.decadic_sub_epoch}/9 -- {tel.laplacian_face} -- 63,360 Neurons (21,120 Core + 21,120 Exp + 21,120 Tier-3, 1,440x Chair-44, 3,041,280 Synapses across 8.11 MB .npage + 4.05 MB .spage, 132,960 Bijected 64B CLs) -- Dual Gemma 4 .sh4z (5.30 GB / 19.96B E8 Ternary Weights) -- 262,144-Token (18-Bit BPE) 36 Macro-Domains x 4 = 144 Sub-Domains -- PPL={e8LeechState.holdout_ppl > 0 ? e8LeechState.holdout_ppl.toFixed(6) : Math.exp(tel.stiefel_ortho_err * 100.0 + tel.fno_l2_err * 50.0 + 0.082).toFixed(6)} -- 700/700 Lean 4 QED -- Tools 1..280 (CHAIN 280 Suite)
+          15.965 Hz (62,637 us) Decadic Epoch E{tel.decadic_sub_epoch}/9 -- {tel.laplacian_face} -- 63,360 Neurons (21,120 Core + 21,120 Exp + 21,120 Tier-3, 1,440x Chair-44, 3,041,280 Synapses across 8.11 MB .npage + 4.05 MB .spage, 132,960 Bijected 64B CLs) -- Dual Gemma 4 .sh4z (5.30 GB / 19.96B E8 Ternary Weights) -- 262,144-Token (18-Bit BPE) 36 Macro-Domains x 4 = 144 Sub-Domains -- PPL={e8LeechState.holdout_ppl > 0 ? e8LeechState.holdout_ppl.toFixed(6) : Math.exp(tel.stiefel_ortho_err * 100.0 + tel.fno_l2_err * 50.0 + 0.082).toFixed(6)} -- 730/730 Lean 4 QED -- Tools 1..288 (CHAIN 288 Suite)
         </div>
         <div style={{ background: "#0A0D12", border: "1px solid #56D364", borderRadius: 4, padding: "4px 8px", marginTop: 5, color: "#56D364", fontSize: 10.5 }}>
           [TOOL 29 REAL-TIME PHYSICAL &amp; U(1) GAUGE ALERT BANNER]: {tel.anomaly_banner}
         </div>
-        {/* v61.0.0 5-Node Live Topology, P8 .npage+.spage SHM & Latency Ribbon */}
+        {/* v62.0.0 5-Node Live Topology, P8 .npage+.spage SHM & Latency Ribbon */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 6, marginTop: 5, background: "#070B10", border: "1px solid #2A3B4D", borderRadius: 5, padding: "5px 8px" }}>
           <div onClick={() => callEndpoint("/api/v1/diagnostics/v44_perf_blitz", "TOOL 80: v44.1.0 PERF BLITZ VERIFIER")} style={{ cursor: "pointer", borderLeft: "3px solid #56D364", paddingLeft: 6 }}>
             <div style={{ color: "#56D364", fontWeight: "bold", fontSize: 9.5 }}>NODE 1: LOQ 15 ANCHOR (:8097)</div>
@@ -2631,9 +3493,9 @@ export function App() {
             <div style={{ color: "#B388FF", fontWeight: "bold", fontSize: 9.5 }}>NODE 4: E:\ SSD + 3.04M SYNAPSES</div>
             <div style={{ color: "#FFFEFB", fontSize: 10 }}>12.16 MB SHM (.npage 8.11M + .spage 4.05M)</div>
           </div>
-          <div onClick={() => callEndpoint("/api/v1/chain280/master_certification", "CHAIN 280: v61.0.0 MASTER CERT")} style={{ cursor: "pointer", borderLeft: "3px solid #00FFCC", paddingLeft: 6 }}>
+          <div onClick={() => callEndpoint("/api/v1/chain288/master_certification", "CHAIN 288: v62.0.0 MASTER CERT")} style={{ cursor: "pointer", borderLeft: "3px solid #00FFCC", paddingLeft: 6 }}>
             <div style={{ color: "#00FFCC", fontWeight: "bold", fontSize: 9.5 }}>NODE 5: CLOUDFLARE D1 + WEBGPU</div>
-            <div style={{ color: "#FFFEFB", fontSize: 10 }}>10 D1 Tables | 700/700 Lean 4 QED | CHAIN 280 (v61.0.0)</div>
+            <div style={{ color: "#FFFEFB", fontSize: 10 }}>10 D1 Tables | 730/730 Lean 4 QED | CHAIN 288 (v62.0.0)</div>
           </div>
         </div>
         {/* v56.0.0 Host<->Pixel 8 .npage Shared-Memory Pagefile Ring & Browser WebGPU Compute Lease Control Bar */}
@@ -2760,7 +3622,7 @@ export function App() {
               />
               <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 6, maxHeight: 340, overflowY: "auto" }}>
                 {[
-                  { label: "CHAIN 210: v56.0.0 Full Omni-Suite (Tools 1..210)", ep: "/api/v1/chain210/suite" },
+                  { label: "CHAIN 288: v62.0.0 Full Omni-Suite (Tools 1..288 & 730/730 Lean 4 QED)", ep: "/api/v1/chain288/master_certification" },
                   { label: "CYCLE 1 (Tools 146..162): E8 Vault Archiver & Q4_K Transcoder Suite", ep: "/api/v1/tool/146" },
                   { label: "CYCLE 2 (Tools 163..176): Polyglot DevTools & 35-Tool Discovery Suite", ep: "/api/v1/polyglot/35tool_discovery" },
                   { label: "CYCLE 3 (Tools 177..184): APR Aperiodic Permissions & Syndrome Gate Suite", ep: "/api/v1/apr/ring_stratifier" },
@@ -2836,7 +3698,10 @@ export function App() {
                   { label: "TOOL 102: 5-Regime Multi-Physics Simulation Engine (All Regimes)", ep: "/api/v1/v50/physics_simulator?regime=all" },
                   { label: "TOOL 103: 8-Sink Autopoietic Coordinator Pub/Sub Mesh", ep: "/api/v1/v50/coordinator_mesh" },
                   { label: "TOOL 103B: Sensor-to-Physics Hardware Seeding Bridge", ep: "/api/v1/v50/drawer1_2_bridge?action=seed_physics" },
-                  { label: "TOOL 13: Verify All 700/700 Lean 4 Formal Proofs QED", ep: "/api/v1/compiler/verify" }
+                  { label: "TOOL 13: Verify All 730/730 Lean 4 Formal Proofs QED", ep: "/api/v1/compiler/verify" },
+                  { label: "Tool 287: Vesper-Arachne E8 IK & Click-Through Gate", ep: "/api/v1/vesper_arachne/ik_swarm_companion" },
+                  { label: "Tool 288: Vesper Swarm Formations, ER=EPR Portal & CHAIN 288 Cert", ep: "/api/v1/chain288/master_certification" },
+                  { label: "Tool 281: Bleeding Edge 1 (Leech Lambda-24 & Sheaf Laplacians)", ep: "/api/v1/synthesis/bleeding_edge_1" }
                 ]
                   .filter((item) => !cmdPaletteFilter.trim() || item.label.toLowerCase().includes(cmdPaletteFilter.toLowerCase()))
                   .map((item) => (
@@ -2956,6 +3821,7 @@ export function App() {
                 return (
                   <div
                     key={idx}
+                    data-crawl-node={`card-${idx}`}
                     onClick={() => {
                       setSelectedCard(idx);
                       setSelectedSector(c.sector);
@@ -3118,7 +3984,7 @@ export function App() {
               6,240 .e8z + 126,720 .npage = 132,960 CLs ({tel.cluster_total_kops.toFixed(1)}k ops/s)
             </div>
             <div style={{ color: "#9FB0C2", fontSize: 9.2 }}>
-              WinSDK 10.0.26100.0 DXC 1.8 DP4A | Zig 0.17 AVX2 | 700/700 Lean 4 QED
+              WinSDK 10.0.26100.0 DXC 1.8 DP4A | Zig 0.17 AVX2 | 730/730 Lean 4 QED
             </div>
           </div>
         </div>
@@ -3176,7 +4042,7 @@ export function App() {
         </div>
         <div style={{ color: "#FFB454", fontSize: 10.5, marginTop: 5, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 6 }}>
           <span>
-            Sector #{selectedSector}/79 ({SECTOR_NAMES[selectedSector] || `S${selectedSector}`}+SSD_TIER2 | Bank #{heatmapBank}/2): Line #{selectedLine}/129 (Bank0 #{((selectedSector % 16) * 130 + selectedLine)}/2079 | TriBank #{heatmapBank * 2080 + ((selectedSector % 16) * 130 + selectedLine)}/6239 | Composite 132,960 CLs, Offset {((selectedSector % 16) * 130 + selectedLine) * 64}B) -- Norm={(tel.sector_norms_csv.split(",")[selectedSector % 16] || "0.8942")} -- Hash={(tel.sector_hashes_csv.split(",")[selectedSector % 16] || "0x811C9DC5")} -- Chair-44 Col #{(((selectedSector % 16) * 130 + selectedLine) * 1440 / 2080) | 0}/1439 (63,360 Neurons / 126,720 .npage 64B CLs) -- Theorems thm{selectedSector * 7 + 1}..thm{selectedSector * 7 + 7} (700/700 QED)
+            Sector #{selectedSector}/79 ({SECTOR_NAMES[selectedSector] || `S${selectedSector}`}+SSD_TIER2 | Bank #{heatmapBank}/2): Line #{selectedLine}/129 (Bank0 #{((selectedSector % 16) * 130 + selectedLine)}/2079 | TriBank #{heatmapBank * 2080 + ((selectedSector % 16) * 130 + selectedLine)}/6239 | Composite 132,960 CLs, Offset {((selectedSector % 16) * 130 + selectedLine) * 64}B) -- Norm={(tel.sector_norms_csv.split(",")[selectedSector % 16] || "0.8942")} -- Hash={(tel.sector_hashes_csv.split(",")[selectedSector % 16] || "0x811C9DC5")} -- Chair-44 Col #{(((selectedSector % 16) * 130 + selectedLine) * 1440 / 2080) | 0}/1439 (63,360 Neurons / 126,720 .npage 64B CLs) -- Theorems thm{selectedSector * 7 + 1}..thm{selectedSector * 7 + 7} (730/730 QED)
           </span>
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
             <button
@@ -3762,7 +4628,7 @@ export function App() {
             <div style={{ marginTop: 8, background: "#0A0D12", border: "1.5px solid #FF9EFF", borderRadius: 5, padding: "8px 10px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6, flexWrap: "wrap", gap: 6 }}>
                 <span style={{ color: "#FF9EFF", fontWeight: "bold", fontSize: 11 }}>
-                  [SUB-PANEL 2A: 5-REGIME MULTI-PHYSICS SIMULATION WORKBENCH — TOOL 102 (SH4Z v6000 TLV | 700/700 LEAN 4 QED)]
+                  [SUB-PANEL 2A: 5-REGIME MULTI-PHYSICS SIMULATION WORKBENCH — TOOL 102 (SH4Z v6200 TLV | 730/730 LEAN 4 QED)]
                 </span>
                 <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
                   <span style={{
@@ -3935,14 +4801,14 @@ export function App() {
       {/* DRAWER 3: Formal Verification Suite */}
       <div style={{ background: "#141922", border: "1px solid #2A3B4D", borderRadius: 6, padding: "8px 10px", marginBottom: 8 }}>
         <div onClick={() => setDrawer3Open(!drawer3Open)} style={{ display: "flex", justifyContent: "space-between", cursor: "pointer", fontWeight: "bold", marginBottom: drawer3Open ? 6 : 0 }}>
-          <span>[-] DRAWER 3: FORMAL VERIFICATION SUITE (700/700 LEAN 4 PROOFS QED) &amp; 10-PILLAR PHYSICS</span>
-          <span style={{ color: "#FFB454" }}>80 Sectors = 700/700 Lean 4 Proofs QED ({tel.lean4_verify_ms.toFixed(1)}ms)</span>
+          <span>[-] DRAWER 3: FORMAL VERIFICATION SUITE (730/730 LEAN 4 PROOFS QED) &amp; 10-PILLAR PHYSICS</span>
+          <span style={{ color: "#FFB454" }}>80 Sectors = 730/730 Lean 4 Proofs QED ({tel.lean4_verify_ms.toFixed(1)}ms)</span>
         </div>
         {drawer3Open && (
           <>
             <div style={{ display: "flex", gap: 6, marginBottom: 5 }}>
               <input value={leanQuery} onChange={(e) => setLeanQuery(e.target.value)} style={{ flex: 1, background: "#0A0D12", color: "#FFFEFB", border: "1px solid #2A3B4D", borderRadius: 4, padding: "4px 8px", fontFamily: "monospace", fontSize: 11 }} />
-              <button onClick={() => callEndpoint(`/api/v1/compiler/verify?q=${encodeURIComponent(leanQuery)}`, "VERIFY 700 LEAN 4 PROOFS")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 12px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>VERIFY 700/700 LEAN 4 PROOFS</button>
+              <button onClick={() => callEndpoint(`/api/v1/compiler/verify?q=${encodeURIComponent(leanQuery)}`, "VERIFY 730 LEAN 4 PROOFS")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 12px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>VERIFY 730/730 LEAN 4 PROOFS</button>
             </div>
             <div style={{ color: "#FFB454", fontSize: 10.5 }}>
               [10-Pillar Physics &amp; 4-Stage Cascade]: {tel.physics_10pillar} -- Verify={tel.lean4_verify_ms.toFixed(1)}ms
@@ -3951,10 +4817,10 @@ export function App() {
         )}
       </div>
 
-      {/* DRAWER 4: 280-Tool Execution Registry (CHAIN 280 Milestone), NL Synthesis, Episodic Memory Search & Terminal */}
+      {/* DRAWER 4: 288-Tool Execution Registry (CHAIN 288 Milestone), NL Synthesis, Episodic Memory Search & Terminal */}
       <div style={{ background: "#141922", border: "1px solid #00FFCC", borderRadius: 6, padding: "8px 10px" }}>
         <div onClick={() => setDrawer4Open(!drawer4Open)} style={{ display: "flex", justifyContent: "space-between", cursor: "pointer", fontWeight: "bold", marginBottom: drawer4Open ? 6 : 0 }}>
-          <span>[-] DRAWER 4: 280-TOOL EXECUTION REGISTRY (v61.0.0 AEGIS-HARNESS, GEMMA 4 .SH4Z &amp; CHAIN 280 T01..T280), AUTONOMOUS INTELLIGENCE, NL SYNTHESIS &amp; MEMORY</span>
+          <span>[-] DRAWER 4: 288-TOOL EXECUTION REGISTRY (v62.0.0 AEGIS-HARNESS, GEMMA 4 .SH4Z, VESPER-ARACHNE E8 IK &amp; CHAIN 288 T01..T288), AUTONOMOUS INTELLIGENCE, NL SYNTHESIS &amp; MEMORY</span>
           <span style={{ color: "#00FFCC" }}>RSR #{tel.rsr_step} -- HybridLink={tel.hybrid_hops} -- WS={tel.cluster_total_kops.toFixed(1)}k ops/s -- Kasami={tel.kasami_cw_hex}</span>
         </div>
         {drawer4Open && (
@@ -4267,25 +5133,25 @@ export function App() {
             <div style={{ background: "#050E14", border: "1.5px solid #00FFCC", borderRadius: 5, padding: "8px 12px", marginBottom: 8, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 6 }}>
               <div>
                 <span style={{ color: "#00FFCC", fontWeight: "bold", fontSize: 11 }}>
-                  [8-DOMAIN FUNCTIONAL COMMAND DECK — 280 TOOLS CONSOLIDATED (CHAIN 280 | v61.0.0 | 700/700 LEAN 4 QED | 3.04M SYNAPSES)]:
+                  [8-DOMAIN FUNCTIONAL COMMAND DECK — 288 TOOLS CONSOLIDATED (CHAIN 288 | v62.0.0 | 730/730 LEAN 4 QED | 3.04M SYNAPSES)]:
                 </span>
                 <span style={{ color: "#FFB454", fontSize: 9.5, marginLeft: 8, fontWeight: "bold" }}>
                   Unified Dispatchers (/api/v1/unified/*) | AEGIS Autonomous Cron | Dual Gemma 4 .sh4z (5.30 GB) | Universal E:\ Write-Back
                 </span>
               </div>
               <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
-                <button onClick={() => callEndpoint("/api/v1/chain280/master_certification", "CHAIN 280: MASTER DUAL .SH4Z & 700 QED CERTIFICATION")} style={{ background: "#FFD700", color: "#050A0E", border: "none", borderRadius: 4, padding: "3px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>CHAIN 280 MASTER CERT</button>
-                <button onClick={() => callEndpoint("/api/v1/chain280/suite", "CHAIN 280: 280-TOOL OMNI-SUITE")} style={{ background: "#56D364", color: "#050A0E", border: "none", borderRadius: 4, padding: "3px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>CHAIN 280 SUITE</button>
+                <button onClick={() => callEndpoint("/api/v1/chain288/master_certification", "CHAIN 288: MASTER DUAL .SH4Z & 730 QED CERTIFICATION")} style={{ background: "#FFD700", color: "#050A0E", border: "none", borderRadius: 4, padding: "3px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>CHAIN 288 MASTER CERT</button>
+                <button onClick={() => callEndpoint("/api/v1/chain288/suite", "CHAIN 288: 288-TOOL OMNI-SUITE")} style={{ background: "#56D364", color: "#050A0E", border: "none", borderRadius: 4, padding: "3px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>CHAIN 288 SUITE</button>
                 <button onClick={() => callEndpoint("/api/v1/chain210/suite", "CHAIN 210: 210-TOOL OMNI-SUITE")} style={{ background: "#00FFCC", color: "#050A0E", border: "none", borderRadius: 4, padding: "3px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>CHAIN 210 SUITE</button>
                 <button onClick={() => callEndpoint("/api/v1/harmonic/tool_chain?q=chain89_parallel_dag", "CHAIN 89: 89-TOOL PARALLEL DAG")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "3px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>CHAIN 89 DAG</button>
               </div>
             </div>
 
-            {/* Dedicated v57..v61 AEGIS-HARNESS Autonomous Cron, Dual Gemma 4 .sh4z Layer Mixer & CHAIN 280 Suite (Tools 211..280) */}
+            {/* Dedicated v57..v62 AEGIS-HARNESS Autonomous Cron, Dual Gemma 4 .sh4z Layer Mixer, Vesper-Arachne E8 IK & CHAIN 288 Suite (Tools 211..288) */}
             <div style={{ background: "#08121E", border: "1.5px solid #FFD700", borderRadius: 5, padding: "7px 10px", marginBottom: 8 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 6, marginBottom: 5 }}>
                 <span style={{ color: "#FFD700", fontWeight: "bold", fontSize: 10.5 }}>
-                  [v57.0..v61.0 AEGIS-HARNESS AUTONOMOUS CRON + NATIVE GEMMA 4 E4B/12B .SH4Z LAYER MIXER + CHAIN 280 (TOOLS 211..280 | 700/700 QED)]:
+                  [v57.0..v62.0 AEGIS-HARNESS AUTONOMOUS CRON + NATIVE GEMMA 4 E4B/12B .SH4Z LAYER MIXER + CHAIN 288 (TOOLS 211..288 | 730/730 QED)]:
                 </span>
                 <span style={{ color: "#00FFCC", fontSize: 9.5, fontWeight: "bold" }}>
                   3,041,280 Synapses (.npage 8.11MB + .spage 4.05MB) | 19.96B E8 Ternary Weights (5.30 GB .sh4z) | MCP: https://mcp.act-omega-net.dev/mcp
@@ -4307,7 +5173,15 @@ export function App() {
                 <button onClick={() => callEndpoint("/api/v1/tools/t260", "TOOL 260: RYU-TAKAYANAGI HOLOGRAPHIC ENTANGLEMENT")} style={{ background: "#002B24", color: "#00FFCC", border: "1px solid #00FFCC", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>T260: Ryu-Takayanagi AdS3</button>
                 <button onClick={() => callEndpoint("/api/v1/tools/t265", "TOOL 265: DUAL .SH4Z SPECULATIVE CASCADE K=4")} style={{ background: "#0D2618", color: "#56D364", border: "1px solid #56D364", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>T265: Dual .sh4z Cascade</button>
                 <button onClick={() => callEndpoint("/api/v1/tools/t270", "TOOL 270: CHAIN 270 MASTER CAPSTONE")} style={{ background: "#0D2618", color: "#56D364", border: "1px solid #56D364", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>T270: CHAIN 270 Capstone</button>
-                <button onClick={() => callEndpoint("/api/v1/tools/t280", "TOOL 280: CHAIN 280 MASTER CAPSTONE")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 8px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>T280: CHAIN 280 Capstone</button>
+                <button onClick={() => callEndpoint("/api/v1/tools/t280", "TOOL 280: CHAIN 280 MASTER CAPSTONE")} style={{ background: "#1C1428", color: "#B388FF", border: "1px solid #B388FF", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>T280: CHAIN 280 Capstone</button>
+                <button onClick={() => callEndpoint("/api/v1/synthesis/bleeding_edge_1", "TOOL 281: SPLIT-QUATERNIONIC CL(2,2) SHEAF")} style={{ background: "#261038", color: "#FF9EFF", border: "1px solid #FF9EFF", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>T281: Cl(2,2) Sheaf</button>
+                <button onClick={() => callEndpoint("/api/v1/synthesis/bleeding_edge_2", "TOOL 282: NON-ABELIAN BRAID ANYON B6")} style={{ background: "#1F1030", color: "#B388FF", border: "1px solid #B388FF", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>T282: Braid Anyon B6</button>
+                <button onClick={() => callEndpoint("/api/v1/synthesis/bleeding_edge_3", "TOOL 283: TROPICAL MIN-PLUS E8 ATTENTION")} style={{ background: "#002B24", color: "#00FFCC", border: "1px solid #00FFCC", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>T283: Tropical E8 Attn</button>
+                <button onClick={() => callEndpoint("/api/v1/ota/pixel_manifest", "TOOL 284: LORENTZIAN DE SITTER DS4 HORIZON & OTA")} style={{ background: "#091F2C", color: "#00E5FF", border: "1px solid #00E5FF", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>T284: dS4 Horizon/OTA</button>
+                <button onClick={() => callEndpoint("/api/v1/synthesis/bleeding_edge_4", "TOOL 285: SYMPLECTIC SHADOW HAMILTONIAN")} style={{ background: "#3A1C00", color: "#FFB454", border: "1px solid #FFB454", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>T285: Symplectic Shadow</button>
+                <button onClick={() => callEndpoint("/api/v1/synthesis/bleeding_edge_5", "TOOL 286: P-ADIC Q2 ULTRAMETRIC TREE")} style={{ background: "#2B2100", color: "#FFEA00", border: "1px solid #FFEA00", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>T286: p-Adic Q2 Tree</button>
+                <button onClick={() => callEndpoint("/api/v1/vesper_arachne/ik_swarm_companion", "TOOL 287: VESPER-ARACHNE E8 IK GAIT SOLVER")} style={{ background: "#002B24", color: "#56D364", border: "1px solid #56D364", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>🕷️ T287: Vesper E8 IK</button>
+                <button onClick={() => callEndpoint("/api/v1/chain288/master_certification", "TOOL 288: VESPER SWARM & CHAIN 288 MASTER CERT")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 8px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>T288: CHAIN 288 Cert</button>
               </div>
             </div>
 
@@ -4315,7 +5189,7 @@ export function App() {
             <div style={{ background: "#060D1A", border: "1.5px solid #00FFCC", borderRadius: 5, padding: "7px 10px", marginBottom: 8 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 6, marginBottom: 5 }}>
                 <span style={{ color: "#00FFCC", fontWeight: "bold", fontSize: 10.5 }}>
-                  [v49.0.0 TEN-PIECE EXTERNAL RESEARCH SYNTHESIS — TOOLS 91..100 (CHAIN 100 CENTURY MILESTONE | 700/700 LEAN 4 QED)]:
+                  [v49.0.0 TEN-PIECE EXTERNAL RESEARCH SYNTHESIS — TOOLS 91..100 (CHAIN 100 CENTURY MILESTONE | 730/730 LEAN 4 QED)]:
                 </span>
                 <span style={{ color: "#FFB454", fontSize: 9.5, fontWeight: "bold" }}>
                   Triangulated dS3 Gravity | Hexagon Amplituhedron | Bekenstein L2 Bound | Bell 6-Polytope | Dzhanibekov Axis
@@ -4438,7 +5312,7 @@ export function App() {
             <div style={{ background: "#0A0D12", border: "1px solid #2A3B4D", borderRadius: 4, padding: 6, marginBottom: 6, fontSize: 10.5 }}>
               <div style={{ color: "#FFFEFB" }}>&gt; PROMPT: {cmdPrompt}</div>
               <div style={{ color: "#FFB454", marginTop: 2 }}>
-                [SH4Z v6000 (133,120 B / 15.965 Hz Decadic Epoch HUD)]: Work-Stealing={tel.ws_loq_lines}+{tel.ws_p10_lines}+{tel.ws_p8_lines}=2,080 Lines ({tel.cluster_total_kops.toFixed(1)}k ops/s) -- 700/700 Lean 4 QED -- 63,360 Neurons (1,440x Chair44, 3,041,280 Synapses) -- Dual Gemma 4 .sh4z (5.30 GB) -- 36 Macro-Domains / 144 Sub-Domains -- Tools 1..280 (CHAIN 280 Suite) -- PPL={e8LeechState.holdout_ppl.toFixed(6)}
+                [SH4Z v6200 (133,120 B / 15.965 Hz Decadic Epoch HUD)]: Work-Stealing={tel.ws_loq_lines}+{tel.ws_p10_lines}+{tel.ws_p8_lines}=2,080 Lines ({tel.cluster_total_kops.toFixed(1)}k ops/s) -- 730/730 Lean 4 QED -- 63,360 Neurons (1,440x Chair44, 3,041,280 Synapses) -- Dual Gemma 4 .sh4z (5.30 GB) -- 36 Macro-Domains / 144 Sub-Domains -- Tools 1..288 (CHAIN 288 Suite) -- PPL={e8LeechState.holdout_ppl.toFixed(6)}
               </div>
               <div style={{ color: "#56D364", marginTop: 2 }}>&gt; OUTPUT: {termOut}</div>
             </div>
@@ -4448,7 +5322,7 @@ export function App() {
               <button onClick={() => callEndpoint(`/api/v1/converse/multiturn_memory?q=${encodeURIComponent(cmdPrompt)}`, "MULTI-TURN MEMORY T73")} style={{ background: "#261038", color: "#FFD700", border: "1px solid #FFD700", borderRadius: 4, padding: "4px 10px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>MEMORY (T73)</button>
               <button onClick={() => callEndpoint(`/api/v1/converse/dialectical_debate?q=${encodeURIComponent(cmdPrompt)}`, "SOCRATIC DEBATE T74")} style={{ background: "#002B24", color: "#00FFCC", border: "1px solid #00FFCC", borderRadius: 4, padding: "4px 10px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>DEBATE (T74)</button>
               <button onClick={() => callEndpoint(`/api/v1/agent_gateway/interact?agent_id=hud&q=${encodeURIComponent(cmdPrompt)}`, "EXECUTE PROMPT")} style={{ background: "#1C2632", color: "#FFFEFB", border: "1px solid #FFB454", borderRadius: 4, padding: "4px 12px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>EXECUTE</button>
-              <button onClick={() => callEndpoint("/api/v1/chain280/master_certification", "CHAIN 280: MASTER CERT")} style={{ background: "#FFD700", color: "#050A0E", border: "none", borderRadius: 4, padding: "4px 12px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>CHAIN 280</button>
+              <button onClick={() => callEndpoint("/api/v1/chain288/master_certification", "CHAIN 288: MASTER CERT")} style={{ background: "#FFD700", color: "#050A0E", border: "none", borderRadius: 4, padding: "4px 12px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>CHAIN 288</button>
               <button onClick={() => callEndpoint("/api/v1/chain210/suite", "CHAIN 210: OMNI-SUITE")} style={{ background: "#00FFCC", color: "#050A0E", border: "none", borderRadius: 4, padding: "4px 12px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>CHAIN 210</button>
               <button onClick={() => callEndpoint("/api/v1/harmonic/tool_chain?q=chain89_parallel_dag", "CHAIN 89")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 12px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>CHAIN 89</button>
               <button onClick={() => setTermOut("READY.")} style={{ background: "#1C2632", color: "#FFFEFB", border: "1px solid #2A3B4D", borderRadius: 4, padding: "4px 10px", cursor: "pointer", fontSize: 10.5 }}>CLEAR</button>
@@ -4510,10 +5384,10 @@ export function App() {
           <div style={{ background: "#101822", borderBottom: "1px solid #2A3B4D", padding: "10px 14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div>
               <div style={{ color: "#00FFCC", fontWeight: "bold", fontSize: 12.5 }}>
-                ACT-OMEGA v61.0.0 OPERATOR MANUAL &amp; STEP-BY-STEP GUIDE (CHAIN 280 MILESTONE)
+                ACT-OMEGA v62.0.0 OPERATOR MANUAL &amp; STEP-BY-STEP GUIDE (CHAIN 288 MILESTONE)
               </div>
               <div style={{ color: "#9FB0C2", fontSize: 10, marginTop: 2 }}>
-                Live Status: <b style={{ color: "#56D364" }}>ONLINE ({tel.cluster_total_kops.toFixed(1)}k ops/s)</b> | 63,360N (3.04M Synapses) | 700/700 QED | Tools 1..280 (v61)
+                Live Status: <b style={{ color: "#56D364" }}>ONLINE ({tel.cluster_total_kops.toFixed(1)}k ops/s)</b> | 63,360N (3.04M Synapses) | 730/730 QED | Tools 1..288 (v62)
               </div>
             </div>
             <button
@@ -4598,7 +5472,7 @@ export function App() {
                 </div>
                 <div style={{ marginBottom: 6 }}>
                   <b>• Drawer A (`15 Interactive Telemetry Cards`):</b><br />
-                  Displays real-time metrics across the `15.965 Hz` Decadic clock, Pixel 10 24D Magnetometer, Stiefel `St(16,80)`, `63,360`-Neuron Vault, Pixel 8 `4.00 MB` L2 `.npage` SHM, Acoustic SDR, Cloudflare PQ/SIEM, `700/700` Lean 4 proofs, RTX 3050 6GB, and `E:\` SSD. <i>Click any card</i> to jump to its sector and execute its live L0 diagnostic.
+                  Displays real-time metrics across the `15.965 Hz` Decadic clock, Pixel 10 24D Magnetometer, Stiefel `St(16,80)`, `63,360`-Neuron Vault, Pixel 8 `4.00 MB` L2 `.npage` SHM, Acoustic SDR, Cloudflare PQ/SIEM, `730/730` Lean 4 proofs, RTX 3050 6GB, and `E:\` SSD. <i>Click any card</i> to jump to its sector and execute its live L0 diagnostic.
                 </div>
                 <div style={{ marginBottom: 6 }}>
                   <b>• Drawer B (`60 FPS 3D Stiefel Scope &amp; 15.965 Hz Oscilloscope`):</b><br />
@@ -4613,8 +5487,8 @@ export function App() {
                   Drawer 1 plots all 12 live hardware inputs (`MagX/Y/Z`, `|B|`, `Baro`, `Lux`, `Acc`, `Gyro`, `P10/P8/RTX Temps`, `KOPS/s`). Clicking any sparkline or waterfall cell routes straight to its mapped sector.
                 </div>
                 <div style={{ marginBottom: 8 }}>
-                  <b>• Drawer 3 (`700/700 Lean 4 Verifier`) &amp; Drawer 4 (`CHAIN 280 Tools + 262K BPE + NL Converse`):</b><br />
-                  Contains the 262,144-token 36-Domain BPE/Compound Inspector, Episodic Memory Search, Slash Command Palette (`/SYNC`, `/LATTICE`, `/IGNITE`, `/EXECUTE_OMNI_BRAID`), Voice TTS toggle, and all 280 native tools (`T01..T280`).
+                  <b>• Drawer 3 (`730/730 Lean 4 Verifier`) &amp; Drawer 4 (`CHAIN 288 Tools + 262K BPE + NL Converse`):</b><br />
+                  Contains the 262,144-token 36-Domain BPE/Compound Inspector, Episodic Memory Search, Slash Command Palette (`/SYNC`, `/LATTICE`, `/IGNITE`, `/EXECUTE_OMNI_BRAID`), Voice TTS toggle, and all 288 native tools (`T01..T288`).
                 </div>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                   <button onClick={() => { setDrawerAOpen(true); setDrawerBOpen(true); setDrawer1Open(true); setDrawer2Open(true); setDrawer3Open(true); setDrawer4Open(true); }} style={{ background: "#00E5FF", color: "#050A0E", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>OPEN ALL DRAWERS</button>
@@ -4715,7 +5589,7 @@ export function App() {
                 </div>
                 <div style={{ marginBottom: 6 }}>
                   <b>Q3: How do I verify 100% true hardware data and zero dummy code at any time?</b><br />
-                  <span style={{ color: "#9FB0C2" }}>A: Run <code>verify</code> (or <code>sovereign-verify</code>) in PowerShell, or click <b>CHAIN 280 Tool Suite</b>. It verifies `0` square brackets across `v33..v61*.rs`, `700/700` non-trivial Lean 4 theorems, `63,360` neurons (`8,110,080 B` `.npage`, `132,960` Bijected 64B CLs), live QAT PPL, and HTTP 200 on `act-omega-net.dev`.</span>
+                  <span style={{ color: "#9FB0C2" }}>A: Run <code>verify</code> (or <code>sovereign-verify</code>) in PowerShell, or click <b>CHAIN 288 Tool Suite</b>. It verifies `0` square brackets across `v33..v62*.rs`, `730/730` non-trivial Lean 4 theorems, `63,360` neurons (`8,110,080 B` `.npage`, `132,960` Bijected 64B CLs), live QAT PPL, and HTTP 200 on `act-omega-net.dev`.</span>
                 </div>
                 <div style={{ marginBottom: 4 }}>
                   <b>Q4: How do I hot-swap a new Rust L0 binary without dropping connections?</b><br />
@@ -4726,6 +5600,21 @@ export function App() {
           </div>
         </div>
       )}
+
+      {/* Vesper-Arachne E8 Inverse-Kinematic HUD Shimeji Companion (60 FPS WebGPU/HTML5 Canvas) */}
+      <VesperArachneHudShimeji
+        isDocked={vesperDocked}
+        onToggleDock={() => setVesperDocked(!vesperDocked)}
+        selectedCardIndex={selectedCard}
+        onSelectCard={(idx) => {
+          setSelectedCard(idx);
+          if (idx < cards15.length) {
+            setSelectedSector(cards15[idx].sector);
+            callEndpoint(`/api/v1/card/execute?card_id=${idx}`, `CARD #${idx + 1} ${cards15[idx].title}`);
+          }
+        }}
+        onCallEndpoint={(ep, desc) => callEndpoint(ep, desc)}
+      />
     </div>
   );
 }

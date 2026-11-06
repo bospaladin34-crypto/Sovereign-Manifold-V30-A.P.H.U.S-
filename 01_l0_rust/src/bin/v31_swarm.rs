@@ -1875,6 +1875,12 @@ fn resolve_tool_id_for_clean_path(
             return id;
         }
     }
+    if clean_path.contains("chain288") {
+        return 288;
+    }
+    if clean_path.contains("vesper_arachne") {
+        return 287;
+    }
     if clean_path.contains("chain280") {
         return 280;
     }
@@ -1917,7 +1923,9 @@ fn resolve_tool_id_for_clean_path(
 
 fn resolve_tool_category(tool_id: u64, clean_path: &str) -> &'static str {
     let _ = tool_id;
-    if clean_path.contains("lattice_algebra") {
+    if clean_path.contains("vesper_arachne") || clean_path.contains("shimeji") {
+        "tool_outputs"
+    } else if clean_path.contains("lattice_algebra") {
         "lean4_proofs"
     } else if clean_path.contains("connectome_qat") {
         "npage_shard_deltas"
@@ -2826,7 +2834,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             let ws_tri_p10 = st.ws_p10_lines * 3;
             let ws_tri_p8 = st.ws_p8_lines * 3;
             let json = format!(
-                "{{\"status\":\"LAMINAR_V61_0_DECADIC_15965HZ_LOCKSTEP\",\"version\":\"ACT-Omega Net v61.0.0 (SH4Z v6000 TLV | CHAIN 280 | 700 QED)\",\"tlv_magic\":\"0x5348345A\",\"tlv_version\":6000,\"official_domain\":\"https://act-omega-net.dev\",\"generation\":{},\"timestamp_ms\":{},\"carrier_clock_hz\":15.965,\"carrier_period_us\":62637,\"decadic_epoch_sec\":10.0,\"decadic_sub_epoch\":{},\"laplacian_face\":\"{}\",\"qm_field_eq\":\"{}\",\"total_shards\":21120,\"expansion_shards\":21120,\"tier3_shards\":21120,\"combined_shards\":63360,\"chair44_multiplier\":480,\"combined_chair44_multiplier\":1440,\"total_synapses\":3041280,\"nl_tokenizer_vocab\":262144,\"nl_bpe_subwords\":65536,\"compound_braid_tokens\":65536,\"dendritic_concept_tokens\":63360,\"oov_morphological_tokens\":67712,\"domains_count\":36,\"subdomains_count\":144,\"compound_phrases_count\":2048,\"holdout_ppl\":{:.6},\"lean4_base_theorems\":700,\"lean4_runtime_obligations\":700,\"lean4_qed\":true,\"tools_count\":280,\"chain_mode\":\"CHAIN_280_PARALLEL_DAG\",\"fno_modes\":16,\"fno_cachelines\":2080,\"e8z_tribank_cachelines\":6240,\"npage_64b_cachelines\":126720,\"composite_bijected_cachelines\":132960,\"fno_l2_rel_error\":{:.5},\"fno_l2_err\":{:.5},\"navier_stokes_reynolds\":{:.1},\"vorticity_norm\":{:.4},\"active_shard_id\":{},\"acoustic_carrier_hz\":1728.0,\"acoustic_ultrasonic_hz\":18500.0,\"acoustic_snr_db\":{:.1},\"cutler_idx\":{},\"cluster_total_kops\":{:.1},\"base_trisilicon_kops\":{:.1},\"webgpu_leased_kops\":{:.1},\"webgpu_active_leases\":{},\"loq15_rtx3050_kops\":{:.1},\"pixel10_g5_kops\":{:.1},\"pixel8_l2_kops\":{:.1},\"neurons_per_sec\":{:.2},\"cachelines_per_sec\":{:.2},\"host_neurons_per_sec\":{:.2},\"host_cachelines_per_sec\":{:.2},\"ws_loq_lines\":{},\"ws_p10_lines\":{},\"ws_p8_lines\":{},\"ws_tribank_loq_lines\":{},\"ws_tribank_p10_lines\":{},\"ws_tribank_p8_lines\":{},\"pixel8_l2_total_bytes\":4194304,\"pixel8_l2_mlock_bytes\":3737600,\"pixel8_l2_free_pct\":10.89,\"pixel8_npage_shm_active\":true,\"pixel8_npage_shm_bytes\":8110080,\"pixel8_spage_shm_bytes\":4055040,\"pixel8_sensor_bypass\":true,\"ssd_tier2_active_path\":\"{}\",\"ssd_tier2_drive_e_mounted\":{},\"ssd_tier2_mirrored_shards\":63360,\"ssd_tier2_merkle_nodes\":32,\"llm_agent_gateway_status\":\"ZERO_TRUST_READ_COMPUTE_AND_EXPANSION_CRYSTALLIZE\",\"fno_solve_runs\":{},\"agent_gateway_visits\":{},\"ssd_tier2_syncs\":{},\"nl_transduce_calls\":{},\"harvest_runs\":{},\"nl_converse_runs\":{},\"episodic_queries\":{},\"anomaly_checks\":{},\"decadic_synth_runs\":{},\"always_on_active\":{},\"always_on_ticks\":{},\"nl_synthesis\":\"{}\",\"episodic_search_out\":\"{}\",\"anomaly_banner\":\"{}\",\"physics_10pillar\":\"{}\",\"p10_broadcasts\":{},\"p8_broadcasts\":{},\"mag_x\":{:.1},\"mag_y\":{:.1},\"mag_z\":{:.1},\"b_norm\":{:.1},\"mag_norm\":{:.1},\"baro_hpa\":{:.1},\"light_lx\":{:.0},\"acc_norm\":{:.2},\"gyro_norm\":{:.3},\"p10_temp_c\":{:.1},\"p8_temp_c\":{:.1},\"p10_batt_mv\":{},\"p10_batt_pct\":{},\"p10_ram_used_mb\":{},\"p10_ram_total_mb\":{},\"p10_sensor_hz\":{:.3},\"p10_stream_hz\":{:.2},\"p10_rtt_ms\":{:.1},\"p10_bearer\":\"{}\",\"p8_batt_mv\":{},\"p8_batt_pct\":{},\"p8_ram_used_mb\":{},\"p8_ram_total_mb\":{},\"p8_stream_hz\":{:.2},\"p8_rtt_ms\":{:.1},\"p8_bearer\":\"{}\",\"rtx_temp_c\":{:.0},\"rtx_clock_mhz\":{},\"rtx_vram_used_mb\":{},\"rtx_vram_total_mb\":{},\"rtx_power_w\":{:.1},\"coherence_mult\":{:.2},\"coherence_mode\":\"{}\",\"kasami_cw_hex\":\"{}\",\"kasami_ecc_fixes\":{},\"stiefel_ortho_err\":{:.7},\"lean4_verify_ms\":{:.1},\"siem_entropy_bits\":{:.3},\"siem_pkts\":{},\"opto_state\":\"{}\",\"prox_cm\":{:.1},\"omega_lt\":{:.5},\"rsr_step\":{},\"hybrid_hops\":{},\"sector_norms_csv\":\"{}\",\"sector_hashes_csv\":\"{}\",\"inspected_sector\":{},\"inspected_line\":{},\"inspected_hex\":\"{}\",\"inspected_trits\":\"{}\",\"last_card_idx\":{},\"last_card_diag\":\"{}\",\"last_browser_url\":\"{}\",\"last_browser_trace\":\"{}\",\"last_lean_query\":\"{}\",\"last_lean_trace\":\"{}\",\"last_term_cmd\":\"{}\",\"last_term_out\":\"{}\"}}",
+                "{{\"status\":\"LAMINAR_V62_0_DECADIC_15965HZ_LOCKSTEP\",\"version\":\"ACT-Omega Net v62.0.0 (SH4Z v6200 TLV | CHAIN 288 | 730 QED)\",\"tlv_magic\":\"0x5348345A\",\"tlv_version\":6200,\"official_domain\":\"https://act-omega-net.dev\",\"generation\":{},\"timestamp_ms\":{},\"carrier_clock_hz\":15.965,\"carrier_period_us\":62637,\"decadic_epoch_sec\":10.0,\"decadic_sub_epoch\":{},\"laplacian_face\":\"{}\",\"qm_field_eq\":\"{}\",\"total_shards\":21120,\"expansion_shards\":21120,\"tier3_shards\":21120,\"combined_shards\":63360,\"chair44_multiplier\":480,\"combined_chair44_multiplier\":1440,\"total_synapses\":3041280,\"nl_tokenizer_vocab\":262144,\"nl_bpe_subwords\":65536,\"compound_braid_tokens\":65536,\"dendritic_concept_tokens\":63360,\"oov_morphological_tokens\":67712,\"domains_count\":36,\"subdomains_count\":144,\"compound_phrases_count\":2048,\"holdout_ppl\":{:.6},\"lean4_base_theorems\":730,\"lean4_runtime_obligations\":730,\"lean4_qed\":true,\"tools_count\":288,\"chain_mode\":\"CHAIN_288_PARALLEL_DAG\",\"fno_modes\":16,\"fno_cachelines\":2080,\"e8z_tribank_cachelines\":6240,\"npage_64b_cachelines\":126720,\"composite_bijected_cachelines\":132960,\"fno_l2_rel_error\":{:.5},\"fno_l2_err\":{:.5},\"navier_stokes_reynolds\":{:.1},\"vorticity_norm\":{:.4},\"active_shard_id\":{},\"acoustic_carrier_hz\":1728.0,\"acoustic_ultrasonic_hz\":18500.0,\"acoustic_snr_db\":{:.1},\"cutler_idx\":{},\"cluster_total_kops\":{:.1},\"base_trisilicon_kops\":{:.1},\"webgpu_leased_kops\":{:.1},\"webgpu_active_leases\":{},\"loq15_rtx3050_kops\":{:.1},\"pixel10_g5_kops\":{:.1},\"pixel8_l2_kops\":{:.1},\"neurons_per_sec\":{:.2},\"cachelines_per_sec\":{:.2},\"host_neurons_per_sec\":{:.2},\"host_cachelines_per_sec\":{:.2},\"ws_loq_lines\":{},\"ws_p10_lines\":{},\"ws_p8_lines\":{},\"ws_tribank_loq_lines\":{},\"ws_tribank_p10_lines\":{},\"ws_tribank_p8_lines\":{},\"pixel8_l2_total_bytes\":4194304,\"pixel8_l2_mlock_bytes\":3737600,\"pixel8_l2_free_pct\":10.89,\"pixel8_npage_shm_active\":true,\"pixel8_npage_shm_bytes\":8110080,\"pixel8_spage_shm_bytes\":4055040,\"pixel8_sensor_bypass\":true,\"ssd_tier2_active_path\":\"{}\",\"ssd_tier2_drive_e_mounted\":{},\"ssd_tier2_mirrored_shards\":63360,\"ssd_tier2_merkle_nodes\":32,\"llm_agent_gateway_status\":\"ZERO_TRUST_READ_COMPUTE_AND_EXPANSION_CRYSTALLIZE\",\"fno_solve_runs\":{},\"agent_gateway_visits\":{},\"ssd_tier2_syncs\":{},\"nl_transduce_calls\":{},\"harvest_runs\":{},\"nl_converse_runs\":{},\"episodic_queries\":{},\"anomaly_checks\":{},\"decadic_synth_runs\":{},\"always_on_active\":{},\"always_on_ticks\":{},\"nl_synthesis\":\"{}\",\"episodic_search_out\":\"{}\",\"anomaly_banner\":\"{}\",\"physics_10pillar\":\"{}\",\"p10_broadcasts\":{},\"p8_broadcasts\":{},\"mag_x\":{:.1},\"mag_y\":{:.1},\"mag_z\":{:.1},\"b_norm\":{:.1},\"mag_norm\":{:.1},\"baro_hpa\":{:.1},\"light_lx\":{:.0},\"acc_norm\":{:.2},\"gyro_norm\":{:.3},\"p10_temp_c\":{:.1},\"p8_temp_c\":{:.1},\"p10_batt_mv\":{},\"p10_batt_pct\":{},\"p10_ram_used_mb\":{},\"p10_ram_total_mb\":{},\"p10_sensor_hz\":{:.3},\"p10_stream_hz\":{:.2},\"p10_rtt_ms\":{:.1},\"p10_bearer\":\"{}\",\"p8_batt_mv\":{},\"p8_batt_pct\":{},\"p8_ram_used_mb\":{},\"p8_ram_total_mb\":{},\"p8_stream_hz\":{:.2},\"p8_rtt_ms\":{:.1},\"p8_bearer\":\"{}\",\"rtx_temp_c\":{:.0},\"rtx_clock_mhz\":{},\"rtx_vram_used_mb\":{},\"rtx_vram_total_mb\":{},\"rtx_power_w\":{:.1},\"coherence_mult\":{:.2},\"coherence_mode\":\"{}\",\"kasami_cw_hex\":\"{}\",\"kasami_ecc_fixes\":{},\"stiefel_ortho_err\":{:.7},\"lean4_verify_ms\":{:.1},\"siem_entropy_bits\":{:.3},\"siem_pkts\":{},\"opto_state\":\"{}\",\"prox_cm\":{:.1},\"omega_lt\":{:.5},\"rsr_step\":{},\"hybrid_hops\":{},\"sector_norms_csv\":\"{}\",\"sector_hashes_csv\":\"{}\",\"inspected_sector\":{},\"inspected_line\":{},\"inspected_hex\":\"{}\",\"inspected_trits\":\"{}\",\"last_card_idx\":{},\"last_card_diag\":\"{}\",\"last_browser_url\":\"{}\",\"last_browser_trace\":\"{}\",\"last_lean_query\":\"{}\",\"last_lean_trace\":\"{}\",\"last_term_cmd\":\"{}\",\"last_term_out\":\"{}\"}}",
                 gen_now,
                 unix_ms(),
                 st.decadic_sub_epoch,
@@ -3867,7 +3875,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
             continue;
         }
-        if clean_path == "/api/v1/synthesis/bleeding_edge_1" || clean_path == "/api/v1/bleeding_edge/synthesis_1" {
+        if clean_path == "/api/v1/synthesis/bleeding_edge_1" || clean_path == "/api/v1/bleeding_edge/synthesis_1" || clean_path == "/api/v1/tools/t281" {
             let sub_epoch = state.lock().map(|g| g.decadic_sub_epoch).unwrap_or(1);
             let col_q = extract_query_param(raw_target, "column_id");
             let sec_q = extract_query_param(raw_target, "sector_id");
@@ -3891,7 +3899,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
             continue;
         }
-        if clean_path == "/api/v1/synthesis/bleeding_edge_2" || clean_path == "/api/v1/bleeding_edge/synthesis_2" {
+        if clean_path == "/api/v1/synthesis/bleeding_edge_2" || clean_path == "/api/v1/bleeding_edge/synthesis_2" || clean_path == "/api/v1/tools/t282" {
             let sub_epoch = state.lock().map(|g| g.decadic_sub_epoch).unwrap_or(1);
             let col_q = extract_query_param(raw_target, "column_id");
             let sec_q = extract_query_param(raw_target, "sector_id");
@@ -3915,7 +3923,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
             continue;
         }
-        if clean_path == "/api/v1/synthesis/bleeding_edge_3" || clean_path == "/api/v1/bleeding_edge/synthesis_3" {
+        if clean_path == "/api/v1/synthesis/bleeding_edge_3" || clean_path == "/api/v1/bleeding_edge/synthesis_3" || clean_path == "/api/v1/tools/t283" {
             let sub_epoch = state.lock().map(|g| g.decadic_sub_epoch).unwrap_or(1);
             let col_q = extract_query_param(raw_target, "column_id");
             let sec_q = extract_query_param(raw_target, "sector_id");
@@ -3939,7 +3947,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
             continue;
         }
-        if clean_path == "/api/v1/synthesis/bleeding_edge_4" || clean_path == "/api/v1/bleeding_edge/synthesis_4" {
+        if clean_path == "/api/v1/synthesis/bleeding_edge_4" || clean_path == "/api/v1/bleeding_edge/synthesis_4" || clean_path == "/api/v1/tools/t285" {
             let sub_epoch = state.lock().map(|g| g.decadic_sub_epoch).unwrap_or(1);
             let col_q = extract_query_param(raw_target, "column_id");
             let sec_q = extract_query_param(raw_target, "sector_id");
@@ -3963,7 +3971,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
             continue;
         }
-        if clean_path == "/api/v1/synthesis/bleeding_edge_5" || clean_path == "/api/v1/bleeding_edge/synthesis_5" {
+        if clean_path == "/api/v1/synthesis/bleeding_edge_5" || clean_path == "/api/v1/bleeding_edge/synthesis_5" || clean_path == "/api/v1/tools/t286" {
             let sub_epoch = state.lock().map(|g| g.decadic_sub_epoch).unwrap_or(1);
             let col_q = extract_query_param(raw_target, "column_id");
             let sec_q = extract_query_param(raw_target, "sector_id");
@@ -3988,6 +3996,28 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             continue;
         }
         if clean_path == "/api/v1/ota/pixel_apk" {
+            let has_query_key = !extract_query_param(raw_target, "key").is_empty();
+            let is_ota_peer = is_loopback
+                || stream
+                    .peer_addr()
+                    .map(|a| a.ip().to_string().starts_with("192.168.137."))
+                    .unwrap_or(false);
+            let auth_ok = !has_query_key && verify_operator_header_auth(&operator_header_key, is_ota_peer);
+            if !auth_ok {
+                let reason = if !is_ota_peer {
+                    "OTA binary distribution is restricted to 127.0.0.1 loopback or 192.168.137.0/24 hotspot."
+                } else if has_query_key {
+                    "Passing credentials via URL query parameter '?key=' is forbidden. Use 'X-Sovereign-Operator-Key' request header."
+                } else {
+                    "Invalid or missing 'X-Sovereign-Operator-Key' request header."
+                };
+                let trap_json = format!(
+                    "{{\"status\":\"HTTP_403_OTA_OPERATOR_AUTH_REQUIRED\",\"endpoint\":\"/api/v1/ota/pixel_apk\",\"is_loopback\":{},\"operator_vault_verified\":false,\"reason\":\"{}\"}}",
+                    is_loopback, reason
+                );
+                write_http_str(&mut stream, "403 Forbidden", "application/json; charset=utf-8", &trap_json);
+                continue;
+            }
             let apk_path = "04_edge_silicon/ACT-Omega-Pixel10-Sovereign.apk";
             let apk_alt = "04_edge_silicon/pixel10_ndk_app/app/build/outputs/apk/debug/app-debug.apk";
             if let Ok(apk_bytes) = fs::read(apk_path).or_else(|_| fs::read(apk_alt)) {
@@ -3997,7 +4027,29 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             }
             continue;
         }
-        if clean_path == "/api/v1/ota/pixel_manifest" {
+        if clean_path == "/api/v1/ota/pixel_manifest" || clean_path == "/api/v1/tools/t284" {
+            let has_query_key = !extract_query_param(raw_target, "key").is_empty();
+            let is_ota_peer = is_loopback
+                || stream
+                    .peer_addr()
+                    .map(|a| a.ip().to_string().starts_with("192.168.137."))
+                    .unwrap_or(false);
+            let auth_ok = !has_query_key && verify_operator_header_auth(&operator_header_key, is_ota_peer);
+            if !auth_ok {
+                let reason = if !is_ota_peer {
+                    "OTA manifest inspection is restricted to 127.0.0.1 loopback or 192.168.137.0/24 hotspot."
+                } else if has_query_key {
+                    "Passing credentials via URL query parameter '?key=' is forbidden. Use 'X-Sovereign-Operator-Key' request header."
+                } else {
+                    "Invalid or missing 'X-Sovereign-Operator-Key' request header."
+                };
+                let trap_json = format!(
+                    "{{\"status\":\"HTTP_403_OTA_OPERATOR_AUTH_REQUIRED\",\"endpoint\":\"{}\",\"is_loopback\":{},\"operator_vault_verified\":false,\"reason\":\"{}\"}}",
+                    clean_path, is_loopback, reason
+                );
+                write_http_str(&mut stream, "403 Forbidden", "application/json; charset=utf-8", &trap_json);
+                continue;
+            }
             let sub_epoch = state.lock().map(|g| g.decadic_sub_epoch).unwrap_or(1);
             let apk_path = "04_edge_silicon/ACT-Omega-Pixel10-Sovereign.apk";
             let apk_alt = "04_edge_silicon/pixel10_ndk_app/app/build/outputs/apk/debug/app-debug.apk";
@@ -4012,7 +4064,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             let p8_target = v55_pixel8_ksud_root_edgetpu_mali_kvm_governor::v55_resolve_adb_target("3A121FDJH00BW5");
             let p10_target = v55_pixel8_ksud_root_edgetpu_mali_kvm_governor::v55_resolve_adb_target("58170DLCR0004V");
             let raw_json = format!(
-                "{{\"status\":\"{}\",\"package\":\"com.sovereign.manifold\",\"version_name\":\"v61.0.0\",\"version_code\":61,\"apk_bytes\":{},\"apk_sha256\":\"{}\",\"lan_ota_url\":\"http://192.168.137.1:8097/api/v1/ota/pixel_apk\",\"cloudflare_ota_url\":\"https://api.act-omega-net.dev/api/v1/ota/pixel_apk\",\"android17_qpr3_beta3_ready\":true,\"elf_16kb_page_aligned\":true,\"dual_slot_ab_supported\":true,\"p8_resolved_adb_target\":\"{}\",\"p10_resolved_adb_target\":\"{}\",\"yubikey_5c_nfc_usb_slot_preserved\":true}}",
+                "{{\"status\":\"{}\",\"package\":\"com.sovereign.manifold\",\"version_name\":\"v62.0.0\",\"version_code\":62,\"apk_bytes\":{},\"apk_sha256\":\"{}\",\"lan_ota_url\":\"http://192.168.137.1:8097/api/v1/ota/pixel_apk\",\"cloudflare_ota_url\":\"https://api.act-omega-net.dev/api/v1/ota/pixel_apk\",\"operator_auth_verified\":true,\"android17_qpr3_beta3_ready\":true,\"elf_16kb_page_aligned\":true,\"dual_slot_ab_supported\":true,\"p8_resolved_adb_target\":\"{}\",\"p10_resolved_adb_target\":\"{}\",\"yubikey_5c_nfc_usb_slot_preserved\":true}}",
                 if apk_ok { "MEASURED_PIXEL_OTA_MANIFEST_READY" } else { "UNMEASURED/OFFLINE" },
                 apk_len,
                 apk_sha,
@@ -4240,7 +4292,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.last_card_diag = pb.diag.clone();
             st.last_term_out = pb.diag.clone();
             let json = format!(
-                "{{\"status\":\"V44_PERFORMANCE_BLITZ_VERIFIED_QED\",\"version\":\"v61.0.0\",\"tool_index\":80,\"tool_name\":\"tool:v44_perf_blitz_benchmark_verifier\",\"bench_run\":{},\"npage_shm_delta_us\":{:.1},\"e8z_80sector_scan_us\":{:.1},\"bpe_65k_encode_us\":{:.1},\"p8_shm_speedup_pct\":{:.1},\"base_trisilicon_kops\":{:.1},\"webgpu_leased_kops\":{:.1},\"total_elastic_kops\":{:.1},\"lean4_theorems_qed\":{},\"tools_verified\":{},\"diag\":\"{}\"}}",
+                "{{\"status\":\"V44_PERFORMANCE_BLITZ_VERIFIED_QED\",\"version\":\"v62.0.0\",\"tool_index\":80,\"tool_name\":\"tool:v44_perf_blitz_benchmark_verifier\",\"bench_run\":{},\"npage_shm_delta_us\":{:.1},\"e8z_80sector_scan_us\":{:.1},\"bpe_65k_encode_us\":{:.1},\"p8_shm_speedup_pct\":{:.1},\"base_trisilicon_kops\":{:.1},\"webgpu_leased_kops\":{:.1},\"total_elastic_kops\":{:.1},\"lean4_theorems_qed\":{},\"tools_verified\":{},\"diag\":\"{}\"}}",
                 pb.bench_run,
                 pb.npage_shm_delta_us,
                 pb.e8z_80sector_scan_us,
@@ -4265,7 +4317,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             };
             st.gen_counter += 1;
             let json = format!(
-                "{{\"status\":\"OK_V56_0_0_TOOLS_CATALOG\",\"version\":\"v56.0.0\",\"tools_total\":210,\"chain_milestone\":\"CHAIN 210\",\"omni_suite\":\"/api/v1/chain210/suite\",\"tools\":{{\"t101\":\"/api/v1/v50/avx2_crystallizer\",\"t102\":\"/api/v1/v50/physics_simulator\",\"t103\":\"/api/v1/v50/coordinator_mesh\",\"t104\":\"/api/v1/monograph/braidir_yang_baxter_bresenham_compiler\",\"t105\":\"/api/v1/monograph/sh4z_dual_shell_lvq_quantizer\",\"t106\":\"/api/v1/monograph/vesper_4phase_cellular_sheaf_runtime\",\"t135\":\"/api/v1/brain/sovereign_63360_144subdomain_qat_trainer\",\"t145\":\"/api/v1/toolchain/windows_sdk_dxc_omni_audit\"}},\"diag\":\"ACT-Omega Net v56.0.0 Tools Catalog: 210 Native Tools Online (CHAIN 210 | 63,360 Neurons | 132,960 Bijected CLs | 624/624 Lean 4 QED)\"}}"
+                "{{\"status\":\"OK_V62_0_0_TOOLS_CATALOG\",\"version\":\"v62.0.0\",\"tools_total\":288,\"chain_milestone\":\"CHAIN 288\",\"omni_suite\":\"/api/v1/chain288/suite\",\"tools\":{{\"t101\":\"/api/v1/v50/avx2_crystallizer\",\"t102\":\"/api/v1/v50/physics_simulator\",\"t103\":\"/api/v1/v50/coordinator_mesh\",\"t104\":\"/api/v1/monograph/braidir_yang_baxter_bresenham_compiler\",\"t105\":\"/api/v1/monograph/sh4z_dual_shell_lvq_quantizer\",\"t106\":\"/api/v1/monograph/vesper_4phase_cellular_sheaf_runtime\",\"t135\":\"/api/v1/brain/sovereign_63360_144subdomain_qat_trainer\",\"t145\":\"/api/v1/toolchain/windows_sdk_dxc_omni_audit\",\"t287\":\"/api/v1/vesper_arachne/ik_swarm_companion\",\"t288\":\"/api/v1/chain288/master_certification\"}},\"diag\":\"ACT-Omega Net v62.0.0 Tools Catalog: 288 Native Tools Online (CHAIN 288 | 63,360 Neurons | 132,960 Bijected CLs | 730/730 Lean 4 QED)\"}}"
             );
             st.last_card_diag = format!("EXEC({}) -> OK", clean_path);
             st.last_term_out = format!("EXEC({}) -> OK", clean_path);
@@ -4651,6 +4703,8 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                     || tool_called == "gemma4_http206_slice"
                     || tool_called == "chain270_master_certification"
                     || tool_called == "chain280_master_certification"
+                    || tool_called == "chain288_master_certification"
+                    || tool_called == "vesper_arachne_ik_swarm_companion"
                     || tool_called == "unified_8domain_chain280_dispatcher"
                     || tool_called == "gemma4_speculative_cascade"
                     || tool_called == "gemma4_multimodal_tower_probe"
@@ -4675,6 +4729,10 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                         (v57_aegis_autonomous_agent_harness::v57_execute_gemma4_http206_slicer(&arg_text), 258u64, "tool_outputs")
                     } else if tool_called == "chain270_master_certification" {
                         (v58_v60_chain270_vector_and_gemma4_synthesis::dispatch_chain270_suite(), 270u64, "tool_outputs")
+                    } else if tool_called == "chain288_master_certification" {
+                        (v62_bleeding_edge_synthesis_1_to_5::v62_measure_vesper_swarm_formations_and_chain288_cert(req_body_str), 288u64, "tool_outputs")
+                    } else if tool_called == "vesper_arachne_ik_swarm_companion" {
+                        (v62_bleeding_edge_synthesis_1_to_5::v62_measure_vesper_arachne_e8_ik_and_click_through(req_body_str), 287u64, "tool_outputs")
                     } else if tool_called == "chain280_master_certification" || tool_called == "unified_8domain_chain280_dispatcher" {
                         (v58_v60_chain270_vector_and_gemma4_synthesis::dispatch_chain280_suite(), 280u64, "tool_outputs")
                     } else if tool_called == "gemma4_speculative_cascade" {
@@ -4746,7 +4804,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 continue;
             }
             let diag = format!(
-                "TOOL 46 STRICT MCP SERVER PORTAL (Method='{}', ID={}, Negotiated='{}'): Endpoint={} | Exposed Tools=18 (with inputSchema, 0 extra root keys) | Exposed Resources=6 (.e8z, .npage 8.11MB, .spage 4.05MB, Gemma4 E4B/12B .sh4z 5.30GB, D1 10 Tables) | Zero-OAuth HTTPS Ready={} (RPC Calls #{})",
+                "TOOL 46 STRICT MCP SERVER PORTAL (Method='{}', ID={}, Negotiated='{}'): Endpoint={} | Exposed Tools=19 (with inputSchema, 0 extra root keys) | Exposed Resources=6 (.e8z, .npage 8.11MB, .spage 4.05MB, Gemma4 E4B/12B .sh4z 5.30GB, D1 10 Tables) | Zero-OAuth HTTPS Ready={} (RPC Calls #{})",
                 rpc_method, id_raw, negotiated_proto, m.server_endpoint, m.zero_trust_portal_ready, m.rpc_calls_handled
             );
             {
@@ -4771,7 +4829,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.gen_counter += 1;
             let o = evaluate_openai_compat_surface(st.gen_counter);
             let json = format!(
-                "{{\"object\":\"list\",\"status\":\"OPENAI_V1_MODELS_LIST_READY\",\"version\":\"v61.0.0\",\"data\":\x5b{{\"id\":\"{}\",\"object\":\"model\",\"created\":1760980000,\"owned_by\":\"act-omega-sovereign-manifold\",\"dendritic_neurons\":63360,\"synapses\":3041280,\"vocab_size\":262144,\"holdout_ppl\":{:.8}}},{{\"id\":\"gemma-4-12B-it-sh4z\",\"object\":\"model\",\"created\":1761840000,\"owned_by\":\"act-omega-sovereign-manifold\",\"sh4z_vault_bytes\":3176803328,\"quantized_weights\":11959730176,\"vocab_size\":262144}},{{\"id\":\"gemma-4-E4B-it-sh4z\",\"object\":\"model\",\"created\":1761840000,\"owned_by\":\"act-omega-sovereign-manifold\",\"sh4z_vault_bytes\":2123979252,\"quantized_weights\":7996157184,\"vocab_size\":262144}}\x5d}}",
+                "{{\"object\":\"list\",\"status\":\"OPENAI_V1_MODELS_LIST_READY\",\"version\":\"v62.0.0\",\"data\":\x5b{{\"id\":\"{}\",\"object\":\"model\",\"created\":1760980000,\"owned_by\":\"act-omega-sovereign-manifold\",\"dendritic_neurons\":63360,\"synapses\":3041280,\"vocab_size\":262144,\"holdout_ppl\":{:.8}}},{{\"id\":\"gemma-4-12B-it-sh4z\",\"object\":\"model\",\"created\":1761840000,\"owned_by\":\"act-omega-sovereign-manifold\",\"sh4z_vault_bytes\":3176803328,\"quantized_weights\":11959730176,\"vocab_size\":262144}},{{\"id\":\"gemma-4-E4B-it-sh4z\",\"object\":\"model\",\"created\":1761840000,\"owned_by\":\"act-omega-sovereign-manifold\",\"sh4z_vault_bytes\":2123979252,\"quantized_weights\":7996157184,\"vocab_size\":262144}}\x5d}}",
                 o.model_id, o.holdout_ppl
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
@@ -4825,7 +4883,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             let comp_toks = nl.split_whitespace().count();
             let created_sec = unix_ms() / 1000;
             let json = format!(
-                "{{\"id\":\"chatcmpl-sh4z-v6000-{}\",\"object\":\"chat.completion\",\"created\":{},\"status\":\"OPENAI_V1_COMPAT_SURFACE_LOCKED\",\"version\":\"v61.0.0\",\"tool_index\":47,\"tool_name\":\"tool:openai_v1_compat_api\",\"model\":\"{}\",\"choices\":\x5b{{\"index\":0,\"message\":{{\"role\":\"assistant\",\"content\":\"{}\"}},\"finish_reason\":\"stop\"}}\x5d,\"usage\":{{\"prompt_tokens\":{},\"completion_tokens\":{},\"total_tokens\":{}}},\"dendritic_neurons\":63360,\"synapses_total\":3041280,\"vocab_size\":262144,\"aegis_chair44_col\":{},\"aegis_target_neuron\":{},\"dominant_domain\":\"{}\",\"crystallized_neuron_id\":{},\"crystallized_shard_id\":{},\"holdout_ppl\":{:.6},\"completion_tokens_generated\":{},\"nl_synthesis\":\"{}\",\"diag\":\"{}\"}}",
+                "{{\"id\":\"chatcmpl-sh4z-v6200-{}\",\"object\":\"chat.completion\",\"created\":{},\"status\":\"OPENAI_V1_COMPAT_SURFACE_LOCKED\",\"version\":\"v62.0.0\",\"tool_index\":47,\"tool_name\":\"tool:openai_v1_compat_api\",\"model\":\"{}\",\"choices\":\x5b{{\"index\":0,\"message\":{{\"role\":\"assistant\",\"content\":\"{}\"}},\"finish_reason\":\"stop\"}}\x5d,\"usage\":{{\"prompt_tokens\":{},\"completion_tokens\":{},\"total_tokens\":{}}},\"dendritic_neurons\":63360,\"synapses_total\":3041280,\"vocab_size\":262144,\"aegis_chair44_col\":{},\"aegis_target_neuron\":{},\"dominant_domain\":\"{}\",\"crystallized_neuron_id\":{},\"crystallized_shard_id\":{},\"holdout_ppl\":{:.6},\"completion_tokens_generated\":{},\"nl_synthesis\":\"{}\",\"diag\":\"{}\"}}",
                 st.gen_counter, created_sec, o.model_id, esc_nl, gw.total_tokens, comp_toks, gw.total_tokens + comp_toks, aegis_col, aegis_neuron, gw.dominant_domain, gw.mapped_neuron_id, gw.crystallized_shard_id, o.holdout_ppl, comp_toks, esc_nl, json_escape_clean(&diag)
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
@@ -6002,11 +6060,21 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             || clean_path == "/api/v1/chain210_suite"
         {
             Some(dispatch_chain210_suite())
-        } else if clean_path == "/api/v1/chain280/suite"
+        } else if clean_path == "/api/v1/chain288/suite"
+            || clean_path == "/api/v1/chain288_suite"
+            || clean_path == "/api/v1/chain288/master_certification"
+            || clean_path == "/api/v1/chain280/suite"
             || clean_path == "/api/v1/chain280_suite"
             || clean_path == "/api/v1/chain280/master_certification"
+            || clean_path == "/api/v1/tools/t288"
         {
-            Some(v58_v60_chain270_vector_and_gemma4_synthesis::dispatch_chain280_suite())
+            Some(v62_bleeding_edge_synthesis_1_to_5::v62_measure_vesper_swarm_formations_and_chain288_cert(&post_body))
+        } else if clean_path == "/api/v1/vesper_arachne/ik_swarm_companion"
+            || clean_path == "/api/v1/vesper_arachne/e8_ik"
+            || clean_path == "/api/v1/tools/t287"
+        {
+            let req_payload = if !post_body.trim().is_empty() { &post_body } else { raw_target };
+            Some(v62_bleeding_edge_synthesis_1_to_5::v62_measure_vesper_arachne_e8_ik_and_click_through(req_payload))
         } else if clean_path == "/api/v1/chain270/suite"
             || clean_path == "/api/v1/chain270_suite"
             || clean_path == "/api/v1/chain270/master_certification"
@@ -6061,7 +6129,11 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 };
                 st.gen_counter += 1;
                 st.tool_chain_runs += 1;
-                let chain_tag = if clean_path.contains("280") {
+                let chain_tag = if clean_path.contains("288") {
+                    "CHAIN 288"
+                } else if clean_path.contains("vesper_arachne") {
+                    "VESPER ARACHNE IK"
+                } else if clean_path.contains("280") {
                     "CHAIN 280"
                 } else if clean_path.contains("270") {
                     "CHAIN 270"
@@ -6469,7 +6541,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 write_http_vec(&mut stream, "200 OK", "text/plain; charset=utf-8", &bytes);
                 continue;
             }
-            let fallback = "# ACT-Omega Net v61.0.0 (Sovereign Harmonic VI / SH4Z v6000 TLV | CHAIN 280 | 700/700 Lean 4 QED | 3,041,280 Synapses)\n> Official Domain: https://act-omega-net.dev\n";
+            let fallback = "# ACT-Omega Net v62.0.0 (Sovereign Harmonic VI / SH4Z v6200 TLV | CHAIN 288 | 730/730 Lean 4 QED | 3,041,280 Synapses)\n> Official Domain: https://act-omega-net.dev\n";
             write_http_str(&mut stream, "200 OK", "text/plain; charset=utf-8", fallback);
             continue;
         }
@@ -6546,7 +6618,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             &mut stream,
             "200 OK",
             "text/html; charset=utf-8",
-            "<html><body style='background:#0E1116;color:#FFFEFB;font-family:monospace'><h2>ACT-Omega Net v61.0.0 (SH4Z v6000 TLV | CHAIN 280 | 700 QED) Online at act-omega-net.dev</h2><p>Discovery: <a href='/api/v1/tools'>/api/v1/tools</a> | <a href='/api/v1/chain280/master_certification'>/api/v1/chain280/master_certification</a> | <a href='/openapi.json'>/openapi.json</a></p></body></html>",
+            "<html><body style='background:#0E1116;color:#FFFEFB;font-family:monospace'><h2>ACT-Omega Net v62.0.0 (SH4Z v6200 TLV | CHAIN 288 | 730 QED) Online at act-omega-net.dev</h2><p>Discovery: <a href='/api/v1/tools'>/api/v1/tools</a> | <a href='/api/v1/chain288/master_certification'>/api/v1/chain288/master_certification</a> | <a href='/openapi.json'>/openapi.json</a></p></body></html>",
         );
     }
 
@@ -6574,16 +6646,16 @@ fn run_listener(addr: &'static str, state: Arc<Mutex<SwarmState>>) {
     let listener = loop {
         match TcpListener::bind(addr) {
             Ok(l) => {
-                println!("  (v31_swarm v61.0.0) Bound HTTP Keep-Alive listener on {}", addr);
+                println!("  (v31_swarm v62.0.0) Bound HTTP Keep-Alive listener on {}", addr);
                 break l;
             }
             Err(e) => {
                 attempt += 1;
                 if attempt > 8 {
-                    println!("  (v31_swarm v61.0.0) Port {} already active in primary instance; exiting duplicate.", addr);
+                    println!("  (v31_swarm v62.0.0) Port {} already active in primary instance; exiting duplicate.", addr);
                     std::process::exit(0);
                 }
-                println!("  (v31_swarm v61.0.0) Retry #{} binding {}: {}", attempt, addr, e);
+                println!("  (v31_swarm v62.0.0) Retry #{} binding {}: {}", attempt, addr, e);
                 thread::sleep(Duration::from_millis(250));
             }
         }
@@ -6602,8 +6674,8 @@ fn run_listener(addr: &'static str, state: Arc<Mutex<SwarmState>>) {
 
 fn main() {
     println!("========================================================================");
-    println!(" ACT-OMEGA NET v61.0.0 (SOVEREIGN HARMONIC VI / SH4Z v6000 TLV) SWARM");
-    println!(" 15.965 Hz Decadic Epoch, 63,360 Neurons, 3.04M Synapses, 700 QED & CHAIN 280");
+    println!(" ACT-OMEGA NET v62.0.0 (SOVEREIGN HARMONIC VI / SH4Z v6200 TLV) SWARM");
+    println!(" 15.965 Hz Decadic Epoch, 63,360 Neurons, 3.04M Synapses, 730 QED & CHAIN 288");
     println!("========================================================================");
 
     let (init_norms, init_hashes, init_kasami) = compute_real_e8z_norms(1);

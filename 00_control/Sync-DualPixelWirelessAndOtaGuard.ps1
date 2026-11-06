@@ -115,10 +115,15 @@ if (-not (Test-Path $apkPath)) {
 }
 
 if ($FlashWholeApp -and (Test-Path $apkPath)) {
+    $hostOpKeyFile = "C:\Users\Nbell\.act_omega_operator_vault_key"
     foreach ($tgt in @($p8Target, $p10Target)) {
         if (-not [string]::IsNullOrWhiteSpace($tgt)) {
             Write-Host "[5/5] Flashing Whole-App APK ($apkPath) wirelessly to $tgt..." -ForegroundColor Cyan
             & $adb -s $tgt install -r -d $apkPath
+            if (Test-Path $hostOpKeyFile) {
+                & $adb -s $tgt push $hostOpKeyFile "/data/local/tmp/.act_omega_operator_vault_key" | Out-Null
+                & $adb -s $tgt shell "chmod 644 /data/local/tmp/.act_omega_operator_vault_key" 2>$null
+            }
             & $adb -s $tgt reverse tcp:8097 tcp:8097 2>$null
             & $adb -s $tgt reverse tcp:5173 tcp:5173 2>$null
             & $adb -s $tgt shell am start -n com.actomega.manifold/.MainActivity

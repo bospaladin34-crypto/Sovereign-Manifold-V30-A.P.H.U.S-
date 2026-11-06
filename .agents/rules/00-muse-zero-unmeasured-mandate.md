@@ -2,7 +2,7 @@
 trigger: always_on
 description: "Mandatory constitutional constraint for Parent Agent and all 10 Specialist/Gatekeeper Agents: If it is not measured, calculated or computed, it DOES NOT ship, full stop."
 ---
-# Muse Zero-Unmeasured-Data & Total Branch Honesty Mandate (`v62.0.0` | `CHAIN 288` | `730/730 QED`)
+# Muse Zero-Unmeasured-Data & Total Branch Honesty Mandate (`v62.0.0` | `CHAIN 292` | `740/740 QED`)
 
 1. **HARD CONSTITUTIONAL CONSTRAINT**:
    - **"If it is not measured, calculated or computed, it DOES NOT ship, full stop."**
@@ -20,8 +20,8 @@ description: "Mandatory constitutional constraint for Parent Agent and all 10 Sp
 4. **Mandatory `// SCAFFOLD:` Marker Law**:
    - Any unavoidable mathematical, physical, or architectural reference constant in source code must carry an explicit inline marker: `// SCAFFOLD: <what it stands in for> — measure via <how>`. Silent constants are forbidden.
 
-5. **Zero-Trivial-Theorem (`730/730` QED) & External-Only Secret Law**:
-   - Never pad Lean 4 files with trivial `Nat`/`Int` identities (`a + b = b + a`, `N = N`) proven by `omega`/`rfl`; every theorem (`730/730` QED) must constrain an explicit domain `structure` or `def` and pass `C:\Users\Nbell\.elan\bin\lean.exe`.
+5. **Zero-Trivial-Theorem (`740/740` QED) & External-Only Secret Law**:
+   - Never pad Lean 4 files with trivial `Nat`/`Int` identities (`a + b = b + a`, `N = N`) proven by `omega`/`rfl`; every theorem (`740/740` QED) must constrain an explicit domain `structure` or `def` and pass `C:\Users\Nbell\.elan\bin\lean.exe`.
    - Operator credentials live exclusively outside the repository (`C:\Users\Nbell\.act_omega_operator_vault_key` / `ACT_OMEGA_OPERATOR_KEY`). Never commit any operator key literal into the repo, and always enforce `X-Sovereign-Operator-Key` header + loopback (`?key=` rejected).
 
 6. **First-Pass Periphery Sync & 4-Gatekeeper Enforcement**:

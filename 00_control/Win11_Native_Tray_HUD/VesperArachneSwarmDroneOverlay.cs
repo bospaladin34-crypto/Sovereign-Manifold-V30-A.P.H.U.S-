@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.IO;
@@ -47,15 +48,21 @@ public class VesperArachneSwarmDroneOverlay : Form
     private const int HTCLIENT = 1;
 
     private System.Windows.Forms.Timer frameTimer;
+    private Stopwatch clockWatch = Stopwatch.StartNew();
+    private long lastTickTimestamp = 0;
     private NotifyIcon trayIcon;
     private ContextMenuStrip droneMenu;
 
-    // Kinematic and Pose State
+    // 2nd-Order Spring-Damper Kinematic and Pose State
     private float spiderX;
     private float spiderY;
     private float vx = 0.0f;
     private float vy = 0.0f;
     private float heading = -1.5708f;
+    private float angularVel = 0.0f;
+    private float bodyRoll = 0.0f;
+    private float bodyHeave = 0.0f;
+    private float opisthosomaSway = 0.0f;
     private float headYaw = 0.0f;
     private float runeAngle = 0.0f;
     private float corePulse = 0.0f;
@@ -63,13 +70,14 @@ public class VesperArachneSwarmDroneOverlay : Form
     private float dockY = 44.0f;
     private bool isDocked = false;
     private bool isDragging = false;
+    private bool isClickThrough = true;
     private int behaviorMode = 0; // 0 = Cursor Stalk, 1 = Auto-Patrol, 2 = Perch on Active Window Title Bar
     private bool laserScannerOn = true;
     private bool droneOrbitRingOn = true;
     private int idleTicks = 0;
     private int idleLimitTicks = 900;
     private POINT lastCursor;
-    private string speechText = "ACT-OMEGA v62.0.0 | VESPER-ARACHNE E8 IK SHIMEJI | CHAIN 288 | 730/730 QED | Ready!";
+    private string speechText = "ACT-OMEGA v62.0.0 | VESPER-ARACHNE E8 IK SHIMEJI | CHAIN 292 | 740/740 QED | Ready!";
     private int speechTimer = 340;
 
     // Superpowers State
@@ -97,6 +105,8 @@ public class VesperArachneSwarmDroneOverlay : Form
         public Color CoreColor;
         public float X;
         public float Y;
+        public float Vx;
+        public float Vy;
         public float TargetX;
         public float TargetY;
         public float Heading;
@@ -122,13 +132,15 @@ public class VesperArachneSwarmDroneOverlay : Form
     private float[] goalX = new float[8];
     private float[] goalY = new float[8];
     private float[] stepProg = new float[8];
+    private bool[] wasInSwing = new bool[8];
+    private float[] touchdownPulse = new float[8];
     private float[] localAngles = new float[] { -0.42f, -0.95f, -1.52f, -2.18f, 0.42f, 0.95f, 1.52f, 2.18f };
     private float[] baseRadius = new float[] { 76.0f, 84.0f, 84.0f, 76.0f, 76.0f, 84.0f, 84.0f, 76.0f };
 
     public VesperArachneSwarmDroneOverlay()
     {
         Rectangle bounds = Screen.PrimaryScreen.Bounds;
-        this.Text = "ACT-OMEGA v62.0.0 | VESPER-ARACHNE E8 IK SHIMEJI | CHAIN 288 | 730/730 QED";
+        this.Text = "ACT-OMEGA v62.0.0 | VESPER-ARACHNE E8 IK SHIMEJI | CHAIN 292 | 740/740 QED";
         this.FormBorderStyle = FormBorderStyle.None;
         this.StartPosition = FormStartPosition.Manual;
         this.Bounds = bounds;
@@ -162,7 +174,7 @@ public class VesperArachneSwarmDroneOverlay : Form
 
         trayIcon = new NotifyIcon();
         trayIcon.Icon = SystemIcons.Shield;
-        string tipText = "VESPER-ARACHNE v62.0 E8 IK SHIMEJI (CHAIN 288 | 730 QED)";
+        string tipText = "VESPER-ARACHNE v62.0 E8 IK SHIMEJI (CHAIN 292 | 740 QED)";
         if (tipText.Length > 63) tipText = tipText.Substring(0, 63);
         trayIcon.Text = tipText;
         trayIcon.ContextMenuStrip = droneMenu;
@@ -185,40 +197,34 @@ public class VesperArachneSwarmDroneOverlay : Form
         get
         {
             CreateParams cp = base.CreateParams;
-            cp.ExStyle |= WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TOOLWINDOW;
+            cp.ExStyle |= WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_TOPMOST | WS_EX_TOOLWINDOW;
             return cp;
         }
     }
 
     /// <summary>
-    /// Synchronous Click-Through Hit-Testing via WM_NCHITTEST:
+    /// Cross-Process Click-Through Gate via WS_EX_TRANSPARENT (0x20) on GWL_EXSTYLE:
     /// As proven in Lean 4 thm_v62_728_vesper_arachne_win32_click_through_gate_exclusivity:
-    /// Returns HTTRANSPARENT (-1) when the cursor is outside the soma interaction radius (66px)
-    /// and dock radius (48px) while not dragging, allowing operator clicks to pass directly to
-    /// windows underneath without DWM style races or flickering.
+    /// In Win32, top-level layered windows only pass mouse clicks to OTHER processes when
+    /// WS_EX_TRANSPARENT is set in GWL_EXSTYLE (whereas WM_NCHITTEST HTTRANSPARENT only
+    /// passes hit-testing to windows within the same thread). We keep WS_EX_TRANSPARENT enabled
+    /// across the entire screen except when the operator's cursor hovers directly inside Vesper's
+    /// central carapace (<= 34px), the upper-right dock portal (<= 34px), or while dragging/menu open.
     /// </summary>
-    protected override void WndProc(ref Message m)
+    private void SetClickThrough(bool enable)
     {
-        if (m.Msg == WM_NCHITTEST)
+        if (isClickThrough == enable) return;
+        isClickThrough = enable;
+        if (!this.IsHandleCreated) return;
+        int exStyle = GetWindowLong(this.Handle, GWL_EXSTYLE);
+        if (enable)
         {
-            int screenX = (short)(m.LParam.ToInt32() & 0xFFFF);
-            int screenY = (short)((m.LParam.ToInt32() >> 16) & 0xFFFF);
-            double distBody = Math.Sqrt((screenX - spiderX) * (screenX - spiderX) + (screenY - spiderY) * (screenY - spiderY));
-            double distDock = Math.Sqrt((screenX - dockX) * (screenX - dockX) + (screenY - dockY) * (screenY - dockY));
-
-            bool canInteract = isDragging || (distDock <= 48.0) || (!isDocked && distBody <= 66.0);
-            if (!canInteract)
-            {
-                m.Result = (IntPtr)HTTRANSPARENT;
-                return;
-            }
-            else
-            {
-                m.Result = (IntPtr)HTCLIENT;
-                return;
-            }
+            SetWindowLong(this.Handle, GWL_EXSTYLE, exStyle | WS_EX_LAYERED | WS_EX_TRANSPARENT);
         }
-        base.WndProc(ref m);
+        else
+        {
+            SetWindowLong(this.Handle, GWL_EXSTYLE, (exStyle | WS_EX_LAYERED) & ~WS_EX_TRANSPARENT);
+        }
     }
 
     private void BuildDroneMenu()
@@ -339,7 +345,7 @@ public class VesperArachneSwarmDroneOverlay : Form
 
         string[] mcpTools = new string[] {
             "vesper_arachne_ik_swarm_companion",
-            "chain288_master_certification",
+            "chain292_master_certification",
             "unified_8domain_chain280_dispatcher",
             "gemma4_speculative_cascade",
             "gemma4_ple_256d_surgical_router",
@@ -356,7 +362,8 @@ public class VesperArachneSwarmDroneOverlay : Form
             "safe_llm_gateway_interact",
             "browser_article_operationalizer",
             "metabolic_5w1h_harness",
-            "cloudflare_d1_vpc_shadow"
+            "cloudflare_d1_vpc_shadow",
+            "polytope_7777d_crt_rvq_router"
         };
         foreach (string t in mcpTools)
         {
@@ -636,7 +643,7 @@ public class VesperArachneSwarmDroneOverlay : Form
             new PointF(x1 + nx * w1, y1 + ny * w1),
             new PointF(mx + nx * wMid, my + ny * wMid),
             new PointF(x2 + nx * w2, y2 + ny * w2),
-            new PointF(x2 - nx * w2, y2 - nx * w2),
+            new PointF(x2 - nx * w2, y2 - ny * w2),
             new PointF(mx - nx * wMid, my - ny * wMid),
             new PointF(x1 - nx * w1, y1 - ny * w1)
         };
@@ -652,8 +659,21 @@ public class VesperArachneSwarmDroneOverlay : Form
 
     private void OnFrameTick(object sender, EventArgs e)
     {
+        long nowTicks = clockWatch.ElapsedTicks;
+        float dt = (lastTickTimestamp == 0)
+            ? 0.016f
+            : (float)(nowTicks - lastTickTimestamp) / (float)Stopwatch.Frequency;
+        lastTickTimestamp = nowTicks;
+        dt = Math.Max(0.004f, Math.Min(0.050f, dt));
+        float dtScale = dt * 60.0f;
+
         POINT pt;
         GetCursorPos(out pt);
+
+        if (isDragging && (Control.MouseButtons & MouseButtons.Left) == MouseButtons.None)
+        {
+            isDragging = false;
+        }
 
         if (Math.Abs(pt.X - lastCursor.X) > 2 || Math.Abs(pt.Y - lastCursor.Y) > 2)
         {
@@ -665,9 +685,9 @@ public class VesperArachneSwarmDroneOverlay : Form
             idleTicks++;
         }
 
-        runeAngle += 0.038f;
-        if (corePulse > 0.01f) corePulse *= 0.92f;
-        if (portalPulse > 0.01f) portalPulse *= 0.95f;
+        runeAngle += 0.038f * dtScale;
+        if (corePulse > 0.01f) corePulse *= (float)Math.Pow(0.92, dtScale);
+        if (portalPulse > 0.01f) portalPulse *= (float)Math.Pow(0.95, dtScale);
         if (speechTimer > 0) speechTimer--;
 
         if (golayTimer > 0)
@@ -681,10 +701,11 @@ public class VesperArachneSwarmDroneOverlay : Form
         while (desiredYaw > Math.PI) desiredYaw -= (float)(Math.PI * 2.0);
         while (desiredYaw < -Math.PI) desiredYaw += (float)(Math.PI * 2.0);
         float clampedYaw = Math.Max(-0.55f, Math.Min(0.55f, desiredYaw));
-        headYaw += (clampedYaw - headYaw) * 0.20f;
+        headYaw += (clampedYaw - headYaw) * Math.Min(1.0f, 0.22f * dtScale);
 
         float prevX = spiderX;
         float prevY = spiderY;
+        float prevHeading = heading;
 
         if (!isDocked && behaviorMode == 0 && idleTicks > idleLimitTicks)
         {
@@ -694,20 +715,34 @@ public class VesperArachneSwarmDroneOverlay : Form
             if (d < 16.0f)
             {
                 isDocked = true;
+                vx = 0.0f;
+                vy = 0.0f;
                 speechText = "Auto-docked into Upper-Right Screen Corner (15s Idle).";
                 speechTimer = 180;
             }
             else
             {
-                heading = (float)Math.Atan2(dy, dx);
-                spiderX += (dx / d) * 6.8f;
-                spiderY += (dy / d) * 6.8f;
+                float targetHeading = (float)Math.Atan2(dy, dx);
+                float diff = targetHeading - heading;
+                while (diff > Math.PI) diff -= (float)(Math.PI * 2.0);
+                while (diff < -Math.PI) diff += (float)(Math.PI * 2.0);
+                angularVel = angularVel * 0.72f + diff * 0.22f;
+                heading += angularVel * dtScale;
+                vx = vx * 0.78f + (dx / d) * 1.45f;
+                vy = vy * 0.78f + (dy / d) * 1.45f;
+                spiderX += vx * dtScale;
+                spiderY += vy * dtScale;
             }
         }
         else if (isDragging)
         {
+            float dragVx = (pt.X - spiderX) * 0.45f;
+            float dragVy = (pt.Y - spiderY) * 0.45f;
+            vx = dragVx;
+            vy = dragVy;
             spiderX = pt.X;
             spiderY = pt.Y;
+            angularVel *= 0.80f;
         }
         else if (!isDocked)
         {
@@ -741,59 +776,135 @@ public class VesperArachneSwarmDroneOverlay : Form
                 float diff = targetHeading - heading;
                 while (diff > Math.PI) diff -= (float)(Math.PI * 2.0);
                 while (diff < -Math.PI) diff += (float)(Math.PI * 2.0);
-                heading += diff * 0.16f;
 
-                float speed = Math.Min(7.5f, (dist - stopDist + 8.0f) * 0.09f);
-                spiderX += (float)Math.Cos(heading) * speed;
-                spiderY += (float)Math.Sin(heading) * speed;
+                // 2nd-Order Critically Damped Angular Spring-Damper
+                angularVel = angularVel * 0.68f + diff * 0.24f;
+                heading += angularVel * dtScale;
+
+                float desiredSpeed = Math.Min(7.8f, (dist - stopDist + 8.0f) * 0.095f);
+                // Slow forward thrust slightly when executing a sharp turn (> 45 deg)
+                float turnAlignment = Math.Max(0.28f, (float)Math.Cos(Math.Min(1.3f, Math.Abs(diff))));
+                float targetVx = (float)Math.Cos(heading) * desiredSpeed * turnAlignment;
+                float targetVy = (float)Math.Sin(heading) * desiredSpeed * turnAlignment;
+
+                // Critically damped velocity blending
+                vx += (targetVx - vx) * Math.Min(1.0f, 0.26f * dtScale);
+                vy += (targetVy - vy) * Math.Min(1.0f, 0.26f * dtScale);
+                spiderX += vx * dtScale;
+                spiderY += vy * dtScale;
+            }
+            else
+            {
+                // Smoothly damp velocity and turn rate to rest
+                vx *= (float)Math.Pow(0.72, dtScale);
+                vy *= (float)Math.Pow(0.72, dtScale);
+                angularVel *= (float)Math.Pow(0.68, dtScale);
+                spiderX += vx * dtScale;
+                spiderY += vy * dtScale;
             }
         }
 
-        vx = spiderX - prevX;
-        vy = spiderY - prevY;
-        float actualSpeed = (float)Math.Sqrt(vx * vx + vy * vy);
+        float frameDx = spiderX - prevX;
+        float frameDy = spiderY - prevY;
+        float actualSpeed = (float)Math.Sqrt(frameDx * frameDx + frameDy * frameDy) / Math.Max(0.25f, dtScale);
+        float headingDelta = heading - prevHeading;
+        while (headingDelta > Math.PI) headingDelta -= (float)(Math.PI * 2.0);
+        while (headingDelta < -Math.PI) headingDelta += (float)(Math.PI * 2.0);
 
-        // Update E8 Alternating Tetrapod Gait
-        // Advance gait phase continuously with speed; when resting, pulse slowly
-        float phaseInc = (actualSpeed > 0.4f) ? (actualSpeed * 0.045f) : 0.015f;
-        gaitPhase = (gaitPhase + phaseInc) % (float)(Math.PI * 2.0);
+        // Compute max foot stance error to detect when idle/turn micro-stepping is needed
+        float maxStanceError = 0.0f;
+        for (int i = 0; i < 8; i++)
+        {
+            float idealAng = heading + localAngles[i];
+            float ix = spiderX + (float)Math.Cos(idealAng) * baseRadius[i];
+            float iy = spiderY + (float)Math.Sin(idealAng) * baseRadius[i];
+            float err = (float)Math.Sqrt((ix - footX[i]) * (ix - footX[i]) + (iy - footY[i]) * (iy - footY[i]));
+            if (err > maxStanceError) maxStanceError = err;
+        }
+        bool needsRestAdjustment = (!isDragging && actualSpeed <= 0.45f && maxStanceError > 14.0f);
+
+        // Update E8 Alternating Tetrapod Gait Phase
+        float phaseInc = isDragging
+            ? 0.14f
+            : (actualSpeed > 0.40f
+                ? Math.Min(0.34f, 0.065f + actualSpeed * 0.038f)
+                : (needsRestAdjustment ? 0.14f : 0.016f));
+        gaitPhase = (gaitPhase + phaseInc * dtScale) % (float)(Math.PI * 2.0);
+
+        // Suspension Heave, Roll & Abdomen Counter-Sway
+        float targetHeave = (actualSpeed > 0.40f)
+            ? (float)Math.Sin(gaitPhase * 2.0) * Math.Min(2.6f, actualSpeed * 0.35f)
+            : (float)Math.Sin(runeAngle * 1.4f) * 0.7f;
+        bodyHeave += (targetHeave - bodyHeave) * Math.Min(1.0f, 0.25f * dtScale);
+
+        float targetRoll = Math.Max(-0.32f, Math.Min(0.32f, headingDelta * 2.4f));
+        bodyRoll += (targetRoll - bodyRoll) * Math.Min(1.0f, 0.22f * dtScale);
+
+        float targetSway = isDragging
+            ? Math.Max(-0.45f, Math.Min(0.45f, -vx * 0.03f))
+            : Math.Max(-0.28f, Math.Min(0.28f, -headingDelta * 1.8f + (float)Math.Sin(gaitPhase) * Math.Min(0.10f, actualSpeed * 0.015f)));
+        opisthosomaSway += (targetSway - opisthosomaSway) * Math.Min(1.0f, 0.20f * dtScale);
 
         // Group partition:
         // Group A = {0, 2, 5, 7} in phase gaitPhase
         // Group B = {1, 3, 4, 6} in phase (gaitPhase + Math.PI) % 2*PI
         for (int i = 0; i < 8; i++)
         {
+            if (touchdownPulse[i] > 0.01f)
+            {
+                touchdownPulse[i] *= (float)Math.Pow(0.86, dtScale);
+            }
+            else
+            {
+                touchdownPulse[i] = 0.0f;
+            }
+
             bool isGroupA = (i == 0 || i == 2 || i == 5 || i == 7);
             float legPhase = isGroupA ? gaitPhase : (float)((gaitPhase + Math.PI) % (Math.PI * 2.0));
-
-            // Stance phase: legPhase in [0, PI) -> grounded
-            // Swing phase: legPhase in [PI, 2*PI) -> lifted with parabolic trajectory
             bool inSwing = (legPhase >= Math.PI);
 
             float idealAng = heading + localAngles[i];
-            float idealX = spiderX + (float)Math.Cos(idealAng) * baseRadius[i] + vx * 2.5f;
-            float idealY = spiderY + (float)Math.Sin(idealAng) * baseRadius[i] + vy * 2.5f;
+            float leadVelX = frameDx * 2.8f;
+            float leadVelY = frameDy * 2.8f;
+            float idealX = spiderX + (float)Math.Cos(idealAng) * baseRadius[i] + leadVelX;
+            float idealY = spiderY + (float)Math.Sin(idealAng) * baseRadius[i] + leadVelY;
 
-            if (inSwing)
+            if (isDragging)
             {
-                // Swing progress tau in [0, 1]
-                float prevProg = stepProg[i];
+                // Air-grasping kinematic reflex while picked up by operator
+                float wave = (float)Math.Sin(runeAngle * 3.2f + i * 0.85f);
+                footX[i] = idealX + (float)Math.Cos(idealAng + wave * 0.16f) * 6.0f;
+                footY[i] = idealY + (float)Math.Sin(idealAng + wave * 0.16f) * 6.0f;
+                footLift[i] = 10.0f + (wave + 1.0f) * 5.5f;
+                startX[i] = footX[i];
+                startY[i] = footY[i];
+                goalX[i] = footX[i];
+                goalY[i] = footY[i];
+                stepProg[i] = 0.5f;
+                wasInSwing[i] = true;
+                continue;
+            }
+
+            if (inSwing && (actualSpeed > 0.35f || needsRestAdjustment))
+            {
                 float tau = (float)((legPhase - Math.PI) / Math.PI);
+                if (!wasInSwing[i])
+                {
+                    // Exact Stance -> Swing liftoff anchor lock
+                    startX[i] = footX[i];
+                    startY[i] = footY[i];
+                    wasInSwing[i] = true;
+                }
                 stepProg[i] = tau;
 
-                // Smooth Hermite ease-in-out horizontal trajectory s(tau) = 3*tau^2 - 2*tau^3
+                // Smooth Cubic Hermite ease-in-out horizontal trajectory s(tau) = 3*tau^2 - 2*tau^3
                 float smoothTau = tau * tau * (3.0f - 2.0f * tau);
 
                 // Parabolic foot-lift z(tau) = 4 * H * tau * (1 - tau) as proven in Lean 4 thm_v62_727
-                float dynamicStepH = (actualSpeed > 0.35f) ? StepHeight : (StepHeight * 0.28f);
+                float dynamicStepH = (actualSpeed > 0.35f) ? StepHeight : (StepHeight * 0.45f);
                 footLift[i] = 4.0f * dynamicStepH * tau * (1.0f - tau);
 
-                if (prevProg >= 0.95f || tau < prevProg)
-                {
-                    startX[i] = footX[i];
-                    startY[i] = footY[i];
-                }
-                float leadOffset = (actualSpeed > 0.35f) ? Math.Min(22.0f, actualSpeed * 3.2f) : 4.0f;
+                float leadOffset = (actualSpeed > 0.35f) ? Math.Min(22.0f, actualSpeed * 3.0f) : 0.0f;
                 goalX[i] = idealX + (float)Math.Cos(heading) * leadOffset;
                 goalY[i] = idealY + (float)Math.Sin(heading) * leadOffset;
                 footX[i] = startX[i] + (goalX[i] - startX[i]) * smoothTau;
@@ -801,15 +912,24 @@ public class VesperArachneSwarmDroneOverlay : Form
             }
             else
             {
+                if (wasInSwing[i])
+                {
+                    // Exact Swing -> Stance touchdown shockwave trigger
+                    wasInSwing[i] = false;
+                    if (actualSpeed > 0.45f || needsRestAdjustment)
+                    {
+                        touchdownPulse[i] = 1.0f;
+                    }
+                }
                 stepProg[i] = 1.0f;
                 footLift[i] = 0.0f;
 
                 // Grounded stance phase: foot stays firmly planted unless body is dragged beyond reach
                 float err = (float)Math.Sqrt((idealX - footX[i]) * (idealX - footX[i]) + (idealY - footY[i]) * (idealY - footY[i]));
-                if (err > 52.0f)
+                if (err > 54.0f)
                 {
-                    footX[i] += (idealX - footX[i]) * 0.35f;
-                    footY[i] += (idealY - footY[i]) * 0.35f;
+                    footX[i] += (idealX - footX[i]) * 0.38f;
+                    footY[i] += (idealY - footY[i]) * 0.38f;
                 }
                 startX[i] = footX[i];
                 startY[i] = footY[i];
@@ -817,12 +937,20 @@ public class VesperArachneSwarmDroneOverlay : Form
         }
 
         // Update Swarm Clones based on Current Formation
-        UpdateSwarmClonesFormation();
+        UpdateSwarmClonesFormation(dtScale);
+
+        // Cross-Process Click-Through Gate: keep WS_EX_TRANSPARENT active everywhere on screen
+        // except when hovering directly over Vesper's 34px central carapace or 34px dock portal
+        double distBody = Math.Sqrt((pt.X - spiderX) * (pt.X - spiderX) + (pt.Y - spiderY) * (pt.Y - spiderY));
+        double distDock = Math.Sqrt((pt.X - dockX) * (pt.X - dockX) + (pt.Y - dockY) * (pt.Y - dockY));
+        bool menuOpen = (droneMenu != null && droneMenu.Visible);
+        bool shouldInterceptMouse = isDragging || menuOpen || (distDock <= 34.0) || (!isDocked && distBody <= 34.0);
+        SetClickThrough(!shouldInterceptMouse);
 
         this.Invalidate();
     }
 
-    private void UpdateSwarmClonesFormation()
+    private void UpdateSwarmClonesFormation(float dtScale)
     {
         float screenW = Screen.PrimaryScreen.Bounds.Width;
         float screenH = Screen.PrimaryScreen.Bounds.Height;
@@ -830,7 +958,7 @@ public class VesperArachneSwarmDroneOverlay : Form
         for (int c = swarmClones.Count - 1; c >= 0; c--)
         {
             SwarmCloneWorker sc = swarmClones[c];
-            sc.Phase += 0.05f;
+            sc.Phase = (sc.Phase + 0.12f * dtScale) % (float)(Math.PI * 2.0);
 
             if (sc.Merging)
             {
@@ -846,8 +974,8 @@ public class VesperArachneSwarmDroneOverlay : Form
                     continue;
                 }
                 sc.Heading = (float)Math.Atan2(cdy, cdx);
-                sc.X += (cdx / cdist) * 9.5f;
-                sc.Y += (cdy / cdist) * 9.5f;
+                sc.X += (cdx / cdist) * 9.5f * dtScale;
+                sc.Y += (cdy / cdist) * 9.5f * dtScale;
                 continue;
             }
 
@@ -891,12 +1019,24 @@ public class VesperArachneSwarmDroneOverlay : Form
             float dx = tx - sc.X;
             float dy = ty - sc.Y;
             float dist = (float)Math.Sqrt(dx * dx + dy * dy);
-            if (dist > 6.0f)
+            if (dist > 4.0f)
             {
-                sc.Heading = (float)Math.Atan2(dy, dx);
-                float spd = Math.Min(6.5f, dist * 0.08f);
-                sc.X += (dx / dist) * spd;
-                sc.Y += (dy / dist) * spd;
+                float desiredH = (float)Math.Atan2(dy, dx);
+                float hDiff = desiredH - sc.Heading;
+                while (hDiff > Math.PI) hDiff -= (float)(Math.PI * 2.0);
+                while (hDiff < -Math.PI) hDiff += (float)(Math.PI * 2.0);
+                sc.Heading += hDiff * Math.Min(1.0f, 0.22f * dtScale);
+
+                float spd = Math.Min(6.8f, dist * 0.09f);
+                sc.Vx = sc.Vx * 0.72f + (dx / dist) * spd * 0.28f;
+                sc.Vy = sc.Vy * 0.72f + (dy / dist) * spd * 0.28f;
+                sc.X += sc.Vx * dtScale;
+                sc.Y += sc.Vy * dtScale;
+            }
+            else
+            {
+                sc.Vx *= 0.75f;
+                sc.Vy *= 0.75f;
             }
         }
     }
@@ -992,7 +1132,7 @@ public class VesperArachneSwarmDroneOverlay : Form
             }
         }
 
-        // 6. Independent Mitotic Swarm Clone Workers & Formation Mesh
+        // 6. Independent Mitotic Swarm Clone Workers & Formation Mesh (8-Leg Tetrapod Phase)
         if (swarmClones.Count > 0)
         {
             using (Pen meshPen = new Pen(Color.FromArgb(145, 56, 189, 248), 1.3f))
@@ -1007,19 +1147,29 @@ public class VesperArachneSwarmDroneOverlay : Form
                     g.DrawLine(meshPen, spiderX, spiderY, sc.X, sc.Y);
                     if (c > 0) g.DrawLine(meshPen, swarmClones[c - 1].X, swarmClones[c - 1].Y, sc.X, sc.Y);
 
-                    // 8 articulated mini-legs for each clone
-                    for (int k = 0; k < 8; k++)
+                    using (Pen roleLegPen = new Pen(sc.CoreColor, 1.5f))
                     {
-                        float lAng = sc.Heading + localAngles[k];
-                        float hx = sc.X + (float)Math.Cos(lAng) * 10.0f;
-                        float hy = sc.Y + (float)Math.Sin(lAng) * 10.0f;
-                        float stride = (float)Math.Sin(sc.Phase * 2.5f + k * 0.9f) * 5.0f;
-                        float fx = sc.X + (float)Math.Cos(lAng) * (38.0f + stride);
-                        float fy = sc.Y + (float)Math.Sin(lAng) * (38.0f + stride);
-                        float kx = (hx + fx) * 0.5f;
-                        float ky = (hy + fy) * 0.5f - 8.0f;
-                        g.DrawLine(cloneEdge, hx, hy, kx, ky);
-                        g.DrawLine(cloneEdge, kx, ky, fx, fy);
+                        // 8 articulated mini-legs with alternating tetrapod gait & parabolic lift
+                        for (int k = 0; k < 8; k++)
+                        {
+                            bool cGroupA = (k == 0 || k == 2 || k == 5 || k == 7);
+                            float cLegPhase = cGroupA ? sc.Phase : (float)((sc.Phase + Math.PI) % (Math.PI * 2.0));
+                            bool cInSwing = (cLegPhase >= Math.PI);
+                            float cTau = cInSwing ? (float)((cLegPhase - Math.PI) / Math.PI) : 0.0f;
+                            float cLift = cInSwing ? (4.0f * 7.5f * cTau * (1.0f - cTau)) : 0.0f;
+
+                            float lAng = sc.Heading + localAngles[k];
+                            float hx = sc.X + (float)Math.Cos(lAng) * 9.5f;
+                            float hy = sc.Y + (float)Math.Sin(lAng) * 9.5f;
+                            float stride = (float)Math.Sin(cLegPhase) * 6.0f;
+                            float fx = sc.X + (float)Math.Cos(lAng) * 34.0f + (float)Math.Cos(sc.Heading) * stride;
+                            float fy = sc.Y + (float)Math.Sin(lAng) * 34.0f + (float)Math.Sin(sc.Heading) * stride - cLift;
+                            float kx = (hx + fx) * 0.52f;
+                            float ky = (hy + fy) * 0.52f - 7.5f - cLift * 0.35f;
+                            g.DrawLine(cloneEdge, hx, hy, kx, ky);
+                            g.DrawLine(cInSwing ? roleLegPen : cloneEdge, kx, ky, fx, fy);
+                            g.FillEllipse(cInSwing ? Brushes.Gold : Brushes.Cyan, fx - 1.8f, fy - 1.8f, 3.6f, 3.6f);
+                        }
                     }
 
                     // Octagonal mini-mecha carapace & role-colored core
@@ -1033,7 +1183,7 @@ public class VesperArachneSwarmDroneOverlay : Form
                     g.DrawPolygon(cloneEdge, cOct);
                     using (SolidBrush roleBr = new SolidBrush(sc.CoreColor))
                     {
-                        g.FillEllipse(roleBr, sc.X - 7.0f, sc.Y - 7.0f, 14.0f, 14.0f);
+                        g.FillEllipse(roleBr, sc.X - 6.5f, sc.Y - 6.5f, 13.0f, 13.0f);
                         g.DrawString(sc.RoleName, fClone, roleBr, sc.X - 38.0f, sc.Y + 16.0f);
                     }
                 }
@@ -1045,6 +1195,15 @@ public class VesperArachneSwarmDroneOverlay : Form
         {
             tetherPen.DashStyle = DashStyle.Dash;
             g.DrawLine(tetherPen, dockX, dockY, spiderX, spiderY);
+        }
+
+        float bodyCenterX = spiderX;
+        float bodyCenterY = spiderY + bodyHeave;
+
+        // 7b. Soft Ground Contact Shadow Under Soma Chassis
+        using (SolidBrush bodyShadow = new SolidBrush(Color.FromArgb(95, 4, 8, 16)))
+        {
+            g.FillEllipse(bodyShadow, spiderX - 28.0f, spiderY + 12.0f, 56.0f, 24.0f);
         }
 
         // 8. Procedural 8-Leg 3-Jointed E8 Alternating Tetrapod IK Gait Engine
@@ -1059,28 +1218,46 @@ public class VesperArachneSwarmDroneOverlay : Form
         using (SolidBrush jointFill = new SolidBrush(Color.FromArgb(255, 9, 13, 22)))
         using (Pen orangePen = new Pen(orangeCore, 1.5f))
         using (Pen cyanPen = new Pen(cyanEdge, 1.5f))
+        using (Pen goldPen = new Pen(goldStep, 1.3f))
         {
             for (int i = 0; i < 8; i++)
             {
                 bool stepping = (stepProg[i] < 1.0f);
                 float hipAngle = heading + localAngles[i];
-                float coxaX = spiderX + (float)Math.Cos(hipAngle) * 20.0f;
-                float coxaY = spiderY + (float)Math.Sin(hipAngle) * 20.0f;
+                float rollOffset = (i < 4 ? -1.0f : 1.0f) * bodyRoll * 8.0f;
+                float coxaX = bodyCenterX + (float)Math.Cos(hipAngle) * 20.0f;
+                float coxaY = bodyCenterY + (float)Math.Sin(hipAngle) * 20.0f + rollOffset;
 
                 float lift = footLift[i];
                 float fx = footX[i];
                 float fy = footY[i] - lift;
+
+                // Touchdown Shockwave Ripple Ring on Foot Contact
+                if (touchdownPulse[i] > 0.05f)
+                {
+                    int pulseAlpha = Math.Max(10, Math.Min(220, (int)(touchdownPulse[i] * 210.0f)));
+                    float ringR = (1.0f - touchdownPulse[i]) * 16.0f + 3.0f;
+                    using (Pen ripplePen = new Pen(Color.FromArgb(pulseAlpha, 56, 189, 248), 1.4f))
+                    {
+                        g.DrawEllipse(ripplePen, footX[i] - ringR, footY[i] - ringR * 0.55f, ringR * 2.0f, ringR * 1.1f);
+                    }
+                }
+
+                // Ground contact shadow on desktop plane (footX[i], footY[i]) when foot is lifted
+                if (lift > 0.5f)
+                {
+                    using (SolidBrush shadowBr = new SolidBrush(Color.FromArgb(115, 4, 8, 16)))
+                    {
+                        float shW = Math.Max(4.0f, 11.0f - lift * 0.22f);
+                        g.FillEllipse(shadowBr, footX[i] - shW * 0.5f, footY[i] - shW * 0.25f, shW, shW * 0.5f);
+                    }
+                }
 
                 // Analytical 2-Bone Law-of-Cosines Inverse Kinematics
                 float dx = fx - coxaX;
                 float dy = fy - coxaY;
                 float rawDist = (float)Math.Sqrt(dx * dx + dy * dy);
                 float d = Math.Max(18.0f, Math.Min(L1 + L2 - 2.0f, rawDist));
-
-                // cos(theta_knee) = (d^2 - L1^2 - L2^2) / (2 * L1 * L2)
-                float cosKnee = (d * d - L1 * L1 - L2 * L2) / (2.0f * L1 * L2);
-                cosKnee = Math.Max(-1.0f, Math.Min(1.0f, cosKnee));
-                float thetaKnee = (float)Math.Acos(cosKnee);
 
                 // Elevation angles
                 float alpha = (float)Math.Atan2(dy, dx);
@@ -1092,44 +1269,43 @@ public class VesperArachneSwarmDroneOverlay : Form
                 float thetaFemur = alpha + beta * archSign;
 
                 float kneeX = coxaX + (float)Math.Cos(thetaFemur) * L1;
-                float kneeY = coxaY + (float)Math.Sin(thetaFemur) * L1 - (lift * 0.4f);
+                float kneeY = coxaY + (float)Math.Sin(thetaFemur) * L1 - (lift * 0.42f);
 
                 float ankleX = kneeX + (fx - kneeX) * 0.72f;
                 float ankleY = kneeY + (fy - kneeY) * 0.72f;
 
-                // Hydraulic under-piston
-                g.DrawLine(pistonPen, coxaX, coxaY + 3.0f, (coxaX + kneeX) * 0.55f, (coxaY + kneeY) * 0.55f + 3.0f);
+                // Dual Hydraulic Under-Pistons (Femur & Tibia Cylinders)
+                g.DrawLine(pistonPen, coxaX, coxaY + 3.0f, (coxaX + kneeX) * 0.58f, (coxaY + kneeY) * 0.58f + 3.0f);
+                g.DrawLine(pistonPen, kneeX, kneeY + 2.2f, (kneeX + ankleX) * 0.55f, (kneeY + ankleY) * 0.55f + 2.2f);
 
                 // Proximal Femur Armor Plate (L1 = 36px)
-                DrawTaperedArmorPlate(g, coxaX, coxaY, kneeX, kneeY, 3.6f, 5.4f, 3.0f, armorDark, slateEdge, orangeCore);
+                DrawTaperedArmorPlate(g, coxaX, coxaY, kneeX, kneeY, 3.8f, 5.6f, 3.1f, armorDark, slateEdge, orangeCore);
                 // Medial Tibia Armor Strut (L2 = 54px proximal segment)
-                DrawTaperedArmorPlate(g, kneeX, kneeY, ankleX, ankleY, 3.1f, 3.9f, 2.0f, armorDark, cyanEdge, cyanEdge);
+                DrawTaperedArmorPlate(g, kneeX, kneeY, ankleX, ankleY, 3.2f, 4.0f, 2.1f, armorDark, cyanEdge, cyanEdge);
                 // Distal Scythe Blade
-                DrawTaperedArmorPlate(g, ankleX, ankleY, fx, fy, 2.0f, 1.4f, 0.5f, armorDark, stepping ? goldStep : cyanEdge, stepping ? orangeCore : cyanEdge);
+                DrawTaperedArmorPlate(g, ankleX, ankleY, fx, fy, 2.1f, 1.5f, 0.5f, armorDark, stepping ? goldStep : cyanEdge, stepping ? orangeCore : cyanEdge);
 
                 // Diamond Servo-Hinges at Coxa, Knee & Ankle
                 PointF[] coxaDia = new PointF[] {
-                    new PointF(coxaX, coxaY - 3.2f), new PointF(coxaX + 3.2f, coxaY),
-                    new PointF(coxaX, coxaY + 3.2f), new PointF(coxaX - 3.2f, coxaY)
+                    new PointF(coxaX, coxaY - 3.3f), new PointF(coxaX + 3.3f, coxaY),
+                    new PointF(coxaX, coxaY + 3.3f), new PointF(coxaX - 3.3f, coxaY)
                 };
                 g.FillPolygon(jointFill, coxaDia);
                 g.DrawPolygon(orangePen, coxaDia);
 
                 PointF[] kneeDia = new PointF[] {
-                    new PointF(kneeX, kneeY - 4.2f), new PointF(kneeX + 4.2f, kneeY),
-                    new PointF(kneeX, kneeY + 4.2f), new PointF(kneeX - 4.2f, kneeY)
+                    new PointF(kneeX, kneeY - 4.3f), new PointF(kneeX + 4.3f, kneeY),
+                    new PointF(kneeX, kneeY + 4.3f), new PointF(kneeX - 4.3f, kneeY)
                 };
                 g.FillPolygon(jointFill, kneeDia);
                 g.DrawPolygon(cyanPen, kneeDia);
 
-                // Ground contact shadow on desktop plane (footX[i], footY[i]) when foot is lifted
-                if (lift > 0.5f)
-                {
-                    using (SolidBrush shadowBr = new SolidBrush(Color.FromArgb(110, 4, 8, 16)))
-                    {
-                        g.FillEllipse(shadowBr, fx - 5.0f, footY[i] - 2.2f, 10.0f, 4.4f);
-                    }
-                }
+                PointF[] ankleDia = new PointF[] {
+                    new PointF(ankleX, ankleY - 2.8f), new PointF(ankleX + 2.8f, ankleY),
+                    new PointF(ankleX, ankleY + 2.8f), new PointF(ankleX - 2.8f, ankleY)
+                };
+                g.FillPolygon(jointFill, ankleDia);
+                g.DrawPolygon(stepping ? goldPen : cyanPen, ankleDia);
 
                 // Articulated 3-Pronged Magnetic Tarsus Claw at Foot
                 float tibiaAng = (float)Math.Atan2(fy - ankleY, fx - ankleX);
@@ -1147,8 +1323,8 @@ public class VesperArachneSwarmDroneOverlay : Form
 
         // 9. Sovereign Mecha Dual-Section Body (Opisthosoma Reactor + Swiveling Prosoma Head)
         GraphicsState st = g.Save();
-        g.TranslateTransform(spiderX, spiderY);
-        g.RotateTransform((float)((heading + Math.PI * 0.5) * 180.0 / Math.PI));
+        g.TranslateTransform(bodyCenterX, bodyCenterY);
+        g.RotateTransform((float)((heading + bodyRoll * 0.25f + Math.PI * 0.5) * 180.0 / Math.PI));
 
         // 9a. Orbital Tactical Reticle
         if (droneOrbitRingOn)
@@ -1162,9 +1338,12 @@ public class VesperArachneSwarmDroneOverlay : Form
             }
         }
 
-        // 9b. 4 Rear Spinneret Plasma Thrusters
+        // 9b & 9c. 12-Facet Beveled Geodesic Opisthosoma with Inertial Pendulum Counter-Sway + 4 Rear Plasma Thrusters
+        GraphicsState abdoState = g.Save();
+        g.RotateTransform((float)(opisthosomaSway * 180.0 / Math.PI));
+
         float speedMag = (float)Math.Sqrt(vx * vx + vy * vy);
-        float plume = 9.0f + Math.Min(18.0f, speedMag * 1.6f) + corePulse * 10.0f;
+        float plume = 9.5f + Math.Min(19.0f, speedMag * 1.7f) + corePulse * 10.0f + (float)Math.Sin(runeAngle * 4.5f) * 2.2f;
         float[] thrusterX = new float[] { -8.5f, -3.2f, 3.2f, 8.5f };
         using (SolidBrush plumeOrange = new SolidBrush(Color.FromArgb(240, 249, 115, 22)))
         using (SolidBrush plumeCyan = new SolidBrush(Color.FromArgb(240, 34, 211, 238)))
@@ -1174,15 +1353,14 @@ public class VesperArachneSwarmDroneOverlay : Form
                 float tx = thrusterX[t];
                 float ty = (t == 0 || t == 3) ? 31.0f : 34.0f;
                 PointF[] cone = new PointF[] {
-                    new PointF(tx - 2.0f, ty),
-                    new PointF(tx + 2.0f, ty),
+                    new PointF(tx - 2.2f, ty),
+                    new PointF(tx + 2.2f, ty),
                     new PointF(tx, ty + plume)
                 };
                 g.FillPolygon((t % 2 == 0) ? plumeCyan : plumeOrange, cone);
             }
         }
 
-        // 9c. 12-Facet Beveled Geodesic Opisthosoma (Abdomen at y = +11)
         float abY = 11.0f;
         PointF[] outerAb = new PointF[12];
         PointF[] midAb = new PointF[12];
@@ -1198,6 +1376,7 @@ public class VesperArachneSwarmDroneOverlay : Form
         using (SolidBrush bevelLight = new SolidBrush(Color.FromArgb(255, 24, 46, 78)))
         using (Pen cyanBorder = new Pen(Color.FromArgb(255, 56, 189, 248), 1.8f))
         using (Pen facetPen = new Pen(Color.FromArgb(180, 56, 189, 248), 0.9f))
+        using (Pen goldAccent = new Pen(Color.FromArgb(220, 250, 204, 21), 1.2f))
         using (SolidBrush coreOuter = new SolidBrush(Color.FromArgb(255, 234, 88, 12)))
         using (SolidBrush coreMid = new SolidBrush(Color.FromArgb(255, 251, 146, 60)))
         using (SolidBrush coreHot = new SolidBrush(Color.FromArgb(255, 254, 249, 195)))
@@ -1213,7 +1392,7 @@ public class VesperArachneSwarmDroneOverlay : Form
             g.DrawPolygon(cyanBorder, outerAb);
 
             // Gemma 4 12B-it + SH4Z Singularity Core
-            float rC = 13.5f + corePulse * 3.5f;
+            float rC = 13.5f + corePulse * 3.5f + (float)Math.Sin(runeAngle * 2.2f) * 1.1f;
             g.FillEllipse(coreOuter, -rC, abY - rC, rC * 2.0f, rC * 2.0f);
             g.FillEllipse(coreMid, -rC * 0.7f, abY - rC * 0.7f, rC * 1.4f, rC * 1.4f);
             g.FillEllipse(coreHot, -4.5f, abY - 4.5f, 9.0f, 9.0f);
@@ -1232,7 +1411,9 @@ public class VesperArachneSwarmDroneOverlay : Form
                 g.DrawLine(facetPen, cage[i].X, cage[i].Y, cage[(i + 2) % 6].X, cage[(i + 2) % 6].Y);
             }
 
-            // 9d. Independently Swiveling Anterior Prosoma (Cephalothorax + 8 Optical Lenses + Mandibles + Laser Scanner)
+            g.Restore(abdoState);
+
+            // 9d. Independently Swiveling Anterior Prosoma (Cephalothorax + Pedipalps + Mandibles + 8 Ocelli + Laser Scanner)
             GraphicsState headState = g.Save();
             g.TranslateTransform(0.0f, -13.0f);
             g.RotateTransform((float)(headYaw * 180.0 / Math.PI));
@@ -1253,20 +1434,34 @@ public class VesperArachneSwarmDroneOverlay : Form
                 }
             }
 
+            // Articulated 2-Jointed Front Sensor Pedipalps Flanking the Chelicerae
+            float palpsWave = (float)Math.Sin(runeAngle * 2.8f) * 3.0f;
+            DrawTaperedArmorPlate(g, -11.5f, -8.0f, -19.0f, -18.5f + palpsWave * 0.4f, 2.2f, 2.8f, 1.8f, armorDark, cyanEdge, orangeCore);
+            DrawTaperedArmorPlate(g, -19.0f, -18.5f + palpsWave * 0.4f, -14.5f + palpsWave * 0.5f, -30.5f, 1.8f, 1.4f, 0.6f, armorDark, Color.FromArgb(255, 250, 204, 21), cyanEdge);
+            g.FillEllipse(Brushes.Gold, -14.5f + palpsWave * 0.5f - 2.0f, -30.5f - 2.0f, 4.0f, 4.0f);
+
+            DrawTaperedArmorPlate(g, 11.5f, -8.0f, 19.0f, -18.5f - palpsWave * 0.4f, 2.2f, 2.8f, 1.8f, armorDark, cyanEdge, orangeCore);
+            DrawTaperedArmorPlate(g, 19.0f, -18.5f - palpsWave * 0.4f, 14.5f + palpsWave * 0.5f, -30.5f, 1.8f, 1.4f, 0.6f, armorDark, Color.FromArgb(255, 250, 204, 21), cyanEdge);
+            g.FillEllipse(Brushes.Gold, 14.5f + palpsWave * 0.5f - 2.0f, -30.5f - 2.0f, 4.0f, 4.0f);
+
             // Articulated Plasma Chelicerae / Mandibles
             float pinch = (float)Math.Sin(runeAngle * 2.5f) * 2.5f;
             PointF[] leftPincer = new PointF[] {
                 new PointF(-8.0f, -11.0f), new PointF(-14.0f + pinch, -19.0f),
-                new PointF(-9.0f + pinch, -27.0f), new PointF(-5.5f, -15.0f)
+                new PointF(-9.0f + pinch, -27.5f), new PointF(-5.5f, -15.0f)
             };
             PointF[] rightPincer = new PointF[] {
                 new PointF(8.0f, -11.0f), new PointF(14.0f - pinch, -19.0f),
-                new PointF(9.0f - pinch, -27.0f), new PointF(5.5f, -15.0f)
+                new PointF(9.0f - pinch, -27.5f), new PointF(5.5f, -15.0f)
             };
             g.FillPolygon(bodyBrush, leftPincer);
             g.DrawPolygon(cyanBorder, leftPincer);
             g.FillPolygon(bodyBrush, rightPincer);
             g.DrawPolygon(cyanBorder, rightPincer);
+
+            // Crackling Plasma Arc Between Mandible Tips
+            g.DrawLine(goldAccent, -9.0f + pinch, -27.5f, 0.0f, -29.0f + (float)Math.Sin(runeAngle * 6.0f) * 2.0f);
+            g.DrawLine(goldAccent, 0.0f, -29.0f + (float)Math.Sin(runeAngle * 6.0f) * 2.0f, 9.0f - pinch, -27.5f);
 
             // Multi-Plate V-Chevron Cephalothorax Head Shield
             PointF[] headShield = new PointF[] {

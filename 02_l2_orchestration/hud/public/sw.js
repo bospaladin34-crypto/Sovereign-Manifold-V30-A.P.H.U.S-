@@ -1,4 +1,4 @@
-const CACHE_NAME = 'act-omega-cockpit-v62-0-1-chain288';
+const CACHE_NAME = 'act-omega-cockpit-v62-0-2-chain288';
 const STATIC_ASSETS = [
   './',
   './index.html',

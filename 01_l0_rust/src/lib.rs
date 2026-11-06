@@ -77,3 +77,35 @@ pub use v61_gemma4_multimodal_ple_speculative_cascade_and_mcp_suite::{
     V61MultimodalProbeOutput,
     V61SpeculativeCascadeOutput,
 };
+
+// Track B / Milestone M2: Formal CRT, RVQ, PVQ & Sparse MatVec Runtime
+pub mod v61_14_formal_crt_rvq_pvq_sparse_matvec_runtime;
+
+pub use v61_14_formal_crt_rvq_pvq_sparse_matvec_runtime::{
+    CoprimeResidueTuple,
+    CoprimeModuliCrtIndexMap,
+    IrrationalPhaseFrameOperator,
+    L1CodebookClassification,
+    L1UnitBallCodebookClassifier,
+    MultiStageLeastSquaresRvq,
+    CoarseHorizonRoutingHeader,
+    TwoLevelBlockSparseMatVecRouter,
+    MapAssociativeMemoryMips,
+    Round2AcceptabilityAudit,
+    AcceptabilityGateController,
+    MODULUS_P1,
+    MODULUS_P2,
+    MODULUS_P3,
+    BLOCK_HORIZON_DIM,
+    L1_UNIT_BALL_CODEBOOK_SIZE,
+    MICRO_BLOCK_DIM,
+    MICRO_BLOCK_PACKED_BYTES,
+    MICRO_BLOCKS_PER_HORIZON,
+    CRT_IDEMPOTENT_E1,
+    CRT_IDEMPOTENT_E2,
+    CRT_IDEMPOTENT_E3,
+    v61_14_dispatch_tool_289_crt_pfa,
+    v61_14_dispatch_tool_290_rvq_pvq,
+    v61_14_dispatch_tool_291_sparse_matvec,
+    v61_14_dispatch_tool_292_chain292_cert,
+};

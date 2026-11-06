@@ -37,7 +37,11 @@ Write-Host "Source:  $((Get-FileHash $src).Hash)"
 Write-Host "Mirror:  $((Get-FileHash $mirrorCs).Hash)"
 
 if (-not $NoRestart) {
-    Write-Host "Restarting VesperArachneSwarmDroneOverlay..." -ForegroundColor Yellow
-    Start-Process -FilePath $target1
-    Write-Host "[OK] Vesper-Arachne Desktop Companion launched." -ForegroundColor Green
+    Write-Host "Restarting VesperArachneSwarmDroneOverlay via WMI Service Host..." -ForegroundColor Yellow
+    $res = Invoke-CimMethod -ClassName Win32_Process -MethodName Create -Arguments @{
+        CommandLine = "`"$target1`""
+        CurrentDirectory = "C:\sovereign_manifold_v31"
+    }
+    Start-Sleep -Milliseconds 600
+    Write-Host "[OK] Vesper-Arachne Desktop Companion launched (PID: $($res.ProcessId))." -ForegroundColor Green
 }

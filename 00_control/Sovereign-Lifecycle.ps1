@@ -1,5 +1,5 @@
 # C:\sovereign_manifold_v31\00_control\Sovereign-Lifecycle.ps1
-# ACT-Omega Net v62.0.0 (SH4Z v6200 TLV | CHAIN 288 | 730/730 Lean 4 QED) -- Unified Safe Cluster Start / Stop / Handover / Verify / Status Controller
+# ACT-Omega Net v62.0.0 (SH4Z v6200 TLV | CHAIN 292 | 740/740 Lean 4 QED) -- Unified Safe Cluster Start / Stop / Handover / Verify / Status Controller
 param(
     [ValidateSet("start", "stop", "stop-all", "restart", "status", "handover", "verify")]
     [string]$Action = "status",
@@ -15,8 +15,24 @@ $cfCfg           = "C:\sovereign_manifold_v31\00_control\cloudflare_named_config
 $trayHudExe      = "C:\sovereign_manifold_v31\SovereignCockpitHUD.exe"
 $shmPath         = "C:\sovereign_manifold_v31\00_control\weights\neurons_v5000_63360.npage"
 $capsulePath     = "C:\sovereign_manifold_v31\03_vault\connectome\continuum_handover_capsule.json"
-$p10Serial       = "58170DLCR0004V"
-$p8Serial        = "3A121FDJH00BW5"
+function Resolve-SovereignAdbTarget {
+    param([string]$CanonicalSerial, [string]$ModelPattern)
+    $lines = adb devices -l 2>$null
+    foreach ($l in $lines) {
+        if ($l -match "^$([regex]::Escape($CanonicalSerial))\s+device\b") {
+            return $CanonicalSerial
+        }
+    }
+    foreach ($l in $lines) {
+        if ($l -match "\s+device\b" -and ($l -match $ModelPattern -or $l -match $CanonicalSerial)) {
+            return ($l -split "\s+")[0]
+        }
+    }
+    return $CanonicalSerial
+}
+
+$p10Serial       = Resolve-SovereignAdbTarget -CanonicalSerial "58170DLCR0004V" -ModelPattern "model:Pixel_10|product:frankel|192\.168\.137\.10:"
+$p8Serial        = Resolve-SovereignAdbTarget -CanonicalSerial "3A121FDJH00BW5" -ModelPattern "model:Pixel_8|product:shiba|192\.168\.137\.8:"
 $p8ApexBinLocal  = "C:\sovereign_manifold_v31\04_edge_silicon\pixel8_headless\p8_ksu_apex_daemon"
 $p8ApexBinRemote = "/data/local/tmp/p8_ksu_apex_daemon"
 $p8ApexPidPath   = "/data/local/tmp/p8_ksu_apex.pid"
@@ -127,7 +143,7 @@ function Invoke-SovereignContinuumHandover {
 
     $capsuleObj = [ordered]@{
         status = "CONTINUUM_HANDOVER_CAPSULE_READY"
-        version = "ACT-Omega Net v62.0.0 (SH4Z v6200 TLV | 730/730 Lean 4 QED)"
+        version = "ACT-Omega Net v62.0.0 (SH4Z v6200 TLV | 740/740 Lean 4 QED)"
         handover_mode = $HandoverMode
         timestamp_utc = $tsUtc
         shm_npage_bytes = 8110080
@@ -135,8 +151,8 @@ function Invoke-SovereignContinuumHandover {
         shm_chair44_cols = 1440
         shm_sha256 = $shmSha
         lean4_sha256 = $leanSha
-        lean4_theorems_qed = 730
-        tools_total = 288
+        lean4_theorems_qed = 740
+        tools_total = 292
         metabolic_atp = $atp
         last_host_kops = $kops
         last_rtx_temp_c = $rtxT
@@ -177,7 +193,7 @@ function Invoke-SovereignContinuumHandover {
 function Show-SovereignStatus {
     Write-Host ""
     Write-Host "==========================================================================" -ForegroundColor Cyan
-    Write-Host "   ACT-OMEGA NET v62.0.0 (SH4Z v6200 | CHAIN 288) -- TRI-SILICON CLUSTER STATUS       " -ForegroundColor Cyan
+    Write-Host "   ACT-OMEGA NET v62.0.0 (SH4Z v6200 | CHAIN 292) -- TRI-SILICON CLUSTER STATUS       " -ForegroundColor Cyan
     Write-Host "==========================================================================" -ForegroundColor Cyan
 
     $isPaused = Test-Path $pauseFile
@@ -279,9 +295,9 @@ function Invoke-SovereignSixLayerVerify {
     $thmCnt = ([regex]::Matches($leanRaw, '(?m)^theorem\s+')).Count
     $trivCnt = ([regex]::Matches($leanRaw, '\((\d+) = \1\)')).Count
     $leanSha = (Get-FileHash "C:\sovereign_manifold_v31\01_l0_rust\lean4\SovereignManifoldTheorems.lean" -Algorithm SHA256).Hash.ToLower().Substring(0, 16)
-    $l2Pass = ($thmCnt -ge 730) -and ($trivCnt -eq 0)
+    $l2Pass = ($thmCnt -ge 740) -and ($trivCnt -eq 0)
     if (-not $l2Pass) { $failCount++ }
-    Write-Host ("  [LAYER 2 - LEAN 4 QED]  [{0}] Theorems={1}/730 (Req:>=730) | Trivial(N=N)={2} (Req:0) | SHA256={3}..." -f ($(if($l2Pass){"PASS"}else{"FAIL"}), $thmCnt, $trivCnt, $leanSha)) -ForegroundColor $(if($l2Pass){"Green"}else{"Red"})
+    Write-Host ("  [LAYER 2 - LEAN 4 QED]  [{0}] Theorems={1}/740 (Req:>=740) | Trivial(N=N)={2} (Req:0) | SHA256={3}..." -f ($(if($l2Pass){"PASS"}else{"FAIL"}), $thmCnt, $trivCnt, $leanSha)) -ForegroundColor $(if($l2Pass){"Green"}else{"Red"})
 
     # Layer 3: 5W1H & 63,360-Neuron Shared Memory (.npage)
     $prof = $null
@@ -400,7 +416,7 @@ function Stop-SovereignClusterSafely {
     param([bool]$StopPhonesToo = $false)
     Write-Host ""
     Write-Host "==========================================================================" -ForegroundColor Yellow
-    Write-Host "   SAFE GRACEFUL SHUTDOWN: ACT-OMEGA NET v62.0.0 (SH4Z v6200 | CHAIN 288)             " -ForegroundColor Yellow
+    Write-Host "   SAFE GRACEFUL SHUTDOWN: ACT-OMEGA NET v62.0.0 (SH4Z v6200 | CHAIN 292)             " -ForegroundColor Yellow
     Write-Host "==========================================================================" -ForegroundColor Yellow
 
     # 1. Hand over state to Pixel 8, Pixel 10 & Cloudflare Edge DO before stopping Host
@@ -452,7 +468,7 @@ function Stop-SovereignClusterSafely {
 function Start-SovereignClusterSafely {
     Write-Host ""
     Write-Host "==========================================================================" -ForegroundColor Cyan
-    Write-Host "   SAFE CLUSTER IGNITION: ACT-OMEGA NET v62.0.0 (SH4Z v6200 | CHAIN 288)              " -ForegroundColor Cyan
+    Write-Host "   SAFE CLUSTER IGNITION: ACT-OMEGA NET v62.0.0 (SH4Z v6200 | CHAIN 292)              " -ForegroundColor Cyan
     Write-Host "==========================================================================" -ForegroundColor Cyan
 
     if (Test-Path $pauseFile) {

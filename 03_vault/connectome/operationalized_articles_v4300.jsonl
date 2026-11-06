@@ -116,3 +116,21 @@
 {"source":"ping","mode":"safe_llm_gateway_interact","domain":"D1:E8xLeech_Gauge_FNO","tokens":2,"ratio":2.00,"sector":56,"col":902,"neuron_id":39690,"shard_id":39691,"npage_offset":2376960,"mi_bits":24.88}
 {"source":"hi","mode":"chat_completion_and_shard_crystallize","domain":"D1:E8xLeech_Gauge_FNO","tokens":2,"ratio":1.00,"sector":59,"col":861,"neuron_id":37886,"shard_id":37887,"npage_offset":2146048,"mi_bits":23.61}
 {"source":"hi","mode":"chat_completion_and_shard_crystallize","domain":"D1:E8xLeech_Gauge_FNO","tokens":2,"ratio":1.00,"sector":59,"col":861,"neuron_id":37886,"shard_id":37887,"npage_offset":2146048,"mi_bits":23.61}
+{"source":"crash_test","mode":"nonexistent_tool","domain":"D1:E8xLeech_Gauge_FNO","tokens":8,"ratio":1.25,"sector":27,"col":487,"neuron_id":21436,"shard_id":21437,"npage_offset":40448,"mi_bits":23.15}
+{"source":"{
+    'method':  'tools/call',
+    'params':  {
+                   'arguments':  {
+
+                                 },
+                   'name':  'non_existent_tool_adversarial_test'
+               },
+    'id':  43,
+    'jsonrpc':  '2.0'
+}","mode":"non_existent_tool_adversarial_test","domain":"D6:MCP_OpenAI_CloudflareD1","tokens":223,"ratio":1.13,"sector":25,"col":926,"neuron_id":40747,"shard_id":40748,"npage_offset":2512256,"mi_bits":21.91}
+{"source":"{'jsonrpc':'2.0','id':3,'method':'tools/call','params':{'name':'nonexistent_tool_293','arguments':{}}}","mode":"nonexistent_tool_293","domain":"D6:MCP_OpenAI_CloudflareD1","tokens":80,"ratio":1.27,"sector":69,"col":497,"neuron_id":21904,"shard_id":21905,"npage_offset":100352,"mi_bits":22.59}
+{"source":"{'jsonrpc':'2.0','id':3,'method':'tools/call','params':{'name':'nonexistent_tool_293','arguments':{}}}","mode":"nonexistent_tool_293","domain":"D6:MCP_OpenAI_CloudflareD1","tokens":80,"ratio":1.27,"sector":69,"col":497,"neuron_id":21904,"shard_id":21905,"npage_offset":100352,"mi_bits":22.59}
+{"source":"{'jsonrpc':'2.0','id':3,'method':'tools/call','params':{'name':'nonexistent_tool_293','arguments':{}}}","mode":"nonexistent_tool_293","domain":"D6:MCP_OpenAI_CloudflareD1","tokens":80,"ratio":1.27,"sector":69,"col":497,"neuron_id":21904,"shard_id":21905,"npage_offset":100352,"mi_bits":22.59}
+{"source":"{'jsonrpc':'2.0','id':999,'method':'tools/call','params':{'name':'tool_9999_nonexistent','arguments':{}}}","mode":"tool_9999_nonexistent","domain":"D6:MCP_OpenAI_CloudflareD1","tokens":83,"ratio":1.27,"sector":67,"col":492,"neuron_id":21687,"shard_id":21688,"npage_offset":72576,"mi_bits":22.56}
+{"source":"{'jsonrpc':'2.0','id':999,'method':'tools/call','params':{'name':'tool_9999_nonexistent','arguments':{}}}","mode":"tool_9999_nonexistent","domain":"D6:MCP_OpenAI_CloudflareD1","tokens":83,"ratio":1.27,"sector":67,"col":492,"neuron_id":21687,"shard_id":21688,"npage_offset":72576,"mi_bits":22.56}
+{"source":"{'jsonrpc':'2.0','id':999,'method':'tools/call','params':{'name':'tool_9999_nonexistent','arguments':{}}}","mode":"tool_9999_nonexistent","domain":"D6:MCP_OpenAI_CloudflareD1","tokens":83,"ratio":1.27,"sector":67,"col":492,"neuron_id":21687,"shard_id":21688,"npage_offset":72576,"mi_bits":22.56}

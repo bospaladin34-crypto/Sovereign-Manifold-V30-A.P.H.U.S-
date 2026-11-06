@@ -80,3 +80,21 @@
 {"visit":43,"agent_id":"MCP-JSONRPC-Visitor-Agent","protocol":"MCP-2026-07-28 (tools/call)","action":"safe_llm_gateway_interact","domain":"D1:E8xLeech_Gauge_FNO","tokens":2,"ratio":2.00,"sector":56,"col":902,"neuron_id":39690,"shard_id":39691,"sig":"0xA953E5FAFD2E6C31","prompt":"ping"}
 {"visit":43,"agent_id":"OpenAI-SDK-Compatible-Agent","protocol":"OpenAI-/v1/chat/completions","action":"chat_completion_and_shard_crystallize","domain":"D1:E8xLeech_Gauge_FNO","tokens":2,"ratio":1.00,"sector":59,"col":861,"neuron_id":37886,"shard_id":37887,"sig":"0xD215527A41B2C2BB","prompt":"hi"}
 {"visit":44,"agent_id":"OpenAI-SDK-Compatible-Agent","protocol":"OpenAI-/v1/chat/completions","action":"chat_completion_and_shard_crystallize","domain":"D1:E8xLeech_Gauge_FNO","tokens":2,"ratio":1.00,"sector":59,"col":861,"neuron_id":37886,"shard_id":37887,"sig":"0x3FCE51118B15A15A","prompt":"hi"}
+{"visit":43,"agent_id":"MCP-JSONRPC-Visitor-Agent","protocol":"MCP-2026-07-28 (tools/call)","action":"nonexistent_tool","domain":"D1:E8xLeech_Gauge_FNO","tokens":8,"ratio":1.25,"sector":27,"col":487,"neuron_id":21436,"shard_id":21437,"sig":"0x9EF28AACDB56593D","prompt":"crash_test"}
+{"visit":44,"agent_id":"MCP-JSONRPC-Visitor-Agent","protocol":"MCP-2026-07-28 (tools/call)","action":"non_existent_tool_adversarial_test","domain":"D6:MCP_OpenAI_CloudflareD1","tokens":223,"ratio":1.13,"sector":25,"col":926,"neuron_id":40747,"shard_id":40748,"sig":"0x4E730ECB3BAD2F26","prompt":"{
+    'method':  'tools/call',
+    'params':  {
+                   'arguments':  {
+
+                                 },
+                   'name':  'non_existent_tool_adversarial_test'
+               },
+    'id':  43,
+    'jsonrpc':  '2.0'
+}"}
+{"visit":43,"agent_id":"MCP-JSONRPC-Visitor-Agent","protocol":"MCP-2026-07-28 (tools/call)","action":"nonexistent_tool_293","domain":"D6:MCP_OpenAI_CloudflareD1","tokens":80,"ratio":1.27,"sector":69,"col":497,"neuron_id":21904,"shard_id":21905,"sig":"0x0DFAB3FAE63BCD8F","prompt":"{'jsonrpc':'2.0','id':3,'method':'tools/call','params':{'name':'nonexistent_tool_293','arguments':{}}}"}
+{"visit":44,"agent_id":"MCP-JSONRPC-Visitor-Agent","protocol":"MCP-2026-07-28 (tools/call)","action":"nonexistent_tool_293","domain":"D6:MCP_OpenAI_CloudflareD1","tokens":80,"ratio":1.27,"sector":69,"col":497,"neuron_id":21904,"shard_id":21905,"sig":"0x24412B454642017E","prompt":"{'jsonrpc':'2.0','id':3,'method':'tools/call','params':{'name':'nonexistent_tool_293','arguments':{}}}"}
+{"visit":45,"agent_id":"MCP-JSONRPC-Visitor-Agent","protocol":"MCP-2026-07-28 (tools/call)","action":"nonexistent_tool_293","domain":"D6:MCP_OpenAI_CloudflareD1","tokens":80,"ratio":1.27,"sector":69,"col":497,"neuron_id":21904,"shard_id":21905,"sig":"0x216F03EE04A2F5C1","prompt":"{'jsonrpc':'2.0','id':3,'method':'tools/call','params':{'name':'nonexistent_tool_293','arguments':{}}}"}
+{"visit":46,"agent_id":"MCP-JSONRPC-Visitor-Agent","protocol":"MCP-2026-07-28 (tools/call)","action":"tool_9999_nonexistent","domain":"D6:MCP_OpenAI_CloudflareD1","tokens":83,"ratio":1.27,"sector":67,"col":492,"neuron_id":21687,"shard_id":21688,"sig":"0x0D8FCDAF6918702A","prompt":"{'jsonrpc':'2.0','id':999,'method':'tools/call','params':{'name':'tool_9999_nonexistent','arguments':{}}}"}
+{"visit":47,"agent_id":"MCP-JSONRPC-Visitor-Agent","protocol":"MCP-2026-07-28 (tools/call)","action":"tool_9999_nonexistent","domain":"D6:MCP_OpenAI_CloudflareD1","tokens":83,"ratio":1.27,"sector":67,"col":492,"neuron_id":21687,"shard_id":21688,"sig":"0x6645B779A5E02223","prompt":"{'jsonrpc':'2.0','id':999,'method':'tools/call','params':{'name':'tool_9999_nonexistent','arguments':{}}}"}
+{"visit":48,"agent_id":"MCP-JSONRPC-Visitor-Agent","protocol":"MCP-2026-07-28 (tools/call)","action":"tool_9999_nonexistent","domain":"D6:MCP_OpenAI_CloudflareD1","tokens":83,"ratio":1.27,"sector":67,"col":492,"neuron_id":21687,"shard_id":21688,"sig":"0x0F5784202AB12B2C","prompt":"{'jsonrpc':'2.0','id':999,'method':'tools/call','params':{'name':'tool_9999_nonexistent','arguments':{}}}"}

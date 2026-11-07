@@ -1,13 +1,76 @@
 cff-version: 1.2.0
-message: "If you use ACT-Omega Net v61.0.0 (SH4Z v6000 TLV | CHAIN 280 | 700/700 Lean 4 QED | 18 Gemini MCP Tools), please cite it as below."
-authors:
-  - family-names: "Bell"
-    given-names: "Nicholas"
-  - family-names: "Garlock"
-    given-names: "Richard"
-title: "ACT-Omega Net v61.0.0 (SH4Z v6000 TLV | CHAIN 280 | 700/700 Lean 4 QED | 18 Gemini MCP Tools): 80-Sector 63,360-Neuron Tri-Silicon & External SSD Topological Compute Manifold"
-version: "61.0.0"
+message: "If you use the ACT-Omega / Sovereign Manifold runtime (v69.0.0 | SH4Z v6900 TLV | CHAIN 308 | 820/820 Lean 4 QED | 84,480 Neurons | 4,055,040 Synapses), please cite both this repository (Donevin Frownfelter) and the foundational E8 / Leech lattice optimality papers by Maryna S. Viazovska et al."
+title: "ACT-Omega Net v69.0.0 (SH4Z v6900 TLV | CHAIN 308 | 820/820 Lean 4 QED | 84,480 Neurons | 4,055,040 Synapses | OmegaLang v16.0): Tri-Silicon Topological & E8/Leech Lattice Compute Manifold"
+type: software
+version: "69.0.0"
 doi: "10.5281/zenodo.23651696"
-date-released: 2026-11-04
-url: "https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-"
+identifiers:
+  - type: doi
+    value: "10.5281/zenodo.23651696"
+    description: "Zenodo Permanent DOI"
+  - type: doi
+    value: "10.17605/OSF.IO/2XQ5Z"
+    description: "OSF Permanent DOI"
+date-released: "2026-11-07"
+url: "https://act-omega-net.dev"
+repository-code: "https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-"
 license: MIT
+authors:
+  - family-names: "Frownfelter"
+    given-names: "Donevin"
+    alias: "bospaladin34-crypto"
+references:
+  - type: article
+    title: "The sphere packing problem in dimension 8"
+    authors:
+      - family-names: "Viazovska"
+        given-names: "Maryna S."
+    journal: "Annals of Mathematics"
+    volume: 185
+    issue: 3
+    start: 991
+    end: 1015
+    year: 2017
+    doi: "10.4007/annals.2017.185.3.7"
+    url: "https://arxiv.org/abs/1603.04246"
+  - type: article
+    title: "The sphere packing problem in dimension 24"
+    authors:
+      - family-names: "Cohn"
+        given-names: "Henry"
+      - family-names: "Kumar"
+        given-names: "Abhinav"
+      - family-names: "Miller"
+        given-names: "Stephen D."
+      - family-names: "Radchenko"
+        given-names: "Danylo"
+      - family-names: "Viazovska"
+        given-names: "Maryna"
+    journal: "Annals of Mathematics"
+    volume: 185
+    issue: 3
+    start: 1017
+    end: 1033
+    year: 2017
+    doi: "10.4007/annals.2017.185.3.8"
+    url: "https://arxiv.org/abs/1603.06518"
+  - type: article
+    title: "Universal optimality of the E8 and Leech lattices and interpolation formulas"
+    authors:
+      - family-names: "Cohn"
+        given-names: "Henry"
+      - family-names: "Kumar"
+        given-names: "Abhinav"
+      - family-names: "Miller"
+        given-names: "Stephen D."
+      - family-names: "Radchenko"
+        given-names: "Danylo"
+      - family-names: "Viazovska"
+        given-names: "Maryna"
+    journal: "Annals of Mathematics"
+    volume: 196
+    issue: 3
+    start: 983
+    end: 1082
+    year: 2022
+    url: "https://arxiv.org/pdf/1902.05438"

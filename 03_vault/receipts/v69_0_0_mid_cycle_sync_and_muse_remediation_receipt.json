@@ -1,0 +1,23 @@
+{
+    "version":  "v69.0.0",
+    "schema":  "SH4Z_v6900_TLV",
+    "chain":  "CHAIN_308",
+    "primary_author":  "Donevin Frownfelter (@bospaladin34-crypto)",
+    "timestamp_utc":  "2026-11-07T17:52:34.8945594Z",
+    "neurons":  84480,
+    "synapses_total":  4055040,
+    "bijected_cachelines":  177664,
+    "bpe_vocab_19bit":  524288,
+    "sub_domains":  192,
+    "lean4_proofs_qed":  820,
+    "apk_v69_sha256":  "EB5CD2D4043E5DF9C7454DBDD7795DA9930BA2957351BCE7761525428C664806",
+    "npage_v6900_sha256":  "42659D03B113DDBBF00A03444E2208D1813936009343A32F0B747E8B3C2F38E9",
+    "spage_v6900_sha256":  "2DB3064A6CB141393356D04E0D79C83346B7A823C85BA69A84341A26CCE5BC86",
+    "e8z_v6900_sha256":  "087A1BC61F4A850F2AB4A39726229296B8BF33665E28BDE5E1F82C3A33F5430A",
+    "muse_2026_11_07_remediated":  true,
+    "viazovska_citations":  [
+                                "10.4007/annals.2017.185.3.7",
+                                "10.4007/annals.2017.185.3.8",
+                                "10.4007/annals.2022.196.3.3"
+                            ]
+}

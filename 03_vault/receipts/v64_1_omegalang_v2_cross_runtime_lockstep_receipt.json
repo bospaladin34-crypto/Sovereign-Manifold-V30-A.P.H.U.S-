@@ -1,0 +1,31 @@
+{
+    "release":  "ACT-Omega v64.1 OmegaLang v2.0 Cross-Compiler Bit-Exact Lockstep \u0026 CLI",
+    "timestamp_utc":  "2026-11-05T17:06:48.4741637Z",
+    "standalone_cli_exe":  "E:\\ACT_OMEGA_UNIFIED_COMPILER_LAB\\bin\\omegalangc.exe",
+    "single_source_oml":  "E:\\ACT_OMEGA_UNIFIED_COMPILER_LAB\\src_oml\\sovereign_7777d_v2_lockstep.oml",
+    "theorems_verified":  4,
+    "reidemeister_dce_rules_applied":  3,
+    "emitted_targets":  [
+                            "Julia (.jl)",
+                            "Rust (.rs)",
+                            "Haskell (.hs)",
+                            "Lean 4 (.lean)",
+                            "C23 (.c)",
+                            "C# (.cs)"
+                        ],
+    "emitted_square_brackets":  0,
+    "csharp_checksums_k1_k2_k3_k4":  [
+                                         30236976,
+                                         940685272065,
+                                         49645794,
+                                         241942468
+                                     ],
+    "julia_checksums_k1_k2_k3_k4":  [
+                                        30236976,
+                                        940685272065,
+                                        49645794,
+                                        241942468
+                                    ],
+    "cross_compiler_bit_drift":  0,
+    "total_elapsed_ms":  647.21
+}

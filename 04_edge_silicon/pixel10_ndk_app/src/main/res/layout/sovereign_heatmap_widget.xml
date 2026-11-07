@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#FF0E1116"
+    android:background="#FF070A10"
     android:padding="7dp">
     <FrameLayout android:id="@+id/widget_root" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
     <ImageView android:id="@+id/widget_heatmap_img" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
@@ -19,8 +19,8 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="SOVEREIGN v63.2.0 (CHAIN 296) -- 63,360N / 3.04M SYN"
-            android:textColor="#FFFFB454"
+            android:text="SOVEREIGN v69.0.0 (CHAIN 308) -- 84,480N / 4.05M SYN"
+            android:textColor="#FFFFD166"
             android:textSize="9.5sp"
             android:textStyle="bold"
             android:fontFamily="monospace" />
@@ -28,13 +28,13 @@
             android:id="@+id/sovereign_widget_sync_btn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="#FF1C2632"
+            android:background="#FF171F30"
             android:paddingLeft="6dp"
             android:paddingRight="6dp"
             android:paddingTop="2dp"
             android:paddingBottom="2dp"
             android:text="SYNC SHM"
-            android:textColor="#FF56D364"
+            android:textColor="#FF5CE17A"
             android:textSize="8.5sp"
             android:textStyle="bold"
             android:fontFamily="monospace" />
@@ -44,16 +44,16 @@
         android:id="@+id/sovereign_widget_sub_txt"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="act-omega-net.dev -- BPUT 1.607 GiB/tok (13.86x) -- 296 Tools (CHAIN 296) -- 750/750 QED"
-        android:textColor="#FFFFFEFB"
+        android:text="act-omega-net.dev -- BPUT 1.607 GiB/tok (13.86x) -- 308 Tools (CHAIN 308) -- 820/820 QED"
+        android:textColor="#FFF3F6FC"
         android:textSize="8.2sp"
         android:fontFamily="monospace" />
     <TextView
         android:id="@+id/sovereign_widget_live_txt"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Tick #906200 -- 15.965Hz Decadic + 132,960 Bijected CLs -- 5495.5k ops/s"
-        android:textColor="#FF56D364"
+        android:text="Tick #906200 -- 15.965Hz Decadic + 177,664 Bijected CLs -- 5495.5k ops/s"
+        android:textColor="#FF5CE17A"
         android:textSize="8.2sp"
         android:fontFamily="monospace"
         android:layout_marginBottom="3dp" />
@@ -62,5 +62,5 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scaleType="fitXY"
-        android:background="#FF141922" />
+        android:background="#FF111724" />
 </LinearLayout>

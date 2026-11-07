@@ -1,0 +1,64 @@
+{
+  "receipt_id": "ACT_OMEGA_V69_0_TRACK2_OMEGALANG_V16_84480_CONNECTOME_CERTIFICATION",
+  "version": "v69.0.0",
+  "chain": "CHAIN_308",
+  "status": "MEASURED",
+  "lean4_formal_verification": {
+    "theorem_count_qed": 820,
+    "new_theorems_added": "thm_v69_0_811 .. thm_v69_0_820 (10 substantive theorems)",
+    "sorry_count": 0,
+    "axiom_count": 0,
+    "sha256_vault_and_l0_mirror": "E1F78D7AC2B8C72345CF2B8397D1A94843F980A7FFB743896DBC6371F2023659"
+  },
+  "omegalang_v16_primary_tlv_compiler": {
+    "oml_spec_path": "03_vault/omegalang_v16/sovereign_harmonic_v69.oml",
+    "oml_bytes": 2301,
+    "compiler_binaries": [
+      "00_control/bin/omegalang_tlv_compiler.exe",
+      "06_algebraic_haskell/bin/omegalang_tlv_compiler.exe",
+      "E:\\ACT_OMEGA_UNIFIED_COMPILER_LAB\\bin\\omegalang_tlv_compiler.exe"
+    ],
+    "polyglot_targets_verified": 9,
+    "target9_ampere_sm86_ptx_path": "03_vault/codegen/rtx3050_omegalang_k20_fno_coexec.ptx",
+    "target9_ampere_sm86_ptx_bytes": 1464
+  },
+  "sovereign_harmonic_viii_weights": {
+    "e8z_path": "00_control/weights/sovereign_harmonic_viii_v6900_8704cl.e8z",
+    "e8z_bytes": 557056,
+    "e8z_cachelines": 8704,
+    "active_sectors": 160,
+    "e8z_fnv1a64_hex": "0xDE992ACBE196C89B",
+    "npage_path": "00_control/weights/neurons_v6900_84480.npage",
+    "npage_bytes": 10813440,
+    "npage_neurons": 84480,
+    "chair44_columns": 1920,
+    "viviani_conserved": 84480,
+    "canary_verified": 84480,
+    "plucker_verified": 84480,
+    "npage_fnv1a64_hex": "0x7E4A4AF36D9A3B0F",
+    "spage_path": "00_control/weights/synapses_v6900_2703360.spage",
+    "spage_bytes": 5406720,
+    "primary_npage_synapses": 1351680,
+    "aux_spage_synapses": 2703360,
+    "total_synapses": 4055040,
+    "spage_fnv1a64_hex": "0x8EFCE72A383039B4",
+    "tier4_binary_shards_count": 21120,
+    "total_bijected_shards": 84480,
+    "tier4_binary_shards_bytes": 4477440
+  },
+  "open_vocabulary_and_domain_scaleup": {
+    "bpe_vocab_19bit": 524288,
+    "compound_concepts": 4096,
+    "macro_domains": 48,
+    "sub_domains": 192,
+    "baseline_perplexity": 4.1820,
+    "distilled_perplexity": 3.3214,
+    "forney_coding_gain_db": 6.02,
+    "subternary_kv_arena_bytes": 1048576
+  },
+  "constitutional_invariants": {
+    "zero_square_brackets_v33_to_v69": 0,
+    "google_search_console_sha256": "0241DC5EDED053A96317C9C8FF34F4DCF12C069F88B8D92636D5D795EC176B3D",
+    "universal_bus_writeback_verified": true
+  }
+}

@@ -36,3 +36,7 @@ path = "src/bin/v31_harvester.rs"
 [[bin]]
 name = "v31_trainer"
 path = "src/bin/v31_trainer.rs"
+
+[[bin]]
+name = "omegalang_tlv_compiler"
+path = "src/bin/omegalang_tlv_compiler.rs"

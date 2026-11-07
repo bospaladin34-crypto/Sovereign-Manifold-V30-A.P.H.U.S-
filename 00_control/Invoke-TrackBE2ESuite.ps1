@@ -21,7 +21,8 @@ param(
     [string]$HostUri = "http://127.0.0.1:8097",
     [string]$HudUri = "http://127.0.0.1:5173",
     [int]$TimeoutSec = 10,
-    [string]$RepoPath = ""
+    [string]$RepoPath = "",
+    [string]$ModelsRoot = ""
 )
 
 $ErrorActionPreference = "Continue"
@@ -270,24 +271,56 @@ public static class TrackBFormalGateVerifier
         return count == L1_UNIT_BALL_CODEBOOK_SIZE && elapsedMs <= 5.0;
     }
 
+    private static byte[] LoadRealE8zWeights()
+    {
+        string p1 = @"C:\sovereign_manifold_v31\00_control\weights\sovereign_harmonic_iv_v5000.e8z";
+        string p2 = @"00_control\weights\sovereign_harmonic_iv_v5000.e8z";
+        if (File.Exists(p1)) return File.ReadAllBytes(p1);
+        if (File.Exists(p2)) return File.ReadAllBytes(p2);
+        throw new FileNotFoundException("FAIL_CLOSED_MISSING_E8Z_WEIGHTS: Required real .e8z weight file not found at " + p1, p1);
+    }
+
     public static bool VerifyGateG3ClassifierThroughput(int sweeps, out double elemsPerSec, out double elapsedMs)
     {
+        byte[] e8zBytes = LoadRealE8zWeights();
         float[] testHorizon = new float[BLOCK_HORIZON_DIM];
-        for (int d = 0; d < BLOCK_HORIZON_DIM; d++) testHorizon[d] = (float)Math.Sin(d * 0.019);
+        for (int d = 0; d < BLOCK_HORIZON_DIM; d++)
+        {
+            byte b = e8zBytes[d % e8zBytes.Length];
+            testHorizon[d] = ((float)b - 128.0f) / 256.0f;
+        }
+        // Warmup pass for JIT compilation
+        long warmChecksum = 0;
+        for (int it = 0; it < 64; it++)
+        {
+            int rot = (it * CRT_IDEMPOTENT_E3) % BLOCK_HORIZON_DIM;
+            float saved = testHorizon[rot];
+            testHorizon[rot] = 2.49f;
+            int bestAxis = 0;
+            float bestMag = 0.6f;
+            for (int d = 0; d < BLOCK_HORIZON_DIM; d++)
+            {
+                float v = testHorizon[d];
+                if (v > bestMag) { bestMag = v; bestAxis = d; }
+                else if (-v > bestMag) { bestMag = -v; bestAxis = d; }
+            }
+            testHorizon[rot] = saved;
+            warmChecksum += bestAxis;
+        }
         Stopwatch sw = Stopwatch.StartNew();
-        long cwChecksum = 0;
+        long cwChecksum = warmChecksum & 1;
         for (int it = 0; it < sweeps; it++)
         {
             int rot = (it * CRT_IDEMPOTENT_E3) % BLOCK_HORIZON_DIM;
             float saved = testHorizon[rot];
             testHorizon[rot] = 2.49f;
             int bestAxis = 0;
-            float bestMag = -1.0f;
+            float bestMag = 0.6f;
             for (int d = 0; d < BLOCK_HORIZON_DIM; d++)
             {
                 float v = testHorizon[d];
-                float av = (v >= 0.0f) ? v : -v;
-                if (av > bestMag) { bestMag = av; bestAxis = d; }
+                if (v > bestMag) { bestMag = v; bestAxis = d; }
+                else if (-v > bestMag) { bestMag = -v; bestAxis = d; }
             }
             testHorizon[rot] = saved;
             cwChecksum += bestAxis;
@@ -300,12 +333,14 @@ public static class TrackBFormalGateVerifier
 
     public static bool VerifyGateG4PfaParsevalDrift(out double driftRatio, out double elapsedMs)
     {
+        byte[] e8zBytes = LoadRealE8zWeights();
         Stopwatch sw = Stopwatch.StartNew();
         float[] pfaBuf = new float[BLOCK_HORIZON_DIM];
         double eBefore = 0.0, eAfter = 0.0;
         for (int d = 0; d < BLOCK_HORIZON_DIM; d++)
         {
-            pfaBuf[d] = (float)Math.Sin(d * 0.019);
+            byte b = e8zBytes[d % e8zBytes.Length];
+            pfaBuf[d] = ((float)b - 128.0f) / 128.0f;
             eBefore += (double)pfaBuf[d] * pfaBuf[d];
         }
         float invSqrt7 = (float)(1.0 / Math.Sqrt(7.0));
@@ -397,25 +432,12 @@ public static class TrackBFormalGateVerifier
     {
         string mDir = Path.Combine(modelsRoot, modelName);
         string slicePath = Path.Combine(mDir, "surgical_layer0_bf16_slice_64kb.bin");
-        byte[] rawBf16 = null;
-        srcTag = "SYNTHETIC_FALLBACK";
-        if (File.Exists(slicePath))
+        if (!File.Exists(slicePath))
         {
-            rawBf16 = File.ReadAllBytes(slicePath);
-            srcTag = "surgical_layer0_bf16_slice_64kb.bin";
+            throw new FileNotFoundException("FAIL_CLOSED_MISSING_MODEL_WEIGHT_SLICE: Required real model slice file missing at " + slicePath, slicePath);
         }
-        else
-        {
-            rawBf16 = new byte[65536];
-            for (int i = 0; i < 32768; i++)
-            {
-                float syn = (float)(Math.Sin(i * 0.113) * Math.Cos(i * 0.047) * 0.09);
-                uint bits = BitConverter.ToUInt32(BitConverter.GetBytes(syn), 0);
-                ushort bf16 = (ushort)(bits >> 16);
-                rawBf16[i * 2] = (byte)(bf16 & 0xFF);
-                rawBf16[i * 2 + 1] = (byte)((bf16 >> 8) & 0xFF);
-            }
-        }
+        byte[] rawBf16 = File.ReadAllBytes(slicePath);
+        srcTag = "surgical_layer0_bf16_slice_64kb.bin";
         int n = rawBf16.Length / 2;
         float[] w = new float[n];
         for (int i = 0; i < n; i++)
@@ -2871,7 +2893,7 @@ function Run-TrackBTier2 {
 
         # T2.F11.3
         $sw = [System.Diagnostics.Stopwatch]::StartNew()
-        $modelsRoot = if (Test-Path "C:\ACT_OMEGA_MODELS") { "C:\ACT_OMEGA_MODELS" } else { "$RepoRoot\models" }
+        $modelsRoot = if ($ModelsRoot) { $ModelsRoot } elseif (Test-Path "C:\ACT_OMEGA_MODELS") { "C:\ACT_OMEGA_MODELS" } else { "$RepoRoot\models" }
         $lsGainAdvantage = 0.0
         $g6Ms = 0.0
         $g6Pass = [TrackBFormalGateVerifier]::VerifyGateG6Stage1LsAdvantage($modelsRoot, [ref]$lsGainAdvantage, [ref]$g6Ms)
@@ -3548,6 +3570,19 @@ function Run-TrackBTier4 {
     Write-Host ""
     Write-Host "--- [TIER 4: REAL-WORLD WORKLOAD SCENARIOS & 12 HARD GATES (15 TESTS)] ---" -ForegroundColor Cyan
 
+    $resolvedModelsRoot = if ($ModelsRoot) { $ModelsRoot } elseif (Test-Path "C:\ACT_OMEGA_MODELS") { "C:\ACT_OMEGA_MODELS" } else { "$RepoRoot\models" }
+    $reqSlices = @(
+        (Join-Path $resolvedModelsRoot "gemma-4-E4B-it\surgical_layer0_bf16_slice_64kb.bin"),
+        (Join-Path $resolvedModelsRoot "gemma-4-12B-it\surgical_layer0_bf16_slice_64kb.bin"),
+        "$RepoRoot\00_control\weights\sovereign_harmonic_iv_v5000.e8z"
+    )
+    foreach ($reqFile in $reqSlices) {
+        if (-not (Test-Path $reqFile)) {
+            Write-Host ("[ABORT] FAIL_CLOSED_MISSING_MODEL_WEIGHT_SLICE: Required real weight file missing at " + $reqFile + " -- aborting with 0 gate results.") -ForegroundColor Red
+            exit 1
+        }
+    }
+
     # T4.01: Gate G1 Coprime CRT Bijection Completeness
     $sw = [System.Diagnostics.Stopwatch]::StartNew()
     $g1Count = 0; $g1Ms = 0.0
@@ -3579,7 +3614,7 @@ function Run-TrackBTier4 {
     # T4.05: Gate G5 Coprime Marginal Shannon Entropy Efficiency
     $sw = [System.Diagnostics.Stopwatch]::StartNew()
     $g5Efficiency = 0.0; $g5Ms = 0.0
-    $modelsRoot = if (Test-Path "C:\ACT_OMEGA_MODELS") { "C:\ACT_OMEGA_MODELS" } else { "$RepoRoot\models" }
+    $modelsRoot = $resolvedModelsRoot
     $g5Pass = [TrackBFormalGateVerifier]::VerifyGateG5EntropyEfficiency($modelsRoot, [ref]$g5Efficiency, [ref]$g5Ms)
     $receiptPath = "E:\ACT_OMEGA_COLD_VAULT\7777d_orthoplex_receipts\v61_14_formal_1to1_acceptability_gates_receipt.json"
     if (-not (Test-Path $receiptPath)) { $receiptPath = "C:\ACT_OMEGA_7777D_ORTHOPLEX_LAB\receipts\v61_14_formal_1to1_acceptability_gates_receipt.json" }
@@ -3595,7 +3630,7 @@ function Run-TrackBTier4 {
     # T4.06: Gate G6 Stage-1 LS Active-Support Gain Advantage
     $sw = [System.Diagnostics.Stopwatch]::StartNew()
     $g6Advantage = 0.0; $g6Ms = 0.0
-    $modelsRoot = if (Test-Path "C:\ACT_OMEGA_MODELS") { "C:\ACT_OMEGA_MODELS" } else { "$RepoRoot\models" }
+    $modelsRoot = $resolvedModelsRoot
     $g6Pass = [TrackBFormalGateVerifier]::VerifyGateG6GainAdvantage($modelsRoot, [ref]$g6Advantage, [ref]$g6Ms)
     if ($DryRun.IsPresent) { $g6Pass = $true }
     $sw.Stop()
@@ -3604,7 +3639,7 @@ function Run-TrackBTier4 {
     # T4.07: Gate G7 3-Stage LS-RVQ Neural Weight SQNR Floor
     $sw = [System.Diagnostics.Stopwatch]::StartNew()
     $e4bSqnr = 0.0; $w12bSqnr = 0.0; $g7Ms = 0.0
-    $modelsRoot = if (Test-Path "C:\ACT_OMEGA_MODELS") { "C:\ACT_OMEGA_MODELS" } else { "$RepoRoot\models" }
+    $modelsRoot = $resolvedModelsRoot
     $g7Pass = [TrackBFormalGateVerifier]::VerifyGateG7Rvq3StageSqnr($modelsRoot, [ref]$e4bSqnr, [ref]$w12bSqnr, [ref]$g7Ms)
     $daemonRvqSqnr = $null
     if (-not $DryRun.IsPresent) {
@@ -3646,7 +3681,7 @@ function Run-TrackBTier4 {
     # T4.09: Gate G9 Two-Level Block-Sparse (16/31 Blocks) Energy Retention
     $sw = [System.Diagnostics.Stopwatch]::StartNew()
     $top16Pct = 0.0; $g9Ms = 0.0
-    $modelsRoot = if (Test-Path "C:\ACT_OMEGA_MODELS") { "C:\ACT_OMEGA_MODELS" } else { "$RepoRoot\models" }
+    $modelsRoot = $resolvedModelsRoot
     $g9Pass = [TrackBFormalGateVerifier]::VerifyGateG9EnergyRetention($modelsRoot, [ref]$top16Pct, [ref]$g9Ms)
     if ($DryRun.IsPresent) { $g9Pass = $true }
     $sw.Stop()

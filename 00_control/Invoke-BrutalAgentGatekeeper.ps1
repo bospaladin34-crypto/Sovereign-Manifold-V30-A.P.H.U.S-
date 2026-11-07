@@ -169,7 +169,7 @@ function Run-StaticGatekeeperChecks {
             continue
         }
         $hContent = [System.IO.File]::ReadAllText($hf)
-        if ($hContent -notmatch 'data-sovereign-ssr="v(56|60|61|62|63|68)(\.[0-9]+)*"') {
+        if ($hContent -notmatch 'data-sovereign-ssr="v(56|60|61|62|63|68|69)(\.[0-9]+)*"') {
             $failures.Add("HTML_SSR_MISSING: $hf missing data-sovereign-ssr attribute")
         }
         $bundleMatches = [regex]::Matches($hContent, '(?i)(?:\./)?assets/(index-[^"''\s>]+\.js)')
@@ -409,20 +409,23 @@ if ($FullAudit) {
         Write-Host "  [12 YUBIKEY 5C NFC HROT][FAIL] $_" -ForegroundColor Red
     }
 
-    # 13. Live CHAIN 300 Master Certification & 300-Tool Catalog Probe
+    # 13. Live CHAIN 292 / CHAIN 300 / CHAIN 308 Master Certification & 12-Gate Probe
     try {
+        $c292 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/chain292/master_certification" -TimeoutSec 5
         $c300 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/chain300/master_certification" -TimeoutSec 5
+        $c308 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/chain308/master_certification" -TimeoutSec 5
         $toolsCount = if ($c300.tools_verified) { $c300.tools_verified } else { $c300.total_chain_tools }
         $thmCount = if ($c300.lean4_theorems_qed) { $c300.lean4_theorems_qed } else { $c300.lean4_qed_theorems }
-        if ($c300.status -match "CHAIN_300" -and $toolsCount -eq 300 -and $thmCount -ge 800) {
-            Write-Host "  [13 CHAIN 300 MASTER]   [PASS] Tools=$toolsCount (Req:300) | Theorems=$thmCount (Req:>=800) | K19=$($c300.k19_effective_tops) TOPS | K20=$($c300.k20_harmonic_effective_pops) POPS | Status=$($c300.status)" -ForegroundColor Green
+        $c308Tools = if ($c308.tools_verified) { $c308.tools_verified } else { $c308.total_tools }
+        if ($c292.status -eq "CHAIN_292_MASTER_CERTIFIED_OK" -and $c292.all_gates_passed -eq $true -and $c292.gates_passed -eq 12 -and $c300.status -match "CHAIN_300" -and $toolsCount -eq 300 -and $thmCount -ge 800 -and $c308.status -eq "MEASURED" -and $c308Tools -eq 308) {
+            Write-Host "  [13 CHAIN 292/300/308]  [PASS] CHAIN292=$($c292.status) (12/12 Gates) | CHAIN300=$toolsCount Tools | CHAIN308=$c308Tools Tools | QED=$($c308.lean4_theorems_qed)" -ForegroundColor Green
         } else {
-            $failures.Add("CHAIN300_AUDIT_FAIL: Tools=$toolsCount (Req:300) Theorems=$thmCount Status=$($c300.status)")
-            Write-Host "  [13 CHAIN 300 MASTER]   [FAIL] Tools=$toolsCount Status=$($c300.status)" -ForegroundColor Red
+            $failures.Add("CHAIN_CERT_AUDIT_FAIL: C292=$($c292.status) (all_gates_passed=$($c292.all_gates_passed), unmeasured=$($c292.unmeasured_gates)) C300=$($c300.status) C308=$($c308.status)")
+            Write-Host "  [13 CHAIN 292/300/308]  [FAIL] C292=$($c292.status) all_gates_passed=$($c292.all_gates_passed) C300=$($c300.status) C308=$($c308.status)" -ForegroundColor Red
         }
     } catch {
-        $failures.Add("CHAIN300_PROBE_ERR: $_")
-        Write-Host "  [13 CHAIN 300 MASTER]   [FAIL] $_" -ForegroundColor Red
+        $failures.Add("CHAIN_CERT_PROBE_ERR: $_")
+        Write-Host "  [13 CHAIN 292/300/308]  [FAIL] $_" -ForegroundColor Red
     }
 
     Write-Host "==========================================================================" -ForegroundColor Cyan

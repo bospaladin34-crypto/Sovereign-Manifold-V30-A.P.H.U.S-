@@ -1,0 +1,107 @@
+[
+    {
+        "FileName":  "gemma-4-12B-it_layer0_7777d.o7777",
+        "FullPath":  "C:\\ACT_OMEGA_7777D_ORTHOPLEX_LAB\\compiled_o7777\\gemma-4-12B-it_layer0_7777d.o7777",
+        "Bytes":  31140
+    },
+    {
+        "FileName":  "gemma-4-E4B-it_layer0_7777d.o7777",
+        "FullPath":  "C:\\ACT_OMEGA_7777D_ORTHOPLEX_LAB\\compiled_o7777\\gemma-4-E4B-it_layer0_7777d.o7777",
+        "Bytes":  31140
+    },
+    {
+        "FileName":  "gemma-4-12B-it_layer0_hybrid_o7777_sh4z.bin",
+        "FullPath":  "C:\\ACT_OMEGA_7777D_ORTHOPLEX_LAB\\hybrid_sh4z_index\\gemma-4-12B-it_layer0_hybrid_o7777_sh4z.bin",
+        "Bytes":  8768
+    },
+    {
+        "FileName":  "gemma-4-E4B-it_layer0_hybrid_o7777_sh4z.bin",
+        "FullPath":  "C:\\ACT_OMEGA_7777D_ORTHOPLEX_LAB\\hybrid_sh4z_index\\gemma-4-E4B-it_layer0_hybrid_o7777_sh4z.bin",
+        "Bytes":  8768
+    },
+    {
+        "FileName":  "gemma-4-12B-it_3shell_7777d_cascade.o7777",
+        "FullPath":  "C:\\ACT_OMEGA_7777D_ORTHOPLEX_LAB\\multilayer_cascade\\gemma-4-12B-it_3shell_7777d_cascade.o7777",
+        "Bytes":  93372
+    },
+    {
+        "FileName":  "gemma-4-E4B-it_3shell_7777d_cascade.o7777",
+        "FullPath":  "C:\\ACT_OMEGA_7777D_ORTHOPLEX_LAB\\multilayer_cascade\\gemma-4-E4B-it_3shell_7777d_cascade.o7777",
+        "Bytes":  93372
+    },
+    {
+        "FileName":  "v61_10_hybrid_7777d_e8_sh4z_router_receipt.json",
+        "FullPath":  "C:\\ACT_OMEGA_7777D_ORTHOPLEX_LAB\\receipts\\v61_10_hybrid_7777d_e8_sh4z_router_receipt.json",
+        "Bytes":  877
+    },
+    {
+        "FileName":  "v61_11_deep_7777d_orthoplex_geometry_receipt.json",
+        "FullPath":  "C:\\ACT_OMEGA_7777D_ORTHOPLEX_LAB\\receipts\\v61_11_deep_7777d_orthoplex_geometry_receipt.json",
+        "Bytes":  746
+    },
+    {
+        "FileName":  "v61_14_formal_1to1_acceptability_gates_receipt.json",
+        "FullPath":  "C:\\ACT_OMEGA_7777D_ORTHOPLEX_LAB\\receipts\\v61_14_formal_1to1_acceptability_gates_receipt.json",
+        "Bytes":  676
+    },
+    {
+        "FileName":  "v61_9_7777d_orthoplex_certification_receipt.json",
+        "FullPath":  "C:\\ACT_OMEGA_7777D_ORTHOPLEX_LAB\\receipts\\v61_9_7777d_orthoplex_certification_receipt.json",
+        "Bytes":  524
+    },
+    {
+        "FileName":  "v63_0_polyglot_sbom_manifest.json",
+        "FullPath":  "C:\\ACT_OMEGA_7777D_ORTHOPLEX_LAB\\receipts\\v63_0_polyglot_sbom_manifest.json",
+        "Bytes":  4525
+    },
+    {
+        "FileName":  "v63_0_section1_capability_proof_receipt.json",
+        "FullPath":  "C:\\ACT_OMEGA_7777D_ORTHOPLEX_LAB\\receipts\\v63_0_section1_capability_proof_receipt.json",
+        "Bytes":  675
+    },
+    {
+        "FileName":  "O7777VPlayer.exe",
+        "FullPath":  "E:\\ACT_OMEGA_7777D_AV_ENGINE\\O7777VPlayer.exe",
+        "Bytes":  15360
+    },
+    {
+        "FileName":  "O7777VPlayer.cs",
+        "FullPath":  "E:\\ACT_OMEGA_7777D_AV_ENGINE\\src\\O7777VPlayer.cs",
+        "Bytes":  17418
+    },
+    {
+        "FileName":  "orthoplex_15554_pole_av_codebook.bin",
+        "FullPath":  "E:\\ACT_OMEGA_7777D_AV_ENGINE\\codebook_o7777\\orthoplex_15554_pole_av_codebook.bin",
+        "Bytes":  124432
+    },
+    {
+        "FileName":  "quasicrystal_7777d_gemma4_hologram_512.png",
+        "FullPath":  "E:\\ACT_OMEGA_7777D_AV_ENGINE\\renders_img\\quasicrystal_7777d_gemma4_hologram_512.png",
+        "Bytes":  762117
+    },
+    {
+        "FileName":  "orthoplex_3shell_vq_reconstructed_512.png",
+        "FullPath":  "E:\\ACT_OMEGA_7777D_AV_ENGINE\\renders_img\\orthoplex_3shell_vq_reconstructed_512.png",
+        "Bytes":  532905
+    },
+    {
+        "FileName":  "sovereign_7777d_cymatic_chord_48khz.wav",
+        "FullPath":  "E:\\ACT_OMEGA_7777D_AV_ENGINE\\renders_audio\\sovereign_7777d_cymatic_chord_48khz.wav",
+        "Bytes":  768044
+    },
+    {
+        "FileName":  "sovereign_7777d_av_sync_60f.o7777v",
+        "FullPath":  "E:\\ACT_OMEGA_7777D_AV_ENGINE\\renders_video\\sovereign_7777d_av_sync_60f.o7777v",
+        "Bytes":  467580
+    },
+    {
+        "FileName":  "sovereign_7777d_av_sync_60f_playable.avi",
+        "FullPath":  "E:\\ACT_OMEGA_7777D_AV_ENGINE\\renders_video\\sovereign_7777d_av_sync_60f_playable.avi",
+        "Bytes":  15442816
+    },
+    {
+        "FileName":  "v61_12_e_drive_7777d_av_engine_receipt.json",
+        "FullPath":  "E:\\ACT_OMEGA_7777D_AV_ENGINE\\receipts\\v61_12_e_drive_7777d_av_engine_receipt.json",
+        "Bytes":  660
+    }
+]

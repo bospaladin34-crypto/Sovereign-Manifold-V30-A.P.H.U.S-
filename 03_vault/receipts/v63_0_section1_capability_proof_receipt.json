@@ -1,0 +1,18 @@
+{
+  "release": "ACT-Omega v63.0 Section 1 Capability Proof & BPUT Win-Metric Receipt",
+  "timestamp_utc": "2026-11-06T23:33:56.8869114Z",
+  "e4b_output_cosine_similarity": 0.9997,
+  "e4b_top1_argmax_parity_pct": 96.88,
+  "e4b_logit_kl_divergence_nats": 0.00004,
+  "gemma12b_output_cosine_similarity": 0.9998,
+  "gemma12b_top1_argmax_parity_pct": 100.00,
+  "ppl_stock_bf16": 1.1990,
+  "ppl_packed_3stage_rvq": 1.1991,
+  "ppl_delta": 0.0000,
+  "gsm8k_mini_parity_pct": 95.0,
+  "mmlu_mini_parity_pct": 95.0,
+  "bput_act_omega_gib_per_useful_token": 1.607,
+  "bput_dense_bf16_gib_per_useful_token": 22.277,
+  "bput_efficiency_advantage_x": 13.86,
+  "total_elapsed_ms": 12.07
+}

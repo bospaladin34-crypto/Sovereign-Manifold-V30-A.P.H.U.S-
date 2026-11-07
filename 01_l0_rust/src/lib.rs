@@ -146,3 +146,38 @@ pub use v62_0_vesper_os_uefi_gop_and_pid1_init_kernel::{
     v62_0_dispatch_vesper_os_ssd_appliance,
 };
 
+// Track 1 (v68.5.0 | CHAIN 304 | 810/810 QED): MIT Cold-to-Hot Index, Galois 256D Tower, CERN LHCb 5-Mapping Auditor, Gemma 4 Studio & FB1..FB12
+pub mod v68_5_mit_hot_index_galois_cern_and_gemma4_studio;
+
+pub use v68_5_mit_hot_index_galois_cern_and_gemma4_studio::{
+    GaloisFieldTower,
+    MitHotShardRecord,
+    V68_5_GALOIS_TOTAL_DEGREE_256,
+    V68_5_POLYTONIC_32D_ROOTS,
+    V68_5_VESPER_FIB_15,
+    v68_5_scan_mit_hot_index,
+    v68_5_dispatch_tool_301_mit_hot_index_and_galois_tower,
+    v68_5_dispatch_tool_302_cern_lhcb_5mapping_auditor,
+    v68_5_dispatch_tool_303_gemma4_conversational_studio,
+    v68_5_dispatch_tool_304_frontier_fb12_and_chain304_cert,
+};
+
+// Track 2 (v69.0.0 | CHAIN 308 | 820/820 QED): OmegaLang v16.0 Primary TLV Compiler, Tier-4 84,480-Neuron / 4,055,040-Synapse Connectome & 524,288 19-Bit BPE
+pub mod v69_0_omegalang_v16_primary_tlv_compiler_and_84480_connectome;
+
+pub use v69_0_omegalang_v16_primary_tlv_compiler_and_84480_connectome::{
+    V69_TOTAL_NEURONS,
+    V69_TOTAL_SYNAPSES,
+    V69_E8Z_CACHELINES,
+    V69_MACRO_DOMAINS,
+    V69_SUB_DOMAINS,
+    V69_BPE_VOCAB_19BIT,
+    V69_COMPOUND_CONCEPTS,
+    v69_0_ensure_and_compile_sovereign_harmonic_v6900,
+    v69_0_dispatch_tool_305_omegalang_v16_primary_tlv_compiler,
+    v69_0_dispatch_tool_306_tier4_84480_connectome_verifier,
+    v69_0_dispatch_tool_307_open_vocab_524k_192subdomains_fluency,
+    v69_0_dispatch_tool_308_chain308_master_certification,
+};
+
+

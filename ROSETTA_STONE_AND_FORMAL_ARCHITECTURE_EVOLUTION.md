@@ -1,6 +1,6 @@
 # ACT-Omega & Vesper: 1:1 Formal Rosetta Stone Translation, Mathematical Equations & Canonical Architecture Evolution (`v29.0` $\rightarrow$ `v61.0.0 | CHAIN 280 | 700/700 Lean 4 QED`)
 
-**Principal Investigator & Systems Architect:** Nicholas Bell (Donevin R. T. Z. Frownfelter)  
+**Principal Investigator & Systems Architect:** Donevin Frownfelter (`@bospaladin34-crypto`)  
 **Repository:** `bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-` (`vesper_production` / `main` / `gh-pages`)  
 **Archival Monograph Reference:** Zenodo (`10.5281/zenodo.23651696`, `https://doi.org/10.5281/zenodo.23651696`) / OSF (`10.17605/OSF.IO/2XQ5Z`, `https://osf.io/2xq5z/overview`)  
 **Current Production Release:** **ACT-Omega Net v61.0.0 (`SH4Z v6000 TLV` | `CHAIN 280` | `63,360` Neurons / `3,041,280` Synapses / `132,960` Bijected Cachelines | `700/700` Substantive Lean 4 QED | `18` Gemini MCP Tools)**  

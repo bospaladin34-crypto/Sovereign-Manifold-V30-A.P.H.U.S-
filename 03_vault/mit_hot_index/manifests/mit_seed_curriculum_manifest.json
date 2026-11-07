@@ -1,0 +1,119 @@
+{
+    "schema_version":  "ACT_OMEGA_v68_5_MIT_CORPUS_BOOTSTRAPPER",
+    "timestamp_utc":  "2026-11-07T16:11:02.0200812Z",
+    "storage_topology":  "C:\\ + E:\\ = 1.5 TB Combined SSD; F:\\ = 3.0 TB Cold Vault (4.5 TB Total)",
+    "mit_6_451_pdf_path":  "F:\\Sovereign_Cold_Vault\\MIT_Corpus\\ocw_zips\\MIT6_451S05_FullLecNotes.pdf",
+    "mit_6_451_pdf_bytes":  3902071,
+    "drives_detected":  [
+                            {
+                                "Drive":  "C:\\",
+                                "UsedGB":  439.07,
+                                "FreeGB":  35.65,
+                                "TotalGB":  474.72
+                            },
+                            {
+                                "Drive":  "E:\\",
+                                "UsedGB":  288.41,
+                                "FreeGB":  665.43,
+                                "TotalGB":  953.84
+                            },
+                            {
+                                "Drive":  "F:\\",
+                                "UsedGB":  463.9,
+                                "FreeGB":  2330.6,
+                                "TotalGB":  2794.5
+                            }
+                        ],
+    "seed_courses":  [
+                         {
+                             "course_id":  "18.701-fall-2010",
+                             "triad":  "Triad_II_Algebra",
+                             "rosetta":  "Aut(E8)_Orbit_Compression",
+                             "url":  "https://ocw.mit.edu/courses/18-701-algebra-i-fall-2010/",
+                             "shard":  "18_701.e8q",
+                             "fib_anchor":  37,
+                             "summary":  "Groups, vector spaces, bilinear forms, and Aut(E8) / SO(n) symmetry orbit compression"
+                         },
+                         {
+                             "course_id":  "18.702-spring-2011",
+                             "triad":  "Triad_II_Galois_Core",
+                             "rosetta":  "galois_correspondence.rs",
+                             "url":  "https://ocw.mit.edu/courses/18-702-algebra-ii-spring-2011/",
+                             "shard":  "18_702.e8q",
+                             "fib_anchor":  89,
+                             "summary":  "Rings, modules, field extension towers [K:F]=[K:E][E:F], and Fundamental Theorem of Galois Theory"
+                         },
+                         {
+                             "course_id":  "18.712-fall-2010",
+                             "triad":  "Triad_II_Rep_Theory",
+                             "rosetta":  "e8_polytonic_32d.rs",
+                             "url":  "https://ocw.mit.edu/courses/18-712-introduction-to-representation-theory-fall-2010/pages/syllabus/",
+                             "shard":  "18_712.e8q",
+                             "fib_anchor":  144,
+                             "summary":  "Schur-Weyl duality, Frobenius reciprocity, and simply laced A-D-E / 32D Polytonic E8^4 lattices"
+                         },
+                         {
+                             "course_id":  "18.318-spring-2006",
+                             "triad":  "Triad_II_Combinatorics",
+                             "rosetta":  "catalan_dual_graph.rs",
+                             "url":  "https://ocw.mit.edu/courses/18-318-topics-in-algebraic-combinatorics-spring-2006/pages/syllabus/",
+                             "shard":  "18_318.e8q",
+                             "fib_anchor":  233,
+                             "summary":  "Shannon capacity of 5-cycle, nonuniform Fisher inequality, and Archimedean-Catalan dual incidence"
+                         },
+                         {
+                             "course_id":  "18.065-spring-2018",
+                             "triad":  "Triad_II_III_Spectral",
+                             "rosetta":  "Ops_rcSVD_Symplectic",
+                             "url":  "https://ocw.mit.edu/courses/18-065-matrix-methods-in-data-analysis-signal-processing-and-machine-learning-spring-2018/resources/18/",
+                             "shard":  "18_065.e8q",
+                             "fib_anchor":  310,
+                             "summary":  "Spectral graph Laplacians, randomized SVD, and positive-definite Stiefel manifold optimization"
+                         },
+                         {
+                             "course_id":  "6.451-spring-2005",
+                             "triad":  "Triad_II_III_Lattices",
+                             "rosetta":  "gf2_lattice_codec.rs",
+                             "url":  "https://ocw.mit.edu/courses/6-451-principles-of-digital-communication-ii-spring-2005/bb895c1dee9ce0b39d6846e0aa984981_MIT6_451S05_FullLecNotes.pdf",
+                             "shard":  "6_451.e8q",
+                             "fib_anchor":  377,
+                             "summary":  "Shannon rate-distortion, Construction A GF(2) [8,4,4] Hamming -\u003e E8, Barnes-Wall BW16, and Golay G24 -\u003e Leech_24"
+                         },
+                         {
+                             "course_id":  "6.172-fall-2018",
+                             "triad":  "Triad_I_Performance",
+                             "rosetta":  "subternary_kv_arena.rs",
+                             "url":  "https://ocw.mit.edu/courses/6-172-performance-engineering-of-software-systems-fall-2018/resources/lecture-notes/",
+                             "shard":  "6_172.e8q",
+                             "fib_anchor":  442,
+                             "summary":  "256-bit AVX2 SIMD vectorization, L1D cache blocking, bit-hacks, and 64-byte cacheline alignment"
+                         },
+                         {
+                             "course_id":  "6.006-fall-2011",
+                             "triad":  "Triad_I_Algorithms",
+                             "rosetta":  "braid_ssa.rs",
+                             "url":  "https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-fall-2011/resources/recitation-1-asymptotic-complexity-peak-finding/index.html",
+                             "shard":  "6_006.e8q",
+                             "fib_anchor":  509,
+                             "summary":  "DAG topological sorting, dominator trees, and Reidemeister Type II SSA dead-code elimination"
+                         },
+                         {
+                             "course_id":  "6.824-spring-2006",
+                             "triad":  "Triad_I_Distributed",
+                             "rosetta":  "sheaf_cohomology.rs",
+                             "url":  "https://ocw.mit.edu/courses/6-824-distributed-computer-systems-engineering-spring-2006/pages/lecture-notes/",
+                             "shard":  "6_824.e8q",
+                             "fib_anchor":  562,
+                             "summary":  "Distributed linearizability, Cellular Sheaf H^1(X;F)=0 consensus, and 4-Phase UARM WAL rollback"
+                         },
+                         {
+                             "course_id":  "8.04-spring-2016",
+                             "triad":  "Triad_II_Quantum",
+                             "rosetta":  "hypersphere_harmonics.rs",
+                             "url":  "https://ocw.mit.edu/courses/8-04-quantum-physics-i-spring-2016/",
+                             "shard":  "8_04.e8q",
+                             "fib_anchor":  610,
+                             "summary":  "Unitary operator algebras, S^7 hypersphere harmonics Y_l^m, and Laplace-Beltrami eigenfunctions"
+                         }
+                     ]
+}

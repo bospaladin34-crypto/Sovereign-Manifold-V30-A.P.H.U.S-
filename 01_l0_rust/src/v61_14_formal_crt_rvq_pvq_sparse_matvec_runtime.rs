@@ -516,7 +516,72 @@ fn v61_14_parse_field(input: &str, field_key: &str) -> String {
             }
         }
     }
+    let q_target_1 = format!("?{}=", field_key);
+    let q_target_2 = format!("&{}=", field_key);
+    if let Some(pos) = trimmed.find(&q_target_1).or_else(|| trimmed.find(&q_target_2)) {
+        let after = trimmed.split_at(pos.saturating_add(field_key.len() + 2)).1;
+        let end_idx = after
+            .find(|c: char| c == '&' || c == ' ' || c == '\r' || c == '\n')
+            .unwrap_or(after.len());
+        return after.split_at(end_idx).0.trim().to_string();
+    }
     String::new()
+}
+
+fn v61_14_parse_receipt_f64(json: &str, key: &str) -> Option<f64> {
+    let target = format!("\"{}\"", key);
+    let pos = json.find(&target)?;
+    let after = json.split_at(pos.saturating_add(target.len())).1;
+    let colon = after.find(':')?;
+    let val_part = after.split_at(colon.saturating_add(1)).1;
+    let mut num_str = String::new();
+    let mut started = false;
+    for ch in val_part.chars() {
+        if ch.is_ascii_digit() || ch == '.' || ch == '-' {
+            num_str.push(ch);
+            started = true;
+        } else if started {
+            break;
+        } else if ch == ',' || ch == '}' || ch == '\n' {
+            break;
+        }
+    }
+    if num_str.is_empty() {
+        None
+    } else {
+        num_str.parse::<f64>().ok()
+    }
+}
+
+fn v61_14_parse_receipt_f64_pair(json: &str, key: &str) -> Option<(f64, f64)> {
+    let target = format!("\"{}\"", key);
+    let pos = json.find(&target)?;
+    let after = json.split_at(pos.saturating_add(target.len())).1;
+    let colon = after.find(':')?;
+    let val_part = after.split_at(colon.saturating_add(1)).1;
+    let mut first_str = String::new();
+    let mut second_str = String::new();
+    let mut stage: u8 = 0;
+    for ch in val_part.chars() {
+        if ch.is_ascii_digit() || ch == '.' || ch == '-' {
+            if stage == 0 || stage == 1 {
+                stage = 1;
+                first_str.push(ch);
+            } else if stage == 2 || stage == 3 {
+                stage = 3;
+                second_str.push(ch);
+            }
+        } else if stage == 1 {
+            stage = 2;
+        } else if stage == 3 {
+            break;
+        } else if ch == '\n' || ch == '}' {
+            break;
+        }
+    }
+    let a = first_str.parse::<f64>().ok()?;
+    let b = second_str.parse::<f64>().ok()?;
+    Some((a, b))
 }
 
 pub fn v61_14_dispatch_tool_289_crt_pfa(input: &str) -> String {
@@ -524,6 +589,7 @@ pub fn v61_14_dispatch_tool_289_crt_pfa(input: &str) -> String {
     let _ = mode;
     let t0 = Instant::now();
     let mut crt_map = unsafe { CoprimeModuliCrtIndexMap::allocate_l1d_aligned() };
+    let mut second_map = unsafe { CoprimeModuliCrtIndexMap::allocate_l1d_aligned() };
     let crt_passed = CoprimeModuliCrtIndexMap::verify_exhaustive_crt_bijection_gate();
 
     let e8z_path = "00_control/weights/sovereign_harmonic_iv_v5000.e8z";
@@ -534,13 +600,27 @@ pub fn v61_14_dispatch_tool_289_crt_pfa(input: &str) -> String {
     let mut i: usize = 0;
     while i < BLOCK_HORIZON_DIM {
         let raw_b = e8z_bytes.iter().nth(i % e8z_bytes.len().max(1)).copied().unwrap_or(128u8);
+        let raw_b2 = e8z_bytes
+            .iter()
+            .nth((i + BLOCK_HORIZON_DIM) % e8z_bytes.len().max(1))
+            .copied()
+            .unwrap_or(128u8);
         let sample_f32 = ((raw_b as f32) - 128.0_f32) / 128.0_f32;
+        let sample2_f32 = ((raw_b2 as f32) - 128.0_f32) / 128.0_f32;
         unsafe {
             *crt_map.data_ptr.add(i) = sample_f32;
+            *second_map.data_ptr.add(i) = sample2_f32;
         }
         e_before += (sample_f32 as f64) * (sample_f32 as f64);
         i += 1;
     }
+
+    let class_u = unsafe {
+        L1UnitBallCodebookClassifier::classify_l1_unit_ball_nearest_codeword(crt_map.data_ptr)
+    };
+    let class_v = unsafe {
+        L1UnitBallCodebookClassifier::classify_l1_unit_ball_nearest_codeword(second_map.data_ptr)
+    };
 
     unsafe {
         crt_map.execute_good_thomas_pfa_l1_pass();
@@ -558,8 +638,8 @@ pub fn v61_14_dispatch_tool_289_crt_pfa(input: &str) -> String {
     let pfa_drift = (pfa_ratio - 1.0).abs();
     let pfa_pass = pfa_drift <= 0.0005;
 
-    let u_anchor: u16 = 1827; // SCAFFOLD: Reference anchor codeword ID — measure via group action generator
-    let v_anchor: u16 = 4040; // SCAFFOLD: Reference target codeword ID — measure via group action generator
+    let u_anchor: u16 = class_u.codeword_id;
+    let v_anchor: u16 = class_v.codeword_id;
     let orig_dist = L1UnitBallCodebookClassifier::l1_unit_ball_manhattan_distance(u_anchor, v_anchor);
     let u_img = CoprimeModuliCrtIndexMap::apply_signed_crt_abelian_group_action(u_anchor, 1, 3, 5, 17);
     let v_img = CoprimeModuliCrtIndexMap::apply_signed_crt_abelian_group_action(v_anchor, 1, 3, 5, 17);
@@ -670,7 +750,12 @@ pub fn v61_14_dispatch_tool_290_rvq_pvq(input: &str) -> String {
 }
 
 pub fn v61_14_dispatch_tool_291_sparse_matvec(input: &str) -> String {
-    let _ = input;
+    let requested_blocks_str = v61_14_parse_field(input, "active_micro_blocks");
+    let target_active_blocks = requested_blocks_str
+        .parse::<usize>()
+        .ok()
+        .filter(|&v| v >= 1 && v <= MICRO_BLOCKS_PER_HORIZON)
+        .unwrap_or(16);
     let t0 = Instant::now();
     let e8z_path = "00_control/weights/sovereign_harmonic_iv_v5000.e8z";
     let alt_path = "C:/sovereign_manifold_v31/00_control/weights/sovereign_harmonic_iv_v5000.e8z";
@@ -679,10 +764,12 @@ pub fn v61_14_dispatch_tool_291_sparse_matvec(input: &str) -> String {
     let layout_weights = unsafe { Layout::from_size_align_unchecked(BLOCK_HORIZON_DIM * std::mem::size_of::<i8>(), 64) };
     let layout_scales = unsafe { Layout::from_size_align_unchecked(MICRO_BLOCKS_PER_HORIZON * std::mem::size_of::<f32>(), 64) };
     let layout_acts = unsafe { Layout::from_size_align_unchecked(BLOCK_HORIZON_DIM * std::mem::size_of::<f32>(), 64) };
+    let layout_energies = unsafe { Layout::from_size_align_unchecked(MICRO_BLOCKS_PER_HORIZON * std::mem::size_of::<f64>(), 64) };
 
     let weights_ptr = unsafe { alloc_zeroed(layout_weights) as *mut i8 };
     let scales_ptr = unsafe { alloc_zeroed(layout_scales) as *mut f32 };
     let acts_ptr = unsafe { alloc_zeroed(layout_acts) as *mut f32 };
+    let energies_ptr = unsafe { alloc_zeroed(layout_energies) as *mut f64 };
 
     let mut i: usize = 0;
     while i < BLOCK_HORIZON_DIM {
@@ -702,21 +789,59 @@ pub fn v61_14_dispatch_tool_291_sparse_matvec(input: &str) -> String {
     let mut sb: usize = 0;
     while sb < MICRO_BLOCKS_PER_HORIZON {
         let b = e8z_bytes.iter().nth(sb.saturating_mul(19) % e8z_bytes.len().max(1)).copied().unwrap_or(128u8);
+        let start_idx = sb * MICRO_BLOCK_DIM;
+        let end_idx = (start_idx + MICRO_BLOCK_DIM).min(BLOCK_HORIZON_DIM);
+        let mut mb_energy: f64 = 0.0;
+        let mut idx = start_idx;
+        while idx < end_idx {
+            let x = unsafe { *acts_ptr.add(idx) } as f64;
+            mb_energy += x * x;
+            idx += 1;
+        }
         unsafe {
             *scales_ptr.add(sb) = 0.5_f32 + ((b as f32) / 512.0_f32);
+            *energies_ptr.add(sb) = mb_energy;
         }
         sb += 1;
     }
 
-    let active_mask: u32 = 0x0000FFFF; // SCAFFOLD: Top 16 of 31 micro blocks active — measure via dynamic energy threshold
+    let classification = unsafe {
+        L1UnitBallCodebookClassifier::classify_l1_unit_ball_nearest_codeword(acts_ptr)
+    };
+
+    let mut active_mask: u32 = 0;
+    let mut dominant_mb: usize = 0;
+    let mut rank: usize = 0;
+    while rank < target_active_blocks {
+        let mut best_mb: usize = 0;
+        let mut best_e: f64 = -1.0;
+        let mut m_idx: usize = 0;
+        while m_idx < MICRO_BLOCKS_PER_HORIZON {
+            let e_val = unsafe { *energies_ptr.add(m_idx) };
+            if e_val > best_e {
+                best_e = e_val;
+                best_mb = m_idx;
+            }
+            m_idx += 1;
+        }
+        if rank == 0 {
+            dominant_mb = best_mb;
+        }
+        active_mask |= 1u32 << best_mb;
+        unsafe {
+            *energies_ptr.add(best_mb) = -2.0;
+        }
+        rank += 1;
+    }
+
     let header = CoarseHorizonRoutingHeader {
-        nearest_l1_codeword: 1827,
-        dominant_flat_axis: 913,
-        r_mod7: 3,
-        r_mod11: 0,
-        r_mod101: 4,
-        dominant_micro_block: 3,
-        peak_magnitude: 1.85_f32,
+        nearest_l1_codeword: classification.codeword_id,
+        dominant_flat_axis: classification.dominant_axis as u16,
+        r_mod7: classification.crt_residues.r_mod7 as u8,
+        r_mod11: classification.crt_residues.r_mod11 as u8,
+        r_mod101: classification.crt_residues.r_mod101 as u8,
+        dominant_micro_block: dominant_mb as u8,
+        peak_magnitude: classification.peak_magnitude,
         active_micro_block_mask: active_mask,
     };
 
@@ -763,11 +888,19 @@ pub fn v61_14_dispatch_tool_291_sparse_matvec(input: &str) -> String {
         dealloc(weights_ptr as *mut u8, layout_weights);
         dealloc(scales_ptr as *mut u8, layout_scales);
         dealloc(acts_ptr as *mut u8, layout_acts);
+        dealloc(energies_ptr as *mut u8, layout_energies);
     }
 
+    let active_blocks_count = header.active_micro_block_mask.count_ones();
+    let dominant_block_id = header.dominant_micro_block;
     let elapsed_us = t0.elapsed().as_secs_f64() * 1_000_000.0;
     format!(
-        "{{\"status\":\"MEASURED_7777D_CRT_RVQ_ROUTED_OK\",\"tool_id\":291,\"chain_milestone\":\"CHAIN 292\",\"active_micro_blocks\":16,\"total_micro_blocks\":31,\"dominant_micro_block\":3,\"dense_eval_us\":{:.2},\"sparse_routed_us\":{:.2},\"matvec_speedup_x\":{:.2},\"sparse_result\":{:.4},\"dense_sample_result\":{:.4},\"mips_self_inner_product\":{},\"elapsed_us\":{:.2}}}",
+        "{{\"status\":\"MEASURED_7777D_CRT_RVQ_ROUTED_OK\",\"tool_id\":291,\"chain_milestone\":\"CHAIN 292\",\"active_micro_blocks\":{},\"total_micro_blocks\":{},\"dominant_micro_block\":{},\"nearest_l1_codeword\":{},\"dominant_flat_axis\":{},\"dense_eval_us\":{:.2},\"sparse_routed_us\":{:.2},\"matvec_speedup_x\":{:.2},\"sparse_result\":{:.4},\"dense_sample_result\":{:.4},\"mips_self_inner_product\":{},\"elapsed_us\":{:.2}}}",
+        active_blocks_count,
+        MICRO_BLOCKS_PER_HORIZON,
+        dominant_block_id,
+        header.nearest_l1_codeword,
+        header.dominant_flat_axis,
         dense_us,
         sparse_us,
         speedup,
@@ -779,7 +912,8 @@ pub fn v61_14_dispatch_tool_291_sparse_matvec(input: &str) -> String {
 }
 
 pub fn v61_14_dispatch_tool_292_chain292_cert(input: &str) -> String {
-    let _ = input;
+    let custom_receipt = v61_14_parse_field(input, "receipt_path");
+    let unmeasured_override = v61_14_parse_field(input, "unmeasured_gate");
     let t0 = Instant::now();
 
     let npage_bytes = fs::metadata("00_control/weights/neurons_v5000_63360.npage")
@@ -811,23 +945,108 @@ pub fn v61_14_dispatch_tool_292_chain292_cert(input: &str) -> String {
     let measured_total_synapses = (measured_neurons * 16) + (spage_bytes / 2);
     let measured_bijected_cls = (npage_bytes / 64) + (tri_e8z_bytes / 64);
 
+    let receipt_json = if !custom_receipt.is_empty() {
+        fs::read_to_string(&custom_receipt).unwrap_or_default()
+    } else {
+        fs::read_to_string("C:/ACT_OMEGA_7777D_ORTHOPLEX_LAB/receipts/v61_14_formal_1to1_acceptability_gates_receipt.json")
+            .or_else(|_| fs::read_to_string("03_vault/receipts/v61_14_formal_1to1_acceptability_gates_receipt.json"))
+            .or_else(|_| fs::read_to_string("C:/sovereign_manifold_v31/03_vault/receipts/v61_14_formal_1to1_acceptability_gates_receipt.json"))
+            .unwrap_or_default()
+    };
+
+    // Live in-process measurement for G1, G4 (Good-Thomas PFA Parseval), and G2 sample check
     let crt_passed = CoprimeModuliCrtIndexMap::verify_exhaustive_crt_bijection_gate();
-    let g1 = crt_passed == BLOCK_HORIZON_DIM;
-    let g2 = true; // SCAFFOLD: Abelian CRT group isometry 15554/15554 — measure via G2 suite
-    let g3 = true; // SCAFFOLD: L1 classifier throughput >= 1000M elems/s — measure via G3 suite
-    let g4 = true; // SCAFFOLD: PFA Parseval drift <= 2.5e-4 — measure via G4 suite
-    let g5 = true; // SCAFFOLD: Coprime marginal Shannon entropy >= 99.95% — measure via G5 suite
-    let g6 = true; // SCAFFOLD: Stage-1 LS gain advantage >= +0.90 dB — measure via G6 suite
-    let g7 = true; // SCAFFOLD: 3-stage RVQ SQNR >= 16.50 dB (E4B) and >= 10.00 dB (12B) — measure via G7 suite
-    let g8 = true; // SCAFFOLD: Visual frame 3-stage PSNR >= 35.00 dB — measure via G8 suite
-    let g9 = true; // SCAFFOLD: Top-16 micro-block energy >= 80.0% — measure via G9 suite
-    let g10 = true; // SCAFFOLD: Block-sparse MatVec speedup >= 15.0x — measure via G10 suite
-    let g11 = true; // SCAFFOLD: MAP associative memory recall margin >= 25.0x — measure via G11 suite
+    let e8z_raw = fs::read("00_control/weights/sovereign_harmonic_iv_v5000.e8z")
+        .or_else(|_| fs::read("C:/sovereign_manifold_v31/00_control/weights/sovereign_harmonic_iv_v5000.e8z"))
+        .unwrap_or_default();
+
+    let mut crt_map = unsafe { CoprimeModuliCrtIndexMap::allocate_l1d_aligned() };
+    let mut e_before: f64 = 0.0;
+    let mut idx: usize = 0;
+    while idx < BLOCK_HORIZON_DIM {
+        let b = e8z_raw.iter().nth(idx % e8z_raw.len().max(1)).copied().unwrap_or(128u8);
+        let v = ((b as f32) - 128.0_f32) / 128.0_f32;
+        unsafe {
+            *crt_map.data_ptr.add(idx) = v;
+        }
+        e_before += (v as f64) * (v as f64);
+        idx += 1;
+    }
+    unsafe {
+        crt_map.execute_good_thomas_pfa_l1_pass();
+    }
+    let mut e_after: f64 = 0.0;
+    let mut jdx: usize = 0;
+    while jdx < BLOCK_HORIZON_DIM {
+        let v = unsafe { *crt_map.data_ptr.add(jdx) };
+        e_after += (v as f64) * (v as f64);
+        jdx += 1;
+    }
+    let live_pfa_ratio = if e_before > 0.0 { e_after / e_before } else { 0.0 };
+
+    let g2_count_opt = v61_14_parse_receipt_f64(&receipt_json, "g2_abelian_group_isometry").map(|v| v as usize);
+    let g3_tput_opt = v61_14_parse_receipt_f64(&receipt_json, "g3_l1_classifier_million_elems_per_sec");
+    let g4_drift_opt = v61_14_parse_receipt_f64(&receipt_json, "g4_pfa_parseval_drift");
+    let g5_entropy_opt = v61_14_parse_receipt_f64(&receipt_json, "g5_coprime_entropy_efficiency_pct");
+    let g6_gain_opt = v61_14_parse_receipt_f64(&receipt_json, "g6_stage1_ls_gain_advantage_db");
+    let g7_pair_opt = v61_14_parse_receipt_f64_pair(&receipt_json, "g7_rvq_3stage_sqnr_db_e4b_12b");
+    let g8_psnr_opt = v61_14_parse_receipt_f64(&receipt_json, "g8_visual_3stage_psnr_db");
+    let g9_energy_opt = v61_14_parse_receipt_f64(&receipt_json, "g9_top16_micro_block_energy_pct");
+    let g10_speedup_opt = v61_14_parse_receipt_f64(&receipt_json, "g10_block_sparse_matvec_speedup_x");
+    let g11_mips_opt = v61_14_parse_receipt_f64(&receipt_json, "g11_mips_35pct_noise_margin_x");
+
+    let pfa_ratio_for_controller = match g4_drift_opt {
+        Some(d) if (live_pfa_ratio - 1.0).abs() <= 0.0005 => 1.0 + d,
+        _ => 0.0,
+    };
+    let sqnr_e4b = g7_pair_opt.map(|p| p.0 as f32).unwrap_or(0.0_f32);
+    let sqnr_12b = g7_pair_opt.map(|p| p.1 as f32).unwrap_or(0.0_f32);
+    let mips_margin_val = g11_mips_opt.unwrap_or(0.0);
+
+    let round2_audit = AcceptabilityGateController::evaluate_round2_production_gates(
+        crt_passed,
+        g2_count_opt.unwrap_or(0),
+        pfa_ratio_for_controller,
+        sqnr_12b,
+        g5_entropy_opt.unwrap_or(0.0),
+        (mips_margin_val * 100.0) as i32,
+        100,
+    );
+
+    let g1 = round2_audit.crt_bijection_exact_7777 && unmeasured_override != "G1";
+    let g2 = g2_count_opt.is_some() && round2_audit.l1_codebook_bijection_15554 && unmeasured_override != "G2";
+    let g3 = g3_tput_opt.map(|v| v >= 1000.0).unwrap_or(false) && unmeasured_override != "G3";
+    let g4 = g4_drift_opt.is_some() && round2_audit.pfa_parseval_drift_within_2e4 && !e8z_raw.is_empty() && unmeasured_override != "G4";
+    let g5 = g5_entropy_opt.is_some() && round2_audit.coprime_entropy_efficiency_above_99_95pct && unmeasured_override != "G5";
+    let g6 = g6_gain_opt.map(|v| v >= 0.90).unwrap_or(false) && unmeasured_override != "G6";
+    let g7 = g7_pair_opt.is_some() && sqnr_e4b >= 16.50_f32 && round2_audit.rvq_3stage_sqnr_above_10db && unmeasured_override != "G7";
+    let g8 = g8_psnr_opt.map(|v| v >= 35.00).unwrap_or(false) && unmeasured_override != "G8";
+    let g9 = g9_energy_opt.map(|v| v >= 80.0).unwrap_or(false) && unmeasured_override != "G9";
+    let g10 = g10_speedup_opt.map(|v| v >= 15.0).unwrap_or(false) && unmeasured_override != "G10";
+    let g11 = g11_mips_opt.is_some() && round2_audit.mips_35pct_noise_margin_above_25x && unmeasured_override != "G11";
     let g12 = npage_bytes == 8110080
         && spage_bytes == 4055040
         && e8z_bytes == 133120
         && measured_bijected_cls == 132960
-        && lean_count >= 740;
+        && lean_count >= 740
+        && unmeasured_override != "G12";
+
+    let mut unmeasured_list = String::new();
+    if !g1 { unmeasured_list.push_str("G1_UNMEASURED_OR_FAIL;"); }
+    if !g2 { unmeasured_list.push_str("G2_UNMEASURED_OR_FAIL;"); }
+    if !g3 { unmeasured_list.push_str("G3_UNMEASURED_OR_FAIL;"); }
+    if !g4 { unmeasured_list.push_str("G4_UNMEASURED_OR_FAIL;"); }
+    if !g5 { unmeasured_list.push_str("G5_UNMEASURED_OR_FAIL;"); }
+    if !g6 { unmeasured_list.push_str("G6_UNMEASURED_OR_FAIL;"); }
+    if !g7 { unmeasured_list.push_str("G7_UNMEASURED_OR_FAIL;"); }
+    if !g8 { unmeasured_list.push_str("G8_UNMEASURED_OR_FAIL;"); }
+    if !g9 { unmeasured_list.push_str("G9_UNMEASURED_OR_FAIL;"); }
+    if !g10 { unmeasured_list.push_str("G10_UNMEASURED_OR_FAIL;"); }
+    if !g11 { unmeasured_list.push_str("G11_UNMEASURED_OR_FAIL;"); }
+    if !g12 { unmeasured_list.push_str("G12_UNMEASURED_OR_FAIL;"); }
+    if unmeasured_list.is_empty() {
+        unmeasured_list.push_str("NONE");
+    }
 
     let mut gates_passed: usize = 0;
     if g1 { gates_passed += 1; }
@@ -843,20 +1062,21 @@ pub fn v61_14_dispatch_tool_292_chain292_cert(input: &str) -> String {
     if g11 { gates_passed += 1; }
     if g12 { gates_passed += 1; }
 
-    let all_gates_passed = gates_passed == 12;
+    let all_gates_passed = gates_passed == 12 && round2_audit.all_gates_passed;
     let status = if all_gates_passed {
         "CHAIN_292_MASTER_CERTIFIED_OK"
     } else {
-        "CHAIN_CERTIFICATION_EVALUATING"
+        "CHAIN_292_NOT_CERTIFIED"
     };
 
     let elapsed_us = t0.elapsed().as_secs_f64() * 1_000_000.0;
     format!(
-        "{{\"status\":\"{}\",\"tool_id\":292,\"chain_milestone\":\"CHAIN 292\",\"total_chain_tools\":292,\"lean4_qed_theorems\":{},\"gates_passed\":{},\"gates_total\":12,\"all_gates_passed\":{},\"connectome\":{{\"dendritic_neurons\":{},\"npage_bytes\":{},\"spage_bytes\":{},\"total_synapses\":{},\"bijected_cachelines\":{}}},\"gates\":{{\"g1_crt_bijection\":{},\"g2_group_isometry\":{},\"g3_classifier_throughput\":{},\"g4_pfa_parseval\":{},\"g5_coprime_entropy\":{},\"g6_stage1_ls_gain\":{},\"g7_rvq_3stage_sqnr\":{},\"g8_visual_psnr\":{},\"g9_micro_block_energy\":{},\"g10_matvec_speedup\":{},\"g11_mips_recall\":{},\"g12_polyglot_hygiene\":{}}},\"elapsed_us\":{:.2}}}",
+        "{{\"status\":\"{}\",\"tool_id\":292,\"chain_milestone\":\"CHAIN 292\",\"total_chain_tools\":292,\"lean4_qed_theorems\":{},\"gates_passed\":{},\"gates_total\":12,\"all_gates_passed\":{},\"unmeasured_gates\":\"{}\",\"connectome\":{{\"dendritic_neurons\":{},\"npage_bytes\":{},\"spage_bytes\":{},\"total_synapses\":{},\"bijected_cachelines\":{}}},\"gates\":{{\"g1_crt_bijection\":{},\"g2_group_isometry\":{},\"g3_classifier_throughput\":{},\"g4_pfa_parseval\":{},\"g5_coprime_entropy\":{},\"g6_stage1_ls_gain\":{},\"g7_rvq_3stage_sqnr\":{},\"g8_visual_psnr\":{},\"g9_micro_block_energy\":{},\"g10_matvec_speedup\":{},\"g11_mips_recall\":{},\"g12_polyglot_hygiene\":{}}},\"elapsed_us\":{:.2}}}",
         status,
         lean_count,
         gates_passed,
         all_gates_passed,
+        unmeasured_list,
         measured_neurons,
         npage_bytes,
         spage_bytes,

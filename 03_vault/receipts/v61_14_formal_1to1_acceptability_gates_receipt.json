@@ -1,0 +1,18 @@
+{
+  "release": "ACT-Omega v61.14 Round-2 Strict 1:1 Formalism Acceptability Audit",
+  "timestamp_utc": "2026-11-06T20:44:30.6015756Z",
+  "gates_passed": 12,
+  "gates_total": 12,
+  "g1_crt_bijection": 7777,
+  "g2_abelian_group_isometry": 15554,
+  "g3_l1_classifier_million_elems_per_sec": 1226.32,
+  "g4_pfa_parseval_drift": 0.000020,
+  "g5_coprime_entropy_efficiency_pct": 99.989,
+  "g6_stage1_ls_gain_advantage_db": 3.47,
+  "g7_rvq_3stage_sqnr_db_e4b_12b": [17.95, 10.21],
+  "g8_visual_3stage_psnr_db": 36.47,
+  "g9_top16_micro_block_energy_pct": 84.48,
+  "g10_block_sparse_matvec_speedup_x": 32.70,
+  "g11_mips_35pct_noise_margin_x": 49.64,
+  "total_elapsed_ms": 382.88
+}

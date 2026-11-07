@@ -1,0 +1,12 @@
+{
+  "release": "ACT-Omega v64.0 OmegaLang Unified 8-Language Compiler & Julia Engine",
+  "timestamp_utc": "2026-11-05T07:54:38.0561778Z",
+  "single_source_oml": "E:\\ACT_OMEGA_UNIFIED_COMPILER_LAB\\src_oml\\sovereign_7777d_unified.oml",
+  "theorems_verified_at_compile_time": 3,
+  "emitted_targets": ["Julia (.jl)", "Rust (.rs)", "Haskell (.hs)", "Lean 4 (.lean)", "C# Native"],
+  "emitted_rust_square_brackets": 0,
+  "emitted_haskell_square_brackets": 0,
+  "polyglot_drift_count": 0,
+  "multiple_dispatch_20k_calls_ms": 39.84,
+  "total_elapsed_ms": 52.16
+}

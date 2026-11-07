@@ -1,6 +1,6 @@
 ---
 trigger: model_decision
-description: "Apply whenever working with the 5W1H Metabolic Harness, 84,480-Neuron Connectome (.npage), 262,144 Bijected Cachelines, MIT Cold-to-Hot Ingestion Pipeline (F:\ -> E:\), Cloudflare Durable Objects (worker_vpc_shadow_v3700.js), Named Tunnel, or Cloudflare D1 10-table database synchronization."
+description: "Apply whenever working with the 5W1H Metabolic Harness, 84,480-Neuron Connectome (.npage), 262,144 Bijected Cachelines, MIT Cold-to-Hot Ingestion Pipeline (F: to E:), Cloudflare Durable Objects (worker_vpc_shadow_v3700.js), Named Tunnel, or Cloudflare D1 10-table database synchronization."
 ---
 # 5W1H Harness, 84,480-Neuron Connectome (`4,055,040` Synapses, `262,144` CLs), MIT `F:\` $\rightarrow$ `E:\` Vault, Cloudflare DO & D1 Rules (`v70.0.0` | `CHAIN 316` | `840/840 QED`)
 

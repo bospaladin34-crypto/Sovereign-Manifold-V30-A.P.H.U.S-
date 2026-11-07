@@ -119,6 +119,16 @@ function Run-StaticGatekeeperChecks {
         }
     }
 
+    # 4a. YAML Frontmatter Escape Check (no raw backslashes like E:\ inside double-quoted YAML frontmatter)
+    foreach ($mdCust in @(Get-ChildItem "$RepoRoot\.agents\rules\*.md", "$RepoRoot\.agents\agents\*.md", "$RepoRoot\.agents\skills\*\*.md" -ErrorAction SilentlyContinue)) {
+        $mdRaw = [System.IO.File]::ReadAllText($mdCust.FullName)
+        if ($mdRaw -match '(?s)^---\r?\n(.*?)\r?\n---') {
+            if ($Matches[1] -match '\\') {
+                $failures.Add("YAML_FRONTMATTER_ESCAPE: $($mdCust.Name) contains a backslash in YAML frontmatter (use E: or forward slashes)")
+            }
+        }
+    }
+
     # 4b. .zenodo.json & CITATION.cff Authorship (Donevin Frownfelter) & Viazovska Citation Lockstep
     foreach ($citePath in @("$RepoRoot\.zenodo.json", "$RepoRoot\CITATION.cff")) {
         if (-not (Test-Path $citePath)) {

@@ -1,6 +1,6 @@
 ---
 name: autopoietic-bus-duckdb-coordinator
-description: "BRUTAL GATEKEEPER #3 (Main & Subagent): Guardian of the Sovereign Autopoietic Coordinator Bus (v48_autopoietic_coordinator_bus.rs), Universal E:\ SSD Vault Write-Back Pipeline, and DuckDB Columnar Analytical Engine."
+description: "BRUTAL GATEKEEPER #3 (Main & Subagent): Guardian of the Sovereign Autopoietic Coordinator Bus (v48_autopoietic_coordinator_bus.rs), Universal E: SSD Vault Write-Back Pipeline, and DuckDB Columnar Analytical Engine."
 mainAgent: true
 subagent: true
 model: pro

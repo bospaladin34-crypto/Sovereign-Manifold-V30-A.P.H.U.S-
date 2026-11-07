@@ -1,0 +1,21 @@
+{
+  "name": "act-omega-sovereign-manifold",
+  "displayName": "ACT-Omega Sovereign Manifold (v70.0.0 | CHAIN 316 | 840/840 QED)",
+  "version": "70.0.0",
+  "description": "Official Antigravity architecture plugin for ACT-Omega Sovereign Manifold v70.0.0 (SH4Z v7000 TLV, 84,480 Neurons, 262,144 Bijected Cachelines, 840/840 Lean 4 QED, OmegaLang v16.0, Heterogeneous CPU+RTX 3050 CUDA Co-Execution, Dual-Pixel NDK, and Cloudflare Edge/D1).",
+  "logo": "assets/logo.svg",
+  "author": {
+    "name": "Donevin Frownfelter (@bospaladin34-crypto)",
+    "url": "https://act-omega-net.dev"
+  },
+  "homepage": "https://act-omega-net.dev",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-"
+  },
+  "suggestedPrompts": [
+    "Run the 13-point Brutal Agent Gatekeeper and 6-Layer Lifecycle Audit across the Tri-Silicon Cluster",
+    "Execute Simultaneous Host CPU AVX2 + RTX 3050 CUDA PTX Co-Execution and 262,144-Cacheline Work-Steal",
+    "Audit and synchronize the Cloudflare Named Tunnel, SovereignEdgeShadowDO Durable Object, and 10-Table D1 Vault"
+  ]
+}

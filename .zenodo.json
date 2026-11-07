@@ -1,33 +1,61 @@
 {
-  "title": "ACT-Omega Net v61.0.0 (SH4Z v6000 TLV | CHAIN 280 | 700/700 Lean 4 QED | 18 Gemini MCP Tools): 80-Sector 63,360-Neuron Tri-Silicon & External SSD Topological Compute Manifold",
-  "version": "v61.0.0",
-  "publication_date": "2026-11-04",
+  "title": "ACT-Omega Net v70.0.0 (SH4Z v7000 TLV | CHAIN 316 | 840/840 Lean 4 QED | 262,144 Bijected Cachelines | 84,480 Neurons | 4,055,040 Synapses | OmegaLang v16.0): Tri-Silicon Topological & E8/Leech Lattice Compute Manifold",
+  "version": "v70.0.0",
+  "publication_date": "2026-11-07",
   "doi": "10.5281/zenodo.23651696",
   "upload_type": "software",
   "license": "MIT",
   "creators": [
     {
-      "name": "Bell, Nicholas",
-      "affiliation": "Sovereign Manifold Research"
+      "name": "Frownfelter, Donevin",
+      "affiliation": "ACT-Omega Sovereign Manifold Research (@bospaladin34-crypto)"
+    }
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "10.17605/OSF.IO/2XQ5Z",
+      "relation": "isSupplementTo",
+      "scheme": "doi"
     },
     {
-      "name": "Garlock, Richard",
-      "affiliation": "Sovereign Manifold Research"
+      "identifier": "10.4007/annals.2017.185.3.7",
+      "relation": "cites",
+      "scheme": "doi"
+    },
+    {
+      "identifier": "10.4007/annals.2017.185.3.8",
+      "relation": "cites",
+      "scheme": "doi"
+    },
+    {
+      "identifier": "10.4007/annals.2022.196.3.3",
+      "relation": "cites",
+      "scheme": "doi"
+    },
+    {
+      "identifier": "arXiv:1902.05438",
+      "relation": "cites",
+      "scheme": "arxiv"
     }
   ],
   "keywords": [
     "ACT-Omega",
-    "Sovereign Harmonic VII",
-    "SH4Z v6000",
-    "CHAIN 280",
-    "700/700 Lean 4 QED",
-    "63,360 Neurons",
-    "3,041,280 Synapses",
+    "Donevin Frownfelter",
+    "Maryna Viazovska",
+    "E8 Lattice",
+    "Leech Lattice",
+    "Sovereign Harmonic VIII",
+    "SH4Z v7000",
+    "OmegaLang v16.0",
+    "CHAIN 316",
+    "840/840 Lean 4 QED",
+    "262,144 Bijected Cachelines",
+    "84,480 Neurons",
+    "4,055,040 Synapses",
     "Gemma 4 Multimodal PLE",
-    "18 Gemini MCP Tools",
+    "21 Gemini MCP Tools",
     "Fourier Neural Operator",
     "Stiefel Manifold",
-    "Leech Lattice",
     "Lean 4 Formal Verification"
   ]
 }

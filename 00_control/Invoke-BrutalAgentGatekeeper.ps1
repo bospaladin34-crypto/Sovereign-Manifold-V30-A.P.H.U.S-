@@ -119,6 +119,24 @@ function Run-StaticGatekeeperChecks {
         }
     }
 
+    # 4b. .zenodo.json & CITATION.cff Authorship (Donevin Frownfelter) & Viazovska Citation Lockstep
+    foreach ($citePath in @("$RepoRoot\.zenodo.json", "$RepoRoot\CITATION.cff")) {
+        if (-not (Test-Path $citePath)) {
+            $failures.Add("CITATION_FILE_MISSING: $citePath not found")
+        } else {
+            $citeRaw = [System.IO.File]::ReadAllText($citePath)
+            if (($citeRaw -notmatch 'Frownfelter') -or ($citeRaw -notmatch 'Donevin')) {
+                $failures.Add("AUTHORSHIP_DRIFT: $citePath missing Primary Author Donevin Frownfelter")
+            }
+            if (($citeRaw -match 'Bell,\s*Nicholas') -or ($citeRaw -match 'Nicholas\s+Bell') -or ($citeRaw -match 'Garlock,\s*Richard')) {
+                $failures.Add("AUTHORSHIP_CONTAMINATION: $citePath contains retired OS username attribution (Bell/Garlock)")
+            }
+            if ($citeRaw -notmatch '10\.4007/annals\.2017\.185\.3\.7') {
+                $failures.Add("CITATION_MISSING_VIAZOVSKA: $citePath missing Maryna S. Viazovska E8 citation (10.4007/annals.2017.185.3.7)")
+            }
+        }
+    }
+
     # 5. Zero-Secret Leak Check (Retired Passkey, Active External Key & YubiKey Slot-2 Secret)
     $retiredLiteral = "SOVEREIGN" + "-LOQ15-4200"
     $activeKeyPath = "C:\Users\Nbell\.act_omega_operator_vault_key"

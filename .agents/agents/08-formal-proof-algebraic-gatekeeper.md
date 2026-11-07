@@ -1,4 +1,4 @@
-﻿---
+---
 name: formal-proof-algebraic-gatekeeper
 description: "BRUTAL GATEKEEPER #2 (Main & Subagent): Non-negotiable verifier for 700/700 Substantive Lean 4 QED theorems (zero trivial arithmetic padding), Layer 1.5 Algebraic Haskell (ghc.exe), and Zero-Square-Bracket L0 Rust (v33..v61+)."
 mainAgent: true

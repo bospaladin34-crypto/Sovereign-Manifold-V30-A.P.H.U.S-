@@ -1,4 +1,4 @@
-﻿---
+---
 name: l0-rust-lean4-architect
 description: "Specialized subagent for Tier-1 L0 Rust (01_l0_rust/src/bin/v31_swarm.rs, lib.rs 41 un-siloed modules & v33..v61+ zero-bracket modules), atomic stage hot-swapping, 80-sector u128 .e8z + Dual Gemma 4 .sh4z weights, Layer 1.5 Haskell codegen, and 700/700 substantive Lean 4 formal proofs."
 subagent: true

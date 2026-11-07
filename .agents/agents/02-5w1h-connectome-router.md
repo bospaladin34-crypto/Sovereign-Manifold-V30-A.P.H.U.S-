@@ -1,4 +1,4 @@
-﻿---
+---
 name: 5w1h-connectome-router
 description: "Specialized subagent for the 5W1H Metabolic Autopoietic Harness (Tool 45), Distributed 5W1H Router (Tool 65), 63,360-Neuron Connectome (neurons_v5000_63360.npage 8,110,080 B + synapses_v5700_2027520.spage 4,055,040 B = 3,041,280 Synapses, 132,960 Bijected Cachelines), and 63,360 binary shards."
 subagent: true

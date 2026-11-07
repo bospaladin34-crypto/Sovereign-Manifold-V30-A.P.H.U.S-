@@ -1,4 +1,4 @@
-﻿---
+---
 trigger: glob
 globs: "05_hud_cockpit/**/*, 02_l2_orchestration/**/*, docs/**/*, index.html, wiki.html, hud.html"
 description: "Host WebGPU HUD (05_hud_cockpit & 02_l2_orchestration/hud) preservation of 15 Cards, 60 FPS Scopes, 16x130 Heatmap, 5-View Lens Switcher, honest UNMEASURED/OFFLINE fallbacks, External Operator Auth Gate, Anti-Stale Headers, and Relative Asset / SSR Snapshot Law."

@@ -1,4 +1,4 @@
-﻿---
+---
 name: cloudflare-d1-tunnel-ops
 description: "Specialized subagent for Cloudflare Named Tunnel (act-omega-net.dev, HTTP/2 anti-502), SovereignContinuumDO Durable Object (worker_vpc_shadow_v3700.js), Remote 5 GB Cloudflare D1 SQLite (act_omega_d1_vault, 10 tables), 18-Tool Gemini JSON-RPC 2.0 MCP (:8097/mcp & mcp.act-omega-net.dev/mcp), and E:/G: Vault sync."
 subagent: true

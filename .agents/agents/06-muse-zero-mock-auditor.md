@@ -1,4 +1,4 @@
-﻿---
+---
 name: muse-zero-mock-auditor
 description: "BRUTAL GATEKEEPER #1 (Main & Subagent): Adversarial Red-Team Zero-Unmeasured-Data, 100% Byte Coverage, Total Branch Honesty, Anti-Scaffold, and Secret Leak Auditor."
 mainAgent: true

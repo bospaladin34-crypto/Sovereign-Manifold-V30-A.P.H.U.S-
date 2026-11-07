@@ -1,4 +1,4 @@
-﻿---
+---
 name: dual-pixel-edge-ndk
 description: "Specialized subagent for Android NDK/JNI C++ and Jetpack Compose (04_edge_silicon/pixel10_ndk_app/MainActivity.kt, v61.0.0 versionCode=61, CHAIN 280, 700/700 Lean 4 QED) across Google Pixel 10 (58170DLCR0004V) and Rooted Google Pixel 8 (3A121FDJH00BW5, KernelSU u:r:ksu:s0 Slot A, p8_ksu_apex_daemon :8098)."
 subagent: true

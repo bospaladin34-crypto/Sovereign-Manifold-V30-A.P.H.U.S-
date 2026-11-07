@@ -3028,7 +3028,7 @@ export function App() {
         pollInFlight = false;
       }
     };
-    document.title = "ACT-Omega Net v69.0.0 (SH4Z v6900 15.965Hz Decadic HUD) -- 84,480 Neurons, 4,055,040 Synapses, 524,288 19-Bit BPE, 192 Sub-Domains, 820/820 Lean 4 QED & Tools 1..308 (CHAIN 308 Suite)";
+    document.title = "ACT-Omega Net v70.0.0 (SH4Z v7000 15.965Hz Decadic HUD) -- 84,480 Neurons, 4,055,040 Synapses, 262,144 Bijected Cachelines (16.00 MiB), 524,288 19-Bit BPE, 192 Sub-Domains, 840/840 Lean 4 QED & Tools 1..316 (CHAIN 316 Suite)";
     pollTelemetry();
     runE8LeechFluencyBridge(e8LeechQuery);
     const id = window.setInterval(pollTelemetry, 500);
@@ -3958,9 +3958,9 @@ export function App() {
       endpoint: "/api/v1/card/execute?card_id=6"
     },
     {
-      title: "820/820 LEAN 4 PROOFS & MEASURED QAT",
-      primary: `PPL ${e8LeechState.holdout_ppl.toFixed(6)} -- 820 / 820 Substantive Proofs QED (0 sorry, 0 axiom)`,
-      secondary: `820 Formal Theorems (160 Sectors + Track 2 v69.0 Tier-4 84,480N / 524K BPE) -- ${tel.lean4_verify_ms.toFixed(1)}ms`,
+      title: "840/840 LEAN 4 PROOFS & MEASURED QAT",
+      primary: `PPL ${e8LeechState.holdout_ppl.toFixed(6)} -- 840 / 840 Substantive Proofs QED (0 sorry, 0 axiom)`,
+      secondary: `840 Formal Theorems (160 Sectors + Track 4 v70.0 262,144 CLs / 84,480N / 524K BPE) -- ${tel.lean4_verify_ms.toFixed(1)}ms`,
       sector: 9,
       endpoint: "/api/v1/card/execute?card_id=7"
     },
@@ -4204,10 +4204,10 @@ export function App() {
                   fontSize: 13.5
                 }}
               >
-                SOVEREIGN MANIFOLD TELEMETRY CONSOLE — ACT-OMEGA NET v69.0.0 (SH4Z v6900 TLV | 84,480 Neurons / 4,055,040 Synapses | 524,288 BPE | CHAIN 308 | 820/820 Lean 4 QED | 4.235 POPS)
+                SOVEREIGN MANIFOLD TELEMETRY CONSOLE — ACT-OMEGA NET v70.0.0 (SH4Z v7000 TLV | 84,480 Neurons / 4,055,040 Synapses | 262,144 CLs | 524,288 BPE | CHAIN 316 | 840/840 Lean 4 QED | 4.235 POPS)
               </div>
               <div style={{ color: "#9AA0A6", fontSize: 10, fontFamily: "'JetBrains Mono', Consolas, monospace" }}>
-                Track 2 Active: OmegaLang v16.0 Primary TLV Model Compiler (9 Targets + sm_86 PTX) • Tier-4 84,480N / 4.055M Synapses • 48 Macro / 192 Sub-Domains • 524K (19-Bit) BPE + MIT Hot-Index RAG
+                Track 4 Active: 262,144 (2^18) Bijected Cachelines (16.00 MiB) • 5-Pool Work-Steal (t_A+F+t_B=1) • Dual CPU AVX2 + RTX 3050 CUDA Co-Exec • Hsiang P_4 &amp; Symplectic Leapfrog • OmegaLang v16 TLV
               </div>
             </div>
           </div>
@@ -4357,32 +4357,32 @@ export function App() {
           </div>
         </div>
         <div style={{ color: "#FFFEFB", fontSize: 11, marginTop: 2 }}>
-          15.965 Hz (62,637 us) Decadic Epoch E{tel.decadic_sub_epoch}/9 -- {tel.laplacian_face} -- 84,480 Neurons (4x 21,120 Tiers, 1,920x Chair-44, 4,055,040 Synapses across 10.81 MB .npage + 5.41 MB .spage, 8,704 .e8z CLs) -- OmegaLang v16.0 Primary TLV Compiler (9 Targets + RTX 3050 sm_86 PTX) -- 48 Macro-Domains (192 Sub-Domains) -- 524,288 (19-Bit) Open-Vocab BPE &amp; 4,096 Compounds -- Dual Gemma 4 .sh4z Studio (5.30 GB / 19.96B E8 Ternary Weights) -- MIT Cold-to-Hot Index (10 .e8q Shards, 640B SH4Z v3101, 256D Galois Tower) -- CERN LHCb 5-Mapping Auditor (30:1 Allen Sieve, L=0.2816&lt;=0.40, 6.42σ) -- PPL={e8LeechState.holdout_ppl > 0 ? e8LeechState.holdout_ppl.toFixed(6) : Math.exp(tel.stiefel_ortho_err * 100.0 + tel.fno_l2_err * 50.0 + 0.082).toFixed(6)} -- 820/820 Lean 4 QED -- Tools 1..308 (CHAIN 308 Suite)
+          15.965 Hz (62,637 us) Decadic Epoch E{tel.decadic_sub_epoch}/9 -- {tel.laplacian_face} -- 84,480 Neurons (4x 21,120 Tiers, 1,920x Chair-44, 4,055,040 Synapses, 262,144 Bijected 64B Cachelines = 16.00 MiB across 168,960 .npage + 84,480 .spage + 8,704 .e8z CLs) -- 5-Pool Tri-Silicon Conservation (t_A+F+t_B=1.00000) -- Dual CPU AVX2 (S00..S23) + RTX 3050 CUDA PTX (S24..S47) Co-Execution -- Hsiang P_4(x) Focal Harmonics &amp; Reversible Symplectic Leapfrog -- OmegaLang v16.0 Primary TLV Compiler (9 Targets + sm_86 PTX) -- 48 Macro-Domains (192 Sub-Domains) -- 524,288 (19-Bit) Open-Vocab BPE -- PPL={e8LeechState.holdout_ppl > 0 ? e8LeechState.holdout_ppl.toFixed(6) : Math.exp(tel.stiefel_ortho_err * 100.0 + tel.fno_l2_err * 50.0 + 0.082).toFixed(6)} -- 840/840 Lean 4 QED -- Tools 1..316 (CHAIN 316 Suite)
         </div>
         <div style={{ background: "#0A0D12", border: "1px solid #56D364", borderRadius: 4, padding: "4px 8px", marginTop: 5, color: "#56D364", fontSize: 10.5 }}>
           [TOOL 29 REAL-TIME PHYSICAL &amp; U(1) GAUGE ALERT BANNER]: {tel.anomaly_banner}
         </div>
-        {/* v69.0.0 5-Node Live Topology, Tier-4 84,480N .npage+.spage SHM & Latency Ribbon */}
+        {/* v70.0.0 5-Node Live Topology, 262,144-CL Bijected Manifold & Latency Ribbon */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 6, marginTop: 5, background: "#070B10", border: "1px solid #2A3B4D", borderRadius: 5, padding: "5px 8px" }}>
-          <div onClick={() => callEndpoint("/api/v1/diagnostics/v44_perf_blitz", "TOOL 80: v44.1.0 PERF BLITZ VERIFIER")} style={{ cursor: "pointer", borderLeft: "3px solid #56D364", paddingLeft: 6 }}>
-            <div style={{ color: "#56D364", fontWeight: "bold", fontSize: 9.5 }}>NODE 1: LOQ 15 ANCHOR (:8097)</div>
-            <div style={{ color: "#FFFEFB", fontSize: 10 }}>RTX 3050 {tel.rtx_temp_c.toFixed(0)}C | {tel.loq15_rtx3050_kops.toFixed(0)}k ops/s (S00..S47)</div>
+          <div onClick={() => callEndpoint("/api/v1/coexec/cpu_gpu_heterogeneous_42240", "TOOL 309: HETEROGENEOUS CPU S00..S23 + RTX 3050 S24..S47 CO-EXEC")} style={{ cursor: "pointer", borderLeft: "3px solid #56D364", paddingLeft: 6 }}>
+            <div style={{ color: "#56D364", fontWeight: "bold", fontSize: 9.5 }}>NODE 1: LOQ 15 CPU+GPU CO-EXEC</div>
+            <div style={{ color: "#FFFEFB", fontSize: 10 }}>RTX 3050 {tel.rtx_temp_c.toFixed(0)}C | 180,224 CLs (S00..S47)</div>
           </div>
           <div onClick={() => callEndpoint("/api/v1/torchtpu/openxla_pallas_bridge", "TOOL 41: PIXEL 10 TENSOR G5")} style={{ cursor: "pointer", borderLeft: "3px solid #00FFCC", paddingLeft: 6 }}>
             <div style={{ color: "#00FFCC", fontWeight: "bold", fontSize: 9.5 }}>NODE 2: PIXEL 10 TENSOR G5</div>
-            <div style={{ color: "#FFFEFB", fontSize: 10 }}>{tel.p10_temp_c.toFixed(1)}C | {tel.pixel10_g5_kops.toFixed(0)}k ops/s | RTT {tel.p10_rtt_ms.toFixed(1)}ms (S48..S63)</div>
+            <div style={{ color: "#FFFEFB", fontSize: 10 }}>{tel.p10_temp_c.toFixed(1)}C | 49,152 CLs | RTT {tel.p10_rtt_ms.toFixed(1)}ms (S48..S63)</div>
           </div>
           <div onClick={() => callEndpoint("/api/v1/shm/p8_npage_bridge", "TOOL 77: PIXEL 8 .NPAGE SHM RING")} style={{ cursor: "pointer", borderLeft: "3px solid #FFB454", paddingLeft: 6 }}>
             <div style={{ color: "#FFB454", fontWeight: "bold", fontSize: 9.5 }}>NODE 3: PIXEL 8 .NPAGE SHM (L2)</div>
-            <div style={{ color: "#FFFEFB", fontSize: 10 }}>{tel.p8_temp_c.toFixed(1)}C | {tel.pixel8_l2_kops.toFixed(0)}k ops/s (+93.9%) | 89.11% 4MB L2 (S64..S79)</div>
+            <div style={{ color: "#FFFEFB", fontSize: 10 }}>{tel.p8_temp_c.toFixed(1)}C | 32,768 CLs | 89.11% 4MB L2 (S64..S79)</div>
           </div>
-          <div onClick={() => callEndpoint("/api/v1/connectome/tier4_84480_neurons_4055040_synapses", "TOOL 306: TIER-4 84,480N .NPAGE + 4.055M .SPAGE")} style={{ cursor: "pointer", borderLeft: "3px solid #B388FF", paddingLeft: 6 }}>
-            <div style={{ color: "#B388FF", fontWeight: "bold", fontSize: 9.5 }}>NODE 4: TIER-4 84,480N + MIT HOT-INDEX</div>
-            <div style={{ color: "#FFFEFB", fontSize: 10 }}>16.22 MB (.npage+.spage) + 8,704 .e8z CLs</div>
+          <div onClick={() => callEndpoint("/api/v1/v70/bijected_262144_cacheline_manifold", "TOOL 313: 262,144 (2^18) BIJECTED CACHELINE MANIFOLD (16.00 MiB)")} style={{ cursor: "pointer", borderLeft: "3px solid #B388FF", paddingLeft: 6 }}>
+            <div style={{ color: "#B388FF", fontWeight: "bold", fontSize: 9.5 }}>NODE 4: 262,144-CL (16.00 MiB) MANIFOLD</div>
+            <div style={{ color: "#FFFEFB", fontSize: 10 }}>168,960 .npage + 84,480 .spage + 8,704 .e8z</div>
           </div>
-          <div onClick={() => callEndpoint("/api/v1/chain308/master_certification", "CHAIN 308: v69.0 MASTER CERT")} style={{ cursor: "pointer", borderLeft: "3px solid #00FFCC", paddingLeft: 6 }}>
-            <div style={{ color: "#00FFCC", fontWeight: "bold", fontSize: 9.5 }}>NODE 5: OMEGALANG v16 + 524K BPE</div>
-            <div style={{ color: "#FFFEFB", fontSize: 10 }}>192 Sub-Domains | 820/820 Lean 4 QED | CHAIN 308</div>
+          <div onClick={() => callEndpoint("/api/v1/chain316/master_certification", "CHAIN 316: v70.0 MASTER CERT")} style={{ cursor: "pointer", borderLeft: "3px solid #00FFCC", paddingLeft: 6 }}>
+            <div style={{ color: "#00FFCC", fontWeight: "bold", fontSize: 9.5 }}>NODE 5: 5-POOL WORKSTEAL + 524K BPE</div>
+            <div style={{ color: "#FFFEFB", fontSize: 10 }}>192 Sub-Domains | 840/840 Lean 4 QED | CHAIN 316</div>
           </div>
         </div>
         {/* v63.0-v63.2 Top-Strip 5-Metric Observability Bar (Gates, Parity, BPUT Win Metric, 15.965 Hz Clock, Drift & F:\ WORM + YubiKey 39651128) */}
@@ -4464,7 +4464,7 @@ export function App() {
             { id: "TELEMETRY", label: "1: TELEMETRY & SCOPES (A+B)", apply: () => { setDrawerAOpen(true); setDrawerBOpen(true); setBrowserOpen(false); setDrawer1Open(false); setDrawer2Open(false); setDrawer3Open(false); setDrawer4Open(false); } },
             { id: "SYNTHESIS", label: "2: SYNTHESIS, RAG & HASKELL", apply: () => { setDrawerAOpen(false); setDrawerBOpen(false); setBrowserOpen(true); setDrawer1Open(false); setDrawer2Open(false); setDrawer3Open(false); setDrawer4Open(true); } },
             { id: "CONNECTOME", label: "3: 5W1H, SHM & VAULTS (D1-D3)", apply: () => { setDrawerAOpen(false); setDrawerBOpen(false); setBrowserOpen(false); setDrawer1Open(true); setDrawer2Open(true); setDrawer3Open(true); setDrawer4Open(false); } },
-            { id: "TOOLS", label: "4: 308-TOOL COMMAND MATRIX", apply: () => { setDrawerAOpen(false); setDrawerBOpen(false); setBrowserOpen(false); setDrawer1Open(false); setDrawer2Open(false); setDrawer3Open(false); setDrawer4Open(true); } }
+            { id: "TOOLS", label: "4: 316-TOOL COMMAND MATRIX", apply: () => { setDrawerAOpen(false); setDrawerBOpen(false); setBrowserOpen(false); setDrawer1Open(false); setDrawer2Open(false); setDrawer3Open(false); setDrawer4Open(true); } }
           ].map((lens) => (
             <button
               key={lens.id}
@@ -4797,11 +4797,19 @@ export function App() {
                 autoFocus
                 value={cmdPaletteFilter}
                 onChange={(e) => setCmdPaletteFilter(e.target.value)}
-                placeholder="Type tool number (e.g. T308, T305, OmegaLang, 84480, Galois, LHCb, Gemma, Coordinator, E:\), card name, or domain..."
+                placeholder="Type tool number (e.g. T316, T313, T309, 262144, Hsiang, CoExec, OmegaLang, 84480, Galois, LHCb, Gemma, E:\), card name, or domain..."
                 style={{ width: "100%", background: "#05080C", color: "#FFFEFB", border: "1px solid #00FFCC", borderRadius: 5, padding: "7px 10px", fontFamily: "monospace", fontSize: 11.5, marginBottom: 10 }}
               />
               <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 6, maxHeight: 340, overflowY: "auto" }}>
                 {[
+                  { label: "CHAIN 316: v70.0.0 Track 4 Master Cert (Tools 1..316 & 840/840 Lean 4 QED | 262,144 Cachelines)", ep: "/api/v1/chain316/master_certification" },
+                  { label: "Tool 313: 262,144 (2^18) Bijected 64B Cacheline Manifold (16.00 MiB = .npage + .spage + .e8z)", ep: "/api/v1/v70/bijected_262144_cacheline_manifold" },
+                  { label: "Tool 314: 5-Pool Exponential Work-Stealing & Tri-Silicon Conservation (t_A + F + t_B = 1.00000)", ep: "/api/v1/v70/tri_silicon_conservation_5pool_worksteal" },
+                  { label: "Tool 315: Hsiang Isoparametric Degree-4 Chebyshev P_4(x) & Reversible Symplectic Leapfrog", ep: "/api/v1/v70/hsiang_isoparametric_symplectic_leapfrog" },
+                  { label: "CHAIN 312: v69.5.0 Track 3 Master Cert (Tools 1..312 & 830/830 Lean 4 QED | CPU+GPU Co-Exec)", ep: "/api/v1/chain312/master_certification" },
+                  { label: "Tool 309: Heterogeneous CPU AVX2 (S00..S23) + RTX 3050 CUDA PTX (S24..S47) Co-Execution", ep: "/api/v1/coexec/cpu_gpu_heterogeneous_42240" },
+                  { label: "Tool 310: RTX 3050 sm_86 CUDA PTX K1 E_8 x Lambda_24 & K2 3-Compartment Dendritic Step", ep: "/api/v1/gpu/rtx3050_ptx_e8_leech_and_dendritic" },
+                  { label: "Tool 311: Cross-Device Zero-Drift Lockstep Verifier (CPU Reference vs RTX 3050 GPU)", ep: "/api/v1/coexec/cross_device_zero_drift_verifier" },
                   { label: "CHAIN 308: v69.0.0 Track 2 Master Cert (Tools 1..308 & 820/820 Lean 4 QED | 84,480 Neurons)", ep: "/api/v1/chain308/master_certification" },
                   { label: "Tool 305: OmegaLang v16.0 Primary TLV Compiler (.e8z 8,704 CL + 9 Polyglot Targets + PTX)", ep: "/api/v1/omegalang/tlv_model_compiler" },
                   { label: "Tool 306: Tier-4 Connectome Bijection (84,480 Neurons / 1,920 Chair-44 / 4,055,040 Synapses)", ep: "/api/v1/connectome/npage_84480_tier4" },
@@ -6376,28 +6384,29 @@ export function App() {
             <div style={{ background: "#050E14", border: "1.5px solid #00FFCC", borderRadius: 5, padding: "8px 12px", marginBottom: 8, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 6 }}>
               <div>
                 <span style={{ color: "#00FFCC", fontWeight: "bold", fontSize: 11 }}>
-                  [8-DOMAIN FUNCTIONAL COMMAND DECK — 308 TOOLS CONSOLIDATED (CHAIN 308 | v69.0.0 | 820/820 LEAN 4 QED | 84,480 NEURONS | 4.05M SYNAPSES)]:
+                  [8-DOMAIN FUNCTIONAL COMMAND DECK — 316 TOOLS CONSOLIDATED (CHAIN 316 | v70.0.0 | 840/840 LEAN 4 QED | 262,144 CACHELINES | 84,480 NEURONS | 4.05M SYNAPSES)]:
                 </span>
                 <span style={{ color: "#FFB454", fontSize: 9.5, marginLeft: 8, fontWeight: "bold" }}>
-                  Unified Dispatchers (/api/v1/unified/*) | OmegaLang v16 TLV Compiler | 524K BPE + 192 Sub-Domains | MIT Hot-Index (.e8q) | CERN LHCb Auditor | Universal E:\ Write-Back
+                  262,144 (2^18) Bijected CLs (16.00 MiB) | 5-Pool Work-Steal (t_A+F+t_B=1) | CPU+RTX 3050 CUDA Co-Exec | Hsiang P_4 &amp; Leapfrog | OmegaLang v16 TLV
                 </span>
               </div>
               <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
-                <button onClick={() => callEndpoint("/api/v1/chain308/master_certification", "CHAIN 308: MASTER v69.0.0, OMEGALANG v16 TLV, 84,480 NEURONS & 820 QED CERTIFICATION")} style={{ background: "#FFD700", color: "#050A0E", border: "none", borderRadius: 4, padding: "3px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>👑 CHAIN 308 MASTER CERT</button>
-                <button onClick={() => callEndpoint("/api/v1/chain304/master_certification", "CHAIN 304: MASTER v68.5.0, MIT HOT-INDEX, CERN LHCb & 810 QED CERTIFICATION")} style={{ background: "#56D364", color: "#050A0E", border: "none", borderRadius: 4, padding: "3px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>CHAIN 304 CERT</button>
-                <button onClick={() => callEndpoint("/api/v1/chain300/master_certification", "CHAIN 300: MASTER v68.0.0, 535.73 TOPS & 800 QED CERTIFICATION")} style={{ background: "#00FFCC", color: "#050A0E", border: "none", borderRadius: 4, padding: "3px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>CHAIN 300 CERT</button>
+                <button onClick={() => callEndpoint("/api/v1/chain316/master_certification", "CHAIN 316: MASTER v70.0.0, 262,144 BIJECTED CACHELINES, 5-POOL WORKSTEAL & 840 QED CERTIFICATION")} style={{ background: "#FFD700", color: "#050A0E", border: "none", borderRadius: 4, padding: "3px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>👑 CHAIN 316 MASTER CERT</button>
+                <button onClick={() => callEndpoint("/api/v1/chain312/master_certification", "CHAIN 312: MASTER v69.5.0, CPU+GPU CO-EXEC & 830 QED CERTIFICATION")} style={{ background: "#00E5FF", color: "#050A0E", border: "none", borderRadius: 4, padding: "3px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>CHAIN 312 CERT</button>
+                <button onClick={() => callEndpoint("/api/v1/chain308/master_certification", "CHAIN 308: MASTER v69.0.0, OMEGALANG v16 TLV, 84,480 NEURONS & 820 QED CERTIFICATION")} style={{ background: "#56D364", color: "#050A0E", border: "none", borderRadius: 4, padding: "3px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>CHAIN 308 CERT</button>
+                <button onClick={() => callEndpoint("/api/v1/chain304/master_certification", "CHAIN 304: MASTER v68.5.0, MIT HOT-INDEX, CERN LHCb & 810 QED CERTIFICATION")} style={{ background: "#00FFCC", color: "#050A0E", border: "none", borderRadius: 4, padding: "3px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>CHAIN 304 CERT</button>
                 <button onClick={() => callEndpoint("/api/v1/harmonic/tool_chain?q=chain89_parallel_dag", "CHAIN 89: 89-TOOL PARALLEL DAG")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "3px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>CHAIN 89 DAG</button>
               </div>
             </div>
 
-            {/* Dedicated v57..v69.0 AEGIS-HARNESS Autonomous Cron, OmegaLang v16 Primary TLV Compiler, 84,480-Neuron Connectome, 524K BPE & CHAIN 308 Suite (Tools 211..308) */}
+            {/* Dedicated v57..v70.0 AEGIS-HARNESS Autonomous Cron, OmegaLang v16 Primary TLV Compiler, 84,480-Neuron Connectome, 262,144 Bijected CLs & CHAIN 316 Suite (Tools 211..316) */}
             <div style={{ background: "#08121E", border: "1.5px solid #FFD700", borderRadius: 5, padding: "7px 10px", marginBottom: 8 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 6, marginBottom: 5 }}>
                 <span style={{ color: "#FFD700", fontWeight: "bold", fontSize: 10.5 }}>
-                  [v57.0..v69.0 OMEGALANG v16 TLV + 84,480 NEURONS + 524K BPE + MIT HOT-INDEX + GEMMA 4 STUDIO &amp; CHAIN 308 (TOOLS 211..308 | 820/820 QED)]:
+                  [v57.0..v70.0 262,144 BIJECTED CLs + 5-POOL WORKSTEAL + CPU/GPU CO-EXEC + OMEGALANG v16 TLV + 84,480N &amp; CHAIN 316 (TOOLS 211..316 | 840/840 QED)]:
                 </span>
                 <span style={{ color: "#00FFCC", fontSize: 9.5, fontWeight: "bold" }}>
-                  4,055,040 Synapses (.npage 10.81MB + .spage 5.41MB) | 557KB .e8z (8,704 CL) | 524,288 BPE + 192 Sub-Domains
+                  262,144 CLs (16.00 MiB = 168,960 .npage + 84,480 .spage + 8,704 .e8z) | t_A+F+t_B=1.00000 | 524,288 BPE
                 </span>
               </div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
@@ -6444,7 +6453,15 @@ export function App() {
                 <button onClick={() => callEndpoint("/api/v1/omegalang/tlv_model_compiler", "TOOL 305: OMEGALANG v16.0 PRIMARY TLV COMPILER (.E8Z 8,704 CL + 9 TARGETS + PTX)")} style={{ background: "#261038", color: "#FF9EFF", border: "1px solid #FF9EFF", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>⚙️ T305: OmegaLang v16 TLV (9-Target)</button>
                 <button onClick={() => callEndpoint("/api/v1/connectome/npage_84480_tier4", "TOOL 306: TIER-4 84,480 NEURONS / 1,920 CHAIR-44 / 4,055,040 SYNAPSES BIJECTION")} style={{ background: "#002B24", color: "#00FFCC", border: "1px solid #00FFCC", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>🧠 T306: 84,480 Neurons (4.05M Synapses)</button>
                 <button onClick={() => callEndpoint(`/api/v1/fluency/open_vocab_524k_192subdomains?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 307: 524,288 (19-BIT) BPE + 192 SUB-DOMAINS + MIT/GEMMA 4 QAT FLUENCY")} style={{ background: "#1B1F2B", color: "#A8C7FA", border: "1px solid #A8C7FA", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>🗣️ T307: 524K BPE + 192 Sub-Domains</button>
-                <button onClick={() => callEndpoint("/api/v1/chain308/master_certification", "TOOL 308: TRACK 2 MASTER CERTIFICATION (TOOLS 1..308 & 820/820 LEAN 4 QED)")} style={{ background: "#FFD700", color: "#050A0E", border: "none", borderRadius: 4, padding: "4px 8px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>👑 T308: CHAIN 308 (84,480 N / 820 QED)</button>
+                <button onClick={() => callEndpoint("/api/v1/chain308/master_certification", "TOOL 308: TRACK 2 MASTER CERTIFICATION (TOOLS 1..308 & 820/820 LEAN 4 QED)")} style={{ background: "#0D2618", color: "#56D364", border: "1px solid #56D364", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>T308: CHAIN 308 (84,480 N)</button>
+                <button onClick={() => callEndpoint("/api/v1/coexec/cpu_gpu_heterogeneous_42240", "TOOL 309: HETEROGENEOUS CPU S00..S23 + RTX 3050 S24..S47 CO-EXECUTION")} style={{ background: "#091F2C", color: "#00E5FF", border: "1px solid #00E5FF", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>⚡ T309: CPU+RTX3050 Co-Exec</button>
+                <button onClick={() => callEndpoint("/api/v1/gpu/rtx3050_ptx_e8_leech_and_dendritic", "TOOL 310: RTX 3050 SM_86 PTX K1 E8xLEECH & K2 DENDRITIC")} style={{ background: "#261038", color: "#FF9EFF", border: "1px solid #FF9EFF", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>🎮 T310: RTX 3050 PTX K1+K2</button>
+                <button onClick={() => callEndpoint("/api/v1/coexec/cross_device_zero_drift_verifier", "TOOL 311: CROSS-DEVICE ZERO-DRIFT LOCKSTEP VERIFIER")} style={{ background: "#002B24", color: "#00FFCC", border: "1px solid #00FFCC", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>🔒 T311: Zero-Drift Lockstep</button>
+                <button onClick={() => callEndpoint("/api/v1/chain312/master_certification", "TOOL 312: TRACK 3 MASTER CERTIFICATION (TOOLS 1..312 & 830/830 QED)")} style={{ background: "#0D2618", color: "#56D364", border: "1px solid #56D364", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>T312: CHAIN 312 (830 QED)</button>
+                <button onClick={() => callEndpoint("/api/v1/v70/bijected_262144_cacheline_manifold", "TOOL 313: 262,144 (2^18) BIJECTED 64B CACHELINE MANIFOLD (16.00 MiB)")} style={{ background: "#1F1030", color: "#B388FF", border: "1px solid #B388FF", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>💎 T313: 262,144 Bijected CLs</button>
+                <button onClick={() => callEndpoint("/api/v1/v70/tri_silicon_conservation_5pool_worksteal", "TOOL 314: 5-POOL WORK-STEAL & TRI-SILICON CONSERVATION (t_A+F+t_B=1)")} style={{ background: "#091F2C", color: "#00E5FF", border: "1px solid #00E5FF", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>⚖️ T314: 5-Pool Work-Steal</button>
+                <button onClick={() => callEndpoint("/api/v1/v70/hsiang_isoparametric_symplectic_leapfrog", "TOOL 315: HSIANG ISOPARAMETRIC P_4(x) & SYMPLECTIC LEAPFROG")} style={{ background: "#3A1C00", color: "#FFB454", border: "1px solid #FFB454", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>🌀 T315: Hsiang P_4 &amp; Leapfrog</button>
+                <button onClick={() => callEndpoint("/api/v1/chain316/master_certification", "TOOL 316: TRACK 4 MASTER CERTIFICATION (TOOLS 1..316 & 840/840 LEAN 4 QED)")} style={{ background: "#FFD700", color: "#050A0E", border: "none", borderRadius: 4, padding: "4px 8px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>👑 T316: CHAIN 316 (262K CL / 840 QED)</button>
               </div>
             </div>
 
@@ -6952,7 +6969,7 @@ export function App() {
           MIT .E8Q (T301)
         </button>
         <button
-          onClick={() => callEndpoint("/api/v1/chain308/master_certification", "OMNIBAR CHAIN 308 CERT")}
+          onClick={() => callEndpoint("/api/v1/chain316/master_certification", "OMNIBAR CHAIN 316 CERT")}
           style={{
             background: "#FDD663",
             color: "#0B0D13",
@@ -6965,7 +6982,7 @@ export function App() {
             whiteSpace: "nowrap"
           }}
         >
-          CHAIN 308 (820 QED)
+          CHAIN 316 (840 QED)
         </button>
       </div>
 

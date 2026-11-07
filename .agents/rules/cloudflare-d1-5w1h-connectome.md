@@ -1,4 +1,4 @@
-﻿---
+---
 trigger: model_decision
 description: "Apply whenever working with the 5W1H Metabolic Harness, 63,360-Neuron Connectome (.npage), Cloudflare Durable Objects (worker_vpc_shadow_v3700.js), Named Tunnel, or Cloudflare D1 10-table database synchronization."
 ---

@@ -1,8 +1,8 @@
 cff-version: 1.2.0
-message: "If you use the ACT-Omega / Sovereign Manifold runtime (v69.0.0 | SH4Z v6900 TLV | CHAIN 308 | 820/820 Lean 4 QED | 84,480 Neurons | 4,055,040 Synapses), please cite both this repository (Donevin Frownfelter) and the foundational E8 / Leech lattice optimality papers by Maryna S. Viazovska et al."
-title: "ACT-Omega Net v69.0.0 (SH4Z v6900 TLV | CHAIN 308 | 820/820 Lean 4 QED | 84,480 Neurons | 4,055,040 Synapses | OmegaLang v16.0): Tri-Silicon Topological & E8/Leech Lattice Compute Manifold"
+message: "If you use the ACT-Omega / Sovereign Manifold runtime (v70.0.0 | SH4Z v7000 TLV | CHAIN 316 | 840/840 Lean 4 QED | 262,144 Bijected Cachelines | 84,480 Neurons | 4,055,040 Synapses), please cite both this repository (Donevin Frownfelter) and the foundational E8 / Leech lattice optimality papers by Maryna S. Viazovska et al."
+title: "ACT-Omega Net v70.0.0 (SH4Z v7000 TLV | CHAIN 316 | 840/840 Lean 4 QED | 262,144 Bijected Cachelines | 84,480 Neurons | 4,055,040 Synapses | OmegaLang v16.0): Tri-Silicon Topological & E8/Leech Lattice Compute Manifold"
 type: software
-version: "69.0.0"
+version: "70.0.0"
 doi: "10.5281/zenodo.23651696"
 identifiers:
   - type: doi

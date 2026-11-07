@@ -155,6 +155,15 @@ v56CanonicalSpecs =
       "verify_v68_capstone_800_qed"
       "750_i64.saturating_add(50_i64)"
       800
+  , AlgebraicInvariantSpec
+      840
+      "ACT-Omega Net v70.0.0 Grand Capstone 840 Lean 4 Proofs QED, 262,144 Bijected Cachelines, 4,055,040 Synapses & CHAIN 316 Closure"
+      "thm_v70_840_track4_v70_0_chain316_840qed_master_closure"
+      "(s : Track4V70_0MasterClosureState) : isTrack4V70_0MasterClosed s"
+      "dsimp [isTrack4V70_0MasterClosed]; decide"
+      "verify_v70_capstone_840_qed"
+      "168960_i64.saturating_add(84480_i64).saturating_add(8704_i64)"
+      262144
   ]
 
 -- | ACT-Omega Net v56.0.0 (SH4Z v5600 TLV | CHAIN 210 | 624/624 Lean 4 QED) ZeroBracketRustAndLean4

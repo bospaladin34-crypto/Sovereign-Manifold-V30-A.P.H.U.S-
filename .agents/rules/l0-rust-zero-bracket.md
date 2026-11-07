@@ -1,4 +1,4 @@
-﻿---
+---
 trigger: glob
 globs: "01_l0_rust/**/*.rs, 01_l0_rust/**/*.lean, 03_vault/lean4/*.lean, 06_algebraic_haskell/**/*.hs"
 description: "L0 Rust Swarm Daemon (v31_swarm.exe), 41 Un-Siloed Core Modules (lib.rs), Zero-Square-Bracket v33..v61+ verifier, 100% .e8z/.npage byte sampling, Layer 1.5 Haskell, and 700/700 Substantive Lean 4 QED rules."

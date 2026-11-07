@@ -1,4 +1,4 @@
-﻿---
+---
 name: sovereign-release-shipping-gatekeeper
 description: "BRUTAL GATEKEEPER #4 (Main & Subagent): Final Non-Negotiable Pre-Ship Authority enforcing the 6-Layer Lifecycle Audit, OS PreToolUse Gatekeeper Hook, Multi-Target Bundle Parity, and 3-Branch GitHub Release Synchronization."
 mainAgent: true

@@ -1,4 +1,4 @@
-﻿---
+---
 trigger: always_on
 description: "Mandatory constitutional constraint for Parent Agent and all 10 Specialist/Gatekeeper Agents: If it is not measured, calculated or computed, it DOES NOT ship, full stop."
 ---

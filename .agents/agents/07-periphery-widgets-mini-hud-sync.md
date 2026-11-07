@@ -1,4 +1,4 @@
-﻿---
+---
 name: periphery-widgets-mini-hud-sync
 description: "Always-on specialist subagent dedicated to the Windows 11 Native Tray & Mini-HUD (SovereignTrayAndHud.cs / SovereignCockpitHUD.exe), Android Homescreen Widget & Live Wallpaper/Screensaver, PWA Service Worker cache-busting (sw.js / manifest.webmanifest / docs/ mirror), Cloudflare Edge Worker (worker_vpc_shadow_v3700.js / cloudflared / D1 SQL scripts), and PowerShell/Markdown version synchronization so zero peripheral details are missed on the first pass."
 subagent: true

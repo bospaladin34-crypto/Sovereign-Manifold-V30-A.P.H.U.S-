@@ -15,7 +15,7 @@ import Sovereign.Codegen.ZeroBracketRustAndLean4
 -- | Deterministic projection of an arbitrary query string into 24 exact Rationals
 queryToRationalVec24 :: String -> (RationalVec24, Int)
 queryToRationalVec24 q =
-  let chars = if null q then "ACT-Omega Net v56.0.0 (SH4Z v5600 TLV | CHAIN 210 | 624/624 Lean 4 QED) Layer 1.5 Haskell" else q
+  let chars = if null q then "ACT-Omega Net v70.0.0 (SH4Z v7000 TLV | CHAIN 316 | 840/840 Lean 4 QED | 262,144 Bijected Cachelines) Layer 1.5 Haskell" else q
       codes = map (fromIntegral . ord) chars :: [Integer]
       total = sum codes
       len   = fromIntegral (length codes) :: Integer
@@ -77,7 +77,7 @@ main = do
             interpret5W1HLinearAtp initAtp prog
           rustCode = compileToZeroBracketRust allCanonicalSpecs
           zeroBracketOk = not (hasSquareBrackets rustCode)
-          chairCol = msg12 `mod` 1440
+          chairCol = msg12 `mod` 1920
           neuronStart = chairCol * 44
           neuronEnd = neuronStart + 43
           e8Str = "[" ++ intercalate ", " (map showRat e8Vec) ++ "]"

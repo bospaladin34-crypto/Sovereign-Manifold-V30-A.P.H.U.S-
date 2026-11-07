@@ -2,7 +2,7 @@
 name = "act_omega_l0_core"
 version = "30.0.0"
 edition = "2021"
-authors = ["Sovereign Manifold Team"]
+authors = ["Donevin Frownfelter <stability-node@khys.io>"]
 description = "ACT-Omega v30.0 Deterministic Topological Compute Core"
 
 [dependencies]

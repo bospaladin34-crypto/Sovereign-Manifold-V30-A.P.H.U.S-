@@ -20,7 +20,7 @@
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher_round"
-        android:label="ACT-Omega v63.2.0 (CHAIN 296)"
+        android:label="ACT-Omega v70.0.0 (CHAIN 316)"
         android:supportsRtl="true"
         android:usesCleartextTraffic="true"
         android:theme="@android:style/Theme.DeviceDefault.NoActionBar">
@@ -88,7 +88,7 @@
         <receiver
             android:name=".SovereignManifoldWidgetProvider"
             android:exported="true"
-            android:label="ACT-Omega v63.2.0 Live 16x130 &amp; .npage/.spage SHM Widget (CHAIN 296, 750/750 QED)">
+            android:label="ACT-Omega v70.0.0 Live 16x130 &amp; .npage/.spage SHM Widget (CHAIN 316, 840/840 QED)">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
                 <action android:name="com.actomega.manifold.ACTION_REFRESH_HEATMAP" />

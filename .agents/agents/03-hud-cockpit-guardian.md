@@ -1,4 +1,4 @@
-﻿---
+---
 name: hud-cockpit-guardian
 description: "Specialized subagent for the Host WebGPU React HUD (05_hud_cockpit & 02_l2_orchestration/hud), preserving all 15 Telemetry Cards (Card #8 700/700 Lean 4 QED), 60 FPS scopes, 16x130 Heatmap, 5-View Lens Switcher, Ctrl+K Palette, CHAIN 280 Drawer 4 (8-Domain Functional Command Deck), GSC 53-byte certificate, and honest UNMEASURED/OFFLINE fallbacks."
 subagent: true

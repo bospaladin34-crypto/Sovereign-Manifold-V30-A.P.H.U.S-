@@ -1,4 +1,4 @@
----
+﻿---
 trigger: glob
 globs: "01_l0_rust/src/v48_*.rs, 01_l0_rust/src/v56_1_*.rs, 01_l0_rust/src/v35_*.rs, 01_l0_rust/src/v31_swarm.rs, 01_l0_rust/src/bin/v31_swarm.rs, 03_vault/connectome/*.jsonl"
 description: "Sovereign Autopoietic Coordinator Bus, 9-Directory Universal E:\ SSD Vault Write-Back, 8 Unified Functional Domains, Vectorized 16-Domain AVX2/Rayon FNO, and DuckDB Analytical Engine rules."

@@ -1,0 +1,136 @@
+﻿{
+    "summary":  {
+                    "pass_rate_pct":  87.5,
+                    "failed":  1,
+                    "skipped":  0,
+                    "total":  8,
+                    "passed":  7
+                },
+    "suite":  "ACT-Omega Net v61.0.0 Master E2E Suite",
+    "timestamp":  "2026-10-31T01:47:49Z",
+    "results":  [
+                    {
+                        "feature":  "F05",
+                        "milestone":  "M3",
+                        "id":  "T1.1_ZeroBracket",
+                        "passed":  true,
+                        "measured_data":  {
+                                              "FilesScanned":  42,
+                                              "Violations":  "",
+                                              "TotalBrackets":  0
+                                          },
+                        "skipped":  false,
+                        "name":  "Zero-Bracket L0 Rust (v33..v61+)",
+                        "elapsed_ms":  285.3256,
+                        "tier":  1,
+                        "message":  "Zero square brackets confirmed across 42 modules"
+                    },
+                    {
+                        "feature":  "F03",
+                        "milestone":  "M1",
+                        "id":  "T1.2_CargoCheck",
+                        "passed":  true,
+                        "measured_data":  {
+                                              "Warnings":  0,
+                                              "ExitCode":  0
+                                          },
+                        "skipped":  false,
+                        "name":  "Compiler Warning Elimination",
+                        "elapsed_ms":  645.84710000000007,
+                        "tier":  1,
+                        "message":  "cargo check compiled cleanly with 0 warnings"
+                    },
+                    {
+                        "feature":  "F03",
+                        "milestone":  "M1",
+                        "id":  "T1.3_SwarmSync",
+                        "passed":  false,
+                        "measured_data":  {
+                                              "HashBin":  "FF16AD892020D93FE758D064CD410D0BE963C82A440FA68971A9262954E7E360",
+                                              "HashSrc":  "F576D9CFE3C4ECADAEE5254052783BB810068D074BA39ACAE914F41C9FB8021A"
+                                          },
+                        "skipped":  false,
+                        "name":  "Swarm Source 1:1 Binary Sync",
+                        "elapsed_ms":  49.919200000000004,
+                        "tier":  1,
+                        "message":  "Hash drift: src (F576D9CFE3) != bin (FF16AD8920)"
+                    },
+                    {
+                        "feature":  "F03",
+                        "milestone":  "M1",
+                        "id":  "T1.4_ZeroPython",
+                        "passed":  true,
+                        "measured_data":  {
+                                              "PythonProcesses":  0,
+                                              "PythonFiles":  0
+                                          },
+                        "skipped":  false,
+                        "name":  "Zero-Python Cleanliness Audit",
+                        "elapsed_ms":  701.9488,
+                        "tier":  1,
+                        "message":  "Strict Zero-Python mandate verified (0 processes, 0 .py files)"
+                    },
+                    {
+                        "feature":  "F12",
+                        "milestone":  "M4",
+                        "id":  "T1.5_Lean4QED",
+                        "passed":  true,
+                        "measured_data":  {
+                                              "TrivialCount":  0,
+                                              "TheoremCount":  690,
+                                              "SorryCount":  0,
+                                              "MirrorHashMatch":  true
+                                          },
+                        "skipped":  false,
+                        "name":  "Substantive Lean 4 Proof Invariant",
+                        "elapsed_ms":  7.7429000000000006,
+                        "tier":  1,
+                        "message":  "Lean 4 verified (690 theorems, 0 sorry, 0 trivial, hash mirrored)"
+                    },
+                    {
+                        "feature":  "F12",
+                        "milestone":  "M4",
+                        "id":  "T1.6_HaskellQED",
+                        "passed":  true,
+                        "measured_data":  {
+                                              "ExitCode":  0,
+                                              "Status":  "LAYER_1_5_HASKELL_GHC_EXACT_ALGEBRA_QED"
+                                          },
+                        "skipped":  false,
+                        "name":  "Layer 1.5 Haskell Algebra QED",
+                        "elapsed_ms":  75.9351,
+                        "tier":  1,
+                        "message":  "Haskell Layer 1.5 QED: Weyl zero-drift verified"
+                    },
+                    {
+                        "feature":  "F15",
+                        "milestone":  "M5",
+                        "id":  "T1.7_GSCLock",
+                        "passed":  true,
+                        "measured_data":  {
+                                              "TotalChecked":  7,
+                                              "ValidTargets":  7
+                                          },
+                        "skipped":  false,
+                        "name":  "GSC Certificate 7-Mirror Lock",
+                        "elapsed_ms":  21.150100000000002,
+                        "tier":  1,
+                        "message":  "GSC cert verified across all 7 target paths (53B, SHA-256 match)"
+                    },
+                    {
+                        "feature":  "F15",
+                        "milestone":  "M5",
+                        "id":  "T1.8_SourceMirrors",
+                        "passed":  true,
+                        "measured_data":  {
+                                              "MobileMirrorMatch":  true,
+                                              "HudMirrorMatch":  true
+                                          },
+                        "skipped":  false,
+                        "name":  "HUD \u0026 Mobile Source Mirrors",
+                        "elapsed_ms":  5.8333,
+                        "tier":  1,
+                        "message":  "HUD and Mobile source code mirrors 100% in sync"
+                    }
+                ]
+}

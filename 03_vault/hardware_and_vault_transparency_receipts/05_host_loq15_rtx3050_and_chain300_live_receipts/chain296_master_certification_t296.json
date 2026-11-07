@@ -1,0 +1,26 @@
+{
+    "status":  "CHAIN_296_MASTER_CERTIFIED_OK",
+    "tool_id":  296,
+    "chain_milestone":  "CHAIN 296",
+    "total_chain_tools":  296,
+    "lean4_qed_theorems":  800,
+    "bput_act_omega_gib":  1.607,
+    "bput_efficiency_advantage_x":  13.86,
+    "e4b_cosine_similarity":  0.9997,
+    "ppl_delta":  0.00004,
+    "fdrive_3tb_worm_online":  true,
+    "yubikey_5c_nfc_attested":  true,
+    "connectome":  {
+                       "dendritic_neurons":  63360,
+                       "npage_bytes":  8110080,
+                       "spage_bytes":  4055040,
+                       "total_synapses":  3041280,
+                       "bijected_cachelines":  132960
+                   },
+    "elapsed_us":  48686.70,
+    "autopoietic_bus_seq":  38648,
+    "e_vault_writeback_path":  "E:\\Sovereign_Manifold_SSD_Vault\\autopoietic_codegen\\tool_outputs\\tool_296_1794023228474743.json",
+    "e_vault_writeback_bytes":  471,
+    "e_vault_writeback_sha256":  "cc077703e33805109106a4102621db6e3ea91744dcf29ea201e3a818d01926e6",
+    "e_vault_mounted":  true
+}

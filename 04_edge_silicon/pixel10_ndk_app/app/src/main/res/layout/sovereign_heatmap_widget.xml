@@ -19,7 +19,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="SOVEREIGN v62.0.0 (CHAIN 292) -- 63,360N / 3.04M SYN"
+            android:text="SOVEREIGN v68.0.0 (CHAIN 300) -- 63,360N / 3.04M SYN"
             android:textColor="#FFFFB454"
             android:textSize="9.5sp"
             android:textStyle="bold"
@@ -44,7 +44,7 @@
         android:id="@+id/sovereign_widget_sub_txt"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="act-omega-net.dev -- 3.04M Synapses (.npage+.spage) -- 292 Tools (CHAIN 292) -- 740/740 QED"
+        android:text="act-omega-net.dev -- OmegaLang v15 535.73 TOPS -- 300 Tools (CHAIN 300) -- 800/800 QED"
         android:textColor="#FFFFFEFB"
         android:textSize="8.2sp"
         android:fontFamily="monospace" />

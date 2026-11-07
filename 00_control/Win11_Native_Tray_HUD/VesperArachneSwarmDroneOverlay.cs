@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -77,7 +77,7 @@ public class VesperArachneSwarmDroneOverlay : Form
     private int idleTicks = 0;
     private int idleLimitTicks = 900;
     private POINT lastCursor;
-    private string speechText = "ACT-OMEGA v62.0.0 | VESPER-ARACHNE E8 IK SHIMEJI | CHAIN 292 | 740/740 QED | Ready!";
+    private string speechText = "ACT-OMEGA v68.0.0 | VESPER-ARACHNE E8 IK SHIMEJI | CHAIN 300 | 800/800 QED | Ready!";
     private int speechTimer = 340;
 
     // Superpowers State
@@ -140,7 +140,7 @@ public class VesperArachneSwarmDroneOverlay : Form
     public VesperArachneSwarmDroneOverlay()
     {
         Rectangle bounds = Screen.PrimaryScreen.Bounds;
-        this.Text = "ACT-OMEGA v62.0.0 | VESPER-ARACHNE E8 IK SHIMEJI | CHAIN 292 | 740/740 QED";
+        this.Text = "ACT-OMEGA v68.0.0 | VESPER-ARACHNE E8 IK SHIMEJI | CHAIN 300 | 800/800 QED";
         this.FormBorderStyle = FormBorderStyle.None;
         this.StartPosition = FormStartPosition.Manual;
         this.Bounds = bounds;
@@ -174,7 +174,7 @@ public class VesperArachneSwarmDroneOverlay : Form
 
         trayIcon = new NotifyIcon();
         trayIcon.Icon = SystemIcons.Shield;
-        string tipText = "VESPER-ARACHNE v62.0 E8 IK SHIMEJI (CHAIN 292 | 740 QED)";
+        string tipText = "VESPER-ARACHNE v68.0 E8 IK SHIMEJI (CHAIN 300 | 800 QED)";
         if (tipText.Length > 63) tipText = tipText.Substring(0, 63);
         trayIcon.Text = tipText;
         trayIcon.ContextMenuStrip = droneMenu;
@@ -344,8 +344,9 @@ public class VesperArachneSwarmDroneOverlay : Form
         droneMenu.Items.Add(mcpHeader);
 
         string[] mcpTools = new string[] {
+            "omegalang_v15_k19_535tops_infer",
             "vesper_arachne_ik_swarm_companion",
-            "chain292_master_certification",
+            "chain300_master_certification",
             "unified_8domain_chain280_dispatcher",
             "gemma4_speculative_cascade",
             "gemma4_ple_256d_surgical_router",
@@ -595,7 +596,7 @@ public class VesperArachneSwarmDroneOverlay : Form
         corePulse = 1.2f;
         speechText = isDocked
             ? "Docked into Upper-Right Win11 Screen Corner. Click portal to summon!"
-            : "ACT-OMEGA v62.0.0 | VESPER-ARACHNE E8 IK SHIMEJI Unfurled onto Desktop!";
+            : "ACT-OMEGA v68.0.0 | VESPER-ARACHNE E8 IK SHIMEJI Unfurled onto Desktop!";
         speechTimer = 260;
     }
 

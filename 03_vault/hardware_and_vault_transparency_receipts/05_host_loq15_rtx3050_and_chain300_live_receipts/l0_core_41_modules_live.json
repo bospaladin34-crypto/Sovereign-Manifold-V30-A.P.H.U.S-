@@ -1,0 +1,319 @@
+{
+    "status":  "L0_CORE_41_MODULES_EXECUTED_OK",
+    "modules_count":  41,
+    "modules_executed":  [
+                             {
+                                 "index":  1,
+                                 "name":  "bi_stalk_attention_1024",
+                                 "function":  "forward",
+                                 "coboundary_norm":  4.620209,
+                                 "status":  "OK"
+                             },
+                             {
+                                 "index":  2,
+                                 "name":  "host_telemetry",
+                                 "function":  "sample_live_hardware_frame",
+                                 "norm_ut":  56.3306,
+                                 "carrier_phase_rad":  0.000019,
+                                 "status":  "OK"
+                             },
+                             {
+                                 "index":  3,
+                                 "name":  "e8_lattice",
+                                 "function":  "ConwaySloaneE8::snap",
+                                 "snapped_l1_norm":  4,
+                                 "status":  "OK"
+                             },
+                             {
+                                 "index":  4,
+                                 "name":  "sheaf_cohomology",
+                                 "function":  "SheafAuditor::audit_superstep",
+                                 "h1_obstruction":  0.023101,
+                                 "passed":  false,
+                                 "status":  "OK"
+                             },
+                             {
+                                 "index":  5,
+                                 "name":  "braid_ir",
+                                 "function":  "BraidInstruction::decode",
+                                 "opcode_raw":  63,
+                                 "status":  "OK"
+                             },
+                             {
+                                 "index":  6,
+                                 "name":  "harmonic_endpoint",
+                                 "function":  "infer_with_compound_bi_stalk",
+                                 "out_token":  130,
+                                 "logit":  158.6095,
+                                 "latency_us":  0.02,
+                                 "status":  "OK"
+                             },
+                             {
+                                 "index":  7,
+                                 "name":  "sh3_manifold_30l",
+                                 "function":  "infer_30_layers",
+                                 "out_token":  42,
+                                 "logit":  145.5000,
+                                 "h1":  0.000001,
+                                 "latency_us":  125.10,
+                                 "status":  "OK"
+                             },
+                             {
+                                 "index":  8,
+                                 "name":  "e8_table_gemv",
+                                 "function":  "gemv_row",
+                                 "inner_product":  21,
+                                 "status":  "OK"
+                             },
+                             {
+                                 "index":  9,
+                                 "name":  "qat_training",
+                                 "function":  "train_step",
+                                 "total_loss":  0.439458,
+                                 "ce_loss":  0.439453,
+                                 "status":  "OK"
+                             },
+                             {
+                                 "index":  10,
+                                 "name":  "shard_loader",
+                                 "function":  "load_from_directory",
+                                 "shards_loaded":  880,
+                                 "tokens_loaded":  56320,
+                                 "status":  "OK"
+                             },
+                             {
+                                 "index":  11,
+                                 "name":  "vocab_e8_table",
+                                 "function":  "get_entry",
+                                 "glyph":  "a",
+                                 "f1_hz":  311.0,
+                                 "status":  "OK"
+                             },
+                             {
+                                 "index":  12,
+                                 "name":  "braid_attention",
+                                 "function":  "forward_braid_loom",
+                                 "latent0":  -0.720568,
+                                 "status":  "OK"
+                             },
+                             {
+                                 "index":  13,
+                                 "name":  "e8_roots",
+                                 "function":  "generate_e8_roots",
+                                 "root_count":  240,
+                                 "gram00":  2,
+                                 "status":  "OK"
+                             },
+                             {
+                                 "index":  14,
+                                 "name":  "e8_subword_vocab",
+                                 "function":  "tokenize_subwords",
+                                 "tokens_count":  14,
+                                 "status":  "OK"
+                             },
+                             {
+                                 "index":  15,
+                                 "name":  "e8_shell2",
+                                 "function":  "generate_e8_shell2",
+                                 "shell2_count":  2160,
+                                 "status":  "OK"
+                             },
+                             {
+                                 "index":  16,
+                                 "name":  "dual_shell_head",
+                                 "function":  "project",
+                                 "best_magic":  96,
+                                 "magic_activation":  2.6535,
+                                 "status":  "OK"
+                             },
+                             {
+                                 "index":  17,
+                                 "name":  "sheaf_cross_attention",
+                                 "function":  "forward",
+                                 "dirichlet_energy":  391.678772,
+                                 "status":  "OK"
+                             },
+                             {
+                                 "index":  18,
+                                 "name":  "conversational_bpe",
+                                 "function":  "tokenize_conversational",
+                                 "tokens_count":  10,
+                                 "status":  "OK"
+                             },
+                             {
+                                 "index":  19,
+                                 "name":  "sierpinski_158_quantizer",
+                                 "function":  "quantize_heat_then_compress",
+                                 "packed_bytes":  1536,
+                                 "scale_gamma":  52.376335,
+                                 "elastic_net_loss":  0.3640,
+                                 "status":  "OK"
+                             },
+                             {
+                                 "index":  20,
+                                 "name":  "ab_plaquette_coincidence",
+                                 "function":  "try_collapse_plaquette",
+                                 "ab_flux_rad":  0.663019,
+                                 "status":  "OK"
+                             },
+                             {
+                                 "index":  21,
+                                 "name":  "hyperbolic_eraser_cavity",
+                                 "function":  "propagate_hyperbolic_cavity",
+                                 "attractor_gain":  6.5613,
+                                 "status":  "OK"
+                             },
+                             {
+                                 "index":  22,
+                                 "name":  "chair44_automorphism",
+                                 "function":  "execute_chair44_automorphism",
+                                 "unique_shards":  415,
+                                 "status":  "OK"
+                             },
+                             {
+                                 "index":  23,
+                                 "name":  "stomachion_router",
+                                 "function":  "route_stomachion_14_clauses",
+                                 "cutler_config":  484,
+                                 "status":  "OK"
+                             },
+                             {
+                                 "index":  24,
+                                 "name":  "tangram_penrose_field",
+                                 "function":  "project_tangram_penrose_field",
+                                 "penrose_ratio":  1.6180,
+                                 "status":  "OK"
+                             },
+                             {
+                                 "index":  25,
+                                 "name":  "chromatic_triality_sheaf",
+                                 "function":  "evaluate_triality_and_chromatic_sheaf",
+                                 "tau_cubed_matches":  240,
+                                 "status":  "OK"
+                             },
+                             {
+                                 "index":  26,
+                                 "name":  "braid_polyglot_ir",
+                                 "function":  "reduce_braid_word_kolmogorov",
+                                 "reduced_len":  20,
+                                 "status":  "OK"
+                             },
+                             {
+                                 "index":  27,
+                                 "name":  "modular_braid_sl2z",
+                                 "function":  "verify_modular_braid_representation",
+                                 "yang_baxter_ok":  true,
+                                 "status":  "OK"
+                             },
+                             {
+                                 "index":  28,
+                                 "name":  "bell_chsh_witness",
+                                 "function":  "evaluate_bell_chsh_bi_stalk",
+                                 "s_chsh":  1.8401,
+                                 "classical_exceeded":  false,
+                                 "status":  "OK"
+                             },
+                             {
+                                 "index":  29,
+                                 "name":  "cft_energy_ladder",
+                                 "function":  "calibrate_cardy_cft_energy_ladder",
+                                 "scaling_delta":  0.1250,
+                                 "status":  "OK"
+                             },
+                             {
+                                 "index":  30,
+                                 "name":  "heat_compress_qat",
+                                 "function":  "execute_shielded_heat_compress_qat",
+                                 "shielded_pressure":  0.9995,
+                                 "status":  "OK"
+                             },
+                             {
+                                 "index":  31,
+                                 "name":  "elastic_sheaf_ops",
+                                 "function":  "evaluate_six_operators_and_poly_sheaf",
+                                 "homotopy_contraction":  0.7000,
+                                 "status":  "OK"
+                             },
+                             {
+                                 "index":  32,
+                                 "name":  "tri_silicon_affinity",
+                                 "function":  "verify_tri_silicon_affinity_and_l2_pinning",
+                                 "l2_headroom_pct":  83.55,
+                                 "status":  "OK"
+                             },
+                             {
+                                 "index":  33,
+                                 "name":  "relativistic_horizon_hud",
+                                 "function":  "compute_event_horizon_and_beaming",
+                                 "contrast_ratio":  8.37,
+                                 "status":  "OK"
+                             },
+                             {
+                                 "index":  34,
+                                 "name":  "tgnn_unified_pipeline",
+                                 "function":  "execute_tgnn_v30_unified_pass",
+                                 "zero_mul_score":  -60.2089,
+                                 "status":  "OK"
+                             },
+                             {
+                                 "index":  35,
+                                 "name":  "sheaf_context_tensor",
+                                 "function":  "quantize_sheaf_context_tensor",
+                                 "scale_gamma":  0.872335,
+                                 "packed_bytes":  11520,
+                                 "status":  "OK"
+                             },
+                             {
+                                 "index":  36,
+                                 "name":  "sh4_leech_e8_zigzag",
+                                 "function":  "run_sh4_benchmark",
+                                 "exact_zigzag_blocks":  7680,
+                                 "fwht_err":  0.00000012,
+                                 "status":  "OK"
+                             },
+                             {
+                                 "index":  37,
+                                 "name":  "v31_desargues_dehornoy_teleparallel",
+                                 "function":  "run_v31_topological_physics_audit",
+                                 "desargues_ok":  true,
+                                 "torsion_t":  1.707107,
+                                 "status":  "OK"
+                             },
+                             {
+                                 "index":  38,
+                                 "name":  "utcp_v31_ring",
+                                 "function":  "run_utcp_v31_ring_audit",
+                                 "isolation_db":  120.0,
+                                 "status":  "OK"
+                             },
+                             {
+                                 "index":  39,
+                                 "name":  "uarm_cascade_sh4",
+                                 "function":  "run_uarm_4model_cascade_audit",
+                                 "cascade_holdout_ppl":  1.199,
+                                 "status":  "OK"
+                             },
+                             {
+                                 "index":  40,
+                                 "name":  "e8_compound_1024_lexicon",
+                                 "function":  "verify_compound_1024_lexicon",
+                                 "roundtrip_ok":  true,
+                                 "status":  "OK"
+                             },
+                             {
+                                 "index":  41,
+                                 "name":  "octonionic_triality_cubic",
+                                 "function":  "evaluate_octonionic_cubic_zero_mul",
+                                 "cubic_energy":  0.0000,
+                                 "norm_ok":  true,
+                                 "status":  "OK"
+                             }
+                         ],
+    "bus_envelope_sha256":  "28731ecaa460b44e30e1ea701a335662c67ee88fe7d6fcd75e3082c097b2e6bf",
+    "elapsed_ms":  7926.13,
+    "autopoietic_bus_seq":  38671,
+    "e_vault_writeback_path":  "E:\\Sovereign_Manifold_SSD_Vault\\autopoietic_codegen\\tool_outputs\\tool_275_1794023243603467.json",
+    "e_vault_writeback_bytes":  5246,
+    "e_vault_writeback_sha256":  "bc0c46eb964f6029412ebe60a4dc3dac783fabd1832716ce64f88e8b2fa586dd",
+    "e_vault_mounted":  true
+}

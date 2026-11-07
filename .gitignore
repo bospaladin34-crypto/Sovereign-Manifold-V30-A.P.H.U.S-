@@ -38,3 +38,9 @@ target_stage/
 *.o
 *.exe.old
 04_edge_silicon/pixel10_ndk_app/app/.cxx/
+07_vesper_os_ssd/uefi_kernel/target/
+f4se_rust_governor/target/
+**/ACT_Omega_Sovereign_HUD_Mobile.apk
+**/act-omega-mobile.apk
+
+

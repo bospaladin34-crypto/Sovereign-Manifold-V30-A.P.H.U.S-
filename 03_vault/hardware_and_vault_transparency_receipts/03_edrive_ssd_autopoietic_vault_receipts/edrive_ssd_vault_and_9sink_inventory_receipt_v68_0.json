@@ -1,0 +1,69 @@
+{
+    "status":  "E_DRIVE_SOVEREIGN_SSD_VAULT_TRANSPARENCY_RECEIPT_VERIFIED",
+    "vault_root":  "E:\\Sovereign_Manifold_SSD_Vault",
+    "npage_63360_bytes":  8110080,
+    "npage_63360_sha256":  "C0610E2E02914FCE1ECA884FDE5BD94F7BC545E358F3F4D95080E6AB845442AA",
+    "spage_2027520_bytes":  4055040,
+    "spage_2027520_sha256":  "A44FAE26446A45F443F9AFC3E2677D3BFAD16E61BE5C62D952E992A7C87F6192",
+    "e8z_v5000_bytes":  133120,
+    "e8z_v5000_sha256":  "A2CA34144FC3051F503D6B615E35B4E0074B260A04406C6D3B7377C4EF4E4AE5",
+    "e8z_tribank_6240cl_bytes":  399360,
+    "e8z_tribank_6240cl_sha256":  "45131DBBB7BFE38B2D2F30FA43E9CCB7FC3BFE2A26BD90DF31BC032CA9008DA6",
+    "autopoietic_9sinks":  {
+                               "rust_l0":  {
+                                               "file_count":  152,
+                                               "total_bytes":  1452479,
+                                               "latest_file":  "autopoietic_browser_4stage_transducer_06746.rs",
+                                               "latest_sha256":  "50B536372F1C22156EFD59457B1726EC2FE912540358725C36B89C4CA6D53D0B"
+                                           },
+                               "lean4_proofs":  {
+                                                    "file_count":  71,
+                                                    "total_bytes":  267194,
+                                                    "latest_file":  "autopoietic_browser_4stage_transducer_06747.lean",
+                                                    "latest_sha256":  "BB14E2835916ED754DBB2FCF7FF4C7CBA8DFB024A0AF18694A219CC727FCDF71"
+                                                },
+                               "wgsl_kernels":  {
+                                                    "file_count":  4,
+                                                    "total_bytes":  733,
+                                                    "latest_file":  "autopoietic_browser_4stage_transducer_06748.wgsl",
+                                                    "latest_sha256":  "B4521EE7BF6981FBEE3D09A25B0DCBD135848405123C927EBFEB7AFFCAA99DFE"
+                                                },
+                               "haskell_l15":  {
+                                                   "file_count":  1,
+                                                   "total_bytes":  11928064,
+                                                   "latest_file":  "sovereign_algebra_hs.exe",
+                                                   "latest_sha256":  "36140CC580461897E10F1B44DE7EE7C2C8AAD182244F5A82C80E1F7B3846CB50"
+                                               },
+                               "audio_wav":  {
+                                                 "file_count":  1,
+                                                 "total_bytes":  40044,
+                                                 "latest_file":  "v50_neural_prosodic_speech.wav",
+                                                 "latest_sha256":  "7606F7BF94B326384000384309EAE4BB24D824EA13F9CC82DCCD2907E12C5B5C"
+                                             },
+                               "physics_sim_trajectories":  {
+                                                                "file_count":  90,
+                                                                "total_bytes":  28273,
+                                                                "latest_file":  "trajectory_hamiltonian_1793976789335.json",
+                                                                "latest_sha256":  "DFCA0109F50BDCACB268D17AE18725CACE8AE174D17A8106A553A8D7314ACAC7"
+                                                            },
+                               "npage_shard_deltas":  {
+                                                          "file_count":  11,
+                                                          "total_bytes":  98316,
+                                                          "latest_file":  "aegis_cron_latest_cycle_v5700.json",
+                                                          "latest_sha256":  "DFEF72C20423D8D5951C2B2A9A7FAD181CF8BC5D92251F26FB7C3F0858ABDBD5"
+                                                      },
+                               "drawer1_2_sensor_sdr_captures":  {
+                                                                     "file_count":  0,
+                                                                     "total_bytes":  0,
+                                                                     "latest_file":  "NONE",
+                                                                     "latest_sha256":  "NONE"
+                                                                 },
+                               "tool_outputs":  {
+                                                    "file_count":  13301,
+                                                    "total_bytes":  15194224,
+                                                    "latest_file":  "tool_001_1794022984493685.json",
+                                                    "latest_sha256":  "12C589444DBAEFE39AF536EC2E5B9580730A9FB281729FEB5E95882C1A16CF51"
+                                                }
+                           },
+    "generated_at_utc":  "2026-11-07T03:47:07Z"
+}

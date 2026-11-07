@@ -1,4 +1,4 @@
----
+﻿---
 trigger: glob
 globs: "01_l0_rust/src/v54_5*.rs, 01_l0_rust/src/v55*.rs, 01_l0_rust/src/v56*.rs, 04_edge_silicon/**/*, pixel8_shiba_ksu/**/*, 00_control/pixel8_shiba_ksu/**/*"
 description: "Aperiodic Permissions Routing (APR) 4-Ring Capability Stratifier (Rings A0..A3, OWNED_SILICON_ONLY) and Pixel 8 (3A121FDJH00BW5) KernelSU-Next ksud 3.4.2 root governance with untouched factory stock slot _b rollback invariance."
@@ -6,7 +6,7 @@ description: "Aperiodic Permissions Routing (APR) 4-Ring Capability Stratifier (
 # Aperiodic Permissions Routing & Pixel 8 Root Governance Rules (ACT-Omega Net v61.0.0 | CHAIN 280 | 700/700 QED)
 
 1. **APR 4-Ring Capability Stratifier (`OWNED_SILICON_ONLY`)**:
-   - **Ring A0 — Bare-Metal Root & Hardware Accelerators (`OWNED_SILICON_ONLY`)**:
+   - **Ring A0 â€” Bare-Metal Root & Hardware Accelerators (`OWNED_SILICON_ONLY`)**:
      - Highest privilege boundary. Restricted exclusively to verified, physically owned silicon cluster hardware: Anchor-1 LOQ 15 (`Intel i5-12450HX`, `RTX 3050 6GB`), Edge-1 Pixel 10 (`Tensor G5`, ADB `58170DLCR0004V`), and Rooted Edge-2 Pixel 8 (`Tensor G3 zuma`, ADB `3A121FDJH00BW5`).
      - Kernel execution context: `uid=0(root) gid=0(root) groups=0(root) context=u:r:ksu:s0` via KernelSU-Next `ksud 3.4.2` (uapi: 5, ksu fd: 6).
      - Direct hardware character devices:
@@ -16,16 +16,16 @@ description: "Aperiodic Permissions Routing (APR) 4-Ring Capability Stratifier (
        - CPU frequency scaling governors: `/sys/devices/system/cpu/cpufreq/policy0` (Cortex-A520 4x efficiency), `policy4` (Cortex-A715 4x mid), `policy8` (Cortex-X3 1x prime core).
      - **Strict Non-Negotiable Invariant**: Remote execution, unowned cloud hardware, third-party sandboxes, or simulated endpoints are strictly barred from Ring A0. Any privilege escalation attempt from unowned silicon triggers immediate security halt.
 
-   - **Ring A1 — Sovereign Runtime & Connectome Core (Native / NDK / C++)**:
+   - **Ring A1 â€” Sovereign Runtime & Connectome Core (Native / NDK / C++)**:
      - Core autopoietic Native runtime host (`v31_swarm.exe` on `:8097` and `:5173`) with NDK / C++ bindings, zero-bracket L0 Rust modules (`v33..v56+`), 63,360 dendritic pyramidal neurons (`neurons_v5000_63360.npage`, `8,110,080 B`), 1,440 Chair-44 columns, 1,013,760 BDH/KAN synapses, and 80-sector E8 cache (`132,960` bijected cachelines in `sovereign_harmonic_iv_v5000.e8z`).
      - Kasami Golay syndrome routing, Sturmian $\phi$ + Plastic $\rho$ Chair-44 ticket verification, and 3-Party Bell Witness state consensus ($S > 2.0$).
      - Requires valid decadic sub-epoch (`0..9`), 5W1H Bus envelope publication to `message_bus_ledger_v4800.jsonl`, and local loopback origin.
 
-   - **Ring A2 — Privileged IPC, Edge Sync & Operator Interface (Managed / JVM / ART)**:
+   - **Ring A2 â€” Privileged IPC, Edge Sync & Operator Interface (Managed / JVM / ART)**:
      - Managed Android Runtime (ART) and JVM services (`MainActivity.kt`, `SovereignWidgetProvider.kt`), authenticated operator gate (`/api/v1/auth/operator_vault_gate`), root governor API (`/api/v1/p8_root/hardware_audit`, `/api/v1/p8_root/governor`), Dual-Pixel telemetry synchronization (`S48..S63` Pixel 10 IMU/magnetometer, `S64..S79` Pixel 8 L2 cache/speculative drafter), Cloudflare D1 Vault batching, and Universal `E:\` Vault write-back (`E:\Sovereign_Manifold_SSD_Vault`).
      - **Strict Authentication Gate**: Mandatory `X-Sovereign-Operator-Key` HTTP header over loopback (`127.0.0.1`), key verified against external `C:\Users\Nbell\.act_omega_operator_vault_key` (`>= 24` chars). `?key=` URL query parameters are rejected.
 
-   - **Ring A3 — Public Edge, WebGPU HUD & Autonomous Workers**:
+   - **Ring A3 â€” Public Edge, WebGPU HUD & Autonomous Workers**:
      - Read-only WebGPU HUD (`:5173`, `05_hud_cockpit`, `docs/`, `index.html`), Cloudflare Edge Durable Object (`worker_vpc_shadow_v3700.js` on `act-omega-net.dev`), crawler models (SSR pre-rendered `#root`), public tool discovery (`/api/v1/chain135/suite`, `/api/v1/chain145/suite`, `/api/v1/chain210/suite`), and unprivileged subagents.
      - **Strict Isolation**: Ring A3 cannot access Ring A0 devices, cannot initiate write operations to `E:\` or Cloudflare D1 without passing through Ring A1/A2 bus envelopes, and must serve crawler responses with anti-stale headers (`max-age=0, must-revalidate`).
 

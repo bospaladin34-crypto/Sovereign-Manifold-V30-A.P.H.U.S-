@@ -109,3 +109,40 @@ pub use v61_14_formal_crt_rvq_pvq_sparse_matvec_runtime::{
     v61_14_dispatch_tool_291_sparse_matvec,
     v61_14_dispatch_tool_292_chain292_cert,
 };
+
+// Track C / Handoffs #6 & #7: v63.0 - v63.2 Capability Parity, BPUT Win Metric, Q16.16 Adapter & F:\ 3TB Epoch Vault
+pub mod v63_0_capability_parity_bput_and_fdrive_epoch_vault;
+
+pub use v63_0_capability_parity_bput_and_fdrive_epoch_vault::{
+    CapabilityParityBputMetrics,
+    compute_live_capability_parity_and_bput,
+    v63_0_dispatch_tool_293_capability_parity_bput,
+    v63_0_dispatch_tool_294_transformer_highway_q16_adapter,
+    v63_1_dispatch_tool_295_fdrive_immutable_epoch_vault,
+    v63_2_dispatch_tool_296_chain296_cert,
+};
+
+// Track D / Handoff #7: v68.0.0 OmegaLang v15.0 8-Target Compiler, 78ns K16a, 90L K18a Stream & 535.73 TOPS K19 / 4.235 POPS K20 Superposition
+pub mod v68_0_omegalang_v15_unified_compiler_and_k16a_k20_engine;
+
+pub use v68_0_omegalang_v15_unified_compiler_and_k16a_k20_engine::{
+    V68_CERTIFIED_O7777_BYTES,
+    V68_CERTIFIED_O7777S_BYTES,
+    V68_TOTAL_LAYERS_90,
+    V68_HARMONIC_STAGES_8,
+    v68_0_dispatch_tool_297_omegalang_v15_8target_compiler,
+    v68_0_dispatch_tool_298_k16a_78ns_quarterblock_l1d,
+    v68_0_dispatch_tool_299_k18a_90layer_multishard_l2_stream,
+    v68_0_dispatch_tool_300_k19_k20_superposition_and_chain300_cert,
+};
+
+// Track E / Handoff #5: VESPER-OS External SSD Bootstrapped UEFI GOP Microkernel & PID 1 Init Appliance
+pub mod v62_0_vesper_os_uefi_gop_and_pid1_init_kernel;
+
+pub use v62_0_vesper_os_uefi_gop_and_pid1_init_kernel::{
+    VesperOsSsdBootTelemetry,
+    tool_299_uefi_gop_framebuffer_offset,
+    tool_300_verify_vesper_os_ssd_layout_and_pid1,
+    v62_0_dispatch_vesper_os_ssd_appliance,
+};
+

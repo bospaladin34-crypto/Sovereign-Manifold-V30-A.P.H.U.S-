@@ -1,0 +1,15 @@
+{
+  "release": "ACT-Omega v61.9 7777D Orthoplex Practical Test Battery",
+  "timestamp_utc": "2026-11-02T18:43:36.3368301Z",
+  "crt_bijection_passed": 7777,
+  "crt_total_dimensions": 7777,
+  "crt_idempotents": [3333, 2828, 1617],
+  "orthoplex_vertices": 15554,
+  "orthoplex_orthogonal_pct": 99.98714,
+  "bus_iterations": 100000,
+  "bus_million_coords_per_sec": 1393.35,
+  "good_thomas_pfa_energy_ratio": 1.000173,
+  "kanerva_35pct_noise_recalled_item": 0,
+  "kanerva_target_dot_score": 2333,
+  "total_elapsed_ms": 596.22
+}

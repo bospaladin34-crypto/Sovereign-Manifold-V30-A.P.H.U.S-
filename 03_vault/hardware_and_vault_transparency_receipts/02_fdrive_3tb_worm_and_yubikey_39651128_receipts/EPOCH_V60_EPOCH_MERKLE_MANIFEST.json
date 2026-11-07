@@ -1,0 +1,12 @@
+{
+  "schema": "ACT-Omega Immutable Decadic Epoch Vault v63.1",
+  "epoch_version": "v60",
+  "sealed_utc": "2026-11-06T23:41:59.8150134Z",
+  "epoch_directory": "F:\\ACT_OMEGA_IMMUTABLE_EPOCH_ARCHIVES\\EPOCH_V60_IMMUTABLE_SNAPSHOT",
+  "total_files_sealed": 3617,
+  "total_bytes_sealed": 5442664223,
+  "total_gib_sealed": 5.0689,
+  "read_only_worm_lock_applied": true,
+  "epoch_merkle_root_sha256": "427a6cfb6be8dc20c6e04d1d1473d9ddaccadf658775d163bb1a5cfbe2dca566",
+  "yubikey_hmac_challenge_hex": "427a6cfb6be8dc20c6e04d1d1473d9ddaccadf658775d163bb1a5cfbe2dca566"
+}

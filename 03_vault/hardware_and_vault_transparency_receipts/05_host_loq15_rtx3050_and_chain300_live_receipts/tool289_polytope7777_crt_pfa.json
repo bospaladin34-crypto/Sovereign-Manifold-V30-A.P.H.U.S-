@@ -1,0 +1,30 @@
+{
+    "status":  "MEASURED_7777D_CRT_PFA_OK",
+    "tool_id":  289,
+    "chain_milestone":  "CHAIN 292",
+    "crt_bijection":  {
+                          "passed":  7777,
+                          "total":  7777,
+                          "all_passed":  true
+                      },
+    "pfa_spectral_pass":  {
+                              "energy_before":  2721.209045,
+                              "energy_after":  2721.576930,
+                              "energy_ratio":  1.000135,
+                              "parseval_drift":  0.00013519,
+                              "drift_within_threshold":  true
+                          },
+    "abelian_group_action":  {
+                                 "anchor_u":  1827,
+                                 "anchor_v":  4040,
+                                 "transformed_u":  11758,
+                                 "transformed_v":  13973,
+                                 "isometry_verified":  true
+                             },
+    "elapsed_us":  359.40,
+    "autopoietic_bus_seq":  38662,
+    "e_vault_writeback_path":  "E:\\Sovereign_Manifold_SSD_Vault\\autopoietic_codegen\\tool_outputs\\tool_289_1794023229523975.json",
+    "e_vault_writeback_bytes":  450,
+    "e_vault_writeback_sha256":  "55f81940ee19a7bc21ccf9ef9a3c7e44dbdf7f3175c852f95e76a94f78dea32f",
+    "e_vault_mounted":  true
+}

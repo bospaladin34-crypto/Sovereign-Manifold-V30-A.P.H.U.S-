@@ -1,0 +1,28 @@
+{
+    "status":  "MEASURED_FDRIVE_3TB_WORM_EPOCH_VAULT_OK",
+    "tool_id":  295,
+    "chain_milestone":  "CHAIN 296",
+    "fdrive_mounted":  true,
+    "decadic_epochs_mounted":  true,
+    "epoch_v60_worm_sealed":  true,
+    "epoch_v60_yubikey_sig_present":  true,
+    "epoch_v65_gold_master_present":  true,
+    "epoch_v60_merkle_root_sha256":  "427a6cfb6be8dc20c6e04d1d1473d9ddaccadf658775d163bb1a5cfbe2dca566",
+    "yubikey_detected_device":  "YubiKey 5C NFC (5.8.0) (OTP+FIDO+CCID) Serial: 39651128",
+    "yubikey_fido2_ed25519_sk_fingerprint":  "SHA256:KwsDUzdrEWHpWFSt0BXhx0ryT/tOM78n0mlhwgLAzBo",
+    "yubikey_slot2_hmac_verified":  "6d27d1f4b27533e7b69ef053d382b239bdedd861",
+    "polyglot_sbom_tracked_files":  21,
+    "observability_5_strip":  {
+                                  "metric_1_gates":  "12/12 PASS",
+                                  "metric_2_parity":  "COS 0.9997 | dPPL +0.0001",
+                                  "metric_3_bput":  "1.607 GiB/tok (13.86x Edge)",
+                                  "metric_4_clock":  "15.965 Hz (62.64 ms LOCKED)",
+                                  "metric_5_drift_vault":  "0 Trits | F:\\ WORM + YubiKey 39651128"
+                              },
+    "elapsed_us":  1705.30,
+    "autopoietic_bus_seq":  38650,
+    "e_vault_writeback_path":  "E:\\Sovereign_Manifold_SSD_Vault\\autopoietic_codegen\\tool_outputs\\tool_295_1794023228583228.json",
+    "e_vault_writeback_bytes":  911,
+    "e_vault_writeback_sha256":  "b98c87cf3a443b28335897383b4ffdd7637198f82125cb96bd02a9e92ecde726",
+    "e_vault_mounted":  true
+}

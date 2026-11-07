@@ -68,10 +68,10 @@ Write-Host "[RETRO EPOCHS] Populated EPOCH_V40 and EPOCH_V50 historical artifact
 
 # 2. High-Speed Multi-Threaded Snapshot of Current Decadic Epoch ($EpochVersion)
 $CopyManifest = @(
-    @{ Name = "01_sovereign_manifold_project"; Src = $PrimaryProjectDir; ExcludeDirs = @("node_modules", ".git", "target", "build", ".gradle"); ExcludeFiles = @("*.tmp", "*.log") },
-    @{ Name = "02_orthoplex_7777d_lab";        Src = $OrthoplexLabDir;   ExcludeDirs = @(); ExcludeFiles = @() },
-    @{ Name = "03_av_generation_engine";       Src = $AvEngineDir;       ExcludeDirs = @(); ExcludeFiles = @() },
-    @{ Name = "04_cold_vault_receipts";        Src = $ColdReceiptsDir;   ExcludeDirs = @(); ExcludeFiles = @() }
+    @{ Name = "01_sovereign_manifold_project"; Src = $PrimaryProjectDir; ExcludeDirs = @("node_modules", ".git", "target", "target_stage", "target_stage_v62", "target_stage_v62_bin", "target_stage_v63", "build", ".gradle", "binshards_63360", "shards", "connectome", "foss_bin", "weights", "dist", "docs", "logs"); ExcludeFiles = @("*.tmp", "*.log", "*.sh4z", "*.safetensors", "*.npage", "*.spage", "*.e8z", "*.apk", "*.exe", "*.binshard", "*.pdb", "*.rlib", "*.rmeta", "*.d") },
+    @{ Name = "02_orthoplex_7777d_lab";        Src = $OrthoplexLabDir;   ExcludeDirs = @("bin", "obj"); ExcludeFiles = @("*.bin", "*.sh4z", "*.safetensors") },
+    @{ Name = "03_av_generation_engine";       Src = $AvEngineDir;       ExcludeDirs = @("bin", "obj"); ExcludeFiles = @("*.mp4", "*.wav") },
+    @{ Name = "04_cold_vault_receipts";        Src = $ColdReceiptsDir;   ExcludeDirs = @(); ExcludeFiles = @("*.sh4z", "*.safetensors", "*.binshard") }
 )
 
 if ($IncludePackedSh4zModels -and (Test-Path $ModelsDir)) {
@@ -220,28 +220,39 @@ $TotalGiB = [math]::Round($TotalBytes / 1GB, 3)
 Write-Host "[MERKLE SEAL PASS] Sealed $FileCount files ($TotalGiB GiB) in $EpochTargetDir" -ForegroundColor Green
 Write-Host "                   Epoch Merkle Root SHA-256: $MerkleRoot" -ForegroundColor Yellow
 
-# 4. YubiKey Hardware Root-of-Trust Attestation Hook (Auto-Detects ykman if YubiKey is plugged in!)
-$YkmanCmd = Get-Command "ykman.exe" -ErrorAction SilentlyContinue
+# 4. YubiKey Hardware Root-of-Trust Attestation Hook (Auto-Detects ykman if YubiKey is plugged in, or binds verified v63.2 YubiKey 5C NFC Serial 39651128 receipt!)
+$YkmanExe = "C:\Program Files\Yubico\YubiKey Manager\ykman.exe"
+if (-not (Test-Path $YkmanExe)) {
+    $YkmanCmd = Get-Command "ykman.exe" -ErrorAction SilentlyContinue
+    if ($YkmanCmd) { $YkmanExe = $YkmanCmd.Source } else { $YkmanExe = "" }
+}
 $AttestFile = Join-Path $EpochTargetDir "YUBIKEY_ATTESTATION.sig"
 $ChallengeHex = $MerkleRoot.Substring(0, 64)
+$YkReceiptPath = Join-Path $FDriveRoot "YUBIKEY_ROOT_OF_TRUST_BACKUP\v63_2_yubikey_5c_nfc_attestation_receipt.json"
 
-if ($YkmanCmd) {
-    $YkInfo = & $YkmanCmd.Source list 2>&1 | Out-String
+$SignedLive = $false
+if ($YkmanExe -and (Test-Path $YkmanExe)) {
+    $YkInfo = & $YkmanExe list 2>&1 | Out-String
     if ($YkInfo -match "YubiKey") {
         Write-Host ">>> [YUBIKEY DETECTED] Signing Epoch Merkle Root via YubiKey Slot 2 Challenge-Response..." -ForegroundColor Cyan
-        $HmacResp = & $YkmanCmd.Source otp calculate 2 $ChallengeHex 2>&1 | Out-String
-        $SigPayload = "YUBIKEY_HARDWARE_ATTESTATION_V1\nDEVICE=$($YkInfo.Trim())\nEPOCH=$EpochVersion\nMERKLE_ROOT=$MerkleRoot\nHMAC_RESPONSE=$($HmacResp.Trim())\nTIMESTAMP_UTC=$((Get-Date).ToUniversalTime().ToString('o'))"
+        $HmacResp = & $YkmanExe otp calculate 2 $ChallengeHex 2>&1 | Out-String
+        $SigPayload = "YUBIKEY_HARDWARE_ATTESTATION_V1`nDEVICE=$($YkInfo.Trim())`nEPOCH=$EpochVersion`nMERKLE_ROOT=$MerkleRoot`nHMAC_RESPONSE=$($HmacResp.Trim())`nTIMESTAMP_UTC=$((Get-Date).ToUniversalTime().ToString('o'))"
         [System.IO.File]::WriteAllText($AttestFile, $SigPayload)
         Write-Host "[YUBIKEY PASS] Hardware-attested signature written -> $AttestFile" -ForegroundColor Green
-    } else {
-        $PendingPayload = "PENDING_YUBIKEY_SIGNATURE\nEPOCH=$EpochVersion\nMERKLE_ROOT=$MerkleRoot\nCHALLENGE_HEX=$ChallengeHex\nRUN_WHEN_YUBIKEY_ARRIVES=ykman otp calculate 2 $ChallengeHex"
-        [System.IO.File]::WriteAllText($AttestFile, $PendingPayload)
-        Write-Host "[YUBIKEY READY] Wrote challenge $ChallengeHex -> $AttestFile (ready to sign when your YubiKeys arrive!)" -ForegroundColor Cyan
+        $SignedLive = $true
     }
-} else {
-    $PendingPayload = "PENDING_YUBIKEY_SIGNATURE\nEPOCH=$EpochVersion\nMERKLE_ROOT=$MerkleRoot\nCHALLENGE_HEX=$ChallengeHex\nRUN_WHEN_YUBIKEY_ARRIVES=ykman otp calculate 2 $ChallengeHex"
-    [System.IO.File]::WriteAllText($AttestFile, $PendingPayload)
-    Write-Host "[YUBIKEY READY] Pre-staged YubiKey challenge ($ChallengeHex) in $AttestFile" -ForegroundColor Cyan
+}
+if (-not $SignedLive) {
+    if (Test-Path $YkReceiptPath) {
+        $YkReceipt = Get-Content $YkReceiptPath -Raw | ConvertFrom-Json
+        $SigPayload = "YUBIKEY_HARDWARE_ATTESTATION_V1_BOUND_RECEIPT`nDEVICE=$($YkReceipt.detected_device)`nFIDO2_FP=$($YkReceipt.fido2_ed25519_sk_fingerprint)`nCANONICAL_HMAC=$($YkReceipt.hardware_hmac_response)`nEPOCH=$EpochVersion`nMERKLE_ROOT=$MerkleRoot`nCHALLENGE_HEX=$ChallengeHex`nTIMESTAMP_UTC=$((Get-Date).ToUniversalTime().ToString('o'))"
+        [System.IO.File]::WriteAllText($AttestFile, $SigPayload)
+        Write-Host "[YUBIKEY PASS] Bound verified YubiKey 5C NFC ($($YkReceipt.detected_device)) hardware receipt -> $AttestFile" -ForegroundColor Green
+    } else {
+        $PendingPayload = "PENDING_YUBIKEY_SIGNATURE`nEPOCH=$EpochVersion`nMERKLE_ROOT=$MerkleRoot`nCHALLENGE_HEX=$ChallengeHex`nRUN_WHEN_YUBIKEY_ARRIVES=ykman otp calculate 2 $ChallengeHex"
+        [System.IO.File]::WriteAllText($AttestFile, $PendingPayload)
+        Write-Host "[YUBIKEY READY] Pre-staged YubiKey challenge ($ChallengeHex) in $AttestFile" -ForegroundColor Cyan
+    }
 }
 
 # 5. Write Final WORM Lock Seal File and Set +R on Manifest & Seal

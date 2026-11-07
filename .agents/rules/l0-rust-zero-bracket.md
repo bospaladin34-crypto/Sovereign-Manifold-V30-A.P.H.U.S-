@@ -1,4 +1,4 @@
----
+﻿---
 trigger: glob
 globs: "01_l0_rust/**/*.rs, 01_l0_rust/**/*.lean, 03_vault/lean4/*.lean, 06_algebraic_haskell/**/*.hs"
 description: "L0 Rust Swarm Daemon (v31_swarm.exe), 41 Un-Siloed Core Modules (lib.rs), Zero-Square-Bracket v33..v61+ verifier, 100% .e8z/.npage byte sampling, Layer 1.5 Haskell, and 700/700 Substantive Lean 4 QED rules."
@@ -25,4 +25,4 @@ description: "L0 Rust Swarm Daemon (v31_swarm.exe), 41 Un-Siloed Core Modules (l
    - Whenever modifying `06_algebraic_haskell/src/Sovereign/Codegen/ZeroBracketRustAndLean4.hs` or `Main.hs`, recompile with `C:\ghcup\bin\ghc.exe -O2 -i06_algebraic_haskell/src -outputdir 06_algebraic_haskell/build -o 06_algebraic_haskell/bin/sovereign_algebra_hs.exe 06_algebraic_haskell/src/Main.hs` and verify emitted Lean 4 files with `lean.exe`.
 
 5. **Total Branch Measurement & `// SCAFFOLD:` Mandate**:
-   - Every branch (including `action == "release"` in `v44_worksteal_npage_shm_webgpu_lease.rs`, `.e8z` audits in `v49_muse_clean_and_chain100_synthesis.rs`, `v60_sample_manifold_bytes` full-slice folding in `v58_v60_chain270_vector_and_gemma4_synthesis.rs`, and `Tool 183` Verifier Sentry in `v54_5_aperiodic_permissions_router_and_syndrome_gate.rs`) must compute from real measurements (`Instant::now()`, `12/12` `.e8z` bytes, full 64B/128B slice folding) or return `"UNMEASURED/OFFLINE"`. Any reference constant must carry `// SCAFFOLD: <what it stands in for> — measure via <how>`.
+   - Every branch (including `action == "release"` in `v44_worksteal_npage_shm_webgpu_lease.rs`, `.e8z` audits in `v49_muse_clean_and_chain100_synthesis.rs`, `v60_sample_manifold_bytes` full-slice folding in `v58_v60_chain270_vector_and_gemma4_synthesis.rs`, and `Tool 183` Verifier Sentry in `v54_5_aperiodic_permissions_router_and_syndrome_gate.rs`) must compute from real measurements (`Instant::now()`, `12/12` `.e8z` bytes, full 64B/128B slice folding) or return `"UNMEASURED/OFFLINE"`. Any reference constant must carry `// SCAFFOLD: <what it stands in for> â€” measure via <how>`.

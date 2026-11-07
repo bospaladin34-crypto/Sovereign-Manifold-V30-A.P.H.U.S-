@@ -1,4 +1,4 @@
----
+﻿---
 trigger: glob
 globs: "04_edge_silicon/**/*"
 description: "Dual-Phone Android NDK/Compose APK (MainActivity.kt) rules for Pixel 10 (58170DLCR0004V) and Pixel 8 (3A121FDJH00BW5)."

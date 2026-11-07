@@ -1,0 +1,12 @@
+﻿{
+    "release":  "ACT-Omega v63.2 YubiKey 5C NFC Root-of-Trust Provisioning",
+    "timestamp_utc":  "2026-11-05T03:36:52.3698013Z",
+    "detected_device":  "YubiKey 5C NFC (5.8.0) [OTP+FIDO+CCID] Serial: 39651128",
+    "slot2_configured":  true,
+    "canonical_challenge_hex":  "3333282816177777",
+    "hardware_hmac_response":  "ac41e16540ea603588860c2924fca055d5d3efa8",
+    "clone_secret_backup":  "F:\\ACT_OMEGA_IMMUTABLE_EPOCH_ARCHIVES\\YUBIKEY_ROOT_OF_TRUST_BACKUP\\SLOT2_HMAC_SHARED_SECRET_FOR_KEY2_CLONING.txt",
+    "fido2_ed25519_sk_public_key":  "sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAIOothh1i5ln2Swhq334EEyIyl13wRR1WewIGrYzBuk6iAAAABHNzaDo= act-omega-point-of-origin@yubikey-5c-nfc",
+    "fido2_ed25519_sk_fingerprint":  "SHA256:KwsDUzdrEWHpWFSt0BXhx0ryT/tOM78n0mlhwgLAzBo",
+    "git_ssh_signing_configured":  true
+}

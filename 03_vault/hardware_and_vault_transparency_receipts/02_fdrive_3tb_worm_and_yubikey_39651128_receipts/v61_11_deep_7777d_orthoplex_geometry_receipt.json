@@ -1,0 +1,19 @@
+{
+  "release": "ACT-Omega v61.11 Deep 7777D Orthoplex Geometry & Pixel 8 Sync",
+  "timestamp_utc": "2026-11-02T19:14:26.3362684Z",
+  "orthoplex_0_faces_vertices": 15554,
+  "orthoplex_1_faces_edges": 120947904,
+  "orthoplex_2_faces_triangles": 626913302400,
+  "cayley_crt_automorphism_order": 15554,
+  "cayley_crt_l1_isometry_verified": 15554,
+  "e4b_k1_vertex_cosine": 0.0256,
+  "e4b_k7_simplex_cosine": 0.0677,
+  "e4b_k24_leech_cosine": 0.1253,
+  "e4b_k101_simplex_cosine": 0.2568,
+  "e4b_3shell_snr_db": [9.87, 14.25, 17.95],
+  "gemma12b_3shell_snr_db": [4.48, 8.05, 10.21],
+  "crt_entropy_bits_z7_z11_z101": [2.8073, 3.4593, 6.6569],
+  "crt_total_entropy_bits": 12.9236,
+  "crt_entropy_efficiency_pct": 99.989,
+  "total_elapsed_ms": 14.62
+}

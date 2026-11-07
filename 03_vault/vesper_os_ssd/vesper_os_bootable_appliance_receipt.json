@@ -1,0 +1,21 @@
+{
+    "status":  "VESPER_OS_SSD_BOOTABLE_APPLIANCE_VERIFIED_QED",
+    "version":  "v68.0.0",
+    "tlv_version":  6800,
+    "internal_windows11_c_drive_untouched":  true,
+    "boot_architecture":  "DUAL_TARGET_UEFI_GOP_AND_PID1_INIT",
+    "target1_uefi_gop_path":  "07_vesper_os_ssd/ESP/EFI/BOOT/BOOTX64.EFI",
+    "target1_uefi_gop_bytes":  2048,
+    "target1_uefi_gop_sha256":  "A3DE3585D6D7456B3536901BF20CDFB0C23F4884CFAF37A0ED37B969F0FD8A90",
+    "bootable_esp_img_path":  "07_vesper_os_ssd/vesper_os_v68_0_bootable_esp.img",
+    "bootable_esp_img_bytes":  4194304,
+    "bootable_esp_img_sha256":  "68B0ACDF499815F61097D9990033D1AF73C484AD1F936648A62843E22AB3DB98",
+    "npage_bytes":  8110080,
+    "spage_bytes":  4055040,
+    "e8z_bytes":  133120,
+    "connected_neurons":  63360,
+    "connected_synapses":  3041280,
+    "lean4_theorems_qed":  800,
+    "chain_tools_online":  300,
+    "generated_at_utc":  "2026-11-07T03:41:49Z"
+}

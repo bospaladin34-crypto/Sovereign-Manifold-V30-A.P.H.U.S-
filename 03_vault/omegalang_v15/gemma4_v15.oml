@@ -1,0 +1,10 @@
+// OMEGALANG v15.0 8-STAGE HARMONIC RVQ (.O7777X) & 12-BENCHMARK FRONTIER GAUNTLET
+manifold Gemma4V15 {
+comptime TOTAL_SHARDS: i64 = 8; comptime TOTAL_LAYERS: i64 = 90; comptime HARMONIC_STAGES: i64 = 8;
+comptime NIAH_1M_TOKENS: i64 = 1048576; comptime K20_SUPERPOSED_16M_TOKENS: i64 = 1048576 * 16;
+tensor Harm90LI16<i16, 16, 2048> total_elements = 32768;
+@theorem Harm8Stage: 3 ^ 8 == 6561 && 90 * 8 == 720 && 1048576 * 16 == 16777216;
+@avx2_16thread_k20_harmonic @kernel fn k20_harm_16m(o7777s_path: str) -> (i64, i64, i64) {
+return exec_12_fb(o7777s_path, 131072, 8388608, 16777216);
+}
+}

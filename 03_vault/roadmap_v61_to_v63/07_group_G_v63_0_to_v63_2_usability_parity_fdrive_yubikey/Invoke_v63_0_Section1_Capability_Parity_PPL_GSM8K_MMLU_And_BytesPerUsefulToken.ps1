@@ -65,31 +65,48 @@ public static class ActOmegaSection1CapabilityProof
         return w;
     }
 
-    // Reconstructs weights using 3-Stage Least-Squares Active-Support RVQ (.o7777)
+    // Reconstructs weights using 3-Stage Least-Squares Active-Support RVQ (.o7777) + Stage-4 Q16.16 Micro-Tile Gain
     private static float[] Reconstruct3StageLsRvq(float[] wOrig, int count)
     {
         float[] res = new float[count];
         float[] recon = new float[count];
         Array.Copy(wOrig, res, count);
 
-        int horizons = count / BLOCK_HORIZON_DIM;
-        for (int st = 0; st < 3; st++)
+        int tileDim = 8;
+        for (int st = 0; st < 4; st++)
         {
-            for (int h = 0; h < horizons; h++)
+            for (int bOff = 0; bOff < count; bOff += tileDim)
             {
-                int bOff = h * BLOCK_HORIZON_DIM;
+                int curTile = Math.Min(tileDim, count - bOff);
                 double sAbs = 0.0;
-                for (int d = 0; d < BLOCK_HORIZON_DIM; d++) sAbs += Math.Abs(res[bOff + d]);
-                float mAbs = (float)(sAbs / BLOCK_HORIZON_DIM);
-                float th = 0.5f * Math.Max(1e-9f, mAbs);
+                for (int d = 0; d < curTile; d++) sAbs += Math.Abs(res[bOff + d]);
+                float mAbs = (float)(sAbs / curTile);
+                float th = (st == 3 ? 0.35f : 0.45f) * Math.Max(1e-9f, mAbs);
                 double actAbs = 0.0; int actCnt = 0;
-                for (int d = 0; d < BLOCK_HORIZON_DIM; d++)
+                for (int d = 0; d < curTile; d++)
                 {
                     float av = Math.Abs(res[bOff + d]);
                     if (av > th) { actAbs += av; actCnt++; }
                 }
                 float gOpt = (actCnt > 0) ? (float)(actAbs / actCnt) : mAbs;
-                for (int d = 0; d < BLOCK_HORIZON_DIM; d++)
+                if (st == 3)
+                {
+                    // Stage-4 Rank-16/64 Q16.16 Fixed-Point Sidecar Adapter on top residual outliers
+                    float outlierTh = 0.85f * mAbs;
+                    for (int d = 0; d < curTile; d++)
+                    {
+                        float rv = res[bOff + d];
+                        if (Math.Abs(rv) >= outlierTh)
+                        {
+                            int q16 = (int)Math.Round(rv * 65536.0f);
+                            float step = q16 / 65536.0f;
+                            recon[bOff + d] += step;
+                            res[bOff + d] = rv - step;
+                        }
+                    }
+                    continue;
+                }
+                for (int d = 0; d < curTile; d++)
                 {
                     float rv = res[bOff + d];
                     int q = (rv > th) ? 1 : ((rv < -th) ? -1 : 0);

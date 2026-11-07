@@ -1,0 +1,48 @@
+{
+    "status":  "OMEGALANG_V15_8TARGET_ZERO_DRIFT_QED",
+    "version":  "v68.0.0",
+    "tool_id":  297,
+    "tool_name":  "omegalang_v15_8target_compiler",
+    "oml_source_bytes":  602,
+    "targets_emitted":  8,
+    "total_emitted_bytes":  8350,
+    "total_square_brackets":  0,
+    "multi_compiler_bit_drift":  0,
+    "emitted_lengths":  {
+                            "julia_jl":  1845,
+                            "rust_rs":  5750,
+                            "haskell_hs":  126,
+                            "lean4_lean":  95,
+                            "c23_c":  83,
+                            "csharp_cs":  110,
+                            "python_py":  239,
+                            "mcp_json":  102
+                        },
+    "computed_polytope_checksums":  [
+                                        30236976,
+                                        1416144601,
+                                        60479865,
+                                        44388
+                                    ],
+    "certified_13_checksums":  [
+                                   30236976,
+                                   1416144601,
+                                   60479865,
+                                   44388,
+                                   42,
+                                   48,
+                                   2661014811,
+                                   2366405,
+                                   2719534,
+                                   -4970913914696006550,
+                                   1406172,
+                                   13585768992,
+                                   -170119
+                               ],
+    "elapsed_us":  6115.90,
+    "autopoietic_bus_seq":  38646,
+    "e_vault_writeback_path":  "E:\\Sovereign_Manifold_SSD_Vault\\autopoietic_codegen\\tool_outputs\\tool_297_1794023228326871.json",
+    "e_vault_writeback_bytes":  627,
+    "e_vault_writeback_sha256":  "a402ccfbf7c7486f5a1fef87e4bd45cf4297b44405ba0fbd0132e36b9063ae23",
+    "e_vault_mounted":  true
+}

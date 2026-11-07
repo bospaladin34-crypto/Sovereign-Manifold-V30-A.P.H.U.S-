@@ -1,0 +1,37 @@
+{
+    "status":  "CHAIN_292_MASTER_CERTIFIED_OK",
+    "tool_id":  292,
+    "chain_milestone":  "CHAIN 292",
+    "total_chain_tools":  292,
+    "lean4_qed_theorems":  800,
+    "gates_passed":  12,
+    "gates_total":  12,
+    "all_gates_passed":  true,
+    "connectome":  {
+                       "dendritic_neurons":  63360,
+                       "npage_bytes":  8110080,
+                       "spage_bytes":  4055040,
+                       "total_synapses":  3041280,
+                       "bijected_cachelines":  132960
+                   },
+    "gates":  {
+                  "g1_crt_bijection":  true,
+                  "g2_group_isometry":  true,
+                  "g3_classifier_throughput":  true,
+                  "g4_pfa_parseval":  true,
+                  "g5_coprime_entropy":  true,
+                  "g6_stage1_ls_gain":  true,
+                  "g7_rvq_3stage_sqnr":  true,
+                  "g8_visual_psnr":  true,
+                  "g9_micro_block_energy":  true,
+                  "g10_matvec_speedup":  true,
+                  "g11_mips_recall":  true,
+                  "g12_polyglot_hygiene":  true
+              },
+    "elapsed_us":  1643.80,
+    "autopoietic_bus_seq":  38656,
+    "e_vault_writeback_path":  "E:\\Sovereign_Manifold_SSD_Vault\\autopoietic_codegen\\tool_outputs\\tool_292_1794023229078629.json",
+    "e_vault_writeback_bytes":  673,
+    "e_vault_writeback_sha256":  "99091f20a7743ee848e9323720da9c3fee07a4d79f5eadcd37d6f5dcea637a85",
+    "e_vault_mounted":  true
+}

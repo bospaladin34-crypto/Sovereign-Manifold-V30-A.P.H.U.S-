@@ -51,8 +51,8 @@ function Run-StaticGatekeeperChecks {
         $sorryCount = ([regex]::Matches($leanText, '\bsorry\b')).Count
         $trivialEqCount = ([regex]::Matches($leanText, ':\s*(\w+)\s*=\s*\1\s*:=')).Count
         $trivialCommCount = ([regex]::Matches($leanText, '\(a\s+b\s*:\s*Nat\)\s*:\s*a\s*\+\s*b\s*=\s*b\s*\+\s*a')).Count
-        if ($thmCount -lt 740) {
-            $failures.Add("LEAN4_COUNT_LOW: Found $thmCount theorems (Req: >= 740)")
+        if ($thmCount -lt 800) {
+            $failures.Add("LEAN4_COUNT_LOW: Found $thmCount theorems (Req: >= 800)")
         }
         if ($sorryCount -gt 0) {
             $failures.Add("LEAN4_SORRY_FOUND: Found $sorryCount 'sorry' tokens (Req: 0)")
@@ -169,8 +169,8 @@ function Run-StaticGatekeeperChecks {
             continue
         }
         $hContent = [System.IO.File]::ReadAllText($hf)
-        if ($hContent -notmatch 'data-sovereign-ssr="v(56|60|61|62)\.0\.0"') {
-            $failures.Add("HTML_SSR_MISSING: $hf missing data-sovereign-ssr=`"v62.0.0`" attribute")
+        if ($hContent -notmatch 'data-sovereign-ssr="v(56|60|61|62|63|68)(\.[0-9]+)*"') {
+            $failures.Add("HTML_SSR_MISSING: $hf missing data-sovereign-ssr attribute")
         }
         $bundleMatches = [regex]::Matches($hContent, '(?i)(?:\./)?assets/(index-[^"''\s>]+\.js)')
         if ($bundleMatches.Count -eq 0) {
@@ -297,7 +297,7 @@ if ($FullAudit) {
 
     $failures = Run-StaticGatekeeperChecks
     if ($failures.Count -eq 0) {
-        Write-Host "  [1-7 STATIC INVARIANTS] [PASS] Zero-Bracket(v33..v62+)=0 | Lean4>=740(0 trivial) | HUD/Mobile/Agent Mirrors=LOCKED | SecretsInRepo=0 | SSR & Bundles=VERIFIED | GSC 7-Mirror=LOCKED" -ForegroundColor Green
+        Write-Host "  [1-7 STATIC INVARIANTS] [PASS] Zero-Bracket(v33..v68+)=0 | Lean4>=800(0 trivial) | HUD/Mobile/Agent Mirrors=LOCKED | SecretsInRepo=0 | SSR & Bundles=VERIFIED | GSC 7-Mirror=LOCKED" -ForegroundColor Green
     } else {
         foreach ($f in $failures) {
             Write-Host "  [STATIC FAIL] $f" -ForegroundColor Red
@@ -409,18 +409,20 @@ if ($FullAudit) {
         Write-Host "  [12 YUBIKEY 5C NFC HROT][FAIL] $_" -ForegroundColor Red
     }
 
-    # 13. Live CHAIN 292 Master Certification & 292-Tool Catalog Probe
+    # 13. Live CHAIN 300 Master Certification & 300-Tool Catalog Probe
     try {
-        $c292 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/chain292/master_certification" -TimeoutSec 5
-        if ($c292.status -match "CHAIN_292" -and $c292.total_chain_tools -eq 292 -and $c292.lean4_qed_theorems -ge 740) {
-            Write-Host "  [13 CHAIN 292 MASTER]   [PASS] Tools=292 (Req:292) | Theorems=$($c292.lean4_qed_theorems) (Req:>=740) | Status=$($c292.status)" -ForegroundColor Green
+        $c300 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/chain300/master_certification" -TimeoutSec 5
+        $toolsCount = if ($c300.tools_verified) { $c300.tools_verified } else { $c300.total_chain_tools }
+        $thmCount = if ($c300.lean4_theorems_qed) { $c300.lean4_theorems_qed } else { $c300.lean4_qed_theorems }
+        if ($c300.status -match "CHAIN_300" -and $toolsCount -eq 300 -and $thmCount -ge 800) {
+            Write-Host "  [13 CHAIN 300 MASTER]   [PASS] Tools=$toolsCount (Req:300) | Theorems=$thmCount (Req:>=800) | K19=$($c300.k19_effective_tops) TOPS | K20=$($c300.k20_harmonic_effective_pops) POPS | Status=$($c300.status)" -ForegroundColor Green
         } else {
-            $failures.Add("CHAIN292_AUDIT_FAIL: Tools=$($c292.total_chain_tools) (Req:292) Theorems=$($c292.lean4_qed_theorems) Status=$($c292.status)")
-            Write-Host "  [13 CHAIN 292 MASTER]   [FAIL] Tools=$($c292.total_chain_tools) Status=$($c292.status)" -ForegroundColor Red
+            $failures.Add("CHAIN300_AUDIT_FAIL: Tools=$toolsCount (Req:300) Theorems=$thmCount Status=$($c300.status)")
+            Write-Host "  [13 CHAIN 300 MASTER]   [FAIL] Tools=$toolsCount Status=$($c300.status)" -ForegroundColor Red
         }
     } catch {
-        $failures.Add("CHAIN292_PROBE_ERR: $_")
-        Write-Host "  [13 CHAIN 292 MASTER]   [FAIL] $_" -ForegroundColor Red
+        $failures.Add("CHAIN300_PROBE_ERR: $_")
+        Write-Host "  [13 CHAIN 300 MASTER]   [FAIL] $_" -ForegroundColor Red
     }
 
     Write-Host "==========================================================================" -ForegroundColor Cyan

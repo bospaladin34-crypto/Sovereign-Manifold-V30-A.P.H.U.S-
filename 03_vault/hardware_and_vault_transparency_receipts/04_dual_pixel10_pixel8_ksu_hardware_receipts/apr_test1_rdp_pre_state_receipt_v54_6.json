@@ -1,0 +1,27 @@
+{
+    "TimestampUtc":  "2026-10-27T04:02:53.9919265Z",
+    "EditionID":  "Core",
+    "LCUVer":  "10.0.26100.8935",
+    "fDenyTSConnections":  1,
+    "UserAuthentication":  1,
+    "TermServiceStatus":  "Running",
+    "TermServiceStartType":  "Automatic",
+    "RdpMumsFound":  [
+                         "Microsoft-OneCore-RemoteDesktopServices-Collaboration-Package~31bf3856ad364e35~amd64~~10.0.26100.8935.mum",
+                         "Microsoft-Windows-TerminalServices-AppServer-Client-FOD-Package-Wrapper~31bf3856ad364e35~amd64~en-US~10.0.26100.8935.mum",
+                         "Microsoft-Windows-TerminalServices-AppServer-Client-FOD-Package-Wrapper~31bf3856ad364e35~amd64~~10.0.26100.8935.mum",
+                         "Microsoft-Windows-TerminalServices-AppServer-Client-FOD-Package-Wrapper~31bf3856ad364e35~wow64~en-US~10.0.26100.8935.mum",
+                         "Microsoft-Windows-TerminalServices-AppServer-Client-FOD-Package-Wrapper~31bf3856ad364e35~wow64~~10.0.26100.8935.mum",
+                         "Microsoft-Windows-TerminalServices-AppServer-Client-FOD-Package~31bf3856ad364e35~amd64~en-US~10.0.26100.8935.mum",
+                         "Microsoft-Windows-TerminalServices-AppServer-Client-FOD-Package~31bf3856ad364e35~amd64~~10.0.26100.8935.mum",
+                         "Microsoft-Windows-TerminalServices-AppServer-Client-FOD-Package~31bf3856ad364e35~wow64~en-US~10.0.26100.8935.mum",
+                         "Microsoft-Windows-TerminalServices-AppServer-Client-FOD-Package~31bf3856ad364e35~wow64~~10.0.26100.8935.mum",
+                         "Microsoft-Windows-TerminalServices-AppServerClient-Opt-Package~31bf3856ad364e35~amd64~~10.0.26100.8935.mum",
+                         "Microsoft-Windows-TerminalServices-AppServerClient-Opt-WOW64-Package~31bf3856ad364e35~wow64~~10.0.26100.8935.mum",
+                         "Microsoft-Windows-TerminalServices-Publishing-WMIProvider-Package~31bf3856ad364e35~amd64~~10.0.26100.8935.mum",
+                         "Microsoft-Windows-TerminalServices-RemoteApplications-Client-Package~31bf3856ad364e35~amd64~~10.0.26100.8935.mum",
+                         "Microsoft-Windows-TerminalServices-UsbRedirector-Package~31bf3856ad364e35~amd64~~10.0.26100.8935.mum",
+                         "Microsoft-Windows-TerminalServices-WMIProvider-Package~31bf3856ad364e35~amd64~~10.0.26100.8935.mum",
+                         "RemoteDesktopServices-Base-Package~31bf3856ad364e35~amd64~~10.0.26100.8935.mum"
+                     ]
+}

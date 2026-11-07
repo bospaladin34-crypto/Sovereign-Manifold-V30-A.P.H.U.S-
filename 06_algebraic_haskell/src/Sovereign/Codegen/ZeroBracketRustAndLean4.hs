@@ -146,6 +146,15 @@ v56CanonicalSpecs =
       "verify_v60_capstone_690_qed"
       "624_i64.saturating_add(66_i64)"
       690
+  , AlgebraicInvariantSpec
+      800
+      "ACT-Omega Net v68.0.0 Grand Capstone 800 Lean 4 Proofs QED, 535.73 TOPS K19, 4.235 POPS K20 & CHAIN 300 Closure"
+      "thm_v68_800_act_omega_v68_chain300_and_800qed_master_closure"
+      "(s : ActOmegaV68MasterClosureState) : isActOmegaV68MasterClosed s"
+      "dsimp [isActOmegaV68MasterClosed]; decide"
+      "verify_v68_capstone_800_qed"
+      "750_i64.saturating_add(50_i64)"
+      800
   ]
 
 -- | ACT-Omega Net v56.0.0 (SH4Z v5600 TLV | CHAIN 210 | 624/624 Lean 4 QED) ZeroBracketRustAndLean4

@@ -1,0 +1,17 @@
+{
+  "release": "ACT-Omega v61.12 E-Drive 7777D Orthoplex Image, Audio & Video Engine",
+  "timestamp_utc": "2026-11-03T03:48:08.0998226Z",
+  "staging_root": "E:\\ACT_OMEGA_7777D_AV_ENGINE",
+  "audio_wav_bytes": 768044,
+  "audio_wav_sha256_prefix": "19fc1e7f340753ab",
+  "image_3shell_snr_db": [8.34, 16.85, 24.90],
+  "image_3shell_psnr_db": [19.91, 28.41, 36.47],
+  "video_frames_encoded": 60,
+  "video_stream_o7777v_bytes": 467580,
+  "video_compression_ratio_x": 25.23,
+  "video_encode_fps": 1635.7,
+  "video_sha256_prefix": "174b2aace9aa31ab",
+  "codebook_15554_bytes": 124432,
+  "codebook_sha256_prefix": "85eeca8537a6ab2d",
+  "total_elapsed_ms": 610.02
+}

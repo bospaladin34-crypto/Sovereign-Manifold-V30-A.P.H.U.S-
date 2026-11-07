@@ -1,0 +1,17 @@
+{
+    "status":  "V44_PERFORMANCE_BLITZ_VERIFIED_QED",
+    "version":  "v68.0.0",
+    "tool_index":  80,
+    "tool_name":  "tool:v44_perf_blitz_benchmark_verifier",
+    "bench_run":  801258,
+    "npage_shm_delta_us":  56.1,
+    "e8z_80sector_scan_us":  26.9,
+    "bpe_65k_encode_us":  44.1,
+    "p8_shm_speedup_pct":  190.5,
+    "base_trisilicon_kops":  951674.5,
+    "webgpu_leased_kops":  0.0,
+    "total_elastic_kops":  951674.5,
+    "lean4_theorems_qed":  700,
+    "tools_verified":  280,
+    "diag":  "TOOL 80 v61.0.0 PERFORMANCE BLITZ BENCHMARK VERIFIER (Run #801258 | CHAIN 280 | 700/700 Lean 4 QED | 132,960 Bijected 64B Cachelines): .npage 8.11 MB SHM Probe=56.1us | .e8z 6,240-CL Tri-Bank Probe=26.9us | 262K BPE Roundtrip=44.1us | Pixel 8 .npage SHM Speedup=+190.5% (552.0k -\u003e 1603.5k ops/s, 89.11% Mali-G715 L2 Pinned) | Base Tri-Silicon=951674.5k ops/s + Browser WebGPU Leases=+0.0k ops/s =\u003e 951674.5k ops/s Total!"
+}

@@ -1,0 +1,20 @@
+{
+    "status":  "MEASURED_7777D_CRT_RVQ_ROUTED_OK",
+    "tool_id":  291,
+    "chain_milestone":  "CHAIN 292",
+    "active_micro_blocks":  16,
+    "total_micro_blocks":  31,
+    "dominant_micro_block":  3,
+    "dense_eval_us":  537.90,
+    "sparse_routed_us":  371.10,
+    "matvec_speedup_x":  1.45,
+    "sparse_result":  4363.7681,
+    "dense_sample_result":  4600.7812,
+    "mips_self_inner_product":  5081,
+    "elapsed_us":  1268.40,
+    "autopoietic_bus_seq":  38658,
+    "e_vault_writeback_path":  "E:\\Sovereign_Manifold_SSD_Vault\\autopoietic_codegen\\tool_outputs\\tool_291_1794023229288852.json",
+    "e_vault_writeback_bytes":  346,
+    "e_vault_writeback_sha256":  "8af33322b43bccb4e5dbf1eafa84321677accfe566dea229e6658a30b35ee347",
+    "e_vault_mounted":  true
+}

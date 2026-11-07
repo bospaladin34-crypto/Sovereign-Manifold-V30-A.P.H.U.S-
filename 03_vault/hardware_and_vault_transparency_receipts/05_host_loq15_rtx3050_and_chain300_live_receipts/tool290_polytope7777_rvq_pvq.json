@@ -1,0 +1,30 @@
+{
+    "status":  "MEASURED_7777D_RVQ_PVQ_OK",
+    "tool_id":  290,
+    "chain_milestone":  "CHAIN 292",
+    "active_support_trits":  1705,
+    "dominant_codeword":  {
+                              "codeword_id":  8457,
+                              "dominant_axis":  4228,
+                              "polarity_sign":  -1,
+                              "peak_magnitude":  1.798367,
+                              "crt_residues":  {
+                                                   "r_mod7":  0,
+                                                   "r_mod11":  4,
+                                                   "r_mod101":  87
+                                               }
+                          },
+    "rvq_3stage":  {
+                       "sqnr_db":  20.0519,
+                       "scale_stage1":  0.998452,
+                       "scale_stage2":  0.418830,
+                       "scale_stage3":  0.207606,
+                       "floor_passed":  true
+                   },
+    "elapsed_us":  1544.30,
+    "autopoietic_bus_seq":  38660,
+    "e_vault_writeback_path":  "E:\\Sovereign_Manifold_SSD_Vault\\autopoietic_codegen\\tool_outputs\\tool_290_1794023229406480.json",
+    "e_vault_writeback_bytes":  417,
+    "e_vault_writeback_sha256":  "11fc9a5b374a5d5cf11d0638a6b9acdd98dca3b03c25013145beecb0a8240de2",
+    "e_vault_mounted":  true
+}

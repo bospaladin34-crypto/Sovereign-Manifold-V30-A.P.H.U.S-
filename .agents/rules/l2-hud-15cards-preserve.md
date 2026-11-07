@@ -1,4 +1,4 @@
----
+﻿---
 trigger: glob
 globs: "05_hud_cockpit/**/*, 02_l2_orchestration/**/*, docs/**/*, index.html, wiki.html, hud.html"
 description: "Host WebGPU HUD (05_hud_cockpit & 02_l2_orchestration/hud) preservation of 15 Cards, 60 FPS Scopes, 16x130 Heatmap, 5-View Lens Switcher, honest UNMEASURED/OFFLINE fallbacks, External Operator Auth Gate, Anti-Stale Headers, and Relative Asset / SSR Snapshot Law."
@@ -43,7 +43,7 @@ description: "Host WebGPU HUD (05_hud_cockpit & 02_l2_orchestration/hud) preserv
        - Verified hardware IDs, ADB serials, Zenodo DOI `10.5281/zenodo.23651696`, OSF DOI `10.17605/OSF.IO/2XQ5Z`.
      - When React mounts on a client browser, it hydrates or replaces `#root`, while search crawlers, headless agents, and `curl` receive 100% crawlable architectural telemetry without executing JavaScript.
 
-7. **Permanent Google Search Console Ownership Certificate Lock (`google6edc0affb12d0455.html`) — STRICT `DO NOT REMOVE`**:
+7. **Permanent Google Search Console Ownership Certificate Lock (`google6edc0affb12d0455.html`) â€” STRICT `DO NOT REMOVE`**:
    - **7-Target Exact Byte & SHA-256 Lock**: `google6edc0affb12d0455.html` MUST remain strictly `53` bytes (`google-site-verification: google6edc0affb12d0455.html`, SHA-256 `0241DC5EDED053A96317C9C8FF34F4DCF12C069F88B8D92636D5D795EC176B3D`) across:
      1. `05_hud_cockpit/public/google6edc0affb12d0455.html`
      2. `02_l2_orchestration/hud/public/google6edc0affb12d0455.html`

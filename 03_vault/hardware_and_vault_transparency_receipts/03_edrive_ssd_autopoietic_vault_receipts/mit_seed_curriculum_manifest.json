@@ -1,0 +1,22 @@
+﻿[
+    {
+        "Url":  "https://ocw.mit.edu/courses/6-451-principles-of-digital-communication-ii-spring-2005/bb895c1dee9ce0b39d684981_MIT6_451S05_FullLecNotes.pdf",
+        "Domain":  "Information_Theory_E8_Leech_Lattices",
+        "Id":  "6-451-spring-2005"
+    },
+    {
+        "Url":  "https://ocw.mit.edu/courses/8-04-quantum-physics-i-spring-2016/",
+        "Domain":  "Quantum_Operator_Harmonics",
+        "Id":  "8-04-spring-2016"
+    },
+    {
+        "Url":  "https://ocw.mit.edu/courses/18-065-matrix-methods-in-data-analysis-signal-processing-and-machine-learning-spring-2018/",
+        "Domain":  "Matrix_Methods_Spectral_ML",
+        "Id":  "18-065-spring-2018"
+    },
+    {
+        "Url":  "https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-fall-2011/",
+        "Domain":  "Algorithms_SSA_DAGs",
+        "Id":  "6-006-fall-2011"
+    }
+]

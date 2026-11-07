@@ -1,0 +1,22 @@
+{
+    "status":  "DUAL_PIXEL_LIVE_HARDWARE_LOCKSTEP_RECEIPT_V68_0",
+    "version":  "v68.0.0",
+    "version_code":  68,
+    "adb_devices_list":  "List of devices attached\r\n58170DLCR0004V         device product:frankel_beta model:Pixel_10 device:frankel transport_id:13\r\n192.168.137.8:5555     device product:shiba_beta model:Pixel_8 device:shiba transport_id:10",
+    "edge1_pixel10_tensor_g5":  {
+                                    "serial":  "58170DLCR0004V",
+                                    "sectors":  "S48..S63",
+                                    "package_dumpsys":  ""
+                                },
+    "edge2_pixel8_tensor_g3_p8_apex":  {
+                                           "serial":  "3A121FDJH00BW5",
+                                           "wireless_adb":  "192.168.137.8:5555",
+                                           "sectors":  "S64..S79",
+                                           "kernelsu_slot":  "Slot A (u:r:ksu:s0)",
+                                           "mali_g715_l2_pinned_bytes":  4194304,
+                                           "package_dumpsys":  ""
+                                       },
+    "apk_sha256":  "CEE84B74CC38BD0D053C6B6745402ECAA67870D96600DA486DBA049110770DAA",
+    "apk_bytes":  29792722,
+    "generated_at_utc":  "2026-11-07T03:47:07Z"
+}

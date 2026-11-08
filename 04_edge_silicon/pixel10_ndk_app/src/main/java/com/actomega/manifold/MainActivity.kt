@@ -835,7 +835,7 @@ object SovereignLiveBus : SensorEventListener {
             }
             val body = String.format(
                 Locale.US,
-                "Tick #%d | 84,480N / 4.05M Syn | 524K Vocab | 316 Tools | 840/840 QED | %s (%.1fms)",
+                "Tick #%d | 84,480N / 4.05M Syn | 524K Vocab | 317 Tools | 840/840 QED | %s (%.1fms)",
                 snap.gen,
                 snap.activeBearer,
                 snap.rttMs
@@ -931,7 +931,7 @@ object SovereignLiveBus : SensorEventListener {
             } else {
                 "SOVEREIGN v70.0.0 P10-G5 -- 84.4K NEURONS | 4.05M SYN | CHAIN 316 | 840 QED"
             }
-            val subLine = "act-omega-net.dev -- 262,144 CLs (16.00 MiB) -- 316 Tools (CHAIN 316) -- 840/840 QED"
+            val subLine = "act-omega-net.dev -- 262,144 CLs (16.00 MiB) -- 317 Tools (CHAIN 317) -- 840/840 QED"
 
             val piFlags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE
@@ -1320,7 +1320,7 @@ object SovereignVisualizerRenderer {
 
         paint.color = 0xFFA0AEBF.toInt()
         canvas.drawText(
-            String.format(Locale.US, "Tick #%d | 262,144 CLs (16.00 MiB) | 316 Tools (CHAIN 316) | 840/840 Lean 4 QED | %s", snap.gen, snap.activeBearer.take(24)),
+            String.format(Locale.US, "Tick #%d | 262,144 CLs (16.00 MiB) | 317 Tools (CHAIN 317) | 840/840 Lean 4 QED | %s", snap.gen, snap.activeBearer.take(24)),
             cx,
             h * 0.945f,
             paint
@@ -1936,7 +1936,7 @@ fun SovereignCockpitV326Screen() {
                 ToolButton603010("3:5W1H+SHM", Color(0xFF2B2100), Color(0xFFFFB454), Modifier.weight(1f)) {
                     drawerAOpen = false; drawerBOpen = false; browserOpen = false; drawer1Open = true; drawer2Open = true; drawer3Open = true; drawer4Open = false
                 }
-                ToolButton603010("4:316 TOOLS", Color(0xFF261038), Color(0xFFFFD700), Modifier.weight(1f)) {
+                ToolButton603010("4:317 TOOLS", Color(0xFF261038), Color(0xFFFFD700), Modifier.weight(1f)) {
                     drawerAOpen = false; drawerBOpen = false; browserOpen = false; drawer1Open = false; drawer2Open = false; drawer3Open = false; drawer4Open = true
                 }
                 ToolButton603010("VESPER IK", Color(0xFF1C1234), Color(0xFF38BDF8), Modifier.weight(1f)) {
@@ -3187,6 +3187,14 @@ fun SovereignCockpitV326Screen() {
                 }
                 ToolButton603010("T316: CHAIN 316", Color(0xFF2B0A0D), Color(0xFFFFD700), Modifier.weight(1f)) {
                     invokeHostEndpoint("/api/v1/chain316/master_certification", null, "TOOL 316: CHAIN 316 MASTER CERTIFICATION (840 QED)")
+                }
+            }
+            Spacer(modifier = Modifier.height(4.dp))
+
+            // Row v70.0.0-I: Cloudflare 6 Free Developer Tiers Continuum Governor (Tool 317)
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                ToolButton603010("T317: CF Free Tier (6 Tiers)", Color(0xFF2B1600), Color(0xFFF38020), Modifier.weight(1f)) {
+                    invokeHostEndpoint("/api/v1/cloudflare/free_tier_governor", null, "TOOL 317: CLOUDFLARE 6 FREE DEVELOPER TIERS CONTINUUM GOVERNOR")
                 }
             }
             Spacer(modifier = Modifier.height(4.dp))

@@ -1,4 +1,4 @@
-﻿# C:\sovereign_manifold_v31\00_control\Sovereign-Lifecycle.ps1
+# C:\sovereign_manifold_v31\00_control\Sovereign-Lifecycle.ps1
 # ACT-Omega Net v70.0.0 (SH4Z v7000 TLV | CHAIN 316 | 840/840 Lean 4 QED) -- Unified Safe Cluster Start / Stop / Handover / Verify / Status Controller
 param(
     [ValidateSet("start", "stop", "stop-all", "restart", "status", "handover", "verify")]
@@ -7,6 +7,10 @@ param(
 )
 
 $ErrorActionPreference = "SilentlyContinue"
+$adbDir = "C:\Users\Nbell\AppData\Local\Android\Sdk\platform-tools"
+if ((Test-Path $adbDir) -and ($env:PATH -notmatch [regex]::Escape($adbDir))) {
+    $env:PATH = "$adbDir;$env:PATH"
+}
 $root            = "C:\sovereign_manifold_v31"
 $pauseFile       = "C:\sovereign_manifold_v31\00_control\daemon.paused"
 $swarmExe        = "C:\sovereign_manifold_v31\01_l0_rust\target\release\v31_swarm.exe"

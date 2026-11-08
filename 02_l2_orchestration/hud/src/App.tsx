@@ -124,6 +124,105 @@ export interface FunctionalToolItem {
   styleKind?: "cyan" | "gold" | "green" | "purple" | "amber" | "blue";
 }
 
+export interface CloudflareTierVectorize {
+  binding: string;
+  index_name: string;
+  queried_dims_month: number;
+  monthly_soft_cap: number;
+  monthly_hard_cap: number;
+  warning_threshold: number;
+  usage_pct: number;
+  status: string;
+  lru_cache_ttl_ms: number;
+  lru_cache_size: number;
+  fallback_active: boolean;
+  fallback_target: string;
+}
+
+export interface CloudflareTierR2 {
+  binding: string;
+  bucket_name: string;
+  class_a_ops_month: number;
+  class_a_soft_cap: number;
+  class_b_ops_month: number;
+  class_b_soft_cap: number;
+  class_b_hard_cap: number;
+  usage_pct: number;
+  edge_cache_ttl_s: number;
+  edge_cache_hits: number;
+  status: string;
+  fallback_active: boolean;
+  fallback_chain: string[];
+}
+
+export interface CloudflareTierWorkersAi {
+  binding: string;
+  model: string;
+  daily_neurons_used: number;
+  daily_soft_cap: number;
+  daily_hard_cap: number;
+  usage_pct: number;
+  utc_rollover_date: string;
+  dedup_cache_size: number;
+  status: string;
+  fallback_active: boolean;
+  fallback_target: string;
+  fallback_badge: string;
+}
+
+export interface CloudflareTierZeroTrust {
+  turnstile_site_key_configured: boolean;
+  turnstile_secret_configured: boolean;
+  tokens_verified: number;
+  token_cache_ttl_ms: number;
+  jwt_assertions_cached: number;
+  operator_key_enforced: boolean;
+  status: string;
+}
+
+export interface CloudflareTierWorkersKv {
+  binding: string;
+  namespace_id: string;
+  daily_writes: number;
+  daily_soft_cap: number;
+  daily_hard_cap: number;
+  min_write_interval_ms: number;
+  isolate_cache_ttl_ms: number;
+  last_write_ms: number;
+  status: string;
+}
+
+export interface CloudflareTierAnalyticsEngine {
+  binding: string;
+  dataset: string;
+  data_points_emitted: number;
+  d1_rollups_logged: number;
+  batch_buffer_size: number;
+  status: string;
+}
+
+export interface CloudflareGovernorPayload {
+  service: string;
+  version: string;
+  tlv_version: number;
+  lean4_theorems_qed: string;
+  tools_total: number;
+  status: string;
+  global_status: string;
+  timestamp_ms: number;
+  tiers: {
+    vectorize: CloudflareTierVectorize;
+    r2: CloudflareTierR2;
+    workers_ai: CloudflareTierWorkersAi;
+    zero_trust_turnstile: CloudflareTierZeroTrust;
+    workers_kv: CloudflareTierWorkersKv;
+    analytics_engine: CloudflareTierAnalyticsEngine;
+  };
+  durable_object_shadow: string;
+  d1_database: string;
+  response_sha256?: string;
+}
+
 export interface FunctionalDomainDef {
   id: number;
   slug: string;
@@ -438,8 +537,8 @@ export const DOMAINS_CATALOG: FunctionalDomainDef[] = [
     slug: "autopoietic_bus_vault_d1",
     name: "Autopoietic Coordinator Bus, E:\\ Vault & Cloudflare D1",
     shortName: "Autopoietic Vault",
-    toolCount: 50,
-    toolRange: "T46-T48, T51, T53-T56, T59-T60, T69-T72, T81, T89-T90, T96-T100, T103, T281-T304",
+    toolCount: 51,
+    toolRange: "T46-T48, T51, T53-T56, T59-T60, T69-T72, T81, T89-T90, T96-T100, T103, T281-T304, T317",
     writebackCat: "tool_outputs",
     ep: "/api/v1/unified/autopoietic_bus_vault_d1",
     accent: "#FFFEFB",
@@ -500,7 +599,8 @@ export const DOMAINS_CATALOG: FunctionalDomainDef[] = [
       { id: 301, tag: "T301", label: "T301: MIT Cold-to-Hot Ingestion (.e8q Shards) & 256D Galois Field Tower", ep: "/api/v1/mit_pipeline/hot_index_ingest_and_query" },
       { id: 302, tag: "T302", label: "T302: CERN LHCb Run 3 5-Mapping Internal Auditor (30:1 Allen HLT1 Sieve)", ep: "/api/v1/audit/cern_lhcb_5mapping_auditor" },
       { id: 303, tag: "T303", label: "T303: Dedicated Dual Gemma 4 Conversational Studio (E4B + 12B + K20)", ep: "/api/v1/gemma4/chat" },
-      { id: 304, tag: "T304", label: "T304: FB1..FB12 Frontier Gauntlet & CHAIN 304 Master Cert (810/810 QED)", ep: "/api/v1/chain304/master_certification" }
+      { id: 304, tag: "T304", label: "T304: FB1..FB12 Frontier Gauntlet & CHAIN 304 Master Cert (810/810 QED)", ep: "/api/v1/chain304/master_certification" },
+      { id: 317, tag: "T317", label: "T317: Cloudflare Free-Tier Quota Governor & Zero-Downtime Shield", ep: "/api/v1/cloudflare/free_tier_governor" }
     ]
   }
 ];
@@ -2088,6 +2188,10 @@ export function App() {
     mounted: true
   });
 
+  // Cloudflare Free-Tier Governor Telemetry State (Tool 317 & Card #7)
+  const [cfGovernor, setCfGovernor] = useState<CloudflareGovernorPayload | null>(null);
+  const [cfGovernorLoading, setCfGovernorLoading] = useState<boolean>(false);
+
   // v56.0.0 Workbenches State: Sub-Panels 1A, 1B, 1C and Sub-Panel 2A (MUSE Zero-Unmeasured-Data Compliant)
   const [v50CrystallizerState, setV50CrystallizerState] = useState<{
     status: string;
@@ -3346,6 +3450,9 @@ export function App() {
             }
             if (j.diag) displayMsg = j.diag;
             else if (j.trace) displayMsg = j.trace;
+            if (j.tiers && j.tiers.vectorize && j.tiers.r2 && j.tiers.workers_ai) {
+              setCfGovernor(j);
+            }
           } catch {}
           setTermOut(`[${label} OK]: ${displayMsg}`);
       if ((voiceTtsEnabled || path.indexOf("/api/v1/speech/") === 0) && typeof window !== "undefined") {
@@ -3375,6 +3482,29 @@ export function App() {
     const fallbackMsg = `[${label} OFFLINE / UNVERIFIED]: Backend probe unreachable -- verification did not run`;
     setTermOut(fallbackMsg);
     setCardDiag(fallbackMsg);
+  };
+
+  const fetchCloudflareGovernor = async () => {
+    setCfGovernorLoading(true);
+    try {
+      const bases =
+        typeof window !== "undefined" && window.location.protocol === "https:"
+          ? ["", "https://api.act-omega-net.dev", "http://127.0.0.1:8097"]
+          : ["", "http://127.0.0.1:8097"];
+      for (const b of bases) {
+        try {
+          const res = await fetch(`${b}/api/v1/cloudflare/free_tier_governor`, { cache: "no-store" });
+          if (res.ok) {
+            const data: CloudflareGovernorPayload = await res.json();
+            setCfGovernor(data);
+            setTermOut(`[TOOL 317 OK]: Cloudflare Free-Tier Governor: Global Status=${data.global_status}, Tiers=6/6 Nominal, SHA-256=${data.response_sha256?.slice(0, 16)}...`);
+            break;
+          }
+        } catch {}
+      }
+    } finally {
+      setCfGovernorLoading(false);
+    }
   };
 
   const runBpeInspector = async (inputStr: string) => {
@@ -3951,11 +4081,15 @@ export function App() {
       endpoint: "/api/v1/card/execute?card_id=5"
     },
     {
-      title: "CLOUDFLARE PQ, SIEM & PHOTOELECTRIC",
-      primary: `0 BREACHES -- H(X)=${tel.siem_entropy_bits.toFixed(3)}b/B`,
-      secondary: `hf>=phi0(2.15eV) -- X25519MLKEM768 -- Pkts #${tel.siem_pkts}`,
+      title: "CLOUDFLARE 6-TIER EDGE & VAULT",
+      primary: cfGovernor
+        ? `Vec: ${cfGovernor.tiers.vectorize.usage_pct.toFixed(1)}% | AI: ${cfGovernor.tiers.workers_ai.daily_neurons_used}/${cfGovernor.tiers.workers_ai.daily_soft_cap}N | R2 B: ${cfGovernor.tiers.r2.usage_pct.toFixed(1)}%`
+        : `0 BREACHES -- H(X)=${tel.siem_entropy_bits.toFixed(3)}b/B (Click to Poll 6-Tier Gov)`,
+      secondary: cfGovernor
+        ? `KV: ${cfGovernor.tiers.workers_kv.daily_writes}/${cfGovernor.tiers.workers_kv.daily_soft_cap} | ZT: ${cfGovernor.tiers.zero_trust_turnstile.status} | AE: ${cfGovernor.tiers.analytics_engine.data_points_emitted} pts -- ${cfGovernor.global_status}`
+        : `hf>=phi0(2.15eV) -- X25519MLKEM768 -- Pkts #${tel.siem_pkts} (Tool 317)`,
       sector: 7,
-      endpoint: "/api/v1/card/execute?card_id=6"
+      endpoint: "/api/v1/cloudflare/free_tier_governor"
     },
     {
       title: "840/840 LEAN 4 PROOFS & MEASURED QAT",
@@ -5053,6 +5187,178 @@ export function App() {
                 );
               })}
             </div>
+
+            {/* EXPANDED 6-TIER CLOUDFLARE FREE-TIER GOVERNOR TELEMETRY PANEL (CARD #7) */}
+            {selectedCard === 6 && (
+              <div
+                style={{
+                  background: "#070E17",
+                  border: "1.5px solid #00E5FF",
+                  borderRadius: 5,
+                  padding: "10px 12px",
+                  marginTop: 8,
+                  marginBottom: 6
+                }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ color: "#00E5FF", fontWeight: "bold", fontSize: 11 }}>
+                      [CARD #7: CLOUDFLARE EDGE & VAULT TELEMETRY — 6 FREE DEVELOPER TIERS & STRICT QUOTA GOVERNORS]:
+                    </span>
+                    <span
+                      style={{
+                        background: cfGovernor?.global_status === "ALL_TIERS_NOMINAL" ? "#0D2618" : "#3A1C00",
+                        color: cfGovernor?.global_status === "ALL_TIERS_NOMINAL" ? "#56D364" : "#FFB454",
+                        border: `1px solid ${cfGovernor?.global_status === "ALL_TIERS_NOMINAL" ? "#56D364" : "#FFB454"}`,
+                        borderRadius: 3,
+                        padding: "1px 6px",
+                        fontSize: 9,
+                        fontWeight: "bold"
+                      }}
+                    >
+                      {cfGovernor ? cfGovernor.global_status : "OFFLINE / UNMEASURED"}
+                    </span>
+                  </div>
+                  <div style={{ display: "flex", gap: 6 }}>
+                    <button
+                      onClick={() => fetchCloudflareGovernor()}
+                      disabled={cfGovernorLoading}
+                      style={{
+                        background: "#00E5FF",
+                        color: "#050A0E",
+                        border: "none",
+                        borderRadius: 3,
+                        padding: "3px 8px",
+                        fontWeight: "bold",
+                        cursor: "pointer",
+                        fontSize: 9.5
+                      }}
+                    >
+                      {cfGovernorLoading ? "POLLING..." : "⚡ POLL GOVERNOR (T317)"}
+                    </button>
+                  </div>
+                </div>
+
+                {cfGovernor ? (
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 8 }}>
+                    {/* Tier 1: Vectorize */}
+                    <div style={{ background: "#0A131E", border: "1px solid #1E334D", borderRadius: 4, padding: "8px" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", color: "#00FFCC", fontWeight: "bold", fontSize: 10 }}>
+                        <span>1. VECTORIZE (DIMENSIONS)</span>
+                        <span>{cfGovernor.tiers.vectorize.status}</span>
+                      </div>
+                      <div style={{ color: "#FFFEFB", fontSize: 10, margin: "4px 0" }}>
+                        Queried Dims: {cfGovernor.tiers.vectorize.queried_dims_month.toLocaleString()} / 24,000,000 /mo ({cfGovernor.tiers.vectorize.usage_pct}%)
+                      </div>
+                      <div style={{ width: "100%", background: "#1C2632", borderRadius: 3, height: 6, overflow: "hidden", marginBottom: 4 }}>
+                        <div
+                          style={{
+                            width: `${Math.min(cfGovernor.tiers.vectorize.usage_pct, 100)}%`,
+                            height: "100%",
+                            background: cfGovernor.tiers.vectorize.usage_pct >= 80 ? "#FFB454" : "#00FFCC"
+                          }}
+                        />
+                      </div>
+                      <div style={{ color: "#8AB4C9", fontSize: 9 }}>
+                        LRU Cache: {cfGovernor.tiers.vectorize.lru_cache_size} items (300s TTL) | Fallback: {cfGovernor.tiers.vectorize.fallback_target} ({cfGovernor.tiers.vectorize.fallback_active ? "ACTIVE" : "STANDBY"})
+                      </div>
+                    </div>
+
+                    {/* Tier 2: R2 Vault */}
+                    <div style={{ background: "#0A131E", border: "1px solid #1E334D", borderRadius: 4, padding: "8px" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", color: "#FFB454", fontWeight: "bold", fontSize: 10 }}>
+                        <span>2. R2 VAULT (CLASS A/B OPS)</span>
+                        <span>{cfGovernor.tiers.r2.status}</span>
+                      </div>
+                      <div style={{ color: "#FFFEFB", fontSize: 10, margin: "4px 0" }}>
+                        Class A: {cfGovernor.tiers.r2.class_a_ops_month.toLocaleString()} / 800k | Class B: {cfGovernor.tiers.r2.class_b_ops_month.toLocaleString()} / 8M ({cfGovernor.tiers.r2.usage_pct}%)
+                      </div>
+                      <div style={{ width: "100%", background: "#1C2632", borderRadius: 3, height: 6, overflow: "hidden", marginBottom: 4 }}>
+                        <div
+                          style={{
+                            width: `${Math.min(cfGovernor.tiers.r2.usage_pct, 100)}%`,
+                            height: "100%",
+                            background: cfGovernor.tiers.r2.usage_pct >= 80 ? "#E94E34" : "#FFB454"
+                          }}
+                        />
+                      </div>
+                      <div style={{ color: "#8AB4C9", fontSize: 9 }}>
+                        Edge Cache: caches.default (300s) | Hits: {cfGovernor.tiers.r2.edge_cache_hits} | Fallback: {cfGovernor.tiers.r2.fallback_chain.join(" -> ")}
+                      </div>
+                    </div>
+
+                    {/* Tier 3: Workers AI */}
+                    <div style={{ background: "#0A131E", border: "1px solid #1E334D", borderRadius: 4, padding: "8px" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", color: "#B388FF", fontWeight: "bold", fontSize: 10 }}>
+                        <span>3. WORKERS AI (NEURON BUDGET)</span>
+                        <span>{cfGovernor.tiers.workers_ai.status}</span>
+                      </div>
+                      <div style={{ color: "#FFFEFB", fontSize: 10, margin: "4px 0" }}>
+                        Daily Neurons: {cfGovernor.tiers.workers_ai.daily_neurons_used.toLocaleString()} / 8,500 ({cfGovernor.tiers.workers_ai.usage_pct}%) [UTC: {cfGovernor.tiers.workers_ai.utc_rollover_date}]
+                      </div>
+                      <div style={{ width: "100%", background: "#1C2632", borderRadius: 3, height: 6, overflow: "hidden", marginBottom: 4 }}>
+                        <div
+                          style={{
+                            width: `${Math.min(cfGovernor.tiers.workers_ai.usage_pct, 100)}%`,
+                            height: "100%",
+                            background: cfGovernor.tiers.workers_ai.usage_pct >= 80 ? "#FFB454" : "#B388FF"
+                          }}
+                        />
+                      </div>
+                      <div style={{ color: "#8AB4C9", fontSize: 9 }}>
+                        Model: {cfGovernor.tiers.workers_ai.model} | Dedup: {cfGovernor.tiers.workers_ai.dedup_cache_size} | {cfGovernor.tiers.workers_ai.fallback_badge}
+                      </div>
+                    </div>
+
+                    {/* Tier 4: Zero Trust + Turnstile */}
+                    <div style={{ background: "#0A131E", border: "1px solid #1E334D", borderRadius: 4, padding: "8px" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", color: "#56D364", fontWeight: "bold", fontSize: 10 }}>
+                        <span>4. ZERO TRUST + TURNSTILE</span>
+                        <span>{cfGovernor.tiers.zero_trust_turnstile.status}</span>
+                      </div>
+                      <div style={{ color: "#FFFEFB", fontSize: 10, margin: "4px 0" }}>
+                        Tokens Verified: {cfGovernor.tiers.zero_trust_turnstile.tokens_verified} (300s Isolate Cache) | JWT Assertions: {cfGovernor.tiers.zero_trust_turnstile.jwt_assertions_cached}
+                      </div>
+                      <div style={{ color: "#8AB4C9", fontSize: 9, marginTop: 4 }}>
+                        Operator Key Gate: {cfGovernor.tiers.zero_trust_turnstile.operator_key_enforced ? "ENFORCED (Loopback 127.0.0.1)" : "OFFLINE"} | SiteKey: {cfGovernor.tiers.zero_trust_turnstile.turnstile_site_key_configured ? "CONFIGURED" : "MISSING"}
+                      </div>
+                    </div>
+
+                    {/* Tier 5: Workers KV */}
+                    <div style={{ background: "#0A131E", border: "1px solid #1E334D", borderRadius: 4, padding: "8px" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", color: "#FFD700", fontWeight: "bold", fontSize: 10 }}>
+                        <span>5. WORKERS KV (DEBOUNCED WRITES)</span>
+                        <span>{cfGovernor.tiers.workers_kv.status}</span>
+                      </div>
+                      <div style={{ color: "#FFFEFB", fontSize: 10, margin: "4px 0" }}>
+                        Daily Writes: {cfGovernor.tiers.workers_kv.daily_writes} / 720 writes/day ({((cfGovernor.tiers.workers_kv.daily_writes / 720) * 100).toFixed(1)}%)
+                      </div>
+                      <div style={{ color: "#8AB4C9", fontSize: 9, marginTop: 4 }}>
+                        Debounce Interval: {cfGovernor.tiers.workers_kv.min_write_interval_ms / 1000}s | Isolate Cache: {cfGovernor.tiers.workers_kv.isolate_cache_ttl_ms / 1000}s TTL
+                      </div>
+                    </div>
+
+                    {/* Tier 6: Analytics Engine */}
+                    <div style={{ background: "#0A131E", border: "1px solid #1E334D", borderRadius: 4, padding: "8px" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", color: "#00E5FF", fontWeight: "bold", fontSize: 10 }}>
+                        <span>6. ANALYTICS ENGINE (TELEMETRY)</span>
+                        <span>{cfGovernor.tiers.analytics_engine.status}</span>
+                      </div>
+                      <div style={{ color: "#FFFEFB", fontSize: 10, margin: "4px 0" }}>
+                        Data Points Emitted: {cfGovernor.tiers.analytics_engine.data_points_emitted.toLocaleString()} pts | D1 Rollups: {cfGovernor.tiers.analytics_engine.d1_rollups_logged}
+                      </div>
+                      <div style={{ color: "#8AB4C9", fontSize: 9, marginTop: 4 }}>
+                        Dataset: {cfGovernor.tiers.analytics_engine.dataset} | Batch Buffer: {cfGovernor.tiers.analytics_engine.batch_buffer_size}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{ color: "#8AB4C9", fontSize: 10, fontStyle: "italic", padding: "8px 0" }}>
+                    Telemetry offline or unpolled. Click &apos;POLL GOVERNOR (T317)&apos; or run Domain 8 Tool 317 to inspect live Cloudflare edge quotas.
+                  </div>
+                )}
+              </div>
+            )}
             <div style={{ background: "#0A0D12", border: "1px solid #2A3B4D", borderRadius: 4, padding: "5px 8px", marginTop: 6, color: "#56D364", fontSize: 10.5 }}>
               {cardDiag}
             </div>
@@ -6462,6 +6768,7 @@ export function App() {
                 <button onClick={() => callEndpoint("/api/v1/v70/tri_silicon_conservation_5pool_worksteal", "TOOL 314: 5-POOL WORK-STEAL & TRI-SILICON CONSERVATION (t_A+F+t_B=1)")} style={{ background: "#091F2C", color: "#00E5FF", border: "1px solid #00E5FF", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>⚖️ T314: 5-Pool Work-Steal</button>
                 <button onClick={() => callEndpoint("/api/v1/v70/hsiang_isoparametric_symplectic_leapfrog", "TOOL 315: HSIANG ISOPARAMETRIC P_4(x) & SYMPLECTIC LEAPFROG")} style={{ background: "#3A1C00", color: "#FFB454", border: "1px solid #FFB454", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>🌀 T315: Hsiang P_4 &amp; Leapfrog</button>
                 <button onClick={() => callEndpoint("/api/v1/chain316/master_certification", "TOOL 316: TRACK 4 MASTER CERTIFICATION (TOOLS 1..316 & 840/840 LEAN 4 QED)")} style={{ background: "#FFD700", color: "#050A0E", border: "none", borderRadius: 4, padding: "4px 8px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>👑 T316: CHAIN 316 (262K CL / 840 QED)</button>
+                <button onClick={() => callEndpoint("/api/v1/cloudflare/free_tier_governor", "TOOL 317: CLOUDFLARE 6-TIER EDGE GOVERNOR & ZERO-DOWNTIME SHIELD")} style={{ background: "#00E5FF", color: "#050A0E", border: "none", borderRadius: 4, padding: "4px 8px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>☁️ T317: CF Free Tier (6 Tiers)</button>
               </div>
             </div>
 
@@ -6588,6 +6895,51 @@ export function App() {
                 })}
             </div>
 
+            {/* DEDICATED TOOL 317 CLOUDFLARE FREE-TIER GOVERNOR RESPONSE VIEWER */}
+            {cfGovernor && (
+              <div style={{ background: "#050B12", border: "1px solid #00E5FF", borderRadius: 4, padding: "8px 10px", marginBottom: 6 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                  <span style={{ color: "#00E5FF", fontWeight: "bold", fontSize: 10.5 }}>
+                    [TOOL 317: CLOUDFLARE FREE-TIER GOVERNOR TELEMETRY — GLOBAL STATUS: {cfGovernor.global_status}]
+                  </span>
+                  <span style={{ color: "#8AB4C9", fontSize: 9 }}>
+                    SHA-256: {cfGovernor.response_sha256?.slice(0, 24)}... | Time: {new Date(cfGovernor.timestamp_ms).toLocaleTimeString()}
+                  </span>
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 6, fontSize: 9.5 }}>
+                  <div style={{ background: "#08131E", border: "1px solid #2A3B4D", borderRadius: 3, padding: 5 }}>
+                    <div style={{ color: "#00FFCC", fontWeight: "bold" }}>1. Vectorize ({cfGovernor.tiers.vectorize.status})</div>
+                    <div>Dims: {cfGovernor.tiers.vectorize.queried_dims_month.toLocaleString()} / 24M ({cfGovernor.tiers.vectorize.usage_pct}%)</div>
+                    <div style={{ color: "#8AB4C9" }}>Fallback: {cfGovernor.tiers.vectorize.fallback_target} ({cfGovernor.tiers.vectorize.fallback_active ? "ACTIVE" : "STANDBY"})</div>
+                  </div>
+                  <div style={{ background: "#08131E", border: "1px solid #2A3B4D", borderRadius: 3, padding: 5 }}>
+                    <div style={{ color: "#FFB454", fontWeight: "bold" }}>2. R2 Vault ({cfGovernor.tiers.r2.status})</div>
+                    <div>Class A: {cfGovernor.tiers.r2.class_a_ops_month.toLocaleString()} / 800k | Class B: {cfGovernor.tiers.r2.class_b_ops_month.toLocaleString()} / 8M</div>
+                    <div style={{ color: "#8AB4C9" }}>Edge Cache Hits: {cfGovernor.tiers.r2.edge_cache_hits} (300s TTL)</div>
+                  </div>
+                  <div style={{ background: "#08131E", border: "1px solid #2A3B4D", borderRadius: 3, padding: 5 }}>
+                    <div style={{ color: "#B388FF", fontWeight: "bold" }}>3. Workers AI ({cfGovernor.tiers.workers_ai.status})</div>
+                    <div>Neurons: {cfGovernor.tiers.workers_ai.daily_neurons_used} / 8,500/day ({cfGovernor.tiers.workers_ai.usage_pct}%)</div>
+                    <div style={{ color: "#8AB4C9" }}>Dedup Cache: {cfGovernor.tiers.workers_ai.dedup_cache_size} | {cfGovernor.tiers.workers_ai.fallback_badge}</div>
+                  </div>
+                  <div style={{ background: "#08131E", border: "1px solid #2A3B4D", borderRadius: 3, padding: 5 }}>
+                    <div style={{ color: "#56D364", fontWeight: "bold" }}>4. Zero Trust + Turnstile ({cfGovernor.tiers.zero_trust_turnstile.status})</div>
+                    <div>Verified Tokens: {cfGovernor.tiers.zero_trust_turnstile.tokens_verified} | JWTs: {cfGovernor.tiers.zero_trust_turnstile.jwt_assertions_cached}</div>
+                    <div style={{ color: "#8AB4C9" }}>Operator Key Gate: {cfGovernor.tiers.zero_trust_turnstile.operator_key_enforced ? "ENFORCED (Loopback)" : "OFFLINE"}</div>
+                  </div>
+                  <div style={{ background: "#08131E", border: "1px solid #2A3B4D", borderRadius: 3, padding: 5 }}>
+                    <div style={{ color: "#FFD700", fontWeight: "bold" }}>5. Workers KV ({cfGovernor.tiers.workers_kv.status})</div>
+                    <div>Daily Writes: {cfGovernor.tiers.workers_kv.daily_writes} / 720 | Debounce: 120s</div>
+                    <div style={{ color: "#8AB4C9" }}>Isolate Cache: 60s TTL</div>
+                  </div>
+                  <div style={{ background: "#08131E", border: "1px solid #2A3B4D", borderRadius: 3, padding: 5 }}>
+                    <div style={{ color: "#00E5FF", fontWeight: "bold" }}>6. Analytics Engine ({cfGovernor.tiers.analytics_engine.status})</div>
+                    <div>Data Points: {cfGovernor.tiers.analytics_engine.data_points_emitted} | D1 Rollups: {cfGovernor.tiers.analytics_engine.d1_rollups_logged}</div>
+                    <div style={{ color: "#8AB4C9" }}>Dataset: {cfGovernor.tiers.analytics_engine.dataset}</div>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div style={{ background: "#0A0D12", border: "1px solid #2A3B4D", borderRadius: 4, padding: 6, marginBottom: 6, fontSize: 10.5 }}>
               <div style={{ color: "#FFFEFB" }}>&gt; PROMPT: {cmdPrompt}</div>

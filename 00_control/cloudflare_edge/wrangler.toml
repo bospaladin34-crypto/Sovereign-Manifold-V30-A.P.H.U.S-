@@ -3,18 +3,53 @@ main = "worker_vpc_shadow_v3700.js"
 compatibility_date = "2026-07-28"
 account_id = "a37cf8ab07e7c5f886c302be3f098744"
 
+# --- Cloudflare Tier 4: Zero Trust & Turnstile Variables ---
+[vars]
+TURNSTILE_SITE_KEY = "1x00000000000000000000AA"
+TURNSTILE_SECRET_KEY = "1x0000000000000000000000000000000AA"
+CF_ACCESS_TEAM_DOMAIN = "act-omega-net.cloudflareaccess.com"
+CF_ACCESS_AUD = "act-omega-zero-trust-aud"
+
+# --- Cloudflare Tier 3: Workers AI (bge-small-en-v1.5) ---
+[ai]
+binding = "AI"
+
+# --- Cloudflare D1 Vault (Remote 5GB 10-Table SQLite Database) ---
 [[d1_databases]]
 binding = "ACT_OMEGA_D1"
 database_name = "act_omega_d1_vault"
 database_id = "9f46d56a-ef3e-4232-a9ac-c4bd12e20a87"
 
+# --- Cloudflare Durable Object (SovereignEdgeShadowDO SQLite Continuum) ---
 [[durable_objects.bindings]]
 name = "SOVEREIGN_EDGE_SHADOW_DO"
 class_name = "SovereignEdgeShadowDO"
 
+# --- Cloudflare Durable Object Migrations ---
 [[migrations]]
 tag = "v3800"
 new_sqlite_classes = ["SovereignEdgeShadowDO"]
 
+# --- Cloudflare Tier 1: Vectorize (MIT Hot E8Q 384D Vector Index) ---
+[[vectorize]]
+binding = "ACT_OMEGA_VECTORIZE"
+index_name = "act-omega-mit-e8q-index"
+
+# --- Cloudflare Tier 2: R2 Vault (Class B Caching & HTTP 206 Slicing) ---
+[[r2_buckets]]
+binding = "ACT_OMEGA_R2_VAULT"
+bucket_name = "act-omega-r2-vault"
+
+# --- Cloudflare Tier 5: Workers KV (60s Cache & 120s Write Debounce) ---
+[[kv_namespaces]]
+binding = "ACT_OMEGA_KV"
+id = "65bc6848257345ce988e31a8b6571b6d" # act_omega_kv_vault
+
+# --- Cloudflare Tier 6: Analytics Engine (Edge Telemetry & D1 Rollup) ---
+[[analytics_engine_datasets]]
+binding = "ACT_OMEGA_ANALYTICS"
+dataset = "act_omega_edge_telemetry"
+
+# --- Cloudflare Cron Triggers (15-Minute Sync Pulse) ---
 [triggers]
 crons = ["*/15 * * * *"]

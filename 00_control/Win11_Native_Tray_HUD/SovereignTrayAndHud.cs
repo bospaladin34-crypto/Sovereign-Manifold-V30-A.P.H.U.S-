@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -123,7 +123,7 @@ namespace SovereignManifoldDesktop
             _onRunAction = onRunAction;
             _onLaunchVesperIk = onLaunchVesperIk;
 
-            this.Text = "ACT-Omega v70.0.0 Live Desktop Widget (SH4Z v7000 | CHAIN 316 | 840 QED)";
+            this.Text = "ACT-Omega v70.0.0 Live Desktop Widget (SH4Z v7000 | CHAIN 317 | 840 QED)";
             this.FormBorderStyle = FormBorderStyle.None;
             this.StartPosition = FormStartPosition.Manual;
             this.Size = new Size(430, 295);
@@ -294,7 +294,7 @@ namespace SovereignManifoldDesktop
                     }
 
                     // Status ticker
-                    string line1 = "ACT-OMEGA v70.0.0 (CHAIN 316 | 840/840 QED | 84,480N)";
+                    string line1 = "ACT-OMEGA v70.0.0 (CHAIN 317 | 840/840 QED | 84,480N)";
                     string line2 = string.Format("{0:0.0}k ops | RTX {1:0}C | P10 {2:0}C | P8 {3:0}C | FNO={4:0.0000}",
                         _tel.ClusterKops, _tel.RtxTemp, _tel.P10Temp, _tel.P8Temp, _tel.FnoL2Err);
                     g.DrawString(line1, fSub, brAmber, 54, 5);
@@ -315,11 +315,11 @@ namespace SovereignManifoldDesktop
                         g.DrawRectangle(borderPen, 1, 1, this.Width - 3, this.Height - 3);
                     }
 
-                    g.DrawString("ACT-OMEGA v70.0.0 (SH4Z v7000 | CHAIN 316) [WIN11 MICA + M3 MINI-HUD]", fTitle, brAmber, 12, 10);
+                    g.DrawString("ACT-OMEGA v70.0.0 (SH4Z v7000 | CHAIN 317) [WIN11 MICA + M3 MINI-HUD]", fTitle, brAmber, 12, 10);
 
                     Brush statusBr = _tel.Online ? brGreen : brRed;
                     string statusTxt = _tel.Online
-                        ? string.Format("ONLINE | Tick #{0} | {1:0.0}k ops/s | 840/840 QED | 316 Tools (4.05M Syn)", _tel.Generation, _tel.ClusterKops)
+                        ? string.Format("ONLINE | Tick #{0} | {1:0.0}k ops/s | 840/840 QED | 317 Tools (4.05M Syn)", _tel.Generation, _tel.ClusterKops)
                         : "OFFLINE / AWAITING LOCALHOST :8097 TELEMETRY";
                     g.DrawString(statusTxt, fSub, statusBr, 12, 28);
 
@@ -423,8 +423,8 @@ namespace SovereignManifoldDesktop
             menu.MenuItems.Add("-");
 
             // Feature 11: 8 Unified Functional Domains Submenu
-            MenuItem miUnified = new MenuItem("Unified Functional Domains (8 Groups / 316 Tools / CHAIN 316)");
-            miUnified.MenuItems.Add(new MenuItem("Unified Catalog (8 Domains / 316 Tools)", (s, e) => ExecuteClusterAction("/api/v1/unified/catalog", "UNIFIED CATALOG")));
+            MenuItem miUnified = new MenuItem("Unified Functional Domains (8 Groups / 317 Tools / CHAIN 317)");
+            miUnified.MenuItems.Add(new MenuItem("Unified Catalog (8 Domains / 317 Tools)", (s, e) => ExecuteClusterAction("/api/v1/unified/catalog", "UNIFIED CATALOG")));
             miUnified.MenuItems.Add(new MenuItem("OmegaLang v16.0 9-Target Primary TLV Compiler (T305)", (s, e) => ExecuteClusterAction("/api/v1/tools/t305", "OMEGALANG V16 COMPILER")));
             miUnified.MenuItems.Add(new MenuItem("84,480-Neuron Tier-4 Connectome & 4.05M Synapses (T306)", (s, e) => ExecuteClusterAction("/api/v1/tools/t306", "84,480 NEURON CONNECTOME")));
             miUnified.MenuItems.Add(new MenuItem("524,288 (19-Bit) Open-Vocab BPE & 192 Sub-Domains (T307)", (s, e) => ExecuteClusterAction("/api/v1/tools/t307", "524K BPE & 192 SUB-DOMAINS")));
@@ -442,6 +442,7 @@ namespace SovereignManifoldDesktop
             miUnified.MenuItems.Add(new MenuItem("6. Aperiodic Permissions Router (APR) & Security", (s, e) => ExecuteClusterAction("/api/v1/unified/apr_permissions_security", "DOMAIN 6: APR PERMISSIONS SECURITY")));
             miUnified.MenuItems.Add(new MenuItem("7. Polyglot Compilers, DevTools & Sandboxes", (s, e) => ExecuteClusterAction("/api/v1/unified/polyglot_compilers_devtools", "DOMAIN 7: POLYGLOT DEVTOOLS")));
             miUnified.MenuItems.Add(new MenuItem("8. Autopoietic Coordinator Bus, E:\\ Vault & Cloudflare D1", (s, e) => ExecuteClusterAction("/api/v1/unified/autopoietic_bus_vault_d1", "DOMAIN 8: AUTOPOIETIC BUS VAULT D1")));
+            miUnified.MenuItems.Add(new MenuItem("   └─ Cloudflare 6 Free Developer Tiers Governor (Tool 317)", (s, e) => ExecuteClusterAction("/api/v1/cloudflare/free_tier_governor", "TOOL 317: FREE TIER GOVERNOR")));
             miUnified.MenuItems.Add("-");
             miUnified.MenuItems.Add(new MenuItem("Run 256-Bit AVX2 16-Domain FNO Solver (Tool 22)", (s, e) => ExecuteClusterAction("/api/v1/operator/fno_solve", "256-BIT AVX2 16-DOMAIN FNO SOLVE")));
             menu.MenuItems.Add(miUnified);
@@ -463,7 +464,7 @@ namespace SovereignManifoldDesktop
             menu.MenuItems.Add("-");
             menu.MenuItems.Add(new MenuItem("Sync 16.22MB .npage+.spage Shared Memory (P8 + P10 Roaming)", (s, e) => ExecuteClusterAction("/api/v1/shm/p8_npage_bridge", "SYNC .NPAGE+.SPAGE SHM")));
             menu.MenuItems.Add(new MenuItem("Handover Continuum State to Phones + Cloudflare DO", (s, e) => ExecuteClusterAction("HANDOVER_PHONES", "HANDOVER TO PHONES")));
-            menu.MenuItems.Add(new MenuItem("Run 6-Layer True-Data Audit (316 Tools / 840 QED)", (s, e) => ExecuteClusterAction("/api/v1/diagnostics/v44_self_profiler", "6-LAYER AUDIT")));
+            menu.MenuItems.Add(new MenuItem("Run 6-Layer True-Data Audit (317 Tools / 840 QED)", (s, e) => ExecuteClusterAction("/api/v1/diagnostics/v44_self_profiler", "6-LAYER AUDIT")));
             menu.MenuItems.Add(new MenuItem("Run CHAIN 316 Master Certification (Tools 1..308)", (s, e) => ExecuteClusterAction("/api/v1/chain316/master_certification", "CHAIN 316 MASTER CERT")));
             menu.MenuItems.Add(new MenuItem("Trigger AEGIS Autonomous Cron Tick", (s, e) => ExecuteClusterAction("/api/v1/aegis/cron_status?action=trigger_now", "AEGIS CRON TICK")));
             menu.MenuItems.Add("-");
@@ -472,7 +473,7 @@ namespace SovereignManifoldDesktop
             menu.MenuItems.Add(new MenuItem("Architecture Specifications (v70.0.0)", (s, e) =>
             {
                 MessageBox.Show(
-                    "ACT-Omega Net v70.0.0 (SH4Z v7000 TLV | CHAIN 316 | 840/840 QED)\n\n" +
+                    "ACT-Omega Net v70.0.0 (SH4Z v7000 TLV | CHAIN 317 | 840/840 QED)\n\n" +
                     "â€¢ Primary Author: Donevin Frownfelter (bospaladin34-crypto)\n" +
                     "â€¢ Shards / Neurons: 84,480 (Core 21,120 + Exp 21,120 + Tier-3 21,120 + Tier-4 21,120)\n" +
                     "â€¢ Bijected 64B Cachelines: 8,704 .e8z CLs (557,056 B) + 168,960 .npage CLs\n" +
@@ -482,8 +483,8 @@ namespace SovereignManifoldDesktop
                     "â€¢ Columns: 1,920 Chair-44 Columns\n" +
                     "â€¢ Sub-Domains: 192 (48 Macro-Domains x 4)\n" +
                     "â€¢ Vocabulary: 524,288 (19-bit) Open-Vocab BPE (4,096 Compounds)\n" +
-                    "â€¢ Formal Proofs: 820 / 820 Substantive Lean 4 Proofs QED\n" +
-                    "â€¢ Tools: 308 Native Tools (CHAIN 316) + MIT Hot-Index RAG\n" +
+                    "â€¢ Formal Proofs: 840 / 840 Substantive Lean 4 Proofs QED\n" +
+                    "â€¢ Tools: 317 Native Tools (CHAIN 317) + MIT Hot-Index RAG\n" +
                     "â€¢ Foundational Citations: Maryna S. Viazovska (E8 & Leech Sphere Packing & Universal Optimality)\n\n" +
                     "Permanent Archival DOIs:\n" +
                     "â€¢ Zenodo: 10.5281/zenodo.23651696\n" +
@@ -790,7 +791,7 @@ namespace SovereignManifoldDesktop
                                 _tel.ClusterKops, _tel.FnoL2Err, _tel.NavierReynolds, _tel.RtxTemp);
                             if (tip.Length > 63) tip = tip.Substring(0, 63);
                             _trayIcon.Text = tip;
-                            _miStatus.Text = string.Format("ACT-Omega v70.0.0 | {0:0.0}k ops/s | 840/840 QED | 316 Tools (4.05M Syn)", _tel.ClusterKops);
+                            _miStatus.Text = string.Format("ACT-Omega v70.0.0 | {0:0.0}k ops/s | 840/840 QED | 317 Tools (4.05M Syn)", _tel.ClusterKops);
                         });
                     }
                 }

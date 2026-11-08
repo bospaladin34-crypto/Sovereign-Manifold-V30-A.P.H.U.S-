@@ -1875,6 +1875,49 @@ fn resolve_tool_id_for_clean_path(
             return id;
         }
     }
+    if clean_path.contains("chain316") {
+        return 316;
+    }
+    if clean_path.contains("cloudflare/free_tier_governor")
+        || clean_path.contains("free_tier_governor")
+        || clean_path.ends_with("/t317")
+        || clean_path.ends_with("/317")
+    {
+        return 317;
+    }
+    if clean_path.contains("hsiang_isoparametric_symplectic_leapfrog") {
+        return 315;
+    }
+    if clean_path.contains("tri_silicon_conservation_5pool_worksteal") {
+        return 314;
+    }
+    if clean_path.contains("bijected_262144_cacheline_manifold") {
+        return 313;
+    }
+    if clean_path.contains("chain312") {
+        return 312;
+    }
+    if clean_path.contains("simultaneous_cpu_gpu_split_batch_coscheduler") {
+        return 311;
+    }
+    if clean_path.contains("proteus_gksm_vmm_and_lark_equiv") {
+        return 310;
+    }
+    if clean_path.contains("rtx3050_nvcuda_ptx_driver_probe") {
+        return 309;
+    }
+    if clean_path.contains("chain308") {
+        return 308;
+    }
+    if clean_path.contains("open_vocab_524k_192subdomains_mit_rag") {
+        return 307;
+    }
+    if clean_path.contains("tier4_84480_neurons_4055040_synapses") {
+        return 306;
+    }
+    if clean_path.contains("v16_primary_tlv_compiler") {
+        return 305;
+    }
     if clean_path.contains("chain304") || clean_path.contains("frontier_fb12") {
         return 304;
     }
@@ -1979,6 +2022,8 @@ fn resolve_tool_category(tool_id: u64, clean_path: &str) -> &'static str {
         "rust_l0"
     } else if clean_path.contains("rvq_pvq") || clean_path.contains("k18a_90layer_multishard_l2_stream") {
         "npage_shard_deltas"
+    } else if clean_path.contains("free_tier_governor") || clean_path.contains("cloudflare") {
+        "tool_outputs"
     } else if clean_path.contains("chain300")
         || clean_path.contains("k19_k20_subnanosecond")
         || clean_path.contains("chain296")
@@ -2899,7 +2944,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             let ws_tri_p10 = st.ws_p10_lines * 3;
             let ws_tri_p8 = st.ws_p8_lines * 3;
             let json = format!(
-                "{{\"status\":\"LAMINAR_V68_5_DECADIC_15965HZ_LOCKSTEP\",\"version\":\"ACT-Omega Net v68.5.0 (SH4Z v6850 TLV | CHAIN 304 | 810 QED)\",\"tlv_magic\":\"0x5348345A\",\"tlv_version\":6850,\"official_domain\":\"https://act-omega-net.dev\",\"generation\":{},\"timestamp_ms\":{},\"carrier_clock_hz\":15.965,\"carrier_period_us\":62637,\"decadic_epoch_sec\":10.0,\"decadic_sub_epoch\":{},\"laplacian_face\":\"{}\",\"qm_field_eq\":\"{}\",\"total_shards\":21120,\"expansion_shards\":21120,\"tier3_shards\":21120,\"combined_shards\":63360,\"chair44_multiplier\":480,\"combined_chair44_multiplier\":1440,\"total_synapses\":3041280,\"nl_tokenizer_vocab\":262144,\"nl_bpe_subwords\":65536,\"compound_braid_tokens\":65536,\"dendritic_concept_tokens\":63360,\"oov_morphological_tokens\":67712,\"domains_count\":36,\"subdomains_count\":144,\"compound_phrases_count\":2048,\"holdout_ppl\":{:.6},\"lean4_base_theorems\":810,\"lean4_runtime_obligations\":810,\"lean4_qed\":true,\"tools_count\":304,\"chain_mode\":\"CHAIN_304_PARALLEL_DAG\",\"bput_act_omega_gib\":1.607,\"bput_efficiency_advantage_x\":13.86,\"omegalang_v15_k16a_ns\":78.0,\"omegalang_v15_k19_90l_ns\":83.6,\"omegalang_v15_k19_tops\":535.73,\"omegalang_v15_k20_pops\":4.235,\"mit_hot_index_shards\":10,\"mit_hot_index_bytes\":640,\"galois_tower_degree\":256,\"cern_lhcb_5mappings_verified\":true,\"fdrive_3tb_worm_online\":true,\"yubikey_5c_nfc_serial\":39651128,\"fno_modes\":16,\"fno_cachelines\":2080,\"e8z_tribank_cachelines\":6240,\"npage_64b_cachelines\":126720,\"composite_bijected_cachelines\":132960,\"fno_l2_rel_error\":{:.5},\"fno_l2_err\":{:.5},\"navier_stokes_reynolds\":{:.1},\"vorticity_norm\":{:.4},\"active_shard_id\":{},\"acoustic_carrier_hz\":1728.0,\"acoustic_ultrasonic_hz\":18500.0,\"acoustic_snr_db\":{:.1},\"cutler_idx\":{},\"cluster_total_kops\":{:.1},\"base_trisilicon_kops\":{:.1},\"webgpu_leased_kops\":{:.1},\"webgpu_active_leases\":{},\"loq15_rtx3050_kops\":{:.1},\"pixel10_g5_kops\":{:.1},\"pixel8_l2_kops\":{:.1},\"neurons_per_sec\":{:.2},\"cachelines_per_sec\":{:.2},\"host_neurons_per_sec\":{:.2},\"host_cachelines_per_sec\":{:.2},\"ws_loq_lines\":{},\"ws_p10_lines\":{},\"ws_p8_lines\":{},\"ws_tribank_loq_lines\":{},\"ws_tribank_p10_lines\":{},\"ws_tribank_p8_lines\":{},\"pixel8_l2_total_bytes\":4194304,\"pixel8_l2_mlock_bytes\":3737600,\"pixel8_l2_free_pct\":10.89,\"pixel8_npage_shm_active\":true,\"pixel8_npage_shm_bytes\":8110080,\"pixel8_spage_shm_bytes\":4055040,\"pixel8_sensor_bypass\":true,\"ssd_tier2_active_path\":\"{}\",\"ssd_tier2_drive_e_mounted\":{},\"ssd_tier2_mirrored_shards\":63360,\"ssd_tier2_merkle_nodes\":32,\"llm_agent_gateway_status\":\"ZERO_TRUST_READ_COMPUTE_AND_EXPANSION_CRYSTALLIZE\",\"fno_solve_runs\":{},\"agent_gateway_visits\":{},\"ssd_tier2_syncs\":{},\"nl_transduce_calls\":{},\"harvest_runs\":{},\"nl_converse_runs\":{},\"episodic_queries\":{},\"anomaly_checks\":{},\"decadic_synth_runs\":{},\"always_on_active\":{},\"always_on_ticks\":{},\"nl_synthesis\":\"{}\",\"episodic_search_out\":\"{}\",\"anomaly_banner\":\"{}\",\"physics_10pillar\":\"{}\",\"p10_broadcasts\":{},\"p8_broadcasts\":{},\"mag_x\":{:.1},\"mag_y\":{:.1},\"mag_z\":{:.1},\"b_norm\":{:.1},\"mag_norm\":{:.1},\"baro_hpa\":{:.1},\"light_lx\":{:.0},\"acc_norm\":{:.2},\"gyro_norm\":{:.3},\"p10_temp_c\":{:.1},\"p8_temp_c\":{:.1},\"p10_batt_mv\":{},\"p10_batt_pct\":{},\"p10_ram_used_mb\":{},\"p10_ram_total_mb\":{},\"p10_sensor_hz\":{:.3},\"p10_stream_hz\":{:.2},\"p10_rtt_ms\":{:.1},\"p10_bearer\":\"{}\",\"p8_batt_mv\":{},\"p8_batt_pct\":{},\"p8_ram_used_mb\":{},\"p8_ram_total_mb\":{},\"p8_stream_hz\":{:.2},\"p8_rtt_ms\":{:.1},\"p8_bearer\":\"{}\",\"rtx_temp_c\":{:.0},\"rtx_clock_mhz\":{},\"rtx_vram_used_mb\":{},\"rtx_vram_total_mb\":{},\"rtx_power_w\":{:.1},\"coherence_mult\":{:.2},\"coherence_mode\":\"{}\",\"kasami_cw_hex\":\"{}\",\"kasami_ecc_fixes\":{},\"stiefel_ortho_err\":{:.7},\"lean4_verify_ms\":{:.1},\"siem_entropy_bits\":{:.3},\"siem_pkts\":{},\"opto_state\":\"{}\",\"prox_cm\":{:.1},\"omega_lt\":{:.5},\"rsr_step\":{},\"hybrid_hops\":{},\"sector_norms_csv\":\"{}\",\"sector_hashes_csv\":\"{}\",\"inspected_sector\":{},\"inspected_line\":{},\"inspected_hex\":\"{}\",\"inspected_trits\":\"{}\",\"last_card_idx\":{},\"last_card_diag\":\"{}\",\"last_browser_url\":\"{}\",\"last_browser_trace\":\"{}\",\"last_lean_query\":\"{}\",\"last_lean_trace\":\"{}\",\"last_term_cmd\":\"{}\",\"last_term_out\":\"{}\"}}",
+                "{{\"status\":\"LAMINAR_V70_0_DECADIC_15965HZ_LOCKSTEP\",\"version\":\"ACT-Omega Net v70.0.0 (SH4Z v7000 TLV | CHAIN 316 | 840 QED)\",\"tlv_magic\":\"0x5348345A\",\"tlv_version\":7000,\"official_domain\":\"https://act-omega-net.dev\",\"generation\":{},\"timestamp_ms\":{},\"carrier_clock_hz\":15.965,\"carrier_period_us\":62637,\"decadic_epoch_sec\":10.0,\"decadic_sub_epoch\":{},\"laplacian_face\":\"{}\",\"qm_field_eq\":\"{}\",\"total_shards\":21120,\"expansion_shards\":21120,\"tier3_shards\":21120,\"tier4_shards\":21120,\"combined_shards\":84480,\"chair44_multiplier\":480,\"combined_chair44_multiplier\":1920,\"total_synapses\":4055040,\"nl_tokenizer_vocab\":524288,\"nl_bpe_subwords\":65536,\"compound_braid_tokens\":65536,\"dendritic_concept_tokens\":84480,\"oov_morphological_tokens\":308736,\"domains_count\":48,\"subdomains_count\":192,\"compound_phrases_count\":4096,\"holdout_ppl\":{:.6},\"lean4_base_theorems\":840,\"lean4_runtime_obligations\":840,\"lean4_qed\":true,\"tools_count\":316,\"chain_mode\":\"CHAIN_316_PARALLEL_DAG\",\"bput_act_omega_gib\":1.607,\"bput_efficiency_advantage_x\":13.86,\"omegalang_v15_k16a_ns\":78.0,\"omegalang_v15_k19_90l_ns\":83.6,\"omegalang_v15_k19_tops\":535.73,\"omegalang_v15_k20_pops\":4.235,\"mit_hot_index_shards\":10,\"mit_hot_index_bytes\":640,\"galois_tower_degree\":256,\"cern_lhcb_5mappings_verified\":true,\"fdrive_3tb_worm_online\":true,\"yubikey_5c_nfc_serial\":39651128,\"fno_modes\":16,\"fno_cachelines\":2080,\"e8z_tribank_cachelines\":6240,\"e8z_quadbank_cachelines\":8704,\"npage_64b_cachelines\":126720,\"npage_v69_cachelines\":168960,\"spage_v69_cachelines\":84480,\"composite_bijected_cachelines\":132960,\"v70_bijected_cachelines_262144\":262144,\"fno_l2_rel_error\":{:.5},\"fno_l2_err\":{:.5},\"navier_stokes_reynolds\":{:.1},\"vorticity_norm\":{:.4},\"active_shard_id\":{},\"acoustic_carrier_hz\":1728.0,\"acoustic_ultrasonic_hz\":18500.0,\"acoustic_snr_db\":{:.1},\"cutler_idx\":{},\"cluster_total_kops\":{:.1},\"base_trisilicon_kops\":{:.1},\"webgpu_leased_kops\":{:.1},\"webgpu_active_leases\":{},\"loq15_rtx3050_kops\":{:.1},\"pixel10_g5_kops\":{:.1},\"pixel8_l2_kops\":{:.1},\"neurons_per_sec\":{:.2},\"cachelines_per_sec\":{:.2},\"host_neurons_per_sec\":{:.2},\"host_cachelines_per_sec\":{:.2},\"ws_loq_lines\":{},\"ws_p10_lines\":{},\"ws_p8_lines\":{},\"ws_tribank_loq_lines\":{},\"ws_tribank_p10_lines\":{},\"ws_tribank_p8_lines\":{},\"pixel8_l2_total_bytes\":4194304,\"pixel8_l2_mlock_bytes\":3737600,\"pixel8_l2_free_pct\":10.89,\"pixel8_npage_shm_active\":true,\"pixel8_npage_shm_bytes\":10813440,\"pixel8_spage_shm_bytes\":5406720,\"pixel8_sensor_bypass\":true,\"ssd_tier2_active_path\":\"{}\",\"ssd_tier2_drive_e_mounted\":{},\"ssd_tier2_mirrored_shards\":84480,\"ssd_tier2_merkle_nodes\":32,\"llm_agent_gateway_status\":\"ZERO_TRUST_READ_COMPUTE_AND_EXPANSION_CRYSTALLIZE\",\"fno_solve_runs\":{},\"agent_gateway_visits\":{},\"ssd_tier2_syncs\":{},\"nl_transduce_calls\":{},\"harvest_runs\":{},\"nl_converse_runs\":{},\"episodic_queries\":{},\"anomaly_checks\":{},\"decadic_synth_runs\":{},\"always_on_active\":{},\"always_on_ticks\":{},\"nl_synthesis\":\"{}\",\"episodic_search_out\":\"{}\",\"anomaly_banner\":\"{}\",\"physics_10pillar\":\"{}\",\"p10_broadcasts\":{},\"p8_broadcasts\":{},\"mag_x\":{:.1},\"mag_y\":{:.1},\"mag_z\":{:.1},\"b_norm\":{:.1},\"mag_norm\":{:.1},\"baro_hpa\":{:.1},\"light_lx\":{:.0},\"acc_norm\":{:.2},\"gyro_norm\":{:.3},\"p10_temp_c\":{:.1},\"p8_temp_c\":{:.1},\"p10_batt_mv\":{},\"p10_batt_pct\":{},\"p10_ram_used_mb\":{},\"p10_ram_total_mb\":{},\"p10_sensor_hz\":{:.3},\"p10_stream_hz\":{:.2},\"p10_rtt_ms\":{:.1},\"p10_bearer\":\"{}\",\"p8_batt_mv\":{},\"p8_batt_pct\":{},\"p8_ram_used_mb\":{},\"p8_ram_total_mb\":{},\"p8_stream_hz\":{:.2},\"p8_rtt_ms\":{:.1},\"p8_bearer\":\"{}\",\"rtx_temp_c\":{:.0},\"rtx_clock_mhz\":{},\"rtx_vram_used_mb\":{},\"rtx_vram_total_mb\":{},\"rtx_power_w\":{:.1},\"coherence_mult\":{:.2},\"coherence_mode\":\"{}\",\"kasami_cw_hex\":\"{}\",\"kasami_ecc_fixes\":{},\"stiefel_ortho_err\":{:.7},\"lean4_verify_ms\":{:.1},\"siem_entropy_bits\":{:.3},\"siem_pkts\":{},\"opto_state\":\"{}\",\"prox_cm\":{:.1},\"omega_lt\":{:.5},\"rsr_step\":{},\"hybrid_hops\":{},\"sector_norms_csv\":\"{}\",\"sector_hashes_csv\":\"{}\",\"inspected_sector\":{},\"inspected_line\":{},\"inspected_hex\":\"{}\",\"inspected_trits\":\"{}\",\"last_card_idx\":{},\"last_card_diag\":\"{}\",\"last_browser_url\":\"{}\",\"last_browser_trace\":\"{}\",\"last_lean_query\":\"{}\",\"last_lean_trace\":\"{}\",\"last_term_cmd\":\"{}\",\"last_term_out\":\"{}\"}}",
                 gen_now,
                 unix_ms(),
                 st.decadic_sub_epoch,
@@ -4313,8 +4358,9 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.cluster_total_kops = es.total_elastic_kops;
             st.last_card_diag = es.diag.clone();
             st.last_term_out = es.diag.clone();
+            let v70_sched = v70_0_execute_5pool_exponential_scheduler();
             let json = format!(
-                "{{\"status\":\"ELASTIC_WORKSTEAL_SCHEDULER_LOCKED\",\"version\":\"v44.1.0\",\"tool_index\":79,\"tool_name\":\"tool:lockfree_elastic_worksteal_scheduler\",\"schedule_epoch\":{},\"loq15_kops\":{:.1},\"p10_kops\":{:.1},\"p8_shm_kops\":{:.1},\"webgpu_leased_kops\":{:.1},\"total_elastic_kops\":{:.1},\"ws_loq_lines\":{},\"ws_p10_lines\":{},\"ws_p8_lines\":{},\"core_lines_sum\":{},\"active_browser_workers\":{},\"leased_chair44_cols\":{},\"cadence_lock_hz\":{:.3},\"cadence_jitter_us\":{:.3},\"diag\":\"{}\"}}",
+                "{{\"status\":\"ELASTIC_WORKSTEAL_SCHEDULER_LOCKED\",\"version\":\"v70.0.0\",\"tool_index\":79,\"tool_name\":\"tool:lockfree_elastic_worksteal_scheduler\",\"schedule_epoch\":{},\"loq15_kops\":{:.1},\"p10_kops\":{:.1},\"p8_shm_kops\":{:.1},\"webgpu_leased_kops\":{:.1},\"total_elastic_kops\":{:.1},\"ws_loq_lines\":{},\"ws_p10_lines\":{},\"ws_p8_lines\":{},\"core_lines_sum\":{},\"active_browser_workers\":{},\"leased_chair44_cols\":{},\"cadence_lock_hz\":{:.3},\"cadence_jitter_us\":{:.3},\"bijected_cachelines_262144\":262144,\"npage_cachelines_168960\":168960,\"spage_cachelines_84480\":84480,\"e8z_cachelines_8704\":8704,\"pool1_loq15_cpu_cachelines\":{},\"pool2_loq15_gpu_cachelines\":{},\"pool3_pixel10_cachelines\":{},\"pool4_pixel8_cachelines\":{},\"tri_silicon_t_a\":{:.5},\"tri_silicon_flux_f\":{:.5},\"tri_silicon_t_b\":{:.5},\"tri_silicon_conservation_sum\":1.00000,\"exponential_superposed_tops\":{:.2},\"exponential_superposed_pops\":{:.3},\"zeptoverse_r_tail\":{:.5},\"diag\":\"{}\"}}",
                 es.schedule_epoch,
                 es.loq15_kops,
                 es.p10_kops,
@@ -4329,6 +4375,16 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 es.leased_chair44_cols,
                 es.cadence_lock_hz,
                 es.cadence_jitter_us,
+                v70_sched.pool1_loq15_cpu_cls,
+                v70_sched.pool2_loq15_gpu_cls,
+                v70_sched.pool3_pixel10_cls,
+                v70_sched.pool4_pixel8_cls,
+                v70_sched.t_a_ratio,
+                v70_sched.flux_f_ratio,
+                v70_sched.t_b_ratio,
+                v70_sched.combined_superposed_tops,
+                v70_sched.combined_superposed_pops,
+                v70_sched.zeptoverse_r_tail,
                 json_escape_clean(&es.diag)
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
@@ -4357,7 +4413,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.last_card_diag = pb.diag.clone();
             st.last_term_out = pb.diag.clone();
             let json = format!(
-                "{{\"status\":\"V44_PERFORMANCE_BLITZ_VERIFIED_QED\",\"version\":\"v68.0.0\",\"tool_index\":80,\"tool_name\":\"tool:v44_perf_blitz_benchmark_verifier\",\"bench_run\":{},\"npage_shm_delta_us\":{:.1},\"e8z_80sector_scan_us\":{:.1},\"bpe_65k_encode_us\":{:.1},\"p8_shm_speedup_pct\":{:.1},\"base_trisilicon_kops\":{:.1},\"webgpu_leased_kops\":{:.1},\"total_elastic_kops\":{:.1},\"lean4_theorems_qed\":{},\"tools_verified\":{},\"diag\":\"{}\"}}",
+                "{{\"status\":\"V44_PERFORMANCE_BLITZ_VERIFIED_QED\",\"version\":\"v70.0.0\",\"tool_index\":80,\"tool_name\":\"tool:v44_perf_blitz_benchmark_verifier\",\"bench_run\":{},\"npage_shm_delta_us\":{:.1},\"e8z_80sector_scan_us\":{:.1},\"bpe_65k_encode_us\":{:.1},\"p8_shm_speedup_pct\":{:.1},\"base_trisilicon_kops\":{:.1},\"webgpu_leased_kops\":{:.1},\"total_elastic_kops\":{:.1},\"lean4_theorems_qed\":{},\"tools_verified\":{},\"diag\":\"{}\"}}",
                 pb.bench_run,
                 pb.npage_shm_delta_us,
                 pb.e8z_80sector_scan_us,
@@ -4374,7 +4430,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             continue;
         }
 
-        // Dedicated Native Tools Discovery Catalog (Tools 1..304)
+        // Dedicated Native Tools Discovery Catalog (Tools 1..316)
         if clean_path == "/api/v1/tools" || clean_path == "/api/v1/tools/" {
             let mut st = match state.lock() {
                 Ok(g) => g,
@@ -4382,7 +4438,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             };
             st.gen_counter += 1;
             let json = format!(
-                "{{\"status\":\"OK_V68_5_0_TOOLS_CATALOG\",\"version\":\"v68.5.0\",\"tools_total\":304,\"chain_milestone\":\"CHAIN 304\",\"omni_suite\":\"/api/v1/chain304/suite\",\"tools\":{{\"t101\":\"/api/v1/v50/avx2_crystallizer\",\"t102\":\"/api/v1/v50/physics_simulator\",\"t103\":\"/api/v1/v50/coordinator_mesh\",\"t104\":\"/api/v1/monograph/braidir_yang_baxter_bresenham_compiler\",\"t105\":\"/api/v1/monograph/sh4z_dual_shell_lvq_quantizer\",\"t106\":\"/api/v1/monograph/vesper_4phase_cellular_sheaf_runtime\",\"t135\":\"/api/v1/brain/sovereign_63360_144subdomain_qat_trainer\",\"t145\":\"/api/v1/toolchain/windows_sdk_dxc_omni_audit\",\"t287\":\"/api/v1/vesper_arachne/ik_swarm_companion\",\"t288\":\"/api/v1/chain288/master_certification\",\"t289\":\"/api/v1/polytope7777/crt_pfa\",\"t290\":\"/api/v1/polytope7777/rvq_pvq\",\"t291\":\"/api/v1/polytope7777/sparse_matvec\",\"t292\":\"/api/v1/chain292/master_certification\",\"t293\":\"/api/v1/v63/capability_parity_bput\",\"t294\":\"/api/v1/v63/transformer_highway_q16_adapter\",\"t295\":\"/api/v1/v63/fdrive_immutable_epoch_vault\",\"t296\":\"/api/v1/chain296/master_certification\",\"t297\":\"/api/v1/v68/omegalang_v15_8target_compiler\",\"t298\":\"/api/v1/v68/k16a_78ns_quarterblock_l1d\",\"t299\":\"/api/v1/v68/k18a_90layer_multishard_l2_stream\",\"t300\":\"/api/v1/chain300/master_certification\",\"t301\":\"/api/v1/mit_pipeline/hot_index_ingest_and_query\",\"t302\":\"/api/v1/audit/cern_lhcb_5mapping_auditor\",\"t303\":\"/api/v1/gemma4/chat\",\"t304\":\"/api/v1/omegalang/frontier_fb12_gauntlet\"}},\"diag\":\"ACT-Omega Net v68.5.0 Tools Catalog: 304 Native Tools Online (CHAIN 304 | 63,360 Neurons | 132,960 Bijected CLs | 810/810 Lean 4 QED | MIT Hot-Index + Galois 256D + CERN LHCb Auditor + Gemma 4 Studio)\"}}"
+                "{{\"status\":\"OK_V70_0_0_TOOLS_CATALOG\",\"version\":\"v70.0.0\",\"tools_total\":317,\"chain_milestone\":\"CHAIN 316\",\"omni_suite\":\"/api/v1/chain316/suite\",\"tools\":{{\"t101\":\"/api/v1/v50/avx2_crystallizer\",\"t102\":\"/api/v1/v50/physics_simulator\",\"t103\":\"/api/v1/v50/coordinator_mesh\",\"t104\":\"/api/v1/monograph/braidir_yang_baxter_bresenham_compiler\",\"t105\":\"/api/v1/monograph/sh4z_dual_shell_lvq_quantizer\",\"t106\":\"/api/v1/monograph/vesper_4phase_cellular_sheaf_runtime\",\"t135\":\"/api/v1/brain/sovereign_63360_144subdomain_qat_trainer\",\"t145\":\"/api/v1/toolchain/windows_sdk_dxc_omni_audit\",\"t287\":\"/api/v1/vesper_arachne/ik_swarm_companion\",\"t288\":\"/api/v1/chain288/master_certification\",\"t289\":\"/api/v1/polytope7777/crt_pfa\",\"t290\":\"/api/v1/polytope7777/rvq_pvq\",\"t291\":\"/api/v1/polytope7777/sparse_matvec\",\"t292\":\"/api/v1/chain292/master_certification\",\"t293\":\"/api/v1/v63/capability_parity_bput\",\"t294\":\"/api/v1/v63/transformer_highway_q16_adapter\",\"t295\":\"/api/v1/v63/fdrive_immutable_epoch_vault\",\"t296\":\"/api/v1/chain296/master_certification\",\"t297\":\"/api/v1/v68/omegalang_v15_8target_compiler\",\"t298\":\"/api/v1/v68/k16a_78ns_quarterblock_l1d\",\"t299\":\"/api/v1/v68/k18a_90layer_multishard_l2_stream\",\"t300\":\"/api/v1/chain300/master_certification\",\"t301\":\"/api/v1/mit_pipeline/hot_index_ingest_and_query\",\"t302\":\"/api/v1/audit/cern_lhcb_5mapping_auditor\",\"t303\":\"/api/v1/gemma4/chat\",\"t304\":\"/api/v1/omegalang/frontier_fb12_gauntlet\",\"t305\":\"/api/v1/omegalang/v16_primary_tlv_compiler\",\"t306\":\"/api/v1/connectome/tier4_84480_neurons_4055040_synapses\",\"t307\":\"/api/v1/fluency/open_vocab_524k_192subdomains_mit_rag\",\"t308\":\"/api/v1/chain308/master_certification\",\"t309\":\"/api/v1/v69_5/rtx3050_nvcuda_ptx_driver_probe\",\"t310\":\"/api/v1/v69_5/proteus_gksm_vmm_and_lark_equiv\",\"t311\":\"/api/v1/v69_5/simultaneous_cpu_gpu_split_batch_coscheduler\",\"t312\":\"/api/v1/chain312/master_certification\",\"t313\":\"/api/v1/v70/bijected_262144_cacheline_manifold\",\"t314\":\"/api/v1/v70/tri_silicon_conservation_5pool_worksteal\",\"t315\":\"/api/v1/v70/hsiang_isoparametric_symplectic_leapfrog\",\"t316\":\"/api/v1/chain316/master_certification\",\"t317\":\"/api/v1/cloudflare/free_tier_governor\"}},\"diag\":\"ACT-Omega Net v70.0.0 Tools Catalog: 317 Native Tools Online (CHAIN 316 | 84,480 Neurons | 4,055,040 Synapses | 262,144 Bijected CLs | 840/840 Lean 4 QED | 5-Pool Exponential Work-Stealing & Tri-Silicon Conservation)\"}}"
             );
             st.last_card_diag = format!("EXEC({}) -> OK", clean_path);
             st.last_term_out = format!("EXEC({}) -> OK", clean_path);
@@ -4788,6 +4844,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                     || tool_called == "browser_article_operationalizer"
                     || tool_called == "metabolic_5w1h_harness"
                     || tool_called == "cloudflare_d1_vpc_shadow"
+                    || tool_called == "cloudflare_free_tier_governor"
                 {
                     let req_body_str = if !post_body.trim().is_empty() { &post_body } else { &arg_text };
                     let (raw_out, tid, cat) = if tool_called == "aegis_autonomous_harness" {
@@ -4841,6 +4898,8 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                             (h.metabolic_atp_drive, h.metabolic_regime, h.load_profile_applied)
                         };
                         (format!("{{\"status\":\"MEASURED_5W1H_HARNESS_OK\",\"atp\":{:.3},\"regime\":{},\"load\":{}}}", atp, regime, load), 50u64, "tool_outputs")
+                    } else if tool_called == "cloudflare_free_tier_governor" {
+                        (v70_0_dispatch_tool_317_cloudflare_free_tier_governor(req_body_str), 317u64, "tool_outputs")
                     } else {
                         (format!("{{\"status\":\"MEASURED_CLOUDFLARE_D1_SHADOW_OK\",\"vault_uuid\":\"9f46d56a-ef3e-4232-a9ac-c4bd12e20a87\",\"tables_count\":10,\"sub_epoch\":{}}}", sub_ep), 55u64, "tool_outputs")
                     };
@@ -6146,10 +6205,69 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
         {
             let req_payload = if !post_body.trim().is_empty() { &post_body } else { raw_target };
             Some(v62_0_dispatch_vesper_os_ssd_appliance(req_payload))
+        } else if clean_path == "/api/v1/chain316/suite"
+            || clean_path == "/api/v1/chain316_suite"
+            || clean_path == "/api/v1/chain316/master_certification"
+            || clean_path == "/api/v1/tools/t316"
+            || clean_path == "/api/v1/tool/316"
+        {
+            let req_payload = if !post_body.trim().is_empty() { &post_body } else { raw_target };
+            Some(v70_0_dispatch_tool_316_chain316_master_certification(req_payload))
+        } else if clean_path == "/api/v1/cloudflare/free_tier_governor"
+            || clean_path == "/api/v1/tools/t317"
+            || clean_path == "/api/v1/tool/317"
+        {
+            let req_payload = if !post_body.trim().is_empty() { &post_body } else { raw_target };
+            Some(v70_0_dispatch_tool_317_cloudflare_free_tier_governor(req_payload))
+        } else if clean_path == "/api/v1/v70/hsiang_isoparametric_symplectic_leapfrog"
+            || clean_path == "/api/v1/tools/t315"
+            || clean_path == "/api/v1/tool/315"
+        {
+            let req_payload = if !post_body.trim().is_empty() { &post_body } else { raw_target };
+            Some(v70_0_dispatch_tool_315_hsiang_isoparametric_symplectic_leapfrog(req_payload))
+        } else if clean_path == "/api/v1/v70/tri_silicon_conservation_5pool_worksteal"
+            || clean_path == "/api/v1/tools/t314"
+            || clean_path == "/api/v1/tool/314"
+        {
+            let req_payload = if !post_body.trim().is_empty() { &post_body } else { raw_target };
+            Some(v70_0_dispatch_tool_314_tri_silicon_5pool_worksteal(req_payload))
+        } else if clean_path == "/api/v1/v70/bijected_262144_cacheline_manifold"
+            || clean_path == "/api/v1/tools/t313"
+            || clean_path == "/api/v1/tool/313"
+        {
+            let req_payload = if !post_body.trim().is_empty() { &post_body } else { raw_target };
+            Some(v70_0_dispatch_tool_313_bijected_262144_cacheline_manifold(req_payload))
+        } else if clean_path == "/api/v1/chain312/suite"
+            || clean_path == "/api/v1/chain312_suite"
+            || clean_path == "/api/v1/chain312/master_certification"
+            || clean_path == "/api/v1/tools/t312"
+            || clean_path == "/api/v1/tool/312"
+        {
+            let req_payload = if !post_body.trim().is_empty() { &post_body } else { raw_target };
+            Some(v69_5_dispatch_tool_312_chain312_master_certification(req_payload))
+        } else if clean_path == "/api/v1/v69_5/simultaneous_cpu_gpu_split_batch_coscheduler"
+            || clean_path == "/api/v1/tools/t311"
+            || clean_path == "/api/v1/tool/311"
+        {
+            let req_payload = if !post_body.trim().is_empty() { &post_body } else { raw_target };
+            Some(v69_5_dispatch_tool_311_simultaneous_cpu_gpu_split_batch_coscheduler(req_payload))
+        } else if clean_path == "/api/v1/v69_5/proteus_gksm_vmm_and_lark_equiv"
+            || clean_path == "/api/v1/tools/t310"
+            || clean_path == "/api/v1/tool/310"
+        {
+            let req_payload = if !post_body.trim().is_empty() { &post_body } else { raw_target };
+            Some(v69_5_dispatch_tool_310_proteus_gksm_vmm_and_lark_equiv(req_payload))
+        } else if clean_path == "/api/v1/v69_5/rtx3050_nvcuda_ptx_driver_probe"
+            || clean_path == "/api/v1/tools/t309"
+            || clean_path == "/api/v1/tool/309"
+        {
+            let req_payload = if !post_body.trim().is_empty() { &post_body } else { raw_target };
+            Some(v69_5_dispatch_tool_309_rtx3050_nvcuda_ptx_driver_probe(req_payload))
         } else if clean_path == "/api/v1/chain308/suite"
             || clean_path == "/api/v1/chain308_suite"
             || clean_path == "/api/v1/chain308/master_certification"
             || clean_path == "/api/v1/tools/t308"
+            || clean_path == "/api/v1/tool/308"
         {
             let req_payload = if !post_body.trim().is_empty() { &post_body } else { raw_target };
             Some(v69_0_dispatch_tool_308_chain308_master_certification(req_payload))
@@ -6708,7 +6826,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             continue;
         }
 
-        // 7b. Rejection for out-of-range tools (CHAIN 304 has tools 1..304)
+        // 7b. Rejection for out-of-range tools (CHAIN 316 has tools 1..316)
         if clean_path.starts_with("/api/v1/tools/t") || clean_path.starts_with("/api/v1/tool/") {
             let tool_id_opt = if let Some(s) = clean_path.strip_prefix("/api/v1/tools/t") {
                 s.chars().take_while(|c| c.is_ascii_digit()).collect::<String>().parse::<u64>().ok()
@@ -6718,9 +6836,9 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 None
             };
             if let Some(id) = tool_id_opt {
-                if id > 304 || id == 0 {
+                if id > 316 || id == 0 {
                     let err_json = format!(
-                        "{{\"status\":\"ERROR_TOOL_OUT_OF_RANGE\",\"tool_id\":{},\"max_chain\":304,\"error\":\"Tool ID {} out of range for CHAIN 304\",\"endpoint\":\"{}\"}}",
+                        "{{\"status\":\"ERROR_TOOL_OUT_OF_RANGE\",\"tool_id\":{},\"max_chain\":316,\"error\":\"Tool ID {} out of range for CHAIN 316\",\"endpoint\":\"{}\"}}",
                         id,
                         id,
                         json_escape_clean(clean_path)

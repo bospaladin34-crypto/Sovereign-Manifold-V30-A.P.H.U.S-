@@ -1878,6 +1878,13 @@ fn resolve_tool_id_for_clean_path(
     if clean_path.contains("chain316") {
         return 316;
     }
+    if clean_path.contains("cloudflare/free_tier_governor")
+        || clean_path.contains("free_tier_governor")
+        || clean_path.ends_with("/t317")
+        || clean_path.ends_with("/317")
+    {
+        return 317;
+    }
     if clean_path.contains("hsiang_isoparametric_symplectic_leapfrog") {
         return 315;
     }
@@ -2015,6 +2022,8 @@ fn resolve_tool_category(tool_id: u64, clean_path: &str) -> &'static str {
         "rust_l0"
     } else if clean_path.contains("rvq_pvq") || clean_path.contains("k18a_90layer_multishard_l2_stream") {
         "npage_shard_deltas"
+    } else if clean_path.contains("free_tier_governor") || clean_path.contains("cloudflare") {
+        "tool_outputs"
     } else if clean_path.contains("chain300")
         || clean_path.contains("k19_k20_subnanosecond")
         || clean_path.contains("chain296")
@@ -4429,7 +4438,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             };
             st.gen_counter += 1;
             let json = format!(
-                "{{\"status\":\"OK_V70_0_0_TOOLS_CATALOG\",\"version\":\"v70.0.0\",\"tools_total\":316,\"chain_milestone\":\"CHAIN 316\",\"omni_suite\":\"/api/v1/chain316/suite\",\"tools\":{{\"t101\":\"/api/v1/v50/avx2_crystallizer\",\"t102\":\"/api/v1/v50/physics_simulator\",\"t103\":\"/api/v1/v50/coordinator_mesh\",\"t104\":\"/api/v1/monograph/braidir_yang_baxter_bresenham_compiler\",\"t105\":\"/api/v1/monograph/sh4z_dual_shell_lvq_quantizer\",\"t106\":\"/api/v1/monograph/vesper_4phase_cellular_sheaf_runtime\",\"t135\":\"/api/v1/brain/sovereign_63360_144subdomain_qat_trainer\",\"t145\":\"/api/v1/toolchain/windows_sdk_dxc_omni_audit\",\"t287\":\"/api/v1/vesper_arachne/ik_swarm_companion\",\"t288\":\"/api/v1/chain288/master_certification\",\"t289\":\"/api/v1/polytope7777/crt_pfa\",\"t290\":\"/api/v1/polytope7777/rvq_pvq\",\"t291\":\"/api/v1/polytope7777/sparse_matvec\",\"t292\":\"/api/v1/chain292/master_certification\",\"t293\":\"/api/v1/v63/capability_parity_bput\",\"t294\":\"/api/v1/v63/transformer_highway_q16_adapter\",\"t295\":\"/api/v1/v63/fdrive_immutable_epoch_vault\",\"t296\":\"/api/v1/chain296/master_certification\",\"t297\":\"/api/v1/v68/omegalang_v15_8target_compiler\",\"t298\":\"/api/v1/v68/k16a_78ns_quarterblock_l1d\",\"t299\":\"/api/v1/v68/k18a_90layer_multishard_l2_stream\",\"t300\":\"/api/v1/chain300/master_certification\",\"t301\":\"/api/v1/mit_pipeline/hot_index_ingest_and_query\",\"t302\":\"/api/v1/audit/cern_lhcb_5mapping_auditor\",\"t303\":\"/api/v1/gemma4/chat\",\"t304\":\"/api/v1/omegalang/frontier_fb12_gauntlet\",\"t305\":\"/api/v1/omegalang/v16_primary_tlv_compiler\",\"t306\":\"/api/v1/connectome/tier4_84480_neurons_4055040_synapses\",\"t307\":\"/api/v1/fluency/open_vocab_524k_192subdomains_mit_rag\",\"t308\":\"/api/v1/chain308/master_certification\",\"t309\":\"/api/v1/v69_5/rtx3050_nvcuda_ptx_driver_probe\",\"t310\":\"/api/v1/v69_5/proteus_gksm_vmm_and_lark_equiv\",\"t311\":\"/api/v1/v69_5/simultaneous_cpu_gpu_split_batch_coscheduler\",\"t312\":\"/api/v1/chain312/master_certification\",\"t313\":\"/api/v1/v70/bijected_262144_cacheline_manifold\",\"t314\":\"/api/v1/v70/tri_silicon_conservation_5pool_worksteal\",\"t315\":\"/api/v1/v70/hsiang_isoparametric_symplectic_leapfrog\",\"t316\":\"/api/v1/chain316/master_certification\"}},\"diag\":\"ACT-Omega Net v70.0.0 Tools Catalog: 316 Native Tools Online (CHAIN 316 | 84,480 Neurons | 4,055,040 Synapses | 262,144 Bijected CLs | 840/840 Lean 4 QED | 5-Pool Exponential Work-Stealing & Tri-Silicon Conservation)\"}}"
+                "{{\"status\":\"OK_V70_0_0_TOOLS_CATALOG\",\"version\":\"v70.0.0\",\"tools_total\":317,\"chain_milestone\":\"CHAIN 316\",\"omni_suite\":\"/api/v1/chain316/suite\",\"tools\":{{\"t101\":\"/api/v1/v50/avx2_crystallizer\",\"t102\":\"/api/v1/v50/physics_simulator\",\"t103\":\"/api/v1/v50/coordinator_mesh\",\"t104\":\"/api/v1/monograph/braidir_yang_baxter_bresenham_compiler\",\"t105\":\"/api/v1/monograph/sh4z_dual_shell_lvq_quantizer\",\"t106\":\"/api/v1/monograph/vesper_4phase_cellular_sheaf_runtime\",\"t135\":\"/api/v1/brain/sovereign_63360_144subdomain_qat_trainer\",\"t145\":\"/api/v1/toolchain/windows_sdk_dxc_omni_audit\",\"t287\":\"/api/v1/vesper_arachne/ik_swarm_companion\",\"t288\":\"/api/v1/chain288/master_certification\",\"t289\":\"/api/v1/polytope7777/crt_pfa\",\"t290\":\"/api/v1/polytope7777/rvq_pvq\",\"t291\":\"/api/v1/polytope7777/sparse_matvec\",\"t292\":\"/api/v1/chain292/master_certification\",\"t293\":\"/api/v1/v63/capability_parity_bput\",\"t294\":\"/api/v1/v63/transformer_highway_q16_adapter\",\"t295\":\"/api/v1/v63/fdrive_immutable_epoch_vault\",\"t296\":\"/api/v1/chain296/master_certification\",\"t297\":\"/api/v1/v68/omegalang_v15_8target_compiler\",\"t298\":\"/api/v1/v68/k16a_78ns_quarterblock_l1d\",\"t299\":\"/api/v1/v68/k18a_90layer_multishard_l2_stream\",\"t300\":\"/api/v1/chain300/master_certification\",\"t301\":\"/api/v1/mit_pipeline/hot_index_ingest_and_query\",\"t302\":\"/api/v1/audit/cern_lhcb_5mapping_auditor\",\"t303\":\"/api/v1/gemma4/chat\",\"t304\":\"/api/v1/omegalang/frontier_fb12_gauntlet\",\"t305\":\"/api/v1/omegalang/v16_primary_tlv_compiler\",\"t306\":\"/api/v1/connectome/tier4_84480_neurons_4055040_synapses\",\"t307\":\"/api/v1/fluency/open_vocab_524k_192subdomains_mit_rag\",\"t308\":\"/api/v1/chain308/master_certification\",\"t309\":\"/api/v1/v69_5/rtx3050_nvcuda_ptx_driver_probe\",\"t310\":\"/api/v1/v69_5/proteus_gksm_vmm_and_lark_equiv\",\"t311\":\"/api/v1/v69_5/simultaneous_cpu_gpu_split_batch_coscheduler\",\"t312\":\"/api/v1/chain312/master_certification\",\"t313\":\"/api/v1/v70/bijected_262144_cacheline_manifold\",\"t314\":\"/api/v1/v70/tri_silicon_conservation_5pool_worksteal\",\"t315\":\"/api/v1/v70/hsiang_isoparametric_symplectic_leapfrog\",\"t316\":\"/api/v1/chain316/master_certification\",\"t317\":\"/api/v1/cloudflare/free_tier_governor\"}},\"diag\":\"ACT-Omega Net v70.0.0 Tools Catalog: 317 Native Tools Online (CHAIN 316 | 84,480 Neurons | 4,055,040 Synapses | 262,144 Bijected CLs | 840/840 Lean 4 QED | 5-Pool Exponential Work-Stealing & Tri-Silicon Conservation)\"}}"
             );
             st.last_card_diag = format!("EXEC({}) -> OK", clean_path);
             st.last_term_out = format!("EXEC({}) -> OK", clean_path);
@@ -4835,6 +4844,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                     || tool_called == "browser_article_operationalizer"
                     || tool_called == "metabolic_5w1h_harness"
                     || tool_called == "cloudflare_d1_vpc_shadow"
+                    || tool_called == "cloudflare_free_tier_governor"
                 {
                     let req_body_str = if !post_body.trim().is_empty() { &post_body } else { &arg_text };
                     let (raw_out, tid, cat) = if tool_called == "aegis_autonomous_harness" {
@@ -4888,6 +4898,8 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                             (h.metabolic_atp_drive, h.metabolic_regime, h.load_profile_applied)
                         };
                         (format!("{{\"status\":\"MEASURED_5W1H_HARNESS_OK\",\"atp\":{:.3},\"regime\":{},\"load\":{}}}", atp, regime, load), 50u64, "tool_outputs")
+                    } else if tool_called == "cloudflare_free_tier_governor" {
+                        (v70_0_dispatch_tool_317_cloudflare_free_tier_governor(req_body_str), 317u64, "tool_outputs")
                     } else {
                         (format!("{{\"status\":\"MEASURED_CLOUDFLARE_D1_SHADOW_OK\",\"vault_uuid\":\"9f46d56a-ef3e-4232-a9ac-c4bd12e20a87\",\"tables_count\":10,\"sub_epoch\":{}}}", sub_ep), 55u64, "tool_outputs")
                     };
@@ -6201,6 +6213,12 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
         {
             let req_payload = if !post_body.trim().is_empty() { &post_body } else { raw_target };
             Some(v70_0_dispatch_tool_316_chain316_master_certification(req_payload))
+        } else if clean_path == "/api/v1/cloudflare/free_tier_governor"
+            || clean_path == "/api/v1/tools/t317"
+            || clean_path == "/api/v1/tool/317"
+        {
+            let req_payload = if !post_body.trim().is_empty() { &post_body } else { raw_target };
+            Some(v70_0_dispatch_tool_317_cloudflare_free_tier_governor(req_payload))
         } else if clean_path == "/api/v1/v70/hsiang_isoparametric_symplectic_leapfrog"
             || clean_path == "/api/v1/tools/t315"
             || clean_path == "/api/v1/tool/315"

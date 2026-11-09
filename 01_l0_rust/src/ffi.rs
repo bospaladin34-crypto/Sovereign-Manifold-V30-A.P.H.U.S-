@@ -162,6 +162,32 @@ struct NvmlMemory {
     used: u64,
 }
 
+#[repr(C)]
+#[derive(Clone, Copy)]
+struct NvmlPciInfo {
+    bus_id_legacy: [u8; 16],
+    domain: u32,
+    bus: u32,
+    device: u32,
+    pci_device_id: u32,
+    pci_subsystem_id: u32,
+    bus_id: [u8; 32],
+}
+
+impl Default for NvmlPciInfo {
+    fn default() -> Self {
+        Self {
+            bus_id_legacy: [0u8; 16],
+            domain: 0,
+            bus: 0,
+            device: 0,
+            pci_device_id: 0,
+            pci_subsystem_id: 0,
+            bus_id: [0u8; 32],
+        }
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct Rtx3050NvCudaCoExecSample {
     pub nvcuda_loaded: bool,
@@ -169,6 +195,19 @@ pub struct Rtx3050NvCudaCoExecSample {
     pub cu_init_status: i32,
     pub device_name: String,
     pub driver_version_raw: i32,
+    pub sm_count: i32,
+    pub cuda_cores: usize,
+    pub l2_cache_bytes: i32,
+    pub memory_bus_width_bits: i32,
+    pub compute_major: i32,
+    pub compute_minor: i32,
+    pub pci_bus_id: i32,
+    pub pci_device_id: i32,
+    pub nvml_pci_device_id: u32,
+    pub nvml_pci_subsystem_id: u32,
+    pub bar1_total_bytes: u64,
+    pub bar1_used_bytes: u64,
+    pub bar1_free_bytes: u64,
     pub total_vram_bytes: u64,
     pub used_vram_bytes: u64,
     pub free_vram_bytes: u64,
@@ -197,6 +236,8 @@ type FnNvmlDeviceGetTemperature = unsafe extern "C" fn(*mut c_void, u32, *mut u3
 type FnNvmlDeviceGetPowerUsage = unsafe extern "C" fn(*mut c_void, *mut u32) -> i32;
 type FnNvmlDeviceGetUtilizationRates = unsafe extern "C" fn(*mut c_void, *mut NvmlUtilization) -> i32;
 type FnNvmlDeviceGetMemoryInfo = unsafe extern "C" fn(*mut c_void, *mut NvmlMemory) -> i32;
+type FnNvmlDeviceGetBAR1MemoryInfo = unsafe extern "C" fn(*mut c_void, *mut NvmlMemory) -> i32;
+type FnNvmlDeviceGetPciInfoV3 = unsafe extern "C" fn(*mut c_void, *mut NvmlPciInfo) -> i32;
 type FnNvmlDeviceGetClockInfo = unsafe extern "C" fn(*mut c_void, u32, *mut u32) -> i32;
 
 type FnCuInit = unsafe extern "C" fn(u32) -> i32;
@@ -204,6 +245,7 @@ type FnCuDriverGetVersion = unsafe extern "C" fn(*mut i32) -> i32;
 type FnCuDeviceGet = unsafe extern "C" fn(*mut i32, i32) -> i32;
 type FnCuDeviceGetName = unsafe extern "C" fn(*mut u8, i32, i32) -> i32;
 type FnCuDeviceTotalMemV2 = unsafe extern "C" fn(*mut usize, i32) -> i32;
+type FnCuDeviceGetAttribute = unsafe extern "C" fn(*mut i32, i32, i32) -> i32;
 type FnCuCtxCreateV2 = unsafe extern "C" fn(*mut *mut c_void, u32, i32) -> i32;
 type FnCuCtxSetCurrent = unsafe extern "C" fn(*mut c_void) -> i32;
 type FnCuModuleLoadData = unsafe extern "C" fn(*mut *mut c_void, *const c_void) -> i32;
@@ -245,6 +287,14 @@ struct PersistentCudaState {
     alloc_elements: usize,
     device_name: String,
     driver_version_raw: i32,
+    sm_count: i32,
+    cuda_cores: usize,
+    l2_cache_bytes: i32,
+    memory_bus_width_bits: i32,
+    compute_major: i32,
+    compute_minor: i32,
+    pci_bus_id: i32,
+    pci_device_id: i32,
     total_vram_bytes: u64,
 }
 
@@ -274,6 +324,19 @@ pub fn execute_rtx3050_nvcuda_dual_ptx_kernels(
         cu_init_status: -1,
         device_name: String::from("UNMEASURED/OFFLINE"),
         driver_version_raw: 0,
+        sm_count: 0,
+        cuda_cores: 0,
+        l2_cache_bytes: 0,
+        memory_bus_width_bits: 0,
+        compute_major: 0,
+        compute_minor: 0,
+        pci_bus_id: 0,
+        pci_device_id: 0,
+        nvml_pci_device_id: 0,
+        nvml_pci_subsystem_id: 0,
+        bar1_total_bytes: 0,
+        bar1_used_bytes: 0,
+        bar1_free_bytes: 0,
         total_vram_bytes: 0,
         used_vram_bytes: 0,
         free_vram_bytes: 0,
@@ -307,6 +370,8 @@ pub fn execute_rtx3050_nvcuda_dual_ptx_kernels(
             let p_pwr = GetProcAddress(h_nvml, b"nvmlDeviceGetPowerUsage\0".as_ptr());
             let p_util = GetProcAddress(h_nvml, b"nvmlDeviceGetUtilizationRates\0".as_ptr());
             let p_mem = GetProcAddress(h_nvml, b"nvmlDeviceGetMemoryInfo\0".as_ptr());
+            let p_bar1 = GetProcAddress(h_nvml, b"nvmlDeviceGetBAR1MemoryInfo\0".as_ptr());
+            let p_pci = GetProcAddress(h_nvml, b"nvmlDeviceGetPciInfo_v3\0".as_ptr());
             let p_clk = GetProcAddress(h_nvml, b"nvmlDeviceGetClockInfo\0".as_ptr());
 
             if !p_init.is_null() && !p_handle.is_null() {
@@ -346,6 +411,23 @@ pub fn execute_rtx3050_nvcuda_dual_ptx_kernels(
                                 sample.used_vram_bytes = m_val.used;
                             }
                         }
+                        if !p_bar1.is_null() {
+                            let fn_bar1: FnNvmlDeviceGetBAR1MemoryInfo = std::mem::transmute(p_bar1);
+                            let mut b1_val = NvmlMemory::default();
+                            if fn_bar1(dev_h, &mut b1_val) == 0 {
+                                sample.bar1_total_bytes = b1_val.total;
+                                sample.bar1_free_bytes = b1_val.free;
+                                sample.bar1_used_bytes = b1_val.used;
+                            }
+                        }
+                        if !p_pci.is_null() {
+                            let fn_pci: FnNvmlDeviceGetPciInfoV3 = std::mem::transmute(p_pci);
+                            let mut pci_val = NvmlPciInfo::default();
+                            if fn_pci(dev_h, &mut pci_val) == 0 {
+                                sample.nvml_pci_device_id = pci_val.pci_device_id;
+                                sample.nvml_pci_subsystem_id = pci_val.pci_subsystem_id;
+                            }
+                        }
                         if !p_clk.is_null() {
                             let fn_clk: FnNvmlDeviceGetClockInfo = std::mem::transmute(p_clk);
                             let mut sm_c: u32 = 0;
@@ -376,6 +458,7 @@ pub fn execute_rtx3050_nvcuda_dual_ptx_kernels(
                 let p_cu_dev_get = GetProcAddress(h_cuda, b"cuDeviceGet\0".as_ptr());
                 let p_cu_dev_name = GetProcAddress(h_cuda, b"cuDeviceGetName\0".as_ptr());
                 let p_cu_dev_mem = GetProcAddress(h_cuda, b"cuDeviceTotalMem_v2\0".as_ptr());
+                let p_cu_dev_attr = GetProcAddress(h_cuda, b"cuDeviceGetAttribute\0".as_ptr());
                 let p_cu_ctx_create = GetProcAddress(h_cuda, b"cuCtxCreate_v2\0".as_ptr());
                 let p_cu_mod_load = GetProcAddress(h_cuda, b"cuModuleLoadData\0".as_ptr());
                 let p_cu_mod_func = GetProcAddress(h_cuda, b"cuModuleGetFunction\0".as_ptr());
@@ -420,6 +503,31 @@ pub fn execute_rtx3050_nvcuda_dual_ptx_kernels(
                                     total_vram = tb as u64;
                                 }
                             }
+                            let mut sm_cnt: i32 = 0;
+                            let mut l2_bytes: i32 = 0;
+                            let mut bus_width: i32 = 0;
+                            let mut cc_maj: i32 = 0;
+                            let mut cc_min: i32 = 0;
+                            let mut pci_bus: i32 = 0;
+                            let mut pci_dev: i32 = 0;
+                            if !p_cu_dev_attr.is_null() {
+                                let fn_attr: FnCuDeviceGetAttribute = std::mem::transmute(p_cu_dev_attr);
+                                let _ = fn_attr(&mut sm_cnt, 16, dev);
+                                let _ = fn_attr(&mut pci_bus, 33, dev);
+                                let _ = fn_attr(&mut pci_dev, 34, dev);
+                                let _ = fn_attr(&mut bus_width, 37, dev);
+                                let _ = fn_attr(&mut l2_bytes, 38, dev);
+                                let _ = fn_attr(&mut cc_maj, 75, dev);
+                                let _ = fn_attr(&mut cc_min, 76, dev);
+                            }
+                            let cores_per_sm: usize = if cc_maj == 8 && cc_min == 6 {
+                                128
+                            } else if cc_maj == 8 && cc_min == 0 {
+                                64
+                            } else {
+                                128
+                            };
+                            let measured_cores = (sm_cnt.max(0) as usize) * cores_per_sm;
                             let mut ctx: *mut c_void = ptr::null_mut();
                             if fn_cu_ctx_create(&mut ctx, 0, dev) == 0 && !ctx.is_null() {
                                 let mut c_ptx = Vec::with_capacity(ptx_source.len() + 1);
@@ -469,6 +577,14 @@ pub fn execute_rtx3050_nvcuda_dual_ptx_kernels(
                                                 alloc_elements: count,
                                                 device_name: dev_name,
                                                 driver_version_raw: drv_v,
+                                                sm_count: sm_cnt,
+                                                cuda_cores: measured_cores,
+                                                l2_cache_bytes: l2_bytes,
+                                                memory_bus_width_bits: bus_width,
+                                                compute_major: cc_maj,
+                                                compute_minor: cc_min,
+                                                pci_bus_id: pci_bus,
+                                                pci_device_id: pci_dev,
                                                 total_vram_bytes: total_vram,
                                             });
                                         }
@@ -493,6 +609,14 @@ pub fn execute_rtx3050_nvcuda_dual_ptx_kernels(
             sample.cu_init_status = 0;
             sample.device_name = st.device_name.clone();
             sample.driver_version_raw = st.driver_version_raw;
+            sample.sm_count = st.sm_count;
+            sample.cuda_cores = st.cuda_cores;
+            sample.l2_cache_bytes = st.l2_cache_bytes;
+            sample.memory_bus_width_bits = st.memory_bus_width_bits;
+            sample.compute_major = st.compute_major;
+            sample.compute_minor = st.compute_minor;
+            sample.pci_bus_id = st.pci_bus_id;
+            sample.pci_device_id = st.pci_device_id;
             if sample.total_vram_bytes == 0 {
                 sample.total_vram_bytes = st.total_vram_bytes;
             }

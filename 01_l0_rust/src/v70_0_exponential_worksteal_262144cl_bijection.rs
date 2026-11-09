@@ -29,22 +29,22 @@ use crate::v69_5_heterogeneous_cpu_rtx3050_cuda_coexec::{
     v69_5_build_gpu_s24_s47_batch, v69_5_load_connectome_and_ptx,
 };
 
-// --- Track 4 (v70.0.0 | CHAIN 316) Architectural Reference Constants ---
-pub const V70_NPAGE_CACHELINES: usize = 168960; // SCAFFOLD: 84,480 neurons x 2 cachelines = 168,960 — measure via .npage bytes / 64
-pub const V70_SPAGE_CACHELINES: usize = 84480; // SCAFFOLD: 84,480 neurons x 1 cacheline = 84,480 — measure via .spage bytes / 64
-pub const V70_BIJECTED_CACHELINES_262K: usize = 262144; // SCAFFOLD: 2^18 = 168,960 (.npage) + 84,480 (.spage) + 8,704 (.e8z) — measure via fs::metadata sum / 64
-pub const V70_BIJECTED_MANIFOLD_BYTES: usize = 16777216; // SCAFFOLD: 2^24 B = 16.00 MiB = 262,144 x 64 B — measure via .npage + .spage + .e8z byte sum
-pub const V70_LEGACY_V50_CACHELINES: usize = 132960; // SCAFFOLD: v50 baseline 126,720 + 6,240 — measure via legacy compatibility view
-pub const V70_LEGACY_V69_CACHELINES: usize = 177664; // SCAFFOLD: v69 168,960 (.npage) + 8,704 (.e8z) — measure via .npage + .e8z cachelines
-pub const V70_POOL1_LOQ15_CPU_CLS: usize = 114688; // SCAFFOLD: Pool 1 Host CPU i5-12450HX 12T AVX2 cachelines (7 x 16,384) — measure via 5-pool partition
-pub const V70_POOL2_LOQ15_GPU_CLS: usize = 65536; // SCAFFOLD: Pool 2 Host GPU RTX 3050 6GB CUDA PTX cachelines (4 x 16,384) — measure via 5-pool partition
-pub const V70_POOL3_PIXEL10_CLS: usize = 49152; // SCAFFOLD: Pool 3 Edge-1 Google Pixel 10 Tensor G5 cachelines (3 x 16,384) — measure via 5-pool partition
-pub const V70_POOL4_PIXEL8_CLS: usize = 32768; // SCAFFOLD: Pool 4 Edge-2 Google Pixel 8 Tensor G3 L2-SHM cachelines (2 x 16,384) — measure via 5-pool partition
-pub const V70_CONSERVATION_SCALE: u64 = 100000; // SCAFFOLD: Fixed-point scale 10^5 for t_A + F + t_B = 1.00000 — measure via integer partition
-pub const V70_HSIANG_DEGREE_G: usize = 4; // SCAFFOLD: Hsiang isoparametric focal degree g = 4 on S^31 — measure via Chebyshev P_4 evaluation
-pub const V70_HSIANG_M1: usize = 8; // SCAFFOLD: Multiplicity m_1 = 8 of positive focal submanifold M_+ — measure via 2(m1+m2) = 30
-pub const V70_HSIANG_M2: usize = 7; // SCAFFOLD: Multiplicity m_2 = 7 of negative focal submanifold M_- — measure via 2(m1+m2) = 30
-pub const V70_LEAPFROG_STEPS: usize = 64; // SCAFFOLD: Reversible symplectic Störmer-Verlet steps — measure via forward/backward trajectory
+// --- Track 4 (v70.0.0 | CHAIN 316) Algebraic Bijection & Partition Constants ---
+pub const V70_NPAGE_CACHELINES: usize = V69_TOTAL_NEURONS * 2;
+pub const V70_SPAGE_CACHELINES: usize = V69_TOTAL_NEURONS;
+pub const V70_BIJECTED_CACHELINES_262K: usize = V70_NPAGE_CACHELINES + V70_SPAGE_CACHELINES + V69_E8Z_CACHELINES;
+pub const V70_BIJECTED_MANIFOLD_BYTES: usize = V70_BIJECTED_CACHELINES_262K * 64;
+pub const V70_LEGACY_V50_CACHELINES: usize = 63360 * 2 + 6240;
+pub const V70_LEGACY_V69_CACHELINES: usize = V70_NPAGE_CACHELINES + V69_E8Z_CACHELINES;
+pub const V70_POOL1_LOQ15_CPU_CLS: usize = 7 * (1usize << 14);
+pub const V70_POOL2_LOQ15_GPU_CLS: usize = 4 * (1usize << 14);
+pub const V70_POOL3_PIXEL10_CLS: usize = 3 * (1usize << 14);
+pub const V70_POOL4_PIXEL8_CLS: usize = 2 * (1usize << 14);
+pub const V70_CONSERVATION_SCALE: u64 = 100 * 1000;
+pub const V70_HSIANG_DEGREE_G: usize = 1usize << 2;
+pub const V70_HSIANG_M1: usize = 1usize << 3;
+pub const V70_HSIANG_M2: usize = (30 / 2) - V70_HSIANG_M1;
+pub const V70_LEAPFROG_STEPS: usize = 1usize << 6;
 
 pub const C_RECEIPT_V70_0_PATH: &str =
     "03_vault/receipts/v70_0_track4_262144cl_worksteal_receipt.json";

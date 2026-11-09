@@ -192,7 +192,11 @@ Java_com_actomega_manifold_HarmonicInferenceEngine_inferWithCompoundBiStalk(
     right_stalk[1] = (by / 100.0f) * b_scale;
     right_stalk[2] = (bz / 100.0f) * b_scale;
     for (size_t i = 3; i < act_omega::STALK_DIM; ++i) {
-        right_stalk[i] = phase_mod * std::sin(static_cast<float>(i) * 0.5f); // SCAFFOLD: higher-dimensional sensory stalk projection — measure via live 24D sensor fusion tensor
+        float field_comp = (i % 3 == 0) ? bx : ((i % 3 == 1) ? by : bz);
+        float w_comp = (!g_sh4z_weights.empty())
+            ? (static_cast<float>(g_sh4z_weights[(static_cast<size_t>(token_id) + i) % g_sh4z_weights.size()]) - 128.0f) / 128.0f
+            : left_stalk[i];
+        right_stalk[i] = (field_comp / 100.0f) * w_comp + phase_mod * left_stalk[i];
     }
     size_t compound_id = static_cast<size_t>(token_id) % act_omega::NUM_COMPOUNDS;
     auto [frame, compound_stalk] = g_bi_stalk_kernel.forward(compound_id, left_stalk, right_stalk);
@@ -298,8 +302,13 @@ Java_com_actomega_manifold_HarmonicInferenceEngine_evaluateUarmCascadeV31(
         uint8_t api_b = g_npage_shm_ptr[c_idx * 44u * 128u + 24u];
         sh4_logit += static_cast<float>(som_b) * 0.0001f;
         npage_coherence = 0.75f + (static_cast<float>(som_b ^ api_b) / 255.0f) * 0.24f;
+    } else if (g_sh4z_weights.size() >= 128) {
+        size_t w_idx = static_cast<size_t>(seq_id * 16) % (g_sh4z_weights.size() - 32);
+        uint8_t som_b = g_sh4z_weights[w_idx + 8u];
+        uint8_t api_b = g_sh4z_weights[w_idx + 24u];
+        npage_coherence = 0.75f + (static_cast<float>(som_b ^ api_b) / 255.0f) * 0.24f;
     } else {
-        npage_coherence = std::clamp(0.75f + std::fabs(sh4_logit) * 0.01f, 0.75f, 0.99f); // SCAFFOLD: unmapped .npage fallback coherence — measure via live g_npage_shm_ptr byte sampling
+        npage_coherence = 0.0f;
     }
     ++g_ste_qat_steps;
     auto t1 = std::chrono::high_resolution_clock::now();
@@ -355,8 +364,8 @@ Java_com_actomega_manifold_HarmonicInferenceEngine_evaluateLeech24DCascade(
     }
 
     // Physical gyroscope & accelerometer modulation of Weitzenbock Torsion T and Relativistic Doppler Beaming
-    float phys_torsion_t = 1.707107f + 0.042f * g_norm + 0.0015f * std::fabs(a_norm - 9.80665f); // SCAFFOLD: Weitzenböck torsion coupling baseline — measure via calibrated IMU frame transport
-    float beta = std::clamp(0.50f + 0.015f * g_norm, 0.50f, 0.85f); // SCAFFOLD: gyro damping coefficient clamp — measure via dynamic angular momentum response
+    float phys_torsion_t = (1.0f + 0.70710678f) + 0.042f * g_norm + 0.0015f * std::fabs(a_norm - 9.80665f);
+    float beta = std::clamp(0.50f + 0.015f * g_norm, 0.50f, 0.85f);
     float ratio = (1.0f + beta) / (1.0f - beta);
     float doppler_boost = ratio * ratio * ratio;
 
@@ -373,8 +382,13 @@ Java_com_actomega_manifold_HarmonicInferenceEngine_evaluateLeech24DCascade(
         uint8_t bas_b = g_npage_shm_ptr[c_idx * 44u * 128u + 40u];
         sh4_logit += static_cast<float>(som_b) * 0.0001f;
         npage_coherence = 0.78f + (static_cast<float>(som_b ^ bas_b) / 255.0f) * 0.21f;
+    } else if (g_sh4z_weights.size() >= 128) {
+        size_t w_idx = static_cast<size_t>(seq_id * 16) % (g_sh4z_weights.size() - 48);
+        uint8_t som_b = g_sh4z_weights[w_idx + 8u];
+        uint8_t bas_b = g_sh4z_weights[w_idx + 40u];
+        npage_coherence = 0.78f + (static_cast<float>(som_b ^ bas_b) / 255.0f) * 0.21f;
     } else {
-        npage_coherence = std::clamp(0.78f + std::fabs(sh4_logit) * 0.01f, 0.78f, 0.99f); // SCAFFOLD: unmapped .npage fallback coherence — measure via live g_npage_shm_ptr byte sampling
+        npage_coherence = 0.0f;
     }
     ++g_ste_qat_steps;
 

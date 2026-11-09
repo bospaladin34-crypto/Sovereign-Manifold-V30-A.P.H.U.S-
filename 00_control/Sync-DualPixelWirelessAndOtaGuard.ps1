@@ -50,10 +50,10 @@ try {
 # 2. If Pixel 8 or Pixel 10 is attached via USB right now, bridge it onto GARLOCK00 0975 & TCP :5555
 $rawDevs = (& $adb devices -l) -join "`n"
 if ($rawDevs -match "3A121FDJH00BW5\s+device") {
-    Write-Host "[2/5] Pixel 8 (3A121FDJH00BW5) detected on USB -> Pinning TCP :5555 & 192.168.137.8/24..." -ForegroundColor Cyan
+    Write-Host "[2/5] Pixel 8 (3A121FDJH00BW5) detected on USB -> Pinning TCP :5555, Wi-Fi 6 Hotspot 192.168.137.8/24 & BT-PAN 192.168.44.8/24..." -ForegroundColor Cyan
     & $adb -s 3A121FDJH00BW5 tcpip 5555 | Out-Null
     Start-Sleep -Seconds 2
-    & $adb -s 3A121FDJH00BW5 shell "cmd wifi connect-network 4741524c4f434b30302030393735 wpa2 '011e9^2X' -x; sleep 2; su -c 'ip addr replace 192.168.137.8/24 dev wlan0; ip route replace 192.168.137.0/24 dev wlan0 table local_network; iptables -C INPUT -s 192.168.137.0/24 -j ACCEPT 2>/dev/null || iptables -I INPUT 1 -s 192.168.137.0/24 -j ACCEPT; iptables -C OUTPUT -d 192.168.137.0/24 -j ACCEPT 2>/dev/null || iptables -I OUTPUT 1 -d 192.168.137.0/24 -j ACCEPT'" | Out-Null
+    & $adb -s 3A121FDJH00BW5 shell "cmd wifi connect-network 4741524c4f434b30302030393735 wpa2 '011e9^2X' -x; sleep 2; echo 'ip addr replace 192.168.137.8/24 dev wlan0; ip route replace 192.168.137.0/24 dev wlan0 src 192.168.137.8 table local_network; ip route replace 192.168.137.0/24 dev wlan0 src 192.168.137.8 table wlan0; ip route replace default via 192.168.137.1 dev wlan0 table wlan0; ip rule show | grep -q \"to 192.168.137.0/24 lookup local_network\" || ip rule add to 192.168.137.0/24 lookup local_network pref 1000; iptables -C INPUT -s 192.168.137.0/24 -j ACCEPT 2>/dev/null || iptables -I INPUT 1 -s 192.168.137.0/24 -j ACCEPT; iptables -C OUTPUT -d 192.168.137.0/24 -j ACCEPT 2>/dev/null || iptables -I OUTPUT 1 -d 192.168.137.0/24 -j ACCEPT' | ksud debug su" | Out-Null
 }
 if ($rawDevs -match "58170DLCR0004V\s+device") {
     Write-Host "[2/5] Pixel 10 (58170DLCR0004V) detected on USB -> Pinning TCP :5555..." -ForegroundColor Cyan
@@ -94,16 +94,21 @@ Write-Host "      - Edge-1 Pixel 10 (58170DLCR0004V): $(if ($p10Target) { $p10Ta
 
 # 4. Inspect Android 17 QPR3 Beta 3 Readiness & Optional Inactive-Slot KernelSU OTA Patch
 if ($p8Target) {
-    $p8Props = (& $adb -s $p8Target shell "getprop ro.build.version.release; getprop ro.build.id; getprop ro.boot.slot_suffix; su -c 'id'") -split "`r?`n"
+    & $adb -s $p8Target forward tcp:8098 tcp:8098 2>$null
+    & $adb -s $p8Target reverse tcp:8097 tcp:8097 2>$null
+    & $adb -s $p8Target reverse tcp:5173 tcp:5173 2>$null
+    $p8Props = (& $adb -s $p8Target shell "getprop ro.build.version.release; getprop ro.build.id; getprop ro.boot.slot_suffix; echo 'id' | ksud debug su") -split "`r?`n"
     Write-Host "[4/5] Pixel 8 Live OS Telemetry ($p8Target): Android $($p8Props[0]) | Build=$($p8Props[1]) | ActiveSlot=$($p8Props[2]) | Root=$($p8Props[3])" -ForegroundColor Green
 
     if ($PatchInactiveSlot) {
         Write-Host "      [OTA-GUARD] Patching inactive A/B slot on Pixel 8 via '/data/adb/ksud boot-patch --ota --flash'..." -ForegroundColor Magenta
-        & $adb -s $p8Target shell "su -c '/data/adb/ksud boot-patch --ota --flash'"
+        & $adb -s $p8Target shell "echo '/data/adb/ksud boot-patch --ota --flash' | ksud debug su"
     }
 }
 
 if ($p10Target) {
+    & $adb -s $p10Target reverse tcp:8097 tcp:8097 2>$null
+    & $adb -s $p10Target reverse tcp:5173 tcp:5173 2>$null
     $p10Props = (& $adb -s $p10Target shell "getprop ro.build.version.release; getprop ro.build.id; getprop ro.boot.slot_suffix") -split "`r?`n"
     Write-Host "[4/5] Pixel 10 Live OS Telemetry ($p10Target): Android $($p10Props[0]) | Build=$($p10Props[1]) | ActiveSlot=$($p10Props[2])" -ForegroundColor Green
 }

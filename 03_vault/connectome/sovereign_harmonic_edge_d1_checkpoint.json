@@ -1,0 +1,1 @@
+{"schema":"SH4Z_v7100_CLOUDFLARE_D1_VECTORIZE_CHECKPOINT","d1_database_uuid":"9f46d56a-ef3e-4232-a9ac-c4bd12e20a87","vectorize_index":"act-omega-connectome-32d","vocab_size":1515,"transitions_count":10026,"chair44_columns_awakened":1920,"post_holdout_ppl":1.0959,"speculative_tokens_per_step":5.00,"speculative_speedup_x":3.90}

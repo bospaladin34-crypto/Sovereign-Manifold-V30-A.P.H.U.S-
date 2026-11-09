@@ -1,8 +1,8 @@
 cff-version: 1.2.0
-message: "If you use the ACT-Omega / Sovereign Manifold runtime (v70.0.0 | SH4Z v7000 TLV | CHAIN 316 | 840/840 Lean 4 QED | 262,144 Bijected Cachelines | 84,480 Neurons | 4,055,040 Synapses), please cite both this repository (Donevin Frownfelter) and the foundational E8 / Leech lattice optimality papers by Maryna S. Viazovska et al."
-title: "ACT-Omega Net v70.0.0 (SH4Z v7000 TLV | CHAIN 316 | 840/840 Lean 4 QED | 262,144 Bijected Cachelines | 84,480 Neurons | 4,055,040 Synapses | OmegaLang v16.0): Tri-Silicon Topological & E8/Leech Lattice Compute Manifold"
+message: "If you use the ACT-Omega / Sovereign Manifold runtime (v71.3.2 | SH4Z v7132 TLV | CHAIN 350 | 950/950 Lean 4 QED | 262,144 Bijected Cachelines | 84,480 Neurons | 4,055,040 Synapses | Sovereign Harmonic IX 12L Foundation Model), please cite both this repository (Donevin Frownfelter) and the foundational E8 / Leech lattice optimality papers by Maryna S. Viazovska et al."
+title: "ACT-Omega Net v71.3.2 (SH4Z v7132 TLV | CHAIN 350 | 950/950 Lean 4 QED | 262,144 Bijected Cachelines | 84,480 Neurons | 4,055,040 Synapses | Sovereign Harmonic IX 12L Foundation Model): Tri-Silicon Topological & E8/Leech Lattice Compute Manifold"
 type: software
-version: "70.0.0"
+version: "71.3.2"
 doi: "10.5281/zenodo.23651696"
 identifiers:
   - type: doi
@@ -11,7 +11,7 @@ identifiers:
   - type: doi
     value: "10.17605/OSF.IO/2XQ5Z"
     description: "OSF Permanent DOI"
-date-released: "2026-11-07"
+date-released: "2026-11-09"
 url: "https://act-omega-net.dev"
 repository-code: "https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-"
 license: MIT

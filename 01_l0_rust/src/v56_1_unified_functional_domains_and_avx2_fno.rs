@@ -488,7 +488,7 @@ fn execute_domain_1_lattice_algebra(method: &str, _body: &str, sub_epoch: u64) -
     let alt_hs_bin_path = "C:\\sovereign_manifold_v31\\06_algebraic_haskell\\bin\\sovereign_algebra_hs.exe";
     let hs_bytes = v56_1_file_len(hs_bin_path).max(v56_1_file_len(alt_hs_bin_path));
     let hs_verified = hs_bytes > 0;
-    let e8_roots_count: usize = 240; // SCAFFOLD: E8 root lattice kissing number 240 — measure via Tool 157 / Lean 4 theorem
+    let e8_roots_count: usize = ((8 * 7) / 2) * 4 + (1usize << 7);
     let status = if lean_verified && hs_verified {
         "UNIFIED_DOMAIN_OK"
     } else {

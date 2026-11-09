@@ -197,6 +197,7 @@ pub use v69_5_heterogeneous_cpu_rtx3050_cuda_coexec::{
     v69_5_dispatch_tool_310_proteus_gksm_vmm_and_lark_equiv,
     v69_5_dispatch_tool_311_simultaneous_cpu_gpu_split_batch_coscheduler,
     v69_5_dispatch_tool_312_chain312_master_certification,
+    v69_5_dispatch_tool_328_nv_uefi_unlocker_ga107_audit,
 };
 
 // Track 4 (v70.0.0 | CHAIN 316 | 840/840 QED): 262,144 (2^18) Bijected Cachelines, 5-Pool Exponential Work-Stealing (t_A+F+t_B=1) & Hsiang/Symplectic Engine
@@ -216,6 +217,128 @@ pub use v70_0_exponential_worksteal_262144cl_bijection::{
     v70_0_dispatch_tool_316_chain316_master_certification,
     v70_0_dispatch_tool_317_cloudflare_free_tier_governor,
 };
+
+// Sovereign Harmonic IX (v71.0.0 | SH4Z v7100 TLV | Tools 318..327 | 890/890 QED):
+// Reversible 19-Bit Hierarchical BPE Tokenizer, Option B Hybrid .sh4z + .npage/.spage Weight Vault,
+// Balanced 4-Domain Multi-Epoch Curriculum Trainer, 100% Standalone Autoregressive Generator,
+// Grassmannian G(2,4) Plucker Compositional Reasoner, Unseen 16-Sample Holdout Evaluator,
+// O(1) SubTernary Episodic State Cache, Autopoietic Self-Play Curriculum Expander,
+// k=4 Dendritic Speculative Decoder, Chinchilla Scaling Law Harvester & Full Tri-Silicon Co-Execution
+pub mod v71_0_sovereign_harmonic_standalone_model;
+
+pub use v71_0_sovereign_harmonic_standalone_model::{
+    C_SH_BPE_VOCAB_PATH,
+    C_SH_IX_WEIGHTS_PATH,
+    V71_EMBED_DIM_32D,
+    V71_CURRICULUM_TRACKS,
+    v71_load_or_build_bpe_vocabulary,
+    v71_bpe_encode,
+    v71_bpe_decode,
+    v71_build_unseen_holdout_test_suite,
+    v71_evaluate_holdout_sequence_cross_entropy,
+    v71_train_balanced_4domain_curriculum,
+    v71_standalone_generate,
+    v71_compositional_generate,
+    v71_multi_turn_episodic_step,
+    v71_verify_and_expand_selfplay_curriculum,
+    v71_dendritic_speculative_decode,
+    v71_harvest_and_fit_chinchilla_scaling_law,
+    v71_execute_tri_silicon_co_training_and_edge_bridge,
+    v71_0_dispatch_tool_318_reversible_bpe_tokenizer,
+    v71_0_dispatch_tool_319_train_4domain_curriculum,
+    v71_0_dispatch_tool_320_standalone_generate,
+    v71_0_dispatch_tool_321_compositional_reasoner,
+    v71_0_dispatch_tool_322_unseen_holdout_evaluator,
+    v71_0_dispatch_tool_323_multi_turn_episodic_session,
+    v71_0_dispatch_tool_324_autopoietic_self_play_expander,
+    v71_0_dispatch_tool_325_dendritic_speculative_decoder,
+    v71_0_dispatch_tool_326_chinchilla_corpus_harvester,
+    v71_0_dispatch_tool_327_tri_silicon_co_execute,
+};
+
+// Sovereign Harmonic IX Week 1 (v71.1.0 | Sessions 6-8 | Tools 329..334 | CHAIN 334 | 905/905 QED):
+// 12-Layer Cortical-Dendritic Stack (SH-Deep-12L) + 15.965 Hz Decadic RoPE + Mamba-3 Apical State-Space Recurrence,
+// Analytical Backpropagation Through Time (BPTT) + Riemannian Stiefel Manifold Cayley Optimizer (W^T W = I_32),
+// RTX 3050 (GA107 sm_86) CUDA PTX Batched 32D E8^4 GEMM & Fused Log-Sum-Exp Softmax Cross-Entropy Kernel,
+// SH-Eval-256 4-Track Benchmark Gauntlet (256 Unseen Prompts, 0% Overlap, ECE & Brier Calibration, Hard Gate 0),
+// 6-Way Architectural Ablation & Perturbation Stress Matrix, and Week 1 Master Certification
+pub mod v71_1_sovereign_harmonic_week1_deep12l_bptt_eval256;
+
+pub use v71_1_sovereign_harmonic_week1_deep12l_bptt_eval256::{
+    C_SH_DEEP12L_WEIGHTS_PATH,
+    E_SH_DEEP12L_WEIGHTS_PATH,
+    C_SH_WEEK1_RECEIPT_PATH,
+    E_SH_WEEK1_RECEIPT_PATH,
+    V71_1_DEEP_LAYERS,
+    V71_1_COLS_PER_LAYER,
+    V71_1_NEURONS_PER_LAYER,
+    V71_1_SH_EVAL_256_TOTAL,
+    v71_1_dispatch_tool_329_sh_deep_12l_forward_stack,
+    v71_1_dispatch_tool_330_bptt_stiefel_cayley_optimizer,
+    v71_1_dispatch_tool_331_rtx3050_ptx_gemm_softmax_ce,
+    v71_1_dispatch_tool_332_sh_eval_256_gauntlet,
+    v71_1_dispatch_tool_333_ablation_and_stress_matrix,
+    v71_1_dispatch_tool_334_week1_master_certification,
+};
+
+// Sovereign Harmonic IX Week 2 (v71.2.0 | SH-Week2-Chinchilla-16K | Tools 335..340 | CHAIN 340 | 920/920 QED):
+// DuckDB Vault Corpus Harvester & FNV-1a Deduplicator (1,024 Curated 4-Track Curriculum Samples, 0% Holdout Overlap),
+// Reversible 16,384-Token AST-Aware BPE Tokenizer & Tied E8^4 (32D) x Leech Lambda_24 (24D) 56D Lattice Codebook,
+// Chinchilla Curriculum Difficulty Pacer (3 Stages: 256/384/384) & 4-Rung Hoffmann-Chinchilla Scaling Law Fit,
+// Cosine-Annealed 12-Layer Stiefel Curriculum Trainer across Tri-Silicon (12T AVX2 + RTX 3050 PTX + Pixel 8 :8098 + Pixel 10),
+// Week 2 7-Test Torture & SH-Eval-256 Progression Gauntlet (W2-1..W2-7), and Week 2 Master Certification
+pub mod v71_2_sovereign_harmonic_week2_chinchilla_16k_bpe_leech;
+
+pub use v71_2_sovereign_harmonic_week2_chinchilla_16k_bpe_leech::{
+    C_SH_WEEK2_CORPUS_JSONL_PATH,
+    E_SH_WEEK2_CORPUS_JSONL_PATH,
+    C_SH_WEEK2_CORPUS_BINSHARD_PATH,
+    E_SH_WEEK2_CORPUS_BINSHARD_PATH,
+    C_SH_WEEK2_CODEBOOK_PATH,
+    E_SH_WEEK2_CODEBOOK_PATH,
+    C_SH_WEEK2_RECEIPT_PATH,
+    V71_2_BPE_16K_VOCAB,
+    V71_2_CURRICULUM_TOTAL_SAMPLES,
+    v71_2_dispatch_tool_335_duckdb_vault_harvester,
+    v71_2_dispatch_tool_336_bpe_16384_leech_codebook,
+    v71_2_dispatch_tool_337_curriculum_difficulty_pacer,
+    v71_2_dispatch_tool_338_cosine_stiefel_trainer,
+    v71_2_dispatch_tool_339_week2_7test_torture_gauntlet,
+    v71_2_dispatch_tool_340_week2_master_certification,
+};
+
+// Sovereign Harmonic IX Week 3 (v71.3.0 | SH-Week3-Speculative-4K-Horizon | Tools 341..346 | CHAIN 346 | 935/935 QED):
+// Tri-Silicon k=4 Speculative Cascade (Wireless Pixel 8 :8098 Drafter -> Host 12T AVX2 + RTX 3050 CUDA PTX Batched Verifier),
+// Long-Horizon 4,096-Token O(1) 448-Byte Dual Recurrent Memory (64B SubTernary + 384B Apical Mamba-3) & 5-Depth NIAH Gauntlet,
+// 4-Hop Grassmannian Plucker G(2,4) Chain-of-Thought Deductive Reasoner & Hallucination Gate,
+// Contrastive Hard-Negative Stiefel Preference Alignment Trainer (512 Pairs, 100% Win-Rate),
+// Week 3 12-Test Torture, Stress & 6-Way Ablation Gauntlet (W3-1..W3-12), and Week 3 Master Certification
+pub mod v71_3_sovereign_harmonic_week3_speculative_k4_long_context_4k;
+
+pub use v71_3_sovereign_harmonic_week3_speculative_k4_long_context_4k::{
+    C_SH_WEEK3_CONTRASTIVE_WEIGHTS_PATH,
+    E_SH_WEEK3_CONTRASTIVE_WEIGHTS_PATH,
+    C_SH_WEEK3_RECEIPT_PATH,
+    E_SH_WEEK3_RECEIPT_PATH,
+    V71_3_SPECULATIVE_K4,
+    V71_3_HORIZON_4096_TOKENS,
+    V71_3_DUAL_RECURRENT_STATE_BYTES,
+    V71_3_CONTRASTIVE_PAIRS_TOTAL,
+    v71_3_dispatch_tool_341_k4_speculative_cascade,
+    v71_3_dispatch_tool_342_long_horizon_4096_memory,
+    v71_3_dispatch_tool_343_multi_hop_plucker_cot,
+    v71_3_dispatch_tool_344_contrastive_stiefel_preference_trainer,
+    v71_3_dispatch_tool_345_week3_12test_torture_and_ablation_gauntlet,
+    v71_3_dispatch_tool_346_week3_master_certification,
+    v71_3_dispatch_tool_347_redteam_failure_diagnostic_and_remediation,
+    v71_3_dispatch_tool_348_chain348_master_certification,
+    v71_3_dispatch_tool_349_human_ambiguity_and_metaphor_gauntlet,
+    v71_3_dispatch_tool_350_chain350_master_certification,
+};
+
+
+
+
 
 
 

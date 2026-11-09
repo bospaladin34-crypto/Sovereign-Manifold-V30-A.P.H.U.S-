@@ -84,40 +84,53 @@ fn v56_escape_clean(s: &str) -> String {
         .replace('\t', "\\t")
 }
 
-// Helper: Send request over local TCP socket to P8 Apex Daemon (:8098)
-fn v56_query_p8_apex_socket(cmd_payload: &str, timeout_ms: u64) -> Option<(String, f64)> {
-    let ip = std::net::Ipv4Addr::new(127, 0, 0, 1);
-    let addr = SocketAddr::V4(std::net::SocketAddrV4::new(ip, 8098));
-    let t0 = Instant::now();
-    let stream_res = TcpStream::connect_timeout(&addr, Duration::from_millis(timeout_ms));
-    let mut stream = match stream_res {
-        Ok(s) => s,
-        Err(_) => return None,
-    };
-    let _ = stream.set_read_timeout(Some(Duration::from_millis(timeout_ms)));
-    let _ = stream.set_write_timeout(Some(Duration::from_millis(timeout_ms)));
+// Helper: Send request over Tri-Bearer TCP socket to P8 Apex Daemon (:8098)
+// Bearer 1: 127.0.0.1:8098 (USB / Wireless ADB Port Forward)
+// Bearer 2: 192.168.137.8:8098 (Direct Windows 11 Wi-Fi 6 Hotspot "GARLOCK00 0975")
+// Bearer 3: 192.168.44.8:8098 (Direct Stationary Bluetooth PAN "bt-pan")
+pub fn v56_query_p8_apex_socket_with_bearer(
+    cmd_payload: &str,
+    timeout_ms: u64,
+) -> Option<(String, f64, &'static str)> {
+    let mut candidates: Vec<(std::net::Ipv4Addr, &'static str)> = Vec::with_capacity(3);
+    candidates.push((std::net::Ipv4Addr::new(127, 0, 0, 1), "127.0.0.1:8098"));
+    candidates.push((std::net::Ipv4Addr::new(192, 168, 137, 8), "192.168.137.8:8098"));
+    candidates.push((std::net::Ipv4Addr::new(192, 168, 44, 8), "192.168.44.8:8098"));
 
-    if stream.write_all(cmd_payload.as_bytes()).is_err() {
-        return None;
-    }
-    let mut response_bytes: Vec<u8> = Vec::with_capacity(2048);
-    let mut buf = Vec::with_capacity(1024);
-    buf.resize(1024, 0);
+    let per_try_ms = (timeout_ms / 2).max(40);
+    for (ip, label) in candidates.iter() {
+        let addr = SocketAddr::V4(std::net::SocketAddrV4::new(*ip, 8098));
+        let t0 = Instant::now();
+        if let Ok(mut stream) = TcpStream::connect_timeout(&addr, Duration::from_millis(per_try_ms)) {
+            let _ = stream.set_read_timeout(Some(Duration::from_millis(timeout_ms)));
+            let _ = stream.set_write_timeout(Some(Duration::from_millis(timeout_ms)));
 
-    match stream.read(&mut buf) {
-        Ok(n) if n > 0 => {
-            for idx in 0..n {
-                if let Some(b) = buf.get(idx) {
-                    response_bytes.push(*b);
+            if stream.write_all(cmd_payload.as_bytes()).is_ok() {
+                let mut response_bytes: Vec<u8> = Vec::with_capacity(2048);
+                let mut buf = Vec::with_capacity(1024);
+                buf.resize(1024, 0);
+
+                if let Ok(n) = stream.read(&mut buf) {
+                    if n > 0 {
+                        for idx in 0..n {
+                            if let Some(b) = buf.get(idx) {
+                                response_bytes.push(*b);
+                            }
+                        }
+                        let elapsed_us = t0.elapsed().as_secs_f64() * 1_000_000.0;
+                        let resp_str = String::from_utf8_lossy(&response_bytes).to_string();
+                        return Some((resp_str, elapsed_us, *label));
+                    }
                 }
             }
         }
-        _ => return None,
     }
+    None
+}
 
-    let elapsed_us = t0.elapsed().as_secs_f64() * 1_000_000.0;
-    let resp_str = String::from_utf8_lossy(&response_bytes).to_string();
-    Some((resp_str, elapsed_us))
+pub fn v56_query_p8_apex_socket(cmd_payload: &str, timeout_ms: u64) -> Option<(String, f64)> {
+    v56_query_p8_apex_socket_with_bearer(cmd_payload, timeout_ms)
+        .map(|(resp, elapsed_us, _bearer)| (resp, elapsed_us))
 }
 
 // Helper: Read live daemon status from disk if socket unavailable
@@ -309,14 +322,20 @@ pub fn v56_tool208_socket_ipc_bridge(input: &str) -> String {
     let command = if !cmd.is_empty() { cmd } else { String::from("ping") };
 
     let payload = format!("{{\"cmd\":\"{}\"}}\n", command);
-    let socket_res = v56_query_p8_apex_socket(&payload, 400);
+    let socket_res = v56_query_p8_apex_socket_with_bearer(&payload, 400);
 
-    let (status, rtt_us, daemon_resp) = match socket_res {
-        Some((resp, rtt)) => ("MEASURED_SOCKET_IPC_BRIDGE_OK", rtt, resp.trim().to_string()),
+    let (status, rtt_us, daemon_resp, target_ep) = match socket_res {
+        Some((resp, rtt, ep)) => (
+            "MEASURED_SOCKET_IPC_BRIDGE_OK",
+            rtt,
+            resp.trim().to_string(),
+            ep,
+        ),
         None => (
             "UNMEASURED/OFFLINE",
             0.0,
             String::from("{\"error\":\"APEX_DAEMON_SOCKET_OFFLINE\",\"port\":8098}"),
+            "127.0.0.1:8098",
         ),
     };
 
@@ -329,8 +348,8 @@ pub fn v56_tool208_socket_ipc_bridge(input: &str) -> String {
     };
 
     format!(
-        "{{\"status\":\"{}\",\"tool_id\":208,\"tool\":\"socket_ipc_bridge\",\"command\":\"{}\",\"target_endpoint\":\"127.0.0.1:8098\",\"round_trip_us\":{:.2},\"daemon_response\":{},\"elapsed_us\":{:.2}}}",
-        status, v56_escape_clean(&command), rtt_us, valid_daemon_resp, elapsed_us
+        "{{\"status\":\"{}\",\"tool_id\":208,\"tool\":\"socket_ipc_bridge\",\"command\":\"{}\",\"target_endpoint\":\"{}\",\"round_trip_us\":{:.2},\"daemon_response\":{},\"elapsed_us\":{:.2}}}",
+        status, v56_escape_clean(&command), target_ep, rtt_us, valid_daemon_resp, elapsed_us
     )
 }
 

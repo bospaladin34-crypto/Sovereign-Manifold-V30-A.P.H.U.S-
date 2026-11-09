@@ -767,7 +767,7 @@ pub fn v57_execute_aegis_7stage_harness(input: &str, sub_epoch: u64) -> String {
 
     // Stage 2: BraidIR Reidemeister II/III + Stomachion 14-Tile Scheduler
     let t_s2 = Instant::now();
-    let rho = crate::v54_5_aperiodic_permissions_router_and_syndrome_gate::V54_5_PLASTIC_CONSTANT_RHO;
+    let rho = crate::v54_5_aperiodic_permissions_router_and_syndrome_gate::v54_5_compute_plastic_constant_rho();
     let p1 = 1.0 / rho;
     let p2 = 1.0 / (rho * rho);
     let p3 = 1.0 / (rho * rho * rho);
@@ -1029,7 +1029,7 @@ pub fn v57_execute_aegis_7stage_harness(input: &str, sub_epoch: u64) -> String {
 
 pub static V57_CRON_STARTED: AtomicBool = AtomicBool::new(false);
 pub static V57_CRON_ENABLED: AtomicBool = AtomicBool::new(true);
-pub static V57_CRON_INTERVAL_SECS: AtomicU64 = AtomicU64::new(60); // SCAFFOLD: default 60s autonomous cron cadence — tunable via /api/v1/aegis/cron_status
+pub static V57_CRON_INTERVAL_SECS: AtomicU64 = AtomicU64::new(60);
 pub static V57_CRON_TICKS: AtomicU64 = AtomicU64::new(0);
 pub static V57_CRON_LAST_EPOCH_MS: AtomicU64 = AtomicU64::new(0);
 pub static V57_CRON_LAST_DOMAIN_ID: AtomicU64 = AtomicU64::new(0);

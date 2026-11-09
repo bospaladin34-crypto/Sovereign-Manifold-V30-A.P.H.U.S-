@@ -588,13 +588,18 @@ pub fn v61_14_dispatch_tool_289_crt_pfa(input: &str) -> String {
     let mode = v61_14_parse_field(input, "mode");
     let _ = mode;
     let t0 = Instant::now();
-    let mut crt_map = unsafe { CoprimeModuliCrtIndexMap::allocate_l1d_aligned() };
-    let mut second_map = unsafe { CoprimeModuliCrtIndexMap::allocate_l1d_aligned() };
-    let crt_passed = CoprimeModuliCrtIndexMap::verify_exhaustive_crt_bijection_gate();
-
     let e8z_path = "00_control/weights/sovereign_harmonic_iv_v5000.e8z";
     let alt_path = "C:/sovereign_manifold_v31/00_control/weights/sovereign_harmonic_iv_v5000.e8z";
     let e8z_bytes = fs::read(e8z_path).or_else(|_| fs::read(alt_path)).unwrap_or_default();
+    if e8z_bytes.is_empty() {
+        return String::from(
+            "{\"status\":\"UNMEASURED/OFFLINE\",\"tool_id\":289,\"chain_milestone\":\"CHAIN 292\",\"reason\":\"Missing or empty 00_control/weights/sovereign_harmonic_iv_v5000.e8z\"}",
+        );
+    }
+
+    let mut crt_map = unsafe { CoprimeModuliCrtIndexMap::allocate_l1d_aligned() };
+    let second_map = unsafe { CoprimeModuliCrtIndexMap::allocate_l1d_aligned() };
+    let crt_passed = CoprimeModuliCrtIndexMap::verify_exhaustive_crt_bijection_gate();
 
     let mut e_before: f64 = 0.0;
     let mut i: usize = 0;
@@ -672,6 +677,11 @@ pub fn v61_14_dispatch_tool_290_rvq_pvq(input: &str) -> String {
     let e8z_path = "00_control/weights/sovereign_harmonic_iv_v5000.e8z";
     let alt_path = "C:/sovereign_manifold_v31/00_control/weights/sovereign_harmonic_iv_v5000.e8z";
     let e8z_bytes = fs::read(e8z_path).or_else(|_| fs::read(alt_path)).unwrap_or_default();
+    if e8z_bytes.is_empty() {
+        return String::from(
+            "{\"status\":\"UNMEASURED/OFFLINE\",\"tool_id\":290,\"chain_milestone\":\"CHAIN 292\",\"reason\":\"Missing or empty 00_control/weights/sovereign_harmonic_iv_v5000.e8z\"}",
+        );
+    }
 
     let layout_24 = unsafe { Layout::from_size_align_unchecked(24 * std::mem::size_of::<f32>(), 64) };
     let input_24d = unsafe { alloc_zeroed(layout_24) as *mut f32 };
@@ -760,6 +770,11 @@ pub fn v61_14_dispatch_tool_291_sparse_matvec(input: &str) -> String {
     let e8z_path = "00_control/weights/sovereign_harmonic_iv_v5000.e8z";
     let alt_path = "C:/sovereign_manifold_v31/00_control/weights/sovereign_harmonic_iv_v5000.e8z";
     let e8z_bytes = fs::read(e8z_path).or_else(|_| fs::read(alt_path)).unwrap_or_default();
+    if e8z_bytes.is_empty() {
+        return String::from(
+            "{\"status\":\"UNMEASURED/OFFLINE\",\"tool_id\":291,\"chain_milestone\":\"CHAIN 292\",\"reason\":\"Missing or empty 00_control/weights/sovereign_harmonic_iv_v5000.e8z\"}",
+        );
+    }
 
     let layout_weights = unsafe { Layout::from_size_align_unchecked(BLOCK_HORIZON_DIM * std::mem::size_of::<i8>(), 64) };
     let layout_scales = unsafe { Layout::from_size_align_unchecked(MICRO_BLOCKS_PER_HORIZON * std::mem::size_of::<f32>(), 64) };

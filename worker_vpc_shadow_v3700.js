@@ -975,6 +975,59 @@ export default {
       });
     }
 
+    // ANTI-530 (CLOUDFLARE ERROR 1033) & ANTI-502 ORIGIN TUNNEL SHIELD:
+    // When invoked on custom zone routes (act-omega-net.dev / *.act-omega-net.dev),
+    // pass through to the live LOQ 15 Named Tunnel origin first (unless the route is an
+    // edge-native D1/DO/Vectorize/R2/KV/AI binding endpoint or ?edge_direct=1 is set).
+    // If the Named Tunnel returns HTTP 530 (Error 1033), 502, 503, 504, 520..529, or times out,
+    // intercept the error and seamlessly serve from the Edge Continuum (SovereignEdgeShadowDO + D1).
+    const isCustomDomain =
+      url.hostname === "act-omega-net.dev" ||
+      url.hostname.endsWith(".act-omega-net.dev");
+    const isEdgeNativeRoute =
+      url.searchParams.get("edge_direct") === "1" ||
+      request.headers.get("X-Sovereign-Edge-Direct") === "1" ||
+      url.pathname === "/api/v1/cloudflare/d1_vpc_shadow" ||
+      url.pathname === "/api/v1/cloudflare/d1_all8tables" ||
+      url.pathname === "/api/v1/cloudflare/d1_all10tables" ||
+      url.pathname === "/api/v1/cloudflare/cron_sync" ||
+      url.pathname === "/api/v1/cloudflare/shm_relay" ||
+      url.pathname === "/api/v1/continuum/handover" ||
+      url.pathname === "/api/v1/edge_continuum/status" ||
+      url.pathname === "/api/v1/vectorize/query" ||
+      url.pathname.startsWith("/api/v1/r2/vault/") ||
+      url.pathname === "/api/v1/ai/embed" ||
+      url.pathname === "/api/v1/kv/get" ||
+      url.pathname === "/api/v1/kv/put" ||
+      url.pathname === "/api/v1/cloudflare/turnstile_verify";
+
+    if (isCustomDomain && !isEdgeNativeRoute) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5500);
+        const originRes = await fetch(request, { signal: controller.signal });
+        clearTimeout(timeoutId);
+        if (originRes && originRes.status < 502) {
+          return originRes;
+        }
+        emitEdgeTelemetry(env, ctx, {
+          event_type: `ORIGIN_HTTP_${originRes ? originRes.status : 530}_INTERCEPTED`,
+          tier: "edge_shield_1033",
+          status: "EDGE_CONTINUUM_FAILOVER_ACTIVE",
+          duration_us: (Date.now() - t0) * 1000,
+          units: 1
+        });
+      } catch (originErr) {
+        emitEdgeTelemetry(env, ctx, {
+          event_type: "ORIGIN_TUNNEL_TIMEOUT_INTERCEPTED",
+          tier: "edge_shield_1033",
+          status: "EDGE_CONTINUUM_FAILOVER_ACTIVE",
+          duration_us: (Date.now() - t0) * 1000,
+          units: 1
+        });
+      }
+    }
+
     // FEATURE F13 & F14: Model Context Protocol (MCP) JSON-RPC 2.0 Surface (/mcp and /api/v1/mcp/rpc)
     if (url.pathname === "/mcp" || url.pathname === "/api/v1/mcp/rpc") {
       const corsHeaders = {

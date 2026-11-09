@@ -378,10 +378,13 @@ object SovereignLiveBus : SensorEventListener {
             val baseHosts = listOf(
                 Triple("http://127.0.0.1:8097", "B1:USB(:8097) SHM-ZERO-COPY", 350),
                 Triple("http://127.0.0.1:5173", "B1:USB(:5173) SHM-ZERO-COPY", 350),
-                Triple("http://10.0.24.243:8097", "B2:WIFI-LAN(:8097) UNPLUGGED-SHM", 550),
-                Triple("https://api.act-omega-net.dev", "B3:CF-WAN(api.act-omega-net.dev) ROAM-SHM", 1500),
-                Triple("https://act-omega-net.dev", "B4:CF-WAN(act-omega-net.dev) ROAM-SHM", 1500),
-                Triple("https://sovereign-loq15-vpc-shadow.bospaladin34.workers.dev", "B5:CF-EDGE-DO(CONTINUUM-ALIVE)", 1800)
+                Triple("http://192.168.137.1:8097", "B2:WIFI6-HOTSPOT(:8097) DIRECT-SHM", 400),
+                Triple("http://192.168.137.1:5173", "B2:WIFI6-HOTSPOT(:5173) DIRECT-SHM", 400),
+                Triple("http://192.168.44.1:8097", "B3:BT-PAN(:8097) STATIONARY-SHM", 500),
+                Triple("http://10.0.24.243:8097", "B4:WIFI-LAN(:8097) UNPLUGGED-SHM", 550),
+                Triple("https://api.act-omega-net.dev", "B5:CF-WAN(api.act-omega-net.dev) ROAM-SHM", 1500),
+                Triple("https://act-omega-net.dev", "B6:CF-WAN(act-omega-net.dev) ROAM-SHM", 1500),
+                Triple("https://sovereign-loq15-vpc-shadow.bospaladin34.workers.dev", "B7:CF-EDGE-DO(CONTINUUM-ALIVE)", 1800)
             )
             var loopIdx = 0
             while (true) {
@@ -427,7 +430,7 @@ object SovereignLiveBus : SensorEventListener {
                     val querySuffix = if (isPixel8ComputeNode) {
                         String.format(
                             Locale.US,
-                            "/api/v1/telemetry?node=pixel8&p8_kops=1140.0&p8_free=89.11&col=%d&temp=%.1f&mv=%d&bat=%d&ram_u=%d&ram_t=%d&thz=2.00&rtt=%.1f",
+                            "/api/v1/telemetry?node=pixel8&kops=1140.0&p8_kops=1140.0&p8_free=89.11&col=%d&temp=%.1f&mv=%d&bat=%d&ram_u=%d&ram_t=%d&thz=2.00&rtt=%.1f",
                             dirtyCol, battTempC, battMv, battPct, ramUsedMb, ramTotalMb, rtt
                         )
                     } else {
@@ -621,9 +624,9 @@ object SovereignLiveBus : SensorEventListener {
                 "/api/v1/card/execute?card_id=6"
             ),
             TelemetryCardItem(
-                "8. 840/840 Lean 4 PROOFS & MEASURED QAT",
-                "PPL MEASURED -- 840 PROOFS QED",
-                String.format(Locale.US, "840 Formal Theorems QED -- %.2fms", hostLeanVerifyMs),
+                "8. 905/905 Lean 4 PROOFS & MEASURED QAT",
+                "PPL MEASURED -- 905 PROOFS QED",
+                String.format(Locale.US, "905 Formal Theorems QED -- %.2fms", hostLeanVerifyMs),
                 true,
                 9,
                 "/api/v1/card/execute?card_id=7"
@@ -741,7 +744,7 @@ object SovereignLiveBus : SensorEventListener {
 
         val c3 = String.format(
             Locale.US,
-            "SH4Z v7000 (CHAIN 316) -- Gen #%d -- Lean4: 840/840 PROOFS QED in %.1fms\n" +
+            "SH4Z v7100 (CHAIN 334) -- Gen #%d -- Lean4: 905/905 PROOFS QED in %.1fms\n" +
                 "84,480 Neurons (4,055,040 Synapses) -- Kasami Cw=%s -- RSR #%d -- HybridLink Hops=%d\n" +
                 "LLM-Gateway (Tool 21): #%d -- FNO PDE (Tool 22): #%d (Re=%.1f) -- E:/ SSD (Tool 23): #%d",
             gen,
@@ -763,10 +766,10 @@ object SovereignLiveBus : SensorEventListener {
             card1Text = c1,
             card2Text = c2,
             card3Text = c3,
-            card4Status = if (synced) "v70.0.0 (CHAIN 316 + AEGIS-HARNESS) SYNCED" else "UNMEASURED/OFFLINE",
+            card4Status = if (synced) "v71.1.0 (CHAIN 334 + AEGIS-HARNESS) SYNCED" else "UNMEASURED/OFFLINE",
             activeBearer = bearer,
             rttMs = rtt,
-            leanProofs = 840,
+            leanProofs = 905,
             totalShards = 84480,
             p8L2FreePct = 89.11,
             clusterKops = hostClusterKops.toDouble(),
@@ -829,13 +832,13 @@ object SovereignLiveBus : SensorEventListener {
             val syncPi = android.app.PendingIntent.getBroadcast(context, 4402, syncIntent, piFlags)
 
             val title = if (isPixel8ComputeNode) {
-                String.format(Locale.US, "SH4Z v7000 P8 .npage/.spage SHM (CHAIN 316) -- %.1fk ops/s", snap.clusterKops)
+                String.format(Locale.US, "SH4Z v7100 P8 .npage/.spage SHM (CHAIN 334) -- %.1fk ops/s", snap.clusterKops)
             } else {
-                String.format(Locale.US, "SH4Z v7000 P10 24D + .npage/.spage SHM (CHAIN 316) -- %.1fk ops/s", snap.clusterKops)
+                String.format(Locale.US, "SH4Z v7100 P10 24D + .npage/.spage SHM (CHAIN 334) -- %.1fk ops/s", snap.clusterKops)
             }
             val body = String.format(
                 Locale.US,
-                "Tick #%d | 84,480N / 4.05M Syn | 524K Vocab | 317 Tools | 840/840 QED | %s (%.1fms)",
+                "Tick #%d | 84,480N / 4.05M Syn | 524K Vocab | 334 Tools | 905/905 QED | %s (%.1fms)",
                 snap.gen,
                 snap.activeBearer,
                 snap.rttMs
@@ -927,11 +930,11 @@ object SovereignLiveBus : SensorEventListener {
                 snap.gen, snap.wsLoqLines, snap.wsP10Lines, snap.wsP8Lines, bNorm, snap.clusterKops
             )
             val titleLine = if (isPixel8ComputeNode) {
-                "SOVEREIGN v70.0.0 P8-APEX -- 84.4K NEURONS | 4.05M SYN | CHAIN 316 | 840 QED"
+                "SOVEREIGN v71.1.0 P8-APEX -- 84.4K NEURONS | 4.05M SYN | CHAIN 334 | 905 QED"
             } else {
-                "SOVEREIGN v70.0.0 P10-G5 -- 84.4K NEURONS | 4.05M SYN | CHAIN 316 | 840 QED"
+                "SOVEREIGN v71.1.0 P10-G5 -- 84.4K NEURONS | 4.05M SYN | CHAIN 334 | 905 QED"
             }
-            val subLine = "act-omega-net.dev -- 262,144 CLs (16.00 MiB) -- 317 Tools (CHAIN 317) -- 840/840 QED"
+            val subLine = "act-omega-net.dev -- 262,144 CLs (16.00 MiB) -- 334 Tools (CHAIN 334) -- 905/905 QED"
 
             val piFlags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE
@@ -1524,6 +1527,7 @@ fun SovereignCockpitV326Screen() {
                 val opKey = SovereignOtaSelfUpdater.readLocalOperatorKey(localCtx)
                 val bases = listOf(
                     "http://192.168.137.1:8097",
+                    "http://192.168.44.1:8097",
                     "http://127.0.0.1:8097",
                     "http://127.0.0.1:5173",
                     "http://10.0.24.243:8097",
@@ -1706,7 +1710,7 @@ fun SovereignCockpitV326Screen() {
                         )
                     }
                     Text(
-                        text = "SOVEREIGN MANIFOLD TELEMETRY CONSOLE -- ACT-OMEGA NET v70.0.0 (SH4Z v7000 TLV | CHAIN 316 | 840/840 Lean 4 QED)",
+                        text = "SOVEREIGN MANIFOLD TELEMETRY CONSOLE -- ACT-OMEGA NET v71.1.0 (SH4Z v7100 TLV | CHAIN 334 | 905/905 Lean 4 QED)",
                         color = AccentAmber10,
                         fontSize = 9.2.sp,
                         fontWeight = FontWeight.Bold,
@@ -1729,7 +1733,7 @@ fun SovereignCockpitV326Screen() {
                 }
             }
             Text(
-                text = "Gemini + Win11 Dark Mica + M3 Expressive HUD -- 84,480 Neurons (4,055,040 Synapses / 262,144 Bijected 64B CLs) -- 524,288 19-Bit BPE Vocab -- 316 Tools (CHAIN 316) -- 840/840 Lean 4 Proofs QED",
+                text = "Gemini + Win11 Dark Mica + M3 Expressive HUD -- 84,480 Neurons (4,055,040 Synapses / 262,144 Bijected 64B CLs) -- 524,288 19-Bit BPE Vocab -- 334 Tools (CHAIN 334) -- 905/905 Lean 4 Proofs QED",
                 color = TextIvory30,
                 fontSize = 8.2.sp,
                 fontFamily = FontFamily.Monospace
@@ -2662,12 +2666,12 @@ fun SovereignCockpitV326Screen() {
 
         Spacer(modifier = Modifier.height(6.dp))
 
-        // DRAWER 3: FORMAL VERIFICATION SUITE (840/840 Lean 4 PROOFS QED) & 4-STAGE CASCADE
+        // DRAWER 3: FORMAL VERIFICATION SUITE (905/905 Lean 4 PROOFS QED) & 4-STAGE CASCADE
         DrawerCard603010(
-            title = "[-] DRAWER 3: FORMAL VERIFICATION SUITE (840/840 Lean 4 PROOFS QED) & 4-STAGE CASCADE",
+            title = "[-] DRAWER 3: FORMAL VERIFICATION SUITE (905/905 Lean 4 PROOFS QED) & 4-STAGE CASCADE",
             accentBorder = AccentAmber10,
             titleColor = TextIvory30,
-            rightLabel = "80 Sectors = 840/840 QED",
+            rightLabel = "80 Sectors = 905/905 QED",
             isOpen = drawer3Open,
             onToggle = { drawer3Open = !drawer3Open }
         ) {
@@ -2692,8 +2696,8 @@ fun SovereignCockpitV326Screen() {
                     fontFamily = FontFamily.Monospace,
                     modifier = Modifier.weight(0.72f)
                 )
-                ToolButton603010("VERIFY 840 LEAN 4", AccentAmber10, BgVoid60, Modifier.weight(0.28f)) {
-                    invokeHostEndpoint("/api/v1/compiler/verify?q=" + java.net.URLEncoder.encode(leanQuery, "UTF-8"), null, "VERIFY 840/840 Lean 4 QED")
+                ToolButton603010("VERIFY 905 LEAN 4", AccentAmber10, BgVoid60, Modifier.weight(0.28f)) {
+                    invokeHostEndpoint("/api/v1/compiler/verify?q=" + java.net.URLEncoder.encode(leanQuery, "UTF-8"), null, "VERIFY 905/905 Lean 4 QED")
                 }
             }
             Spacer(modifier = Modifier.height(4.dp))
@@ -2716,9 +2720,9 @@ fun SovereignCockpitV326Screen() {
 
         Spacer(modifier = Modifier.height(6.dp))
 
-        // DRAWER 4: 308-TOOL EXECUTION REGISTRY (CHAIN 316 MILESTONE), PRESET QUERIES & TELEMETRY LOG TERMINAL (ALL BUTTONS MATCHING HOST)
+        // DRAWER 4: 334-TOOL EXECUTION REGISTRY (CHAIN 334 MILESTONE), PRESET QUERIES & TELEMETRY LOG TERMINAL (ALL BUTTONS MATCHING HOST)
         DrawerCard603010(
-            title = "[-] DRAWER 4: 308-TOOL EXECUTION REGISTRY (CHAIN 316 MILESTONE | v70.0.0), AEGIS-HARNESS & TELEMETRY LOG TERMINAL",
+            title = "[-] DRAWER 4: 334-TOOL EXECUTION REGISTRY (CHAIN 334 MILESTONE | v71.1.0), AEGIS-HARNESS & TELEMETRY LOG TERMINAL",
             accentBorder = AccentRed10,
             titleColor = TextIvory30,
             rightLabel = String.format(Locale.US, "WS=%.1fk ops/s -- 4.05M Syn", snap.clusterKops),
@@ -2750,8 +2754,8 @@ fun SovereignCockpitV326Screen() {
                     val qEnc = java.net.URLEncoder.encode(cmdPrompt, "UTF-8")
                     invokeHostEndpoint("/api/v1/v69/bpe_524k_192sd_fluency?q=$qEnc", null, "524,288-TOKEN 19-BIT BPE INSPECTOR")
                 }
-                ToolButton603010("CHAIN 316", AccentRed10, TextIvory30, Modifier.weight(0.8f)) {
-                    invokeHostEndpoint("/api/v1/chain308/master_certification", null, "CHAIN 316")
+                ToolButton603010("CHAIN 334", AccentRed10, TextIvory30, Modifier.weight(0.8f)) {
+                    invokeHostEndpoint("/api/v1/chain316/master_certification", null, "CHAIN 334")
                 }
                 ToolButton603010("CLEAR", SlateSurface30, TextIvory30, Modifier.weight(0.6f)) {
                     toolOutput = "READY."

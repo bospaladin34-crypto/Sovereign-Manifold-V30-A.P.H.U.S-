@@ -1,0 +1,16 @@
+{"draft_k":4,"gen_tokens":64,"outer_steps":13,"proposed":52,"accepted":52,"bonus":12,"accept_pct":100.00,"toks_per_step":4.92,"speedup_x":3.84,"total_us":28602}
+{"draft_k":4,"gen_tokens":64,"outer_steps":13,"proposed":52,"accepted":52,"bonus":12,"accept_pct":100.00,"toks_per_step":4.92,"speedup_x":3.84,"total_us":19470}
+{"draft_k":4,"gen_tokens":64,"outer_steps":13,"proposed":52,"accepted":52,"bonus":12,"accept_pct":100.00,"toks_per_step":4.92,"speedup_x":3.84,"total_us":26371}
+{"draft_k":4,"gen_tokens":64,"outer_steps":13,"proposed":52,"accepted":52,"bonus":12,"accept_pct":100.00,"toks_per_step":4.92,"speedup_x":3.84,"total_us":23656}
+{"draft_k":4,"gen_tokens":60,"outer_steps":12,"proposed":48,"accepted":48,"bonus":12,"accept_pct":100.00,"toks_per_step":5.00,"speedup_x":3.90,"total_us":28697}
+{"draft_k":4,"gen_tokens":60,"outer_steps":12,"proposed":48,"accepted":48,"bonus":12,"accept_pct":100.00,"toks_per_step":5.00,"speedup_x":3.90,"total_us":23838}
+{"draft_k":4,"gen_tokens":60,"outer_steps":12,"proposed":48,"accepted":48,"bonus":12,"accept_pct":100.00,"toks_per_step":5.00,"speedup_x":3.90,"total_us":25517}
+{"draft_k":4,"gen_tokens":60,"outer_steps":12,"proposed":48,"accepted":48,"bonus":12,"accept_pct":100.00,"toks_per_step":5.00,"speedup_x":3.90,"total_us":24453}
+{"draft_k":4,"gen_tokens":60,"outer_steps":12,"proposed":48,"accepted":48,"bonus":12,"accept_pct":100.00,"toks_per_step":5.00,"speedup_x":3.90,"total_us":27107}
+{"draft_k":4,"gen_tokens":60,"outer_steps":12,"proposed":48,"accepted":48,"bonus":12,"accept_pct":100.00,"toks_per_step":5.00,"speedup_x":3.90,"total_us":25810}
+{"draft_k":4,"gen_tokens":60,"outer_steps":12,"proposed":48,"accepted":48,"bonus":12,"accept_pct":100.00,"toks_per_step":5.00,"speedup_x":3.90,"total_us":30020}
+{"draft_k":4,"gen_tokens":64,"outer_steps":13,"proposed":52,"accepted":52,"bonus":12,"accept_pct":100.00,"toks_per_step":4.92,"speedup_x":3.84,"total_us":29549}
+{"draft_k":4,"gen_tokens":64,"outer_steps":13,"proposed":52,"accepted":52,"bonus":12,"accept_pct":100.00,"toks_per_step":4.92,"speedup_x":3.84,"total_us":28324}
+{"draft_k":4,"gen_tokens":64,"outer_steps":13,"proposed":52,"accepted":52,"bonus":12,"accept_pct":100.00,"toks_per_step":4.92,"speedup_x":3.84,"total_us":24183}
+{"draft_k":4,"gen_tokens":64,"outer_steps":13,"proposed":52,"accepted":52,"bonus":12,"accept_pct":100.00,"toks_per_step":4.92,"speedup_x":3.84,"total_us":22633}
+{"draft_k":4,"gen_tokens":60,"outer_steps":12,"proposed":48,"accepted":48,"bonus":12,"accept_pct":100.00,"toks_per_step":5.00,"speedup_x":3.90,"total_us":23889}

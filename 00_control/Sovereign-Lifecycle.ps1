@@ -32,11 +32,20 @@ function Resolve-SovereignAdbTarget {
             return ($l -split "\s+")[0]
         }
     }
+    if ($CanonicalSerial -eq "3A121FDJH00BW5") {
+        adb connect 192.168.137.8:5555 2>$null | Out-Null
+        $lines2 = adb devices -l 2>$null
+        foreach ($l in $lines2) {
+            if ($l -match "\s+device\b" -and ($l -match $ModelPattern -or $l -match $CanonicalSerial)) {
+                return ($l -split "\s+")[0]
+            }
+        }
+    }
     return $CanonicalSerial
 }
 
-$p10Serial       = Resolve-SovereignAdbTarget -CanonicalSerial "58170DLCR0004V" -ModelPattern "model:Pixel_10|product:frankel|192\.168\.137\.10:"
-$p8Serial        = Resolve-SovereignAdbTarget -CanonicalSerial "3A121FDJH00BW5" -ModelPattern "model:Pixel_8|product:shiba|192\.168\.137\.8:"
+$p10Serial       = Resolve-SovereignAdbTarget -CanonicalSerial "58170DLCR0004V" -ModelPattern "model:Pixel_10|product:frankel|192\.168\.137\.10:|192\.168\.44\.10:"
+$p8Serial        = Resolve-SovereignAdbTarget -CanonicalSerial "3A121FDJH00BW5" -ModelPattern "model:Pixel_8|product:shiba|192\.168\.137\.8:|192\.168\.44\.8:"
 $p8ApexBinLocal  = "C:\sovereign_manifold_v31\04_edge_silicon\pixel8_headless\p8_ksu_apex_daemon"
 $p8ApexBinRemote = "/data/local/tmp/p8_ksu_apex_daemon"
 $p8ApexPidPath   = "/data/local/tmp/p8_ksu_apex.pid"

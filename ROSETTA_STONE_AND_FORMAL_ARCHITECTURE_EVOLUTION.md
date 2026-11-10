@@ -142,9 +142,9 @@ If you use or reference the ACT-Omega and Vesper formal architecture, lattice qu
 ### Zenodo Archive
 ```bibtex
 @misc{act_omega_net_zenodo_2026,
-  author       = {Bell, Nicholas and The ACT-Omega Consortium},
-  title        = {ACT-Omega and Vesper: A Topological Intermediate Representation, Lattice Vector Quantizer, and Cellular Sheaf Consensus Runtime for Edge-to-Workstation Heterogeneous Computing (v50.0.0)},
-  month        = oct,
+  author       = {Frownfelter, Donevin},
+  title        = {ACT-Omega Net v71.5.0: Vesper Multi-Mode Mica Shell, Sovereign Harmonic X 12L Foundation Model, Lattice Vector Quantizer, and Cellular Sheaf Consensus Runtime for Edge-to-Workstation Heterogeneous Computing},
+  month        = nov,
   year         = 2026,
   publisher    = {Zenodo},
   doi          = {10.5281/zenodo.23651696},
@@ -155,7 +155,7 @@ If you use or reference the ACT-Omega and Vesper formal architecture, lattice qu
 ### Open Science Framework (OSF) Registry
 ```bibtex
 @misc{act_omega_net_osf_2026,
-  author       = {Bell, Nicholas},
+  author       = {Frownfelter, Donevin},
   title        = {ACT-Omega Net: Sovereign Harmonic Topological Intermediate Representation, Lattice Quantizer, and Tri-Silicon Manifold Cluster},
   year         = 2026,
   publisher    = {OSF},

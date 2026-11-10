@@ -2,7 +2,7 @@
     "status":  "CONTINUUM_HANDOVER_CAPSULE_READY",
     "version":  "ACT-Omega Net v70.0.0 (SH4Z v7000 TLV | 840/840 Lean 4 QED)",
     "handover_mode":  "OPERATOR_CONTINUUM_HANDOVER",
-    "timestamp_utc":  "2026-11-10T17:58:44Z",
+    "timestamp_utc":  "2026-11-10T23:06:34Z",
     "shm_npage_bytes":  8110080,
     "shm_neurons_total":  63360,
     "shm_chair44_cols":  1440,

@@ -1,7 +1,7 @@
-# 🌌 What's New in ACT-Omega Net `v71.4.0` (`SH4Z v7140 TLV` | `CHAIN 356` | `965/965 Lean 4 QED` | `262,144 Bijected Cachelines` | `84,480 Neurons` | `4,055,040 Synapses` | `Sovereign Harmonic X 12L Foundation Model & Muse 23-Item Total Remediation`)
+# 🌌 What's New in ACT-Omega Net `v71.5.0` (`Vesper Multi-Mode Mica Shell & CLS 0.00 Host/Mobile Parity` | `SH4Z v7150 TLV` | `CHAIN 356` | `965/965 Lean 4 QED` | `262,144 Bijected Cachelines` | `84,480 Neurons` | `4,055,040 Synapses` | `Sovereign Harmonic X 12L Foundation Model`)
 
 - **Primary Author & Principal Systems Architect**: **Donevin Frownfelter** (`@bospaladin34-crypto`)
-- **Release Tag**: `v71.4.0` (`2026-11-10`)
+- **Release Tag**: `v71.5.0` (`2026-11-10`)
 - **Zenodo Permanent DOI**: [`10.5281/zenodo.23651696`](https://doi.org/10.5281/zenodo.23651696)
 - **OSF Permanent DOI**: [`10.17605/OSF.IO/2XQ5Z`](https://osf.io/2xq5z/overview)
 - **Hardware Point-of-Origin**: YubiKey 5C NFC (`Serial: 39651128`, Resident `ED25519-SK` `SHA256:KwsDUzdrEWHpWFSt0BXhx0ryT/tOM78n0mlhwgLAzBo`)
@@ -10,7 +10,7 @@
 
 ## 🏛️ Foundational Mathematical Citations — Maryna S. Viazovska ($E_8$ & $\Lambda_{24}$ Sphere Packing & Universal Optimality)
 
-The `SH4Z v7140` lattice vector quantizer, the constructive $E_8 \oplus E_8 \oplus E_8 \to \Lambda_{24}$ Turyn–Golay bridge, and the tied $E_8^{\oplus 4} \times \Lambda_{24}$ 56D Lattice Codebook across our `84,480`-neuron / `262,144`-cacheline connectome are grounded in the landmark theorems of **Maryna S. Viazovska** (2022 Fields Medalist) and collaborators establishing optimal sphere packing and universal optimality in dimensions $8$ and $24$:
+The `SH4Z v7150` lattice vector quantizer, the constructive $E_8 \oplus E_8 \oplus E_8 \to \Lambda_{24}$ Turyn–Golay bridge, and the tied $E_8^{\oplus 4} \times \Lambda_{24}$ 56D Lattice Codebook across our `84,480`-neuron / `262,144`-cacheline connectome are grounded in the landmark theorems of **Maryna S. Viazovska** (2022 Fields Medalist) and collaborators establishing optimal sphere packing and universal optimality in dimensions $8$ and $24$:
 
 1. **Viazovska, Maryna S. (2017)**. *"The sphere packing problem in dimension 8."* **Annals of Mathematics**, Vol. 185, Issue 3, pp. 991–1015. DOI: [`10.4007/annals.2017.185.3.7`](https://doi.org/10.4007/annals.2017.185.3.7)
 2. **Cohn, Henry; Kumar, Abhinav; Miller, Stephen D.; Radchenko, Danylo; Viazovska, Maryna S. (2017)**. *"The sphere packing problem in dimension 24."* **Annals of Mathematics**, Vol. 185, Issue 3, pp. 1017–1033. DOI: [`10.4007/annals.2017.185.3.8`](https://doi.org/10.4007/annals.2017.185.3.8)
@@ -20,9 +20,15 @@ See [`CITATION.cff`](./CITATION.cff) for machine-readable BibTeX/CFF attribution
 
 ---
 
-## 🚀 Key Architectural Milestones in `v71.4.0` (`v71.0.0` $\to$ `v71.4.0` | `Tools 317–356` | `CHAIN 356` | `965/965 Lean 4 QED`)
+## 🚀 Key Architectural Milestones in `v71.5.0` (`v71.0.0` $\to$ `v71.5.0` | `Tools 317–356` | `CHAIN 356` | `965/965 Lean 4 QED`)
 
-### 0. Week 4 (`Sovereign Harmonic X` | `Tools 351–356` | `CHAIN 356` | `965/965 QED`) & 23-Item Muse `v70`/`v71` Sweep Total Remediation
+### 0A. `v71.5.0` — Vesper Multi-Mode Mica Shell & `CLS = 0.00` Host + Dual-Pixel Mobile Parity (`versionCode = 72`, `Ω71.5`)
+- **Host WebGPU HUD (`05_hud_cockpit/src/App.tsx` + 6 Static Mirrors) & Win11 Native Tray (`SovereignCockpitHUD.exe`)**:
+  - **6-Mode Vesper Mica Shell + `Classic` Bypass**: Opens in calm, zero-jank **`Calm` Mode** (`#0B0F0E` / `#141A19` / `#00E5A0`) with persistent `localStorage` mode memory, `72px` Left Navigation Rail, `56px` Reserved Header Bar (`LOCAL · VERIFIED · OWNED` YubiKey modal), interactive **`CLS 0.00` Meter & Old-vs-New Slot Simulator**, **Proof Sheet Mode** (5 formal accordions), **Vault Mode** (`16.00 MiB` bijected manifold + `2.67 MiB` archive + Cloudflare 6-Tier Governor), **Tools Mode** (8-Domain + Week 1–4 `SH-Deep-12L`), **Settings Mode**, and **HUD Engineer Mode** mounting 100% of the preserved 15 Telemetry Cards, 60 FPS 3D Stiefel/Theodorus & 15.965 Hz Scopes, `16×130` (`2,080`-CL) Heatmap, and Drawers 1–4 (`CHAIN 356`).
+- **1:1 Android Jetpack Compose Mobile Vesper Multi-Mode Mica Shell (`MainActivity.kt`, `v71.5.0`, `versionCode = 72`)**:
+  - Flashed and hardware-verified on **Google Pixel 10 (`58170DLCR0004V`, Tensor G5)** and **Rooted Google Pixel 8 (`192.168.137.8:5555` / `3A121FDJH00BW5`, Tensor G3 P8-APEX)**: adaptive Portrait `64.dp` Bottom Dock / Landscape `72.dp` Left Rail, `264.dp` fixed-slot `VesperMobileReceiptCard` with 1-tap `Copy Receipt`, genuine `measuredSensorHz = rawHz` sensor telemetry, local `.e8z`/`.npage` byte verification, explicit `"UNMEASURED/OFFLINE"` fallbacks, YubiKey-attested OTA self-update, Homescreen Widget, Live Wallpaper, and `DreamService` Screensaver across all 15 synchronized APK mirrors (`31,366,592 B`, `SHA-256: 49C262E54DFC54E3D1D1061DBCD3F9D885830E901631743F1FE8AA3F1A09C8DB`).
+
+### 0B. Week 4 (`Sovereign Harmonic X` | `Tools 351–356` | `CHAIN 356` | `965/965 QED`) & 23-Item Muse `v70`/`v71` Sweep Total Remediation
 - **23-Item Muse `v70`/`v71` Sweep Total Remediation (`Items 1–17`)**:
   - **Phase I — Cloudflare Edge Security (`Items 1–3`)**: Real WebCrypto RS256 JWKS verification against Cloudflare Access (`/cdn-cgi/access/certs`) with `aud`/`exp`/`nbf` validation and zero caching of unverified tokens; constant-time 32-byte SHA-256 XOR comparison against `env.SOVEREIGN_OPERATOR_KEY`; strict HTTP 403 (`OPERATOR_AUTH_REQUIRED`) on `/api/v1/kv/put`; purged Cloudflare `1x0000...` test keys from production `wrangler.toml` with fail-closed HTTP 503 (`TURNSTILE_UNCONFIGURED_OR_TEST_KEY`).
   - **Phase II — Cloudflare Telemetry, Fallbacks, DO Deduplication & E2E Suite (`Items 4–8`)**: Rust `Tool 317` dynamically queries live edge telemetry and counts `965` Lean 4 theorems at runtime with `0` square brackets; Vectorize fallback returns honest empty matches (`matches: []`) and `/api/v1/ai/embed` returns HTTP 503 on outage (zero hash vectors); DO quota governor enforces `row.hard_cap` (`HARD_CAP_DENIED`, HTTP 429) and dynamic `operator_key_enforced`; `worker_continuum_do.js` deduplicated (`-2,088` lines); `Invoke-FreeTierGovernorE2ESuite.ps1` rebuilt with `110/110` live positive/negative & quota-exhaustion tests (`0` `-DryRun` bypasses).

@@ -1,12 +1,12 @@
 <!-- ========================================================================================= -->
-<!-- ACT-OMEGA NET v71.4.0 — SOVEREIGN HARMONIC X 12L, 262,144 CLS, 84,480 NEURONS, 4,055,040 SYNAPSES, CHAIN 356, 965/965 QED -->
+<!-- ACT-OMEGA NET v71.5.0 — VESPER MULTI-MODE MICA SHELL (CLS 0.00), SOVEREIGN HARMONIC X 12L, 262,144 CLS, 84,480 NEURONS, 4,055,040 SYNAPSES, CHAIN 356, 965/965 QED -->
 <!-- Primary Author & Architect: Donevin Frownfelter (@bospaladin34-crypto)                    -->
 <!-- ========================================================================================= -->
 
-# 🌌 ACT-Omega Net `v71.4.0` (`SH4Z v7140 TLV` | `CHAIN 356` | `965/965 Lean 4 QED` | `21 Gemini MCP Tools`) — `356` Native Tools (`T01..T356` / `CHAIN 356`), `965/965` Substantive Lean 4 Proofs QED (`Sovereign Harmonic X 12L Foundation Model + Muse 23-Item Total Remediation + RLVF Lean 4 Verifier Loop + k=4,b=2 Tree Speculative Cascade + 128-Feature Top-k SAE + 4K/8K O(1) 448B Mamba-3/Cuckoo Memory + 4-Hop Grassmannian G(2,4) Plücker CoT + 10-Mode Red-Team Remediation + 12-Prompt Human Ambiguity & Metaphor Transducer + 16K AST BPE & Tied E8/Leech Codebook + 262,144 Bijected Cachelines + 5-Pool Tri-Silicon Conservation + CPU/GPU Co-Execution + Hsiang P_4 & Symplectic Leapfrog + OmegaLang v16.0 9-Target Primary TLV Compiler + Hot-Index MIT 10-Course Ingestion + 7777D CRT/RVQ + BraidIR + SH4Z + Vesper Cellular Sheaf + AEGIS + Gemma 4 Multimodal PLE + Bleeding Edge Synthesis 1–5 + Vesper Arachne E8 IK`), `84,480` Neurons == `84,480` Shards (`1,920 × Chair-44` | `10,813,440 B` `.npage` + `5,406,720 B` `.spage` + `557,056 B` `.e8z` = `16,777,216 B` (`16.00 MiB`) | `262,144` ($2^{18}$) Bijected Cachelines | `4,055,040` Total Synapses), `524,288` (19-Bit) Open-Vocab BPE + `16,384` AST BPE (`SH-BPE-16K`), Dual Quantized Gemma 4 `.sh4z` Vaults (`E4B-it` + `12B-it` = `19.96B` Params), Layer 1.5 Algebraic Haskell (`GHC 9.8.2` + `DuckDB 1.5.6`), Constructive $E_8 \oplus E_8 \oplus E_8 \to \Lambda_{24}$ Leech Lattice Bridge & 10-Agent Brutal Gatekeeper Governance
+# 🌌 ACT-Omega Net `v71.5.0` (`Vesper Multi-Mode Mica Shell` | `SH4Z v7150 TLV` | `CHAIN 356` | `965/965 Lean 4 QED` | `21 Gemini MCP Tools`) — `356` Native Tools (`T01..T356` / `CHAIN 356`), `965/965` Substantive Lean 4 Proofs QED (`Vesper Multi-Mode Mica Shell & CLS 0.00 Host/Dual-Pixel Mobile Parity + Sovereign Harmonic X 12L Foundation Model + Muse 23-Item Total Remediation + RLVF Lean 4 Verifier Loop + k=4,b=2 Tree Speculative Cascade + 128-Feature Top-k SAE + 4K/8K O(1) 448B Mamba-3/Cuckoo Memory + 4-Hop Grassmannian G(2,4) Plücker CoT + 10-Mode Red-Team Remediation + 12-Prompt Human Ambiguity & Metaphor Transducer + 16K AST BPE & Tied E8/Leech Codebook + 262,144 Bijected Cachelines + 5-Pool Tri-Silicon Conservation + CPU/GPU Co-Execution + Hsiang P_4 & Symplectic Leapfrog + OmegaLang v16.0 9-Target Primary TLV Compiler + Hot-Index MIT 10-Course Ingestion + 7777D CRT/RVQ + BraidIR + SH4Z + Vesper Cellular Sheaf + AEGIS + Gemma 4 Multimodal PLE + Bleeding Edge Synthesis 1–5 + Vesper Arachne E8 IK`), `84,480` Neurons == `84,480` Shards (`1,920 × Chair-44` | `10,813,440 B` `.npage` + `5,406,720 B` `.spage` + `557,056 B` `.e8z` = `16,777,216 B` (`16.00 MiB`) | `262,144` ($2^{18}$) Bijected Cachelines | `4,055,040` Total Synapses), `524,288` (19-Bit) Open-Vocab BPE + `16,384` AST BPE (`SH-BPE-16K`), Dual Quantized Gemma 4 `.sh4z` Vaults (`E4B-it` + `12B-it` = `19.96B` Params), Layer 1.5 Algebraic Haskell (`GHC 9.8.2` + `DuckDB 1.5.6`), Constructive $E_8 \oplus E_8 \oplus E_8 \to \Lambda_{24}$ Leech Lattice Bridge & 10-Agent Brutal Gatekeeper Governance
 
 - **Primary Author & Principal Systems Architect**: **Donevin Frownfelter** (`@bospaladin34-crypto`)
-- **What's New in `v71.4.0`**: [**`WHATS_NEW.md`**](./WHATS_NEW.md) | **Citation Metadata**: [**`CITATION.cff`**](./CITATION.cff)
+- **What's New in `v71.5.0`**: [**`WHATS_NEW.md`**](./WHATS_NEW.md) | **Citation Metadata**: [**`CITATION.cff`**](./CITATION.cff)
 
 <p align="center">
   <img src="./act_omega_logo.jpg" alt="ACT-Omega Net Official Sovereign Harmonic Emblem" width="220" style="border-radius: 22px; border: 2px solid #FFD166;" />
@@ -16,7 +16,7 @@
 [![OSF DOI](https://img.shields.io/badge/OSF_DOI-10.17605%2FOSF.IO%2F2XQ5Z-1c75bc?style=for-the-badge&logo=open-science-framework)](https://osf.io/2xq5z/overview)
 [![Author](https://img.shields.io/badge/Author-Donevin_Frownfelter_(%40bospaladin34--crypto)-FFD166?style=for-the-badge&logo=github)](https://github.com/bospaladin34-crypto)
 [![YubiKey 5C NFC Certified](https://img.shields.io/badge/YubiKey_5C_NFC_Certified-SN_39651128_%7C_ED25519--SK_SHA256%3AKwsDUzdr...AzBo-84BD00?style=for-the-badge&logo=yubico)](https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-)
-[![Release](https://img.shields.io/badge/Release-v71.4.0_(SH4Z_v7140_%7C_CHAIN_356_%2B_965/965_QED)-00FFCC?style=for-the-badge&logo=github)](https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-/releases/tag/v71.4.0)
+[![Release](https://img.shields.io/badge/Release-v71.5.0_(Vesper_Mica_CLS_0.00_%7C_CHAIN_356_%2B_965/965_QED)-00FFCC?style=for-the-badge&logo=github)](https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-/releases/tag/v71.5.0)
 [![Weight Binary](https://img.shields.io/badge/Weights-SH--Deep--12L_(16,808_B_.sh9z_%2B_915_KB_.cbk_%2B_557_KB_.e8z_%7C_262,144_CLs)-FF007F?style=for-the-badge)](https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-/tree/vesper_production/00_control/weights)
 [![Neuron Pagefile](https://img.shields.io/badge/Shards_%26_Neurons-84,480_1:1_Bijection_(4,055,040_Synapses_%7C_16.00_MiB_.npage%2B.spage%2B.e8z)-7B61FF?style=for-the-badge)](https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-/tree/vesper_production/00_control/weights)
 [![SHA-256 Verified](https://img.shields.io/badge/SHA--256_Verified-Zero_Unmeasured_100%25_Byte_Sampled-FF8800?style=for-the-badge)](https://bospaladin34-crypto.github.io/telemetry_snapshot.json)
@@ -274,9 +274,9 @@ If you use or reference the ACT-Omega and Vesper formal architecture, lattice qu
 ### Zenodo Archive
 ```bibtex
 @misc{act_omega_net_zenodo_2026,
-  author       = {Bell, Nicholas and The ACT-Omega Consortium},
-  title        = {ACT-Omega and Vesper: A Topological Intermediate Representation, Lattice Vector Quantizer, and Cellular Sheaf Consensus Runtime for Edge-to-Workstation Heterogeneous Computing (v50.0.0)},
-  month        = oct,
+  author       = {Frownfelter, Donevin},
+  title        = {ACT-Omega Net v71.5.0: Vesper Multi-Mode Mica Shell, Sovereign Harmonic X 12L Foundation Model, Lattice Vector Quantizer, and Cellular Sheaf Consensus Runtime for Edge-to-Workstation Heterogeneous Computing},
+  month        = nov,
   year         = 2026,
   publisher    = {Zenodo},
   doi          = {10.5281/zenodo.23651696},
@@ -287,7 +287,7 @@ If you use or reference the ACT-Omega and Vesper formal architecture, lattice qu
 ### Open Science Framework (OSF) Registry
 ```bibtex
 @misc{act_omega_net_osf_2026,
-  author       = {Bell, Nicholas},
+  author       = {Frownfelter, Donevin},
   title        = {ACT-Omega Net: Sovereign Harmonic Topological Intermediate Representation, Lattice Quantizer, and Tri-Silicon Manifold Cluster},
   year         = 2026,
   publisher    = {OSF},

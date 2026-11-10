@@ -5,4 +5,4 @@ stage_id,stage_name,version,eval256_ppl,holdout_v2_ppl,pass_at_1_pct,pass_at_4_p
 3,Week2_16K_AST_BPE_Leech_Codebook_1K,v71.2.0,74.6479,4.1290,84.38,95.31,4.1200
 4,Week3_Plucker_4Hop_Contrastive_4K,v71.3.0,67.5443,2.8049,90.62,98.44,4.4138
 5,Week3_RedTeam_Metaphor_Transducer,v71.3.2,66.8520,2.7842,93.75,99.22,4.4138
-6,Week4_SH_X_RLVF_GRPO_SAE_TreeK8,v72.0.0,63.5045,2.6111,100.00,100.00,5.9612
+6,Week4_SH_X_RLVF_GRPO_SAE_TreeK8,v72.0.0,63.6310,2.6111,100.00,100.00,5.9612

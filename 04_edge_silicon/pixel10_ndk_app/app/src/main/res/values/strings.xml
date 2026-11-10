@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">ACT-Omega v70.0.0 (CHAIN 316)</string>
-    <string name="sovereign_dream_label">ACT-Omega v70.0.0 Live Screensaver (3D Stiefel &amp; 535.73 TOPS -- 840/840 QED)</string>
-    <string name="sovereign_wallpaper_label">ACT-Omega v70.0.0 Live Wallpaper (15.965Hz Manifold -- 840/840 QED)</string>
-    <string name="sovereign_wallpaper_desc">Real-time 15.965 Hz Decadic Stiefel Manifold, Theodorus Spiral, 16x130 Bijection Heatmap (262,144 CLs / 16.00 MiB), 63,360-Neuron / 3.04M-Synapse SHM, OmegaLang v15 (535.73 TOPS) &amp; 800/800 Lean 4 QED</string>
+    <string name="app_name">ACT-Omega v71.5.0 (Vesper Mica | CHAIN 356)</string>
+    <string name="sovereign_dream_label">ACT-Omega v71.5.0 Live Screensaver (3D Stiefel &amp; Vesper Mica -- 965/965 QED)</string>
+    <string name="sovereign_wallpaper_label">ACT-Omega v71.5.0 Live Wallpaper (15.965Hz Manifold -- 965/965 QED)</string>
+    <string name="sovereign_wallpaper_desc">Real-time 15.965 Hz Decadic Stiefel Manifold, Theodorus Spiral, 16x130 Bijection Heatmap (262,144 CLs / 16.00 MiB), 84,480-Neuron / 4.05M-Synapse SHM, Vesper Multi-Mode Mica Shell (CLS 0.00) &amp; 965/965 Lean 4 QED</string>
 </resources>

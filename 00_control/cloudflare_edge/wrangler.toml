@@ -4,9 +4,10 @@ compatibility_date = "2026-07-28"
 account_id = "a37cf8ab07e7c5f886c302be3f098744"
 
 # --- Cloudflare Tier 4: Zero Trust & Turnstile Variables ---
+# NOTE: Production TURNSTILE_SITE_KEY and TURNSTILE_SECRET_KEY as well as SOVEREIGN_OPERATOR_KEY
+# are provisioned exclusively via encrypted Cloudflare secrets (wrangler secret put)
+# and must never be committed in plaintext repository configurations.
 [vars]
-TURNSTILE_SITE_KEY = "1x00000000000000000000AA"
-TURNSTILE_SECRET_KEY = "1x0000000000000000000000000000000AA"
 CF_ACCESS_TEAM_DOMAIN = "act-omega-net.cloudflareaccess.com"
 CF_ACCESS_AUD = "act-omega-zero-trust-aud"
 

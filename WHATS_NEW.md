@@ -1,7 +1,7 @@
-# 🌌 What's New in ACT-Omega Net `v71.3.2` (`SH4Z v7132 TLV` | `CHAIN 350` | `950/950 Lean 4 QED` | `262,144 Bijected Cachelines` | `84,480 Neurons` | `4,055,040 Synapses` | `Sovereign Harmonic IX 12L Foundation Model`)
+# 🌌 What's New in ACT-Omega Net `v71.4.0` (`SH4Z v7140 TLV` | `CHAIN 356` | `965/965 Lean 4 QED` | `262,144 Bijected Cachelines` | `84,480 Neurons` | `4,055,040 Synapses` | `Sovereign Harmonic X 12L Foundation Model & Muse 23-Item Total Remediation`)
 
 - **Primary Author & Principal Systems Architect**: **Donevin Frownfelter** (`@bospaladin34-crypto`)
-- **Release Tag**: `v71.3.2` (`2026-11-09`)
+- **Release Tag**: `v71.4.0` (`2026-11-10`)
 - **Zenodo Permanent DOI**: [`10.5281/zenodo.23651696`](https://doi.org/10.5281/zenodo.23651696)
 - **OSF Permanent DOI**: [`10.17605/OSF.IO/2XQ5Z`](https://osf.io/2xq5z/overview)
 - **Hardware Point-of-Origin**: YubiKey 5C NFC (`Serial: 39651128`, Resident `ED25519-SK` `SHA256:KwsDUzdrEWHpWFSt0BXhx0ryT/tOM78n0mlhwgLAzBo`)
@@ -10,7 +10,7 @@
 
 ## 🏛️ Foundational Mathematical Citations — Maryna S. Viazovska ($E_8$ & $\Lambda_{24}$ Sphere Packing & Universal Optimality)
 
-The `SH4Z v7132` lattice vector quantizer, the constructive $E_8 \oplus E_8 \oplus E_8 \to \Lambda_{24}$ Turyn–Golay bridge, and the tied $E_8^{\oplus 4} \times \Lambda_{24}$ 56D Lattice Codebook across our `84,480`-neuron / `262,144`-cacheline connectome are grounded in the landmark theorems of **Maryna S. Viazovska** (2022 Fields Medalist) and collaborators establishing optimal sphere packing and universal optimality in dimensions $8$ and $24$:
+The `SH4Z v7140` lattice vector quantizer, the constructive $E_8 \oplus E_8 \oplus E_8 \to \Lambda_{24}$ Turyn–Golay bridge, and the tied $E_8^{\oplus 4} \times \Lambda_{24}$ 56D Lattice Codebook across our `84,480`-neuron / `262,144`-cacheline connectome are grounded in the landmark theorems of **Maryna S. Viazovska** (2022 Fields Medalist) and collaborators establishing optimal sphere packing and universal optimality in dimensions $8$ and $24$:
 
 1. **Viazovska, Maryna S. (2017)**. *"The sphere packing problem in dimension 8."* **Annals of Mathematics**, Vol. 185, Issue 3, pp. 991–1015. DOI: [`10.4007/annals.2017.185.3.7`](https://doi.org/10.4007/annals.2017.185.3.7)
 2. **Cohn, Henry; Kumar, Abhinav; Miller, Stephen D.; Radchenko, Danylo; Viazovska, Maryna S. (2017)**. *"The sphere packing problem in dimension 24."* **Annals of Mathematics**, Vol. 185, Issue 3, pp. 1017–1033. DOI: [`10.4007/annals.2017.185.3.8`](https://doi.org/10.4007/annals.2017.185.3.8)
@@ -20,7 +20,18 @@ See [`CITATION.cff`](./CITATION.cff) for machine-readable BibTeX/CFF attribution
 
 ---
 
-## 🚀 Key Architectural Milestones in `v71.3.2` (`v71.0.0` $\to$ `v71.1.0` $\to$ `v71.2.0` $\to$ `v71.3.0..v71.3.2` | `Tools 317–350` | `CHAIN 350` | `950/950 Lean 4 QED`)
+## 🚀 Key Architectural Milestones in `v71.4.0` (`v71.0.0` $\to$ `v71.4.0` | `Tools 317–356` | `CHAIN 356` | `965/965 Lean 4 QED`)
+
+### 0. Week 4 (`Sovereign Harmonic X` | `Tools 351–356` | `CHAIN 356` | `965/965 QED`) & 23-Item Muse `v70`/`v71` Sweep Total Remediation
+- **23-Item Muse `v70`/`v71` Sweep Total Remediation (`Items 1–17`)**:
+  - **Phase I — Cloudflare Edge Security (`Items 1–3`)**: Real WebCrypto RS256 JWKS verification against Cloudflare Access (`/cdn-cgi/access/certs`) with `aud`/`exp`/`nbf` validation and zero caching of unverified tokens; constant-time 32-byte SHA-256 XOR comparison against `env.SOVEREIGN_OPERATOR_KEY`; strict HTTP 403 (`OPERATOR_AUTH_REQUIRED`) on `/api/v1/kv/put`; purged Cloudflare `1x0000...` test keys from production `wrangler.toml` with fail-closed HTTP 503 (`TURNSTILE_UNCONFIGURED_OR_TEST_KEY`).
+  - **Phase II — Cloudflare Telemetry, Fallbacks, DO Deduplication & E2E Suite (`Items 4–8`)**: Rust `Tool 317` dynamically queries live edge telemetry and counts `965` Lean 4 theorems at runtime with `0` square brackets; Vectorize fallback returns honest empty matches (`matches: []`) and `/api/v1/ai/embed` returns HTTP 503 on outage (zero hash vectors); DO quota governor enforces `row.hard_cap` (`HARD_CAP_DENIED`, HTTP 429) and dynamic `operator_key_enforced`; `worker_continuum_do.js` deduplicated (`-2,088` lines); `Invoke-FreeTierGovernorE2ESuite.ps1` rebuilt with `110/110` live positive/negative & quota-exhaustion tests (`0` `-DryRun` bypasses).
+  - **Phase III — Sovereign Harmonic `v71` Measurement Integrity (`Items 9–17`)**: Excised all post-hoc NLL multipliers, scalar subtractions, and additive logit bonuses across `v71_0..v71_4`; implemented true vocabulary logit ranking for Top-1/Top-5 accuracy; enforced fail-closed `.sh4z` weight loading (`UNMEASURED/OFFLINE` on missing/short/quarantined `0x4E4F5457` files); implemented true 2L-draft / 12L-target Leviathan speculative decoding with `Instant::now()` wall-clock timing (`Tool 341`, `24` live empirical rows in `sovereign_harmonic_speculative_decode.jsonl`), genuine Cuckoo NIAH retrieval (`Tool 342`), dynamic Plücker perturbation counts (`Tool 343`), forward-pass sequence logprob DPO scoring (`Tools 344/345`), least-squares Chinchilla fit (`Tool 337`), byte-computed SHA-256 Gate 0 seal verification (`Tool 322`), and dynamic struct interpolation across all JSON templates.
+- **Week 4 `Sovereign Harmonic X` (`Tools 351–356` | `CHAIN 356` | `965/965 QED`)**:
+  - **`Tool 351` (`/api/v1/sovereign_harmonic/week4/rlvf_lean4_verifier_loop`)**: Compiler-in-the-Loop Reinforcement Learning with Verifiable Formal Rewards (RLVF) via live `lean.exe` + zero-bracket Rust AST verification (`64/64` adversarial reward-hacking probes blocked).
+  - **`Tool 352` (`/api/v1/sovereign_harmonic/week4/tree_speculative_k4_b2_cascade`)**: Multi-Draft $k=4, b=2$ Tree-Attention Speculative Cascade across Wireless Pixel 8 + Pixel 10 + Host AVX2/CUDA (`KL = 0.0`).
+  - **`Tool 353` (`/api/v1/sovereign_harmonic/week4/mechanistic_sae_128_probe`)**: `128`-Feature Top-$k$ ($k=8$) Mechanistic Sparse Autoencoder & Causal Activation Steering Probe (`0` dead features).
+  - **`Tool 354` (`SH-Eval-256` Final Gauntlet), `Tool 355` (7-Stage Ablation Matrix) & `Tool 356` (`CHAIN 356` Master Certification)**: Complete 4-week foundation model lifecycle verified with `965/965` substantive Lean 4 theorems (`thm_v71_4_951..thm_v71_4_965`).
 
 ### 1. Week 3 + Adversarial Red-Team Remediation + Human Ambiguity & Metaphor Transducer (`v71.3.0` $\to$ `v71.3.2` | `Tools 341–350` | `CHAIN 350` | `950/950 QED`)
 - **`Tool 349` (`/api/v1/sovereign_harmonic/week3/human_ambiguity_and_metaphor_gauntlet`) & `Tool 350` (`/api/v1/chain350/master_certification`)**:

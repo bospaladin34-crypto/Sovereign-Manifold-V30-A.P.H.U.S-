@@ -74,6 +74,19 @@ function Run-StaticGatekeeperChecks {
         $failures.Add("MOBILE_MIRROR_DRIFT: app/src MainActivity.kt != src MainActivity.kt")
     }
 
+    # 3a. Cloudflare Edge Worker Mirror Lockstep Check (Item 8 / Finding 9)
+    $workerRoot = "$RepoRoot\worker_vpc_shadow_v3700.js"
+    $workerEdge = "$RepoRoot\00_control\cloudflare_edge\worker_vpc_shadow_v3700.js"
+    if (-not (Test-Path $workerRoot) -or -not (Test-Path $workerEdge)) {
+        $failures.Add("CLOUDFLARE_WORKER_MISSING: worker_vpc_shadow_v3700.js missing in root or 00_control/cloudflare_edge")
+    } else {
+        $hw1 = (Get-FileHash $workerRoot -Algorithm SHA256).Hash
+        $hw2 = (Get-FileHash $workerEdge -Algorithm SHA256).Hash
+        if ($hw1 -ne $hw2) {
+            $failures.Add("CLOUDFLARE_WORKER_DRIFT: root worker_vpc_shadow_v3700.js ($($hw1.Substring(0,12))) != 00_control/cloudflare_edge ($($hw2.Substring(0,12)))")
+        }
+    }
+
     # 4. Constitutional Context & Agent/Rule Global/Workspace Lockstep
     $gWork = "$RepoRoot\GEMINI.md"
     $gUser1 = "C:\Users\Nbell\.gemini\GEMINI.md"

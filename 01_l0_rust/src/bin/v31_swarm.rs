@@ -6705,6 +6705,43 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
         {
             let req_payload = if !post_body.trim().is_empty() { &post_body } else { raw_target };
             Some(v71_3_dispatch_tool_350_chain350_master_certification(req_payload))
+        } else if clean_path == "/api/v1/sovereign_harmonic/week4/rlvf_grpo_compiler_in_the_loop"
+            || clean_path == "/api/v1/tools/t351"
+            || clean_path == "/api/v1/tool/351"
+        {
+            let req_payload = if !post_body.trim().is_empty() { &post_body } else { raw_target };
+            Some(v71_4_dispatch_tool_351_rlvf_grpo_compiler_in_the_loop(req_payload))
+        } else if clean_path == "/api/v1/sovereign_harmonic/week4/medusa_eagle_dendritic_tree_speculative_k8"
+            || clean_path == "/api/v1/tools/t352"
+            || clean_path == "/api/v1/tool/352"
+        {
+            let req_payload = if !post_body.trim().is_empty() { &post_body } else { raw_target };
+            Some(v71_4_dispatch_tool_352_medusa_eagle_dendritic_tree_speculative_k8(req_payload))
+        } else if clean_path == "/api/v1/sovereign_harmonic/week4/sae_monosemantic_feature_circuit_explorer"
+            || clean_path == "/api/v1/tools/t353"
+            || clean_path == "/api/v1/tool/353"
+        {
+            let req_payload = if !post_body.trim().is_empty() { &post_body } else { raw_target };
+            Some(v71_4_dispatch_tool_353_sae_monosemantic_feature_circuit_explorer(req_payload))
+        } else if clean_path == "/api/v1/sovereign_harmonic/week4/sh_eval_256_compiler_pass_at_k_gauntlet"
+            || clean_path == "/api/v1/tools/t354"
+            || clean_path == "/api/v1/tool/354"
+        {
+            let req_payload = if !post_body.trim().is_empty() { &post_body } else { raw_target };
+            Some(v71_4_dispatch_tool_354_sh_eval_256_compiler_pass_at_k_gauntlet(req_payload))
+        } else if clean_path == "/api/v1/sovereign_harmonic/week4/torture_and_ablation_12test_gauntlet"
+            || clean_path == "/api/v1/tools/t355"
+            || clean_path == "/api/v1/tool/355"
+        {
+            let req_payload = if !post_body.trim().is_empty() { &post_body } else { raw_target };
+            Some(v71_4_dispatch_tool_355_week4_12test_torture_and_ablation_gauntlet(req_payload))
+        } else if clean_path == "/api/v1/sovereign_harmonic/week4/master_certification"
+            || clean_path == "/api/v1/chain356/master_certification"
+            || clean_path == "/api/v1/tools/t356"
+            || clean_path == "/api/v1/tool/356"
+        {
+            let req_payload = if !post_body.trim().is_empty() { &post_body } else { raw_target };
+            Some(v71_4_dispatch_tool_356_chain356_master_certification(req_payload))
         } else if clean_path == "/api/v1/v70/hsiang_isoparametric_symplectic_leapfrog"
             || clean_path == "/api/v1/tools/t315"
             || clean_path == "/api/v1/tool/315"

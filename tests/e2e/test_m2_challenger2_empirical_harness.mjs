@@ -52,10 +52,12 @@ testContext.SimpleLruCache = SimpleLruCache;
 testContext.computeCosineSimilarity = computeCosineSimilarity;
 testContext.generateDeterministic32DPolytonicE8 = generateDeterministic32DPolytonicE8;
 testContext.verifyZeroTrustAndOperatorHeaders = verifyZeroTrustAndOperatorHeaders;
+testContext.isProductionTurnstileKey = isProductionTurnstileKey;
 testContext.emitEdgeTelemetry = emitEdgeTelemetry;
 testContext.flushAnalyticsBatchBufferToD1 = flushAnalyticsBatchBufferToD1;
 testContext.gTurnstileTokenCache = gTurnstileTokenCache;
 testContext.gZeroTrustJwtCache = gZeroTrustJwtCache;
+testContext.gAccessJwksKeyCache = gAccessJwksKeyCache;
 testContext.gAnalyticsBatchBuffer = gAnalyticsBatchBuffer;
 `;
 
@@ -75,9 +77,11 @@ const {
   computeCosineSimilarity,
   generateDeterministic32DPolytonicE8,
   verifyZeroTrustAndOperatorHeaders,
+  isProductionTurnstileKey,
   emitEdgeTelemetry,
   gTurnstileTokenCache,
-  gZeroTrustJwtCache
+  gZeroTrustJwtCache,
+  gAccessJwksKeyCache
 } = testContext;
 
 // ==============================================================================
@@ -237,43 +241,133 @@ console.log('\n--- [CHALLENGE 3] Turnstile Safe Fail-Closed Behavior & Zero Trus
 
 // 3.1: verifyZeroTrustAndOperatorHeaders security tests
 const mockUrl = 'https://act-omega-net.dev/api/v1/r2/vault/test.bin';
+const testOperatorKey = 'ACT_OMEGA_OPERATOR_VAULT_KEY_2026_SOVEREIGN';
+const authEnv = {
+  SOVEREIGN_OPERATOR_KEY: testOperatorKey,
+  CF_ACCESS_TEAM_DOMAIN: 'act-omega-net.cloudflareaccess.com',
+  CF_ACCESS_AUD: 'act-omega-zero-trust-aud'
+};
 
 // Test 3.1.1: Rejection of ?key= query parameters
 const reqWithKeyParam = new Request(mockUrl + '?key=validoperatorsecretkey1234567890', {
   headers: new Headers()
 });
-const authQueryParam = verifyZeroTrustAndOperatorHeaders(reqWithKeyParam, {});
+const authQueryParam = await verifyZeroTrustAndOperatorHeaders(reqWithKeyParam, authEnv);
 assert(authQueryParam.authorized === false && authQueryParam.status === 403, 'C3.1: Strict rejection of ?key= query parameter (Constitutional Invariant #7)');
 
 // Test 3.1.2: Short operator key (< 24 chars) rejected
 const reqShortKey = new Request(mockUrl, {
   headers: new Headers({ 'X-Sovereign-Operator-Key': 'shortkey_123456789012' })
 });
-const authShortKey = verifyZeroTrustAndOperatorHeaders(reqShortKey, {});
-assert(authShortKey.authorized === false, 'C3.2: Short operator key (< 24 chars) rejected');
+const authShortKey = await verifyZeroTrustAndOperatorHeaders(reqShortKey, authEnv);
+assert(authShortKey.authorized === false && authShortKey.status === 403, 'C3.2: Short operator key (< 24 chars) rejected');
 
 // Test 3.1.3: Valid operator key (>= 24 chars) accepted
 const reqValidKey = new Request(mockUrl, {
-  headers: new Headers({ 'X-Sovereign-Operator-Key': 'ACT_OMEGA_OPERATOR_VAULT_KEY_2026_SOVEREIGN' })
+  headers: new Headers({ 'X-Sovereign-Operator-Key': testOperatorKey })
 });
-const authValidKey = verifyZeroTrustAndOperatorHeaders(reqValidKey, {});
+const authValidKey = await verifyZeroTrustAndOperatorHeaders(reqValidKey, authEnv);
 assert(authValidKey.authorized === true && authValidKey.role === 'SOVEREIGN_OPERATOR', 'C3.3: Valid operator key (>= 24 chars) accepted with role SOVEREIGN_OPERATOR');
 
-// Test 3.1.4: Valid 3-part JWT assertion accepted
-const validJwt = 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkRvbmV2aW4iLCJpYXQiOjE1MTYyMzkwMjJ9.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c';
+// Test 3.1.3b: Arbitrary 24+ char operator key not matching secret rejected in constant time
+const reqMismatchedKey = new Request(mockUrl, {
+  headers: new Headers({ 'X-Sovereign-Operator-Key': 'INVALID_OPERATOR_KEY_OF_EXACTLY_MATCHING_LENGTH!' })
+});
+const authMismatchedKey = await verifyZeroTrustAndOperatorHeaders(reqMismatchedKey, authEnv);
+assert(authMismatchedKey.authorized === false && authMismatchedKey.status === 403, 'C3.3b: Arbitrary 24+ char operator key not matching secret rejected with 403');
+
+// Cloudflare Access RS256 Key Setup for Empirical JWT Tests
+const accessKeyPair = await crypto.subtle.generateKey(
+  {
+    name: 'RSASSA-PKCS1-v1_5',
+    modulusLength: 2048,
+    publicExponent: new Uint8Array([1, 0, 1]),
+    hash: 'SHA-256'
+  },
+  true,
+  ['sign', 'verify']
+);
+const accessKid = 'act-omega-access-cert-kid-01';
+gAccessJwksKeyCache.set(`${authEnv.CF_ACCESS_TEAM_DOMAIN}:${accessKid}`, {
+  cryptoKey: accessKeyPair.publicKey,
+  expiresAt: Date.now() + 3600000
+});
+
+function toB64Url(obj) {
+  const str = typeof obj === 'string' ? obj : JSON.stringify(obj);
+  return Buffer.from(str).toString('base64url');
+}
+
+const jwtHeader = { alg: 'RS256', kid: accessKid, typ: 'JWT' };
+const nowSec = Math.floor(Date.now() / 1000);
+const jwtPayload = {
+  aud: authEnv.CF_ACCESS_AUD,
+  exp: nowSec + 3600,
+  nbf: nowSec - 60,
+  sub: 'donevin-principal-architect',
+  email: 'bospaladin34@gmail.com'
+};
+
+const unsignedJwt = `${toB64Url(jwtHeader)}.${toB64Url(jwtPayload)}`;
+const sigBuffer = await crypto.subtle.sign(
+  'RSASSA-PKCS1-v1_5',
+  accessKeyPair.privateKey,
+  new TextEncoder().encode(unsignedJwt)
+);
+const validJwt = `${unsignedJwt}.${Buffer.from(sigBuffer).toString('base64url')}`;
+
+// Test 3.1.4: Authentic RS256 JWT assertion accepted
 const reqJwt = new Request(mockUrl, {
   headers: new Headers({ 'Cf-Access-Jwt-Assertion': validJwt })
 });
-const authJwt = verifyZeroTrustAndOperatorHeaders(reqJwt, {});
-assert(authJwt.authorized === true && authJwt.role === 'ZERO_TRUST_OPERATOR', 'C3.4: Valid 3-part Cf-Access-Jwt-Assertion header accepted with role ZERO_TRUST_OPERATOR');
+const authJwt = await verifyZeroTrustAndOperatorHeaders(reqJwt, authEnv);
+assert(authJwt.authorized === true && authJwt.role === 'ZERO_TRUST_OPERATOR', 'C3.4: Authentic RS256 Cf-Access-Jwt-Assertion accepted with role ZERO_TRUST_OPERATOR');
+
+// Test 3.1.4b: Forged JWT (corrupted signature) rejected with 403 and NEVER cached
+const forgedJwt = validJwt.slice(0, -6) + 'XXXXXX';
+const reqForgedJwt = new Request(mockUrl, {
+  headers: new Headers({ 'Cf-Access-Jwt-Assertion': forgedJwt })
+});
+const authForgedJwt = await verifyZeroTrustAndOperatorHeaders(reqForgedJwt, authEnv);
+assert(authForgedJwt.authorized === false && authForgedJwt.status === 403 && !gZeroTrustJwtCache.get(forgedJwt), 'C3.4b: Forged JWT signature rejected with 403 and never cached');
+
+// Test 3.1.4c: Expired JWT rejected with 403
+const expiredPayload = { ...jwtPayload, exp: nowSec - 10 };
+const unsignedExpiredJwt = `${toB64Url(jwtHeader)}.${toB64Url(expiredPayload)}`;
+const expiredSigBuffer = await crypto.subtle.sign(
+  'RSASSA-PKCS1-v1_5',
+  accessKeyPair.privateKey,
+  new TextEncoder().encode(unsignedExpiredJwt)
+);
+const expiredJwt = `${unsignedExpiredJwt}.${Buffer.from(expiredSigBuffer).toString('base64url')}`;
+const reqExpiredJwt = new Request(mockUrl, {
+  headers: new Headers({ 'Cf-Access-Jwt-Assertion': expiredJwt })
+});
+const authExpiredJwt = await verifyZeroTrustAndOperatorHeaders(reqExpiredJwt, authEnv);
+assert(authExpiredJwt.authorized === false && authExpiredJwt.status === 403, 'C3.4c: Expired JWT rejected with 403');
+
+// Test 3.1.4d: Wrong audience JWT rejected with 403
+const wrongAudPayload = { ...jwtPayload, aud: 'wrong-untrusted-audience' };
+const unsignedWrongAudJwt = `${toB64Url(jwtHeader)}.${toB64Url(wrongAudPayload)}`;
+const wrongAudSigBuffer = await crypto.subtle.sign(
+  'RSASSA-PKCS1-v1_5',
+  accessKeyPair.privateKey,
+  new TextEncoder().encode(unsignedWrongAudJwt)
+);
+const wrongAudJwt = `${unsignedWrongAudJwt}.${Buffer.from(wrongAudSigBuffer).toString('base64url')}`;
+const reqWrongAudJwt = new Request(mockUrl, {
+  headers: new Headers({ 'Cf-Access-Jwt-Assertion': wrongAudJwt })
+});
+const authWrongAudJwt = await verifyZeroTrustAndOperatorHeaders(reqWrongAudJwt, authEnv);
+assert(authWrongAudJwt.authorized === false && authWrongAudJwt.status === 403, 'C3.4d: Wrong audience JWT rejected with 403');
 
 // Test 3.1.5: Malformed JWT (e.g. 2 parts or 4 parts) rejected
 const malformedJwt = 'header.payload'; // missing signature
 const reqBadJwt = new Request(mockUrl, {
   headers: new Headers({ 'Cf-Access-Jwt-Assertion': malformedJwt })
 });
-const authBadJwt = verifyZeroTrustAndOperatorHeaders(reqBadJwt, {});
-assert(authBadJwt.authorized === false, 'C3.5: Malformed JWT (< 3 parts) rejected');
+const authBadJwt = await verifyZeroTrustAndOperatorHeaders(reqBadJwt, authEnv);
+assert(authBadJwt.authorized === false && authBadJwt.status === 403, 'C3.5: Malformed JWT (< 3 parts) rejected');
 
 // 3.2: Turnstile Endpoint Fail-Closed Behavior Verification
 // Simulate the turnstile endpoint logic from worker_vpc_shadow_v3700.js
@@ -298,14 +392,39 @@ async function simulateTurnstileEndpoint(req, env) {
   }
 
   const secretKey = env.TURNSTILE_SECRET_KEY;
-  if (!secretKey) {
+  if (!isProductionTurnstileKey(secretKey)) {
     return {
-      status: 500,
+      status: 503,
       data: {
         success: false,
-        error: 'TURNSTILE_SECRET_KEY_MISSING',
+        verified: false,
+        error: 'TURNSTILE_PRODUCTION_SECRET_NOT_CONFIGURED',
         fail_closed: true,
-        status: 'CONFIGURATION_ERROR'
+        status: 503
+      }
+    };
+  }
+
+  if (body.secret && !isProductionTurnstileKey(body.secret)) {
+    return {
+      status: 403,
+      data: {
+        success: false,
+        verified: false,
+        error: 'TURNSTILE_TEST_KEY_REJECTED',
+        status: 403
+      }
+    };
+  }
+
+  if (!isProductionTurnstileKey(token)) {
+    return {
+      status: 403,
+      data: {
+        success: false,
+        verified: false,
+        error: 'TURNSTILE_TEST_TOKEN_REJECTED',
+        status: 403
       }
     };
   }
@@ -320,6 +439,7 @@ async function simulateTurnstileEndpoint(req, env) {
       status: 502,
       data: {
         success: false,
+        verified: false,
         error: 'TURNSTILE_VERIFY_NETWORK_ERROR',
         message: String(err),
         status: 'FAIL_CLOSED'
@@ -338,43 +458,84 @@ function createTurnstileReq(bodyObj) {
 }
 
 // Test 3.2.1: Missing token fails closed with 400
-const resNoToken = await simulateTurnstileEndpoint(createTurnstileReq({}), { TURNSTILE_SECRET_KEY: 'test-secret' });
+const resNoToken = await simulateTurnstileEndpoint(createTurnstileReq({}), { TURNSTILE_SECRET_KEY: 'production-secret-key-32chars-ok' });
 assert(resNoToken.status === 400 && resNoToken.data.error === 'MISSING_TURNSTILE_TOKEN', 'C3.6: Missing Turnstile token fails closed with 400 MISSING_TURNSTILE_TOKEN');
 
-// Test 3.2.2: Missing secret key fails closed with 500 & fail_closed: true
-const resMissingSecret = await simulateTurnstileEndpoint(createTurnstileReq({ token: '0.sample-token' }), {});
-assert(resMissingSecret.status === 500 && resMissingSecret.data.fail_closed === true && resMissingSecret.data.error === 'TURNSTILE_SECRET_KEY_MISSING', 'C3.7: Missing TURNSTILE_SECRET_KEY fails closed with 500 and fail_closed=true');
+// Test 3.2.2: Missing or test secret key fails closed with 503 & fail_closed: true
+const resMissingSecret = await simulateTurnstileEndpoint(createTurnstileReq({ token: '0.sample-production-token' }), {});
+assert(resMissingSecret.status === 503 && resMissingSecret.data.fail_closed === true && resMissingSecret.data.error === 'TURNSTILE_PRODUCTION_SECRET_NOT_CONFIGURED', 'C3.7: Missing TURNSTILE_SECRET_KEY fails closed with 503 and fail_closed=true');
+
+const resTestSecret = await simulateTurnstileEndpoint(createTurnstileReq({ token: '0.sample-production-token' }), { TURNSTILE_SECRET_KEY: '1x0000000000000000000000000000000AA' });
+assert(resTestSecret.status === 503 && resTestSecret.data.fail_closed === true && resTestSecret.data.error === 'TURNSTILE_PRODUCTION_SECRET_NOT_CONFIGURED', 'C3.7b: Test TURNSTILE_SECRET_KEY fails closed with 503');
+
+// Test 3.2.2c: Test token starting with 1x00000 rejected with 403
+const resTestToken = await simulateTurnstileEndpoint(createTurnstileReq({ token: '1x00000000000000000000AA' }), { TURNSTILE_SECRET_KEY: 'production-secret-key-32chars-ok' });
+assert(resTestToken.status === 403 && resTestToken.data.error === 'TURNSTILE_TEST_TOKEN_REJECTED', 'C3.7c: Test Turnstile token rejected with 403');
 
 // Test 3.2.3: Siteverify network failure / exception fails closed with 502
-const resNetworkError = await simulateTurnstileEndpoint(createTurnstileReq({ token: '0.sample-token' }), {
-  TURNSTILE_SECRET_KEY: 'test-secret',
+const resNetworkError = await simulateTurnstileEndpoint(createTurnstileReq({ token: '0.sample-production-token' }), {
+  TURNSTILE_SECRET_KEY: 'production-secret-key-32chars-ok',
   mockFetch: () => { throw new Error('Cloudflare siteverify DNS lookup timeout'); }
 });
 assert(resNetworkError.status === 502 && resNetworkError.data.status === 'FAIL_CLOSED' && resNetworkError.data.error === 'TURNSTILE_VERIFY_NETWORK_ERROR', 'C3.8: Network failure in siteverify fails closed with 502 FAIL_CLOSED');
 
 // Test 3.2.4: Siteverify validation rejected (outcome.success = false)
-const resRejected = await simulateTurnstileEndpoint(createTurnstileReq({ token: '0.sample-token' }), {
-  TURNSTILE_SECRET_KEY: 'test-secret',
+const resRejected = await simulateTurnstileEndpoint(createTurnstileReq({ token: '0.sample-production-token' }), {
+  TURNSTILE_SECRET_KEY: 'production-secret-key-32chars-ok',
   mockFetch: () => ({
     status: 403,
-    data: { success: false, error: 'TURNSTILE_VALIDATION_FAILED', error_codes: ['invalid-input-response'], status: 'REJECTED' }
+    data: { success: false, verified: false, error: 'TURNSTILE_VALIDATION_FAILED', error_codes: ['invalid-input-response'], status: 403 }
   })
 });
-assert(resRejected.status === 403 && resRejected.data.success === false && resRejected.data.status === 'REJECTED', 'C3.9: Invalid token verification rejected with 403 REJECTED');
+assert(resRejected.status === 403 && resRejected.data.success === false && resRejected.data.status === 403, 'C3.9: Invalid token verification rejected with 403');
 
 // Test 3.2.5: Successful validation caches token and subsequent call uses cache
 const validToken = '0.verified-token-' + Date.now();
 const resSuccess = await simulateTurnstileEndpoint(createTurnstileReq({ token: validToken }), {
-  TURNSTILE_SECRET_KEY: 'test-secret',
+  TURNSTILE_SECRET_KEY: 'production-secret-key-32chars-ok',
   mockFetch: () => {
     gTurnstileTokenCache.set(validToken, true);
-    return { status: 200, data: { success: true, source: 'CLOUDFLARE_SITEVERIFY', status: 'NOMINAL' } };
+    return { status: 200, data: { success: true, verified: true, source: 'CLOUDFLARE_SITEVERIFY', status: 'NOMINAL' } };
   }
 });
 assert(resSuccess.status === 200 && resSuccess.data.success === true, 'C3.10: Valid token verifies successfully');
 
-const resCached = await simulateTurnstileEndpoint(createTurnstileReq({ token: validToken }), { TURNSTILE_SECRET_KEY: 'test-secret' });
+const resCached = await simulateTurnstileEndpoint(createTurnstileReq({ token: validToken }), { TURNSTILE_SECRET_KEY: 'production-secret-key-32chars-ok' });
 assert(resCached.status === 200 && resCached.data.source === 'ISOLATE_TOKEN_CACHE', 'C3.11: Cached token returns ISOLATE_TOKEN_CACHE hit without re-verification');
+
+// 3.3: KV PUT Route Authorization Enforcement Verification (Item 2 / Finding 2)
+async function simulateKvPut(req, env) {
+  const auth = await verifyZeroTrustAndOperatorHeaders(req, env);
+  if (!auth.authorized) {
+    return { status: 403, data: { error: 'OPERATOR_AUTH_REQUIRED', status: 403 } };
+  }
+  let body = {};
+  try {
+    body = await req.json();
+  } catch {
+    return { status: 400, data: { error: 'INVALID_JSON_BODY', status: 400 } };
+  }
+  return { status: 200, data: { status: 'NOMINAL', key: body.key, written_to_kv: true } };
+}
+
+const unauthKvReq = new Request('https://act-omega-net.dev/api/v1/kv/put', {
+  method: 'POST',
+  headers: new Headers({ 'Content-Type': 'application/json' }),
+  body: JSON.stringify({ key: 'test_key', value: 'test_val' })
+});
+const resUnauthKv = await simulateKvPut(unauthKvReq, authEnv);
+assert(resUnauthKv.status === 403 && resUnauthKv.data.error === 'OPERATOR_AUTH_REQUIRED', 'C3.12: Unauthenticated KV PUT rejected with 403 OPERATOR_AUTH_REQUIRED');
+
+const authKvReq = new Request('https://act-omega-net.dev/api/v1/kv/put', {
+  method: 'POST',
+  headers: new Headers({
+    'Content-Type': 'application/json',
+    'X-Sovereign-Operator-Key': testOperatorKey
+  }),
+  body: JSON.stringify({ key: 'test_key', value: 'test_val' })
+});
+const resAuthKv = await simulateKvPut(authKvReq, authEnv);
+assert(resAuthKv.status === 200 && resAuthKv.data.status === 'NOMINAL', 'C3.13: Authenticated KV PUT succeeds with 200 NOMINAL');
 
 
 

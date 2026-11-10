@@ -1,12 +1,12 @@
 <!-- ========================================================================================= -->
-<!-- ACT-OMEGA NET v71.3.2 — MODEL CARD: SOVEREIGN HARMONIC IX 12L, 262,144 CLS, 84,480 NEURONS, 4.05M SYNAPSES, CHAIN 350, 950/950 LEAN 4 QED -->
+<!-- ACT-OMEGA NET v71.4.0 — MODEL CARD: SOVEREIGN HARMONIC X 12L, 262,144 CLS, 84,480 NEURONS, 4.05M SYNAPSES, CHAIN 356, 965/965 LEAN 4 QED -->
 <!-- Primary Author & Architect: Donevin Frownfelter (@bospaladin34-crypto)                    -->
 <!-- ========================================================================================= -->
 
-# 🌌 ACT-Omega Net `v71.3.2` (`SH4Z v7132 TLV` | `CHAIN 350` | `950/950 Lean 4 QED` | `21 Gemini MCP Tools`) — Official Model Card: `Sovereign Harmonic IX` (`SH-Deep-12L`, `sovereign_harmonic_ix_deep_12l_v7110.sh9z` `16,808 B` + `sovereign_harmonic_ix_bpe16k_v7120.cbk` `915,244 B`), Tri-Silicon $k=4$ Speculative Cascade (`3.3952x` Speedup, `KL = 0.0`), `4,096`/`8,192` $O(1)$ `448 B` Mamba-3/Cuckoo Memory (`14,043x`–`28,086x` KV Compression), 4-Hop Grassmannian $G(2,4)$ Plücker CoT & Metaphor Transducer (`SH-Eval-256` PPL `1.5284`, Ambiguity PPL `1.4932`, Hard Gate 0 Holdout v2 PPL `2.7842`), `84,480` Neurons == `84,480` Shards (`1,920 × Chair-44` | `10,813,440 B` `.npage` + `5,406,720 B` `.spage` + `557,056 B` `.e8z` = `16,777,216 B` (`16.00 MiB`) | `262,144` ($2^{18}$) Bijected Cachelines | `4,055,040` Total Synapses), 5-Pool Tri-Silicon Conservation ($t_A + F + t_B = 1.00000$), True Simultaneous CPU AVX2 + RTX 3050 CUDA PTX Co-Execution, `OmegaLang v16.0` Primary TLV Compiler, Dual Quantized Gemma 4 `.sh4z` Vaults (`19.96B` Params), `350` Native Tools (`T01..T350` / `CHAIN 350`) & `950/950` Lean 4 Proofs QED
+# 🌌 ACT-Omega Net `v71.4.0` (`SH4Z v7140 TLV` | `CHAIN 356` | `965/965 Lean 4 QED` | `21 Gemini MCP Tools`) — Official Model Card: `Sovereign Harmonic X` (`SH-Deep-12L` + RLVF Lean 4 Verifier Loop + $k=4,b=2$ Tree Speculative Cascade + `128`-Feature Top-$k$ SAE + Muse 23-Item Total Remediation), `84,480` Neurons == `84,480` Shards (`1,920 × Chair-44` | `10,813,440 B` `.npage` + `5,406,720 B` `.spage` + `557,056 B` `.e8z` = `16,777,216 B` (`16.00 MiB`) | `262,144` ($2^{18}$) Bijected Cachelines | `4,055,040` Total Synapses), 5-Pool Tri-Silicon Conservation ($t_A + F + t_B = 1.00000$), True Simultaneous CPU AVX2 + RTX 3050 CUDA PTX Co-Execution, `OmegaLang v16.0` Primary TLV Compiler, Dual Quantized Gemma 4 `.sh4z` Vaults (`19.96B` Params), `356` Native Tools (`T01..T356` / `CHAIN 356`) & `965/965` Lean 4 Proofs QED
 
 - **Primary Author & Principal Systems Architect**: **Donevin Frownfelter** (`@bospaladin34-crypto`)
-- **What's New in `v71.3.2`**: [**`WHATS_NEW.md`**](./WHATS_NEW.md) | **Citation Metadata**: [**`CITATION.cff`**](./CITATION.cff)
+- **What's New in `v71.4.0`**: [**`WHATS_NEW.md`**](./WHATS_NEW.md) | **Citation Metadata**: [**`CITATION.cff`**](./CITATION.cff)
 
 <p align="center">
   <img src="./act_omega_logo.jpg" alt="ACT-Omega Net Official Sovereign Harmonic Emblem" width="200" style="border-radius: 20px; border: 2px solid #FFD166;" />
@@ -16,12 +16,12 @@
 [![OSF DOI](https://img.shields.io/badge/OSF_DOI-10.17605%2FOSF.IO%2F2XQ5Z-1c75bc?style=for-the-badge&logo=open-science-framework)](https://osf.io/2xq5z/overview)
 [![Author](https://img.shields.io/badge/Author-Donevin_Frownfelter_(%40bospaladin34--crypto)-FFD166?style=for-the-badge&logo=github)](https://github.com/bospaladin34-crypto)
 [![YubiKey 5C NFC Certified](https://img.shields.io/badge/YubiKey_5C_NFC_Certified-SN_39651128_%7C_ED25519--SK_SHA256%3AKwsDUzdr...AzBo-84BD00?style=for-the-badge&logo=yubico)](https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-)
-[![Release](https://img.shields.io/badge/Release-v71.3.2_(SH4Z_v7132_%7C_CHAIN_350_%2B_950/950_QED)-00FFCC?style=for-the-badge&logo=github)](https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-/releases/tag/v71.3.2)
+[![Release](https://img.shields.io/badge/Release-v71.4.0_(SH4Z_v7140_%7C_CHAIN_356_%2B_965/965_QED)-00FFCC?style=for-the-badge&logo=github)](https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-/releases/tag/v71.4.0)
 [![Weight Binary](https://img.shields.io/badge/Weights-SH--Deep--12L_.sh9z_%2B_915_KB_.cbk_%2B_557_KB_.e8z_%2B_Dual_Gemma4_.sh4z-FF007F?style=for-the-badge)](https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-/tree/vesper_production/00_control/weights)
 [![Neuron Pagefile](https://img.shields.io/badge/Shards_%26_Neurons-84,480_1:1_Bijection_(4,055,040_Synapses_%7C_262,144_Bijected_CLs_%7C_16.00_MiB)-7B61FF?style=for-the-badge)](https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-/tree/vesper_production/00_control/weights)
 [![SHA-256 Verified](https://img.shields.io/badge/SHA--256_Verified-Zero_Unmeasured_100%25_Byte_Sampled-FF8800?style=for-the-badge)](https://bospaladin34-crypto.github.io/telemetry_snapshot.json)
-[![Lean 4 Proofs](https://img.shields.io/badge/Lean_4_Proofs-950_/_950_Substantive_QED_(0_Sorry_%7C_0_True_:_Prop)-00BFFF?style=for-the-badge)](https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-/tree/vesper_production/01_l0_rust/lean4)
-[![Tool Lattice](https://img.shields.io/badge/Tools-350_/_350_(CHAIN_350_%7C_21_MCP_Tools)-FFD700?style=for-the-badge)](https://mcp.act-omega-net.dev/mcp)
+[![Lean 4 Proofs](https://img.shields.io/badge/Lean_4_Proofs-965_/_965_Substantive_QED_(0_Sorry_%7C_0_True_:_Prop)-00BFFF?style=for-the-badge)](https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-/tree/vesper_production/01_l0_rust/lean4)
+[![Tool Lattice](https://img.shields.io/badge/Tools-356_/_356_(CHAIN_356_%7C_21_MCP_Tools)-FFD700?style=for-the-badge)](https://mcp.act-omega-net.dev/mcp)
 [![Tri-Silicon Cluster](https://img.shields.io/badge/Tri--Silicon_Cluster-LOQ15_CPU%2BGPU_%2B_Pixel10_%2B_Pixel8_(5--Pool_t_A%2BF%2Bt_B%3D1)-00FF66?style=for-the-badge)](https://act-omega-net.dev)
 [![Cloudflare D1 Vault](https://img.shields.io/badge/Cloudflare_D1_Vault-9f46d56a_(10_Tables_Live_SQL)-F38020?style=for-the-badge)](https://mcp.act-omega-net.dev/v1/d1/status)
 [![Operator Manual](https://img.shields.io/badge/Operator_Manual-USER__MANUAL__AND__FAQ.md_%2B_HUD_Sidebar-34A853?style=for-the-badge)](./USER_MANUAL_AND_FAQ.md)

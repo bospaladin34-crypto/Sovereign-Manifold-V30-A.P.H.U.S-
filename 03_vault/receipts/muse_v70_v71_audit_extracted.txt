@@ -1,0 +1,127 @@
+Antigravity remediation prompt — v70/v71 sweep findings
+Muse sweep audit — 2026-11-09  ·  6 commits reviewed (e793856 v70.0.0, 856d5af, 48d32f3, 2ea5e7e, bdd5228 cloudflare-v70, 4f9f9e0 v71.3.2), branch vesper_production
+Copy everything below the line into Antigravity as a single task. It targets only the findings from today's sweep (6 commits: e793856 v70.0.0, 856d5af, 48d32f3, 2ea5e7e, bdd5228 cloudflare-v70, 4f9f9e0 v71.3.2). This is non-invasive work: surgical fixes to the flagged code, no architecture rewrites, no renames, no interface changes, no touching anything outside the listed areas.
+Do NOT re-litigate anything verified in earlier sweeps: the v69 weight fabrication is closed (checksums against the manifest, no filler), tools 302/303/307 are cleaned, tools 289–291 now fail closed, tools 298–300's literal perf numbers are gone, the chain-292 gates are computed and fail-closed, and the OTA endpoints require the operator-key header. Do NOT touch the Lean theorems (950/950, 0 sorry/axiom — not flagged) or the OTA auth gate (intact). Do NOT include the operator passkey rotation — rotation is completed and the new key stays local-only by standing policy. Do NOT touch the residual YubiKey FIDO2 fingerprint in the gatekeeper script or the other pre-existing carried-over items (canned pixel_manifest, telemetry query params, MainActivity.kt defaults, laminar telemetry literals) — those are separate items, not in this window.
+Fix in the order listed: the three security items first, then the Cloudflare telemetry items, then the v71 measurement items. Nothing downstream can be trusted until the edge auth actually verifies something.
+Standing constraint: if a number wasn't measured, it doesn't ship. Any value that remains hardcoded after this pass must carry a // SCAFFOLD: <what it stands in for> — measure via <how> marker. No silent constants.
+
+Task: targeted remediation of v70/v71 sweep findings
+You are working in bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-, branch vesper_production. Fix ONLY the items below. Do not refactor, rename, or restructure anything else. If a fix would require changing a public interface or touching an unrelated module, stop on that item and say so instead of forcing it.
+1. (Fix first) Edge "operator auth" never verifies anything
+Where: 00_control/cloudflare_edge/worker_vpc_shadow_v3700.js:150-181, verifyZeroTrustAndOperatorHeaders() (same code in the byte-identical copy worker_continuum_do.js).
+Problem: any Cf-Access-Jwt-Assertion header with 3 dot-separated parts is accepted as ZERO_TRUST_OPERATOR — no signature, expiry, or audience check — then cached valid for 5 minutes. Any X-Sovereign-Operator-Key header of 24+ characters is accepted as SOVEREIGN_OPERATOR — the key is never compared against any secret; env is never consulted for one. Anyone who knows the header name is "operator".
+Fix:
+Verify the Cloudflare Access JWT properly: check the signature against Cloudflare's JWKS, and check expiry and audience, before accepting it. Do not cache an unverified token as valid.
+Compare the operator key against a secret held in env (or a secret store), with a constant-time comparison. A header that merely looks long enough must be rejected.
+Apply the fix in both worker files (or remove the duplication per item 8 first, then fix the single copy).
+Acceptance: a forged 3-part JWT is rejected; a 24+ character key that does not match the configured secret is rejected; a valid operator request still passes; no auth decision is cached from an unverified input.
+2. /api/v1/kv/put computes auth but never enforces it
+Where: worker_vpc_shadow_v3700.js:2429-2500.
+Problem: const auth = verifyZeroTrustAndOperatorHeaders(request, env) is computed, then there is no if (!auth.authorized) return 403 — contrast R2 PUT (~2226-2228), which does check. Anonymous callers can write arbitrary KV entries. The route is new in this range.
+Fix:
+Enforce the check: return 403 unless the caller is authorized, exactly as R2 PUT does. Audit the other routes in the same file for the same pattern (computed-but-unenforced auth) and fix any others found the same way.
+Acceptance: an unauthenticated PUT to /api/v1/kv/put returns 403 and writes nothing; an authorized PUT still works.
+3. Turnstile always-pass test keys in production wrangler.toml
+Where: wrangler.toml and 00_control/cloudflare_edge/wrangler.toml (TURNSTILE_SITE_KEY = "1x00000000000000000000AA", TURNSTILE_SECRET_KEY = "1x0000000000000000000000000000000AA").
+Problem: these are Cloudflare's documented always-pass test pair. /api/v1/cloudflare/turnstile_verify genuinely calls siteverify, but with the test secret it always succeeds, so bot verification is effectively disabled.
+Fix:
+Replace both keys with the real production keys, held as secrets (never committed in plaintext). Keep the test pair only in a clearly labelled test-only configuration that is never deployed to production.
+Acceptance: a bot challenge with an invalid token fails verification in the deployed configuration; the test pair appears nowhere in any production config.
+4. Tool 317 quota governor always reports all-zero / NOMINAL
+Where: 01_l0_rust/src/v70_0_exponential_worksteal_262144cl_bijection.rs:609+, v70_0_dispatch_tool_317_cloudflare_free_tier_governor().
+Problem: the tool ignores its payload and hardcodes every usage figure to 0 (queried_dims_month, class_a/b_ops_month, daily_neurons_used, daily_writes, data_points_emitted, every usage_pct: 0.00, every tier status NOMINAL, global_status ALL_TIERS_NOMINAL). It never queries the DO, D1, or Cloudflare for real usage — only wrangler/worker file byte sizes and dispatch latency are measured. The governor can never see usage above zero, so it can never trip a cap. It also hardcodes the stale "840/840" Lean count and turnstile_site_key_configured / turnstile_secret_configured: true as literals. (The edge worker's own /api/v1/cloudflare/free_tier_governor route is real — it reads live DO quota_status. The Rust side is the canned one.)
+Fix:
+Query the real usage source (the DO quota status, D1, or Cloudflare) and report the measured figures. Until a figure can be measured, report it UNMEASURED, not 0.00 / NOMINAL.
+Read the Lean count live (or compute it) instead of hardcoding 840/840; report the Turnstile configured flags from the actual configuration, not as literals.
+Acceptance: the governor reports measured usage that can rise above zero, and can trip a cap when usage actually exceeds it; no usage figure is a hardcoded 0 or a literal status.
+5. Vectorize fallback fabricates nearest neighbors; /api/v1/ai/embed returns a hash vector as the embedding
+Where: worker_vpc_shadow_v3700.js ~255-275 (computeD1CosineSimilarityFallback()) and ~2280-2376 (/api/v1/ai/embed).
+Problem: when the D1 mirror has no matching vectors, the fallback fabricates candidates from hash vectors (generateDeterministic32DPolytonicE8("CANDIDATE_"+i)) and returns them as matches with computed cosine scores. When Workers AI is unavailable/quota-blocked, /api/v1/ai/embed returns a 32D hash-derived vector as the embedding. Both are labelled fallback: true, but the "matches" / "embedding" are synthetic and cosine similarity against them is meaningless.
+Fix:
+When there are no real vectors, return no matches (or an explicit no-results response), never fabricated candidates. When Workers AI is unavailable, return an error stating the embedding service is unavailable, never a hash vector presented as an embedding.
+Keep the fallback: true label only for honest fallbacks that return real data through a different path.
+Acceptance: no synthetic vector is ever returned as a match or an embedding; unavailability produces an explicit error or empty result.
+6. Governor payload hardcodes "operator_key_enforced": true; hard cap is decorative
+Where: worker line ~1923 (free_tier_governor response) and checkAndConsumeQuota().
+Problem: the response claims operator_key_enforced: true while the auth function (item 1) never verifies the key against anything. checkAndConsumeQuota() denies only when usage exceeds the soft cap; the hard cap is stored and reported but never compared. Usage is counted from units the worker itself reports (e.g. estimated queryDims), never reconciled against Cloudflare's actual usage.
+Fix:
+Report operator_key_enforced from the actual auth state (false until item 1 is fixed and the key is really enforced).
+Enforce the hard cap as a real denial, not just a reported number. Reconcile counted usage against Cloudflare's actual usage where the platform exposes it; where it cannot be reconciled, say so in the response instead of presenting an estimate as a measurement.
+Acceptance: the hard cap denies over-cap calls; the operator_key_enforced flag reflects reality; no estimated usage is presented as measured.
+7. The "E2E" suite mostly certifies itself
+Where: 00_control/Invoke-FreeTierGovernorE2ESuite.ps1 (new, 1484 lines).
+Problem: most tests are regex-presence checks on source files; T4.S01.2–S01.5 set pass = $edgeOnline (the governor endpoint returning ONLINE makes vectorize/KV/R2/AI flows "pass" without ever calling them); T4.S02.2 sets $no500Errors = $true unconditionally — a test that cannot fail; T4.S02.1/S02.5 call a local C# re-implementation of the budget math, not the live governor; -DryRun passes tests by fiat throughout. Only 2 live HTTP calls exist (lines 1173, 1276), both just checking the governor endpoint returns 200/ONLINE. It never exercises a real quota denial against the live DO.
+Fix:
+Replace presence checks with live calls against the real governor and real flows. Remove every unconditional pass and every DryRun fiat pass. Add a test that drives usage past a cap and verifies the live DO denies it. Tests that call a local re-implementation must be labelled as unit tests of the math, not E2E tests of the governor.
+Acceptance: every test labelled E2E makes a live call; at least one test verifies a real quota denial; no test in the suite can pass unconditionally.
+8. The two worker files are byte-identical
+Where: worker_continuum_do.js == worker_vpc_shadow_v3700.js (2,617 lines, same md5).
+Problem: the DO file is a full copy of the worker including its fetch handler, not just the SovereignEdgeShadowDO class. Any fix applied to one copy (e.g. items 1–2) can silently diverge from the other.
+Fix:
+Make the DO file contain only the DO class (importing shared code from the worker file where needed), and delete the duplicated fetch handler. If a full copy is genuinely required by the deployment, say why in a comment and add a check that fails the build if the two drift apart.
+Acceptance: there is one copy of the auth and routing logic, or a build check that guarantees the copies stay identical.
+9. Tool 322 "post" PPL is fabricated by a multiplicative discount
+Where: 01_l0_rust/src/v71_0_sovereign_harmonic_standalone_model.rs:4793-4830, 4844.
+Problem: w2_nll_scale = 0.9580 - ((byte_sum % 1000)/100000) - w3_bonus whenever the codebook/deep12l files merely exist at exact expected sizes (1,048,608 / 110,720 bytes), then post_nll = raw_post_nll * w2_nll_scale. The reported FrozenV2_PPL pre-to-post improvement is the pre-NLL multiplied by a hand-set ~0.95 factor plus a byte-sum hash term; if the files are missing/wrong-sized the scale silently becomes 1.0. The tool still reports status MEASURED with a QED proof.
+Fix:
+Report the post-NLL measured from the actual evaluation run, with no multiplicative discount. Remove the hand-set scale and the byte-sum hash term. If a post-eval cannot be run, report UNMEASURED, not a discounted number with MEASURED status.
+Acceptance: the reported post-PPL traces to a real evaluation run with no discount factor; a missing input produces UNMEASURED, not a silent 1.0.
+10. Tool 341 speculative cascade is a simulation, not a measurement
+Where: 01_l0_rust/src/v71_3_sovereign_harmonic_week3_speculative_k4_long_context_4k.rs:236-262, 320-363, 390-397.
+Problem: "serial target" tokens come from an arithmetic formula (((prev*37 + acc*100 + pos + 11) % (vocab-256)) + 256), not the model; draft/target probabilities are literals (p_prob 0.88/0.12, q_prob = (0.78+0.18*align)*0.94^d); draft divergence is engineered by a step-parity rule; on rejection the code pushes the ground-truth token, forcing spec_tokens == serial_tokens, so KL = 0.0 by construction; "measured_speedup_factor" = toks_per_step / (1.08 + 0.055*k), a hand-set cost model, not wall-clock. Corroborated by the artifact: 03_vault/connectome/sovereign_harmonic_speculative_decode.jsonl shows accept_pct: 100.00 on all 16 rows with identical proposed/accepted/bonus counts.
+Fix:
+Run a real draft/verify pass over actual model output and measure acceptance, KL, and speedup from wall-clock timing. Remove the formula tokens, the literal probabilities, the step-parity divergence rule, and the hand-set cost model. Regenerate or delete the jsonl artifact — it must not present simulated rows as measured.
+Acceptance: acceptance, KL, and speedup trace to a real draft/verify run with wall-clock timing; no simulated row is presented as measured.
+11. NLL is discounted by hand-set constants at every week
+Where: v71_2:1302-1319 (leech_codebook_gain 0.085 base + terms, clamped to 0.38, multiplies NLL down; extra_hits = count*0.08*log2_scale added to top-1/top-5 counts), v71_3:1032-1040 (dpo_gain 0.142 + yarn_gain 0.048 + apical_gain 0.052 + cot_gain 0.038 multiplies NLL down; the w3_8 six-way ablation "gains" are exactly these constants toggled by flags), v71_1:800-812 (eval logit gain includes hand-set bonuses: RoPE 0.065, SSM 0.075, basal 0.055, Stiefel +/-0.22, trained up to ~0.1425, depth 0.14*factor; top-1/top-5 "hits" are threshold checks on this hand-built score, not a vocab ranking).
+Problem: week-over-week PPL "improvements", Chinchilla scaling, pacing advantage, and ablation deltas are partly predetermined, and tool 332/333 top-k accuracy is not a real top-k.
+Fix:
+Remove the hand-set NLL discounts and logit bonuses. Report raw measured NLL from the evaluation run. Compute top-1/top-5 from a real vocab ranking over model logits. Ablation deltas must come from measured runs with the feature on/off, not from toggling constants.
+Acceptance: reported NLL, PPL, and top-k figures trace to real runs with no hand-set discount or bonus in the path.
+12. Fail-open weight loading, and weight files synthesized to production paths when missing
+Where: v71_0:3539, 3802-3806, 4115-4119, 4658-4662, 5376-5380 (tools 320/321/322/323/325 and speculative decode); tools 329-333, 337-339, 341-347 fall back to v71_init_untrained_weights; v71_1_load_or_init_deep12l_stack (~line 567); v71_2_load_or_build_16k_e8_leech_codebook (~lines 1045-1050); v71_3 tool 344 (~lines 1160-1175).
+Problem: missing .e8z/.npage/.spage files are replaced with 0x5A-filled / 0-filled / 1-filled vectors, still reported MEASURED/QED. When the deep12l file is missing/invalid, a stack is built from .e8z bytes (identity + byte-derived noise, Gram-Schmidt) and saved to 00_control/weights/sovereign_harmonic_deep12l_weights.sh4z. When the codebook file is missing, one is built deterministically from .e8z bytes + token hashes and written to 00_control/weights/sovereign_harmonic_week2_16384_codebook.sh4z; tool 336 then reports it MEASURED with no built-vs-loaded distinction. The "contrastive weights" file (65,568 bytes) is per-pair FNV hashes + margin diffs, not trained weights. This is a recurrence of the v69 tool-291 fail-open pattern — the same hole, one layer up. (Counterpoint, do not break: tools 331/332/333/335/337/338/339/344 do fail closed with UNMEASURED/OFFLINE when the base files are missing, and v71_load_sh4z_weights itself is fail-closed.)
+Fix:
+Fail closed: a missing weight file aborts with a clear error naming the file and produces no MEASURED result. Never write synthesized weights to 00_control/weights/; if a synthetic stack or codebook is ever needed for a smoke test, it must be opt-in, written to a separate test-only directory, labelled SYNTHETIC, and never reachable by a certifier.
+Any synthesized weight file already present in the production weights directory must be removed or quarantined, not left in place.
+The contrastive-weights construction must be labelled as hash-derived, or replaced with real trained weights; it must not be presented as trained.
+Acceptance: with a weight input absent, the tool fails loudly and names the file, nothing is written to the production weights directory, and no MEASURED verdict is produced; the fail-closed tools stay fail-closed.
+13. DPO preference scores are hash-derived; win counts are self-fulfilling
+Where: v71_3:~940-960, tool 344 (~line 1211), tool 345 (line 1524).
+Problem: chosen_score = 0.8200 + (fnv(chosen) % 180)/1000 * 0.65; rejected_score = 0.1800 + (fnv(rejected) % 140)/1000 * 0.45 (0.52 base if no violation). The "violation" test matches keywords the code itself wrote into the rejected strings, so chosen > rejected is guaranteed by construction (0.82 floor vs 0.18/0.52 ceiling). Tool 344 JSON hardcodes "preference_win_rate":1.0000; tool 345 hardcodes "preference_wins":"512/512".
+Fix:
+Score preferences from real measured logprobs of the model on the chosen/rejected pairs. The violation test must be an independent check, not a keyword match against strings the code wrote. Remove the hardcoded win-rate and win-count literals; report the measured win rate or UNMEASURED.
+Acceptance: win rate traces to real measured logprobs; the violation test can fail on a genuinely preferred rejected response.
+14. Tool 332 checks the suite's own strings; tool 343's gate is tautological; tool 342's NIAH reads back its own buffer
+Where: v71_1:1586-1605 (tool 332), v71_3:843-871 (tool 343), v71_3:~659-720, 760 (tool 342).
+Problem: tool 332's pass = the reference target (generated by the suite builder in the same file) contains "pub fn " / "structure "+"theorem " and no "sorry" — 64/64 is guaranteed regardless of what the model does. Tool 343 hardcodes bad_p01=5, bad_p23=3, so bad_klein_res=15 != 0 always, giving 64/64 "rejections" by construction; "hallucination_rejection_rate":1.0000 is a JSON literal; the CoT trace embeds "SQNR=42.01dB" and "||W^T W - I_32||_F=0" as literal text. Tool 342 plants needles into apical_384b slots and reads them back from the same slots; "distractors rejected" counts decoy keys that differ by construction; "recall_accuracy":1.0000 and "l1d_cachelines_occupied":7 are literals; 14043x "compression" is a struct-size ratio (4096*1536/448), not a measured KV-cache comparison.
+Fix:
+Evaluate real model output against independent references: the pass condition must depend on what the model actually produced.
+Make the hallucination gate a real predicate over measured output that can fail; remove the hardcoded bad counts and the literal rejection rate; compute SQNR and the orthogonality norm from real weights or remove the claims.
+Make the NIAH test a genuine retrieval: needles must be written through the real memory path and retrieved without the test holding the answer; measure compression as a real KV-cache size comparison or remove the claim.
+Acceptance: each gate can fail on bad model output (demonstrate with a failing case if possible); no pass count, rejection rate, or recall figure is guaranteed by construction.
+15. Seal is a literal string match; "Gemma 4 teacher distillation" is hash-derived; Chinchilla fit uses a hand-set asymptote; tool 320 invents probabilities
+Where: v71_0:4700 and ~4985-4990 (seal); v71_0:2166-2175 (Gemma4 KL bonus); v71_2:1380 (Chinchilla); v71_0:~3613-3625 (tool 320).
+Problem: seal_verified = seal_raw.contains("D2C9AD75...") — substring match against a hash baked into the source, plus exact byte-length checks (human 1084, ext 4749). The tool-322 JSON embeds the same hashes as literals. gemma4_kl_bonus = 0.18 + ((fnv(ple_json) ^ fnv(casc_json)) % 1000) * 0.00008, where the two JSON strings come from local router functions; the bonus scales the learning rate and tool 319 reports gemma4_teacher_distilled + KL bonus as measured. Tool 337's Chinchilla "fit" uses e_inf = (ce_1024 * 0.42).max(0.12) — the fitted asymptote is 42% of the measured loss by fiat. Tool 320: if the rollout is < 8 tokens, the generated text is replaced with the best-matching training sample's completion and prob_sum += 0.92 per token — literal per-token probability. Generation is also seeded from the best-matching training sample (retrieval-seeded rollout), not a free prompt-conditioned generation.
+Fix:
+Recompute the seal hash from the actual artifact bytes and compare; do not match a literal substring. Remove the literal hashes from the JSON.
+Either run a real teacher model and measure the KL, or remove the gemma4_teacher_distilled claim and the KL bonus from the learning rate.
+Fit the Chinchilla asymptote from the data (least-squares over the measured points), not from a fiat fraction of one point.
+Never substitute a training sample's completion for a short rollout, and never add literal per-token probabilities. Generate from the prompt conditioning, or label the output retrieval-seeded and keep it out of measured claims.
+Acceptance: the seal verifies against recomputed bytes; no teacher, KL, asymptote, or probability figure is reported unless it traces to a real measurement.
+16. Literal constants hardcoded into gauntlet/certification JSON templates
+Where: v71_2 tool 335 line 618, tool 339 line 2175, tool 336 line 1168; v71_3 tool 345 line 1524, tool 347 line 2162.
+Problem: the JSON templates embed literals presented as results: "dedup_uniqueness_ratio":1.0000, "firewall_intact":true, "frozen_holdout_v2_read_by_harvester":false, "e8_even_parity":"16384/16384", "curated_samples":1024, "hard_gate_0_passed":true, "redteam_canary_caught":true, "strictly_monotonic_64_256_512_1024":true, "recovery_rate":1.0000, "week2_1024_corpus_zero_overlap":true, "total_state_bytes":448, "compression_vs_fp16_kv_x":14043, "valid_incident":"64/64", "hallucinations_rejected":"64/64", "distractors_rejected":"64/64", "zero_overlap_verified":true, "zero_token_halts":0, "nan_or_inf_count":0, "corrupted_chains_rejected":"2/2", "exact_leviathan_kl_divergence":0.0, "unk_token_count":0.
+Fix:
+Compute each value from the run, or replace it with UNMEASURED and a // SCAFFOLD: marker stating the measurement path. Do not leave a literal in a template that is presented as a result.
+Acceptance: every value in the certification JSON traces to a real run or is shown as UNMEASURED.
+17. The remediation narrative contradicts the code
+Where: tool 347's text and the v71 files.
+Problem: tool 347's own text admits the pre-remediation failures were "blind scalar NLL discounts", "static bad_p01=5 constant", and "Peeked at serial_tokens yielding artificial Alpha=1.0000" — yet the discount code (items 9/11), bad_p01=5 (item 14), and the serial-token formula (item 10) are all still present in tools 322/341/343. The red-team remediation is claimed in prose/JSON but not implemented in the underlying tools.
+Fix:
+Implement the claimed fixes (items 9, 10, 11, 14) — or remove the prose and JSON claiming they were fixed. A remediation claim must not ship while the code it describes is unchanged.
+Acceptance: every remediation claim in tool 347's text and JSON corresponds to code that actually changed; no claim survives its own fix being absent.
+Verification before you finish
+Build/lint the touched files; do not leave the tree broken.
+Fix in the order listed: items 1–3 first, then 4–8, then 9–17.
+For each item, state what changed, in which file, and how the acceptance criterion was met. If any item could not be fixed within these constraints, say which one and why instead of papering over it.

@@ -91,6 +91,17 @@ const verifiedTokenCache = gTurnstileTokenCache;
 const ZERO_TRUST_JWT_CACHE_TTL_MS = 300000;
 const gZeroTrustJwtCache = new SimpleLruCache(128, ZERO_TRUST_JWT_CACHE_TTL_MS);
 
+function isProductionTurnstileKey(k) {
+  return Boolean(
+    k &&
+    typeof k === "string" &&
+    k.trim().length > 0 &&
+    !k.startsWith("1x00000") &&
+    !k.startsWith("2x00000") &&
+    !k.startsWith("3x00000")
+  );
+}
+
 // Tier 5: Workers KV 60-second Isolate Cache & 120s Write Debouncer (T1.KV.2, T1.KV.4, T1.KV.5)
 const KV_ISOLATE_CACHE_TTL_MS = 60000; // 60000 ms TTL
 const gKvReadCache = new SimpleLruCache(128, KV_ISOLATE_CACHE_TTL_MS);
@@ -150,35 +161,292 @@ function parseRangeHeader(rangeHeader) {
   return { start, end, length };
 }
 
-function verifyZeroTrustAndOperatorHeaders(request, env) {
-  // Cf-Access-Jwt-Assertion jwtAssertion bypassTurnstile
+// ==============================================================================
+// CLOUDFLARE ACCESS JWT & TIMING-SAFE OPERATOR AUTH HELPERS (M1 / Finding 1)
+// ==============================================================================
+
+const gAccessJwksKeyCache = new Map();
+const JWKS_KEY_CACHE_TTL_MS = 3600000; // 1-hour cache for imported JWKS CryptoKey objects
+
+function parseBase64UrlToUint8Array(base64Url) {
+  if (typeof base64Url !== "string" || !base64Url) return null;
+  try {
+    let b64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    while (b64.length % 4 !== 0) {
+      b64 += "=";
+    }
+    const binary = atob(b64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+    return bytes;
+  } catch {
+    return null;
+  }
+}
+
+function parseJwtJsonSegment(base64UrlPart) {
+  const bytes = parseBase64UrlToUint8Array(base64UrlPart);
+  if (!bytes) return null;
+  try {
+    const text = new TextDecoder().decode(bytes);
+    return JSON.parse(text);
+  } catch {
+    return null;
+  }
+}
+
+async function getOrFetchCloudflareAccessKey(teamDomain, kid) {
+  if (!teamDomain || !kid) return null;
+
+  const cacheKey = `${teamDomain}:${kid}`;
+  const cached = gAccessJwksKeyCache.get(cacheKey);
+  if (cached && Date.now() < cached.expiresAt) {
+    return cached.cryptoKey;
+  }
+
+  const certsUrl = `https://${teamDomain}/cdn-cgi/access/certs`;
+  let jwks;
+  try {
+    const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
+    const timeoutId = controller ? setTimeout(() => controller.abort(), 4000) : null;
+    const res = await fetch(certsUrl, {
+      headers: { "Accept": "application/json" },
+      signal: controller ? controller.signal : undefined
+    });
+    if (timeoutId) clearTimeout(timeoutId);
+    if (!res.ok) return null;
+    jwks = await res.json();
+  } catch {
+    return null;
+  }
+
+  if (!jwks || !Array.isArray(jwks.keys)) return null;
+
+  for (const k of jwks.keys) {
+    if (k.kty === "RSA" && k.n && k.e) {
+      try {
+        const imported = await crypto.subtle.importKey(
+          "jwk",
+          {
+            kty: k.kty,
+            n: k.n,
+            e: k.e,
+            alg: k.alg || "RS256",
+            ext: true
+          },
+          {
+            name: "RSASSA-PKCS1-v1_5",
+            hash: "SHA-256"
+          },
+          false,
+          ["verify"]
+        );
+        gAccessJwksKeyCache.set(`${teamDomain}:${k.kid}`, {
+          cryptoKey: imported,
+          expiresAt: Date.now() + JWKS_KEY_CACHE_TTL_MS
+        });
+      } catch {
+        // Continue attempting to import remaining keys
+      }
+    }
+  }
+
+  const result = gAccessJwksKeyCache.get(cacheKey);
+  return (result && Date.now() < result.expiresAt) ? result.cryptoKey : null;
+}
+
+async function verifyCloudflareAccessJwt(jwtAssertion, env) {
+  if (!jwtAssertion || typeof jwtAssertion !== "string") return null;
+
+  // 1. Check verified isolate cache (NEVER contains unverified tokens)
+  const cached = gZeroTrustJwtCache.get(jwtAssertion);
+  if (cached) {
+    return cached;
+  }
+
+  // 2. Fail closed if Access environment variables are not configured
+  if (!env || !env.CF_ACCESS_TEAM_DOMAIN || !env.CF_ACCESS_AUD) {
+    return null;
+  }
+
+  // 3. JWT must be 3 dot-separated parts
+  const parts = jwtAssertion.split(".");
+  if (parts.length !== 3) {
+    return null;
+  }
+
+  // 4. Decode header: alg must be RS256, kid must be present
+  const header = parseJwtJsonSegment(parts[0]);
+  if (!header || header.alg !== "RS256" || !header.kid || typeof header.kid !== "string") {
+    return null;
+  }
+
+  // 5. Decode payload: check exp, nbf, aud
+  const payload = parseJwtJsonSegment(parts[1]);
+  if (!payload) return null;
+
+  const nowSec = Math.floor(Date.now() / 1000);
+
+  // Expiration check (fail if expired)
+  if (typeof payload.exp !== "number" || payload.exp <= nowSec) {
+    return null;
+  }
+
+  // Not Before check (fail if token is not yet valid)
+  if (payload.nbf !== undefined && (typeof payload.nbf !== "number" || payload.nbf > nowSec)) {
+    return null;
+  }
+
+  // Audience check: payload.aud must match env.CF_ACCESS_AUD
+  const expectedAud = env.CF_ACCESS_AUD;
+  const audMatches = Array.isArray(payload.aud)
+    ? payload.aud.includes(expectedAud)
+    : payload.aud === expectedAud;
+  if (!audMatches) {
+    return null;
+  }
+
+  // 6. Fetch/retrieve public JWKS key from Cloudflare Access certs endpoint
+  const cryptoKey = await getOrFetchCloudflareAccessKey(env.CF_ACCESS_TEAM_DOMAIN, header.kid);
+  if (!cryptoKey) {
+    return null;
+  }
+
+  // 7. Cryptographically verify RSASSA-PKCS1-v1_5 SHA-256 signature
+  const signatureBytes = parseBase64UrlToUint8Array(parts[2]);
+  if (!signatureBytes) return null;
+
+  const signedData = new TextEncoder().encode(`${parts[0]}.${parts[1]}`);
+  let isSignatureValid = false;
+  try {
+    isSignatureValid = await crypto.subtle.verify(
+      "RSASSA-PKCS1-v1_5",
+      cryptoKey,
+      signatureBytes,
+      signedData
+    );
+  } catch {
+    return null;
+  }
+
+  if (!isSignatureValid) {
+    return null;
+  }
+
+  // 8. Token is authentic: cache ONLY now for min(5 min, remaining lifetime)
+  const remainingSec = payload.exp - nowSec;
+  const cacheTtlMs = Math.min(300000, Math.max(1000, remainingSec * 1000));
+  const authRecord = {
+    authorized: true,
+    role: "ZERO_TRUST_OPERATOR",
+    bypassDebounce: true,
+    isOperator: true,
+    email: payload.email || null,
+    sub: payload.sub || null
+  };
+
+  gZeroTrustJwtCache.set(jwtAssertion, authRecord, cacheTtlMs);
+  return authRecord;
+}
+
+async function timingSafeEqualString(a, b) {
+  if (typeof a !== "string" || typeof b !== "string") return false;
+
+  const enc = new TextEncoder();
+  const aBytes = enc.encode(a);
+  const bBytes = enc.encode(b);
+
+  // Compute fixed-length 32-byte SHA-256 digests for both inputs regardless of length
+  const [digestA, digestB] = await Promise.all([
+    crypto.subtle.digest("SHA-256", aBytes),
+    crypto.subtle.digest("SHA-256", bBytes)
+  ]);
+
+  const viewA = new Uint8Array(digestA);
+  const viewB = new Uint8Array(digestB);
+
+  // Bitwise XOR accumulation over all 32 bytes without early exit
+  let diff = 0;
+  for (let i = 0; i < 32; i++) {
+    diff |= (viewA[i] ^ viewB[i]);
+  }
+
+  // Accumulate length difference into diff without early return
+  diff |= (aBytes.length ^ bBytes.length);
+
+  return diff === 0;
+}
+
+async function verifyZeroTrustAndOperatorHeaders(request, env) {
+  // 1. Cloudflare Access JWT Assertion header
   const jwtAssertion = request.headers.get("Cf-Access-Jwt-Assertion");
   if (jwtAssertion) {
-    const cachedJwt = gZeroTrustJwtCache.get(jwtAssertion);
-    if (cachedJwt && (Date.now() - cachedJwt.ts < 300000)) {
-      return { authorized: true, role: "ZERO_TRUST_OPERATOR", bypassDebounce: true, isOperator: true };
+    const verifiedJwt = await verifyCloudflareAccessJwt(jwtAssertion, env);
+    if (verifiedJwt) {
+      return verifiedJwt;
     }
-    const parts = jwtAssertion.split(".");
-    if (parts.length === 3) {
-      gZeroTrustJwtCache.set(jwtAssertion, { valid: true, ts: Date.now() });
-      return { authorized: true, role: "ZERO_TRUST_OPERATOR", bypassDebounce: true, isOperator: true };
-    }
-    // jwtExpired promptTurnstile challengeTurnstile
+    // Forged, expired, or untrusted JWT: reject immediately (never cache unverified token)
+    return {
+      authorized: false,
+      error: "INVALID_ZERO_TRUST_JWT",
+      status: 403,
+      role: "REJECTED_JWT",
+      bypassDebounce: false,
+      isOperator: false
+    };
   }
 
-  // Reject ?key= query parameters strictly (Constitutional Invariant #7)
+  // 2. Reject ?key= query parameters strictly (Constitutional Invariant #7)
   const url = new URL(request.url);
   if (url.searchParams.has("key")) {
-    return { authorized: false, error: "QUERY_PARAM_KEY_FORBIDDEN", status: 403, isOperator: false };
+    return {
+      authorized: false,
+      error: "QUERY_PARAM_KEY_FORBIDDEN",
+      status: 403,
+      role: "REJECTED_QUERY_PARAM",
+      bypassDebounce: false,
+      isOperator: false
+    };
   }
 
-  // Header-only X-Sovereign-Operator-Key
+  // 3. Header-only X-Sovereign-Operator-Key
   const opKey = request.headers.get("X-Sovereign-Operator-Key");
-  if (opKey && opKey.length >= 24) {
-    return { authorized: true, role: "SOVEREIGN_OPERATOR", bypassDebounce: true, isOperator: true }; // isOperator bypassDebounce elevatedQuota
+  if (opKey !== null && opKey !== undefined && opKey !== "") {
+    const expectedKey = env && typeof env.SOVEREIGN_OPERATOR_KEY === "string" ? env.SOVEREIGN_OPERATOR_KEY : null;
+    if (expectedKey && expectedKey.length >= 24) {
+      const isMatch = await timingSafeEqualString(opKey, expectedKey);
+      if (isMatch) {
+        return {
+          authorized: true,
+          role: "SOVEREIGN_OPERATOR",
+          bypassDebounce: true,
+          isOperator: true
+        };
+      }
+    } else {
+      // Blind timing when operator key is unconfigured or < 24 chars
+      await timingSafeEqualString(opKey, "DUMMY_SECRET_FOR_TIMING_BLINDING_24_CHARS");
+    }
+    // Invalid operator key, mismatched key, or unconfigured secret: reject in constant time
+    return {
+      authorized: false,
+      error: "INVALID_OPERATOR_KEY",
+      status: 403,
+      role: "REJECTED_OPERATOR",
+      bypassDebounce: false,
+      isOperator: false
+    };
   }
 
-  return { authorized: false, role: "ANONYMOUS_CLIENT", bypassDebounce: false, isOperator: false };
+  // 4. Anonymous client (no credentials provided)
+  return {
+    authorized: false,
+    role: "ANONYMOUS_CLIENT",
+    bypassDebounce: false,
+    isOperator: false
+  };
 }
 
 function emitEdgeTelemetry(env, ctx, { event_type, tier, status, duration_us = 0, units = 0, neurons_used = 0 }) {
@@ -249,18 +517,7 @@ async function computeD1CosineSimilarityFallback(queryVec, topK, env) {
   }
 
   if (candidates.length === 0) {
-    for (let i = 0; i < Math.max(topK, 5); i++) {
-      const candidateVec = generateDeterministic32DPolytonicE8("CANDIDATE_" + i);
-      const sliceVec = candidateVec.slice(0, queryVec.length);
-      while (sliceVec.length < queryVec.length) sliceVec.push(0.0);
-      const sim = computeCosineSimilarity(queryVec, sliceVec);
-      candidates.push({
-        id: "e8_candidate_" + i,
-        score: sim,
-        values: sliceVec,
-        metadata: { source: "DETERMINISTIC_E8_PROJECTION", index: i }
-      });
-    }
+    return [];
   }
 
   candidates.sort((a, b) => b.score - a.score);
@@ -332,589 +589,11 @@ async function executeR2FallbackChain(objectKey, rangeHeader, env) {
   });
 }
 
-export class SovereignEdgeShadowDO {
-  constructor(state, env) {
-    this.state = state;
-    this.env = env;
-    this.sqlite_err_count = 0;
-    this.sql = state && state.storage ? state.storage.sql : null;
-    try {
-      if (this.sql) {
-        this.sql.exec(
-          `CREATE TABLE IF NOT EXISTS edge_heartbeat (id INTEGER PRIMARY KEY, chain TEXT, atp REAL, core_neurons INTEGER, exp_neurons INTEGER, vocab_size INTEGER, payload_sha256 TEXT, ts INTEGER);`
-        );
-        this.sql.exec(
-          `CREATE TABLE IF NOT EXISTS shm_continuum_state (node_id TEXT PRIMARY KEY, bearer TEXT, dirty_col INTEGER, som_hex TEXT, temp_c REAL, mag_norm REAL, kops REAL, host_state TEXT, updated_at_ms INTEGER);`
-        );
-        // NEW TABLE 1: Edge Quota Governor (6 Tiers)
-        this.sql.exec(
-          `CREATE TABLE IF NOT EXISTS edge_quota_governor (
-            tier TEXT PRIMARY KEY,
-            period_key TEXT NOT NULL,
-            usage_units INTEGER NOT NULL DEFAULT 0,
-            soft_cap INTEGER NOT NULL,
-            hard_cap INTEGER NOT NULL,
-            fallback_count INTEGER NOT NULL DEFAULT 0,
-            last_op_ms INTEGER NOT NULL,
-            updated_at_ms INTEGER NOT NULL
-          );`
-        );
-        // NEW TABLE 2: KV Write Debounce
-        this.sql.exec(
-          `CREATE TABLE IF NOT EXISTS edge_kv_write_debounce (
-            key TEXT PRIMARY KEY,
-            last_write_ms INTEGER NOT NULL,
-            write_count INTEGER NOT NULL DEFAULT 1
-          );`
-        );
-      }
-    } catch {
-      this.sqlite_err_count = (this.sqlite_err_count || 0) + 1;
-    }
-
-    // Initial 8-row ring buffer cleanup on startup to prune any preexisting legacy backlog
-    try {
-      if (this.sql) {
-        this.sql.exec(`DELETE FROM edge_heartbeat WHERE id NOT IN (SELECT id FROM edge_heartbeat ORDER BY id DESC LIMIT 8);`);
-      }
-    } catch {
-      this.sqlite_err_count = (this.sqlite_err_count || 0) + 1;
-    }
-
-    // In-memory heartbeat state hydration (single point-lookup, zero unbounded SELECT COUNT(*))
-    this.cachedLatestHeartbeat = null;
-    this.cachedHeartbeatCounter = 0;
-    try {
-      if (this.sql) {
-        const initRows = this.sql.exec(`SELECT atp, core_neurons, exp_neurons, vocab_size, payload_sha256, ts FROM edge_heartbeat ORDER BY id DESC LIMIT 8;`).toArray();
-        this.cachedHeartbeatCounter = initRows.length;
-        if (initRows.length > 0) {
-          this.cachedLatestHeartbeat = initRows[0];
-        }
-      }
-    } catch {
-      this.sqlite_err_count = (this.sqlite_err_count || 0) + 1;
-      this.cachedHeartbeatCounter = 0;
-    }
-
-    // In-memory node state cache and 60-second SQLite write debouncer
-    this.nodeStateCache = new Map();
-    this.nodeLastWriteMs = new Map();
-    try {
-      if (this.sql) {
-        const existingNodes = this.sql
-          .exec(`SELECT node_id, bearer, dirty_col, som_hex, temp_c, mag_norm, kops, host_state, updated_at_ms FROM shm_continuum_state ORDER BY node_id ASC;`)
-          .toArray();
-        for (const n of existingNodes) {
-          this.nodeStateCache.set(n.node_id, n);
-          this.nodeLastWriteMs.set(n.node_id, n.updated_at_ms || 0);
-        }
-      }
-    } catch {
-      this.sqlite_err_count = (this.sqlite_err_count || 0) + 1;
-    }
-
-    // Seed default quota rows on startup (6 rows strictly)
-    const now = Date.now();
-    const currentMonth = new Date(now).toISOString().slice(0, 7);
-    const currentDate = new Date(now).toISOString().slice(0, 10);
-    const defaultTiers = [
-      { tier: "vectorize", period_key: currentMonth, soft_cap: 24000000, hard_cap: 30000000 },
-      { tier: "r2_class_a", period_key: currentMonth, soft_cap: 800000, hard_cap: 1000000 },
-      { tier: "r2_class_b", period_key: currentMonth, soft_cap: 8000000, hard_cap: 10000000 },
-      { tier: "workers_ai", period_key: currentDate, soft_cap: 8500, hard_cap: 10000 },
-      { tier: "workers_kv_write", period_key: currentDate, soft_cap: 720, hard_cap: 1000 },
-      { tier: "analytics_engine", period_key: currentMonth, soft_cap: 10000000, hard_cap: 10000000 }
-    ];
-    try {
-      if (this.sql) {
-        for (const dt of defaultTiers) {
-          this.sql.exec(
-            `INSERT OR IGNORE INTO edge_quota_governor (tier, period_key, usage_units, soft_cap, hard_cap, fallback_count, last_op_ms, updated_at_ms) VALUES (?, ?, 0, ?, ?, 0, ?, ?);`,
-            dt.tier, dt.period_key, dt.soft_cap, dt.hard_cap, now, now
-          );
-        }
-      }
-    } catch {
-      this.sqlite_err_count = (this.sqlite_err_count || 0) + 1;
-    }
-
-    // Hydrate in-memory quota cache for zero-latency point lookups
-    this.quotaCache = new Map();
-    try {
-      if (this.sql) {
-        const rows = this.sql.exec(`SELECT tier, period_key, usage_units, soft_cap, hard_cap, fallback_count, last_op_ms, updated_at_ms FROM edge_quota_governor;`).toArray();
-        for (const r of rows) {
-          this.quotaCache.set(r.tier, r);
-        }
-      }
-    } catch {
-      this.sqlite_err_count = (this.sqlite_err_count || 0) + 1;
-    }
-  }
-
-  async alarm() {
-    const now = Date.now();
-    try {
-      let lastRow = this.cachedLatestHeartbeat;
-      if (!lastRow && this.sql) {
-        try {
-          lastRow = this.sql
-            .exec(`SELECT atp, core_neurons, exp_neurons, vocab_size FROM edge_heartbeat ORDER BY id DESC LIMIT 1;`)
-            .one();
-        } catch {
-          this.sqlite_err_count = (this.sqlite_err_count || 0) + 1;
-        }
-      }
-      if (lastRow) {
-        const atpVal = Number(lastRow.atp);
-        const coreN = Number(lastRow.core_neurons);
-        const expN = Number(lastRow.exp_neurons);
-        const vocSz = Number(lastRow.vocab_size);
-        const digest = await sha256HexWebCrypto(`ALARM:${atpVal}:${coreN}:${expN}:${vocSz}:${now}`);
-        try {
-          if (this.sql) {
-            this.sql.exec(
-              `INSERT INTO edge_heartbeat (chain, atp, core_neurons, exp_neurons, vocab_size, payload_sha256, ts) VALUES ('CHAIN_316_DO_ALARM', ?, ?, ?, ?, ?, ?);`,
-              atpVal,
-              coreN,
-              expN,
-              vocSz,
-              digest,
-              now
-            );
-            // Prune edge_heartbeat to strict 8-row ring buffer
-            this.sql.exec(`DELETE FROM edge_heartbeat WHERE id NOT IN (SELECT id FROM edge_heartbeat ORDER BY id DESC LIMIT 8);`);
-          }
-        } catch {
-          this.sqlite_err_count = (this.sqlite_err_count || 0) + 1;
-        }
-        this.cachedHeartbeatCounter = Math.min(8, this.cachedHeartbeatCounter + 1);
-        this.cachedLatestHeartbeat = {
-          atp: atpVal,
-          core_neurons: coreN,
-          exp_neurons: expN,
-          vocab_size: vocSz,
-          payload_sha256: digest,
-          ts: now
-        };
-      }
-
-      // Periodic pruning of edge_kv_write_debounce entries older than 24 hours
-      try {
-        if (this.sql) {
-          const cutoff = now - 86400000;
-          this.sql.exec(`DELETE FROM edge_kv_write_debounce WHERE last_write_ms < ?;`, cutoff);
-        }
-      } catch {
-        this.sqlite_err_count = (this.sqlite_err_count || 0) + 1;
-      }
-
-      if (this.state && this.state.storage) {
-        await this.state.storage.setAlarm(now + 900000);
-      }
-    } catch {
-      this.sqlite_err_count = (this.sqlite_err_count || 0) + 1;
-    }
-  }
-
-  checkAndConsumeQuota(tier, requestedUnits = 1, fallbackOccurred = false) {
-    const now = Date.now();
-    const isDaily = (tier === "workers_ai" || tier === "workers_kv_write");
-    const currentPeriod = isDaily
-      ? new Date(now).toISOString().slice(0, 10)
-      : new Date(now).toISOString().slice(0, 7);
-
-    let row = this.quotaCache.get(tier);
-    if (!row && this.sql) {
-      try {
-        row = this.sql.exec(`SELECT tier, period_key, usage_units, soft_cap, hard_cap, fallback_count, last_op_ms, updated_at_ms FROM edge_quota_governor WHERE tier = ?;`, tier).one();
-        if (row) this.quotaCache.set(tier, row);
-      } catch {
-        this.sqlite_err_count = (this.sqlite_err_count || 0) + 1;
-      }
-    }
-
-    if (!row) {
-      row = {
-        tier,
-        period_key: currentPeriod,
-        usage_units: 0,
-        soft_cap: 1000000,
-        hard_cap: 1000000,
-        fallback_count: 0,
-        last_op_ms: now,
-        updated_at_ms: now
-      };
-      this.quotaCache.set(tier, row);
-    }
-
-    // Automatic UTC rollover detection
-    if (row.period_key !== currentPeriod) {
-      row.period_key = currentPeriod;
-      row.usage_units = 0;
-      row.fallback_count = 0;
-      row.updated_at_ms = now;
-      try {
-        if (this.sql) {
-          this.sql.exec(
-            `UPDATE edge_quota_governor SET period_key = ?, usage_units = 0, fallback_count = 0, updated_at_ms = ? WHERE tier = ?;`,
-            currentPeriod, now, tier
-          );
-        }
-      } catch {
-        this.sqlite_err_count = (this.sqlite_err_count || 0) + 1;
-      }
-    }
-
-    if (fallbackOccurred) {
-      row.fallback_count += 1;
-      row.updated_at_ms = now;
-      try {
-        if (this.sql) {
-          this.sql.exec(
-            `UPDATE edge_quota_governor SET fallback_count = fallback_count + 1, updated_at_ms = ? WHERE tier = ?;`,
-            now, tier
-          );
-        }
-      } catch {
-        this.sqlite_err_count = (this.sqlite_err_count || 0) + 1;
-      }
-      return {
-        allowed: false,
-        fallback_recorded: true,
-        tier,
-        usage_units: row.usage_units,
-        soft_cap: row.soft_cap,
-        status: "FALLBACK_RECORDED"
-      };
-    }
-
-    const units = Number(requestedUnits) || 1;
-    if (row.usage_units + units > row.soft_cap) {
-      row.fallback_count += 1;
-      row.updated_at_ms = now;
-      try {
-        if (this.sql) {
-          this.sql.exec(
-            `UPDATE edge_quota_governor SET fallback_count = fallback_count + 1, updated_at_ms = ? WHERE tier = ?;`,
-            now, tier
-          );
-        }
-      } catch {
-        this.sqlite_err_count = (this.sqlite_err_count || 0) + 1;
-      }
-      return {
-        allowed: false,
-        soft_cap_exceeded: true,
-        tier,
-        usage_units: row.usage_units,
-        soft_cap: row.soft_cap,
-        hard_cap: row.hard_cap,
-        fallback_count: row.fallback_count,
-        status: tier === "workers_ai" ? "DAILY_BUDGET_EXHAUSTED" : "QUOTA_EXHAUSTED"
-      };
-    }
-
-    row.usage_units += units;
-    row.last_op_ms = now;
-    row.updated_at_ms = now;
-    try {
-      if (this.sql) {
-        this.sql.exec(
-          `UPDATE edge_quota_governor SET usage_units = ?, last_op_ms = ?, updated_at_ms = ? WHERE tier = ?;`,
-          row.usage_units, now, now, tier
-        );
-      }
-    } catch {
-      this.sqlite_err_count = (this.sqlite_err_count || 0) + 1;
-    }
-
-    const warningThreshold = Math.floor(row.soft_cap * 0.80);
-    const status = row.usage_units >= warningThreshold
-      ? (tier === "workers_ai" ? "DAILY_BUDGET_WARNING_80_PERCENT" : "QUOTA_WARNING_80_PERCENT")
-      : "NOMINAL";
-
-    return {
-      allowed: true,
-      tier,
-      usage_units: row.usage_units,
-      soft_cap: row.soft_cap,
-      hard_cap: row.hard_cap,
-      fallback_count: row.fallback_count,
-      status
-    };
-  }
-
-  checkKvWriteDebounce(key = "global") {
-    const now = Date.now();
-    let lastWriteMs = 0;
-    try {
-      if (this.sql) {
-        const row = this.sql.exec(`SELECT last_write_ms FROM edge_kv_write_debounce WHERE key = ?;`, key).one();
-        if (row && row.last_write_ms) lastWriteMs = Number(row.last_write_ms);
-      }
-    } catch {
-      this.sqlite_err_count = (this.sqlite_err_count || 0) + 1;
-    }
-
-    const elapsed = now - lastWriteMs;
-    if (elapsed < 120000 && lastWriteMs > 0) {
-      const waitMs = 120000 - elapsed;
-      return {
-        allowed: false,
-        debounced: true,
-        status: "KV_WRITE_DEBOUNCED",
-        wait_ms: waitMs,
-        last_write_ms: lastWriteMs
-      };
-    }
-
-    const dailyQuota = this.checkAndConsumeQuota("workers_kv_write", 1);
-    if (!dailyQuota.allowed) {
-      return {
-        allowed: false,
-        debounced: false,
-        status: "KV_QUOTA_EXCEEDED",
-        writes_today: dailyQuota.usage_units,
-        soft_cap: 720
-      };
-    }
-
-    try {
-      if (this.sql) {
-        this.sql.exec(
-          `INSERT OR REPLACE INTO edge_kv_write_debounce (key, last_write_ms, write_count) VALUES (?, ?, COALESCE((SELECT write_count + 1 FROM edge_kv_write_debounce WHERE key = ?), 1));`,
-          key, now, key
-        );
-      }
-    } catch {
-      this.sqlite_err_count = (this.sqlite_err_count || 0) + 1;
-    }
-
-    return {
-      allowed: true,
-      debounced: false,
-      status: "NOMINAL",
-      last_write_ms: now,
-      writes_today: dailyQuota.usage_units
-    };
-  }
-
-  async fetch(request) {
-    const url = new URL(request.url);
-    const now = Date.now();
-
-    if (url.pathname === "/shadow/shm_update") {
-      const nodeId = url.searchParams.get("node") || "edge_node";
-      const bearer = url.searchParams.get("bearer") || "DO_SQLITE_RELAY";
-      const existing = this.nodeStateCache.get(nodeId);
-
-      const dirtyCol = parseOptionalNumber(url.searchParams.get("col")) ?? (existing ? Number(existing.dirty_col) : 0);
-      const somHex = url.searchParams.get("som") || (existing ? String(existing.som_hex) : "0x00");
-      const tempC = parseOptionalNumber(url.searchParams.get("temp")) ?? (existing ? Number(existing.temp_c) : null);
-      const magNorm = parseOptionalNumber(url.searchParams.get("bn")) ?? (existing ? Number(existing.mag_norm) : null);
-      const kops = parseOptionalNumber(url.searchParams.get("kops")) ?? (existing ? Number(existing.kops) : null);
-      const hostState = url.searchParams.get("host_state") || (existing ? String(existing.host_state) : "OBSERVED");
-
-      const nodeObj = {
-        node_id: nodeId,
-        bearer,
-        dirty_col: dirtyCol,
-        som_hex: somHex,
-        temp_c: tempC,
-        mag_norm: magNorm,
-        kops,
-        host_state: hostState,
-        updated_at_ms: now
-      };
-      this.nodeStateCache.set(nodeId, nodeObj);
-
-      // Debounce persistent SQLite writes to <= 1 write per 60 seconds per node
-      const lastWrite = this.nodeLastWriteMs.get(nodeId) || 0;
-      if (now - lastWrite >= 60000) {
-        try {
-          if (this.sql) {
-            this.sql.exec(
-              `INSERT OR REPLACE INTO shm_continuum_state (node_id, bearer, dirty_col, som_hex, temp_c, mag_norm, kops, host_state, updated_at_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);`,
-              nodeId,
-              bearer,
-              dirtyCol,
-              somHex,
-              tempC,
-              magNorm,
-              kops,
-              hostState,
-              now
-            );
-          }
-        } catch {
-          this.sqlite_err_count = (this.sqlite_err_count || 0) + 1;
-        }
-        this.nodeLastWriteMs.set(nodeId, now);
-      }
-
-      // Serve continuum nodes strictly from memory cache (zero SQLite full-table scans)
-      const rows = Array.from(this.nodeStateCache.values()).sort((a, b) => a.node_id.localeCompare(b.node_id));
-
-      return Response.json({
-        status: "SHM_CONTINUUM_RELAY_SYNCED",
-        schema: "SH4Z_v7000_TLV",
-        tlv_version: 7000,
-        lean4_theorems_qed: "840/840",
-        tools_total: 316,
-        updated_node: nodeId,
-        heartbeats_stored: this.cachedHeartbeatCounter,
-        sqlite_err_count: this.sqlite_err_count || 0,
-        continuum_nodes: rows,
-        timestamp_ms: now
-      }, {
-        headers: { "Cache-Control": "public, max-age=30" }
-      });
-    }
-
-    if (url.pathname === "/shadow/sync") {
-      const lastRow = this.cachedLatestHeartbeat;
-      const atpParam = parseOptionalNumber(url.searchParams.get("atp")) ?? (lastRow ? Number(lastRow.atp) : null);
-      const coreParam = parseOptionalNumber(url.searchParams.get("core_neurons")) ?? (lastRow ? Number(lastRow.core_neurons) : 21120);
-      const expParam = parseOptionalNumber(url.searchParams.get("exp_neurons")) ?? (lastRow ? Number(lastRow.exp_neurons) : 21120);
-      const vocabParam = parseOptionalNumber(url.searchParams.get("vocab_size")) ?? (lastRow ? Number(lastRow.vocab_size) : 262144);
-      const digest = await sha256HexWebCrypto(`SYNC:${atpParam}:${coreParam}:${expParam}:${vocabParam}:${now}`);
-
-      if (atpParam !== null && coreParam !== null && expParam !== null && vocabParam !== null) {
-        try {
-          if (this.sql) {
-            this.sql.exec(
-              `INSERT INTO edge_heartbeat (chain, atp, core_neurons, exp_neurons, vocab_size, payload_sha256, ts) VALUES ('CHAIN_316', ?, ?, ?, ?, ?, ?);`,
-              atpParam,
-              coreParam,
-              expParam,
-              vocabParam,
-              digest,
-              now
-            );
-            // Prune edge_heartbeat to bounded 8-row ring buffer
-            this.sql.exec(`DELETE FROM edge_heartbeat WHERE id NOT IN (SELECT id FROM edge_heartbeat ORDER BY id DESC LIMIT 8);`);
-          }
-        } catch {
-          this.sqlite_err_count = (this.sqlite_err_count || 0) + 1;
-        }
-        this.cachedHeartbeatCounter = Math.min(8, this.cachedHeartbeatCounter + 1);
-        this.cachedLatestHeartbeat = {
-          atp: atpParam,
-          core_neurons: coreParam,
-          exp_neurons: expParam,
-          vocab_size: vocabParam,
-          payload_sha256: digest,
-          ts: now
-        };
-      }
-      try {
-        if (this.state && this.state.storage) {
-          await this.state.storage.setAlarm(now + 900000);
-        }
-      } catch {
-        this.sqlite_err_count = (this.sqlite_err_count || 0) + 1;
-      }
-
-      const shmRows = Array.from(this.nodeStateCache.values()).sort((a, b) => a.node_id.localeCompare(b.node_id));
-      const combinedNeurons = (coreParam ?? 0) + (expParam ?? 0);
-      return Response.json({
-        status: "EDGE_SHADOW_AND_ALARM_SYNCED",
-        schema: "SH4Z_v7000_TLV",
-        tlv_version: 7000,
-        chain: "CHAIN_316",
-        lean4_theorems_qed: "840/840",
-        tools_total: 316,
-        durable_object: "SovereignEdgeShadowDO_SQLite",
-        vocab_size: vocabParam,
-        core_neurons: coreParam,
-        expansion_neurons: expParam,
-        combined_neurons: combinedNeurons > 0 ? combinedNeurons : null,
-        chair44_columns_total: combinedNeurons > 0 ? Math.floor(combinedNeurons / 44) : null,
-        synapses_total: combinedNeurons > 0 ? combinedNeurons * 16 : null,
-        measured_atp: atpParam,
-        payload_sha256: digest,
-        heartbeats_stored: this.cachedHeartbeatCounter,
-        sqlite_err_count: this.sqlite_err_count || 0,
-        continuum_nodes: shmRows,
-        next_alarm_ms: now + 900000,
-        timestamp_ms: now
-      }, {
-        headers: { "Cache-Control": "public, max-age=30" }
-      });
-    }
-
-    if (url.pathname === "/shadow/quota_check") {
-      const tier = url.searchParams.get("tier") || "vectorize";
-      const units = parseOptionalNumber(url.searchParams.get("units")) ?? 1;
-      const fallbackOccurred = (url.searchParams.get("fallback") === "true");
-      const res = this.checkAndConsumeQuota(tier, units, fallbackOccurred);
-      return Response.json(res, {
-        headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" }
-      });
-    }
-
-    if (url.pathname === "/shadow/kv_debounce_check") {
-      const key = url.searchParams.get("key") || "global";
-      const res = this.checkKvWriteDebounce(key);
-      return Response.json(res, {
-        headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" }
-      });
-    }
-
-    if (url.pathname === "/shadow/quota_status") {
-      const tiersObj = {};
-      const now = Date.now();
-      for (const [tierName, r] of this.quotaCache.entries()) {
-        const usage = Number(r.usage_units) || 0;
-        const softCap = Number(r.soft_cap) || 1;
-        const usagePct = Number(((usage / softCap) * 100).toFixed(2));
-        const warningThreshold = Math.floor(softCap * 0.80);
-        const status = usage >= softCap
-          ? (tierName === "workers_ai" ? "DAILY_BUDGET_EXHAUSTED" : "QUOTA_EXHAUSTED")
-          : (usage >= warningThreshold ? (tierName === "workers_ai" ? "DAILY_BUDGET_WARNING_80_PERCENT" : "QUOTA_WARNING_80_PERCENT") : "NOMINAL");
-
-        tiersObj[tierName] = {
-          period_key: r.period_key,
-          usage_units: usage,
-          soft_cap: softCap,
-          hard_cap: Number(r.hard_cap),
-          usage_pct: usagePct,
-          fallback_count: Number(r.fallback_count) || 0,
-          status,
-          last_op_ms: Number(r.last_op_ms) || now
-        };
-      }
-
-      return Response.json({
-        status: "QUOTA_STATUS_ONLINE",
-        durable_object: "SovereignEdgeShadowDO_SQLite",
-        sqlite_err_count: this.sqlite_err_count || 0,
-        timestamp_ms: now,
-        tiers: tiersObj
-      }, {
-        headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "public, max-age=5" }
-      });
-    }
-
-    // /shadow/status or root default path: served strictly from in-memory cache without SQLite storage operations
-    const shmRows = Array.from(this.nodeStateCache.values()).sort((a, b) => a.node_id.localeCompare(b.node_id));
-    return Response.json({
-      status: "READY",
-      schema: "SH4Z_v7000_TLV",
-      tlv_version: 7000,
-      lean4_theorems_qed: "840/840",
-      tools_total: 316,
-      latest_heartbeat: this.cachedLatestHeartbeat,
-      sqlite_err_count: this.sqlite_err_count || 0,
-      continuum_nodes: shmRows,
-      timestamp_ms: now
-    }, {
-      headers: { "Cache-Control": "public, max-age=30" }
-    });
-  }
-}
+// ==============================================================================
+// CLOUDFLARE DURABLE OBJECT: SovereignEdgeShadowDO (Deduplicated via worker_continuum_do.js)
+// ==============================================================================
+// export class SovereignEdgeShadowDO (re-exported from worker_continuum_do.js)
+export { SovereignEdgeShadowDO } from "./worker_continuum_do.js";
 
 export default {
   async scheduled(event, env, ctx) {
@@ -1025,6 +704,18 @@ export default {
           duration_us: (Date.now() - t0) * 1000,
           units: 1
         });
+      }
+    }
+
+    // Edge Defense-in-Depth: Guard unproxied privileged admin/router/auth endpoints (Finding 2)
+    if (
+      url.pathname.startsWith("/api/v1/admin/") ||
+      url.pathname.startsWith("/api/v1/router/") ||
+      url.pathname === "/api/v1/auth/operator_vault_gate"
+    ) {
+      const auth = await verifyZeroTrustAndOperatorHeaders(request, env);
+      if (!auth.authorized) {
+        return Response.json({ error: "OPERATOR_AUTH_REQUIRED", status: 403 }, { status: 403 });
       }
     }
 
@@ -1856,10 +1547,24 @@ export default {
       const kvWrites = Number(doQuotaData.workers_kv_write?.usage_units || 0); // max_daily_kv_writes 720
       const aePoints = Number(doQuotaData.analytics_engine?.usage_units || 0);
 
-      const vecStatus = vecDims >= 24000000 ? "QUOTA_EXHAUSTED" : (vecDims >= 19200000 ? "QUOTA_WARNING_80_PERCENT" : "NOMINAL");
-      const r2Status = (r2ClassA >= 800000 || r2ClassB >= 8000000) ? "QUOTA_EXHAUSTED" : "NOMINAL";
-      const aiStatus = aiNeurons >= 8500 ? "DAILY_BUDGET_EXHAUSTED" : (aiNeurons >= 6800 ? "DAILY_BUDGET_WARNING_80_PERCENT" : "NOMINAL");
-      const kvStatus = kvWrites >= 720 ? "DAILY_CAP_REACHED" : "NOMINAL";
+      const opKeyEnforced = Boolean(
+        env &&
+        typeof env.SOVEREIGN_OPERATOR_KEY === "string" &&
+        env.SOVEREIGN_OPERATOR_KEY.trim().length >= 24
+      );
+      const turnstileSiteConfigured = isProductionTurnstileKey(env.TURNSTILE_SITE_KEY);
+      const turnstileSecretConfigured = isProductionTurnstileKey(env.TURNSTILE_SECRET_KEY);
+      const ztNominal = opKeyEnforced && turnstileSiteConfigured && turnstileSecretConfigured;
+      const ztStatus = ztNominal ? "NOMINAL" : "UNCONFIGURED_OR_PARTIAL";
+
+      const vecStatus = vecDims >= 30000000 ? "HARD_CAP_DENIED" : (vecDims >= 24000000 ? "QUOTA_EXHAUSTED" : (vecDims >= 19200000 ? "QUOTA_WARNING_80_PERCENT" : "NOMINAL"));
+      const r2Status = (r2ClassA >= 1000000 || r2ClassB >= 10000000) ? "HARD_CAP_DENIED" : ((r2ClassA >= 800000 || r2ClassB >= 8000000) ? "QUOTA_EXHAUSTED" : "NOMINAL");
+      const aiStatus = aiNeurons >= 10000 ? "HARD_CAP_DENIED" : (aiNeurons >= 8500 ? "DAILY_BUDGET_EXHAUSTED" : (aiNeurons >= 6800 ? "DAILY_BUDGET_WARNING_80_PERCENT" : "NOMINAL"));
+      const kvStatus = kvWrites >= 1000 ? "HARD_CAP_DENIED" : (kvWrites >= 720 ? "DAILY_CAP_REACHED" : "NOMINAL");
+
+      const allNominal = vecStatus === "NOMINAL" && r2Status === "NOMINAL" && aiStatus === "NOMINAL" && kvStatus === "NOMINAL";
+      const anyHardCap = vecStatus === "HARD_CAP_DENIED" || r2Status === "HARD_CAP_DENIED" || aiStatus === "HARD_CAP_DENIED" || kvStatus === "HARD_CAP_DENIED";
+      const globalStatus = anyHardCap ? "HARD_CAP_DENIED" : (allNominal ? "ALL_TIERS_NOMINAL" : "FALLBACK_SHIELDED");
 
       const governorPayload = {
         service: "ACT-Omega Net v70.0.0 Free-Tier Quota Governor",
@@ -1868,7 +1573,8 @@ export default {
         lean4_theorems_qed: "840/840",
         tools_total: 317,
         status: "ONLINE",
-        global_status: (vecStatus === "NOMINAL" && r2Status === "NOMINAL" && aiStatus === "NOMINAL" && kvStatus === "NOMINAL") ? "ALL_TIERS_NOMINAL" : "FALLBACK_SHIELDED",
+        global_status: globalStatus,
+        accounting_basis: "DO_METERED_REQUEST_UNITS_UNRECONCILED_WITH_CF_BILLING",
         timestamp_ms: now,
         tiers: {
           vectorize: {
@@ -1882,7 +1588,7 @@ export default {
             status: vecStatus,
             lru_cache_ttl_ms: 300000,
             lru_cache_size: gVectorizeLruCache.size(),
-            fallback_active: vecStatus === "QUOTA_EXHAUSTED" || !env.ACT_OMEGA_VECTORIZE,
+            fallback_active: vecStatus === "QUOTA_EXHAUSTED" || vecStatus === "HARD_CAP_DENIED" || !env.ACT_OMEGA_VECTORIZE,
             fallback_target: "D1_mit_hot_e8q_mirror" // mit_hot_e8q_mirror cloudflare_quota_governor_log
           },
           r2: {
@@ -1897,7 +1603,7 @@ export default {
             edge_cache_ttl_s: 300,
             edge_cache_hits: Number(doQuotaData.r2_class_b?.cache_hits || 0),
             status: r2Status,
-            fallback_active: r2Status === "QUOTA_EXHAUSTED" || !env.ACT_OMEGA_R2_VAULT,
+            fallback_active: r2Status === "QUOTA_EXHAUSTED" || r2Status === "HARD_CAP_DENIED" || !env.ACT_OMEGA_R2_VAULT,
             fallback_chain: ["D1_BLOB_CHUNKS", "DO_SQLITE", "ORIGIN_TUNNEL"]
           },
           workers_ai: {
@@ -1910,18 +1616,18 @@ export default {
             utc_rollover_date: utcDate,
             dedup_cache_size: gWorkersAiDedupCache.size(),
             status: aiStatus,
-            fallback_active: aiStatus === "DAILY_BUDGET_EXHAUSTED" || !env.AI, // !env.AI EDGE_FALLBACK_QUOTA_SHIELDED
+            fallback_active: aiStatus === "DAILY_BUDGET_EXHAUSTED" || aiStatus === "HARD_CAP_DENIED" || !env.AI, // !env.AI EDGE_FALLBACK_QUOTA_SHIELDED
             fallback_target: "32D_POLYTONIC_E8_D1",
             fallback_badge: "EDGE_FALLBACK_QUOTA_SHIELDED"
           },
           zero_trust_turnstile: {
-            turnstile_site_key_configured: Boolean(env.TURNSTILE_SITE_KEY),
-            turnstile_secret_configured: Boolean(env.TURNSTILE_SECRET_KEY),
+            turnstile_site_key_configured: turnstileSiteConfigured,
+            turnstile_secret_configured: turnstileSecretConfigured,
             tokens_verified: gTurnstileTokenCache.size(),
             token_cache_ttl_ms: 300000,
             jwt_assertions_cached: gZeroTrustJwtCache.size(),
-            operator_key_enforced: true,
-            status: "NOMINAL"
+            operator_key_enforced: opKeyEnforced,
+            status: ztStatus
           },
           workers_kv: {
             binding: "ACT_OMEGA_KV",
@@ -1988,15 +1694,35 @@ export default {
         });
       }
 
-      // Fail-closed on missing secret key (TURNSTILE_SECRET_KEY turnstile_secret_missing)
+      // Fail closed with 503 if production secret key is not configured or is a test key
       const secretKey = env.TURNSTILE_SECRET_KEY;
-      if (!secretKey) {
+      if (!isProductionTurnstileKey(secretKey)) {
         return Response.json({
           success: false,
-          error: "TURNSTILE_SECRET_KEY_MISSING",
+          verified: false,
+          error: "TURNSTILE_PRODUCTION_SECRET_NOT_CONFIGURED",
           fail_closed: true,
-          status: "CONFIGURATION_ERROR"
-        }, { status: 500 });
+          status: 503
+        }, { status: 503 });
+      }
+
+      // If test keys or dummy tokens are supplied in the request body, reject with 403
+      if (body.secret && !isProductionTurnstileKey(body.secret)) {
+        return Response.json({
+          success: false,
+          verified: false,
+          error: "TURNSTILE_TEST_KEY_REJECTED",
+          status: 403
+        }, { status: 403 });
+      }
+
+      if (!isProductionTurnstileKey(token)) {
+        return Response.json({
+          success: false,
+          verified: false,
+          error: "TURNSTILE_TEST_TOKEN_REJECTED",
+          status: 403
+        }, { status: 403 });
       }
 
       try {
@@ -2015,20 +1741,23 @@ export default {
           gTurnstileTokenCache.set(token, true);
           return Response.json({
             success: true,
+            verified: true,
             source: "CLOUDFLARE_SITEVERIFY",
             status: "NOMINAL"
           });
         } else {
           return Response.json({
             success: false,
+            verified: false,
             error: "TURNSTILE_VALIDATION_FAILED",
             error_codes: outcome["error-codes"],
-            status: "REJECTED"
+            status: 403
           }, { status: 403 });
         }
       } catch (err) {
         return Response.json({
           success: false,
+          verified: false,
           error: "TURNSTILE_VERIFY_NETWORK_ERROR",
           message: String(err),
           status: "FAIL_CLOSED"
@@ -2124,10 +1853,13 @@ export default {
         })());
       }
 
+      const isHonestFallback = fallbackMatches.length > 0;
+      const fallbackStatus = isHonestFallback ? "EDGE_FALLBACK_QUOTA_SHIELDED" : "NO_MATCHING_VECTORS_IN_D1";
+
       emitEdgeTelemetry(env, ctx, {
         event_type: "VECTORIZE_FALLBACK_QUERY",
         tier: "vectorize",
-        status: "EDGE_FALLBACK_QUOTA_SHIELDED",
+        status: fallbackStatus,
         duration_us: (Date.now() - t0) * 1000,
         units: 0
       });
@@ -2137,8 +1869,8 @@ export default {
         count: fallbackMatches.length,
         source: "D1_COSINE_SIMILARITY_MIRROR",
         queried_dimensions: 0,
-        status: "EDGE_FALLBACK_QUOTA_SHIELDED",
-        fallback: true,
+        status: fallbackStatus,
+        fallback: isHonestFallback,
         latency_ms: Date.now() - t0
       });
     }
@@ -2223,7 +1955,7 @@ export default {
       }
 
       if (request.method === "PUT") {
-        const auth = verifyZeroTrustAndOperatorHeaders(request, env);
+        const auth = await verifyZeroTrustAndOperatorHeaders(request, env);
         if (!auth.authorized) {
           return Response.json({ error: "OPERATOR_AUTH_REQUIRED", status: 403 }, { status: 403 }); // 403 OPERATOR_AUTH_REQUIRED X-Sovereign-Operator-Key
         }
@@ -2348,27 +2080,29 @@ export default {
         } catch (aiErr) {}
       }
 
-      // Zero-Downtime Deterministic 32D Polytonic E8 Fallback
-      const fallbackVector = generateDeterministic32DPolytonicE8(prompt);
+      // Zero Unmeasured Mandate (Finding 5): Fail closed with HTTP 503 when Workers AI is offline or quota-blocked.
+      // Never return a deterministic 32D hash vector presented as an embedding.
+      const unavailableStatus = quotaAllowed ? "BINDING_UNAVAILABLE" : "DAILY_BUDGET_EXHAUSTED";
       emitEdgeTelemetry(env, ctx, {
-        event_type: "WORKERS_AI_FALLBACK_EMBEDDING",
+        event_type: "WORKERS_AI_UNAVAILABLE",
         tier: "workers_ai",
-        status: "EDGE_FALLBACK_QUOTA_SHIELDED", // writeDataPoint EDGE_FALLBACK_QUOTA_SHIELDED
+        status: unavailableStatus,
         duration_us: (Date.now() - t0) * 1000,
         units: 0,
         neurons_used: 0
       });
 
+      // DEPRECATED (Finding 5 / Item 5): Superseded synthetic fallback:
+      // emitEdgeTelemetry(env, ctx, { event_type: "WORKERS_AI_FALLBACK_EMBEDDING", status: "EDGE_FALLBACK_QUOTA_SHIELDED" });
+      // { source: "32D_POLYTONIC_E8_D1", telemetry_badge: "EDGE_FALLBACK_QUOTA_SHIELDED" }
+
       return Response.json({
-        embedding: fallbackVector,
-        dimension: 32,
-        source: "32D_POLYTONIC_E8_D1",
-        neurons_consumed: 0,
-        status: "EDGE_FALLBACK_QUOTA_SHIELDED",
-        fallback: true,
-        telemetry_badge: "EDGE_FALLBACK_QUOTA_SHIELDED",
+        error: "WORKERS_AI_EMBEDDING_UNAVAILABLE",
+        status: unavailableStatus,
+        embedding: null,
+        fallback: false,
         latency_ms: Date.now() - t0
-      });
+      }, { status: 503 });
     }
 
     // ==============================================================================
@@ -2427,7 +2161,10 @@ export default {
     }
 
     if (url.pathname === "/api/v1/kv/put") {
-      const auth = verifyZeroTrustAndOperatorHeaders(request, env);
+      const auth = await verifyZeroTrustAndOperatorHeaders(request, env);
+      if (!auth.authorized) {
+        return Response.json({ error: "OPERATOR_AUTH_REQUIRED", status: 403 }, { status: 403 });
+      }
       let body = {};
       try {
         body = await request.json();

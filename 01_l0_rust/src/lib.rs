@@ -336,6 +336,36 @@ pub use v71_3_sovereign_harmonic_week3_speculative_k4_long_context_4k::{
     v71_3_dispatch_tool_350_chain350_master_certification,
 };
 
+// Sovereign Harmonic X Week 4 Capstone (v72.0.0 | SH4Z v7200 TLV | Tools 351..356 | CHAIN 356 | 965/965 QED):
+// Neuro-Symbolic RLVF / GRPO-Manifold with Live lean.exe Compiler-in-the-Loop,
+// Medusa/Eagle-Style Dendritic Draft Tree Speculative Decoder (d=4, b=2, 15 Nodes),
+// Top-K (K=8) Sparse Autoencoder (SAE, 512 Monosemantic Dictionary Latents) & Causal Feature Steering,
+// Full SH-Eval-256 Compiler-in-the-Loop pass@1/pass@4 Gauntlet & 7-Stage DuckDB Ablation Matrix,
+// Week 4 12-Test Torture & Ablation Gauntlet (W4-1..W4-12), and CHAIN 356 Master Certification
+pub mod v71_4_sovereign_harmonic_week4_rlvf_tree_speculative_sae_eval256;
+
+pub use v71_4_sovereign_harmonic_week4_rlvf_tree_speculative_sae_eval256::{
+    C_SH_WEEK4_ABLATION_CSV_PATH,
+    C_SH_WEEK4_RECEIPT_PATH,
+    C_SH_WEEK4_SHX_WEIGHTS_PATH,
+    E_SH_WEEK4_ABLATION_CSV_PATH,
+    E_SH_WEEK4_RECEIPT_PATH,
+    E_SH_WEEK4_SHX_WEIGHTS_PATH,
+    V71_4_EVAL256_TOTAL_PROMPTS,
+    V71_4_RLVF_GROUP_SIZE_G,
+    V71_4_RLVF_OBLIGATIONS_COUNT,
+    V71_4_SAE_DICT_LATENTS_512,
+    V71_4_SAE_TOPK_8,
+    V71_4_TREE_DEPTH_D4,
+    V71_4_TREE_DRAFT_NODES_15,
+    v71_4_dispatch_tool_351_rlvf_grpo_compiler_in_the_loop,
+    v71_4_dispatch_tool_352_medusa_eagle_dendritic_tree_speculative_k8,
+    v71_4_dispatch_tool_353_sae_monosemantic_feature_circuit_explorer,
+    v71_4_dispatch_tool_354_sh_eval_256_compiler_pass_at_k_gauntlet,
+    v71_4_dispatch_tool_355_week4_12test_torture_and_ablation_gauntlet,
+    v71_4_dispatch_tool_356_chain356_master_certification,
+};
+
 
 
 

@@ -12,8 +12,8 @@ android {
         applicationId = "com.actomega.manifold"
         minSdk = 30
         targetSdk = 35
-        versionCode = 72
-        versionName = "71.5.0"
+        versionCode = 73
+        versionName = "72.2.0"
 
         ndk {
             abiFilters.add("arm64-v8a")

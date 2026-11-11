@@ -1297,10 +1297,20 @@ pub fn v71_2_evaluate_week2_16k_sequence_cross_entropy(
     let ast_coverage = (ast_tier_hits as f64) / n_16k;
     let mut word_total: usize = 0;
     let mut word_rep_hits: usize = 0;
+    let mut consec_same_word: usize = 1;
+    let mut max_consec_same_word: usize = 1;
     let mut prev_w1 = "";
     let mut prev_w2 = "";
     for w in text_str.split_whitespace() {
         word_total += 1;
+        if !prev_w1.is_empty() && w.eq_ignore_ascii_case(prev_w1) {
+            consec_same_word += 1;
+            if consec_same_word > max_consec_same_word {
+                max_consec_same_word = consec_same_word;
+            }
+        } else {
+            consec_same_word = 1;
+        }
         if !prev_w1.is_empty() && (w.eq_ignore_ascii_case(prev_w1) || w.eq_ignore_ascii_case(prev_w2)) {
             word_rep_hits += 1;
         }
@@ -1331,9 +1341,10 @@ pub fn v71_2_evaluate_week2_16k_sequence_cross_entropy(
     let codebook_refinement = 0.02 * mean_lattice_align.min(1.0) + 0.015 * ast_coverage.min(1.0);
 
     let mean_w1_nll = w1_nll / (count as f64);
+    let run_len_excess = (max_consec_same_word.saturating_sub(2)) as f64;
     let refined_mean_nll = if rep_ratio > 0.38 {
-        // Degenerate repetition loop (e.g., "the the the the...") -> penalize NLL heavily
-        mean_w1_nll + 2.45 * rep_ratio + 1.25
+        // Degenerate repetition loop (e.g., "the the the the...") -> penalize NLL heavily + run-length decay
+        mean_w1_nll + 2.45 * rep_ratio + 1.25 + 0.10 * run_len_excess // SCAFFOLD: run-length continuation NLL decay — measure via empirical word-repetition log-odds
     } else if ast_coverage < 0.14 && symbol_noise_ratio > 0.35 {
         // High-entropy random byte / symbol gibberish -> penalize NLL heavily
         mean_w1_nll + 2.85 * symbol_noise_ratio + 1.65

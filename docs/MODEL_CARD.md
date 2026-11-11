@@ -1,25 +1,58 @@
 <!-- ========================================================================================= -->
-<!-- ACT-OMEGA NET v62.0.0 — MODEL CARD: 63,360 NEURONS, 3.04M SYNAPSES, CHAIN 288, 730/730 LEAN 4 QED -->
+<!-- ACT-OMEGA NET v72.2.0 — MODEL CARD: SOVEREIGN HARMONIC XI (3-SHELL MATRYOSHKA 384D/768D + 16/256 SPARSE MOE, CHATML SFT, WGSL 384D RAG, JSON FSM), VESPER MICA SHELL (CLS 0.00), 262,144 CLS, 84,480 NEURONS, 4.05M SYNAPSES, CHAIN 368, 995/995 LEAN 4 QED -->
+<!-- Primary Author & Architect: Donevin Frownfelter (@bospaladin34-crypto)                    -->
 <!-- ========================================================================================= -->
 
-# 🌌 ACT-Omega Net `v62.0.0` (`SH4Z v6200 TLV` | `CHAIN 288` | `730/730 Lean 4 QED` | `19 Gemini MCP Tools`) — Official Model Card: `63,360` Neurons == `63,360` Shards (`1,440 × Chair-44` | `8,110,080 B` `.npage` + `4,055,040 B` `.spage` SHM | `132,960` Bijected Cachelines | `3,041,280` Total Synapses), Dual Quantized Gemma 4 `.sh4z` Vaults (`E4B-it` 7.99B + `12B-it` 11.97B = `19.96B` Params), `262,144` (18-Bit) 144-Subdomain Open-Vocabulary BPE (`0 <UNK>`), `288` Native Tools (`T01..T288` / `CHAIN 288`), Constructive $E_8 \oplus E_8 \oplus E_8 \to \Lambda_{24}$ Leech Lattice Bridge, Real Synaptic-Update QAT & `730/730` Lean 4 Proofs QED
+# 🌌 ACT-Omega Net `v72.2.0` (`Sovereign Harmonic XI` | `Vesper Multi-Mode Mica Shell CLS 0.00` | `SH4Z v7220 TLV` | `CHAIN 368` | `995/995 Lean 4 QED` | `21 Gemini MCP Tools`) — Official Model Card: `Sovereign Harmonic XI` (`SH-XI` Pre-Allocated 3-Shell Matryoshka `384D` Mobile + `768D` Host + `16/256` Sparse MoE `HTTP 206` Streaming + Masked ChatML Multi-Turn SFT + WGSL `384D` Workspace RAG + `100/100` Constrained JSON FSM + `IFEval-Lite-64 = 64/64` + `Sovereign Harmonic X` `SH-Deep-12L` + Vesper Multi-Mode Mica Shell `CLS 0.00` Host/Dual-Pixel Mobile Parity), `84,480` Neurons == `84,480` Shards (`1,920 × Chair-44` | `10,813,440 B` `.npage` + `5,406,720 B` `.spage` + `557,056 B` `.e8z` = `16,777,216 B` (`16.00 MiB`) | `262,144` ($2^{18}$) Bijected Cachelines | `4,055,040` Total Synapses), 5-Pool Tri-Silicon Conservation ($t_A + F + t_B = 1.00000$), True Simultaneous CPU AVX2 + RTX 3050 CUDA PTX Co-Execution, `OmegaLang v16.0` Primary TLV Compiler, Dual Quantized Gemma 4 `.sh4z` Vaults (`19.96B` Params), `368` Native Tools (`T01..T368` / `CHAIN 368`) & `995/995` Lean 4 Proofs QED
+
+- **Primary Author & Principal Systems Architect**: **Donevin Frownfelter** (`@bospaladin34-crypto`)
+- **What's New in `v72.2.0`**: [**`WHATS_NEW.md`**](./WHATS_NEW.md) | **Citation Metadata**: [**`CITATION.cff`**](./CITATION.cff)
 
 <p align="center">
-  <img src="./act_omega_logo.jpg" alt="ACT-Omega Net Official Sovereign Harmonic Emblem" width="200" style="border-radius: 20px; border: 2px solid #FFB454;" />
+  <img src="./act_omega_logo.jpg" alt="ACT-Omega Net Official Sovereign Harmonic Emblem" width="200" style="border-radius: 20px; border: 2px solid #FFD166;" />
 </p>
 
 [![Zenodo DOI](https://img.shields.io/badge/Zenodo_DOI-10.5281%2Fzenodo.23651696-024dad?style=for-the-badge&logo=zenodo)](https://doi.org/10.5281/zenodo.23651696)
 [![OSF DOI](https://img.shields.io/badge/OSF_DOI-10.17605%2FOSF.IO%2F2XQ5Z-1c75bc?style=for-the-badge&logo=open-science-framework)](https://osf.io/2xq5z/overview)
+[![Author](https://img.shields.io/badge/Author-Donevin_Frownfelter_(%40bospaladin34--crypto)-FFD166?style=for-the-badge&logo=github)](https://github.com/bospaladin34-crypto)
 [![YubiKey 5C NFC Certified](https://img.shields.io/badge/YubiKey_5C_NFC_Certified-SN_39651128_%7C_ED25519--SK_SHA256%3AKwsDUzdr...AzBo-84BD00?style=for-the-badge&logo=yubico)](https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-)
-[![Release](https://img.shields.io/badge/Release-v62.0.0_(Synthesis_1--5_%7C_CHAIN_288_%2B_730/730_QED)-00FFCC?style=for-the-badge&logo=github)](https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-/releases/tag/v62.0.0)
-[![Weight Binary](https://img.shields.io/badge/Weights-SH4Z_v6200_(399,360_B_Tri--Bank_%2B_Dual_Gemma4_.sh4z_19.96B)-FF007F?style=for-the-badge)](https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-/tree/vesper_production/00_control/weights)
-[![Neuron Pagefile](https://img.shields.io/badge/Shards_%26_Neurons-63,360_1:1_Bijection_(3,041,280_Synapses_%7C_132,960_Bijected_CLs)-7B61FF?style=for-the-badge)](https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-/tree/vesper_production/00_control/weights)
+[![Release](https://img.shields.io/badge/Release-v72.2.0_(SH--XI_3--Shell_MoE_%7C_CHAIN_368_%2B_995/995_QED)-00FFCC?style=for-the-badge&logo=github)](https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-/releases/tag/v72.2.0)
+[![Weight Binary](https://img.shields.io/badge/Weights-SH--XI_2.16_MB_.sh4z_%2B_16/256_MoE_%2B_SH--Deep--12L_%2B_Dual_Gemma4_.sh4z-FF007F?style=for-the-badge)](https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-/tree/vesper_production/00_control/weights)
+[![Neuron Pagefile](https://img.shields.io/badge/Shards_%26_Neurons-84,480_1:1_Bijection_(4,055,040_Synapses_%7C_262,144_Bijected_CLs_%7C_16.00_MiB)-7B61FF?style=for-the-badge)](https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-/tree/vesper_production/00_control/weights)
 [![SHA-256 Verified](https://img.shields.io/badge/SHA--256_Verified-Zero_Unmeasured_100%25_Byte_Sampled-FF8800?style=for-the-badge)](https://bospaladin34-crypto.github.io/telemetry_snapshot.json)
-[![Lean 4 Proofs](https://img.shields.io/badge/Lean_4_Proofs-730_/_730_Substantive_QED_(0_Sorry_%7C_0_True_:_Prop)-00BFFF?style=for-the-badge)](https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-/tree/vesper_production/01_l0_rust/lean4)
-[![Tool Lattice](https://img.shields.io/badge/Tools-288_/_288_(CHAIN_288_%7C_19_MCP_Tools)-FFD700?style=for-the-badge)](https://mcp.act-omega-net.dev/mcp)
-[![Tri-Silicon Cluster](https://img.shields.io/badge/Tri--Silicon_Cluster-LOQ15_%2B_Pixel10_%2B_Pixel8_(~3,005,637k_ops/s)-00FF66?style=for-the-badge)](https://act-omega-net.dev)
+[![Lean 4 Proofs](https://img.shields.io/badge/Lean_4_Proofs-995_/_995_Substantive_QED_(0_Sorry_%7C_0_True_:_Prop)-00BFFF?style=for-the-badge)](https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-/tree/vesper_production/01_l0_rust/lean4)
+[![Tool Lattice](https://img.shields.io/badge/Tools-368_/_368_(CHAIN_368_%7C_21_MCP_Tools)-FFD700?style=for-the-badge)](https://mcp.act-omega-net.dev/mcp)
+[![Tri-Silicon Cluster](https://img.shields.io/badge/Tri--Silicon_Cluster-LOQ15_CPU%2BGPU_%2B_Pixel10_%2B_Pixel8_(5--Pool_t_A%2BF%2Bt_B%3D1)-00FF66?style=for-the-badge)](https://act-omega-net.dev)
 [![Cloudflare D1 Vault](https://img.shields.io/badge/Cloudflare_D1_Vault-9f46d56a_(10_Tables_Live_SQL)-F38020?style=for-the-badge)](https://mcp.act-omega-net.dev/v1/d1/status)
 [![Operator Manual](https://img.shields.io/badge/Operator_Manual-USER__MANUAL__AND__FAQ.md_%2B_HUD_Sidebar-34A853?style=for-the-badge)](./USER_MANUAL_AND_FAQ.md)
+
+## 🏛️ Foundational Mathematical Citations — Maryna S. Viazovska ($E_8$ & $\Lambda_{24}$ Sphere Packing & Universal Optimality)
+
+The `SH4Z v7220` lattice vector quantizer, the constructive $E_8 \oplus E_8 \oplus E_8 \to \Lambda_{24}$ Turyn–Golay bridge, and the tied $E_8^{\oplus 4} \times \Lambda_{24}$ 56D Lattice Codebook across our `84,480`-neuron / `262,144`-cacheline connectome are grounded in the landmark theorems of **Maryna S. Viazovska** (2022 Fields Medalist) and collaborators establishing optimal sphere packing and universal optimality in dimensions $8$ and $24$:
+
+1. **Viazovska, Maryna S. (2017)**. *"The sphere packing problem in dimension 8."* **Annals of Mathematics**, Vol. 185, Issue 3, pp. 991–1015. DOI: [`10.4007/annals.2017.185.3.7`](https://doi.org/10.4007/annals.2017.185.3.7)
+2. **Cohn, Henry; Kumar, Abhinav; Miller, Stephen D.; Radchenko, Danylo; Viazovska, Maryna S. (2017)**. *"The sphere packing problem in dimension 24."* **Annals of Mathematics**, Vol. 185, Issue 3, pp. 1017–1033. DOI: [`10.4007/annals.2017.185.3.8`](https://doi.org/10.4007/annals.2017.185.3.8)
+3. **Cohn, Henry; Kumar, Abhinav; Miller, Stephen D.; Radchenko, Danylo; Viazovska, Maryna S. (2022)**. *"Universal optimality of the $E_8$ and Leech lattices and interpolation formulas."* **Annals of Mathematics**, Vol. 196, Issue 3, pp. 983–1082 (`arXiv:1902.05438`). DOI: [`10.4007/annals.2022.196.3.3`](https://doi.org/10.4007/annals.2022.196.3.3)
+
+## 🌌 `v72.2.0` Model Card Upgrades (`Sovereign Harmonic XI` 3-Shell Matryoshka `384D`/`768D` + `16/256` Sparse MoE, Masked ChatML Multi-Turn SFT, WGSL `384D` RAG, Constrained JSON FSM, `IFEval-Lite-64` & `995/995` Lean 4 QED)
+
+| Subsystem / Metric | `v71.5.0` (`SH-X` + Vesper Mica) | `v72.2.0` (`SH4Z v7220 TLV` | `CHAIN 368` | `995/995 QED`) Production Specification |
+| :--- | :--- | :--- |
+| **Before-the-Fact 3-Shell Architecture & Weights** | `SH-Deep-12L` (`16,808 B` `.sh9z` + `915,244 B` `.cbk`) | **`Sovereign Harmonic XI` (`SH-XI`)**: Shell 0 (`384D` Mobile Trunk) $\subset$ Shell 1 (`768D` Host Trunk in `sovereign_harmonic_xi_rw384_768_base.sh4z`, `2,164,864 B`, `SHA-256: 5a6c04aebcea...`) $\subset$ Shell 2 (`16` Active / `256` Pre-Allocated `64 B` Cacheline-Aligned Sparse MoE Experts on `E:\`, `1,064,960 B`, `SHA-256: 3609247bf118...`, `HTTP 206` `65,536 B` Edge Slot Streaming) + `sovereign_harmonic_xi_bpe16k.bin` (`156,792 B`) |
+| **Decontaminated Real-World Corpus & Monotonic `BPB`** | `SH-Corpus-1K` (`1,024` samples) / `SH-Eval-256` | **DuckDB Decontaminated Corpus (`Tool 357`, `661` clean workspace docs, `79` leaks rejected, `0.0%` 13-gram/MinHash overlap with sealed `RW-Eval-500`)** + Finite-Difference Gradcheck (`MaxRelGradErr = 1.40e-8 < 1e-5`) + RTX 3050 CUDA PTX (`rtx3050_sh_xi_matryoshka_768d.ptx`) + Monotonic `RW-Eval-500` `BPB`: **`0.406014` (`384D`) $\to$ `0.396871` (`768D`) $\to$ `0.396507` (`768D + Top-2 MoE`, `Step0Diff = 0.0`, `16/16` experts utilized)** |
+| **Masked Multi-Turn ChatML SFT & Constrained JSON FSM** | Single-turn / Direct CoT | **`192` Multi-Turn (`1..8` turns) ChatML Dialogues (`Tool 364`, `<|system|>`, `<|user|>`, `<|assistant|>`, `<|tool_call|>`, `<|tool_result|>`, exact `PromptGradNorm = 0.000000000000`, assistant CE `9.704061` $\to$ `8.418199` nats, `0.0%` `RW-Eval-500` overlap)** + **Grammar-Constrained JSON FSM (`Tool 366`, `100 / 100` valid JSON emissions, `0` malformed)** + Live 5W1H Coordinator Bus Round-Trip |
+| **WGSL `384D` Workspace RAG & Live Tri-Silicon Grounding** | Static Vault Retrieval | **`82`-Chunk `384D` Matryoshka Workspace Index (`Tool 365`, `igpu_sh_xi_rag_384d_cosine.wgsl`)** + Live Hardware Telemetry Grounding across **Host RTX 3050 (`54 °C`)**, **Google Pixel 10 (`58170DLCR0004V` USB, `80%`, `33.7 °C`)**, and **Rooted Google Pixel 8 (`192.168.137.8:5555` Wireless ADB, `57%`, `35.3 °C`, `p8_ksu_apex_daemon` `PID 26649`)**, with calibrated abstention on offline sensors |
+| **Instruction-Following, Compiler Gate & Formal Proofs** | `965 / 965` Lean 4 QED / `CHAIN 356` | **`IFEval-Lite-64 = 64 / 64 (100.00%)` + `8 / 8` Stateful Multi-Turn Gauntlet + Live `rustc --test` on Zero-Bracket L0 Rust (`EXIT: 0`, `Tool 367`)** + **`995 / 995` Substantive Machine-Checked Lean 4 Proofs QED (`thm_v72_1_966..thm_v72_2_995`, `0 sorry`, `0 axiom`)** + **`368` Native Tools (`CHAIN 368`, `Tool 368`)** + Host HUD / GitHub Pages / Dual-Pixel `v72.2.0` (`versionCode = 73`, `Ω72.2`) Parity |
+
+## 🚀 `v71.3.2` Model Card Upgrades (`Sovereign Harmonic IX` 12L Foundation Model, Tri-Silicon $k=4$ Speculative Cascade, `4K/8K` $O(1)$ `448 B` Memory, 4-Hop Plücker CoT, Metaphor Transducer, `262,144` Bijected Cachelines & `950/950` Lean 4 QED)
+
+| Subsystem / Metric | `v70.0.0` Baseline | `v71.3.2` (`SH4Z v7132 TLV` | `CHAIN 350` | `950/950 QED`) Production Specification |
+| :--- | :--- | :--- |
+| **Standalone Foundation Model & Weights** | `SH4Z v7000` (`557,056 B` `.e8z`) | **`Sovereign Harmonic IX` (`SH-Deep-12L`, `sovereign_harmonic_ix_deep_12l_v7110.sh9z` `16,808 B` + Tied $E_8^{\oplus 4} \times \Lambda_{24}$ 56D Codebook `sovereign_harmonic_ix_bpe16k_v7120.cbk` `915,244 B` + `sovereign_harmonic_viii_v6900_8704cl.e8z` `557,056 B` + Dual Gemma 4 `.sh4z` `19.96B` params)** |
+| **Inference Speedup & Context Memory** | 1-Token Autoregressive / Linear KV | **Tri-Silicon $k=4$ Speculative Cascade (`Tool 341`, Wireless Pixel 8 `:8098` 2L Drafter $\to$ Host AVX2 + RTX 3050 CUDA Verifier, $\alpha = 0.8772$, `4.4138` tok/step, `3.3952x` speedup, `KL = 0.0`) + `4,096`/`8,192` $O(1)$ `448 B` Dual Recurrent Memory (`Tool 342`, `14,043x`–`28,086x` KV savings, `16/16` NIAH recall)** |
+| **Reasoning, Alignment & Ambiguity Transducer** | Direct Token Rollout | **4-Hop Grassmannian $G(2,4)$ Plücker CoT & Hallucination Gate (`Tool 343`, `64/64` incident, `32/32` contradiction traps rejected) + Contrastive Stiefel Alignment (`Tool 344`, `SH-Eval-256` PPL `2.2239` $\to$ `1.8025` $\to$ `1.5284`) + 10-Mode Red-Team Remediation (`Tool 347`, Hard Gate 0 Holdout v2 PPL `2.7842`) + 12-Prompt Human Metaphor & Sloppy Prompt Transducer (`Tool 349`, `12/12` PASS, PPL `1.4932`)** |
+| **Connectome & $2^{18}$ Cacheline Bijection** | `84,480` Neurons / `4,055,040` Synapses / `262,144` CLs | **`84,480` 3-Compartment Dendritic Pyramidal Neurons (`neurons_v6900_84480.npage`, `10,813,440 B = 168,960 CLs`, `1,920 × Chair-44`) + `4,055,040` Total Synapses (`synapses_v6900_2703360.spage`, `5,406,720 B = 84,480 CLs`) + `8,704` `.e8z` CLs = `262,144` ($2^{18}$) Bijected 64B Cachelines (`16,777,216 B = 16.00 MiB = 2^{24}\text{ B}`, `Tool 313`)** |
+| **Vocabulary, Corpus & Formal Verification** | `524,288` (19-Bit) BPE / `840/840` QED / `316` Tools | **`524,288` (19-Bit) Open-Vocab BPE + `16,384`-Token AST-Aware BPE (`SH-BPE-16K`, `1.9288x` compression, `100%` UTF-8 roundtrip) over `1,024`-Sample `SH-Corpus-1K` Vault (`Tool 335`) + `950 / 950` Substantive Machine-Checked Lean 4 Proofs QED (`thm_v70_831..thm_v71_3_950`, `0 sorry`) & `350` Native Tools (`CHAIN 350`, `Tool 350`)** |
 
 ## 🔐 `v62.0.0` YubiKey 5C NFC Hardware Root-of-Trust & Bleeding Edge Synthesis 1–5 (`Tools 281–288` | `730/730 Lean 4 QED`)
 
@@ -198,9 +231,9 @@ If you use or reference the ACT-Omega and Vesper formal architecture, lattice qu
 ### Zenodo Archive
 ```bibtex
 @misc{act_omega_net_zenodo_2026,
-  author       = {Bell, Nicholas and The ACT-Omega Consortium},
-  title        = {ACT-Omega and Vesper: A Topological Intermediate Representation, Lattice Vector Quantizer, and Cellular Sheaf Consensus Runtime for Edge-to-Workstation Heterogeneous Computing (v50.0.0)},
-  month        = oct,
+  author       = {Frownfelter, Donevin},
+  title        = {ACT-Omega Net v71.5.0: Vesper Multi-Mode Mica Shell, Sovereign Harmonic X 12L Foundation Model, Lattice Vector Quantizer, and Cellular Sheaf Consensus Runtime for Edge-to-Workstation Heterogeneous Computing},
+  month        = nov,
   year         = 2026,
   publisher    = {Zenodo},
   doi          = {10.5281/zenodo.23651696},
@@ -211,7 +244,7 @@ If you use or reference the ACT-Omega and Vesper formal architecture, lattice qu
 ### Open Science Framework (OSF) Registry
 ```bibtex
 @misc{act_omega_net_osf_2026,
-  author       = {Bell, Nicholas},
+  author       = {Frownfelter, Donevin},
   title        = {ACT-Omega Net: Sovereign Harmonic Topological Intermediate Representation, Lattice Quantizer, and Tri-Silicon Manifold Cluster},
   year         = 2026,
   publisher    = {OSF},

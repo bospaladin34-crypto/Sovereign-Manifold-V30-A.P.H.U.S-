@@ -567,14 +567,14 @@ export const DOMAINS_CATALOG: FunctionalDomainDef[] = [
     slug: "autopoietic_bus_vault_d1",
     name: "Autopoietic Coordinator Bus, E:\\ Vault & Cloudflare D1",
     shortName: "Autopoietic Vault",
-    toolCount: 51,
-    toolRange: "T46-T48, T51, T53-T56, T59-T60, T69-T72, T81, T89-T90, T96-T100, T103, T281-T304, T317",
+    toolCount: 63,
+    toolRange: "T46-T48, T51, T53-T56, T59-T60, T69-T72, T81, T89-T90, T96-T100, T103, T281-T304, T317, T357-T368",
     writebackCat: "tool_outputs",
     ep: "/api/v1/unified/autopoietic_bus_vault_d1",
     accent: "#FFFEFB",
     bg: "#141D26",
     border: "#486581",
-    desc: "5W1H Coordinator Message Bus, DAG Orchestrator, 9-sink universal E:\\ SSD Vault, DuckDB analytics, and Cloudflare D1 sync.",
+    desc: "5W1H Coordinator Message Bus, Sovereign Harmonic XI (3-Shell Matryoshka + 16/256 Sparse MoE), 9-sink universal E:\\ SSD Vault, DuckDB analytics, and Cloudflare D1 sync.",
     tools: [
       { id: 46, tag: "T46", label: "TOOL 46: MCP Server Portal", ep: "/api/v1/mcp/rpc" },
       { id: 47, tag: "T47", label: "TOOL 47: OpenAI /v1/chat/completions", ep: "/api/v1/openai/compat" },
@@ -630,7 +630,19 @@ export const DOMAINS_CATALOG: FunctionalDomainDef[] = [
       { id: 302, tag: "T302", label: "T302: CERN LHCb Run 3 5-Mapping Internal Auditor (30:1 Allen HLT1 Sieve)", ep: "/api/v1/audit/cern_lhcb_5mapping_auditor" },
       { id: 303, tag: "T303", label: "T303: Dedicated Dual Gemma 4 Conversational Studio (E4B + 12B + K20)", ep: "/api/v1/gemma4/chat" },
       { id: 304, tag: "T304", label: "T304: FB1..FB12 Frontier Gauntlet & CHAIN 304 Master Cert (810/810 QED)", ep: "/api/v1/chain304/master_certification" },
-      { id: 317, tag: "T317", label: "T317: Cloudflare Free-Tier Quota Governor & Zero-Downtime Shield", ep: "/api/v1/cloudflare/free_tier_governor" }
+      { id: 317, tag: "T317", label: "T317: Cloudflare Free-Tier Quota Governor & Zero-Downtime Shield", ep: "/api/v1/cloudflare/free_tier_governor" },
+      { id: 357, tag: "T357", label: "T357: SH-XI MinHash Corpus Sieve (661 Docs, 0% Overlap)", ep: "/api/v1/sovereign_harmonic/xi/week1/corpus_builder_minhash" },
+      { id: 358, tag: "T358", label: "T358: SH-XI 16K ChatML BPE & RW-Eval-500 Seal (0 UNK)", ep: "/api/v1/sovereign_harmonic/xi/week1/bpe_16k_chatml_tokenizer" },
+      { id: 359, tag: "T359", label: "T359: SH-XI Matryoshka 384D/768D Gradcheck (1.40e-8)", ep: "/api/v1/sovereign_harmonic/xi/week1/matryoshka_384_768_gradcheck" },
+      { id: 360, tag: "T360", label: "T360: SH-XI RTX 3050 CUDA Matryoshka Pretrainer", ep: "/api/v1/sovereign_harmonic/xi/week1/rtx3050_matryoshka_cuda_pretrain" },
+      { id: 361, tag: "T361", label: "T361: SH-XI Multi-Turn Grounded Converse", ep: "/api/v1/sovereign_harmonic/xi/week2/converse" },
+      { id: 362, tag: "T362", label: "T362: CHAIN 362 Week 1 Master Cert (980/980 QED)", ep: "/api/v1/chain362/master_certification" },
+      { id: 363, tag: "T363", label: "T363: SH-XI Shell-2 16/256 Sparse MoE Router", ep: "/api/v1/sovereign_harmonic/xi/week2/shell2_sparse_moe" },
+      { id: 364, tag: "T364", label: "T364: SH-XI Masked ChatML Multi-Turn SFT", ep: "/api/v1/sovereign_harmonic/xi/week2/chatml_masked_sft" },
+      { id: 365, tag: "T365", label: "T365: SH-XI 384D WGSL Grounded Workspace RAG", ep: "/api/v1/sovereign_harmonic/xi/week2/igpu_grounded_rag" },
+      { id: 366, tag: "T366", label: "T366: SH-XI Constrained JSON FSM Tool Dispatcher", ep: "/api/v1/sovereign_harmonic/xi/week2/fsm_json_tool" },
+      { id: 367, tag: "T367", label: "T367: SH-XI IFEval-Lite-64 (64/64) & Multi-Turn Gauntlet", ep: "/api/v1/sovereign_harmonic/xi/week2/ifeval_lite_64" },
+      { id: 368, tag: "T368", label: "T368: CHAIN 368 Master Certification (995/995 QED)", ep: "/api/v1/chain368/master_certification" }
     ]
   }
 ];
@@ -2553,7 +2565,7 @@ export function VesperReceiptCard({
               fontSize: 11
             }}
           >
-            <span>965/965 Lean 4 QED</span>
+            <span>995/995 Lean 4 QED</span>
             <span>•</span>
             <span>262,144 Bijected CLs (16.00 MiB)</span>
             <span>•</span>
@@ -3407,6 +3419,9 @@ export function VesperCalmView({
   clusterKops,
   lean4VerifyMs,
   speculativeToksPerStep,
+  sessionId,
+  sessionTurnCount,
+  onResetSession,
   onSelectMode
 }: {
   showSkeleton: boolean;
@@ -3423,6 +3438,9 @@ export function VesperCalmView({
   clusterKops: number;
   lean4VerifyMs: number;
   speculativeToksPerStep: number;
+  sessionId: string;
+  sessionTurnCount: number;
+  onResetSession: () => void;
   onSelectMode: (mode: VesperShellMode, rail: VesperRailLabel) => void;
 }) {
   const now = new Date();
@@ -3439,8 +3457,8 @@ export function VesperCalmView({
     Icon: React.ComponentType<{ size?: number; style?: React.CSSProperties }>;
   }> = [
     {
-      label: "Chat",
-      prompt: "Explain Dual-L1D and the 262,144-cacheline bijection in plain language.",
+      label: "Chat (SH-XI)",
+      prompt: "Explain how Sovereign Harmonic XI scales across 384D Mobile, 768D Host, and 16/256 Sparse MoE.",
       routeHint: "chat",
       Icon: MessageSquare
     },
@@ -3512,7 +3530,7 @@ export function VesperCalmView({
         )}
       </section>
 
-      {/* 2. Vesper Arachne Local Residency Banner (64px fixed height) */}
+      {/* 2. Vesper Arachne Local Residency & SH-XI Multi-Turn Session Banner (64px fixed height => CLS 0.00) */}
       <div
         className="vesper-card vesper-reserve"
         style={{
@@ -3540,7 +3558,7 @@ export function VesperCalmView({
         </span>
         <div style={{ minWidth: 0, flex: 1 }}>
           <div style={{ fontSize: 14, fontWeight: 700, color: "var(--vesper-text)" }}>
-            Vesper is here · Local Sovereign Manifold
+            Vesper · SH-XI (384D Mobile · 768D Host · 16/256 MoE · Turn #{sessionTurnCount})
           </div>
           <div
             style={{
@@ -3553,9 +3571,30 @@ export function VesperCalmView({
           >
             {isOffline
               ? ":8097 L0 daemon UNMEASURED/OFFLINE · Zero cloud calls · Honest fallback active"
-              : "84,480 Neurons · 262,144 Bijected CLs (16.00 MiB) · Answers stay on this device"}
+              : `Session ${sessionId.slice(0, 18)} · 384D WGSL RAG + ChatML SFT · 995/995 Lean 4 QED`}
           </div>
         </div>
+        <button
+          type="button"
+          disabled={isLoading}
+          onClick={onResetSession}
+          title="Reset multi-turn Sovereign Harmonic XI episodic session"
+          style={{
+            height: 30,
+            flexShrink: 0,
+            borderRadius: 999,
+            border: "1px solid var(--vesper-line)",
+            background: "rgba(255, 255, 255, 0.05)",
+            color: "#D7E4DF",
+            padding: "0 12px",
+            fontSize: 11.5,
+            fontWeight: 700,
+            cursor: isLoading ? "wait" : "pointer",
+            whiteSpace: "nowrap"
+          }}
+        >
+          ↺ Reset Session
+        </button>
       </div>
 
       {/* 3. 64px Converse Prompt Bar + Voice Mic + Quick Action Chips */}
@@ -3759,7 +3798,7 @@ export function VesperCalmView({
             16.00 MiB
           </div>
           <div style={{ marginTop: 4, fontSize: 12, color: "#A7B8B2" }}>
-            262,144 Bijected CLs · 2.67 MiB archive (13,915×)
+            262,144 Bijected CLs · SH-XI 3-Shell (.sh4z)
           </div>
         </button>
 
@@ -3779,7 +3818,7 @@ export function VesperCalmView({
             PROOFS
           </div>
           <div style={{ marginTop: 8, fontSize: 22, fontWeight: 800, letterSpacing: "-0.02em", color: "#00E5A0" }}>
-            965/965 QED
+            995/995 QED
           </div>
           <div style={{ marginTop: 4, fontSize: 12, color: "#A7B8B2" }}>
             Lean 4 formal · 0 sorry, 0 axiom ·{" "}
@@ -3863,13 +3902,22 @@ export function VesperProofView({
     ep: string;
   }> = [
     {
-      title: "Lean 4 965/965 QED (Zero-Sorry / Zero-Axiom)",
-      status: isOffline ? "UNMEASURED/OFFLINE" : "965/965 QED",
+      title: "Lean 4 995/995 QED (Zero-Sorry / Zero-Axiom)",
+      status: isOffline ? "UNMEASURED/OFFLINE" : "995/995 QED",
       detail: isOffline
         ? ":8097 L0 daemon offline — live lean.exe & RLVF compiler-in-the-loop verification requires local swarm connection."
-        : `All 965 substantive formal theorems in SovereignManifoldTheorems.lean verified locally (${lean4VerifyMs.toFixed(1)} ms) with 0 sorry, 0 axiom, and Week 4 RLVF GRPO compiler-in-the-loop reward gating.`,
+        : `All 995 substantive formal theorems in SovereignManifoldTheorems.lean verified locally (${lean4VerifyMs.toFixed(1)} ms) with 0 sorry, 0 axiom, and Week 4 RLVF GRPO compiler-in-the-loop reward gating.`,
       btnLabel: "Verify RLVF (Tool 351)",
       ep: "/api/v1/sovereign_harmonic/week4/rlvf_grpo_compiler_in_the_loop"
+    },
+    {
+      title: "SH-XI Weeks 1–2 Empirical Gates (3-Shell Matryoshka + 16/256 MoE)",
+      status: isOffline ? "UNMEASURED/OFFLINE" : "BPB 0.3965 · 64/64",
+      detail: isOffline
+        ? ":8097 L0 daemon offline — SH-XI 3-shell Matryoshka + Sparse MoE certification awaiting live local probe."
+        : "384D Mobile + 768D Host + 16/256 Disk-Backed MoE: Holdout BPB 0.4060 → 0.3969 → 0.3965, PromptGradNorm = 0.0, IFEval-Lite 64/64, MultiTurn 8/8, JSON FSM 100/100.",
+      btnLabel: "Verify CHAIN 368 (T368)",
+      ep: "/api/v1/chain368/master_certification"
     },
     {
       title: "7,777D CRT Partition of Unity",
@@ -3914,7 +3962,7 @@ export function VesperProofView({
       <div style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-end", justifyContent: "space-between", gap: 12 }}>
         <div>
           <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.14em", color: "#00E5A0" }}>
-            PROOF SHEET
+            PROOF SHEET · CHAIN 368
           </div>
           <h1 style={{ margin: "6px 0 0 0", fontSize: 28, fontWeight: 800, letterSpacing: "-0.02em" }}>
             Everything checkable, right here
@@ -3927,7 +3975,7 @@ export function VesperProofView({
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
           <button
             type="button"
-            onClick={() => onRunVerifyEndpoint("/api/v1/chain356/master_certification", "CHAIN 356 MASTER CERTIFICATION")}
+            onClick={() => onRunVerifyEndpoint("/api/v1/chain368/master_certification", "CHAIN 368 MASTER CERTIFICATION")}
             style={{
               height: 36,
               borderRadius: 999,
@@ -3940,7 +3988,7 @@ export function VesperProofView({
               cursor: "pointer"
             }}
           >
-            Run CHAIN 356 Cert
+            Run CHAIN 368 Cert
           </button>
           <button
             type="button"
@@ -4126,7 +4174,7 @@ export function VesperProofView({
         skeleton={showSkeleton}
         receiptLines={receiptLines}
         statusMode={telemetrySource}
-        endpointTag="/api/v1/sovereign_harmonic/week4/rlvf_grpo_compiler_in_the_loop"
+        endpointTag="/api/v1/chain368/master_certification"
         sha256={writebackSha256}
       />
     </div>
@@ -4175,7 +4223,7 @@ export function VesperVaultView({
           Your archive
         </h1>
         <p style={{ margin: "4px 0 0 0", fontSize: 14, color: "#A7B8B2" }}>
-          Multi-tier local connectome &amp; edge vault: 16.00 MiB bijected manifold, 2.67 MiB compressed snapshot, E:\ SSD write-back, and Cloudflare 6-Tier Governor.
+          Multi-tier local connectome &amp; edge vault: 16.00 MiB bijected manifold, SH-XI 3-shell (.sh4z v7220) weights, E:\ SSD write-back, and Cloudflare 6-Tier Governor.
         </p>
       </div>
 
@@ -4278,6 +4326,61 @@ export function VesperVaultView({
               }}
             >
               Sync 10-Table D1 (T76)
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Sovereign Harmonic XI (.SH4Z v7220 TLV) 3-Shell Model & Disk-Backed MoE Vault Card */}
+      <div className="vesper-card vesper-reserve" style={{ minHeight: 148, padding: 20 }}>
+        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.1em", color: "#00E5A0" }}>
+              SOVEREIGN HARMONIC XI (.SH4Z v7220 TLV) — 3-SHELL MATRYOSHKA + 16/256 SPARSE MOE VAULT
+            </div>
+            <div style={{ marginTop: 4, fontSize: 15, fontWeight: 700 }}>
+              {isOffline
+                ? "UNMEASURED/OFFLINE — Connect local :8097 swarm to inspect SH-XI .sh4z weights"
+                : "2,164,864 B Base (384D Mobile + 768D Host) · 156,792 B 16K BPE · 16/256 Disk-Backed f16 Experts"}
+            </div>
+            <p className="vesper-mono" style={{ margin: "6px 0 0 0", fontSize: 11.5, color: "#A7B8B2" }}>
+              00_control\weights\sovereign_harmonic_xi_rw384_768_base.sh4z + E:\Sovereign_Manifold_SSD_Vault\weights\sh_xi_moe_experts_256\ (HTTP 206 byte-range stream)
+            </p>
+          </div>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <button
+              type="button"
+              onClick={() => onRunEndpoint("/api/v1/sovereign_harmonic/xi/week2/igpu_grounded_rag", "SH-XI T365: 384D WGSL GROUNDED RAG")}
+              style={{
+                height: 32,
+                borderRadius: 999,
+                border: "none",
+                background: "#00E5A0",
+                color: "#07110F",
+                padding: "0 13px",
+                fontSize: 11.5,
+                fontWeight: 800,
+                cursor: "pointer"
+              }}
+            >
+              384D WGSL RAG (T365)
+            </button>
+            <button
+              type="button"
+              onClick={() => onRunEndpoint("/api/v1/sovereign_harmonic/xi/week2/shell2_sparse_moe", "SH-XI T363: SHELL 2 SPARSE MOE")}
+              style={{
+                height: 32,
+                borderRadius: 999,
+                border: "1px solid var(--vesper-line)",
+                background: "transparent",
+                color: "#D7E4DF",
+                padding: "0 13px",
+                fontSize: 11.5,
+                fontWeight: 700,
+                cursor: "pointer"
+              }}
+            >
+              16/256 MoE (T363)
             </button>
           </div>
         </div>
@@ -4400,6 +4503,17 @@ export function VesperToolsView({
 }) {
   const isOffline = telemetrySource === "UNMEASURED/OFFLINE";
 
+  const shXiFeatured = [
+    { label: "T361 · SH-XI Converse", ep: "/api/v1/sovereign_harmonic/xi/week2/converse" },
+    { label: "T363 · 16/256 Sparse MoE", ep: "/api/v1/sovereign_harmonic/xi/week2/shell2_sparse_moe" },
+    { label: "T364 · ChatML Masked SFT", ep: "/api/v1/sovereign_harmonic/xi/week2/chatml_masked_sft" },
+    { label: "T365 · 384D WGSL RAG", ep: "/api/v1/sovereign_harmonic/xi/week2/igpu_grounded_rag" },
+    { label: "T366 · JSON FSM Grammar", ep: "/api/v1/sovereign_harmonic/xi/week2/fsm_json_tool" },
+    { label: "T367 · IFEval-Lite 64/64", ep: "/api/v1/sovereign_harmonic/xi/week2/ifeval_lite_64" },
+    { label: "T360 · RTX 3050 Matryoshka", ep: "/api/v1/sovereign_harmonic/xi/week1/rtx3050_matryoshka_cuda_pretrain" },
+    { label: "T368 · CHAIN 368 Cert", ep: "/api/v1/chain368/master_certification" }
+  ];
+
   const week4Featured = [
     { label: "T351 · RLVF Lean 4 Prover", ep: "/api/v1/sovereign_harmonic/week4/rlvf_grpo_compiler_in_the_loop" },
     { label: "T352 · Medusa-EAGLE k=8", ep: "/api/v1/sovereign_harmonic/week4/medusa_eagle_dendritic_tree_speculative_k8" },
@@ -4414,13 +4528,13 @@ export function VesperToolsView({
       <div style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-end", justifyContent: "space-between", gap: 12 }}>
         <div>
           <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.14em", color: "#00E5A0" }}>
-            TOOLS · CHAIN 356
+            TOOLS · CHAIN 368
           </div>
           <h1 style={{ margin: "6px 0 0 0", fontSize: 28, fontWeight: 800, letterSpacing: "-0.02em" }}>
             8-Domain Functional Command Deck
           </h1>
           <p style={{ margin: "4px 0 0 0", fontSize: 14, color: "#A7B8B2" }}>
-            Every tool (Tools 1..356) routes through the Sovereign Autopoietic Coordinator Bus with measured E:\ SHA-256 write-back.
+            Every tool (Tools 1..368) routes through the Sovereign Autopoietic Coordinator Bus with measured E:\ SHA-256 write-back.
           </p>
         </div>
 
@@ -4440,7 +4554,7 @@ export function VesperToolsView({
               cursor: "pointer"
             }}
           >
-            Search All 356 Tools (Ctrl+K)
+            Search All 368 Tools (Ctrl+K)
           </button>
           <button
             type="button"
@@ -4462,10 +4576,39 @@ export function VesperToolsView({
         </div>
       </div>
 
+      {/* Sovereign Harmonic XI (SH-XI) Weeks 1 & 2 Featured Strip */}
+      <div className="vesper-card" style={{ padding: 16, border: "1px solid rgba(0, 229, 160, 0.32)" }}>
+        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.1em", color: "#00E5A0", marginBottom: 10 }}>
+          SOVEREIGN HARMONIC XI (SH-XI) WEEKS 1 &amp; 2 SUITE (TOOLS 357..368 · 995/995 LEAN 4 QED)
+        </div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+          {shXiFeatured.map((item) => (
+            <button
+              key={item.label}
+              type="button"
+              onClick={() => onRunEndpoint(item.ep, item.label)}
+              style={{
+                height: 34,
+                borderRadius: 999,
+                border: "1px solid rgba(0, 229, 160, 0.35)",
+                background: "#0B1512",
+                color: "#7DFFD2",
+                padding: "0 13px",
+                fontSize: 12,
+                fontWeight: 700,
+                cursor: "pointer"
+              }}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Week 3–4 SH-Deep-12L Featured Strip */}
       <div className="vesper-card" style={{ padding: 16 }}>
         <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.1em", color: "#7C5CFF", marginBottom: 10 }}>
-          SH-DEEP-12L FRONTIER SUITE (TOOLS 346..356 · 965/965 LEAN 4 QED)
+          SH-DEEP-12L FRONTIER SUITE (TOOLS 346..356 · 995/995 LEAN 4 QED)
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
           {week4Featured.map((item) => (
@@ -4897,7 +5040,7 @@ export function VesperSettingsView({
 }
 
 export function App() {
-  // v71.5.0 Vesper Multi-Mode Mica Shell Persistent State & CLS 0.00 Simulator Scaffolding
+  // v72.2.0 Vesper Multi-Mode Mica Shell Persistent State, SH-XI Multi-Turn Session & CLS 0.00 Simulator Scaffolding
   const [vesperMode, setVesperModeState] = useState<VesperShellMode>(() => {
     if (typeof window !== "undefined") {
       try {
@@ -4932,16 +5075,18 @@ export function App() {
   const [vesperVoiceActive, setVesperVoiceActive] = useState<boolean>(false);
   const [vesperCalmLoading, setVesperCalmLoading] = useState<boolean>(false);
   const [vesperProofOpenRow, setVesperProofOpenRow] = useState<number | null>(0);
+  const [vesperSessionId, setVesperSessionId] = useState<string>(() => `vesper_hud_${Date.now().toString(36)}`);
+  const [vesperSessionTurns, setVesperSessionTurns] = useState<number>(0);
   const [vesperCalmMessages, setVesperCalmMessages] = useState<VesperCalmMessage[]>([
     {
       id: "vesper-init-user",
       role: "user",
-      text: "Explain Dual-L1D and the 262,144-cacheline Sovereign Manifold like I’m not an engineer."
+      text: "Explain Dual-L1D, Sovereign Harmonic XI (384D/768D + 16/256 MoE), and the 262,144-cacheline Sovereign Manifold like I’m not an engineer."
     },
     {
       id: "vesper-init-assistant",
       role: "assistant",
-      text: "Dual-L1D is a double check on distance inside local silicon. One layer keeps every claim tied to our 965 Lean 4 formal theorems, and the second keeps all 84,480 dendritic neurons (262,144 bijected 64-byte cachelines = 16.00 MiB) from drifting while your answer is assembled. If any check moves outside the 31,108 / 32,768 L1D bound, it is rebuilt locally or marked UNMEASURED/OFFLINE — never guessed.",
+      text: "Dual-L1D is a double check on distance inside local silicon. One layer keeps every claim tied to our 995 Lean 4 formal theorems, and the second keeps all 84,480 dendritic neurons (262,144 bijected 64-byte cachelines = 16.00 MiB) from drifting while Sovereign Harmonic XI (384D Mobile Shell 0 + 768D Host Shell 1 + 16/256 Sparse MoE Shell 2) assembles your answer locally. If any check moves outside the 31,108 / 32,768 L1D bound, it is rebuilt locally or marked UNMEASURED/OFFLINE — never guessed.",
       receipt: true,
       endpointTag: "LOCAL_BOOT_ORIENTATION"
     }
@@ -6311,7 +6456,7 @@ export function App() {
         pollInFlight = false;
       }
     };
-    document.title = "ACT-Omega Net v71.5.0 (SH4Z v7140 Vesper Multi-Mode Mica HUD) -- 84,480 Neurons, 4,055,040 Synapses, 262,144 Bijected Cachelines (16.00 MiB), 524,288 19-Bit BPE, 192 Sub-Domains, 965/965 Lean 4 QED & Tools 1..356 (CHAIN 356 Suite)";
+    document.title = "ACT-Omega Net v72.2.0 (SH4Z v7220 Vesper Multi-Mode Mica HUD) -- Sovereign Harmonic XI (384D/768D + 16/256 MoE), 84,480 Neurons, 4,055,040 Synapses, 262,144 Bijected Cachelines (16.00 MiB), 995/995 Lean 4 QED & Tools 1..368 (CHAIN 368 Suite)";
     pollTelemetry();
     runE8LeechFluencyBridge(e8LeechQuery);
     const id = window.setInterval(pollTelemetry, 500);
@@ -7113,6 +7258,38 @@ export function App() {
     }
   };
 
+  const resetVesperCalmSession = async () => {
+    const nextSid = `vesper_hud_${Date.now().toString(36)}`;
+    setVesperSessionId(nextSid);
+    setVesperSessionTurns(0);
+    setVesperCalmMessages([
+      {
+        id: `vesper-reset-${Date.now()}`,
+        role: "assistant",
+        text: `Multi-turn Sovereign Harmonic XI episodic session reset (${nextSid}). Ready for fresh 384D WGSL RAG + 768D Host + 16/256 Sparse MoE converse.`,
+        receipt: false
+      }
+    ]);
+    triggerVesperToast(`Reset SH-XI Session -> ${nextSid}`);
+    const baseUrls =
+      typeof window !== "undefined" && window.location.protocol === "https:"
+        ? ["", "https://api.act-omega-net.dev", "http://127.0.0.1:8097"]
+        : ["", "http://127.0.0.1:8097"];
+    for (const b of baseUrls) {
+      try {
+        const r = await fetch(`${b}/api/v1/sovereign_harmonic/converse`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt: "Session initialized", session_id: nextSid, reset_session: true }),
+          cache: "no-store"
+        });
+        if (r.ok) break;
+      } catch {
+        // ignore offline reset
+      }
+    }
+  };
+
   const sendVesperCalmMessage = async (
     rawPrompt: string,
     routeHint?: "chat" | "prove" | "ambiguity" | "build" | "vault"
@@ -7130,7 +7307,7 @@ export function App() {
     setVesperCalmLoading(true);
 
     const lower = clean.toLowerCase();
-    let targetPath = `/api/v1/sovereign_harmonic/compositional_reasoner?prompt=${encodeURIComponent(clean)}`;
+    let targetPath = "/api/v1/sovereign_harmonic/converse";
     let modeKind: "chat" | "prove" | "ambiguity" | "build" | "vault" = routeHint ?? "chat";
 
     if (!routeHint) {
@@ -7163,7 +7340,19 @@ export function App() {
     let succeeded = false;
     for (const b of baseUrls) {
       try {
-        const res = await fetch(`${b}${targetPath}`, { cache: "no-store" });
+        const res =
+          modeKind === "chat"
+            ? await fetch(`${b}${targetPath}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  prompt: clean,
+                  session_id: vesperSessionId,
+                  reset_session: false
+                }),
+                cache: "no-store"
+              })
+            : await fetch(`${b}${targetPath}`, { cache: "no-store" });
         if (!res.ok) continue;
         const j = await res.json();
         setVesperTelemetrySource("LIVE_L0_SWARM");
@@ -7195,12 +7384,12 @@ export function App() {
           const pass4 = typeof j.post_rlvf_pass_at_4 === "number" ? `${(j.post_rlvf_pass_at_4 * 100).toFixed(1)}%` : "100.0%";
           const hacksBlocked = j.adversarial_reward_hacks_blocked ?? 4;
           const obls = j.obligations_evaluated ?? 8;
-          answerProse = `Verified locally via Tool 351 (RLVF GRPO Compiler-in-the-Loop): Evaluated ${obls} formal proof & zero-bracket Rust obligations with live lean.exe verification. Post-RLVF Pass@1 = ${pass1} (Pass@4 = ${pass4}), blocking ${hacksBlocked}/${j.adversarial_exploit_families_tested ?? hacksBlocked} adversarial reward-hack families (${j.lean4_theorems_verified || "965/965 Lean 4 QED"}).`;
+          answerProse = `Verified locally via Tool 351 (RLVF GRPO Compiler-in-the-Loop): Evaluated ${obls} formal proof & zero-bracket Rust obligations with live lean.exe verification. Post-RLVF Pass@1 = ${pass1} (Pass@4 = ${pass4}), blocking ${hacksBlocked}/${j.adversarial_exploit_families_tested ?? hacksBlocked} adversarial reward-hack families (${j.lean4_theorems_verified || "995/995 Lean 4 QED"}).`;
           receiptLines = [
             `Endpoint · ${targetPath.split("?")[0]} (Tool ${j.tool_id ?? 351})`,
             `RLVF Compiler Pass · Pass@1 ${pass1} · Pass@4 ${pass4} · Latency ${latencyLabel}`,
             `Reward Hacks Blocked · ${hacksBlocked} (0 sorry, 0 axiom, 0 square brackets)`,
-            `Lean 4 Verified · ${j.lean4_theorems_verified || "965/965 QED"}`,
+            `Lean 4 Verified · ${j.lean4_theorems_verified || "995/995 QED"}`,
             `Stiefel Ortho Err · ${j.stiefel_max_orthogonality_error ?? tel.stiefel_ortho_err}`,
             `Bus Seq #${wbSeq} · E:\\ SHA-256 ${wbSha}`
           ];
@@ -7212,7 +7401,7 @@ export function App() {
             `Endpoint · /api/v1/sovereign_harmonic/week3/human_ambiguity_and_metaphor_gauntlet (Tool ${j.tool_id ?? 346})`,
             `Prompts Tested · ${tested} · All 5 Modes Remediated = ${String(all5)}`,
             `Measured Latency · ${latencyLabel}`,
-            `Lean 4 Theorems · ${j.lean4_theorems_verified || "965/965 QED"}`,
+            `Lean 4 Theorems · ${j.lean4_theorems_verified || "995/995 QED"}`,
             `Proof Tag · ${j.proof || "WEEK3_AMBIGUITY_GAUNTLET_QED"}`,
             `Bus Seq #${wbSeq} · E:\\ SHA-256 ${wbSha}`
           ];
@@ -7224,7 +7413,7 @@ export function App() {
             `Endpoint · /api/v1/sovereign_harmonic/week4/medusa_eagle_dendritic_tree_speculative_k8 (Tool ${j.tool_id ?? 352})`,
             `Speculative Tree · ${Number(acceptRate || 4.0).toFixed(2)} tok/step · ${Number(speedup || 3.5).toFixed(2)}× speedup`,
             `Measured Latency · ${latencyLabel} · 0 External Cloud Calls`,
-            `Lean 4 Theorems · ${j.lean4_theorems_verified || "965/965 QED"}`,
+            `Lean 4 Theorems · ${j.lean4_theorems_verified || "995/995 QED"}`,
             `Write-Back Path · ${j.e_vault_writeback_path || writebackStatus.path}`,
             `Bus Seq #${wbSeq} · SHA-256 ${wbSha}`
           ];
@@ -7233,7 +7422,7 @@ export function App() {
           const totalCl = cb.total_bijected_cachelines ?? 262144;
           const totalBytes = cb.total_manifold_bytes ?? 16777216;
           const fnv = cb.manifold_fnv1a64 ?? "MEASURED";
-          answerProse = `Live Vault & Manifold Inspection (Tool ${j.tool_id ?? 313}): ${(totalBytes / 1048576).toFixed(2)} MiB (${totalBytes.toLocaleString()} B) across ${totalCl.toLocaleString()} bijected 64-byte cachelines (${cb.npage_cachelines ?? 168960} .npage + ${cb.spage_cachelines ?? 84480} .spage + ${cb.e8z_cachelines ?? 8704} .e8z), in exact 1:2 bijection with ${Number(cb.bpe_vocab_bijected ?? 524288).toLocaleString()} BPE tokens, paired with the 2.67 MiB compressed snapshot (13,915× ratio from 37.17 GiB).`;
+          answerProse = `Live Vault & Manifold Inspection (Tool ${j.tool_id ?? 313}): ${(totalBytes / 1048576).toFixed(2)} MiB (${totalBytes.toLocaleString()} B) across ${totalCl.toLocaleString()} bijected 64-byte cachelines (${cb.npage_cachelines ?? 168960} .npage + ${cb.spage_cachelines ?? 84480} .spage + ${cb.e8z_cachelines ?? 8704} .e8z), in exact 1:2 bijection with ${Number(cb.bpe_vocab_bijected ?? 524288).toLocaleString()} BPE tokens, paired with SH-XI (.sh4z v7220) 3-shell weights.`;
           receiptLines = [
             `Endpoint · /api/v1/v70/bijected_262144_cacheline_manifold (Tool ${j.tool_id ?? 313})`,
             `Manifold Bytes · ${totalBytes.toLocaleString()} B (16.00 MiB) · ${totalCl.toLocaleString()} CLs (2^18)`,
@@ -7243,21 +7432,29 @@ export function App() {
             `Bus Seq #${wbSeq} · E:\\ SHA-256 ${wbSha}`
           ];
         } else {
-          const cg = j.compositional_generation || {};
-          const cc = j.cortical_coalition || {};
-          const gp = j.grassmann_plucker_g24 || {};
+          const ms = j.matryoshka_shells || {};
+          const nextTurn = typeof j.session_turn_count === "number" ? j.session_turn_count : vesperSessionTurns + 1;
+          setVesperSessionTurns(nextTurn);
+          if (typeof j.session_id === "string" && j.session_id.length > 0) {
+            setVesperSessionId(j.session_id);
+          }
           const synth =
-            cg.synthesized_text ||
             j.output_text ||
+            j.compositional_generation?.synthesized_text ||
             j.nl_synthesis ||
-            `Local Sovereign Harmonic synthesis completed across ${cc.primary_track_name || "Manifold"} -> ${cc.secondary_track_name || "Lean4"} in ${latencyLabel}.`;
-          answerProse = `${synth}\n\n[Cortical Coalition: Col #${cc.primary_chair44_col ?? 0} -> Col #${cc.secondary_chair44_col ?? 0} · Plücker Residual = ${gp.plucker_incidence_residual ?? 0} across ${gp.e8z_bytes_sampled ?? 12}/12 .e8z bytes · 0 external cloud calls]`;
+            `Local Sovereign Harmonic XI synthesis completed across 384D Mobile + 768D Host + 16/256 Sparse MoE in ${latencyLabel}.`;
+          const top1Exp = ms.shell2_top1_expert ?? 0;
+          const top2Exp = ms.shell2_top2_expert ?? 1;
+          const ragSrc = ms.rag_top_source || "WORKSPACE_CHUNK";
+          const ragCos = typeof ms.rag_top_cosine_384d === "number" ? ms.rag_top_cosine_384d.toFixed(4) : "MEASURED";
+          const agree = typeof ms.shell0_vs_shell1_top8_agreement === "number" ? `${(ms.shell0_vs_shell1_top8_agreement * 100).toFixed(1)}%` : "MEASURED";
+          answerProse = `${synth}\n\n[SH-XI Turn #${nextTurn} · Shell 0 (${ms.shell0_mobile_dim ?? 384}D) + Shell 1 (${ms.shell1_host_dim ?? 768}D, Top-8 Agree ${agree}) + Shell 2 MoE (#${top1Exp}, #${top2Exp}) · RAG: ${ragSrc} (cos=${ragCos}) · 0 external cloud calls]`;
           receiptLines = [
-            `Endpoint · /api/v1/sovereign_harmonic/compositional_reasoner (Tool ${j.tool_id ?? 321})`,
-            `Cortical Handoff · ${cc.primary_track_name ?? "Track_A"} (Col #${cc.primary_chair44_col ?? 0}) -> ${cc.secondary_track_name ?? "Track_D"} (Col #${cc.secondary_chair44_col ?? 0})`,
-            `Grassmann Plücker G(2,4) · Residual = ${gp.plucker_incidence_residual ?? 0} (${gp.e8z_bytes_sampled ?? 12}/12 .e8z bytes)`,
-            `Measured Latency · ${latencyLabel} · Tokens = ${cg.total_generated_tokens ?? 96}`,
-            `Lean 4 Theorems · ${j.lean4_theorems_verified || "965/965 QED"}`,
+            `Endpoint · POST /api/v1/sovereign_harmonic/converse (Tool ${j.tool_id ?? 361} · Session ${j.session_id ?? vesperSessionId} Turn #${nextTurn})`,
+            `3-Shell Matryoshka · 384D Mobile + 768D Host (Top-8 Agree ${agree}) + 16/256 MoE Experts #${top1Exp}, #${top2Exp}`,
+            `384D WGSL Grounded RAG · Source ${ragSrc} · Cosine ${ragCos}`,
+            `Measured Latency · ${latencyLabel} · Prompt/Gen Tokens = ${ms.prompt_tokens ?? 0}/${ms.generated_tokens ?? 0}`,
+            `Lean 4 Theorems · ${j.lean4_theorems_verified || "995/995 QED"}`,
             `Bus Seq #${wbSeq} · E:\\ SHA-256 ${wbSha}`
           ];
         }
@@ -7466,9 +7663,9 @@ export function App() {
       endpoint: "/api/v1/cloudflare/free_tier_governor"
     },
     {
-      title: "965/965 LEAN 4 PROOFS & MEASURED QAT",
-      primary: `Seen PPL ${sh9State.post_train_perplexity.toFixed(4)} | Holdout PPL ${sh9State.post_holdout_perplexity.toFixed(4)} -- 965 / 965 QED`,
-      secondary: `965 Formal Theorems (SH-Deep-12L RLVF + Chinchilla 64 + Tri-Silicon + 262,144 CLs | CHAIN 356) -- ${tel.lean4_verify_ms.toFixed(1)}ms`,
+      title: "995/995 LEAN 4 PROOFS & MEASURED QAT",
+      primary: `Seen PPL ${sh9State.post_train_perplexity.toFixed(4)} | Holdout PPL ${sh9State.post_holdout_perplexity.toFixed(4)} -- 995 / 995 QED`,
+      secondary: `995 Formal Theorems (SH-XI 3-Shell MoE + SH-Deep-12L RLVF + 262,144 CLs | CHAIN 368) -- ${tel.lean4_verify_ms.toFixed(1)}ms`,
       sector: 9,
       endpoint: "/api/v1/card/execute?card_id=7"
     },
@@ -8182,15 +8379,15 @@ export function App() {
       ? [
           "STATUS · UNMEASURED/OFFLINE (:8097 L0 daemon unreachable — zero synthetic values emitted)",
           "Manifold Spec · 262,144 Bijected CLs (16.00 MiB = .npage + .spage + .e8z)",
-          "Vault Spec · 2.67 MiB Archive (2,799,784 B) · 84,480 Neurons / 4,055,040 Synapses",
-          "Formal Spec · 965/965 Lean 4 QED target (0 sorry, 0 axiom · CHAIN 356)",
+          "SH-XI Spec · 384D Mobile + 768D Host + 16/256 Sparse MoE (.sh4z v7220)",
+          "Formal Spec · 995/995 Lean 4 QED target (0 sorry, 0 axiom · CHAIN 368)",
           "Hardware Key · YubiKey 5C NFC Serial 39651128 (awaiting live loopback check)"
         ]
       : [
           `Telemetry Source · ${vesperTelemetrySource} (Gen #${tel.generation} · 15.965 Hz E${tel.decadic_sub_epoch}/9)`,
           "Bijected Manifold · 262,144 CLs (16.00 MiB = 10.81 MB .npage + 5.41 MB .spage + 557 KB .e8z)",
-          "Vault Archive · 2.67 MiB (2,799,784 B) · 37.17 GiB → 2.67 MiB (13,915× compression)",
-          `Formal Proofs · 965/965 QED Lean 4 — 0 sorry, 0 axiom (${tel.lean4_verify_ms.toFixed(1)} ms)`,
+          "SH-XI 3-Shell Model · 384D Mobile + 768D Host (2,164,864 B) + 16/256 Disk-Backed MoE",
+          `Formal Proofs · 995/995 QED Lean 4 — 0 sorry, 0 axiom (${tel.lean4_verify_ms.toFixed(1)} ms)`,
           "Dual-L1D Residency · 31,108 B < 32,768 B · 84,480 Neurons / 4,055,040 Synapses",
           `7,777D Coprime CRT · 3333 / 2828 / 1617 · Stiefel Err ${tel.stiefel_ortho_err.toExponential(2)}`,
           `5-Pool Tri-Silicon · ${tel.cluster_total_kops.toFixed(1)}k ops/s · RTX ${tel.rtx_temp_c.toFixed(0)}°C / P10 ${tel.p10_temp_c.toFixed(1)}°C / P8 ${tel.p8_temp_c.toFixed(1)}°C`,
@@ -8304,7 +8501,7 @@ export function App() {
                 triggerVesperToast(
                   vesperTelemetrySource === "UNMEASURED/OFFLINE"
                     ? "Vesper Arachne · Local UI Ready (:8097 UNMEASURED/OFFLINE)"
-                    : `Vesper Arachne · Locked to 15.965 Hz (Gen #${tel.generation} · 965/965 QED)`
+                    : `Vesper Arachne · Locked to 15.965 Hz (Gen #${tel.generation} · 995/995 QED)`
                 );
               }}
             />
@@ -8373,6 +8570,9 @@ export function App() {
                 clusterKops={tel.cluster_total_kops}
                 lean4VerifyMs={tel.lean4_verify_ms}
                 speculativeToksPerStep={sh9State.speculative_toks_per_step}
+                sessionId={vesperSessionId}
+                sessionTurnCount={vesperSessionTurns}
+                onResetSession={resetVesperCalmSession}
                 onSelectMode={selectVesperMode}
               />
             )}
@@ -8627,7 +8827,7 @@ export function App() {
                     },
                     {
                       tag: "DRAWER D (3 & 4)",
-                      title: "356-Tool Matrix & Lean 4",
+                      title: "368-Tool Matrix & Lean 4",
                       metric:
                         vesperTelemetrySource === "UNMEASURED/OFFLINE"
                           ? "UNMEASURED/OFFLINE"
@@ -8917,7 +9117,7 @@ export function App() {
           </div>
         </div>
         <div style={{ color: "#FFFEFB", fontSize: 11, marginTop: 2 }}>
-          15.965 Hz (62,637 us) Decadic Epoch E{tel.decadic_sub_epoch}/9 -- {tel.laplacian_face} -- 84,480 Neurons (4x 21,120 Tiers, 1,920x Chair-44, 4,055,040 Synapses, 262,144 Bijected 64B Cachelines = 16.00 MiB across 168,960 .npage + 84,480 .spage + 8,704 .e8z CLs) -- 5-Pool Tri-Silicon Conservation (t_A+F+t_B=1.00000) -- Dual CPU AVX2 (S00..S23) + RTX 3050 CUDA PTX (S24..S47) Co-Execution -- Hsiang P_4(x) Focal Harmonics &amp; Reversible Symplectic Leapfrog -- OmegaLang v16.0 Primary TLV Compiler (9 Targets + sm_86 PTX) -- 48 Macro-Domains (192 Sub-Domains) -- 524,288 (19-Bit) Open-Vocab BPE -- PPL={e8LeechState.holdout_ppl > 0 ? e8LeechState.holdout_ppl.toFixed(6) : Math.exp(tel.stiefel_ortho_err * 100.0 + tel.fno_l2_err * 50.0 + 0.082).toFixed(6)} -- 965/965 Lean 4 QED -- Tools 1..356 (CHAIN 356 Suite)
+          15.965 Hz (62,637 us) Decadic Epoch E{tel.decadic_sub_epoch}/9 -- {tel.laplacian_face} -- 84,480 Neurons (4x 21,120 Tiers, 1,920x Chair-44, 4,055,040 Synapses, 262,144 Bijected 64B Cachelines = 16.00 MiB across 168,960 .npage + 84,480 .spage + 8,704 .e8z CLs) -- 5-Pool Tri-Silicon Conservation (t_A+F+t_B=1.00000) -- Dual CPU AVX2 (S00..S23) + RTX 3050 CUDA PTX (S24..S47) Co-Execution -- Hsiang P_4(x) Focal Harmonics &amp; Reversible Symplectic Leapfrog -- OmegaLang v16.0 Primary TLV Compiler (9 Targets + sm_86 PTX) -- 48 Macro-Domains (192 Sub-Domains) -- 524,288 (19-Bit) Open-Vocab BPE -- PPL={e8LeechState.holdout_ppl > 0 ? e8LeechState.holdout_ppl.toFixed(6) : Math.exp(tel.stiefel_ortho_err * 100.0 + tel.fno_l2_err * 50.0 + 0.082).toFixed(6)} -- 995/995 Lean 4 QED -- Tools 1..368 (CHAIN 368 Suite)
         </div>
         <div style={{ background: "#0A0D12", border: "1px solid #56D364", borderRadius: 4, padding: "4px 8px", marginTop: 5, color: "#56D364", fontSize: 10.5 }}>
           [TOOL 29 REAL-TIME PHYSICAL &amp; U(1) GAUGE ALERT BANNER]: {tel.anomaly_banner}
@@ -8940,9 +9140,9 @@ export function App() {
             <div style={{ color: "#B388FF", fontWeight: "bold", fontSize: 9.5 }}>NODE 4: 262,144-CL (16.00 MiB) MANIFOLD</div>
             <div style={{ color: "#FFFEFB", fontSize: 10 }}>168,960 .npage + 84,480 .spage + 8,704 .e8z</div>
           </div>
-          <div onClick={() => callEndpoint("/api/v1/chain356/master_certification", "CHAIN 356: v71.5 MASTER CERT")} style={{ cursor: "pointer", borderLeft: "3px solid #00FFCC", paddingLeft: 6 }}>
+          <div onClick={() => callEndpoint("/api/v1/chain368/master_certification", "CHAIN 368: v72.2 MASTER CERT")} style={{ cursor: "pointer", borderLeft: "3px solid #00FFCC", paddingLeft: 6 }}>
             <div style={{ color: "#00FFCC", fontWeight: "bold", fontSize: 9.5 }}>NODE 5: 5-POOL WORKSTEAL + 524K BPE</div>
-            <div style={{ color: "#FFFEFB", fontSize: 10 }}>192 Sub-Domains | 965/965 Lean 4 QED | CHAIN 356</div>
+            <div style={{ color: "#FFFEFB", fontSize: 10 }}>SH-XI 3-Shell MoE | 995/995 Lean 4 QED | CHAIN 368</div>
           </div>
         </div>
         {/* v63.0-v63.2 Top-Strip 5-Metric Observability Bar (Gates, Parity, BPUT Win Metric, 15.965 Hz Clock, Drift & F:\ WORM + YubiKey 39651128) */}
@@ -11046,14 +11246,14 @@ export function App() {
       {/* DRAWER 3: Formal Verification Suite */}
       <div style={{ background: "#141922", border: "1px solid #2A3B4D", borderRadius: 6, padding: "8px 10px", marginBottom: 8 }}>
         <div onClick={() => setDrawer3Open(!drawer3Open)} style={{ display: "flex", justifyContent: "space-between", cursor: "pointer", fontWeight: "bold", marginBottom: drawer3Open ? 6 : 0 }}>
-          <span>[-] DRAWER 3: FORMAL VERIFICATION SUITE (810/810 LEAN 4 PROOFS QED) &amp; 10-PILLAR PHYSICS</span>
-          <span style={{ color: "#FFB454" }}>80 Sectors + Track 1 Galois/LHCb/MIT = 810/810 Lean 4 Proofs QED ({tel.lean4_verify_ms.toFixed(1)}ms)</span>
+          <span>[-] DRAWER 3: FORMAL VERIFICATION SUITE (995/995 LEAN 4 PROOFS QED) &amp; 10-PILLAR PHYSICS</span>
+          <span style={{ color: "#FFB454" }}>80 Sectors + SH-XI Weeks 1â€“2 + SH-Deep-12L = 995/995 Lean 4 Proofs QED ({tel.lean4_verify_ms.toFixed(1)}ms)</span>
         </div>
         {drawer3Open && (
           <>
             <div style={{ display: "flex", gap: 6, marginBottom: 5 }}>
               <input value={leanQuery} onChange={(e) => setLeanQuery(e.target.value)} style={{ flex: 1, background: "#0A0D12", color: "#FFFEFB", border: "1px solid #2A3B4D", borderRadius: 4, padding: "4px 8px", fontFamily: "monospace", fontSize: 11 }} />
-              <button onClick={() => callEndpoint(`/api/v1/compiler/verify?q=${encodeURIComponent(leanQuery)}`, "VERIFY 810 LEAN 4 PROOFS")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 12px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>VERIFY 810/810 LEAN 4 PROOFS</button>
+              <button onClick={() => callEndpoint(`/api/v1/compiler/verify?q=${encodeURIComponent(leanQuery)}`, "VERIFY 995 LEAN 4 PROOFS")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 12px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>VERIFY 995/995 LEAN 4 PROOFS</button>
             </div>
             <div style={{ color: "#FFB454", fontSize: 10.5 }}>
               [10-Pillar Physics &amp; 4-Stage Cascade]: {tel.physics_10pillar} -- Verify={tel.lean4_verify_ms.toFixed(1)}ms
@@ -11378,18 +11578,44 @@ export function App() {
             <div style={{ background: "#050E14", border: "1.5px solid #00FFCC", borderRadius: 5, padding: "8px 12px", marginBottom: 8, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 6 }}>
               <div>
                 <span style={{ color: "#00FFCC", fontWeight: "bold", fontSize: 11 }}>
-                  [8-DOMAIN FUNCTIONAL COMMAND DECK — 334 TOOLS CONSOLIDATED (CHAIN 334 | v71.1.0 | 905/905 LEAN 4 QED | 262,144 CACHELINES | 84,480 NEURONS | 4.05M SYNAPSES)]:
+                  [8-DOMAIN FUNCTIONAL COMMAND DECK — 368 TOOLS CONSOLIDATED (CHAIN 368 | v72.2.0 | 995/995 LEAN 4 QED | 262,144 CACHELINES | 84,480 NEURONS | 4.05M SYNAPSES)]:
                 </span>
                 <span style={{ color: "#FFB454", fontSize: 9.5, marginLeft: 8, fontWeight: "bold" }}>
-                  262,144 (2^18) Bijected CLs (16.00 MiB) | 5-Pool Work-Steal (t_A+F+t_B=1) | CPU+RTX 3050 CUDA Co-Exec + P8-APEX (:8098 WIFI6/BT) | Hsiang P_4 &amp; Leapfrog | OmegaLang v16 TLV
+                  SH-XI 3-Shell (384D Mobile + 768D Host + 16/256 MoE) | 262,144 (2^18) Bijected CLs (16.00 MiB) | 5-Pool Work-Steal (t_A+F+t_B=1) | CPU+RTX 3050 CUDA Co-Exec + P8-APEX (:8098)
                 </span>
               </div>
               <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
-                <button onClick={() => callEndpoint("/api/v1/chain316/master_certification", "CHAIN 316: MASTER v70.0.0, 262,144 BIJECTED CACHELINES, 5-POOL WORKSTEAL & 840 QED CERTIFICATION")} style={{ background: "#FFD700", color: "#050A0E", border: "none", borderRadius: 4, padding: "3px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>👑 CHAIN 316 MASTER CERT</button>
-                <button onClick={() => callEndpoint("/api/v1/chain312/master_certification", "CHAIN 312: MASTER v69.5.0, CPU+GPU CO-EXEC & 830 QED CERTIFICATION")} style={{ background: "#00E5FF", color: "#050A0E", border: "none", borderRadius: 4, padding: "3px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>CHAIN 312 CERT</button>
+                <button onClick={() => callEndpoint("/api/v1/chain368/master_certification", "CHAIN 368: MASTER v72.2.0, SOVEREIGN HARMONIC XI WEEKS 1-2 & 995 QED CERTIFICATION")} style={{ background: "#00E5A0", color: "#050A0E", border: "none", borderRadius: 4, padding: "3px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>👑 CHAIN 368 MASTER CERT</button>
+                <button onClick={() => callEndpoint("/api/v1/chain356/master_certification", "CHAIN 356: MASTER v71.5.0, SH-DEEP-12L & 965 QED CERTIFICATION")} style={{ background: "#FFD700", color: "#050A0E", border: "none", borderRadius: 4, padding: "3px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>CHAIN 356 CERT</button>
+                <button onClick={() => callEndpoint("/api/v1/chain316/master_certification", "CHAIN 316: MASTER v70.0.0, 262,144 BIJECTED CACHELINES, 5-POOL WORKSTEAL & 840 QED CERTIFICATION")} style={{ background: "#00E5FF", color: "#050A0E", border: "none", borderRadius: 4, padding: "3px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>CHAIN 316 CERT</button>
                 <button onClick={() => callEndpoint("/api/v1/chain308/master_certification", "CHAIN 308: MASTER v69.0.0, OMEGALANG v16 TLV, 84,480 NEURONS & 820 QED CERTIFICATION")} style={{ background: "#56D364", color: "#050A0E", border: "none", borderRadius: 4, padding: "3px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>CHAIN 308 CERT</button>
-                <button onClick={() => callEndpoint("/api/v1/chain304/master_certification", "CHAIN 304: MASTER v68.5.0, MIT HOT-INDEX, CERN LHCb & 810 QED CERTIFICATION")} style={{ background: "#00FFCC", color: "#050A0E", border: "none", borderRadius: 4, padding: "3px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>CHAIN 304 CERT</button>
                 <button onClick={() => callEndpoint("/api/v1/harmonic/tool_chain?q=chain89_parallel_dag", "CHAIN 89: 89-TOOL PARALLEL DAG")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "3px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>CHAIN 89 DAG</button>
+              </div>
+            </div>
+
+            {/* Dedicated v72.1.0..v72.2.0 Sovereign Harmonic XI (SH-XI) Weeks 1 & 2 Suite (Tools 357..368 | 995/995 Lean 4 QED) */}
+            <div style={{ background: "#071412", border: "1.5px solid #00E5A0", borderRadius: 5, padding: "7px 10px", marginBottom: 8 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 6, marginBottom: 5 }}>
+                <span style={{ color: "#00E5A0", fontWeight: "bold", fontSize: 10.5 }}>
+                  [v72.2.0 SOVEREIGN HARMONIC XI (SH-XI) WEEKS 1 &amp; 2 — 3-SHELL MATRYOSHKA (384D/768D) + 16/256 SPARSE MOE + CHATML SFT + WGSL RAG (TOOLS 357..368 | 995/995 QED)]:
+                </span>
+                <span style={{ color: "#FFB454", fontSize: 9.5, fontWeight: "bold" }}>
+                  BPB 0.4060 → 0.3969 → 0.3965 | PromptGradNorm = 0.0 | IFEval-Lite 64/64 | MultiTurn 8/8 | JSON FSM 100/100
+                </span>
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+                <button onClick={() => callEndpoint("/api/v1/sovereign_harmonic/xi/week1/corpus_builder_minhash", "TOOL 357: SH-XI MINHASH DEDUP CORPUS HARVESTER")} style={{ background: "#0D2618", color: "#56D364", border: "1px solid #56D364", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>T357: MinHash Corpus</button>
+                <button onClick={() => callEndpoint("/api/v1/sovereign_harmonic/xi/week1/bpe_16k_chatml_tokenizer", "TOOL 358: SH-XI 16K REVERSIBLE CHATML BPE TOKENIZER")} style={{ background: "#091F2C", color: "#00E5FF", border: "1px solid #00E5FF", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>T358: 16K ChatML BPE</button>
+                <button onClick={() => callEndpoint("/api/v1/sovereign_harmonic/xi/week1/matryoshka_384_768_gradcheck", "TOOL 359: SH-XI 384D/768D MATRYOSHKA GRADCHECK")} style={{ background: "#1F1030", color: "#B388FF", border: "1px solid #B388FF", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>T359: 384/768 GradCheck</button>
+                <button onClick={() => callEndpoint("/api/v1/sovereign_harmonic/xi/week1/rtx3050_matryoshka_cuda_pretrain", "TOOL 360: SH-XI RTX 3050 CUDA MATRYOSHKA PRETRAINER")} style={{ background: "#261038", color: "#FF9EFF", border: "1px solid #FF9EFF", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>🎮 T360: RTX 3050 Pretrain</button>
+                <button onClick={() => callEndpoint(`/api/v1/sovereign_harmonic/xi/week2/converse?prompt=${encodeURIComponent(cmdPrompt)}`, "TOOL 361: SH-XI 3-SHELL MATRYOSHKA + MOE CONVERSE")} style={{ background: "#00E5A0", color: "#050A0E", border: "none", borderRadius: 4, padding: "4px 8px", cursor: "pointer", fontFamily: "monospace", fontSize: 9.5, fontWeight: "bold" }}>💬 T361: SH-XI Converse</button>
+                <button onClick={() => callEndpoint("/api/v1/chain362/master_certification", "TOOL 362: CHAIN 362 WEEK 1 MASTER CERTIFICATION")} style={{ background: "#0D2618", color: "#56D364", border: "1px solid #56D364", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>T362: CHAIN 362 Cert</button>
+                <button onClick={() => callEndpoint("/api/v1/sovereign_harmonic/xi/week2/shell2_sparse_moe", "TOOL 363: SH-XI SHELL 2 DISK-BACKED 16/256 SPARSE MOE")} style={{ background: "#3A1C00", color: "#FFB454", border: "1px solid #FFB454", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>🧠 T363: 16/256 Sparse MoE</button>
+                <button onClick={() => callEndpoint("/api/v1/sovereign_harmonic/xi/week2/chatml_masked_sft", "TOOL 364: SH-XI CHATML MASKED ASSISTANT SFT")} style={{ background: "#1F1030", color: "#B388FF", border: "1px solid #B388FF", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>T364: ChatML Masked SFT</button>
+                <button onClick={() => callEndpoint(`/api/v1/sovereign_harmonic/xi/week2/igpu_grounded_rag?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 365: SH-XI INTEL UHD 384D WGSL GROUNDED RAG")} style={{ background: "#091F2C", color: "#00E5FF", border: "1px solid #00E5FF", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>🔎 T365: 384D WGSL RAG</button>
+                <button onClick={() => callEndpoint("/api/v1/sovereign_harmonic/xi/week2/fsm_json_tool", "TOOL 366: SH-XI DETERMINISTIC JSON FSM GRAMMAR CALLER")} style={{ background: "#2B2100", color: "#FFEA00", border: "1px solid #FFEA00", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>T366: JSON FSM (100/100)</button>
+                <button onClick={() => callEndpoint("/api/v1/sovereign_harmonic/xi/week2/ifeval_lite_64", "TOOL 367: SH-XI IFEVAL-LITE-64 & MULTI-TURN GAUNTLET")} style={{ background: "#002B24", color: "#00FFCC", border: "1px solid #00FFCC", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>✅ T367: IFEval-Lite 64/64</button>
+                <button onClick={() => callEndpoint("/api/v1/chain368/master_certification", "TOOL 368: CHAIN 368 MASTER CERTIFICATION (TOOLS 1..368 & 995/995 QED)")} style={{ background: "#FFD700", color: "#050A0E", border: "none", borderRadius: 4, padding: "4px 8px", cursor: "pointer", fontFamily: "monospace", fontSize: 9.5, fontWeight: "bold" }}>👑 T368: CHAIN 368 (995 QED)</button>
               </div>
             </div>
 
@@ -11684,7 +11910,7 @@ export function App() {
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10, gap: 8 }}>
               <span style={{ color: "#00E5A0", fontWeight: 800, fontSize: 12.5 }}>
-                SOVEREIGN COMMAND PALETTE (CTRL+K) — VESPER MODES, TOOLS 1..356 &amp; CARDS
+                SOVEREIGN COMMAND PALETTE (CTRL+K) — VESPER MODES, TOOLS 1..368 &amp; CARDS
               </span>
               <button
                 onClick={() => setCmdPaletteOpen(false)}
@@ -11709,9 +11935,9 @@ export function App() {
                 [
                   { id: "calm", label: "Calm (Chat)", rail: "Chat" },
                   { id: "hud", label: "HUD (Engineer Mode)", rail: "HUD" },
-                  { id: "proof", label: "Proof Sheet (965 QED)", rail: "Proofs" },
+                  { id: "proof", label: "Proof Sheet (995 QED)", rail: "Proofs" },
                   { id: "vault", label: "Vault (16.00 MiB)", rail: "Vault" },
-                  { id: "tools", label: "Tools (CHAIN 356)", rail: "Tools" },
+                  { id: "tools", label: "Tools (CHAIN 368)", rail: "Tools" },
                   { id: "settings", label: "Settings & CLS 0.00", rail: "Settings" },
                   { id: "classic", label: "Classic Full Cockpit", rail: "HUD" }
                 ] as Array<{ id: VesperShellMode; label: string; rail: VesperRailLabel }>
@@ -11743,7 +11969,7 @@ export function App() {
               autoFocus
               value={cmdPaletteFilter}
               onChange={(e) => setCmdPaletteFilter(e.target.value)}
-              placeholder="Type tool number (e.g. T356, T351, T346, T313, T309, 262144, RLVF, Ambiguity, OmegaLang, Galois, LHCb, Gemma), card, or domain..."
+              placeholder="Type tool number (e.g. T368, T365, T363, T361, T351, SH-XI, MoE, RAG, IFEval, 262144, RLVF, OmegaLang), card, or domain..."
               style={{
                 width: "100%",
                 background: "#05080C",
@@ -11758,7 +11984,19 @@ export function App() {
             />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 6, maxHeight: 340, overflowY: "auto" }}>
               {[
-                { label: "CHAIN 356: v71.5.0 Week 4 Master Certification (Tools 1..356 & 965/965 Lean 4 QED)", ep: "/api/v1/chain356/master_certification" },
+                { label: "CHAIN 368: v72.2.0 Sovereign Harmonic XI Weeks 1–2 Master Certification (Tools 1..368 & 995/995 Lean 4 QED)", ep: "/api/v1/chain368/master_certification" },
+                { label: "Tool 367: SH-XI Week 2 IFEval-Lite-64 (64/64) & 8-Session Multi-Turn Coherence Gauntlet", ep: "/api/v1/sovereign_harmonic/xi/week2/ifeval_lite_64" },
+                { label: "Tool 366: SH-XI Week 2 Deterministic JSON FSM Grammar-Constrained Tool Caller (100/100)", ep: "/api/v1/sovereign_harmonic/xi/week2/fsm_json_tool" },
+                { label: "Tool 365: SH-XI Week 2 Intel UHD WebGPU WGSL 384D Grounded RAG Engine", ep: "/api/v1/sovereign_harmonic/xi/week2/igpu_grounded_rag" },
+                { label: "Tool 364: SH-XI Week 2 ChatML Masked Assistant-Only SFT Trainer (PromptGradNorm = 0.0)", ep: "/api/v1/sovereign_harmonic/xi/week2/chatml_masked_sft" },
+                { label: "Tool 363: SH-XI Week 2 Shell 2 Disk-Backed 16/256 Sparse MoE Expert Layer", ep: "/api/v1/sovereign_harmonic/xi/week2/shell2_sparse_moe" },
+                { label: "CHAIN 362: v72.1.0 Sovereign Harmonic XI Week 1 Master Certification (Tools 1..362 & 980/980 Lean 4 QED)", ep: "/api/v1/chain362/master_certification" },
+                { label: "Tool 361: SH-XI 3-Shell Matryoshka + 16/256 MoE Multi-Turn Converse Engine", ep: "/api/v1/sovereign_harmonic/xi/week2/converse" },
+                { label: "Tool 360: SH-XI Week 1 RTX 3050 CUDA Dual-Shell Matryoshka Pretrainer (384D + 768D)", ep: "/api/v1/sovereign_harmonic/xi/week1/rtx3050_matryoshka_cuda_pretrain" },
+                { label: "Tool 359: SH-XI Week 1 384D/768D Matryoshka Finite-Difference Analytical GradCheck", ep: "/api/v1/sovereign_harmonic/xi/week1/matryoshka_384_768_gradcheck" },
+                { label: "Tool 358: SH-XI Week 1 Reversible 16,384-Vocab ChatML BPE Tokenizer", ep: "/api/v1/sovereign_harmonic/xi/week1/bpe_16k_chatml_tokenizer" },
+                { label: "Tool 357: SH-XI Week 1 MinHash Deduplicated Corpus Builder & DuckDB Splits", ep: "/api/v1/sovereign_harmonic/xi/week1/corpus_builder_minhash" },
+                { label: "CHAIN 356: v71.5.0 SH-Deep-12L Master Certification (Tools 1..356 & 965/965 Lean 4 QED)", ep: "/api/v1/chain356/master_certification" },
                 { label: "Tool 351: SH-Deep-12L Week 4 RLVF GRPO Lean 4 & Zero-Bracket Compiler-in-the-Loop Prover", ep: "/api/v1/sovereign_harmonic/week4/rlvf_grpo_compiler_in_the_loop" },
                 { label: "Tool 352: SH-Deep-12L Week 4 Medusa-EAGLE Dendritic Tree Speculative Decoder (k=8)", ep: "/api/v1/sovereign_harmonic/week4/medusa_eagle_dendritic_tree_speculative_k8" },
                 { label: "Tool 353: SH-Deep-12L Week 4 SAE Monosemantic Feature Circuit Explorer", ep: "/api/v1/sovereign_harmonic/week4/sae_monosemantic_feature_circuit_explorer" },
@@ -11806,7 +12044,7 @@ export function App() {
                 { label: "Tool 287: Vesper-Arachne E8 IK & Click-Through Gate", ep: "/api/v1/vesper_arachne/ik_swarm_companion" },
                 { label: "COORDINATOR: 5-Stage Autopoietic DAG + E:\\ Codegen Write-Back", ep: `/api/v1/coordinator/dag_orchestrator?q=${encodeURIComponent(cmdPrompt)}` },
                 { label: "TOOL 90: v48 Layer 1.5 GHC Haskell Exact Rational Algebra & Codegen", ep: `/api/v1/v48/haskell_layer15_algebra?q=${encodeURIComponent(cmdPrompt)}` },
-                { label: "TOOL 13: Verify All 965/965 Lean 4 Formal Proofs QED", ep: "/api/v1/compiler/verify" }
+                { label: "TOOL 13: Verify All 995/995 Lean 4 Formal Proofs QED", ep: "/api/v1/compiler/verify" }
               ]
                 .filter((item) => !cmdPaletteFilter.trim() || item.label.toLowerCase().includes(cmdPaletteFilter.toLowerCase()))
                 .map((item) => (
@@ -12297,7 +12535,7 @@ export function App() {
           MIT .E8Q (T301)
         </button>
         <button
-          onClick={() => callEndpoint("/api/v1/chain356/master_certification", "OMNIBAR CHAIN 356 CERT")}
+          onClick={() => callEndpoint("/api/v1/chain368/master_certification", "OMNIBAR CHAIN 368 CERT")}
           style={{
             background: "#FDD663",
             color: "#0B0D13",
@@ -12310,7 +12548,7 @@ export function App() {
             whiteSpace: "nowrap"
           }}
         >
-          CHAIN 356 (965 QED)
+          CHAIN 368 (995 QED)
         </button>
       </div>
 

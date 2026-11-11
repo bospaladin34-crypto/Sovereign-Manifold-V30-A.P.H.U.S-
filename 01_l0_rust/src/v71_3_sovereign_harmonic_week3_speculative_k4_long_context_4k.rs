@@ -1281,8 +1281,10 @@ pub fn v71_3_dispatch_tool_344_contrastive_stiefel_preference_trainer(payload: &
         }
         l_idx += 1;
     }
-    stack.bptt_epochs_trained = stack.bptt_epochs_trained.saturating_add(1);
-    let _ = v71_1_save_deep12l_stack(&mut stack);
+    if stack.bptt_epochs_trained <= 16 {
+        stack.bptt_epochs_trained = stack.bptt_epochs_trained.saturating_add(1);
+        let _ = v71_1_save_deep12l_stack(&mut stack);
+    }
 
     // 3. Evaluate Chosen vs. Rejected preference margin across all 512 pairs via real forward pass
     let mut preference_wins: usize = 0;

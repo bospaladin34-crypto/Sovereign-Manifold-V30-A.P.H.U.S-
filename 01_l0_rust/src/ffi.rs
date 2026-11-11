@@ -787,3 +787,528 @@ pub fn execute_rtx3050_nvcuda_dual_ptx_kernels(
     sample
 }
 
+// =============================================================================
+// Sovereign Harmonic XI (v72.1.0 | SH4Z v7210 TLV | CHAIN 362):
+// Persistent Float32 Nested Matryoshka (384D subset 768D) + Mamba-3/SwiGLU
+// CUDA PTX Co-Executor on Host Anchor-1 (RTX 3050 6GB Laptop GPU, sm_86)
+// Author: Donevin Frownfelter (@bospaladin34-crypto)
+// =============================================================================
+
+#[derive(Clone, Debug)]
+pub struct Rtx3050ShXiMatryoshkaSample {
+    pub nvcuda_loaded: bool,
+    pub ptx_loaded: bool,
+    pub k1_dual_shell_loaded: bool,
+    pub k2_mamba_swiglu_loaded: bool,
+    pub device_name: String,
+    pub sm_count: i32,
+    pub cuda_cores: usize,
+    pub total_vram_bytes: u64,
+    pub used_vram_bytes: u64,
+    pub free_vram_bytes: u64,
+    pub gpu_temp_c: u32,
+    pub gpu_power_mw: u32,
+    pub sm_clock_mhz: u32,
+    pub launch_elements: usize,
+    pub k1_cuda_ms: f32,
+    pub k2_cuda_ms: f32,
+    pub total_gpu_wall_us: u64,
+    pub out_gemv_f32: Vec<f32>,
+    pub out_mamba_swiglu_f32: Vec<f32>,
+}
+
+struct PersistentShXiCudaState {
+    h_cuda: usize,
+    ctx: usize,
+    h_mod: usize,
+    fn_k1: usize,
+    fn_k2: usize,
+    d_buf0: u64,
+    d_buf1: u64,
+    d_buf2: u64,
+    d_buf3: u64,
+    d_buf4: u64,
+    alloc_elements: usize,
+    device_name: String,
+    sm_count: i32,
+    cuda_cores: usize,
+    total_vram_bytes: u64,
+}
+
+static SH_XI_CUDA_STATE: Mutex<Option<PersistentShXiCudaState>> = Mutex::new(None);
+
+pub fn execute_rtx3050_sh_xi_matryoshka_f32_ptx(
+    ptx_source: &str,
+    x_in: &[f32],
+    w_proj: &[f32],
+    base_res: &[f32],
+    h_prev: &[f32],
+    alpha_decay: &[f32],
+    swiglu_gate: &[f32],
+    shell1_gate: f32,
+    shell0_dim: u32,
+) -> Rtx3050ShXiMatryoshkaSample {
+    let _guard = match CUDA_DRIVER_MUTEX.lock() {
+        Ok(g) => g,
+        Err(p) => p.into_inner(),
+    };
+
+    let count = x_in
+        .len()
+        .min(w_proj.len())
+        .min(base_res.len())
+        .min(h_prev.len())
+        .min(alpha_decay.len())
+        .min(swiglu_gate.len());
+
+    let mut sample = Rtx3050ShXiMatryoshkaSample {
+        nvcuda_loaded: false,
+        ptx_loaded: false,
+        k1_dual_shell_loaded: false,
+        k2_mamba_swiglu_loaded: false,
+        device_name: String::from("UNMEASURED/OFFLINE"),
+        sm_count: 0,
+        cuda_cores: 0,
+        total_vram_bytes: 0,
+        used_vram_bytes: 0,
+        free_vram_bytes: 0,
+        gpu_temp_c: 0,
+        gpu_power_mw: 0,
+        sm_clock_mhz: 0,
+        launch_elements: count,
+        k1_cuda_ms: 0.0,
+        k2_cuda_ms: 0.0,
+        total_gpu_wall_us: 0,
+        out_gemv_f32: Vec::new(),
+        out_mamba_swiglu_f32: Vec::new(),
+    };
+
+    if count == 0 || ptx_source.is_empty() {
+        return sample;
+    }
+
+    unsafe {
+        let h_nvml = LoadLibraryA(b"C:\\Windows\\System32\\nvml.dll\0".as_ptr());
+        if !h_nvml.is_null() {
+            let p_init = GetProcAddress(h_nvml, b"nvmlInit_v2\0".as_ptr());
+            let p_handle = GetProcAddress(h_nvml, b"nvmlDeviceGetHandleByIndex_v2\0".as_ptr());
+            let p_temp = GetProcAddress(h_nvml, b"nvmlDeviceGetTemperature\0".as_ptr());
+            let p_pwr = GetProcAddress(h_nvml, b"nvmlDeviceGetPowerUsage\0".as_ptr());
+            let p_mem = GetProcAddress(h_nvml, b"nvmlDeviceGetMemoryInfo\0".as_ptr());
+            let p_clk = GetProcAddress(h_nvml, b"nvmlDeviceGetClockInfo\0".as_ptr());
+            if !p_init.is_null() && !p_handle.is_null() {
+                let fn_init: FnNvmlInitV2 = std::mem::transmute(p_init);
+                let fn_handle: FnNvmlDeviceGetHandleByIndexV2 = std::mem::transmute(p_handle);
+                if fn_init() == 0 {
+                    let mut dev_h: *mut c_void = ptr::null_mut();
+                    if fn_handle(0, &mut dev_h) == 0 && !dev_h.is_null() {
+                        if !p_temp.is_null() {
+                            let fn_temp: FnNvmlDeviceGetTemperature = std::mem::transmute(p_temp);
+                            let mut t_val: u32 = 0;
+                            if fn_temp(dev_h, 0, &mut t_val) == 0 {
+                                sample.gpu_temp_c = t_val;
+                            }
+                        }
+                        if !p_pwr.is_null() {
+                            let fn_pwr: FnNvmlDeviceGetPowerUsage = std::mem::transmute(p_pwr);
+                            let mut p_val: u32 = 0;
+                            if fn_pwr(dev_h, &mut p_val) == 0 {
+                                sample.gpu_power_mw = p_val;
+                            }
+                        }
+                        if !p_mem.is_null() {
+                            let fn_mem: FnNvmlDeviceGetMemoryInfo = std::mem::transmute(p_mem);
+                            let mut m_val = NvmlMemory::default();
+                            if fn_mem(dev_h, &mut m_val) == 0 {
+                                sample.total_vram_bytes = m_val.total;
+                                sample.free_vram_bytes = m_val.free;
+                                sample.used_vram_bytes = m_val.used;
+                            }
+                        }
+                        if !p_clk.is_null() {
+                            let fn_clk: FnNvmlDeviceGetClockInfo = std::mem::transmute(p_clk);
+                            let mut sm_c: u32 = 0;
+                            if fn_clk(dev_h, 0, &mut sm_c) == 0 {
+                                sample.sm_clock_mhz = sm_c;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        let mut sh_guard = match SH_XI_CUDA_STATE.lock() {
+            Ok(g) => g,
+            Err(p) => p.into_inner(),
+        };
+
+        let need_alloc = match *sh_guard {
+            Some(ref st) => count > st.alloc_elements,
+            None => true,
+        };
+
+        if need_alloc {
+            let existing_ctx_info = match CUDA_PERSISTENT_STATE.lock() {
+                Ok(g) => g.as_ref().map(|s| {
+                    (
+                        s.h_cuda,
+                        s.ctx,
+                        s.device_name.clone(),
+                        s.sm_count,
+                        s.cuda_cores,
+                        s.total_vram_bytes,
+                    )
+                }),
+                Err(p) => p.into_inner().as_ref().map(|s| {
+                    (
+                        s.h_cuda,
+                        s.ctx,
+                        s.device_name.clone(),
+                        s.sm_count,
+                        s.cuda_cores,
+                        s.total_vram_bytes,
+                    )
+                }),
+            };
+
+            let h_cuda = if let Some((hc, _, _, _, _, _)) = existing_ctx_info {
+                hc as *mut c_void
+            } else {
+                LoadLibraryA(b"C:\\Windows\\System32\\nvcuda.dll\0".as_ptr())
+            };
+
+            if !h_cuda.is_null() {
+                let p_cu_init = GetProcAddress(h_cuda, b"cuInit\0".as_ptr());
+                let p_cu_dev_get = GetProcAddress(h_cuda, b"cuDeviceGet\0".as_ptr());
+                let p_cu_dev_name = GetProcAddress(h_cuda, b"cuDeviceGetName\0".as_ptr());
+                let p_cu_dev_attr = GetProcAddress(h_cuda, b"cuDeviceGetAttribute\0".as_ptr());
+                let p_cu_ctx_create = GetProcAddress(h_cuda, b"cuCtxCreate_v2\0".as_ptr());
+                let p_cu_ctx_set = GetProcAddress(h_cuda, b"cuCtxSetCurrent\0".as_ptr());
+                let p_cu_mod_load = GetProcAddress(h_cuda, b"cuModuleLoadData\0".as_ptr());
+                let p_cu_mod_func = GetProcAddress(h_cuda, b"cuModuleGetFunction\0".as_ptr());
+                let p_cu_mem_alloc = GetProcAddress(h_cuda, b"cuMemAlloc_v2\0".as_ptr());
+
+                if !p_cu_init.is_null()
+                    && !p_cu_dev_get.is_null()
+                    && !p_cu_ctx_create.is_null()
+                    && !p_cu_ctx_set.is_null()
+                    && !p_cu_mod_load.is_null()
+                    && !p_cu_mod_func.is_null()
+                    && !p_cu_mem_alloc.is_null()
+                {
+                    let fn_cu_init: FnCuInit = std::mem::transmute(p_cu_init);
+                    let fn_cu_dev_get: FnCuDeviceGet = std::mem::transmute(p_cu_dev_get);
+                    let fn_cu_ctx_create: FnCuCtxCreateV2 = std::mem::transmute(p_cu_ctx_create);
+                    let fn_cu_ctx_set: FnCuCtxSetCurrent = std::mem::transmute(p_cu_ctx_set);
+                    let fn_cu_mod_load: FnCuModuleLoadData = std::mem::transmute(p_cu_mod_load);
+                    let fn_cu_mod_func: FnCuModuleGetFunction = std::mem::transmute(p_cu_mod_func);
+                    let fn_cu_mem_alloc: FnCuMemAllocV2 = std::mem::transmute(p_cu_mem_alloc);
+
+                    if fn_cu_init(0) == 0 {
+                        let (ctx_ptr, dev_name, sm_cnt, measured_cores, total_vram) =
+                            if let Some((_, c_ptr, dn, smc, cores, tv)) = existing_ctx_info {
+                                let _ = fn_cu_ctx_set(c_ptr as *mut c_void);
+                                (c_ptr as *mut c_void, dn, smc, cores, tv)
+                            } else if let Some(ref prev_sh) = *sh_guard {
+                                let _ = fn_cu_ctx_set(prev_sh.ctx as *mut c_void);
+                                (
+                                    prev_sh.ctx as *mut c_void,
+                                    prev_sh.device_name.clone(),
+                                    prev_sh.sm_count,
+                                    prev_sh.cuda_cores,
+                                    prev_sh.total_vram_bytes,
+                                )
+                            } else {
+                                let mut dev: i32 = 0;
+                                let mut c_out: *mut c_void = ptr::null_mut();
+                                let mut dn = String::from("NVIDIA GeForce RTX 3050 6GB Laptop GPU");
+                                let mut smc: i32 = 0;
+                                let mut cc_maj: i32 = 8;
+                                let mut cc_min: i32 = 6;
+                                if fn_cu_dev_get(&mut dev, 0) == 0 {
+                                    if !p_cu_dev_name.is_null() {
+                                        let fn_name: FnCuDeviceGetName =
+                                            std::mem::transmute(p_cu_dev_name);
+                                        let mut name_buf = [0u8; 128];
+                                        if fn_name(name_buf.as_mut_ptr(), 128, dev) == 0 {
+                                            let end = name_buf
+                                                .iter()
+                                                .position(|&b| b == 0)
+                                                .unwrap_or(128);
+                                            dn = String::from_utf8_lossy(&name_buf[..end])
+                                                .trim()
+                                                .to_string();
+                                        }
+                                    }
+                                    if !p_cu_dev_attr.is_null() {
+                                        let fn_attr: FnCuDeviceGetAttribute =
+                                            std::mem::transmute(p_cu_dev_attr);
+                                        let _ = fn_attr(&mut smc, 16, dev);
+                                        let _ = fn_attr(&mut cc_maj, 75, dev);
+                                        let _ = fn_attr(&mut cc_min, 76, dev);
+                                    }
+                                    let _ = fn_cu_ctx_create(&mut c_out, 0, dev);
+                                }
+                                let cps: usize = if cc_maj == 8 && cc_min == 0 { 64 } else { 128 };
+                                (
+                                    c_out,
+                                    dn,
+                                    smc,
+                                    (smc.max(0) as usize) * cps,
+                                    sample.total_vram_bytes,
+                                )
+                            };
+
+                        if !ctx_ptr.is_null() {
+                            let mut c_ptx = Vec::with_capacity(ptx_source.len() + 1);
+                            c_ptx.extend_from_slice(ptx_source.as_bytes());
+                            c_ptx.push(0u8);
+                            let mut h_mod: *mut c_void = ptr::null_mut();
+                            if fn_cu_mod_load(&mut h_mod, c_ptx.as_ptr() as *const c_void) == 0
+                                && !h_mod.is_null()
+                            {
+                                let mut fn_k1: *mut c_void = ptr::null_mut();
+                                let mut fn_k2: *mut c_void = ptr::null_mut();
+                                let r1 = fn_cu_mod_func(
+                                    &mut fn_k1,
+                                    h_mod,
+                                    b"rtx3050_sh_xi_matryoshka_dual_shell_gemv_f32\0".as_ptr(),
+                                );
+                                let r2 = fn_cu_mod_func(
+                                    &mut fn_k2,
+                                    h_mod,
+                                    b"rtx3050_sh_xi_swiglu_mamba3_fused_step_f32\0".as_ptr(),
+                                );
+                                if r1 == 0 && !fn_k1.is_null() && r2 == 0 && !fn_k2.is_null() {
+                                    let cap = count.max(65536);
+                                    let byte_cap = cap * std::mem::size_of::<f32>();
+                                    let mut d0: u64 = 0;
+                                    let mut d1: u64 = 0;
+                                    let mut d2: u64 = 0;
+                                    let mut d3: u64 = 0;
+                                    let mut d4: u64 = 0;
+                                    if fn_cu_mem_alloc(&mut d0, byte_cap) == 0
+                                        && fn_cu_mem_alloc(&mut d1, byte_cap) == 0
+                                        && fn_cu_mem_alloc(&mut d2, byte_cap) == 0
+                                        && fn_cu_mem_alloc(&mut d3, byte_cap) == 0
+                                        && fn_cu_mem_alloc(&mut d4, byte_cap) == 0
+                                    {
+                                        *sh_guard = Some(PersistentShXiCudaState {
+                                            h_cuda: h_cuda as usize,
+                                            ctx: ctx_ptr as usize,
+                                            h_mod: h_mod as usize,
+                                            fn_k1: fn_k1 as usize,
+                                            fn_k2: fn_k2 as usize,
+                                            d_buf0: d0,
+                                            d_buf1: d1,
+                                            d_buf2: d2,
+                                            d_buf3: d3,
+                                            d_buf4: d4,
+                                            alloc_elements: cap,
+                                            device_name: dev_name,
+                                            sm_count: sm_cnt,
+                                            cuda_cores: measured_cores,
+                                            total_vram_bytes: total_vram,
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        let t_wall = Instant::now();
+        if let Some(ref st) = *sh_guard {
+            let h_cuda = st.h_cuda as *mut c_void;
+            let ctx = st.ctx as *mut c_void;
+            let fn_k1 = st.fn_k1 as *mut c_void;
+            let fn_k2 = st.fn_k2 as *mut c_void;
+
+            sample.nvcuda_loaded = true;
+            sample.ptx_loaded = st.h_mod != 0;
+            sample.k1_dual_shell_loaded = st.fn_k1 != 0;
+            sample.k2_mamba_swiglu_loaded = st.fn_k2 != 0;
+            sample.device_name = st.device_name.clone();
+            sample.sm_count = st.sm_count;
+            sample.cuda_cores = st.cuda_cores;
+            if sample.total_vram_bytes == 0 {
+                sample.total_vram_bytes = st.total_vram_bytes;
+            }
+
+            let p_cu_ctx_set = GetProcAddress(h_cuda, b"cuCtxSetCurrent\0".as_ptr());
+            let p_cu_htod = GetProcAddress(h_cuda, b"cuMemcpyHtoD_v2\0".as_ptr());
+            let p_cu_dtoh = GetProcAddress(h_cuda, b"cuMemcpyDtoH_v2\0".as_ptr());
+            let p_cu_evt_create = GetProcAddress(h_cuda, b"cuEventCreate\0".as_ptr());
+            let p_cu_evt_record = GetProcAddress(h_cuda, b"cuEventRecord\0".as_ptr());
+            let p_cu_evt_sync = GetProcAddress(h_cuda, b"cuEventSynchronize\0".as_ptr());
+            let p_cu_evt_elapsed = GetProcAddress(h_cuda, b"cuEventElapsedTime\0".as_ptr());
+            let p_cu_evt_destroy = GetProcAddress(h_cuda, b"cuEventDestroy_v2\0".as_ptr());
+            let p_cu_launch = GetProcAddress(h_cuda, b"cuLaunchKernel\0".as_ptr());
+
+            if !p_cu_ctx_set.is_null()
+                && !p_cu_htod.is_null()
+                && !p_cu_dtoh.is_null()
+                && !p_cu_launch.is_null()
+                && count <= st.alloc_elements
+            {
+                let fn_ctx_set: FnCuCtxSetCurrent = std::mem::transmute(p_cu_ctx_set);
+                let fn_htod: FnCuMemcpyHtoDV2 = std::mem::transmute(p_cu_htod);
+                let fn_dtoh: FnCuMemcpyDtoHV2 = std::mem::transmute(p_cu_dtoh);
+                let fn_launch: FnCuLaunchKernel = std::mem::transmute(p_cu_launch);
+
+                if fn_ctx_set(ctx) == 0 {
+                    let byte_size = count * std::mem::size_of::<f32>();
+                    let block_dim: u32 = 256;
+                    let grid_dim: u32 = ((count as u32) + block_dim - 1) / block_dim;
+                    let mut count_u32: u32 = count as u32;
+                    let mut s0_dim: u32 = shell0_dim;
+                    let mut gate_f32: f32 = shell1_gate;
+                    let mut log2e_f32: f32 = std::f32::consts::LOG2_E;
+                    let mut one_f32: f32 = 1.0_f32;
+
+                    let has_events = !p_cu_evt_create.is_null()
+                        && !p_cu_evt_record.is_null()
+                        && !p_cu_evt_sync.is_null()
+                        && !p_cu_evt_elapsed.is_null()
+                        && !p_cu_evt_destroy.is_null();
+
+                    let mut ev_s1: *mut c_void = ptr::null_mut();
+                    let mut ev_e1: *mut c_void = ptr::null_mut();
+                    let mut ev_s2: *mut c_void = ptr::null_mut();
+                    let mut ev_e2: *mut c_void = ptr::null_mut();
+                    if has_events {
+                        let fn_ev_c: FnCuEventCreate = std::mem::transmute(p_cu_evt_create);
+                        let _ = fn_ev_c(&mut ev_s1, 0);
+                        let _ = fn_ev_c(&mut ev_e1, 0);
+                        let _ = fn_ev_c(&mut ev_s2, 0);
+                        let _ = fn_ev_c(&mut ev_e2, 0);
+                    }
+
+                    // Kernel 1: Matryoshka Dual-Shell GEMV + Net2Wider Gate
+                    let mut d_x = st.d_buf0;
+                    let mut d_w = st.d_buf1;
+                    let mut d_base = st.d_buf2;
+                    let mut d_out1 = st.d_buf3;
+                    let _ = fn_htod(d_x, x_in.as_ptr() as *const c_void, byte_size);
+                    let _ = fn_htod(d_w, w_proj.as_ptr() as *const c_void, byte_size);
+                    let _ = fn_htod(d_base, base_res.as_ptr() as *const c_void, byte_size);
+
+                    if has_events && !ev_s1.is_null() {
+                        let fn_ev_r: FnCuEventRecord = std::mem::transmute(p_cu_evt_record);
+                        let _ = fn_ev_r(ev_s1, ptr::null_mut());
+                    }
+                    let mut params_k1: [*mut c_void; 7] = [
+                        (&mut d_x as *mut u64) as *mut c_void,
+                        (&mut d_w as *mut u64) as *mut c_void,
+                        (&mut d_base as *mut u64) as *mut c_void,
+                        (&mut d_out1 as *mut u64) as *mut c_void,
+                        (&mut gate_f32 as *mut f32) as *mut c_void,
+                        (&mut s0_dim as *mut u32) as *mut c_void,
+                        (&mut count_u32 as *mut u32) as *mut c_void,
+                    ];
+                    let _ = fn_launch(
+                        fn_k1,
+                        grid_dim,
+                        1,
+                        1,
+                        block_dim,
+                        1,
+                        1,
+                        0,
+                        ptr::null_mut(),
+                        params_k1.as_mut_ptr(),
+                        ptr::null_mut(),
+                    );
+                    if has_events && !ev_e1.is_null() {
+                        let fn_ev_r: FnCuEventRecord = std::mem::transmute(p_cu_evt_record);
+                        let fn_ev_s: FnCuEventSynchronize = std::mem::transmute(p_cu_evt_sync);
+                        let fn_ev_e: FnCuEventElapsedTime = std::mem::transmute(p_cu_evt_elapsed);
+                        let _ = fn_ev_r(ev_e1, ptr::null_mut());
+                        let _ = fn_ev_s(ev_e1);
+                        let mut ms1: f32 = 0.0;
+                        if fn_ev_e(&mut ms1, ev_s1, ev_e1) == 0 {
+                            sample.k1_cuda_ms = ms1;
+                        }
+                    }
+                    let mut out1 = vec![0.0_f32; count];
+                    let _ = fn_dtoh(out1.as_mut_ptr() as *mut c_void, d_out1, byte_size);
+                    sample.out_gemv_f32 = out1;
+
+                    // Kernel 2: Fused Mamba-3 Selective State + SwiGLU Step (consuming d_out1 as u_in)
+                    let mut d_hprev = st.d_buf0;
+                    let mut d_uin = st.d_buf3;
+                    let mut d_alpha = st.d_buf1;
+                    let mut d_gate = st.d_buf2;
+                    let mut d_out2 = st.d_buf4;
+                    let _ = fn_htod(d_hprev, h_prev.as_ptr() as *const c_void, byte_size);
+                    let _ = fn_htod(d_alpha, alpha_decay.as_ptr() as *const c_void, byte_size);
+                    let _ = fn_htod(d_gate, swiglu_gate.as_ptr() as *const c_void, byte_size);
+
+                    if has_events && !ev_s2.is_null() {
+                        let fn_ev_r: FnCuEventRecord = std::mem::transmute(p_cu_evt_record);
+                        let _ = fn_ev_r(ev_s2, ptr::null_mut());
+                    }
+                    let mut params_k2: [*mut c_void; 8] = [
+                        (&mut d_hprev as *mut u64) as *mut c_void,
+                        (&mut d_uin as *mut u64) as *mut c_void,
+                        (&mut d_alpha as *mut u64) as *mut c_void,
+                        (&mut d_gate as *mut u64) as *mut c_void,
+                        (&mut d_out2 as *mut u64) as *mut c_void,
+                        (&mut log2e_f32 as *mut f32) as *mut c_void,
+                        (&mut one_f32 as *mut f32) as *mut c_void,
+                        (&mut count_u32 as *mut u32) as *mut c_void,
+                    ];
+                    let _ = fn_launch(
+                        fn_k2,
+                        grid_dim,
+                        1,
+                        1,
+                        block_dim,
+                        1,
+                        1,
+                        0,
+                        ptr::null_mut(),
+                        params_k2.as_mut_ptr(),
+                        ptr::null_mut(),
+                    );
+                    if has_events && !ev_e2.is_null() {
+                        let fn_ev_r: FnCuEventRecord = std::mem::transmute(p_cu_evt_record);
+                        let fn_ev_s: FnCuEventSynchronize = std::mem::transmute(p_cu_evt_sync);
+                        let fn_ev_e: FnCuEventElapsedTime = std::mem::transmute(p_cu_evt_elapsed);
+                        let _ = fn_ev_r(ev_e2, ptr::null_mut());
+                        let _ = fn_ev_s(ev_e2);
+                        let mut ms2: f32 = 0.0;
+                        if fn_ev_e(&mut ms2, ev_s2, ev_e2) == 0 {
+                            sample.k2_cuda_ms = ms2;
+                        }
+                    }
+                    let mut out2 = vec![0.0_f32; count];
+                    let _ = fn_dtoh(out2.as_mut_ptr() as *mut c_void, d_out2, byte_size);
+                    sample.out_mamba_swiglu_f32 = out2;
+
+                    if has_events {
+                        let fn_ev_d: FnCuEventDestroyV2 = std::mem::transmute(p_cu_evt_destroy);
+                        if !ev_s1.is_null() {
+                            let _ = fn_ev_d(ev_s1);
+                        }
+                        if !ev_e1.is_null() {
+                            let _ = fn_ev_d(ev_e1);
+                        }
+                        if !ev_s2.is_null() {
+                            let _ = fn_ev_d(ev_s2);
+                        }
+                        if !ev_e2.is_null() {
+                            let _ = fn_ev_d(ev_e2);
+                        }
+                    }
+                }
+            }
+        }
+        sample.total_gpu_wall_us = t_wall.elapsed().as_micros() as u64;
+    }
+
+    sample
+}
+

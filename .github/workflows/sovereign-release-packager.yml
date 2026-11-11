@@ -61,6 +61,11 @@ jobs:
               Copy-Item "docs\SovereignCockpitHUD.exe" "release_artifacts\SovereignCockpitHUD.exe" -Force
           }
           
+          if (Test-Path "releases\ACT-Omega-$ver-Pixel10-Sovereign.apk") {
+              Copy-Item "releases\ACT-Omega-$ver-Pixel10-Sovereign.apk" "release_artifacts\ACT-Omega-$ver-Pixel10-Sovereign.apk" -Force
+          } elseif (Test-Path "ACT-Omega-Pixel10-Sovereign.apk") {
+              Copy-Item "ACT-Omega-Pixel10-Sovereign.apk" "release_artifacts\ACT-Omega-$ver-Pixel10-Sovereign.apk" -Force
+          }
           if (Test-Path "telemetry_snapshot.json") {
               Copy-Item "telemetry_snapshot.json" "release_artifacts\telemetry_snapshot.json" -Force
           }

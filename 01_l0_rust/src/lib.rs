@@ -366,6 +366,81 @@ pub use v71_4_sovereign_harmonic_week4_rlvf_tree_speculative_sae_eval256::{
     v71_4_dispatch_tool_356_chain356_master_certification,
 };
 
+// Sovereign Harmonic XI Week 1 (v72.1.0 | SH4Z v7210 TLV | Tools 357..362 | CHAIN 362 | 980/980 QED):
+// Sealed RW-Eval-500 Blind Benchmark Vault, 5-Track Real-World Corpus + 13-Gram MinHash Decontaminator + DuckDB,
+// SH-RW-BPE-16K Reversible Indentation & ChatML Tokenizer, Nested Shell 0 (384D) subset Shell 1 (768D)
+// 12-Layer Hybrid Mamba-3 + Causal GQA RoPE + SwiGLU + Net2Wider Stiefel Expansion + Finite-Diff GradCheck,
+// RTX 3050 CUDA PTX Dual-Prefix Pre-Trainer, Neural Conversational/Dual-Rust/SSE Cutover & CHAIN 362 Cert
+pub mod v72_1_sh_xi_matryoshka_384_768_cuda_pretrainer;
+
+pub use v72_1_sh_xi_matryoshka_384_768_cuda_pretrainer::{
+    C_SH_XI_BASE_SH4Z_PATH,
+    C_SH_XI_BPE16K_PATH,
+    C_SH_XI_PTX_PATH,
+    C_SH_XI_RW_EVAL500_PATH,
+    C_SH_XI_TRAIN_CURVE_CSV_PATH,
+    C_SH_XI_WEEK1_RECEIPT_PATH,
+    E_SH_XI_BASE_SH4Z_PATH,
+    E_SH_XI_BPE16K_PATH,
+    E_SH_XI_CORPUS_DUCKDB_PATH,
+    E_SH_XI_MASTER_F32_PATH,
+    V72_1_BPE_VOCAB_16K,
+    V72_1_HYBRID_LAYERS,
+    V72_1_RW_EVAL_500_TOTAL,
+    V72_1_SHELL0_DIM,
+    V72_1_SHELL1_DIM,
+    v72_1_bpe16k_decode,
+    v72_1_bpe16k_encode,
+    v72_1_build_sse_chat_completion_stream,
+    v72_1_converse_execute,
+    v72_1_dispatch_tool_357_corpus_builder_minhash,
+    v72_1_dispatch_tool_358_bpe_16k_chatml_tokenizer,
+    v72_1_dispatch_tool_359_matryoshka_384_768_gradcheck,
+    v72_1_dispatch_tool_360_rtx3050_matryoshka_cuda_pretrain,
+    v72_1_dispatch_tool_361_neural_converse_cutover,
+    v72_1_dispatch_tool_362_week1_master_certification,
+    v72_1_extract_bool_param,
+};
+
+// Sovereign Harmonic XI Week 2 (v72.2.0 | SH-XI-SPARSE-MOE-SFT-RAG | Tools 363..368 | CHAIN 368 | 995/995 QED):
+// Shell 2 CPU+SSD Growable Sparse MoE Bank (16 Active / 256 Pre-Allocated 64B Cacheline Slots, Top-2 Lattice Router),
+// Masked-Prompt Multi-Turn (1..8 Turns) ChatML Instruction SFT Trainer (prompt_grad_norm == 0.0),
+// Intel iGPU WebGPU WGSL + 12T AVX2 384D Shell 0 Workspace RAG & Live Tri-Silicon Telemetry (RTX 3050 + Pixel 10 + Wireless Pixel 8),
+// Deterministic Pushdown JSON Grammar FSM (<|tool_call|> 100% Valid JSON) + 5W1H Coordinator Bus & Epistemic Abstention,
+// Programmatic IFEval-Lite-64 + 8-Turn Stateful Multi-Turn Gauntlet, and CHAIN 368 Master Certification
+pub mod v72_2_sh_xi_sparse_moe_chatml_sft_and_rag;
+
+pub use v72_2_sh_xi_sparse_moe_chatml_sft_and_rag::{
+    C_SH_XI_MOE_DIR_MIRROR_PATH,
+    C_SH_XI_SFT_MANIFEST_PATH,
+    C_SH_XI_WEEK2_RECEIPT_PATH,
+    C_SH_XI_WGSL_RAG_SHADER_PATH,
+    E_SH_XI_MOE_EXPERTS_SH4Z_PATH,
+    E_SH_XI_SFT_CORPUS_JSONL_PATH,
+    E_SH_XI_WEEK2_RECEIPT_PATH,
+    V72_2_ACTIVE_MOE_EXPERTS,
+    V72_2_EXPERT_SLICE_BYTES,
+    V72_2_IFEVAL_TOTAL,
+    V72_2_MAX_DIRECTORY_SLOTS,
+    V72_2_MULTITURN_MAX_TURNS,
+    V72_2_TOP_K_EXPERTS,
+    v72_2_build_sse_chat_completion_stream,
+    v72_2_converse_execute_full,
+    v72_2_dispatch_converse_route,
+    v72_2_dispatch_tool_363_shell2_cpu_ssd_sparse_moe_bank,
+    v72_2_dispatch_tool_364_chatml_masked_sft_trainer,
+    v72_2_dispatch_tool_365_igpu_grounded_rag_and_telemetry,
+    v72_2_dispatch_tool_366_fsm_json_tool_and_abstention,
+    v72_2_dispatch_tool_367_ifeval_lite_64_and_multiturn_suite,
+    v72_2_dispatch_tool_368_week2_chain368_master_certification,
+    v72_2_forward_3shells_and_logits,
+    v72_2_parse_openai_messages_array,
+    v72_2_probe_live_trisilicon_telemetry,
+    v72_2_read_expert_http206_slice,
+    v72_2_validate_json_object_fsm,
+};
+
+
 
 
 

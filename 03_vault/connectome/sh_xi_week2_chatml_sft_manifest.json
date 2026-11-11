@@ -1,0 +1,1 @@
+{"version":"v72.2.0","dialogues":192,"min_turns":1,"max_turns":8,"prompt_masked_tokens":30990,"assistant_target_tokens":28107,"prompt_grad_norm":0.000000000000,"assistant_grad_norm":0.09553256,"init_ce_nats":9.704061,"final_ce_nats":8.418199,"rweval500_overlap":0,"sha256":"4dce95314955a372282fe8b0df66e1c969346057569af987c3d4f7880bdcf493"}

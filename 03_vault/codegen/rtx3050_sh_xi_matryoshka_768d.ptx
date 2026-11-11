@@ -1,0 +1,137 @@
+//
+// ACT-Omega Sovereign Harmonic XI (v72.1.0 | SH4Z v7210 TLV | CHAIN 362)
+// Author: Donevin Frownfelter (@bospaladin34-crypto)
+// Module: rtx3050_sh_xi_matryoshka_768d.ptx
+// Hardware Target: NVIDIA GeForce RTX 3050 6GB Laptop GPU (GA107, sm_86, 2048 CUDA Cores)
+// Kernels:
+//   1. rtx3050_sh_xi_matryoshka_dual_shell_gemv_f32
+//      Nested Matryoshka Shell 0 (384D = E8^48 = Leech^16) subset Shell 1 (768D = E8^96 = Leech^32)
+//      Fused Linear Projection + Zero-Init Net2Wider Residual Gate (y_i = base_i + gate * w_i * x_i)
+//   2. rtx3050_sh_xi_swiglu_mamba3_fused_step_f32
+//      Fused Mamba-3 Selective State-Space Recurrence (h_t = alpha_t * h_prev + beta_t * u_t)
+//      + Ampere sm_86 Hardware SwiGLU (SiLU(g_t) * v_t)
+//
+
+.version 7.8
+.target sm_86
+.address_size 64
+
+.visible .entry rtx3050_sh_xi_matryoshka_dual_shell_gemv_f32(
+    .param .u64 param_x_ptr,
+    .param .u64 param_w_ptr,
+    .param .u64 param_base_ptr,
+    .param .u64 param_out_ptr,
+    .param .f32 param_shell1_gate,
+    .param .u32 param_shell0_dim,
+    .param .u32 param_total_count
+)
+{
+    .reg .pred %p<4>;
+    .reg .b32  %r<10>;
+    .reg .f32  %f<12>;
+    .reg .b64  %rd<14>;
+
+    ld.param.u64 %rd1, [param_x_ptr];
+    ld.param.u64 %rd2, [param_w_ptr];
+    ld.param.u64 %rd3, [param_base_ptr];
+    ld.param.u64 %rd4, [param_out_ptr];
+    ld.param.f32 %f1,  [param_shell1_gate];
+    ld.param.u32 %r1,  [param_shell0_dim];
+    ld.param.u32 %r2,  [param_total_count];
+
+    mov.u32 %r3, %ctaid.x;
+    mov.u32 %r4, %ntid.x;
+    mov.u32 %r5, %tid.x;
+    mad.lo.u32 %r6, %r3, %r4, %r5;
+
+    setp.ge.u32 %p1, %r6, %r2;
+    @%p1 bra L_EXIT_SH_K1;
+
+    mul.wide.u32 %rd5, %r6, 4;
+    add.u64 %rd6, %rd1, %rd5;
+    add.u64 %rd7, %rd2, %rd5;
+    add.u64 %rd8, %rd3, %rd5;
+    add.u64 %rd9, %rd4, %rd5;
+
+    ld.global.f32 %f2, [%rd6];
+    ld.global.f32 %f3, [%rd7];
+    ld.global.f32 %f4, [%rd8];
+
+    // Determine channel index mod 768: Shell 0 [0..384) uses unit scale 1.0,
+    // Delta-Shell 1 [384..768) uses Net2Wider learnable gate param_shell1_gate
+    rem.u32 %r7, %r6, 768;
+    setp.lt.u32 %p2, %r7, %r1;
+    mul.f32 %f5, %f2, %f3;
+    mul.f32 %f6, %f5, %f1;
+    selp.f32 %f7, %f5, %f6, %p2;
+    add.rn.f32 %f8, %f4, %f7;
+
+    st.global.f32 [%rd9], %f8;
+
+L_EXIT_SH_K1:
+    ret;
+}
+
+.visible .entry rtx3050_sh_xi_swiglu_mamba3_fused_step_f32(
+    .param .u64 param_h_prev_ptr,
+    .param .u64 param_u_in_ptr,
+    .param .u64 param_alpha_ptr,
+    .param .u64 param_gate_ptr,
+    .param .u64 param_h_out_ptr,
+    .param .f32 param_log2e,
+    .param .f32 param_one,
+    .param .u32 param_total_count
+)
+{
+    .reg .pred %p<3>;
+    .reg .b32  %r<8>;
+    .reg .f32  %f<16>;
+    .reg .b64  %rd<16>;
+
+    ld.param.u64 %rd1, [param_h_prev_ptr];
+    ld.param.u64 %rd2, [param_u_in_ptr];
+    ld.param.u64 %rd3, [param_alpha_ptr];
+    ld.param.u64 %rd4, [param_gate_ptr];
+    ld.param.u64 %rd5, [param_h_out_ptr];
+    ld.param.f32 %f1,  [param_log2e];
+    ld.param.f32 %f2,  [param_one];
+    ld.param.u32 %r1,  [param_total_count];
+
+    mov.u32 %r2, %ctaid.x;
+    mov.u32 %r3, %ntid.x;
+    mov.u32 %r4, %tid.x;
+    mad.lo.u32 %r5, %r2, %r3, %r4;
+
+    setp.ge.u32 %p1, %r5, %r1;
+    @%p1 bra L_EXIT_SH_K2;
+
+    mul.wide.u32 %rd6,  %r5, 4;
+    add.u64 %rd7,  %rd1, %rd6;
+    add.u64 %rd8,  %rd2, %rd6;
+    add.u64 %rd9,  %rd3, %rd6;
+    add.u64 %rd10, %rd4, %rd6;
+    add.u64 %rd11, %rd5, %rd6;
+
+    ld.global.f32 %f3, [%rd7];
+    ld.global.f32 %f4, [%rd8];
+    ld.global.f32 %f5, [%rd9];
+    ld.global.f32 %f6, [%rd10];
+
+    // Mamba-3 selective state update: h_new = alpha * h_prev + (1.0 - alpha) * u_in
+    sub.rn.f32 %f7, %f2, %f5;
+    mul.rn.f32 %f8, %f5, %f3;
+    fma.rn.f32 %f9, %f7, %f4, %f8;
+
+    // SwiGLU modulation: silu(gate) = gate / (1.0 + exp(-gate)) = gate / (1.0 + 2^(-gate * log2e))
+    neg.f32 %f10, %f6;
+    mul.f32 %f11, %f10, %f1;
+    ex2.approx.ftz.f32 %f12, %f11;
+    add.rn.f32 %f13, %f2, %f12;
+    div.approx.ftz.f32 %f14, %f6, %f13;
+    mul.rn.f32 %f15, %f9, %f14;
+
+    st.global.f32 [%rd11], %f15;
+
+L_EXIT_SH_K2:
+    ret;
+}

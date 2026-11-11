@@ -1902,6 +1902,49 @@ fn resolve_tool_id_for_clean_path(
             return id;
         }
     }
+    if clean_path.contains("chain368") || clean_path.contains("xi/week2/master_certification") {
+        return 368;
+    }
+    if clean_path.contains("xi/week2/ifeval_lite_64") {
+        return 367;
+    }
+    if clean_path.contains("xi/week2/fsm_json_tool") {
+        return 366;
+    }
+    if clean_path.contains("xi/week2/igpu_grounded_rag") {
+        return 365;
+    }
+    if clean_path.contains("xi/week2/chatml_masked_sft") {
+        return 364;
+    }
+    if clean_path.contains("xi/week2/shell2_sparse_moe") {
+        return 363;
+    }
+    if clean_path.contains("chain362") || clean_path.contains("xi/week1/master_certification") {
+        return 362;
+    }
+    if clean_path.contains("sovereign_harmonic/converse")
+        || clean_path.contains("sovereign_harmonic/compositional_reasoner")
+        || clean_path.contains("sovereign_harmonic/generate")
+        || clean_path.contains("xi/week1/neural_converse")
+    {
+        return 361;
+    }
+    if clean_path.contains("xi/week1/rtx3050_matryoshka_cuda_pretrain") {
+        return 360;
+    }
+    if clean_path.contains("xi/week1/matryoshka_384_768_gradcheck") {
+        return 359;
+    }
+    if clean_path.contains("xi/week1/bpe_16k_chatml_tokenizer") {
+        return 358;
+    }
+    if clean_path.contains("xi/week1/corpus_builder_minhash") {
+        return 357;
+    }
+    if clean_path.contains("chain356") {
+        return 356;
+    }
     if clean_path.contains("chain316") {
         return 316;
     }
@@ -3937,35 +3980,32 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 json_escape_clean(&q_arg)
             };
             let t65 = encode_and_detokenize_65k(&topic);
-            let sh_gen = v71_standalone_generate(&topic, 48);
-            let nl = format!(
-                "{} | {}",
-                sh_gen.generated_text,
-                synthesize_natural_language(&st, &topic)
-            );
+            let sh_xi = v72_2_converse_execute_full(&topic, None, None, &Vec::new(), false);
+            let nl = sh_xi.output_text.clone();
             st.nl_synthesis = nl.clone();
             let diag = format!(
-                "TOOL 27 NL CONVERSATIONAL DECODER + SOVEREIGN HARMONIC IX STANDALONE (Run #{}, 524,288 Vocab / {} Track, {} GenTokens @ Prob={:.4}, Roundtrip={}): {}",
+                "TOOL 27 NL CONVERSATIONAL DECODER + SOVEREIGN HARMONIC XI (Run #{}, 16,384 ChatML BPE / {} Mode, {} GenTokens @ Prob={:.4}, Roundtrip={}): {}",
                 st.nl_converse_runs,
-                sh_gen.dominant_track_name,
-                sh_gen.generated_tokens.len(),
-                sh_gen.mean_token_prob,
+                sh_xi.active_mode,
+                sh_xi.generated_tokens_len,
+                sh_xi.mean_token_prob_768d,
                 t65.roundtrip_exact,
                 nl
             );
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"status\":\"NL_CONVERSATION_SYNTHESIZED\",\"tool_index\":27,\"tool_name\":\"tool:nl_conversational_decoder\",\"vocab_size\":524288,\"total_tokens\":{},\"detokenized_exact\":\"{}\",\"detokenized_ipa\":\"{}\",\"roundtrip_exact\":{},\"converse_runs\":{},\"sovereign_harmonic_ix_standalone\":true,\"sovereign_harmonic_ix_track\":\"{}\",\"sovereign_harmonic_ix_generated_tokens\":{},\"sovereign_harmonic_ix_mean_prob\":{:.4},\"sovereign_harmonic_ix_generated\":\"{}\",\"nl_synthesis\":\"{}\",\"diag\":\"{}\"}}",
+                "{{\"status\":\"NL_CONVERSATION_SYNTHESIZED\",\"tool_index\":27,\"tool_name\":\"tool:nl_conversational_decoder\",\"vocab_size\":16384,\"total_tokens\":{},\"detokenized_exact\":\"{}\",\"detokenized_ipa\":\"{}\",\"roundtrip_exact\":{},\"converse_runs\":{},\"sovereign_harmonic_xi_standalone\":true,\"sovereign_harmonic_ix_standalone\":true,\"sovereign_harmonic_ix_track\":\"{}\",\"sovereign_harmonic_ix_generated_tokens\":{},\"sovereign_harmonic_ix_mean_prob\":{:.4},\"sovereign_harmonic_ix_generated\":\"{}\",\"output_text\":\"{}\",\"nl_synthesis\":\"{}\",\"diag\":\"{}\"}}",
                 t65.total_tokens,
                 json_escape_clean(&t65.detokenized_exact),
                 json_escape_clean(&t65.detokenized_ipa),
                 t65.roundtrip_exact,
                 st.nl_converse_runs,
-                sh_gen.dominant_track_name,
-                sh_gen.generated_tokens.len(),
-                sh_gen.mean_token_prob,
-                json_escape_clean(&sh_gen.generated_text),
+                sh_xi.active_mode,
+                sh_xi.generated_tokens_len,
+                sh_xi.mean_token_prob_768d,
+                json_escape_clean(&nl),
+                json_escape_clean(&nl),
                 json_escape_clean(&nl),
                 json_escape_clean(&diag)
             );
@@ -5250,7 +5290,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.gen_counter += 1;
             let o = evaluate_openai_compat_surface(st.gen_counter);
             let json = format!(
-                "{{\"object\":\"list\",\"status\":\"OPENAI_V1_MODELS_LIST_READY\",\"version\":\"v62.0.0\",\"data\":\x5b{{\"id\":\"{}\",\"object\":\"model\",\"created\":1760980000,\"owned_by\":\"act-omega-sovereign-manifold\",\"dendritic_neurons\":63360,\"synapses\":3041280,\"vocab_size\":262144,\"holdout_ppl\":{:.8}}},{{\"id\":\"gemma-4-12B-it-sh4z\",\"object\":\"model\",\"created\":1761840000,\"owned_by\":\"act-omega-sovereign-manifold\",\"sh4z_vault_bytes\":3176803328,\"quantized_weights\":11959730176,\"vocab_size\":262144}},{{\"id\":\"gemma-4-E4B-it-sh4z\",\"object\":\"model\",\"created\":1761840000,\"owned_by\":\"act-omega-sovereign-manifold\",\"sh4z_vault_bytes\":2123979252,\"quantized_weights\":7996157184,\"vocab_size\":262144}}\x5d}}",
+                "{{\"object\":\"list\",\"status\":\"OPENAI_V1_MODELS_LIST_READY\",\"version\":\"v72.1.0\",\"data\":\x5b{{\"id\":\"sovereign-harmonic-xi-768d\",\"object\":\"model\",\"created\":1762800000,\"owned_by\":\"act-omega-sovereign-manifold\",\"shell0_dim\":384,\"shell1_dim\":768,\"hybrid_layers\":12,\"vocab_size\":16384}},{{\"id\":\"{}\",\"object\":\"model\",\"created\":1760980000,\"owned_by\":\"act-omega-sovereign-manifold\",\"dendritic_neurons\":84480,\"synapses\":4055040,\"vocab_size\":524288,\"holdout_ppl\":{:.8}}},{{\"id\":\"gemma-4-12B-it-sh4z\",\"object\":\"model\",\"created\":1761840000,\"owned_by\":\"act-omega-sovereign-manifold\",\"sh4z_vault_bytes\":3176803328,\"quantized_weights\":11959730176,\"vocab_size\":262144}},{{\"id\":\"gemma-4-E4B-it-sh4z\",\"object\":\"model\",\"created\":1761840000,\"owned_by\":\"act-omega-sovereign-manifold\",\"sh4z_vault_bytes\":2123979252,\"quantized_weights\":7996157184,\"vocab_size\":262144}}\x5d}}",
                 o.model_id, o.holdout_ppl
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
@@ -5258,6 +5298,34 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
         }
 
         if clean_path == "/api/v1/openai/compat" || clean_path == "/v1/chat/completions" {
+            let req_payload_chat = if !post_body.trim().is_empty() {
+                post_body.as_str()
+            } else {
+                raw_target
+            };
+            if v72_1_extract_bool_param(req_payload_chat, "stream", false) {
+                let sse_body = v72_2_build_sse_chat_completion_stream(req_payload_chat);
+                let sub_epoch = {
+                    let mut st = match state.lock() {
+                        Ok(g) => g,
+                        Err(p) => p.into_inner(),
+                    };
+                    st.gen_counter += 1;
+                    st.decadic_sub_epoch
+                };
+                let _ = publish_coordinator_bus_envelope(
+                    "TOPIC_OPENAI_SSE_STREAM",
+                    clean_path,
+                    "Sovereign_Harmonic_XI_3Shell_MoE",
+                    "stream=true",
+                    E_BUS_LEDGER_JSONL,
+                    sse_body.len() as u64,
+                    sub_epoch,
+                );
+                REQ_CACHE_CONTROL.with(|c| c.set("no-cache"));
+                write_http_str(&mut stream, "200 OK", "text/event-stream; charset=utf-8", &sse_body);
+                continue;
+            }
             let mut st = match state.lock() {
                 Ok(g) => g,
                 Err(p) => p.into_inner(),
@@ -5265,14 +5333,22 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.gen_counter += 1;
             st.agent_gateway_visits += 1;
             let o = evaluate_openai_compat_surface(st.gen_counter);
-            let user_prompt = {
-                let p_b = extract_json_str_field(&post_body, "content");
+            let parsed_msgs = v72_2_parse_openai_messages_array(&post_body);
+            let session_opt = v72_1_sh_xi_matryoshka_384_768_cuda_pretrainer::v72_1_extract_str_param(&post_body, "session_id");
+            let mode_opt = v72_1_sh_xi_matryoshka_384_768_cuda_pretrainer::v72_1_extract_str_param(&post_body, "mode");
+            let reset_sess = v72_1_extract_bool_param(&post_body, "reset_session", false);
+            let user_prompt = if let Some(last_m) = parsed_msgs.last() {
+                last_m.content.clone()
+            } else {
+                let p_b = v72_1_sh_xi_matryoshka_384_768_cuda_pretrainer::v72_1_extract_str_param(&post_body, "content")
+                    .or_else(|| v72_1_sh_xi_matryoshka_384_768_cuda_pretrainer::v72_1_extract_str_param(&post_body, "prompt"))
+                    .unwrap_or_default();
                 if !p_b.is_empty() {
                     p_b
                 } else if !q_arg.is_empty() {
                     q_arg.clone()
                 } else {
-                    String::from("OpenAI /v1/chat/completions 144-Subdomain Compound IDE & Dual Gemma 4 .sh4z Synthesis")
+                    String::from("Explain the difference between a Rust Mutex and an AtomicUsize in two concise sentences.")
                 }
             };
             let h = evaluate_metabolic_harness_5w1h(st.rtx_temp_c, st.rtx_vram_used_mb, st.rtx_vram_total_mb, st.p10_temp_c, st.p8_temp_c, st.p10_ram_used_mb, st.p10_ram_total_mb, st.decadic_sub_epoch, st.gen_counter);
@@ -5292,22 +5368,28 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             );
             let (_, aegis_col, aegis_neuron, aegis_cw24, _, _) =
                 v57_aegis_autonomous_agent_harness::v57_encode_bpe_and_leech24_modalities(&user_prompt);
-            let sh_gen = v71_standalone_generate(&user_prompt, 56);
+            let sh_xi = v72_2_converse_execute_full(
+                &user_prompt,
+                mode_opt.as_deref(),
+                session_opt.as_deref(),
+                &parsed_msgs,
+                reset_sess,
+            );
             let ep_turn = v71_multi_turn_episodic_step(&user_prompt, false, 56);
-            let nl = format!("{} | {}", sh_gen.generated_text, gw.nl_response);
+            let nl = sh_xi.output_text.clone();
             let diag = format!(
-                "TOOL 47 DROP-IN OPENAI /v1 API SURFACE + SOVEREIGN HARMONIC IX STANDALONE (Visit #{}, Turn #{}): Model='{}' (Track={}) | 84,480 Neurons + 4,055,040 Synapses + 524,288 Vocab | AEGIS Col #{} Neuron N{:05} (Leech24=0x{:06X}) | SubTernary={} | Crystallized Shard #{:05} | Holdout PPL={:.8} | Synthesis: {}",
-                gw.visit_number, ep_turn.turn_index, o.model_id, sh_gen.dominant_track_name, aegis_col, aegis_neuron, aegis_cw24, ep_turn.trit_signature_str, gw.crystallized_shard_id, o.holdout_ppl, nl
+                "TOOL 47 DROP-IN OPENAI /v1 API SURFACE + SOVEREIGN HARMONIC XI WEEK 2 (Visit #{}, Turn #{}): Model='sovereign-harmonic-xi-3shell-moe' (Mode={}, Top2=({}/{})) | AEGIS Col #{} Neuron N{:05} (Leech24=0x{:06X}) | Agreement={:.3}",
+                gw.visit_number, ep_turn.turn_index, sh_xi.active_mode, sh_xi.top1_expert_id, sh_xi.top2_expert_id, aegis_col, aegis_neuron, aegis_cw24, sh_xi.shell0_vs_shell1_top8_agreement
             );
             st.nl_synthesis = nl.clone();
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let esc_nl = json_escape_clean(&nl);
-            let comp_toks = sh_gen.generated_tokens.len().max(nl.split_whitespace().count());
+            let comp_toks = sh_xi.generated_tokens_len.max(1);
             let created_sec = unix_ms() / 1000;
             let json = format!(
-                "{{\"id\":\"chatcmpl-sh4z-v7100-{}\",\"object\":\"chat.completion\",\"created\":{},\"status\":\"OPENAI_V1_COMPAT_SURFACE_LOCKED\",\"version\":\"v71.0.0\",\"tool_index\":47,\"tool_name\":\"tool:openai_v1_compat_api\",\"model\":\"{}\",\"choices\":\x5b{{\"index\":0,\"message\":{{\"role\":\"assistant\",\"content\":\"{}\"}},\"finish_reason\":\"stop\"}}\x5d,\"usage\":{{\"prompt_tokens\":{},\"completion_tokens\":{},\"total_tokens\":{}}},\"dendritic_neurons\":84480,\"synapses_total\":4055040,\"vocab_size\":524288,\"aegis_chair44_col\":{},\"aegis_target_neuron\":{},\"dominant_domain\":\"{}\",\"sovereign_harmonic_ix_track\":\"{}\",\"sovereign_harmonic_ix_generated\":\"{}\",\"episodic_turn_index\":{},\"subternary_32trit_signature\":\"{}\",\"crystallized_neuron_id\":{},\"crystallized_shard_id\":{},\"holdout_ppl\":{:.6},\"completion_tokens_generated\":{},\"nl_synthesis\":\"{}\",\"diag\":\"{}\"}}",
-                st.gen_counter, created_sec, o.model_id, esc_nl, sh_gen.prompt_tokens.len().max(gw.total_tokens), comp_toks, sh_gen.prompt_tokens.len().max(gw.total_tokens) + comp_toks, aegis_col, aegis_neuron, gw.dominant_domain, sh_gen.dominant_track_name, json_escape_clean(&sh_gen.generated_text), ep_turn.turn_index, ep_turn.trit_signature_str, gw.mapped_neuron_id, gw.crystallized_shard_id, o.holdout_ppl, comp_toks, esc_nl, json_escape_clean(&diag)
+                "{{\"id\":\"chatcmpl-shxi-v7220-{}\",\"object\":\"chat.completion\",\"created\":{},\"status\":\"OPENAI_V1_COMPAT_SURFACE_LOCKED\",\"version\":\"v72.2.0\",\"tool_index\":47,\"tool_name\":\"tool:openai_v1_compat_api\",\"model\":\"sovereign-harmonic-xi-3shell-moe\",\"choices\":\x5b{{\"index\":0,\"message\":{{\"role\":\"assistant\",\"content\":\"{}\"}},\"finish_reason\":\"stop\"}}\x5d,\"usage\":{{\"prompt_tokens\":{},\"completion_tokens\":{},\"total_tokens\":{}}},\"dendritic_neurons\":84480,\"synapses_total\":4055040,\"vocab_size\":16384,\"aegis_chair44_col\":{},\"aegis_target_neuron\":{},\"dominant_domain\":\"{}\",\"sovereign_harmonic_xi_mode\":\"{}\",\"sovereign_harmonic_xi_top1_expert\":\"{}\",\"sovereign_harmonic_xi_session_turn\":{},\"sovereign_harmonic_ix_track\":\"{}\",\"sovereign_harmonic_ix_generated\":\"{}\",\"matryoshka_shell0_vs_shell1_agreement\":{:.4},\"episodic_turn_index\":{},\"subternary_32trit_signature\":\"{}\",\"crystallized_neuron_id\":{},\"crystallized_shard_id\":{},\"holdout_ppl\":{:.6},\"completion_tokens_generated\":{},\"output_text\":\"{}\",\"nl_synthesis\":\"{}\",\"diag\":\"{}\"}}",
+                st.gen_counter, created_sec, esc_nl, sh_xi.prompt_tokens_len, comp_toks, sh_xi.prompt_tokens_len + comp_toks, aegis_col, aegis_neuron, gw.dominant_domain, sh_xi.active_mode, sh_xi.top1_expert_name, sh_xi.session_turn_count, sh_xi.retrieved_track_name, esc_nl, sh_xi.shell0_vs_shell1_top8_agreement, ep_turn.turn_index, ep_turn.trit_signature_str, gw.mapped_neuron_id, gw.crystallized_shard_id, o.holdout_ppl, comp_toks, esc_nl, esc_nl, json_escape_clean(&diag)
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
             continue;
@@ -6471,6 +6553,34 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 st.webgpu_leases.len(),
             )
         };
+        // Optional SSE streaming on /api/v1/sovereign_harmonic/converse when stream=true
+        if clean_path == "/api/v1/sovereign_harmonic/converse" {
+            let req_p = if !post_body.trim().is_empty() { post_body.as_str() } else { raw_target };
+            if v72_1_extract_bool_param(req_p, "stream", false) {
+                let sse_body = v72_2_build_sse_chat_completion_stream(req_p);
+                let sub_epoch = {
+                    let mut st = match state.lock() {
+                        Ok(g) => g,
+                        Err(p) => p.into_inner(),
+                    };
+                    st.gen_counter += 1;
+                    st.decadic_sub_epoch
+                };
+                let _ = publish_coordinator_bus_envelope(
+                    "TOPIC_SH_XI_SSE_CONVERSE",
+                    clean_path,
+                    "Sovereign_Harmonic_XI_3Shell_MoE",
+                    "stream=true",
+                    E_BUS_LEDGER_JSONL,
+                    sse_body.len() as u64,
+                    sub_epoch,
+                );
+                REQ_CACHE_CONTROL.with(|c| c.set("no-cache"));
+                write_http_str(&mut stream, "200 OK", "text/event-stream; charset=utf-8", &sse_body);
+                continue;
+            }
+        }
+
         let chain135_json = if clean_path == "/api/v1/chain135/suite"
             || clean_path == "/api/v1/chain135_suite"
         {
@@ -6514,18 +6624,101 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
         {
             let req_payload = if !post_body.trim().is_empty() { &post_body } else { raw_target };
             Some(v71_0_dispatch_tool_319_train_4domain_curriculum(req_payload))
-        } else if clean_path == "/api/v1/sovereign_harmonic/generate"
-            || clean_path == "/api/v1/tools/t320"
+        } else if clean_path == "/api/v1/tools/t320"
             || clean_path == "/api/v1/tool/320"
         {
             let req_payload = if !post_body.trim().is_empty() { &post_body } else { raw_target };
             Some(v71_0_dispatch_tool_320_standalone_generate(req_payload))
-        } else if clean_path == "/api/v1/sovereign_harmonic/compositional_reasoner"
-            || clean_path == "/api/v1/tools/t321"
+        } else if clean_path == "/api/v1/tools/t321"
             || clean_path == "/api/v1/tool/321"
         {
             let req_payload = if !post_body.trim().is_empty() { &post_body } else { raw_target };
             Some(v71_0_dispatch_tool_321_compositional_reasoner(req_payload))
+        } else if clean_path == "/api/v1/sovereign_harmonic/converse"
+            || clean_path == "/api/v1/sovereign_harmonic/compositional_reasoner"
+            || clean_path == "/api/v1/sovereign_harmonic/generate"
+            || clean_path == "/api/v1/sovereign_harmonic/xi/week2/converse"
+        {
+            let req_payload = if !post_body.trim().is_empty() { &post_body } else { raw_target };
+            Some(v72_2_dispatch_converse_route(req_payload))
+        } else if clean_path == "/api/v1/sovereign_harmonic/xi/week1/neural_converse"
+            || clean_path == "/api/v1/tools/t361"
+            || clean_path == "/api/v1/tool/361"
+        {
+            let req_payload = if !post_body.trim().is_empty() { &post_body } else { raw_target };
+            Some(v72_1_dispatch_tool_361_neural_converse_cutover(req_payload))
+        } else if clean_path == "/api/v1/sovereign_harmonic/xi/week2/shell2_sparse_moe"
+            || clean_path == "/api/v1/tools/t363"
+            || clean_path == "/api/v1/tool/363"
+        {
+            let req_payload = if !post_body.trim().is_empty() { &post_body } else { raw_target };
+            Some(v72_2_dispatch_tool_363_shell2_cpu_ssd_sparse_moe_bank(req_payload))
+        } else if clean_path == "/api/v1/sovereign_harmonic/xi/week2/chatml_masked_sft"
+            || clean_path == "/api/v1/tools/t364"
+            || clean_path == "/api/v1/tool/364"
+        {
+            let req_payload = if !post_body.trim().is_empty() { &post_body } else { raw_target };
+            Some(v72_2_dispatch_tool_364_chatml_masked_sft_trainer(req_payload))
+        } else if clean_path == "/api/v1/sovereign_harmonic/xi/week2/igpu_grounded_rag"
+            || clean_path == "/api/v1/tools/t365"
+            || clean_path == "/api/v1/tool/365"
+        {
+            let req_payload = if !post_body.trim().is_empty() { &post_body } else { raw_target };
+            Some(v72_2_dispatch_tool_365_igpu_grounded_rag_and_telemetry(req_payload))
+        } else if clean_path == "/api/v1/sovereign_harmonic/xi/week2/fsm_json_tool"
+            || clean_path == "/api/v1/tools/t366"
+            || clean_path == "/api/v1/tool/366"
+        {
+            let req_payload = if !post_body.trim().is_empty() { &post_body } else { raw_target };
+            Some(v72_2_dispatch_tool_366_fsm_json_tool_and_abstention(req_payload))
+        } else if clean_path == "/api/v1/sovereign_harmonic/xi/week2/ifeval_lite_64"
+            || clean_path == "/api/v1/tools/t367"
+            || clean_path == "/api/v1/tool/367"
+        {
+            let req_payload = if !post_body.trim().is_empty() { &post_body } else { raw_target };
+            Some(v72_2_dispatch_tool_367_ifeval_lite_64_and_multiturn_suite(req_payload))
+        } else if clean_path == "/api/v1/sovereign_harmonic/xi/week2/master_certification"
+            || clean_path == "/api/v1/chain368/master_certification"
+            || clean_path == "/api/v1/chain368/suite"
+            || clean_path == "/api/v1/chain368_suite"
+            || clean_path == "/api/v1/tools/t368"
+            || clean_path == "/api/v1/tool/368"
+        {
+            let req_payload = if !post_body.trim().is_empty() { &post_body } else { raw_target };
+            Some(v72_2_dispatch_tool_368_week2_chain368_master_certification(req_payload))
+        } else if clean_path == "/api/v1/sovereign_harmonic/xi/week1/corpus_builder_minhash"
+            || clean_path == "/api/v1/tools/t357"
+            || clean_path == "/api/v1/tool/357"
+        {
+            let req_payload = if !post_body.trim().is_empty() { &post_body } else { raw_target };
+            Some(v72_1_dispatch_tool_357_corpus_builder_minhash(req_payload))
+        } else if clean_path == "/api/v1/sovereign_harmonic/xi/week1/bpe_16k_chatml_tokenizer"
+            || clean_path == "/api/v1/tools/t358"
+            || clean_path == "/api/v1/tool/358"
+        {
+            let req_payload = if !post_body.trim().is_empty() { &post_body } else { raw_target };
+            Some(v72_1_dispatch_tool_358_bpe_16k_chatml_tokenizer(req_payload))
+        } else if clean_path == "/api/v1/sovereign_harmonic/xi/week1/matryoshka_384_768_gradcheck"
+            || clean_path == "/api/v1/tools/t359"
+            || clean_path == "/api/v1/tool/359"
+        {
+            let req_payload = if !post_body.trim().is_empty() { &post_body } else { raw_target };
+            Some(v72_1_dispatch_tool_359_matryoshka_384_768_gradcheck(req_payload))
+        } else if clean_path == "/api/v1/sovereign_harmonic/xi/week1/rtx3050_matryoshka_cuda_pretrain"
+            || clean_path == "/api/v1/tools/t360"
+            || clean_path == "/api/v1/tool/360"
+        {
+            let req_payload = if !post_body.trim().is_empty() { &post_body } else { raw_target };
+            Some(v72_1_dispatch_tool_360_rtx3050_matryoshka_cuda_pretrain(req_payload))
+        } else if clean_path == "/api/v1/sovereign_harmonic/xi/week1/master_certification"
+            || clean_path == "/api/v1/chain362/master_certification"
+            || clean_path == "/api/v1/chain362/suite"
+            || clean_path == "/api/v1/chain362_suite"
+            || clean_path == "/api/v1/tools/t362"
+            || clean_path == "/api/v1/tool/362"
+        {
+            let req_payload = if !post_body.trim().is_empty() { &post_body } else { raw_target };
+            Some(v72_1_dispatch_tool_362_week1_master_certification(req_payload))
         } else if clean_path == "/api/v1/sovereign_harmonic/holdout_eval"
             || clean_path == "/api/v1/tools/t322"
             || clean_path == "/api/v1/tool/322"
@@ -7349,7 +7542,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             continue;
         }
 
-        // 7b. Rejection for out-of-range tools (CHAIN 316 has tools 1..316)
+        // 7b. Rejection for out-of-range tools (CHAIN 368 has tools 1..368)
         if clean_path.starts_with("/api/v1/tools/t") || clean_path.starts_with("/api/v1/tool/") {
             let tool_id_opt = if let Some(s) = clean_path.strip_prefix("/api/v1/tools/t") {
                 s.chars().take_while(|c| c.is_ascii_digit()).collect::<String>().parse::<u64>().ok()
@@ -7359,9 +7552,9 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 None
             };
             if let Some(id) = tool_id_opt {
-                if id > 350 || id == 0 {
+                if id > 368 || id == 0 {
                     let err_json = format!(
-                        "{{\"status\":\"ERROR_TOOL_OUT_OF_RANGE\",\"tool_id\":{},\"max_chain\":350,\"error\":\"Tool ID {} out of range for CHAIN 350\",\"endpoint\":\"{}\"}}",
+                        "{{\"status\":\"ERROR_TOOL_OUT_OF_RANGE\",\"tool_id\":{},\"max_chain\":368,\"error\":\"Tool ID {} out of range for CHAIN 368\",\"endpoint\":\"{}\"}}",
                         id,
                         id,
                         json_escape_clean(clean_path)

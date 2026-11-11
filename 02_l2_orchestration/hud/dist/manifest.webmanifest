@@ -1,7 +1,7 @@
 {
-  "name": "ACT-Omega Net v71.5.0 (SH4Z v7100 TLV | CHAIN 356 | Vesper Mica CLS 0.00) — Sovereign Harmonic HUD",
+  "name": "ACT-Omega Net v72.2.0 (SH4Z v7220 TLV | CHAIN 368 | SH-XI 3-Shell MoE | Vesper Mica CLS 0.00) — Sovereign Harmonic HUD",
   "short_name": "ACT-Omega HUD",
-  "description": "Multi-Mode Vesper Mica Shell (CLS 0.00) & 4-Tier Tri-Silicon Topological Cockpit HUD (84,480 Neurons, 262,144 Bijected Cachelines, 356 Native Tools, 965/965 Lean 4 QED, OmegaLang v16 535.73 TOPS, 524,288 Open-Vocab BPE, 15.965 Hz Decadic Clock)",
+  "description": "Multi-Mode Vesper Mica Shell (CLS 0.00) & 4-Tier Tri-Silicon Topological Cockpit HUD (Sovereign Harmonic XI 3-Shell 384D/768D + 16/256 Sparse MoE, 84,480 Neurons, 262,144 Bijected Cachelines, 368 Native Tools, 995/995 Lean 4 QED, 15.965 Hz Decadic Clock)",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

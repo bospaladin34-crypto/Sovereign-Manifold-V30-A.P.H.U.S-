@@ -1,9 +1,9 @@
-# ACT-Omega & Vesper: 1:1 Formal Rosetta Stone Translation, Mathematical Equations & Canonical Architecture Evolution (`v29.0` $\rightarrow$ `v61.0.0 | CHAIN 280 | 700/700 Lean 4 QED`)
+# ACT-Omega & Vesper: 1:1 Formal Rosetta Stone Translation, Mathematical Equations & Canonical Architecture Evolution (`v29.0` $\rightarrow$ `v72.2.0 | CHAIN 368 | 995/995 Lean 4 QED | Sovereign Harmonic XI`)
 
 **Principal Investigator & Systems Architect:** Donevin Frownfelter (`@bospaladin34-crypto`)  
-**Repository:** `bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-` (`vesper_production` / `main` / `gh-pages`)  
+**Repository:** `bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-` (`vesper_production` / `main` / `master` / `gh-pages`)  
 **Archival Monograph Reference:** Zenodo (`10.5281/zenodo.23651696`, `https://doi.org/10.5281/zenodo.23651696`) / OSF (`10.17605/OSF.IO/2XQ5Z`, `https://osf.io/2xq5z/overview`)  
-**Current Production Release:** **ACT-Omega Net v61.0.0 (`SH4Z v6000 TLV` | `CHAIN 280` | `63,360` Neurons / `3,041,280` Synapses / `132,960` Bijected Cachelines | `700/700` Substantive Lean 4 QED | `18` Gemini MCP Tools)**  
+**Current Production Release:** **ACT-Omega Net v72.2.0 (`SH4Z v7220 TLV` | `CHAIN 368` | `Sovereign Harmonic XI` 3-Shell `384D`/`768D` + `16/256` Sparse MoE | `84,480` Neurons / `4,055,040` Synapses / `262,144` Bijected Cachelines | `995/995` Substantive Lean 4 QED | `21` Gemini MCP Tools)**  
 **Strict 1:1 Practical Formalism & 12-Gate Spec:** [ACT_OMEGA_v61_14_STRICT_1TO1_FORMALISM_SPEC_AND_ACCEPTABILITY_GATES.md](file:///C:/sovereign_manifold_v31/ACT_OMEGA_v61_14_STRICT_1TO1_FORMALISM_SPEC_AND_ACCEPTABILITY_GATES.md) | [MASTER_ROADMAP_AND_1TO1_FORMALISM_INDEX_v61_to_v63.md](file:///C:/sovereign_manifold_v31/03_vault/roadmap_v61_to_v63/MASTER_ROADMAP_AND_1TO1_FORMALISM_INDEX_v61_to_v63.md)
 
 ---

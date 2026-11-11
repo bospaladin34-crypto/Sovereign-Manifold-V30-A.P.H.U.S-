@@ -37,10 +37,10 @@ $proc = Get-Process -Name "v31_swarm" -ErrorAction SilentlyContinue
 $portConn = Get-NetTCPConnection -LocalPort 8097 -State Listen -ErrorAction SilentlyContinue
 Write-Host "v31_swarm running: $($null -ne $proc) (PID: $($proc.Id)) | Port :8097 Listening: $($null -ne $portConn)"
 
-# Verify CHAIN 308 Master Certification
+# Verify CHAIN 368 Master Certification
 try {
-    $c308 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/chain308/master_certification" -TimeoutSec 5
-    Write-Host "Hot-Swap Verification: Status=$($c308.status) | Tools=$($c308.tools_verified) | Theorems=$($c308.lean4_theorems_qed)"
+    $c368 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/chain368/master_certification" -TimeoutSec 5
+    Write-Host "Hot-Swap Verification: Status=$($c368.status) | Tools=$($c368.tools_verified) | Theorems=$($c368.lean4_theorems_qed)"
 } catch {
     Write-Host "Hot-Swap Warning: :8097 responded with error: $($_.Exception.Message)"
 }

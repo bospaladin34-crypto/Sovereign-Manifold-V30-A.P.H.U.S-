@@ -8,13 +8,15 @@ $ErrorActionPreference = "Stop"
 # 1. Stop running instances of both HUD and Shimeji Companion to prevent file locking
 Write-Host "Terminating active HUD and Shimeji processes..." -ForegroundColor Cyan
 cmd.exe /c "taskkill /F /IM SovereignCockpitHUD.exe /T >nul 2>&1"
+cmd.exe /c "taskkill /F /IM SovereignTrayAndHud.exe /T >nul 2>&1"
 cmd.exe /c "taskkill /F /IM VesperArachneSwarmDroneOverlay.exe /T >nul 2>&1"
-Get-Process -Name "SovereignCockpitHUD", "VesperArachneSwarmDroneOverlay" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
-Get-CimInstance Win32_Process -Filter "Name = 'SovereignCockpitHUD.exe' or Name = 'VesperArachneSwarmDroneOverlay.exe'" -ErrorAction SilentlyContinue | Invoke-CimMethod -MethodName Terminate -ErrorAction SilentlyContinue | Out-Null
+Get-Process -Name "SovereignCockpitHUD", "SovereignTrayAndHud", "VesperArachneSwarmDroneOverlay" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+Get-CimInstance Win32_Process -Filter "Name = 'SovereignCockpitHUD.exe' or Name = 'SovereignTrayAndHud.exe' or Name = 'VesperArachneSwarmDroneOverlay.exe'" -ErrorAction SilentlyContinue | Invoke-CimMethod -MethodName Terminate -ErrorAction SilentlyContinue | Out-Null
 Start-Sleep -Milliseconds 600
 
 $srcHud = "C:\sovereign_manifold_v31\00_control\Win11_Native_Tray_HUD\SovereignTrayAndHud.cs"
 $targetHud1 = "C:\sovereign_manifold_v31\00_control\Win11_Native_Tray_HUD\SovereignCockpitHUD.exe"
+$targetHudTray = "C:\sovereign_manifold_v31\00_control\Win11_Native_Tray_HUD\SovereignTrayAndHud.exe"
 $targetHud2 = "C:\sovereign_manifold_v31\SovereignCockpitHUD.exe"
 $targetHud3 = "C:\sovereign_manifold_v31\docs\SovereignCockpitHUD.exe"
 $mirrorHudCs = "C:\sovereign_manifold_v31\00_control\SovereignCockpitHUD.cs"
@@ -32,12 +34,13 @@ if (-not (Test-Path $droneDir2)) {
 
 $csc = "C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe"
 
-# 2. Compile SovereignCockpitHUD.exe
-Write-Host "Compiling SovereignCockpitHUD.exe (Ω62) with csc.exe..." -ForegroundColor Cyan
+# 2. Compile SovereignCockpitHUD.exe (v72.2.0 / Ω72)
+Write-Host "Compiling SovereignCockpitHUD.exe (v72.2.0 / Ω72) with csc.exe..." -ForegroundColor Cyan
 & $csc /nologo /target:winexe /optimize+ /out:$targetHud1 $srcHud
 if ($LASTEXITCODE -ne 0) { throw "CSC compilation of SovereignCockpitHUD.exe failed with code $LASTEXITCODE" }
 
 # Mirror SovereignCockpitHUD across targets with atomic rename
+Copy-Item -Path $targetHud1 -Destination $targetHudTray -Force
 if (Test-Path $targetHud2) {
     Move-Item -Path $targetHud2 -Destination "$targetHud2.old" -Force -ErrorAction SilentlyContinue
 }

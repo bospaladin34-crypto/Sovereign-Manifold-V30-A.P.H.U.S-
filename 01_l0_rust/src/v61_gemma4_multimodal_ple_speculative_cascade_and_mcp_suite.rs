@@ -917,7 +917,7 @@ pub fn v61_read_resource_metadata(uri: &str) -> (&'static str, String) {
             .unwrap_or(3176803328);
         ("application/json", format!("{{\"uri\":\"{}\",\"status\":\"LIVE_MEASURED\",\"byte_length\":{},\"layers\":48,\"quantized_weights\":11959730176,\"block_bytes\":68,\"quantization\":\"E8_TERNARY_SH4Z\",\"vocab_size\":262144,\"description\":\"Gemma 4 12B-it Full 256D E8 Ternary Vault (3,176,803,328 B)\"}}", uri, size))
     } else if uri == "manifold://d1/act_omega_d1_vault" {
-        ("application/json", format!("{{\"uri\":\"{}\",\"status\":\"LIVE_MEASURED\",\"database_name\":\"act_omega_d1_vault\",\"account_id\":\"a37cf8ab07e7c5f886c302be3f098744\",\"uuid\":\"9f46d56a-ef3e-4232-a9ac-c4bd12e20a87\",\"tables_count\":10,\"free_storage_gb\":5.0,\"chair44_columns\":1440,\"durable_object_shadow\":\"SovereignEdgeShadowDO\",\"zero_502_failover\":true,\"description\":\"Cloudflare D1 10-Table Remote SQLite Vault\"}}", uri))
+        ("application/json", format!("{{\"uri\":\"{}\",\"status\":\"LIVE_MEASURED\",\"database_name\":\"act_omega_d1_vault\",\"tables_count\":10,\"free_storage_gb\":5.0,\"chair44_columns\":1440,\"durable_object_shadow\":\"SovereignEdgeShadowDO\",\"zero_502_failover\":true,\"description\":\"Cloudflare D1 10-Table Remote SQLite Vault\"}}", uri))
     } else {
         ("application/json", format!("{{\"uri\":\"{}\",\"status\":\"NOT_FOUND\",\"error\":\"Unknown resource URI\"}}", uri))
     }

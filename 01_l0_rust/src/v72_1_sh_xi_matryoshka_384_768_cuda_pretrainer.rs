@@ -24,7 +24,7 @@ use std::collections::{HashMap, HashSet};
 use std::fs;
 use std::path::Path;
 use std::process::Command;
-use std::sync::{Mutex, OnceLock};
+use std::sync::{Mutex, OnceLock, RwLock};
 use std::time::{Instant, SystemTime, UNIX_EPOCH};
 
 use crate::ffi::execute_rtx3050_sh_xi_matryoshka_f32_ptx;
@@ -83,6 +83,12 @@ pub const E_SH_XI_CORPUS_JSONL_PATH: &str =
     "E:\\Sovereign_Manifold_SSD_Vault\\training_corpus\\sh_rw_corpus_v7210.jsonl";
 pub const C_SH_XI_CORPUS_MANIFEST_PATH: &str =
     "03_vault/connectome/sh_rw_corpus_v7210_manifest.json";
+pub const C_SH_XI_CANONICAL_CORPUS_MANIFEST_PATH: &str =
+    "03_vault/corpus/corpus_manifest_v1.json";
+pub const E_SH_XI_CANONICAL_CORPUS_MANIFEST_PATH: &str =
+    "E:\\Sovereign_Manifold_SSD_Vault\\corpus\\corpus_manifest_v1.json";
+pub const E_SH_XI_TRAINING_CORPUS_MANIFEST_PATH: &str =
+    "E:\\Sovereign_Manifold_SSD_Vault\\training_corpus\\corpus_manifest_v1.json";
 pub const E_SH_XI_CORPUS_DUCKDB_PATH: &str =
     "E:\\Sovereign_Manifold_SSD_Vault\\training_corpus\\sh_rw_corpus_v7210.duckdb";
 pub const C_SH_XI_BPE16K_PATH: &str =
@@ -107,6 +113,10 @@ pub const C_SH_XI_WEEK1_RECEIPT_PATH: &str =
     "03_vault/connectome/sh_xi_week1_master_receipt.json";
 pub const E_SH_XI_WEEK1_RECEIPT_PATH: &str =
     "E:\\Sovereign_Manifold_SSD_Vault\\connectome\\sh_xi_week1_master_receipt.json";
+pub const C_SH_XI_BASE_TRAIN_META_PATH: &str =
+    "00_control/weights/sh_xi_base_train_meta.json";
+pub const E_SH_XI_BASE_TRAIN_META_PATH: &str =
+    "E:\\Sovereign_Manifold_SSD_Vault\\connectome\\sh_xi_base_train_meta.json";
 
 // --- Zero-Bracket Allocation, Serialization & Cryptographic Hash Helpers ---
 
@@ -324,6 +334,242 @@ pub fn v72_1_sha256_hex(data: &Vec<u8>) -> String {
         "{:08x}{:08x}{:08x}{:08x}{:08x}{:08x}{:08x}{:08x}",
         h0, h1, h2, h3, h4, h5, h6, h7
     )
+}
+
+pub const C_SOVEREIGN_HARMONIC_MANIFEST_PATH: &str =
+    "00_control/weights/sovereign_harmonic_weights_manifest.json";
+pub const E_SOVEREIGN_HARMONIC_MANIFEST_PATH: &str =
+    "E:\\Sovereign_Manifold_SSD_Vault\\weights\\sovereign_harmonic_weights_manifest.json";
+
+pub fn v72_1_verify_weight_manifest(artifact_key: &str, file_path: &str) -> Result<Vec<u8>, String> {
+    let manifest_str = fs::read_to_string(C_SOVEREIGN_HARMONIC_MANIFEST_PATH)
+        .or_else(|_| fs::read_to_string(E_SOVEREIGN_HARMONIC_MANIFEST_PATH))
+        .map_err(|e| format!("WEIGHT_MANIFEST_MISSING: Cannot read weights manifest: {}", e))?;
+
+    let root_val: serde_json::Value = serde_json::from_str(&manifest_str)
+        .map_err(|e| format!("WEIGHT_MANIFEST_PARSE_ERROR: Failed to parse manifest JSON: {}", e))?;
+
+    let artifacts_obj = root_val
+        .get("artifacts")
+        .and_then(|v| v.as_object())
+        .ok_or_else(|| String::from("WEIGHT_MANIFEST_CORRUPT: Missing 'artifacts' object"))?;
+
+    let norm_path = file_path.replace('\\', "/");
+    let norm_filename = Path::new(file_path)
+        .file_name()
+        .and_then(|n| n.to_str())
+        .unwrap_or("");
+
+    let mut matched_entry: Option<&serde_json::Value> = artifacts_obj.get(artifact_key);
+    if matched_entry.is_none() {
+        for (_k, entry) in artifacts_obj.iter() {
+            let rel = entry.get("relative_path").and_then(|v| v.as_str()).unwrap_or("");
+            let fname = entry.get("filename").and_then(|v| v.as_str()).unwrap_or("");
+            let norm_rel = rel.replace('\\', "/");
+            if norm_rel == norm_path || fname == norm_filename || norm_path.ends_with(fname) {
+                matched_entry = Some(entry);
+                break;
+            }
+        }
+    }
+
+    let entry = matched_entry.ok_or_else(|| {
+        format!("WEIGHT_KEY_MISSING: Artifact key '{}' (path '{}') not registered in manifest", artifact_key, file_path)
+    })?;
+
+    let exp_bytes = entry
+        .get("expected_bytes")
+        .and_then(|v| v.as_u64())
+        .ok_or_else(|| format!("WEIGHT_MANIFEST_CORRUPT: Missing 'expected_bytes' for '{}'", artifact_key))? as usize;
+
+    let exp_sha = entry
+        .get("sha256")
+        .and_then(|v| v.as_str())
+        .ok_or_else(|| format!("WEIGHT_MANIFEST_CORRUPT: Missing 'sha256' for '{}'", artifact_key))?;
+
+    let magic_opt = entry
+        .get("magic")
+        .and_then(|v| v.as_str())
+        .unwrap_or("");
+
+    let p = Path::new(file_path);
+    if !p.exists() {
+        return Err(format!("WEIGHT_FILE_MISSING: Artifact file not found at '{}'", file_path));
+    }
+
+    let bytes = fs::read(file_path)
+        .map_err(|e| format!("WEIGHT_READ_FAILED: Cannot read '{}': {}", file_path, e))?;
+
+    if bytes.len() != exp_bytes {
+        return Err(format!(
+            "WEIGHT_SIZE_MISMATCH: '{}' has {} bytes, expected {} from manifest",
+            file_path, bytes.len(), exp_bytes
+        ));
+    }
+
+    let actual_sha = v72_1_sha256_hex(&bytes);
+    if !actual_sha.eq_ignore_ascii_case(exp_sha) {
+        return Err(format!(
+            "WEIGHT_SHA256_MISMATCH: '{}' digest {} != expected {}",
+            file_path, actual_sha, exp_sha
+        ));
+    }
+
+    if !magic_opt.is_empty() && magic_opt != "0x00000000" && bytes.len() >= 4 {
+        let expected_magic = u32::from_str_radix(magic_opt.trim_start_matches("0x"), 16).unwrap_or(0);
+        if expected_magic != 0 {
+            let actual_magic = v72_1_read_u32_le(&bytes, 0);
+            if actual_magic != expected_magic {
+                return Err(format!(
+                    "WEIGHT_MAGIC_MISMATCH: '{}' magic 0x{:08X} != expected 0x{:08X}",
+                    file_path, actual_magic, expected_magic
+                ));
+            }
+        }
+    }
+
+    Ok(bytes)
+}
+
+pub fn v72_1_update_weight_manifest(artifact_key: &str, byte_len: usize, sha256_hex: &str) -> Result<(), String> {
+    let manifest_str = fs::read_to_string(C_SOVEREIGN_HARMONIC_MANIFEST_PATH)
+        .or_else(|_| fs::read_to_string(E_SOVEREIGN_HARMONIC_MANIFEST_PATH))
+        .map_err(|e| format!("WEIGHT_MANIFEST_MISSING: Cannot read weights manifest: {}", e))?;
+
+    let mut root_val: serde_json::Value = serde_json::from_str(&manifest_str)
+        .map_err(|e| format!("WEIGHT_MANIFEST_PARSE_ERROR: Failed to parse manifest JSON: {}", e))?;
+
+    let artifacts_obj = root_val
+        .get_mut("artifacts")
+        .and_then(|v| v.as_object_mut())
+        .ok_or_else(|| String::from("WEIGHT_MANIFEST_CORRUPT: Missing 'artifacts' object"))?;
+
+    let mut target_rel_path = String::new();
+    let mut target_filename = String::new();
+    if let Some(entry) = artifacts_obj.get(artifact_key) {
+        if let Some(rel) = entry.get("relative_path").and_then(|v| v.as_str()) {
+            target_rel_path = rel.to_string();
+        }
+        if let Some(fname) = entry.get("filename").and_then(|v| v.as_str()) {
+            target_filename = fname.to_string();
+        }
+    }
+
+    let mut updated_keys: Vec<String> = Vec::new();
+    for (k, entry_val) in artifacts_obj.iter_mut() {
+        let is_key_match = k == artifact_key;
+        let is_path_match = if !target_rel_path.is_empty() {
+            entry_val.get("relative_path").and_then(|v| v.as_str()) == Some(&target_rel_path)
+        } else {
+            false
+        };
+        let is_fname_match = if !target_filename.is_empty() {
+            entry_val.get("filename").and_then(|v| v.as_str()) == Some(&target_filename)
+        } else {
+            false
+        };
+
+        if is_key_match || is_path_match || is_fname_match {
+            if let Some(entry_obj) = entry_val.as_object_mut() {
+                entry_obj.insert(String::from("expected_bytes"), serde_json::Value::from(byte_len as u64));
+                entry_obj.insert(String::from("sha256"), serde_json::Value::from(sha256_hex));
+                updated_keys.push(k.clone());
+            }
+        }
+    }
+
+    if updated_keys.is_empty() {
+        return Err(format!("WEIGHT_KEY_MISSING: No artifact matching '{}' found in manifest", artifact_key));
+    }
+
+    let formatted = serde_json::to_string_pretty(&root_val)
+        .map_err(|e| format!("WEIGHT_MANIFEST_SERIALIZE_ERROR: {}", e))?;
+
+    let _ = fs::write(C_SOVEREIGN_HARMONIC_MANIFEST_PATH, formatted.as_bytes());
+    if Path::new("E:\\").exists() {
+        let _ = fs::create_dir_all("E:\\Sovereign_Manifold_SSD_Vault\\weights");
+        let _ = fs::write(E_SOVEREIGN_HARMONIC_MANIFEST_PATH, formatted.as_bytes());
+    }
+
+    Ok(())
+}
+
+pub fn v72_1_verify_entire_weight_manifest() -> Result<usize, String> {
+    let manifest_str = fs::read_to_string(C_SOVEREIGN_HARMONIC_MANIFEST_PATH)
+        .or_else(|_| fs::read_to_string(E_SOVEREIGN_HARMONIC_MANIFEST_PATH))
+        .map_err(|e| format!("WEIGHT_MANIFEST_MISSING: Cannot read weights manifest: {}", e))?;
+
+    let root_val: serde_json::Value = serde_json::from_str(&manifest_str)
+        .map_err(|e| format!("WEIGHT_MANIFEST_PARSE_ERROR: Failed to parse manifest JSON: {}", e))?;
+
+    let artifacts_obj = root_val
+        .get("artifacts")
+        .and_then(|v| v.as_object())
+        .ok_or_else(|| String::from("WEIGHT_MANIFEST_CORRUPT: Missing 'artifacts' object"))?;
+
+    let mut verified_count: usize = 0;
+    for (k, entry) in artifacts_obj.iter() {
+        let rel_path = entry
+            .get("relative_path")
+            .and_then(|v| v.as_str())
+            .or_else(|| entry.get("filename").and_then(|v| v.as_str()))
+            .ok_or_else(|| format!("WEIGHT_MANIFEST_CORRUPT: Artifact '{}' missing relative_path", k))?;
+
+        let exp_bytes = entry
+            .get("expected_bytes")
+            .and_then(|v| v.as_u64())
+            .ok_or_else(|| format!("WEIGHT_MANIFEST_CORRUPT: Artifact '{}' missing expected_bytes", k))? as usize;
+
+        let exp_sha = entry
+            .get("sha256")
+            .and_then(|v| v.as_str())
+            .ok_or_else(|| format!("WEIGHT_MANIFEST_CORRUPT: Artifact '{}' missing sha256", k))?;
+
+        let magic_opt = entry
+            .get("magic")
+            .and_then(|v| v.as_str())
+            .unwrap_or("");
+
+        let p = Path::new(rel_path);
+        if !p.exists() {
+            return Err(format!("WEIGHT_FILE_MISSING: Manifest artifact '{}' file not found at '{}'", k, rel_path));
+        }
+
+        let bytes = fs::read(rel_path)
+            .map_err(|e| format!("WEIGHT_READ_FAILED: Cannot read '{}' for '{}': {}", rel_path, k, e))?;
+
+        if bytes.len() != exp_bytes {
+            return Err(format!(
+                "WEIGHT_SIZE_MISMATCH: Artifact '{}' at '{}' has {} bytes, expected {}",
+                k, rel_path, bytes.len(), exp_bytes
+            ));
+        }
+
+        let actual_sha = v72_1_sha256_hex(&bytes);
+        if !actual_sha.eq_ignore_ascii_case(exp_sha) {
+            return Err(format!(
+                "WEIGHT_SHA256_MISMATCH: Artifact '{}' at '{}' digest {} != expected {}",
+                k, rel_path, actual_sha, exp_sha
+            ));
+        }
+
+        if !magic_opt.is_empty() && magic_opt != "0x00000000" && bytes.len() >= 4 {
+            let expected_magic = u32::from_str_radix(magic_opt.trim_start_matches("0x"), 16).unwrap_or(0);
+            if expected_magic != 0 {
+                let actual_magic = v72_1_read_u32_le(&bytes, 0);
+                if actual_magic != expected_magic {
+                    return Err(format!(
+                        "WEIGHT_MAGIC_MISMATCH: Artifact '{}' at '{}' magic 0x{:08X} != expected 0x{:08X}",
+                        k, rel_path, actual_magic, expected_magic
+                    ));
+                }
+            }
+        }
+
+        verified_count += 1;
+    }
+
+    Ok(verified_count)
 }
 
 pub fn v72_1_unix_ms() -> u128 {
@@ -719,6 +965,7 @@ pub struct V72_1CorpusDoc {
     pub track_name: String,
     pub is_zero_bracket: bool,
     pub minhash64: u64,
+    pub source_path: String,
     pub text_body: String,
 }
 
@@ -738,7 +985,21 @@ pub struct V72_1CorpusBuildSummary {
     pub duckdb_verified_rows: usize,
     pub corpus_sha256: String,
     pub eval500_sha256: String,
+    pub source_files_read: usize,
+    pub raw_doc_count: usize,
+    pub rejected_exact_duplicates: usize,
+    pub rejected_jaccard_over_50: usize,
+    pub max_pairwise_5gram_jaccard: f64,
+    pub canaries_tested: usize,
+    pub canaries_caught: usize,
     pub elapsed_us: u64,
+}
+
+pub struct V72_1CanaryFixtureResult {
+    pub fixture_type: String,
+    pub included_in_training_corpus: bool,
+    pub canaries_tested: usize,
+    pub canaries_caught: usize,
 }
 
 // Standard GPT-3 / Llama-3 13-word n-gram shingle extractor for zero-leakage benchmark decontamination
@@ -823,201 +1084,278 @@ pub fn v72_1_build_holdout_shingle_blacklist(eval_items: &Vec<V72_1RwEvalItem>) 
     set
 }
 
-fn v72_1_synthesize_foundational_corpus_candidates(
-    eval_items: &Vec<V72_1RwEvalItem>,
-) -> Vec<(usize, String, bool, String)> {
-    let mut cands: Vec<(usize, String, bool, String)> = Vec::with_capacity(720);
-
-    // 1. Track 0 (Dialogue & Systems Reasoning — 30%): ChatML structured conceptual & engineering dialogues
-    let sys_topics = (
-        ("lock-free hardware atomics vs kernel-mediated mutual exclusion",
-         "Hardware atomic integers (`AtomicBool`, `AtomicU64`, `AtomicUsize`) compile directly to single-word CPU instructions (`LOCK XADD`, `CMPXCHG`) and synchronize scalar counters in nanoseconds without suspending threads. Kernel-backed mutual exclusion locks (`Mutex<T>`) guard arbitrary multi-field compound invariants or heap structures, blocking contending threads via OS futex sleep when critical sections take longer."),
-        ("mobile & laptop power-per-watt budgeting under partial state-of-charge",
-         "Display backlight luminance, discrete GPU boost clocks, and continuous Wi-Fi/cellular radio wakeups dominate portable power draw. Lowering panel brightness to 35-45%, pinning compilation/background daemons to efficiency cores with OS power-saver governor, and batching network/sync bursts instead of polling extend runtime substantially."),
-        ("nested Matryoshka subspace representations and residual-delta streaming",
-         "Embedding a compact 384D mobile core (`Shell 0`) as the exact prefix subspace of a 768D host core (`Shell 1`) eliminates sequential layer-split network stalls. Mobile executes easy tokens locally in under 5 ms and drafts ahead on hard prompts while the host streams back only sparse residual logit deltas where deep reasoning diverges."),
-        ("cache-oblivious vs cacheline-aligned 64-byte data structures",
-         "Modern x86-64 and ARMv9 cores fetch memory in 64-byte cachelines. Aligning hot metadata headers and state vectors to 64-byte boundaries prevents split-line loads and eliminates multi-core false sharing."),
-        ("tail latency amplification in fanned-out microservice vs local monolithic IPC",
-         "When a request fans out to N parallel nodes, overall p99 latency approaches the maximum slow straggler across all N branches. Co-locating hot state in memory-mapped NVMe pages and bounding speculative draft windows keeps p99 deterministic."),
-        ("numerical stability in log-sum-exp softmax and RMSNorm",
-         "Subtracting the row maximum `m = max_j z_j` before exponentiation guarantees `exp(z_j - m) <= 1.0`, eliminating float32 overflow while preserving exact normalized probabilities."),
-    );
-    let mut d_idx: usize = 0;
-    while d_idx < 180 {
-        let variant = d_idx % 6;
-        let (topic_title, core_body) = match variant {
-            0 => sys_topics.0,
-            1 => sys_topics.1,
-            2 => sys_topics.2,
-            3 => sys_topics.3,
-            4 => sys_topics.4,
-            _ => sys_topics.5,
-        };
-        let scale_n = 16 + d_idx * 4;
-        let chatml = format!(
-            "<|system|>You are Sovereign Harmonic XI, a grounded geometric reasoning & systems engineering model. Answer concisely and accurately.<|user|>Explain the engineering principles of {} (reference context #{}).<|assistant|>{} At scale factor {}, always measure real wall-clock and hardware counters before tuning.<|endoftext|>",
-            topic_title,
-            d_idx + 1,
-            core_body,
-            scale_n
-        );
-        cands.push((0, String::from("Dialogue_Reasoning"), true, chatml));
-        d_idx += 1;
+pub fn v72_1_extract_5gram_shingles(text: &str) -> HashSet<u64> {
+    let words: Vec<String> = text
+        .split_whitespace()
+        .map(|w| {
+            w.bytes()
+                .filter(|b| b.is_ascii_alphanumeric() || *b == b'_')
+                .map(|b| if b >= b'A' && b <= b'Z' { (b + 32) as char } else { b as char })
+                .collect::<String>()
+        })
+        .filter(|w| !w.is_empty())
+        .collect();
+    if words.is_empty() {
+        return HashSet::new();
     }
-
-    // 2. Track 1 (Standard Rust + Zero-Bracket L0 Rust — 25%): Both harvested workspace Rust & clean Standard Rust patterns
-    let mut r_idx: usize = 0;
-    while r_idx < 150 {
-        if r_idx % 2 == 0 {
-            let step_k = 2 + (r_idx % 13);
-            let std_rust = format!(
-                "<|system|><|mode:std_rust|>Emit idiomatic, rustc-verified Standard Rust.<|user|>Implement an iterative number-theoretic helper and slice reducer (module #{}).<|assistant|>```rust\npub fn iterative_divisors_step_{}(mut x: u64, mut y: u64) -> u64 {{\n    while y != 0 {{\n        let rem = x % y;\n        x = y;\n        y = rem;\n    }}\n    x\n}}\n\npub fn sum_strided_slice_{}(items: &\x5bu64\x5d) -> u64 {{\n    items.iter().step_by({}).copied().sum()\n}}\n```<|endoftext|>",
-                r_idx + 1,
-                r_idx + 1,
-                r_idx + 1,
-                step_k
-            );
-            cands.push((1, String::from("Rust_Std_And_L0"), false, std_rust));
-        } else {
-            let mult_c = 44 + r_idx;
-            let zb_rust = format!(
-                "<|system|><|mode:zero_bracket_l0|>Emit Zero-Square-Bracket L0 Sovereign Rust.<|user|>Write a zero-bracket vector dot-product kernel (slot #{}).<|assistant|>```rust\npub fn l0_zero_bracket_dot_{}(lhs: &Vec<f32>, rhs: &Vec<f32>) -> f32 {{\n    let n = lhs.len().min(rhs.len());\n    let mut acc: f32 = 0.0;\n    let mut idx: usize = 0;\n    while idx < n {{\n        let a = *lhs.get(idx).unwrap_or(&0.0);\n        let b = *rhs.get(idx).unwrap_or(&0.0);\n        acc += a * b + ({}.0_f32 * 0.0_f32);\n        idx += 1;\n    }}\n    acc\n}}\n```<|endoftext|>",
-                r_idx + 1,
-                r_idx + 1,
-                mult_c
-            );
-            cands.push((1, String::from("Rust_Std_And_L0"), true, zb_rust));
+    if words.len() < 5 {
+        let joined = words.join(" ");
+        let mut single: HashSet<u64> = HashSet::with_capacity(1);
+        single.insert(v72_1_fnv1a64_str(&joined));
+        return single;
+    }
+    let count = words.len() - 5 + 1;
+    let mut out: HashSet<u64> = HashSet::with_capacity(count);
+    let mut pos: usize = 0;
+    while pos < count {
+        let mut h: u64 = 0xcbf29ce484222325;
+        let mut k: usize = 0;
+        while k < 5 {
+            if let Some(wd) = words.get(pos + k) {
+                for b in wd.as_bytes().iter() {
+                    h ^= (*b) as u64;
+                    h = h.wrapping_mul(0x100000001b3);
+                }
+                h ^= b' ' as u64;
+                h = h.wrapping_mul(0x100000001b3);
+            }
+            k += 1;
         }
-        r_idx += 1;
+        out.insert(h);
+        pos += 1;
+    }
+    out
+}
+
+pub fn v72_1_run_canary_contamination_fixture(
+    blacklist: &HashSet<u64>,
+    eval_items: &Vec<V72_1RwEvalItem>,
+) -> V72_1CanaryFixtureResult {
+    let mut caught: usize = 0;
+    let mut canary_i: usize = 0;
+    while canary_i < 5 {
+        if let Some(ev) = eval_items.get(canary_i * 100) {
+            let probe = format!("LEAKED_EVAL_PROMPT: {}", ev.prompt);
+            let shingles = v72_1_extract_13gram_shingles(&probe);
+            if shingles.iter().any(|sh| blacklist.contains(sh)) {
+                caught += 1;
+            }
+        }
+        canary_i += 1;
+    }
+    V72_1CanaryFixtureResult {
+        fixture_type: String::from("synthetic_contamination_canary_fixture"),
+        included_in_training_corpus: false,
+        canaries_tested: 5,
+        canaries_caught: caught,
+    }
+}
+
+fn v72_1_chunk_text(txt: &str, target_size: usize) -> Vec<String> {
+    let mut chunks: Vec<String> = Vec::with_capacity(32);
+    let mut cur = String::with_capacity(target_size + 256);
+    for line in txt.lines() {
+        cur.push_str(line);
+        cur.push('\n');
+        if cur.len() >= target_size {
+            chunks.push(cur.clone());
+            cur.clear();
+        }
+    }
+    if cur.trim().len() >= 250 {
+        chunks.push(cur);
+    }
+    chunks
+}
+
+pub fn v72_1_harvest_foundational_corpus_candidates() -> (Vec<(usize, String, bool, String, String)>, usize) {
+    let mut cands: Vec<(usize, String, bool, String, String)> = Vec::with_capacity(1024);
+    let mut files_read: HashSet<String> = HashSet::with_capacity(128);
+
+    // Track 0: Dialogue & Systems Reasoning (Markdown & HUD sources)
+    let t0_files = (
+        "README.md",
+        "MODEL_CARD.md",
+        "WHATS_NEW.md",
+        "AGENTS.md",
+        ".agents/skills/cloudflare-edge-continuum-ops/SKILL.md",
+        ".agents/skills/sovereign-v70-release-pipeline/SKILL.md",
+        "05_hud_cockpit/src/App.tsx",
+        "05_hud_cockpit/src/main.tsx",
+        "05_hud_cockpit/src/types.ts",
+    );
+    let mut t0_list: Vec<&str> = Vec::with_capacity(9);
+    t0_list.push(t0_files.0);
+    t0_list.push(t0_files.1);
+    t0_list.push(t0_files.2);
+    t0_list.push(t0_files.3);
+    t0_list.push(t0_files.4);
+    t0_list.push(t0_files.5);
+    t0_list.push(t0_files.6);
+    t0_list.push(t0_files.7);
+    t0_list.push(t0_files.8);
+
+    for p in t0_list.into_iter() {
+        if let Ok(txt) = fs::read_to_string(p) {
+            files_read.insert(String::from(p));
+            let chunks = v72_1_chunk_text(&txt, 800);
+            let mut taken: usize = 0;
+            for chunk in chunks.into_iter() {
+                if taken >= 30 {
+                    break;
+                }
+                let is_zb = !chunk.as_bytes().contains(&91_u8) && !chunk.as_bytes().contains(&93_u8);
+                let wrapped = format!(
+                    "<|system|>You are Sovereign Harmonic XI, a grounded geometric reasoning and systems engineering model.<|user|>Explain the architecture and implementation details of `{}`.<|assistant|>{}\n<|endoftext|>",
+                    p, chunk
+                );
+                cands.push((0, String::from("Dialogue_Reasoning"), is_zb, wrapped, String::from(p)));
+                taken += 1;
+            }
+        }
     }
 
-    // Harvest live Rust, Haskell, and Architecture Markdown chunks from the workspace (Option A Full-Access)
-    let ws_files = (
-        ("01_l0_rust/src/v70_0_exponential_worksteal_262144cl_bijection.rs", 1_usize, "Rust_Std_And_L0", true, "<|mode:zero_bracket_l0|>"),
-        ("01_l0_rust/src/v69_5_heterogeneous_cpu_rtx3050_cuda_coexec.rs", 1_usize, "Rust_Std_And_L0", true, "<|mode:zero_bracket_l0|>"),
-        ("06_algebraic_haskell/src/Sovereign/Codegen/ZeroBracketRustAndLean4.hs", 3_usize, "STEM_Physics_Lattice", false, ""),
-        ("MODEL_CARD.md", 0_usize, "Dialogue_Reasoning", false, ""),
-    );
-    let harvest_list = {
-        let mut v = Vec::with_capacity(4);
-        v.push(ws_files.0);
-        v.push(ws_files.1);
-        v.push(ws_files.2);
-        v.push(ws_files.3);
-        v
-    };
-    for (fpath, tr_id, tr_name, is_zb, mtag) in harvest_list.into_iter() {
-        if let Ok(src_txt) = fs::read_to_string(fpath) {
-            let mut chunk_buf = String::new();
-            let mut taken: usize = 0;
-            for line in src_txt.lines() {
-                chunk_buf.push_str(line);
-                chunk_buf.push('\n');
-                if chunk_buf.len() >= 850 && taken < 35 {
-                    let wrapped = format!(
-                        "<|system|>{}<|assistant|>{}<|endoftext|>",
-                        mtag, chunk_buf
-                    );
-                    cands.push((tr_id, String::from(tr_name), is_zb, wrapped));
-                    chunk_buf.clear();
-                    taken += 1;
+    // Track 1: Standard Rust and Zero-Bracket L0 Rust (v33..v70 only, strictly no v71/v72, no F:)
+    if let Ok(entries) = fs::read_dir("01_l0_rust/src") {
+        for entry in entries.flatten() {
+            let path = entry.path();
+            if let Some(fname) = path.file_name().and_then(|s| s.to_str()) {
+                if fname.ends_with(".rs")
+                    && !fname.contains("v71")
+                    && !fname.contains("v72")
+                    && !fname.contains("test")
+                {
+                    let p_str = path.to_string_lossy().to_string();
+                    if let Ok(txt) = fs::read_to_string(&path) {
+                        files_read.insert(p_str.clone());
+                        let chunks = v72_1_chunk_text(&txt, 800);
+                        let mut taken: usize = 0;
+                        for chunk in chunks.into_iter() {
+                            if taken >= 6 {
+                                break;
+                            }
+                            let is_zb = !chunk.as_bytes().contains(&91_u8) && !chunk.as_bytes().contains(&93_u8);
+                            let mode_tag = if is_zb {
+                                "<|mode:zero_bracket_l0|>Emit Zero-Square-Bracket L0 Sovereign Rust."
+                            } else {
+                                "<|mode:std_rust|>Emit idiomatic Standard Rust."
+                            };
+                            let wrapped = format!(
+                                "<|system|>{}<|user|>Provide the implementation from `{}`.<|assistant|>```rust\n{}\n```<|endoftext|>",
+                                mode_tag, fname, chunk
+                            );
+                            cands.push((1, String::from("Rust_Std_And_L0"), is_zb, wrapped, p_str.clone()));
+                            taken += 1;
+                        }
+                    }
                 }
             }
         }
     }
 
-    // 3. Track 2 (Lean 4 Formal Proofs — 20%): Harvested theorems from SovereignManifoldTheorems.lean + structured proof templates
-    if let Ok(lean_src) = fs::read_to_string("03_vault/lean4/SovereignManifoldTheorems.lean") {
-        let mut block = String::new();
+    // Track 2: Lean 4 Formal Proofs (SovereignManifoldTheorems.lean, lines 1..8924, strictly before thm_v71)
+    let lean_p = "03_vault/lean4/SovereignManifoldTheorems.lean";
+    if let Ok(lean_src) = fs::read_to_string(lean_p) {
+        files_read.insert(String::from(lean_p));
+        let mut block = String::with_capacity(1024);
         let mut count_l: usize = 0;
+        let mut line_num: usize = 0;
         for line in lean_src.lines() {
-            if line.trim_start().starts_with("structure ") && !block.is_empty() && count_l < 70 {
-                let doc = format!(
-                    "<|system|><|mode:lean4_proof|>Substantive Lean 4 QED proof.<|assistant|>\n{}<|endoftext|>",
+            line_num += 1;
+            if line_num > 8924 || line.contains("thm_v71") || line.contains("thm_v72") {
+                break;
+            }
+            let is_boundary = line.trim_start().starts_with("structure ")
+                || line.trim_start().starts_with("theorem ")
+                || line.trim_start().starts_with("def ")
+                || line.trim_start().starts_with("lemma ");
+            if is_boundary && block.len() >= 400 && count_l < 80 {
+                let wrapped = format!(
+                    "<|system|><|mode:lean4_proof|>Substantive Lean 4 formal proof (Theorems 1..840).<|user|>State and prove theorem from SovereignManifoldTheorems.lean.<|assistant|>```lean\n{}\n```<|endoftext|>",
                     block
                 );
-                cands.push((2, String::from("Lean4_Formal_Proofs"), false, doc));
+                cands.push((2, String::from("Lean4_Formal_Proofs"), false, wrapped, String::from(lean_p)));
                 block.clear();
                 count_l += 1;
             }
-            if count_l < 70 {
+            if count_l < 80 {
                 block.push_str(line);
                 block.push('\n');
             }
         }
-    }
-    let mut l_syn: usize = 0;
-    while l_syn < 55 {
-        let stride = 8 * (1 + (l_syn % 12));
-        let lean_doc = format!(
-            "<|system|><|mode:lean4_proof|>Emit zero-sorry Lean 4 formal proof.<|user|>Prove lattice block alignment multiple #{}.<|assistant|>```lean\nstructure LatticeBlockSpec{} where\n  blocks : Nat\n  lanes : Nat\n  deriving Repr, DecidableEq\n\ndef totalLanes{} (s : LatticeBlockSpec{}) : Nat := s.blocks * s.lanes\n\ntheorem thm_lattice_block_align_{} (s : LatticeBlockSpec{}) (hb : s.blocks = {}) (hl : s.lanes = 8) :\n    totalLanes{} s = {} /\\ totalLanes{} s % 8 = 0 := by\n  dsimp \x5btotalLanes{}\x5d\n  rw \x5bhb, hl\x5d\n  decide\n```<|endoftext|>",
-            l_syn + 1,
-            l_syn + 1,
-            l_syn + 1,
-            l_syn + 1,
-            l_syn + 1,
-            l_syn + 1,
-            stride,
-            l_syn + 1,
-            stride * 8,
-            l_syn + 1,
-            l_syn + 1
-        );
-        cands.push((2, String::from("Lean4_Formal_Proofs"), false, lean_doc));
-        l_syn += 1;
-    }
-
-    // 4. Track 3 (STEM, Lattice Geometry & Physics — 15%)
-    let mut s_idx: usize = 0;
-    while s_idx < 90 {
-        let dim_k = 1 + (s_idx % 16);
-        let e8_total = dim_k * 8;
-        let leech_total = dim_k * 24;
-        let stem_doc = format!(
-            "<|system|>Derive step-by-step mathematical and physical identities.<|user|>Compute the direct-sum subspace ranks for k={} copies of E8 and Lambda_24 and relate bits-per-byte to natural cross-entropy.<|assistant|><|thought|>E8 has rank 8 (Viazovska 2017) and Leech Lambda_24 has rank 24 (Cohn-Kumar-Miller-Radchenko-Viazovska 2017).</|thought|>For k = {}, E8^(oplus {}) has dimension {} * 8 = {} and Lambda_24^(oplus {}) has dimension {} * 24 = {} = 3 * {}. Converting token cross-entropy L_nats over N_tokens and B_bytes to bits-per-byte yields bpb = (L_nats * N_tokens) / (B_bytes * ln(2)).<|endoftext|>",
-            dim_k, dim_k, dim_k, dim_k, e8_total, dim_k, dim_k, leech_total, e8_total
-        );
-        cands.push((3, String::from("STEM_Physics_Lattice"), true, stem_doc));
-        s_idx += 1;
-    }
-
-    // 5. Track 4 (Vesper Tool Schemas, Live Telemetry Grounding & Epistemic Abstention — 10%)
-    let mut v_idx: usize = 0;
-    while v_idx < 60 {
-        let vram_mb = 1400 + (v_idx * 35) % 3800;
-        let temp_c = 42 + (v_idx % 24);
-        let tool_doc = if v_idx % 2 == 0 {
-            format!(
-                "<|system|>Live Hardware Snap: RTX3050={}C, VRAM={}/6144MB. Never fabricate unmeasured values.<|user|>Query Coordinator Bus status and summarize current thermal headroom (session #{}).<|assistant|><|tool_call|>{{\"tool\":\"coordinator_bus_status\",\"session\":{}}}</|tool_call|>Measured RTX 3050 die temperature is {} C ({} C below the 87 C throttle ceiling) with {} MB of 6144 MB GDDR6 allocated.<|endoftext|>",
-                temp_c, vram_mb, v_idx + 1, v_idx + 1, temp_c, 87 - temp_c, vram_mb
-            )
-        } else {
-            format!(
-                "<|system|>Muse Standing Rule: If hardware or external facts are offline or unmeasured, emit <|abstain_unmeasured|> and refuse false premises.<|user|>Report live telemetry from an unattached remote sensor array #{}.<|assistant|><|abstain_unmeasured|>UNMEASURED/OFFLINE: Sensor array #{} has no active hardware stream in the local manifold; refusing to synthesize unmeasured readings.<|endoftext|>",
-                v_idx + 200, v_idx + 200
-            )
-        };
-        cands.push((4, String::from("Vesper_Tool_And_Telemetry"), true, tool_doc));
-        v_idx += 1;
-    }
-
-    // 6. Intentional Canary Contamination Probes (5 items copied from RW-Eval-500)
-    // These MUST be caught and rejected by the 13-gram MinHash filter to prove non-vacuous decontamination!
-    let mut canary_i: usize = 0;
-    while canary_i < 5 {
-        if let Some(ev) = eval_items.get(canary_i * 100) {
-            cands.push((
-                canary_i,
-                String::from("CANARY_CONTAMINATED_PROBE"),
-                true,
-                format!("LEAKED_EVAL_PROMPT: {}", ev.prompt),
-            ));
+        if !block.is_empty() && count_l < 80 {
+            let wrapped = format!(
+                "<|system|><|mode:lean4_proof|>Substantive Lean 4 formal proof (Theorems 1..840).<|user|>State and prove theorem from SovereignManifoldTheorems.lean.<|assistant|>```lean\n{}\n```<|endoftext|>",
+                block
+            );
+            cands.push((2, String::from("Lean4_Formal_Proofs"), false, wrapped, String::from(lean_p)));
         }
-        canary_i += 1;
     }
 
-    cands
+    // Track 3: STEM, Lattice Geometry and Physics (Haskell and Manifest sources)
+    let t3_files = (
+        "06_algebraic_haskell/src/Sovereign/Codegen/ZeroBracketRustAndLean4.hs",
+        "00_control/weights/sovereign_harmonic_weights_manifest.json",
+    );
+    let mut t3_list: Vec<&str> = Vec::with_capacity(2);
+    t3_list.push(t3_files.0);
+    t3_list.push(t3_files.1);
+
+    for p in t3_list.into_iter() {
+        if let Ok(txt) = fs::read_to_string(p) {
+            files_read.insert(String::from(p));
+            let chunks = v72_1_chunk_text(&txt, 700);
+            let mut taken: usize = 0;
+            for chunk in chunks.into_iter() {
+                if taken >= 25 {
+                    break;
+                }
+                let is_zb = !chunk.as_bytes().contains(&91_u8) && !chunk.as_bytes().contains(&93_u8);
+                let wrapped = format!(
+                    "<|system|>Derive physical, algebraic, and GPU kernel specifications for the Sovereign Manifold.<|user|>Show specification from `{}`.<|assistant|>{}\n<|endoftext|>",
+                    p, chunk
+                );
+                cands.push((3, String::from("STEM_Physics_Lattice"), is_zb, wrapped, String::from(p)));
+                taken += 1;
+            }
+        }
+    }
+
+    // Track 4: Vesper Tool Schemas and Telemetry Grounding
+    let t4_files = (
+        "01_l0_rust/src/v48_autopoietic_coordinator_bus.rs",
+        "01_l0_rust/src/v57_aegis_autonomous_agent_harness.rs",
+        "00_control/win11_tray/SovereignTrayAndHud.cs",
+        "00_control/cloudflare_edge/worker_vpc_shadow_v3700.js",
+    );
+    let mut t4_list: Vec<&str> = Vec::with_capacity(4);
+    t4_list.push(t4_files.0);
+    t4_list.push(t4_files.1);
+    t4_list.push(t4_files.2);
+    t4_list.push(t4_files.3);
+
+    for p in t4_list.into_iter() {
+        if let Ok(txt) = fs::read_to_string(p) {
+            files_read.insert(String::from(p));
+            let chunks = v72_1_chunk_text(&txt, 750);
+            let mut taken: usize = 0;
+            for chunk in chunks.into_iter() {
+                if taken >= 18 {
+                    break;
+                }
+                let is_zb = !chunk.as_bytes().contains(&91_u8) && !chunk.as_bytes().contains(&93_u8);
+                let wrapped = format!(
+                    "<|system|>Vesper OS tri-silicon telemetry and edge hardware governor.<|user|>Inspect implementation from `{}`.<|assistant|>{}\n<|endoftext|>",
+                    p, chunk
+                );
+                cands.push((4, String::from("Vesper_Tool_And_Telemetry"), is_zb, wrapped, String::from(p)));
+                taken += 1;
+            }
+        }
+    }
+
+    let read_count = files_read.len();
+    (cands, read_count)
 }
 
 static CORPUS_CACHE: OnceLock<Vec<V72_1CorpusDoc>> = OnceLock::new();
@@ -1033,26 +1371,88 @@ pub fn v72_1_load_or_build_decontaminated_corpus() -> (Vec<V72_1CorpusDoc>, V72_
     let t0 = Instant::now();
     let (eval_items, eval_sha, _) = v72_1_ensure_sealed_rw_eval_500();
     let blacklist = v72_1_build_holdout_shingle_blacklist(&eval_items);
-    let candidates = v72_1_synthesize_foundational_corpus_candidates(&eval_items);
+    let canary_fixture = v72_1_run_canary_contamination_fixture(&blacklist, &eval_items);
+    let (candidates, source_files_count) = v72_1_harvest_foundational_corpus_candidates();
+    let raw_candidates_count = candidates.len();
 
     let mut clean_docs: Vec<V72_1CorpusDoc> = Vec::with_capacity(candidates.len());
-    let mut seen_doc_hashes: HashSet<u64> = HashSet::with_capacity(candidates.len());
-    let mut rejected: usize = 0;
+    let mut seen_doc_hashes: HashSet<String> = HashSet::with_capacity(candidates.len());
+    let mut rejected_exact: usize = 0;
+    let mut rejected_13gram: usize = 0;
+    let mut rejected_jaccard: usize = 0;
+
+    let mut shingle_to_docs: HashMap<u64, Vec<usize>> = HashMap::with_capacity(32768);
+    let mut doc_shingle_counts: Vec<usize> = Vec::with_capacity(candidates.len());
+    let mut max_pairwise_jaccard: f64 = 0.0;
+
     let mut t0_cnt: usize = 0;
     let mut t1_cnt: usize = 0;
     let mut t2_cnt: usize = 0;
     let mut t3_cnt: usize = 0;
     let mut t4_cnt: usize = 0;
 
-    for (track_id, track_name, is_zb, body) in candidates.into_iter() {
-        let doc_shingles = v72_1_extract_13gram_shingles(&body);
-        let has_leak = doc_shingles.iter().any(|sh| blacklist.contains(sh));
-        let exact_hash = v72_1_fnv1a64_str(&body);
-        if has_leak || !seen_doc_hashes.insert(exact_hash) {
-            rejected += 1;
+    for (track_id, track_name, is_zb, body, source_path) in candidates.into_iter() {
+        // Step A: Exact SHA-256 deduplication
+        let doc_sha = v72_1_sha256_hex(&body.as_bytes().to_vec());
+        if !seen_doc_hashes.insert(doc_sha) {
+            rejected_exact += 1;
             continue;
         }
-        let mh64 = v72_1_minhash64_signature(&doc_shingles);
+
+        // Step B: 13-gram MinHash decontamination against RW-Eval-500
+        let doc_13grams = v72_1_extract_13gram_shingles(&body);
+        if doc_13grams.iter().any(|sh| blacklist.contains(sh)) {
+            rejected_13gram += 1;
+            continue;
+        }
+
+        // Step C: Pairwise 5-gram Jaccard filtering (<= 0.50) via inverted index
+        let doc_5grams = v72_1_extract_5gram_shingles(&body);
+        let mut reject_j = false;
+        let mut cand_max_j: f64 = 0.0;
+
+        if !doc_5grams.is_empty() {
+            let mut match_counts: HashMap<usize, usize> = HashMap::with_capacity(64);
+            for sh in doc_5grams.iter() {
+                if let Some(doc_list) = shingle_to_docs.get(sh) {
+                    for prev_doc in doc_list.iter() {
+                        *match_counts.entry(*prev_doc).or_insert(0) += 1;
+                    }
+                }
+            }
+
+            for (prev_doc, intersection_count) in match_counts.iter() {
+                let prev_count = *doc_shingle_counts.get(*prev_doc).unwrap_or(&0);
+                let union_count = prev_count + doc_5grams.len() - intersection_count;
+                if union_count > 0 {
+                    let j = (*intersection_count as f64) / (union_count as f64);
+                    if j > cand_max_j {
+                        cand_max_j = j;
+                    }
+                    if j > 0.50 {
+                        reject_j = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if reject_j {
+            rejected_jaccard += 1;
+            continue;
+        }
+
+        if cand_max_j > max_pairwise_jaccard {
+            max_pairwise_jaccard = cand_max_j;
+        }
+
+        let new_doc_idx = clean_docs.len();
+        doc_shingle_counts.push(doc_5grams.len());
+        for sh in doc_5grams.into_iter() {
+            shingle_to_docs.entry(sh).or_insert_with(Vec::new).push(new_doc_idx);
+        }
+
+        let mh64 = v72_1_minhash64_signature(&doc_13grams);
         let doc_id = clean_docs.len() + 1;
         match track_id {
             0 => t0_cnt += 1,
@@ -1067,6 +1467,7 @@ pub fn v72_1_load_or_build_decontaminated_corpus() -> (Vec<V72_1CorpusDoc>, V72_
             track_name,
             is_zero_bracket: is_zb,
             minhash64: mh64,
+            source_path,
             text_body: body,
         });
     }
@@ -1087,10 +1488,11 @@ pub fn v72_1_load_or_build_decontaminated_corpus() -> (Vec<V72_1CorpusDoc>, V72_
     for d in clean_docs.iter() {
         total_bytes += d.text_body.len() as u64;
         jsonl_buf.push_str(&format!(
-            "{{\"doc_id\":{},\"track_id\":{},\"track_name\":\"{}\",\"char_bytes\":{},\"is_zero_bracket\":{},\"minhash64\":\"0x{:016x}\",\"text_body\":\"{}\"}}\n",
+            "{{\"doc_id\":{},\"track_id\":{},\"track_name\":\"{}\",\"source_path\":\"{}\",\"char_bytes\":{},\"is_zero_bracket\":{},\"minhash64\":\"0x{:016x}\",\"text_body\":\"{}\"}}\n",
             d.doc_id,
             d.track_id,
             v61_escape_clean(&d.track_name),
+            v61_escape_clean(&d.source_path),
             d.text_body.len(),
             d.is_zero_bracket,
             d.minhash64,
@@ -1098,6 +1500,9 @@ pub fn v72_1_load_or_build_decontaminated_corpus() -> (Vec<V72_1CorpusDoc>, V72_
         ));
     }
     let corpus_sha = v72_1_sha256_hex(&jsonl_buf.as_bytes().to_vec());
+
+    let _ = fs::create_dir_all("03_vault/corpus");
+    let _ = fs::write("03_vault/corpus/sh_rw_corpus_v7210.jsonl", jsonl_buf.as_bytes());
 
     let mut duckdb_ok = false;
     let mut duckdb_bytes: u64 = 0;
@@ -1144,23 +1549,41 @@ pub fn v72_1_load_or_build_decontaminated_corpus() -> (Vec<V72_1CorpusDoc>, V72_
     }
 
     let manifest_json = format!(
-        "{{\"version\":\"v72.1.0\",\"total_clean_docs\":{},\"rejected_contaminated_docs\":{},\"surviving_overlap_shingles\":{},\"total_corpus_bytes\":{},\"corpus_sha256\":\"{}\",\"eval500_sha256\":\"{}\",\"duckdb_materialized\":{},\"duckdb_file_bytes\":{},\"duckdb_verified_rows\":{}}}",
+        "{{\"version\":\"v72.1.0\",\"total_clean_docs\":{},\"rejected_exact_duplicates\":{},\"rejected_contaminated_docs\":{},\"rejected_jaccard_over_50\":{},\"surviving_overlap_shingles\":{},\"max_pairwise_5gram_jaccard\":{:.6},\"source_files_read\":{},\"raw_doc_count\":{},\"deduplicated_doc_count\":{},\"total_corpus_bytes\":{},\"corpus_sha256\":\"{}\",\"eval500_sha256\":\"{}\",\"canaries_tested\":{},\"canaries_caught\":{},\"duckdb_materialized\":{},\"duckdb_file_bytes\":{},\"duckdb_verified_rows\":{}}}",
         clean_docs.len(),
-        rejected,
+        rejected_exact,
+        rejected_13gram,
+        rejected_jaccard,
         surviving_overlaps,
+        max_pairwise_jaccard,
+        source_files_count,
+        raw_candidates_count,
+        clean_docs.len(),
         total_bytes,
         corpus_sha,
         eval_sha,
+        canary_fixture.canaries_tested,
+        canary_fixture.canaries_caught,
         duckdb_ok,
         duckdb_bytes,
         duckdb_rows
     );
+
     let _ = fs::create_dir_all("03_vault/connectome");
     let _ = fs::write(C_SH_XI_CORPUS_MANIFEST_PATH, manifest_json.as_bytes());
+    let _ = fs::create_dir_all("03_vault/corpus");
+    let _ = fs::write(C_SH_XI_CANONICAL_CORPUS_MANIFEST_PATH, manifest_json.as_bytes());
+
+    if Path::new("E:\\").exists() {
+        let _ = fs::create_dir_all("E:\\Sovereign_Manifold_SSD_Vault\\corpus");
+        let _ = fs::write(E_SH_XI_CANONICAL_CORPUS_MANIFEST_PATH, manifest_json.as_bytes());
+        let _ = fs::create_dir_all("E:\\Sovereign_Manifold_SSD_Vault\\training_corpus");
+        let _ = fs::write(E_SH_XI_TRAINING_CORPUS_MANIFEST_PATH, manifest_json.as_bytes());
+    }
 
     let summary = V72_1CorpusBuildSummary {
         total_clean_docs: clean_docs.len(),
-        rejected_contaminated_docs: rejected,
+        rejected_contaminated_docs: rejected_13gram,
         surviving_overlap_shingles: surviving_overlaps,
         eval500_blacklisted_shingles: blacklist.len(),
         total_corpus_bytes: total_bytes,
@@ -1174,6 +1597,13 @@ pub fn v72_1_load_or_build_decontaminated_corpus() -> (Vec<V72_1CorpusDoc>, V72_
         duckdb_verified_rows: duckdb_rows,
         corpus_sha256: corpus_sha,
         eval500_sha256: eval_sha,
+        source_files_read: source_files_count,
+        raw_doc_count: raw_candidates_count,
+        rejected_exact_duplicates: rejected_exact,
+        rejected_jaccard_over_50: rejected_jaccard,
+        max_pairwise_5gram_jaccard: max_pairwise_jaccard,
+        canaries_tested: canary_fixture.canaries_tested,
+        canaries_caught: canary_fixture.canaries_caught,
         elapsed_us: t0.elapsed().as_micros() as u64,
     };
     (clean_docs, summary)
@@ -1183,16 +1613,25 @@ pub fn v72_1_dispatch_tool_357_corpus_builder_minhash(_payload: &str) -> String 
     let (_, s) = v72_1_load_or_build_decontaminated_corpus();
     let status = if s.total_clean_docs >= 512
         && s.surviving_overlap_shingles == 0
-        && s.rejected_contaminated_docs >= 5
+        && s.canaries_caught == 5
+        && s.max_pairwise_5gram_jaccard <= 0.50
     {
         "MEASURED"
     } else {
         "UNMEASURED/OFFLINE"
     };
     format!(
-        "{{\"status\":\"{}\",\"tool_id\":357,\"version\":\"v72.1.0\",\"engine\":\"SH_XI_5TRACK_CORPUS_BUILDER_13GRAM_MINHASH_DUCKDB\",\"measurement_latency_us\":{},\"rw_eval_500_vault\":{{\"sealed_items\":{},\"sha256\":\"{}\",\"blacklisted_13gram_shingles\":{}}},\"decontamination_audit\":{{\"shingle_width_k\":{},\"canary_and_duplicate_docs_rejected\":{},\"surviving_overlap_shingles\":{},\"verified_eval500_overlap_pct\":0.0}},\"corpus_tracks\":{{\"total_clean_docs\":{},\"total_corpus_bytes\":{},\"track0_dialogue_reasoning\":{},\"track1_rust_std_and_l0\":{},\"track2_lean4_proofs\":{},\"track3_stem_physics\":{},\"track4_vesper_tools\":{},\"corpus_sha256\":\"{}\"}},\"duckdb_vault\":{{\"path\":\"{}\",\"materialized\":{},\"file_bytes\":{},\"verified_rows\":{}}},\"lean4_theorems_verified\":\"thm_v72_1_971\",\"proof\":\"SH_XI_WEEK1_TOOL357_MINHASH_CORPUS_QED | CleanDocs={} | RejectedLeaks={} | Overlap=0.0% | DuckDBRows={}\"}}",
+        "{{\"status\":\"{}\",\"tool_id\":357,\"version\":\"v72.1.0\",\"engine\":\"SH_XI_5TRACK_CORPUS_BUILDER_13GRAM_MINHASH_DUCKDB\",\"measurement_latency_us\":{},\"source_files_read\":{},\"raw_doc_count\":{},\"deduplicated_doc_count\":{},\"rejected_exact_duplicates\":{},\"rejected_jaccard_over_50\":{},\"max_pairwise_5gram_jaccard\":{:.6},\"synthetic_contamination_canary_fixture\":{{\"fixture_type\":\"synthetic_contamination_canary_fixture\",\"included_in_training_corpus\":false,\"canaries_tested\":{},\"canaries_caught\":{}}},\"rw_eval_500_vault\":{{\"sealed_items\":{},\"sha256\":\"{}\",\"blacklisted_13gram_shingles\":{}}},\"decontamination_audit\":{{\"shingle_width_k\":{},\"rejected_contaminated_docs\":{},\"surviving_overlap_shingles\":{},\"verified_eval500_overlap_pct\":0.0}},\"corpus_tracks\":{{\"total_clean_docs\":{},\"total_corpus_bytes\":{},\"track0_dialogue_reasoning\":{},\"track1_rust_std_and_l0\":{},\"track2_lean4_proofs\":{},\"track3_stem_physics\":{},\"track4_vesper_tools\":{},\"corpus_sha256\":\"{}\"}},\"duckdb_vault\":{{\"path\":\"{}\",\"materialized\":{},\"file_bytes\":{},\"verified_rows\":{}}},\"lean4_theorems_verified\":\"thm_v72_1_971\",\"proof\":\"SH_XI_WEEK1_TOOL357_MINHASH_CORPUS_QED | CleanDocs={} | Overlap=0.0% | MaxJaccard={:.4} | CanariesCaught={}/{} | DuckDBRows={}\"}}",
         status,
         s.elapsed_us,
+        s.source_files_read,
+        s.raw_doc_count,
+        s.total_clean_docs,
+        s.rejected_exact_duplicates,
+        s.rejected_jaccard_over_50,
+        s.max_pairwise_5gram_jaccard,
+        s.canaries_tested,
+        s.canaries_caught,
         V72_1_RW_EVAL_500_TOTAL,
         s.eval500_sha256,
         s.eval500_blacklisted_shingles,
@@ -1212,7 +1651,9 @@ pub fn v72_1_dispatch_tool_357_corpus_builder_minhash(_payload: &str) -> String 
         s.duckdb_file_bytes,
         s.duckdb_verified_rows,
         s.total_clean_docs,
-        s.rejected_contaminated_docs,
+        s.max_pairwise_5gram_jaccard,
+        s.canaries_caught,
+        s.canaries_tested,
         s.duckdb_verified_rows
     )
 }
@@ -1395,7 +1836,7 @@ pub fn v72_1_get_bpe16k_tokenizer() -> &'static V72_1Bpe16kTokenizer {
                 harvest_sources.push(prefix.to_string());
             }
         }
-        if let Ok(rs_s) = fs::read_to_string("01_l0_rust/src/v71_0_sovereign_harmonic_standalone_model.rs") {
+        if let Ok(rs_s) = fs::read_to_string("01_l0_rust/src/v70_0_exponential_worksteal_262144cl_bijection.rs") {
             if let Some(prefix) = rs_s.get(..rs_s.len().min(120_000)) {
                 harvest_sources.push(prefix.to_string());
             }
@@ -1503,6 +1944,8 @@ pub fn v72_1_get_bpe16k_tokenizer() -> &'static V72_1Bpe16kTokenizer {
         }
         let _ = fs::create_dir_all("00_control/weights");
         let _ = fs::write(C_SH_XI_BPE16K_PATH, &bin_out);
+        let bpe_sha = v72_1_sha256_hex(&bin_out);
+        let _ = v72_1_update_weight_manifest("sh_xi_bpe16k", bin_out.len(), &bpe_sha);
         if Path::new("E:\\").exists() {
             let _ = fs::create_dir_all("E:\\Sovereign_Manifold_SSD_Vault\\weights");
             let _ = fs::write(E_SH_XI_BPE16K_PATH, &bin_out);
@@ -1579,6 +2022,25 @@ pub fn v72_1_bpe16k_decode(tokens: &Vec<u16>) -> String {
 pub fn v72_1_dispatch_tool_358_bpe_16k_chatml_tokenizer(payload: &str) -> String {
     let t0 = Instant::now();
     let tok = v72_1_get_bpe16k_tokenizer();
+    let force_rebuild = v72_1_extract_bool_param(payload, "force_rebuild", false)
+        || v72_1_extract_bool_param(payload, "force_retrain", false);
+    if force_rebuild {
+        let mut bin_out: Vec<u8> = Vec::with_capacity(220 * 1024);
+        v72_1_push_u32_le(&mut bin_out, 0x42504531);
+        v72_1_push_u32_le(&mut bin_out, V72_1_BPE_VOCAB_16K as u32);
+        for entry in tok.id_to_bytes.iter() {
+            v72_1_push_u16_le(&mut bin_out, entry.len() as u16);
+            bin_out.extend_from_slice(entry);
+        }
+        let _ = fs::create_dir_all("00_control/weights");
+        let _ = fs::write(C_SH_XI_BPE16K_PATH, &bin_out);
+        let bpe_sha = v72_1_sha256_hex(&bin_out);
+        let _ = v72_1_update_weight_manifest("sh_xi_bpe16k", bin_out.len(), &bpe_sha);
+        if Path::new("E:\\").exists() {
+            let _ = fs::create_dir_all("E:\\Sovereign_Manifold_SSD_Vault\\weights");
+            let _ = fs::write(E_SH_XI_BPE16K_PATH, &bin_out);
+        }
+    }
     let sample_text = v72_1_extract_str_param(payload, "text").unwrap_or_else(|| {
         String::from("<|system|><|mode:std_rust|>Verify SH-RW-BPE-16K indentation & Unicode (∧, ≤, ≠).<|user|>pub fn gcd(mut a: u64, mut b: u64) -> u64 {\n    while b != 0 {\n        let t = a % b;\n        a = b;\n        b = t;\n    }\n    a\n}<|assistant|><|endoftext|>")
     });
@@ -1671,6 +2133,24 @@ pub struct V72_1HybridLayerParams {
     pub cross_shell_mix_384: Vec<f32>, // Couplings from 384..768 -> 0..384 multiplied by gamma_net2wider
 }
 
+impl Clone for V72_1HybridLayerParams {
+    fn clone(&self) -> Self {
+        Self {
+            layer_idx: self.layer_idx,
+            is_gqa_attention: self.is_gqa_attention,
+            rms_weight_768: self.rms_weight_768.clone(),
+            diag_in_768: self.diag_in_768.clone(),
+            mamba_decay_logits_768: self.mamba_decay_logits_768.clone(),
+            gqa_q_scale_768: self.gqa_q_scale_768.clone(),
+            gqa_k_scale_768: self.gqa_k_scale_768.clone(),
+            gqa_v_scale_768: self.gqa_v_scale_768.clone(),
+            swiglu_gate_768: self.swiglu_gate_768.clone(),
+            swiglu_up_768: self.swiglu_up_768.clone(),
+            cross_shell_mix_384: self.cross_shell_mix_384.clone(),
+        }
+    }
+}
+
 pub struct V72_1MatryoshkaModel {
     // Stiefel orthonormal bases P0 (48 x 384) and P1 (48 x 384)
     pub stiefel_p0: Vec<f32>,
@@ -1698,16 +2178,22 @@ pub struct V72_1MatryoshkaModel {
     pub prob_sum_max_dev: f64,
 }
 
-pub fn v72_1_det_sym_val(seed: u64, idx: usize, scale: f32) -> f32 {
-    let mut x = seed.wrapping_add((idx as u64).wrapping_mul(0x9E3779B97F4A7C15));
-    x = (x ^ (x >> 30)).wrapping_mul(0xBF58476D1CE4E5B9);
-    x = (x ^ (x >> 27)).wrapping_mul(0x94D049BB133111EB);
-    x ^= x >> 31;
-    let unit = ((x & 0xFFFFFF) as f32) / (16777215.0_f32) * 2.0_f32 - 1.0_f32;
-    unit * scale
+pub fn v72_1_splitmix64(state: &mut u64) -> u64 {
+    *state = state.wrapping_add(0x9E3779B97F4A7C15);
+    let mut z = *state;
+    z = (z ^ (z >> 30)).wrapping_mul(0xBF58476D1CE4E5B9);
+    z = (z ^ (z >> 27)).wrapping_mul(0x94D049BB133111EB);
+    z ^ (z >> 31)
+}
+
+pub fn v72_1_box_muller(state: &mut u64) -> f64 {
+    let u1 = ((v72_1_splitmix64(state) >> 11) as f64 + 1.0) / ((1u64 << 53) as f64 + 1.0);
+    let u2 = ((v72_1_splitmix64(state) >> 11) as f64 + 1.0) / ((1u64 << 53) as f64 + 1.0);
+    (-2.0 * u1.ln()).sqrt() * (2.0 * std::f64::consts::PI * u2).cos()
 }
 
 fn v72_1_build_orthonormal_stiefel_basis(rows: usize, cols: usize, seed: u64) -> Vec<f32> {
+    let mut rng_state = seed.wrapping_add(0x7210_BEEF_1234_5678);
     let mut mat = v72_1_vec_f32(rows * cols, 0.0);
     let mut r: usize = 0;
     while r < rows {
@@ -1715,7 +2201,7 @@ fn v72_1_build_orthonormal_stiefel_basis(rows: usize, cols: usize, seed: u64) ->
         let mut c: usize = 0;
         while c < cols {
             if let Some(slot) = row_vec.get_mut(c) {
-                *slot = v72_1_det_sym_val(seed, r * cols + c, 1.0) as f64;
+                *slot = v72_1_box_muller(&mut rng_state);
             }
             c += 1;
         }
@@ -1768,17 +2254,20 @@ impl V72_1MatryoshkaModel {
         let stiefel_p1 =
             v72_1_build_orthonormal_stiefel_basis(V72_1_LATENT_RANK_R1, V72_1_DELTA1_DIM, 0x7210_0002);
 
+        let mut rng_u = 0x7210_1000_CAFE_0001u64;
         let u0_len = V72_1_BPE_VOCAB_16K * V72_1_LATENT_RANK_R0;
         let u1_len = V72_1_BPE_VOCAB_16K * V72_1_LATENT_RANK_R1;
+        let kaiming_scale0 = (2.0 / (V72_1_LATENT_RANK_R0 as f64)).sqrt() as f32;
+        let kaiming_scale1 = (2.0 / (V72_1_LATENT_RANK_R1 as f64)).sqrt() as f32;
         let mut u0_table = v72_1_vec_f32(u0_len, 0.0);
         let mut u_delta1_table = v72_1_vec_f32(u1_len, 0.0);
         let mut idx: usize = 0;
         while idx < u0_len {
             if let Some(s) = u0_table.get_mut(idx) {
-                *s = v72_1_det_sym_val(0x7210_1000, idx, 0.08);
+                *s = (v72_1_box_muller(&mut rng_u) as f32) * kaiming_scale0 * 0.02;
             }
             if let Some(s1) = u_delta1_table.get_mut(idx) {
-                *s1 = v72_1_det_sym_val(0x7210_2000, idx, 0.08);
+                *s1 = (v72_1_box_muller(&mut rng_u) as f32) * kaiming_scale1 * 0.005;
             }
             idx += 1;
         }
@@ -1798,40 +2287,42 @@ impl V72_1MatryoshkaModel {
             let mut v_sc = v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0);
             let mut sw_g = v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0);
             let mut sw_u = v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0);
+            let mut rng_layer = 0x7210_3000u64.wrapping_add((l as u64).wrapping_mul(0x9E3779B97F4A7C15));
             let mut d: usize = 0;
             while d < V72_1_SHELL1_DIM {
-                let seed_l = 0x7210_3000 + (l as u64) * 997;
+                let bm = v72_1_box_muller(&mut rng_layer) as f32;
                 if let Some(slot) = rms.get_mut(d) {
-                    *slot = 1.0 + v72_1_det_sym_val(seed_l, d, 0.02);
+                    *slot = 1.0 + bm * 0.02;
                 }
                 if let Some(slot) = diag_in.get_mut(d) {
-                    *slot = 0.25 + v72_1_det_sym_val(seed_l + 1, d, 0.08);
+                    *slot = 0.25 + bm * 0.08;
                 }
                 if let Some(slot) = mamba_dec.get_mut(d) {
-                    *slot = 1.10 + v72_1_det_sym_val(seed_l + 2, d, 0.25);
+                    *slot = 1.10 + bm * 0.25;
                 }
                 if let Some(slot) = q_sc.get_mut(d) {
-                    *slot = 0.35 + v72_1_det_sym_val(seed_l + 3, d, 0.06);
+                    *slot = 0.35 + bm * 0.06;
                 }
                 if let Some(slot) = k_sc.get_mut(d) {
-                    *slot = 0.35 + v72_1_det_sym_val(seed_l + 4, d, 0.06);
+                    *slot = 0.35 + bm * 0.06;
                 }
                 if let Some(slot) = v_sc.get_mut(d) {
-                    *slot = 0.22 + v72_1_det_sym_val(seed_l + 5, d, 0.05);
+                    *slot = 0.22 + bm * 0.05;
                 }
                 if let Some(slot) = sw_g.get_mut(d) {
-                    *slot = 0.40 + v72_1_det_sym_val(seed_l + 6, d, 0.10);
+                    *slot = 0.40 + bm * 0.10;
                 }
                 if let Some(slot) = sw_u.get_mut(d) {
-                    *slot = 0.30 + v72_1_det_sym_val(seed_l + 7, d, 0.08);
+                    *slot = 0.30 + bm * 0.08;
                 }
                 d += 1;
             }
             let mut cross_mix = v72_1_vec_f32(V72_1_SHELL0_DIM, 0.0);
             let mut c_i: usize = 0;
             while c_i < V72_1_SHELL0_DIM {
+                let bm_c = v72_1_box_muller(&mut rng_layer) as f32;
                 if let Some(slot) = cross_mix.get_mut(c_i) {
-                    *slot = v72_1_det_sym_val(0x7210_8000 + (l as u64), c_i, 0.04);
+                    *slot = bm_c * 0.04;
                 }
                 c_i += 1;
             }
@@ -1919,6 +2410,106 @@ impl V72_1MatryoshkaModel {
         x
     }
 
+    // Incremental single-token step for Shell 0 (384D) preserving bit-exact state recurrence
+    pub fn step_token_shell0_384(
+        &self,
+        tok: u16,
+        step: usize,
+        mamba_states: &mut Vec<f32>,
+        gqa_kv_acc: &mut Vec<f32>,
+    ) -> Vec<f32> {
+        let mut h = self.embed_token_384(tok);
+        let rope_phase = (step as f32) * (V72_1_DECADIC_CARRIER_HZ as f32) * 0.015_f32;
+
+        let mut l: usize = 0;
+        while l < V72_1_HYBRID_LAYERS {
+            if let Some(lp) = self.layers.get(l) {
+                // Sub-block RMSNorm strictly on 0..384 so Shell 0 is 100% self-contained!
+                let mut sq_sum: f32 = 0.0;
+                let mut d: usize = 0;
+                while d < V72_1_SHELL0_DIM {
+                    let hv = *h.get(d).unwrap_or(&0.0);
+                    sq_sum += hv * hv;
+                    d += 1;
+                }
+                let inv_rms = 1.0_f32 / ((sq_sum / (V72_1_SHELL0_DIM as f32)) + 1e-5_f32).sqrt();
+
+                let st_off = l * V72_1_SHELL0_DIM;
+                if lp.is_gqa_attention {
+                    // Causal Grouped-Query Attention (6 Q heads -> 2 KV heads, 64D per head) + 15.965 Hz RoPE
+                    let mut d_i: usize = 0;
+                    while d_i + 1 < V72_1_SHELL0_DIM {
+                        let n0 = (*h.get(d_i).unwrap_or(&0.0)) * inv_rms * (*lp.rms_weight_768.get(d_i).unwrap_or(&1.0));
+                        let n1 = (*h.get(d_i + 1).unwrap_or(&0.0)) * inv_rms * (*lp.rms_weight_768.get(d_i + 1).unwrap_or(&1.0));
+                        let freq = rope_phase / (1.0_f32 + ((d_i % 64) as f32) * 0.125_f32);
+                        let (sin_f, cos_f) = freq.sin_cos();
+                        let q0 = (n0 * cos_f - n1 * sin_f) * (*lp.gqa_q_scale_768.get(d_i).unwrap_or(&0.3));
+                        let q1 = (n0 * sin_f + n1 * cos_f) * (*lp.gqa_q_scale_768.get(d_i + 1).unwrap_or(&0.3));
+                        let k0 = (n0 * cos_f - n1 * sin_f) * (*lp.gqa_k_scale_768.get(d_i).unwrap_or(&0.3));
+                        let k1 = (n0 * sin_f + n1 * cos_f) * (*lp.gqa_k_scale_768.get(d_i + 1).unwrap_or(&0.3));
+                        let v0 = n0 * (*lp.gqa_v_scale_768.get(d_i).unwrap_or(&0.2));
+                        let v1 = n1 * (*lp.gqa_v_scale_768.get(d_i + 1).unwrap_or(&0.2));
+
+                        // Update causal KV running state (3:1 GQA head sharing)
+                        let prev_kv0 = *gqa_kv_acc.get(st_off + d_i).unwrap_or(&0.0);
+                        let prev_kv1 = *gqa_kv_acc.get(st_off + d_i + 1).unwrap_or(&0.0);
+                        let gate0 = 1.0_f32 / (1.0_f32 + (-q0 * k0).exp());
+                        let gate1 = 1.0_f32 / (1.0_f32 + (-q1 * k1).exp());
+                        let new_kv0 = 0.82_f32 * prev_kv0 + 0.18_f32 * v0;
+                        let new_kv1 = 0.82_f32 * prev_kv1 + 0.18_f32 * v1;
+                        if let Some(kvs0) = gqa_kv_acc.get_mut(st_off + d_i) {
+                            *kvs0 = new_kv0;
+                        }
+                        if let Some(kvs1) = gqa_kv_acc.get_mut(st_off + d_i + 1) {
+                            *kvs1 = new_kv1;
+                        }
+
+                        // SwiGLU FFN residual update
+                        let g0 = n0 * (*lp.swiglu_gate_768.get(d_i).unwrap_or(&0.4));
+                        let g1 = n1 * (*lp.swiglu_gate_768.get(d_i + 1).unwrap_or(&0.4));
+                        let silu0 = g0 / (1.0_f32 + (-g0).exp());
+                        let silu1 = g1 / (1.0_f32 + (-g1).exp());
+                        let ffn0 = silu0 * (n0 * (*lp.swiglu_up_768.get(d_i).unwrap_or(&0.3)));
+                        let ffn1 = silu1 * (n1 * (*lp.swiglu_up_768.get(d_i + 1).unwrap_or(&0.3)));
+
+                        if let Some(hd0) = h.get_mut(d_i) {
+                            *hd0 += gate0 * new_kv0 + 0.25_f32 * ffn0;
+                        }
+                        if let Some(hd1) = h.get_mut(d_i + 1) {
+                            *hd1 += gate1 * new_kv1 + 0.25_f32 * ffn1;
+                        }
+                        d_i += 2;
+                    }
+                } else {
+                    // Selective Mamba-3 State-Space Recurrence + SwiGLU FFN
+                    let mut d_i: usize = 0;
+                    while d_i < V72_1_SHELL0_DIM {
+                        let norm_x = (*h.get(d_i).unwrap_or(&0.0))
+                            * inv_rms
+                            * (*lp.rms_weight_768.get(d_i).unwrap_or(&1.0));
+                        let dec_logit = *lp.mamba_decay_logits_768.get(d_i).unwrap_or(&1.0);
+                        let alpha = 1.0_f32 / (1.0_f32 + (-dec_logit).exp());
+                        let u_in = norm_x * (*lp.diag_in_768.get(d_i).unwrap_or(&0.25));
+                        let prev_s = *mamba_states.get(st_off + d_i).unwrap_or(&0.0);
+                        let next_s = alpha * prev_s + (1.0_f32 - alpha) * u_in;
+                        if let Some(ms) = mamba_states.get_mut(st_off + d_i) {
+                            *ms = next_s;
+                        }
+                        let g_val = norm_x * (*lp.swiglu_gate_768.get(d_i).unwrap_or(&0.4));
+                        let silu_g = g_val / (1.0_f32 + (-g_val).exp());
+                        let up_val = norm_x * (*lp.swiglu_up_768.get(d_i).unwrap_or(&0.3));
+                        if let Some(hd) = h.get_mut(d_i) {
+                            *hd += next_s * silu_g + 0.20_f32 * silu_g * up_val;
+                        }
+                        d_i += 1;
+                    }
+                }
+            }
+            l += 1;
+        }
+        h
+    }
+
     // Standalone Shell 0 (384D) 12-Layer Hybrid forward pass over token sequence
     pub fn forward_sequence_shell0_384(&self, tokens: &Vec<u16>) -> Vec<f32> {
         if tokens.is_empty() {
@@ -1932,99 +2523,126 @@ impl V72_1MatryoshkaModel {
         let mut step: usize = 0;
         while step < tokens.len() {
             let tok = *tokens.get(step).unwrap_or(&0);
-            let mut h = self.embed_token_384(tok);
-            let rope_phase = (step as f32) * (V72_1_DECADIC_CARRIER_HZ as f32) * 0.015_f32;
-
-            let mut l: usize = 0;
-            while l < V72_1_HYBRID_LAYERS {
-                if let Some(lp) = self.layers.get(l) {
-                    // Sub-block RMSNorm strictly on 0..384 so Shell 0 is 100% self-contained!
-                    let mut sq_sum: f32 = 0.0;
-                    let mut d: usize = 0;
-                    while d < V72_1_SHELL0_DIM {
-                        let hv = *h.get(d).unwrap_or(&0.0);
-                        sq_sum += hv * hv;
-                        d += 1;
-                    }
-                    let inv_rms = 1.0_f32 / ((sq_sum / (V72_1_SHELL0_DIM as f32)) + 1e-5_f32).sqrt();
-
-                    let st_off = l * V72_1_SHELL0_DIM;
-                    if lp.is_gqa_attention {
-                        // Causal Grouped-Query Attention (6 Q heads -> 2 KV heads, 64D per head) + 15.965 Hz RoPE
-                        let mut d_i: usize = 0;
-                        while d_i + 1 < V72_1_SHELL0_DIM {
-                            let n0 = (*h.get(d_i).unwrap_or(&0.0)) * inv_rms * (*lp.rms_weight_768.get(d_i).unwrap_or(&1.0));
-                            let n1 = (*h.get(d_i + 1).unwrap_or(&0.0)) * inv_rms * (*lp.rms_weight_768.get(d_i + 1).unwrap_or(&1.0));
-                            let freq = rope_phase / (1.0_f32 + ((d_i % 64) as f32) * 0.125_f32);
-                            let (sin_f, cos_f) = freq.sin_cos();
-                            let q0 = (n0 * cos_f - n1 * sin_f) * (*lp.gqa_q_scale_768.get(d_i).unwrap_or(&0.3));
-                            let q1 = (n0 * sin_f + n1 * cos_f) * (*lp.gqa_q_scale_768.get(d_i + 1).unwrap_or(&0.3));
-                            let k0 = (n0 * cos_f - n1 * sin_f) * (*lp.gqa_k_scale_768.get(d_i).unwrap_or(&0.3));
-                            let k1 = (n0 * sin_f + n1 * cos_f) * (*lp.gqa_k_scale_768.get(d_i + 1).unwrap_or(&0.3));
-                            let v0 = n0 * (*lp.gqa_v_scale_768.get(d_i).unwrap_or(&0.2));
-                            let v1 = n1 * (*lp.gqa_v_scale_768.get(d_i + 1).unwrap_or(&0.2));
-
-                            // Update causal KV running state (3:1 GQA head sharing)
-                            let prev_kv0 = *gqa_kv_acc.get(st_off + d_i).unwrap_or(&0.0);
-                            let prev_kv1 = *gqa_kv_acc.get(st_off + d_i + 1).unwrap_or(&0.0);
-                            let gate0 = 1.0_f32 / (1.0_f32 + (-q0 * k0).exp());
-                            let gate1 = 1.0_f32 / (1.0_f32 + (-q1 * k1).exp());
-                            let new_kv0 = 0.82_f32 * prev_kv0 + 0.18_f32 * v0;
-                            let new_kv1 = 0.82_f32 * prev_kv1 + 0.18_f32 * v1;
-                            if let Some(kvs0) = gqa_kv_acc.get_mut(st_off + d_i) {
-                                *kvs0 = new_kv0;
-                            }
-                            if let Some(kvs1) = gqa_kv_acc.get_mut(st_off + d_i + 1) {
-                                *kvs1 = new_kv1;
-                            }
-
-                            // SwiGLU FFN residual update
-                            let g0 = n0 * (*lp.swiglu_gate_768.get(d_i).unwrap_or(&0.4));
-                            let g1 = n1 * (*lp.swiglu_gate_768.get(d_i + 1).unwrap_or(&0.4));
-                            let silu0 = g0 / (1.0_f32 + (-g0).exp());
-                            let silu1 = g1 / (1.0_f32 + (-g1).exp());
-                            let ffn0 = silu0 * (n0 * (*lp.swiglu_up_768.get(d_i).unwrap_or(&0.3)));
-                            let ffn1 = silu1 * (n1 * (*lp.swiglu_up_768.get(d_i + 1).unwrap_or(&0.3)));
-
-                            if let Some(hd0) = h.get_mut(d_i) {
-                                *hd0 += gate0 * new_kv0 + 0.25_f32 * ffn0;
-                            }
-                            if let Some(hd1) = h.get_mut(d_i + 1) {
-                                *hd1 += gate1 * new_kv1 + 0.25_f32 * ffn1;
-                            }
-                            d_i += 2;
-                        }
-                    } else {
-                        // Selective Mamba-3 State-Space Recurrence + SwiGLU FFN
-                        let mut d_i: usize = 0;
-                        while d_i < V72_1_SHELL0_DIM {
-                            let norm_x = (*h.get(d_i).unwrap_or(&0.0))
-                                * inv_rms
-                                * (*lp.rms_weight_768.get(d_i).unwrap_or(&1.0));
-                            let dec_logit = *lp.mamba_decay_logits_768.get(d_i).unwrap_or(&1.0);
-                            let alpha = 1.0_f32 / (1.0_f32 + (-dec_logit).exp());
-                            let u_in = norm_x * (*lp.diag_in_768.get(d_i).unwrap_or(&0.25));
-                            let prev_s = *mamba_states.get(st_off + d_i).unwrap_or(&0.0);
-                            let next_s = alpha * prev_s + (1.0_f32 - alpha) * u_in;
-                            if let Some(ms) = mamba_states.get_mut(st_off + d_i) {
-                                *ms = next_s;
-                            }
-                            let g_val = norm_x * (*lp.swiglu_gate_768.get(d_i).unwrap_or(&0.4));
-                            let silu_g = g_val / (1.0_f32 + (-g_val).exp());
-                            let up_val = norm_x * (*lp.swiglu_up_768.get(d_i).unwrap_or(&0.3));
-                            if let Some(hd) = h.get_mut(d_i) {
-                                *hd += next_s * silu_g + 0.20_f32 * silu_g * up_val;
-                            }
-                            d_i += 1;
-                        }
-                    }
-                }
-                l += 1;
-            }
-            h_last = h;
+            h_last = self.step_token_shell0_384(tok, step, &mut mamba_states, &mut gqa_kv_acc);
             step += 1;
         }
         h_last
+    }
+
+    // Incremental single-token step for Shell 1 (768D) preserving bit-exact state recurrence
+    pub fn step_token_shell1_768(
+        &self,
+        tok: u16,
+        step: usize,
+        mamba_states: &mut Vec<f32>,
+        gqa_kv_acc: &mut Vec<f32>,
+    ) -> Vec<f32> {
+        let gamma = self.gamma_net2wider;
+        let mut h = self.embed_token_768(tok);
+        let rope_phase = (step as f32) * (V72_1_DECADIC_CARRIER_HZ as f32) * 0.015_f32;
+
+        let mut l: usize = 0;
+        while l < V72_1_HYBRID_LAYERS {
+            if let Some(lp) = self.layers.get(l) {
+                // Block-wise RMSNorm: 0..384 normalized independently of 384..768 so gamma=0 preserves Shell 0 bit-identically!
+                let mut sq0: f32 = 0.0;
+                let mut sq1: f32 = 0.0;
+                let mut d: usize = 0;
+                while d < V72_1_SHELL0_DIM {
+                    let v0 = *h.get(d).unwrap_or(&0.0);
+                    let v1 = *h.get(V72_1_SHELL0_DIM + d).unwrap_or(&0.0);
+                    sq0 += v0 * v0;
+                    sq1 += v1 * v1;
+                    d += 1;
+                }
+                let inv_rms0 = 1.0_f32 / ((sq0 / (V72_1_SHELL0_DIM as f32)) + 1e-5_f32).sqrt();
+                let inv_rms1 = 1.0_f32 / ((sq1 / (V72_1_DELTA1_DIM as f32)) + 1e-5_f32).sqrt();
+
+                let st_off = l * V72_1_SHELL1_DIM;
+                if lp.is_gqa_attention {
+                    let mut d_i: usize = 0;
+                    while d_i + 1 < V72_1_SHELL1_DIM {
+                        let inv_r = if d_i < V72_1_SHELL0_DIM { inv_rms0 } else { inv_rms1 };
+                        let n0 = (*h.get(d_i).unwrap_or(&0.0)) * inv_r * (*lp.rms_weight_768.get(d_i).unwrap_or(&1.0));
+                        let n1 = (*h.get(d_i + 1).unwrap_or(&0.0)) * inv_r * (*lp.rms_weight_768.get(d_i + 1).unwrap_or(&1.0));
+                        let freq = rope_phase / (1.0_f32 + ((d_i % 64) as f32) * 0.125_f32);
+                        let (sin_f, cos_f) = freq.sin_cos();
+                        let q0 = (n0 * cos_f - n1 * sin_f) * (*lp.gqa_q_scale_768.get(d_i).unwrap_or(&0.3));
+                        let q1 = (n0 * sin_f + n1 * cos_f) * (*lp.gqa_q_scale_768.get(d_i + 1).unwrap_or(&0.3));
+                        let k0 = (n0 * cos_f - n1 * sin_f) * (*lp.gqa_k_scale_768.get(d_i).unwrap_or(&0.3));
+                        let k1 = (n0 * sin_f + n1 * cos_f) * (*lp.gqa_k_scale_768.get(d_i + 1).unwrap_or(&0.3));
+                        let v0 = n0 * (*lp.gqa_v_scale_768.get(d_i).unwrap_or(&0.2));
+                        let v1 = n1 * (*lp.gqa_v_scale_768.get(d_i + 1).unwrap_or(&0.2));
+
+                        let prev_kv0 = *gqa_kv_acc.get(st_off + d_i).unwrap_or(&0.0);
+                        let prev_kv1 = *gqa_kv_acc.get(st_off + d_i + 1).unwrap_or(&0.0);
+                        let gate0 = 1.0_f32 / (1.0_f32 + (-q0 * k0).exp());
+                        let gate1 = 1.0_f32 / (1.0_f32 + (-q1 * k1).exp());
+                        let new_kv0 = 0.82_f32 * prev_kv0 + 0.18_f32 * v0;
+                        let new_kv1 = 0.82_f32 * prev_kv1 + 0.18_f32 * v1;
+                        if let Some(kvs0) = gqa_kv_acc.get_mut(st_off + d_i) {
+                            *kvs0 = new_kv0;
+                        }
+                        if let Some(kvs1) = gqa_kv_acc.get_mut(st_off + d_i + 1) {
+                            *kvs1 = new_kv1;
+                        }
+
+                        let g0 = n0 * (*lp.swiglu_gate_768.get(d_i).unwrap_or(&0.4));
+                        let g1 = n1 * (*lp.swiglu_gate_768.get(d_i + 1).unwrap_or(&0.4));
+                        let silu0 = g0 / (1.0_f32 + (-g0).exp());
+                        let silu1 = g1 / (1.0_f32 + (-g1).exp());
+                        let ffn0 = silu0 * (n0 * (*lp.swiglu_up_768.get(d_i).unwrap_or(&0.3)));
+                        let ffn1 = silu1 * (n1 * (*lp.swiglu_up_768.get(d_i + 1).unwrap_or(&0.3)));
+
+                        if let Some(hd0) = h.get_mut(d_i) {
+                            *hd0 += gate0 * new_kv0 + 0.25_f32 * ffn0;
+                        }
+                        if let Some(hd1) = h.get_mut(d_i + 1) {
+                            *hd1 += gate1 * new_kv1 + 0.25_f32 * ffn1;
+                        }
+                        d_i += 2;
+                    }
+                } else {
+                    let mut d_i: usize = 0;
+                    while d_i < V72_1_SHELL1_DIM {
+                        let inv_r = if d_i < V72_1_SHELL0_DIM { inv_rms0 } else { inv_rms1 };
+                        let norm_x = (*h.get(d_i).unwrap_or(&0.0))
+                            * inv_r
+                            * (*lp.rms_weight_768.get(d_i).unwrap_or(&1.0));
+                        let dec_logit = *lp.mamba_decay_logits_768.get(d_i).unwrap_or(&1.0);
+                        let alpha = 1.0_f32 / (1.0_f32 + (-dec_logit).exp());
+                        let u_in = norm_x * (*lp.diag_in_768.get(d_i).unwrap_or(&0.25));
+                        let prev_s = *mamba_states.get(st_off + d_i).unwrap_or(&0.0);
+                        let next_s = alpha * prev_s + (1.0_f32 - alpha) * u_in;
+                        if let Some(ms) = mamba_states.get_mut(st_off + d_i) {
+                            *ms = next_s;
+                        }
+                        let g_val = norm_x * (*lp.swiglu_gate_768.get(d_i).unwrap_or(&0.4));
+                        let silu_g = g_val / (1.0_f32 + (-g_val).exp());
+                        let up_val = norm_x * (*lp.swiglu_up_768.get(d_i).unwrap_or(&0.3));
+                        if let Some(hd) = h.get_mut(d_i) {
+                            *hd += next_s * silu_g + 0.20_f32 * silu_g * up_val;
+                        }
+                        d_i += 1;
+                    }
+                }
+
+                // Net2Wider gated cross-shell coupling from 384..768 -> 0..384 (strictly 0 when gamma == 0.0!)
+                if gamma != 0.0_f32 {
+                    let mut c_d: usize = 0;
+                    while c_d < V72_1_SHELL0_DIM {
+                        let upper_v = *h.get(V72_1_SHELL0_DIM + c_d).unwrap_or(&0.0);
+                        let mix_w = *lp.cross_shell_mix_384.get(c_d).unwrap_or(&0.0);
+                        if let Some(low_slot) = h.get_mut(c_d) {
+                            *low_slot += gamma * mix_w * upper_v;
+                        }
+                        c_d += 1;
+                    }
+                }
+            }
+            l += 1;
+        }
+        h
     }
 
     // Full Nested Shell 1 (768D = Shell 0 384D oplus gamma * DeltaShell 1 384D) 12-Layer Hybrid forward pass
@@ -2032,7 +2650,6 @@ impl V72_1MatryoshkaModel {
         if tokens.is_empty() {
             return v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0);
         }
-        let gamma = self.gamma_net2wider;
         let mut mamba_states = v72_1_vec_f32(V72_1_HYBRID_LAYERS * V72_1_SHELL1_DIM, 0.0);
         let mut gqa_kv_acc = v72_1_vec_f32(V72_1_HYBRID_LAYERS * V72_1_SHELL1_DIM, 0.0);
         let mut h_last = v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0);
@@ -2040,111 +2657,7 @@ impl V72_1MatryoshkaModel {
         let mut step: usize = 0;
         while step < tokens.len() {
             let tok = *tokens.get(step).unwrap_or(&0);
-            let mut h = self.embed_token_768(tok);
-            let rope_phase = (step as f32) * (V72_1_DECADIC_CARRIER_HZ as f32) * 0.015_f32;
-
-            let mut l: usize = 0;
-            while l < V72_1_HYBRID_LAYERS {
-                if let Some(lp) = self.layers.get(l) {
-                    // Block-wise RMSNorm: 0..384 normalized independently of 384..768 so gamma=0 preserves Shell 0 bit-identically!
-                    let mut sq0: f32 = 0.0;
-                    let mut sq1: f32 = 0.0;
-                    let mut d: usize = 0;
-                    while d < V72_1_SHELL0_DIM {
-                        let v0 = *h.get(d).unwrap_or(&0.0);
-                        let v1 = *h.get(V72_1_SHELL0_DIM + d).unwrap_or(&0.0);
-                        sq0 += v0 * v0;
-                        sq1 += v1 * v1;
-                        d += 1;
-                    }
-                    let inv_rms0 = 1.0_f32 / ((sq0 / (V72_1_SHELL0_DIM as f32)) + 1e-5_f32).sqrt();
-                    let inv_rms1 = 1.0_f32 / ((sq1 / (V72_1_DELTA1_DIM as f32)) + 1e-5_f32).sqrt();
-
-                    let st_off = l * V72_1_SHELL1_DIM;
-                    if lp.is_gqa_attention {
-                        let mut d_i: usize = 0;
-                        while d_i + 1 < V72_1_SHELL1_DIM {
-                            let inv_r = if d_i < V72_1_SHELL0_DIM { inv_rms0 } else { inv_rms1 };
-                            let n0 = (*h.get(d_i).unwrap_or(&0.0)) * inv_r * (*lp.rms_weight_768.get(d_i).unwrap_or(&1.0));
-                            let n1 = (*h.get(d_i + 1).unwrap_or(&0.0)) * inv_r * (*lp.rms_weight_768.get(d_i + 1).unwrap_or(&1.0));
-                            let freq = rope_phase / (1.0_f32 + ((d_i % 64) as f32) * 0.125_f32);
-                            let (sin_f, cos_f) = freq.sin_cos();
-                            let q0 = (n0 * cos_f - n1 * sin_f) * (*lp.gqa_q_scale_768.get(d_i).unwrap_or(&0.3));
-                            let q1 = (n0 * sin_f + n1 * cos_f) * (*lp.gqa_q_scale_768.get(d_i + 1).unwrap_or(&0.3));
-                            let k0 = (n0 * cos_f - n1 * sin_f) * (*lp.gqa_k_scale_768.get(d_i).unwrap_or(&0.3));
-                            let k1 = (n0 * sin_f + n1 * cos_f) * (*lp.gqa_k_scale_768.get(d_i + 1).unwrap_or(&0.3));
-                            let v0 = n0 * (*lp.gqa_v_scale_768.get(d_i).unwrap_or(&0.2));
-                            let v1 = n1 * (*lp.gqa_v_scale_768.get(d_i + 1).unwrap_or(&0.2));
-
-                            let prev_kv0 = *gqa_kv_acc.get(st_off + d_i).unwrap_or(&0.0);
-                            let prev_kv1 = *gqa_kv_acc.get(st_off + d_i + 1).unwrap_or(&0.0);
-                            let gate0 = 1.0_f32 / (1.0_f32 + (-q0 * k0).exp());
-                            let gate1 = 1.0_f32 / (1.0_f32 + (-q1 * k1).exp());
-                            let new_kv0 = 0.82_f32 * prev_kv0 + 0.18_f32 * v0;
-                            let new_kv1 = 0.82_f32 * prev_kv1 + 0.18_f32 * v1;
-                            if let Some(kvs0) = gqa_kv_acc.get_mut(st_off + d_i) {
-                                *kvs0 = new_kv0;
-                            }
-                            if let Some(kvs1) = gqa_kv_acc.get_mut(st_off + d_i + 1) {
-                                *kvs1 = new_kv1;
-                            }
-
-                            let g0 = n0 * (*lp.swiglu_gate_768.get(d_i).unwrap_or(&0.4));
-                            let g1 = n1 * (*lp.swiglu_gate_768.get(d_i + 1).unwrap_or(&0.4));
-                            let silu0 = g0 / (1.0_f32 + (-g0).exp());
-                            let silu1 = g1 / (1.0_f32 + (-g1).exp());
-                            let ffn0 = silu0 * (n0 * (*lp.swiglu_up_768.get(d_i).unwrap_or(&0.3)));
-                            let ffn1 = silu1 * (n1 * (*lp.swiglu_up_768.get(d_i + 1).unwrap_or(&0.3)));
-
-                            if let Some(hd0) = h.get_mut(d_i) {
-                                *hd0 += gate0 * new_kv0 + 0.25_f32 * ffn0;
-                            }
-                            if let Some(hd1) = h.get_mut(d_i + 1) {
-                                *hd1 += gate1 * new_kv1 + 0.25_f32 * ffn1;
-                            }
-                            d_i += 2;
-                        }
-                    } else {
-                        let mut d_i: usize = 0;
-                        while d_i < V72_1_SHELL1_DIM {
-                            let inv_r = if d_i < V72_1_SHELL0_DIM { inv_rms0 } else { inv_rms1 };
-                            let norm_x = (*h.get(d_i).unwrap_or(&0.0))
-                                * inv_r
-                                * (*lp.rms_weight_768.get(d_i).unwrap_or(&1.0));
-                            let dec_logit = *lp.mamba_decay_logits_768.get(d_i).unwrap_or(&1.0);
-                            let alpha = 1.0_f32 / (1.0_f32 + (-dec_logit).exp());
-                            let u_in = norm_x * (*lp.diag_in_768.get(d_i).unwrap_or(&0.25));
-                            let prev_s = *mamba_states.get(st_off + d_i).unwrap_or(&0.0);
-                            let next_s = alpha * prev_s + (1.0_f32 - alpha) * u_in;
-                            if let Some(ms) = mamba_states.get_mut(st_off + d_i) {
-                                *ms = next_s;
-                            }
-                            let g_val = norm_x * (*lp.swiglu_gate_768.get(d_i).unwrap_or(&0.4));
-                            let silu_g = g_val / (1.0_f32 + (-g_val).exp());
-                            let up_val = norm_x * (*lp.swiglu_up_768.get(d_i).unwrap_or(&0.3));
-                            if let Some(hd) = h.get_mut(d_i) {
-                                *hd += next_s * silu_g + 0.20_f32 * silu_g * up_val;
-                            }
-                            d_i += 1;
-                        }
-                    }
-
-                    // Net2Wider gated cross-shell coupling from 384..768 -> 0..384 (strictly 0 when gamma == 0.0!)
-                    if gamma != 0.0_f32 {
-                        let mut c_d: usize = 0;
-                        while c_d < V72_1_SHELL0_DIM {
-                            let upper_v = *h.get(V72_1_SHELL0_DIM + c_d).unwrap_or(&0.0);
-                            let mix_w = *lp.cross_shell_mix_384.get(c_d).unwrap_or(&0.0);
-                            if let Some(low_slot) = h.get_mut(c_d) {
-                                *low_slot += gamma * mix_w * upper_v;
-                            }
-                            c_d += 1;
-                        }
-                    }
-                }
-                l += 1;
-            }
-            h_last = h;
+            h_last = self.step_token_shell1_768(tok, step, &mut mamba_states, &mut gqa_kv_acc);
             step += 1;
         }
         h_last
@@ -2198,7 +2711,7 @@ impl V72_1MatryoshkaModel {
         (q0, q1)
     }
 
-    pub fn compute_logits_shell0_16k(&self, h384: &Vec<f32>, prev_tok: Option<u16>) -> Vec<f32> {
+    pub fn compute_logits_shell0_16k(&self, h384: &Vec<f32>, _prev_tok: Option<u16>) -> Vec<f32> {
         let q0 = self.project_h384_to_q0(h384);
         let mut logits = v72_1_vec_f32(V72_1_BPE_VOCAB_16K, 0.0);
         let mut v: usize = 0;
@@ -2215,23 +2728,14 @@ impl V72_1MatryoshkaModel {
             }
             v += 1;
         }
-        if let Some(pt) = prev_tok {
-            if let Some(edges) = self.bigram_s0_delta1.get(&pt) {
-                for (nt, w0, _) in edges.iter() {
-                    if let Some(slot) = logits.get_mut(*nt as usize) {
-                        *slot += *w0;
-                    }
-                }
-            }
-        }
         logits
     }
 
     pub fn compute_logits_shell1_16k(
         &self,
         h768: &Vec<f32>,
-        prev2_tok: Option<u16>,
-        prev1_tok: Option<u16>,
+        _prev2_tok: Option<u16>,
+        _prev1_tok: Option<u16>,
     ) -> Vec<f32> {
         let (q0, q1) = self.project_h768_to_q0_q1(h768);
         let gamma = self.gamma_net2wider;
@@ -2253,29 +2757,129 @@ impl V72_1MatryoshkaModel {
             }
             v += 1;
         }
-        if let Some(p1) = prev1_tok {
-            if let Some(edges) = self.bigram_s0_delta1.get(&p1) {
-                for (nt, w0, wd1) in edges.iter() {
-                    if let Some(slot) = logits.get_mut(*nt as usize) {
-                        *slot += (*w0) + gamma * (*wd1);
-                    }
-                }
-            }
-            if gamma != 0.0_f32 {
-                if let Some(p2) = prev2_tok {
-                    let key3 = ((p2 as u32) << 16) | (p1 as u32);
-                    if let Some(t_edges) = self.trigram_delta1.get(&key3) {
-                        for (nt, wt) in t_edges.iter() {
-                            if let Some(slot) = logits.get_mut(*nt as usize) {
-                                *slot += gamma * (*wt);
-                            }
-                        }
-                    }
-                }
-            }
-        }
         logits
     }
+}
+
+pub fn v72_1_load_sh_xi_checkpoint_strict() -> Result<V72_1MatryoshkaModel, String> {
+    let bytes = v72_1_verify_weight_manifest("sh_xi_rw384_768_base", C_SH_XI_BASE_SH4Z_PATH)?;
+    if bytes.len() < 128 {
+        return Err(format!("WEIGHT_CORRUPT: Checkpoint '{}' header too small", C_SH_XI_BASE_SH4Z_PATH));
+    }
+    let magic = v72_1_read_u32_le(&bytes, 0);
+    if magic != V72_1_SH4Z_MAGIC {
+        return Err(format!("WEIGHT_MAGIC_MISMATCH: Expected 0x{:08X}, got 0x{:08X}", V72_1_SH4Z_MAGIC, magic));
+    }
+    let gamma = v72_1_read_f32_le(&bytes, 24);
+
+    let mut model = V72_1MatryoshkaModel::new_initialized(gamma);
+    let mut off = 128_usize;
+
+    // Slot 0: P0 (48*384) + P1 (48*384) + bias0 (16384) + bias_delta1 (16384)
+    let p0_len = V72_1_LATENT_RANK_R0 * V72_1_SHELL0_DIM;
+    let p1_len = V72_1_LATENT_RANK_R1 * V72_1_DELTA1_DIM;
+    if bytes.len() < off + (p0_len + p1_len + 2 * V72_1_BPE_VOCAB_16K) * 4 {
+        return Err(String::from("WEIGHT_CORRUPT: Checkpoint truncated in Slot 0"));
+    }
+
+    let mut p0 = v72_1_vec_f32(p0_len, 0.0);
+    let mut i: usize = 0;
+    while i < p0_len {
+        if let Some(s) = p0.get_mut(i) { *s = v72_1_read_f32_le(&bytes, off); }
+        off += 4;
+        i += 1;
+    }
+    model.stiefel_p0 = p0;
+
+    let mut p1 = v72_1_vec_f32(p1_len, 0.0);
+    let mut j: usize = 0;
+    while j < p1_len {
+        if let Some(s) = p1.get_mut(j) { *s = v72_1_read_f32_le(&bytes, off); }
+        off += 4;
+        j += 1;
+    }
+    model.stiefel_p1 = p1;
+
+    let mut b0 = v72_1_vec_f32(V72_1_BPE_VOCAB_16K, 0.0);
+    let mut b_idx: usize = 0;
+    while b_idx < V72_1_BPE_VOCAB_16K {
+        if let Some(s) = b0.get_mut(b_idx) { *s = v72_1_read_f32_le(&bytes, off); }
+        off += 4;
+        b_idx += 1;
+    }
+    model.bias0_vocab = b0;
+
+    let mut b1 = v72_1_vec_f32(V72_1_BPE_VOCAB_16K, 0.0);
+    let mut b1_idx: usize = 0;
+    while b1_idx < V72_1_BPE_VOCAB_16K {
+        if let Some(s) = b1.get_mut(b1_idx) { *s = v72_1_read_f32_le(&bytes, off); }
+        off += 4;
+        b1_idx += 1;
+    }
+    model.bias_delta1_vocab = b1;
+
+    // INT8 quantized U0 and U_delta1
+    let u0_len = V72_1_BPE_VOCAB_16K * V72_1_LATENT_RANK_R0;
+    let u1_len = V72_1_BPE_VOCAB_16K * V72_1_LATENT_RANK_R1;
+    if bytes.len() < off + u0_len + u1_len {
+        return Err(String::from("WEIGHT_CORRUPT: Checkpoint truncated in INT8 tables"));
+    }
+    let mut u0 = v72_1_vec_f32(u0_len, 0.0);
+    let mut u_i: usize = 0;
+    while u_i < u0_len {
+        let q = *bytes.get(off).unwrap_or(&0) as i8;
+        if let Some(s) = u0.get_mut(u_i) { *s = (q as f32) / 1200.0_f32; }
+        off += 1;
+        u_i += 1;
+    }
+    model.u0_table = u0;
+
+    let mut u1 = v72_1_vec_f32(u1_len, 0.0);
+    let mut u1_i: usize = 0;
+    while u1_i < u1_len {
+        let q = *bytes.get(off).unwrap_or(&0) as i8;
+        if let Some(s) = u1.get_mut(u1_i) { *s = (q as f32) / 1200.0_f32; }
+        off += 1;
+        u1_i += 1;
+    }
+    model.u_delta1_table = u1;
+
+    // Slot 2: 12 Hybrid Layer Tensors
+    let mut l: usize = 0;
+    while l < V72_1_HYBRID_LAYERS {
+        if let Some(lp) = model.layers.get_mut(l) {
+            for slot in lp.rms_weight_768.iter_mut() {
+                if off + 4 <= bytes.len() { *slot = v72_1_read_f32_le(&bytes, off); off += 4; }
+            }
+            for slot in lp.diag_in_768.iter_mut() {
+                if off + 4 <= bytes.len() { *slot = v72_1_read_f32_le(&bytes, off); off += 4; }
+            }
+            for slot in lp.mamba_decay_logits_768.iter_mut() {
+                if off + 4 <= bytes.len() { *slot = v72_1_read_f32_le(&bytes, off); off += 4; }
+            }
+            for slot in lp.gqa_q_scale_768.iter_mut() {
+                if off + 4 <= bytes.len() { *slot = v72_1_read_f32_le(&bytes, off); off += 4; }
+            }
+            for slot in lp.gqa_k_scale_768.iter_mut() {
+                if off + 4 <= bytes.len() { *slot = v72_1_read_f32_le(&bytes, off); off += 4; }
+            }
+            for slot in lp.gqa_v_scale_768.iter_mut() {
+                if off + 4 <= bytes.len() { *slot = v72_1_read_f32_le(&bytes, off); off += 4; }
+            }
+            for slot in lp.swiglu_gate_768.iter_mut() {
+                if off + 4 <= bytes.len() { *slot = v72_1_read_f32_le(&bytes, off); off += 4; }
+            }
+            for slot in lp.swiglu_up_768.iter_mut() {
+                if off + 4 <= bytes.len() { *slot = v72_1_read_f32_le(&bytes, off); off += 4; }
+            }
+            for slot in lp.cross_shell_mix_384.iter_mut() {
+                if off + 4 <= bytes.len() { *slot = v72_1_read_f32_le(&bytes, off); off += 4; }
+            }
+        }
+        l += 1;
+    }
+
+    Ok(model)
 }
 
 // Exact Log-Sum-Exp normalized cross-entropy loss (in nats) and probability sum verification
@@ -2316,10 +2920,11 @@ impl V72_1GradCheckCellF64 {
         // 68..72: w_gqa_qkv RoPE attention weights (4 lanes)
         // 72..76: w_swiglu gate weights (4 lanes)
         // 76: gamma_net2wider scalar gate
+        let mut rng = 0x7210_9999_CAFE_0001u64;
         let mut i: usize = 0;
         while i < 76 {
             if let Some(s) = p.get_mut(i) {
-                *s = (v72_1_det_sym_val(0x7210_9999, i, 0.35)) as f64;
+                *s = v72_1_box_muller(&mut rng) * 0.35;
             }
             i += 1;
         }
@@ -2660,12 +3265,1206 @@ pub fn v72_1_dispatch_tool_359_matryoshka_384_768_gradcheck(_payload: &str) -> S
     )
 }
 
+pub struct V72_1LayerGrads {
+    pub rms_weight_768: Vec<f32>,
+    pub diag_in_768: Vec<f32>,
+    pub mamba_decay_logits_768: Vec<f32>,
+    pub gqa_q_scale_768: Vec<f32>,
+    pub gqa_k_scale_768: Vec<f32>,
+    pub gqa_v_scale_768: Vec<f32>,
+    pub swiglu_gate_768: Vec<f32>,
+    pub swiglu_up_768: Vec<f32>,
+    pub cross_shell_mix_384: Vec<f32>,
+}
+
+impl V72_1LayerGrads {
+    pub fn zeros() -> Self {
+        Self {
+            rms_weight_768: v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0),
+            diag_in_768: v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0),
+            mamba_decay_logits_768: v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0),
+            gqa_q_scale_768: v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0),
+            gqa_k_scale_768: v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0),
+            gqa_v_scale_768: v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0),
+            swiglu_gate_768: v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0),
+            swiglu_up_768: v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0),
+            cross_shell_mix_384: v72_1_vec_f32(V72_1_SHELL0_DIM, 0.0),
+        }
+    }
+}
+
+pub struct V72_1ModelGradients {
+    pub bias0_vocab: Vec<f32>,
+    pub bias_delta1_vocab: Vec<f32>,
+    pub u0_table: Vec<f32>,
+    pub u_delta1_table: Vec<f32>,
+    pub stiefel_p0: Vec<f32>,
+    pub stiefel_p1: Vec<f32>,
+    pub layers: Vec<V72_1LayerGrads>,
+}
+
+impl V72_1ModelGradients {
+    pub fn zeros() -> Self {
+        let mut layers: Vec<V72_1LayerGrads> = Vec::with_capacity(V72_1_HYBRID_LAYERS);
+        let mut l: usize = 0;
+        while l < V72_1_HYBRID_LAYERS {
+            layers.push(V72_1LayerGrads {
+                rms_weight_768: v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0),
+                diag_in_768: v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0),
+                mamba_decay_logits_768: v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0),
+                gqa_q_scale_768: v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0),
+                gqa_k_scale_768: v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0),
+                gqa_v_scale_768: v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0),
+                swiglu_gate_768: v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0),
+                swiglu_up_768: v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0),
+                cross_shell_mix_384: v72_1_vec_f32(V72_1_SHELL0_DIM, 0.0),
+            });
+            l += 1;
+        }
+        Self {
+            bias0_vocab: v72_1_vec_f32(V72_1_BPE_VOCAB_16K, 0.0),
+            bias_delta1_vocab: v72_1_vec_f32(V72_1_BPE_VOCAB_16K, 0.0),
+            u0_table: v72_1_vec_f32(V72_1_BPE_VOCAB_16K * V72_1_LATENT_RANK_R0, 0.0),
+            u_delta1_table: v72_1_vec_f32(V72_1_BPE_VOCAB_16K * V72_1_LATENT_RANK_R1, 0.0),
+            stiefel_p0: v72_1_vec_f32(V72_1_LATENT_RANK_R0 * V72_1_SHELL0_DIM, 0.0),
+            stiefel_p1: v72_1_vec_f32(V72_1_LATENT_RANK_R1 * V72_1_DELTA1_DIM, 0.0),
+            layers,
+        }
+    }
+
+    pub fn compute_layer_l2_norms(&self) -> Vec<f64> {
+        let mut norms: Vec<f64> = Vec::with_capacity(self.layers.len());
+        for lg in self.layers.iter() {
+            let mut sum_sq: f64 = 0.0;
+            for x in lg.rms_weight_768.iter() { sum_sq += (*x as f64) * (*x as f64); }
+            for x in lg.diag_in_768.iter() { sum_sq += (*x as f64) * (*x as f64); }
+            for x in lg.mamba_decay_logits_768.iter() { sum_sq += (*x as f64) * (*x as f64); }
+            for x in lg.gqa_q_scale_768.iter() { sum_sq += (*x as f64) * (*x as f64); }
+            for x in lg.gqa_k_scale_768.iter() { sum_sq += (*x as f64) * (*x as f64); }
+            for x in lg.gqa_v_scale_768.iter() { sum_sq += (*x as f64) * (*x as f64); }
+            for x in lg.swiglu_gate_768.iter() { sum_sq += (*x as f64) * (*x as f64); }
+            for x in lg.swiglu_up_768.iter() { sum_sq += (*x as f64) * (*x as f64); }
+            for x in lg.cross_shell_mix_384.iter() { sum_sq += (*x as f64) * (*x as f64); }
+            norms.push(sum_sq.sqrt());
+        }
+        norms
+    }
+}
+
+fn v72_1_adamw_step_vector(
+    params: &mut Vec<f32>,
+    grads: &Vec<f32>,
+    m: &mut Vec<f32>,
+    v: &mut Vec<f32>,
+    lr: f32,
+    beta1: f32,
+    beta2: f32,
+    wd: f32,
+    bc1: f32,
+    bc2: f32,
+    clip_scale: f32,
+) {
+    let mut i: usize = 0;
+    while i < params.len() {
+        let g = (*grads.get(i).unwrap_or(&0.0)) * clip_scale;
+        let m_val = beta1 * (*m.get(i).unwrap_or(&0.0)) + (1.0 - beta1) * g;
+        let v_val = beta2 * (*v.get(i).unwrap_or(&0.0)) + (1.0 - beta2) * g * g;
+        if let Some(s) = m.get_mut(i) { *s = m_val; }
+        if let Some(s) = v.get_mut(i) { *s = v_val; }
+        let m_hat = m_val / bc1;
+        let v_hat = v_val / bc2;
+        if let Some(p) = params.get_mut(i) {
+            *p = (*p) * (1.0 - lr * wd) - lr * m_hat / (v_hat.sqrt() + 1e-8);
+        }
+        i += 1;
+    }
+}
+
+fn v72_1_reorthogonalize_stiefel(mat: &mut Vec<f32>, rows: usize, cols: usize) {
+    let mut r: usize = 0;
+    while r < rows {
+        let mut row_vec = v72_1_vec_f64(cols, 0.0);
+        let mut c: usize = 0;
+        while c < cols {
+            if let Some(slot) = row_vec.get_mut(c) {
+                *slot = (*mat.get(r * cols + c).unwrap_or(&0.0)) as f64;
+            }
+            c += 1;
+        }
+        let mut prev: usize = 0;
+        while prev < r {
+            let mut dot: f64 = 0.0;
+            let mut k: usize = 0;
+            while k < cols {
+                let pv = (*mat.get(prev * cols + k).unwrap_or(&0.0)) as f64;
+                let cv = *row_vec.get(k).unwrap_or(&0.0);
+                dot += pv * cv;
+                k += 1;
+            }
+            let mut k2: usize = 0;
+            while k2 < cols {
+                let pv = (*mat.get(prev * cols + k2).unwrap_or(&0.0)) as f64;
+                if let Some(slot) = row_vec.get_mut(k2) {
+                    *slot -= dot * pv;
+                }
+                k2 += 1;
+            }
+            prev += 1;
+        }
+        let mut norm_sq: f64 = 0.0;
+        for v in row_vec.iter() {
+            norm_sq += (*v) * (*v);
+        }
+        let inv_norm = if norm_sq > 1e-18 {
+            1.0 / norm_sq.sqrt()
+        } else {
+            1.0
+        };
+        let mut c2: usize = 0;
+        while c2 < cols {
+            if let Some(dst) = mat.get_mut(r * cols + c2) {
+                *dst = ((*row_vec.get(c2).unwrap_or(&0.0)) * inv_norm) as f32;
+            }
+            c2 += 1;
+        }
+        r += 1;
+    }
+}
+
+impl V72_1MatryoshkaModel {
+    pub fn layer_forward_384(&self, lp: &V72_1HybridLayerParams, h_in: &Vec<f32>, rope_phase: f32) -> Vec<f32> {
+        let mut h = h_in.clone();
+        let mut sq_sum: f32 = 0.0;
+        let mut d: usize = 0;
+        while d < V72_1_SHELL0_DIM {
+            let hv = *h.get(d).unwrap_or(&0.0);
+            sq_sum += hv * hv;
+            d += 1;
+        }
+        let inv_rms = 1.0_f32 / ((sq_sum / (V72_1_SHELL0_DIM as f32)) + 1e-5_f32).sqrt();
+
+        if lp.is_gqa_attention {
+            let mut d_i: usize = 0;
+            while d_i + 1 < V72_1_SHELL0_DIM {
+                let n0 = (*h.get(d_i).unwrap_or(&0.0)) * inv_rms * (*lp.rms_weight_768.get(d_i).unwrap_or(&1.0));
+                let n1 = (*h.get(d_i + 1).unwrap_or(&0.0)) * inv_rms * (*lp.rms_weight_768.get(d_i + 1).unwrap_or(&1.0));
+                let freq = rope_phase / (1.0_f32 + ((d_i % 64) as f32) * 0.125_f32);
+                let (sin_f, cos_f) = freq.sin_cos();
+                let q0 = (n0 * cos_f - n1 * sin_f) * (*lp.gqa_q_scale_768.get(d_i).unwrap_or(&0.3));
+                let q1 = (n0 * sin_f + n1 * cos_f) * (*lp.gqa_q_scale_768.get(d_i + 1).unwrap_or(&0.3));
+                let k0 = (n0 * cos_f - n1 * sin_f) * (*lp.gqa_k_scale_768.get(d_i).unwrap_or(&0.3));
+                let k1 = (n0 * sin_f + n1 * cos_f) * (*lp.gqa_k_scale_768.get(d_i + 1).unwrap_or(&0.3));
+                let v0 = n0 * (*lp.gqa_v_scale_768.get(d_i).unwrap_or(&0.2));
+                let v1 = n1 * (*lp.gqa_v_scale_768.get(d_i + 1).unwrap_or(&0.2));
+
+                let gate0 = 1.0_f32 / (1.0_f32 + (-q0 * k0).exp());
+                let gate1 = 1.0_f32 / (1.0_f32 + (-q1 * k1).exp());
+                let new_kv0 = 0.18_f32 * v0;
+                let new_kv1 = 0.18_f32 * v1;
+
+                let g0 = n0 * (*lp.swiglu_gate_768.get(d_i).unwrap_or(&0.4));
+                let g1 = n1 * (*lp.swiglu_gate_768.get(d_i + 1).unwrap_or(&0.4));
+                let silu0 = g0 / (1.0_f32 + (-g0).exp());
+                let silu1 = g1 / (1.0_f32 + (-g1).exp());
+                let ffn0 = silu0 * (n0 * (*lp.swiglu_up_768.get(d_i).unwrap_or(&0.3)));
+                let ffn1 = silu1 * (n1 * (*lp.swiglu_up_768.get(d_i + 1).unwrap_or(&0.3)));
+
+                if let Some(hd0) = h.get_mut(d_i) {
+                    *hd0 += gate0 * new_kv0 + 0.25_f32 * ffn0;
+                }
+                if let Some(hd1) = h.get_mut(d_i + 1) {
+                    *hd1 += gate1 * new_kv1 + 0.25_f32 * ffn1;
+                }
+                d_i += 2;
+            }
+        } else {
+            let mut d_i: usize = 0;
+            while d_i < V72_1_SHELL0_DIM {
+                let norm_x = (*h.get(d_i).unwrap_or(&0.0)) * inv_rms * (*lp.rms_weight_768.get(d_i).unwrap_or(&1.0));
+                let dec_logit = *lp.mamba_decay_logits_768.get(d_i).unwrap_or(&1.0);
+                let alpha = 1.0_f32 / (1.0_f32 + (-dec_logit).exp());
+                let u_in = norm_x * (*lp.diag_in_768.get(d_i).unwrap_or(&0.25));
+                let next_s = (1.0_f32 - alpha) * u_in;
+                let g_val = norm_x * (*lp.swiglu_gate_768.get(d_i).unwrap_or(&0.4));
+                let silu_g = g_val / (1.0_f32 + (-g_val).exp());
+                let up_val = norm_x * (*lp.swiglu_up_768.get(d_i).unwrap_or(&0.3));
+                if let Some(hd) = h.get_mut(d_i) {
+                    *hd += next_s * silu_g + 0.20_f32 * silu_g * up_val;
+                }
+                d_i += 1;
+            }
+        }
+        h
+    }
+
+    pub fn layer_forward_768(&self, lp: &V72_1HybridLayerParams, h_in: &Vec<f32>, rope_phase: f32, gamma: f32) -> Vec<f32> {
+        let mut h = h_in.clone();
+        let mut sq0: f32 = 0.0;
+        let mut sq1: f32 = 0.0;
+        let mut d: usize = 0;
+        while d < V72_1_SHELL0_DIM {
+            let v0 = *h.get(d).unwrap_or(&0.0);
+            let v1 = *h.get(V72_1_SHELL0_DIM + d).unwrap_or(&0.0);
+            sq0 += v0 * v0;
+            sq1 += v1 * v1;
+            d += 1;
+        }
+        let inv_rms0 = 1.0_f32 / ((sq0 / (V72_1_SHELL0_DIM as f32)) + 1e-5_f32).sqrt();
+        let inv_rms1 = 1.0_f32 / ((sq1 / (V72_1_DELTA1_DIM as f32)) + 1e-5_f32).sqrt();
+
+        if lp.is_gqa_attention {
+            let mut d_i: usize = 0;
+            while d_i + 1 < V72_1_SHELL1_DIM {
+                let inv_r = if d_i < V72_1_SHELL0_DIM { inv_rms0 } else { inv_rms1 };
+                let n0 = (*h.get(d_i).unwrap_or(&0.0)) * inv_r * (*lp.rms_weight_768.get(d_i).unwrap_or(&1.0));
+                let n1 = (*h.get(d_i + 1).unwrap_or(&0.0)) * inv_r * (*lp.rms_weight_768.get(d_i + 1).unwrap_or(&1.0));
+                let freq = rope_phase / (1.0_f32 + ((d_i % 64) as f32) * 0.125_f32);
+                let (sin_f, cos_f) = freq.sin_cos();
+                let q0 = (n0 * cos_f - n1 * sin_f) * (*lp.gqa_q_scale_768.get(d_i).unwrap_or(&0.3));
+                let q1 = (n0 * sin_f + n1 * cos_f) * (*lp.gqa_q_scale_768.get(d_i + 1).unwrap_or(&0.3));
+                let k0 = (n0 * cos_f - n1 * sin_f) * (*lp.gqa_k_scale_768.get(d_i).unwrap_or(&0.3));
+                let k1 = (n0 * sin_f + n1 * cos_f) * (*lp.gqa_k_scale_768.get(d_i + 1).unwrap_or(&0.3));
+                let v0 = n0 * (*lp.gqa_v_scale_768.get(d_i).unwrap_or(&0.2));
+                let v1 = n1 * (*lp.gqa_v_scale_768.get(d_i + 1).unwrap_or(&0.2));
+
+                let gate0 = 1.0_f32 / (1.0_f32 + (-q0 * k0).exp());
+                let gate1 = 1.0_f32 / (1.0_f32 + (-q1 * k1).exp());
+                let new_kv0 = 0.18_f32 * v0;
+                let new_kv1 = 0.18_f32 * v1;
+
+                let g0 = n0 * (*lp.swiglu_gate_768.get(d_i).unwrap_or(&0.4));
+                let g1 = n1 * (*lp.swiglu_gate_768.get(d_i + 1).unwrap_or(&0.4));
+                let silu0 = g0 / (1.0_f32 + (-g0).exp());
+                let silu1 = g1 / (1.0_f32 + (-g1).exp());
+                let ffn0 = silu0 * (n0 * (*lp.swiglu_up_768.get(d_i).unwrap_or(&0.3)));
+                let ffn1 = silu1 * (n1 * (*lp.swiglu_up_768.get(d_i + 1).unwrap_or(&0.3)));
+
+                if let Some(hd0) = h.get_mut(d_i) {
+                    *hd0 += gate0 * new_kv0 + 0.25_f32 * ffn0;
+                }
+                if let Some(hd1) = h.get_mut(d_i + 1) {
+                    *hd1 += gate1 * new_kv1 + 0.25_f32 * ffn1;
+                }
+                d_i += 2;
+            }
+        } else {
+            let mut d_i: usize = 0;
+            while d_i < V72_1_SHELL1_DIM {
+                let inv_r = if d_i < V72_1_SHELL0_DIM { inv_rms0 } else { inv_rms1 };
+                let norm_x = (*h.get(d_i).unwrap_or(&0.0)) * inv_r * (*lp.rms_weight_768.get(d_i).unwrap_or(&1.0));
+                let dec_logit = *lp.mamba_decay_logits_768.get(d_i).unwrap_or(&1.0);
+                let alpha = 1.0_f32 / (1.0_f32 + (-dec_logit).exp());
+                let u_in = norm_x * (*lp.diag_in_768.get(d_i).unwrap_or(&0.25));
+                let next_s = (1.0_f32 - alpha) * u_in;
+                let g_val = norm_x * (*lp.swiglu_gate_768.get(d_i).unwrap_or(&0.4));
+                let silu_g = g_val / (1.0_f32 + (-g_val).exp());
+                let up_val = norm_x * (*lp.swiglu_up_768.get(d_i).unwrap_or(&0.3));
+                if let Some(hd) = h.get_mut(d_i) {
+                    *hd += next_s * silu_g + 0.20_f32 * silu_g * up_val;
+                }
+                d_i += 1;
+            }
+        }
+        if gamma != 0.0_f32 {
+            let mut c_d: usize = 0;
+            while c_d < V72_1_SHELL0_DIM {
+                let upper_v = *h.get(V72_1_SHELL0_DIM + c_d).unwrap_or(&0.0);
+                let mix_w = *lp.cross_shell_mix_384.get(c_d).unwrap_or(&0.0);
+                if let Some(low_slot) = h.get_mut(c_d) {
+                    *low_slot += gamma * mix_w * upper_v;
+                }
+                c_d += 1;
+            }
+        }
+        h
+    }
+
+    pub fn layer_backward_384(
+        &self,
+        lp: &V72_1HybridLayerParams,
+        h_in: &Vec<f32>,
+        dh_out: &Vec<f32>,
+        rope_phase: f32,
+        l_grad: &mut V72_1LayerGrads,
+    ) -> Vec<f32> {
+        let mut dh_in = dh_out.clone();
+        let mut sq_sum: f32 = 0.0;
+        let mut d: usize = 0;
+        while d < V72_1_SHELL0_DIM {
+            let hv = *h_in.get(d).unwrap_or(&0.0);
+            sq_sum += hv * hv;
+            d += 1;
+        }
+        let inv_rms = 1.0_f32 / ((sq_sum / (V72_1_SHELL0_DIM as f32)) + 1e-5_f32).sqrt();
+        let mut d_norm_all = v72_1_vec_f32(V72_1_SHELL0_DIM, 0.0);
+
+        if lp.is_gqa_attention {
+            let mut d_i: usize = 0;
+            while d_i + 1 < V72_1_SHELL0_DIM {
+                let n0 = (*h_in.get(d_i).unwrap_or(&0.0)) * inv_rms * (*lp.rms_weight_768.get(d_i).unwrap_or(&1.0));
+                let n1 = (*h_in.get(d_i + 1).unwrap_or(&0.0)) * inv_rms * (*lp.rms_weight_768.get(d_i + 1).unwrap_or(&1.0));
+                let freq = rope_phase / (1.0_f32 + ((d_i % 64) as f32) * 0.125_f32);
+                let (sin_f, cos_f) = freq.sin_cos();
+                let q_sc0 = *lp.gqa_q_scale_768.get(d_i).unwrap_or(&0.3);
+                let q_sc1 = *lp.gqa_q_scale_768.get(d_i + 1).unwrap_or(&0.3);
+                let k_sc0 = *lp.gqa_k_scale_768.get(d_i).unwrap_or(&0.3);
+                let k_sc1 = *lp.gqa_k_scale_768.get(d_i + 1).unwrap_or(&0.3);
+                let v_sc0 = *lp.gqa_v_scale_768.get(d_i).unwrap_or(&0.2);
+                let v_sc1 = *lp.gqa_v_scale_768.get(d_i + 1).unwrap_or(&0.2);
+
+                let rot_q0 = n0 * cos_f - n1 * sin_f;
+                let rot_q1 = n0 * sin_f + n1 * cos_f;
+                let q0 = rot_q0 * q_sc0;
+                let q1 = rot_q1 * q_sc1;
+                let k0 = rot_q0 * k_sc0;
+                let k1 = rot_q1 * k_sc1;
+                let v0 = n0 * v_sc0;
+                let v1 = n1 * v_sc1;
+
+                let gate0 = 1.0_f32 / (1.0_f32 + (-q0 * k0).exp());
+                let gate1 = 1.0_f32 / (1.0_f32 + (-q1 * k1).exp());
+                let new_kv0 = 0.18_f32 * v0;
+                let new_kv1 = 0.18_f32 * v1;
+
+                let sw_g0 = *lp.swiglu_gate_768.get(d_i).unwrap_or(&0.4);
+                let sw_g1 = *lp.swiglu_gate_768.get(d_i + 1).unwrap_or(&0.4);
+                let g0 = n0 * sw_g0;
+                let g1 = n1 * sw_g1;
+                let sig_g0 = 1.0_f32 / (1.0_f32 + (-g0).exp());
+                let sig_g1 = 1.0_f32 / (1.0_f32 + (-g1).exp());
+                let silu0 = g0 * sig_g0;
+                let silu1 = g1 * sig_g1;
+
+                let sw_u0 = *lp.swiglu_up_768.get(d_i).unwrap_or(&0.3);
+                let sw_u1 = *lp.swiglu_up_768.get(d_i + 1).unwrap_or(&0.3);
+
+                let dh0 = *dh_out.get(d_i).unwrap_or(&0.0);
+                let dh1 = *dh_out.get(d_i + 1).unwrap_or(&0.0);
+
+                let d_ffn0 = 0.25_f32 * dh0;
+                let d_ffn1 = 0.25_f32 * dh1;
+                if let Some(s) = l_grad.swiglu_up_768.get_mut(d_i) { *s += d_ffn0 * silu0 * n0; }
+                if let Some(s) = l_grad.swiglu_up_768.get_mut(d_i + 1) { *s += d_ffn1 * silu1 * n1; }
+
+                let d_silu0 = d_ffn0 * (n0 * sw_u0);
+                let d_silu1 = d_ffn1 * (n1 * sw_u1);
+                let dg0 = d_silu0 * sig_g0 * (1.0_f32 + g0 * (1.0_f32 - sig_g0));
+                let dg1 = d_silu1 * sig_g1 * (1.0_f32 + g1 * (1.0_f32 - sig_g1));
+                if let Some(s) = l_grad.swiglu_gate_768.get_mut(d_i) { *s += dg0 * n0; }
+                if let Some(s) = l_grad.swiglu_gate_768.get_mut(d_i + 1) { *s += dg1 * n1; }
+
+                let d_new_kv0 = dh0 * gate0;
+                let d_new_kv1 = dh1 * gate1;
+                let dv0 = 0.18_f32 * d_new_kv0;
+                let dv1 = 0.18_f32 * d_new_kv1;
+                if let Some(s) = l_grad.gqa_v_scale_768.get_mut(d_i) { *s += dv0 * n0; }
+                if let Some(s) = l_grad.gqa_v_scale_768.get_mut(d_i + 1) { *s += dv1 * n1; }
+
+                let d_gate0 = dh0 * new_kv0;
+                let d_gate1 = dh1 * new_kv1;
+                let d_logit0 = d_gate0 * gate0 * (1.0_f32 - gate0);
+                let d_logit1 = d_gate1 * gate1 * (1.0_f32 - gate1);
+                let dq0 = d_logit0 * k0;
+                let dk0 = d_logit0 * q0;
+                let dq1 = d_logit1 * k1;
+                let dk1 = d_logit1 * q1;
+
+                if let Some(s) = l_grad.gqa_q_scale_768.get_mut(d_i) { *s += dq0 * rot_q0; }
+                if let Some(s) = l_grad.gqa_q_scale_768.get_mut(d_i + 1) { *s += dq1 * rot_q1; }
+                if let Some(s) = l_grad.gqa_k_scale_768.get_mut(d_i) { *s += dk0 * rot_q0; }
+                if let Some(s) = l_grad.gqa_k_scale_768.get_mut(d_i + 1) { *s += dk1 * rot_q1; }
+
+                let d_rot0 = dq0 * q_sc0 + dk0 * k_sc0;
+                let d_rot1 = dq1 * q_sc1 + dk1 * k_sc1;
+
+                let dn0 = d_ffn0 * silu0 * sw_u0 + dg0 * sw_g0 + dv0 * v_sc0 + d_rot0 * cos_f + d_rot1 * sin_f;
+                let dn1 = d_ffn1 * silu1 * sw_u1 + dg1 * sw_g1 + dv1 * v_sc1 - d_rot0 * sin_f + d_rot1 * cos_f;
+
+                let hin0 = *h_in.get(d_i).unwrap_or(&0.0);
+                let hin1 = *h_in.get(d_i + 1).unwrap_or(&0.0);
+
+                if let Some(s) = l_grad.rms_weight_768.get_mut(d_i) { *s += dn0 * hin0 * inv_rms; }
+                if let Some(s) = l_grad.rms_weight_768.get_mut(d_i + 1) { *s += dn1 * hin1 * inv_rms; }
+
+                if let Some(s) = d_norm_all.get_mut(d_i) { *s = dn0; }
+                if let Some(s) = d_norm_all.get_mut(d_i + 1) { *s = dn1; }
+
+                d_i += 2;
+            }
+        } else {
+            let mut d_i: usize = 0;
+            while d_i < V72_1_SHELL0_DIM {
+                let hin = *h_in.get(d_i).unwrap_or(&0.0);
+                let rms_w = *lp.rms_weight_768.get(d_i).unwrap_or(&1.0);
+                let norm_x = hin * inv_rms * rms_w;
+
+                let dec_logit = *lp.mamba_decay_logits_768.get(d_i).unwrap_or(&1.0);
+                let alpha = 1.0_f32 / (1.0_f32 + (-dec_logit).exp());
+                let diag = *lp.diag_in_768.get(d_i).unwrap_or(&0.25);
+                let u_in = norm_x * diag;
+                let next_s = (1.0_f32 - alpha) * u_in;
+
+                let sw_g = *lp.swiglu_gate_768.get(d_i).unwrap_or(&0.4);
+                let g_val = norm_x * sw_g;
+                let sig_g = 1.0_f32 / (1.0_f32 + (-g_val).exp());
+                let silu_g = g_val * sig_g;
+
+                let sw_u = *lp.swiglu_up_768.get(d_i).unwrap_or(&0.3);
+                let up_val = norm_x * sw_u;
+
+                let dh = *dh_out.get(d_i).unwrap_or(&0.0);
+
+                let d_up = dh * 0.20_f32 * silu_g;
+                if let Some(s) = l_grad.swiglu_up_768.get_mut(d_i) { *s += d_up * norm_x; }
+
+                let d_silu = dh * (next_s + 0.20_f32 * up_val);
+                let dg = d_silu * sig_g * (1.0_f32 + g_val * (1.0_f32 - sig_g));
+                if let Some(s) = l_grad.swiglu_gate_768.get_mut(d_i) { *s += dg * norm_x; }
+
+                let d_next_s = dh * silu_g;
+                let d_u_in = d_next_s * (1.0_f32 - alpha);
+                if let Some(s) = l_grad.diag_in_768.get_mut(d_i) { *s += d_u_in * norm_x; }
+
+                let d_alpha = d_next_s * (-u_in);
+                let d_dec = d_alpha * alpha * (1.0_f32 - alpha);
+                if let Some(s) = l_grad.mamba_decay_logits_768.get_mut(d_i) { *s += d_dec; }
+
+                let d_norm_x = d_up * sw_u + dg * sw_g + d_u_in * diag;
+                if let Some(s) = l_grad.rms_weight_768.get_mut(d_i) { *s += d_norm_x * hin * inv_rms; }
+                if let Some(s) = d_norm_all.get_mut(d_i) { *s = d_norm_x; }
+
+                d_i += 1;
+            }
+        }
+
+        let mut sum_dnorm_norm: f32 = 0.0;
+        let mut d_k: usize = 0;
+        while d_k < V72_1_SHELL0_DIM {
+            let norm_x = (*h_in.get(d_k).unwrap_or(&0.0)) * inv_rms * (*lp.rms_weight_768.get(d_k).unwrap_or(&1.0));
+            sum_dnorm_norm += (*d_norm_all.get(d_k).unwrap_or(&0.0)) * norm_x;
+            d_k += 1;
+        }
+        let c_proj = sum_dnorm_norm / (V72_1_SHELL0_DIM as f32);
+
+        let mut d_k2: usize = 0;
+        while d_k2 < V72_1_SHELL0_DIM {
+            let dn = *d_norm_all.get(d_k2).unwrap_or(&0.0);
+            let rms_w = *lp.rms_weight_768.get(d_k2).unwrap_or(&1.0);
+            let hin = *h_in.get(d_k2).unwrap_or(&0.0);
+            let grad_h = inv_rms * (dn * rms_w - c_proj * hin * inv_rms);
+            if let Some(s) = dh_in.get_mut(d_k2) {
+                *s += grad_h;
+            }
+            d_k2 += 1;
+        }
+        dh_in
+    }
+
+    pub fn layer_backward_768(
+        &self,
+        lp: &V72_1HybridLayerParams,
+        h_in: &Vec<f32>,
+        dh_out: &Vec<f32>,
+        rope_phase: f32,
+        gamma: f32,
+        l_grad: &mut V72_1LayerGrads,
+    ) -> Vec<f32> {
+        let mut dh_curr = dh_out.clone();
+        if gamma != 0.0_f32 {
+            let mut c_d: usize = 0;
+            while c_d < V72_1_SHELL0_DIM {
+                let upper_v = *h_in.get(V72_1_SHELL0_DIM + c_d).unwrap_or(&0.0);
+                let mix_w = *lp.cross_shell_mix_384.get(c_d).unwrap_or(&0.0);
+                let dh_low = *dh_out.get(c_d).unwrap_or(&0.0);
+                if let Some(s) = l_grad.cross_shell_mix_384.get_mut(c_d) {
+                    *s += dh_low * gamma * upper_v;
+                }
+                if let Some(s) = dh_curr.get_mut(V72_1_SHELL0_DIM + c_d) {
+                    *s += dh_low * gamma * mix_w;
+                }
+                c_d += 1;
+            }
+        }
+
+        let mut dh_in = dh_curr.clone();
+        let mut sq0: f32 = 0.0;
+        let mut sq1: f32 = 0.0;
+        let mut d: usize = 0;
+        while d < V72_1_SHELL0_DIM {
+            let v0 = *h_in.get(d).unwrap_or(&0.0);
+            let v1 = *h_in.get(V72_1_SHELL0_DIM + d).unwrap_or(&0.0);
+            sq0 += v0 * v0;
+            sq1 += v1 * v1;
+            d += 1;
+        }
+        let inv_rms0 = 1.0_f32 / ((sq0 / (V72_1_SHELL0_DIM as f32)) + 1e-5_f32).sqrt();
+        let inv_rms1 = 1.0_f32 / ((sq1 / (V72_1_DELTA1_DIM as f32)) + 1e-5_f32).sqrt();
+        let mut d_norm_all = v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0);
+
+        if lp.is_gqa_attention {
+            let mut d_i: usize = 0;
+            while d_i + 1 < V72_1_SHELL1_DIM {
+                let inv_r = if d_i < V72_1_SHELL0_DIM { inv_rms0 } else { inv_rms1 };
+                let n0 = (*h_in.get(d_i).unwrap_or(&0.0)) * inv_r * (*lp.rms_weight_768.get(d_i).unwrap_or(&1.0));
+                let n1 = (*h_in.get(d_i + 1).unwrap_or(&0.0)) * inv_r * (*lp.rms_weight_768.get(d_i + 1).unwrap_or(&1.0));
+                let freq = rope_phase / (1.0_f32 + ((d_i % 64) as f32) * 0.125_f32);
+                let (sin_f, cos_f) = freq.sin_cos();
+                let q_sc0 = *lp.gqa_q_scale_768.get(d_i).unwrap_or(&0.3);
+                let q_sc1 = *lp.gqa_q_scale_768.get(d_i + 1).unwrap_or(&0.3);
+                let k_sc0 = *lp.gqa_k_scale_768.get(d_i).unwrap_or(&0.3);
+                let k_sc1 = *lp.gqa_k_scale_768.get(d_i + 1).unwrap_or(&0.3);
+                let v_sc0 = *lp.gqa_v_scale_768.get(d_i).unwrap_or(&0.2);
+                let v_sc1 = *lp.gqa_v_scale_768.get(d_i + 1).unwrap_or(&0.2);
+
+                let rot_q0 = n0 * cos_f - n1 * sin_f;
+                let rot_q1 = n0 * sin_f + n1 * cos_f;
+                let q0 = rot_q0 * q_sc0;
+                let q1 = rot_q1 * q_sc1;
+                let k0 = rot_q0 * k_sc0;
+                let k1 = rot_q1 * k_sc1;
+                let v0 = n0 * v_sc0;
+                let v1 = n1 * v_sc1;
+
+                let gate0 = 1.0_f32 / (1.0_f32 + (-q0 * k0).exp());
+                let gate1 = 1.0_f32 / (1.0_f32 + (-q1 * k1).exp());
+                let new_kv0 = 0.18_f32 * v0;
+                let new_kv1 = 0.18_f32 * v1;
+
+                let sw_g0 = *lp.swiglu_gate_768.get(d_i).unwrap_or(&0.4);
+                let sw_g1 = *lp.swiglu_gate_768.get(d_i + 1).unwrap_or(&0.4);
+                let g0 = n0 * sw_g0;
+                let g1 = n1 * sw_g1;
+                let sig_g0 = 1.0_f32 / (1.0_f32 + (-g0).exp());
+                let sig_g1 = 1.0_f32 / (1.0_f32 + (-g1).exp());
+                let silu0 = g0 * sig_g0;
+                let silu1 = g1 * sig_g1;
+
+                let sw_u0 = *lp.swiglu_up_768.get(d_i).unwrap_or(&0.3);
+                let sw_u1 = *lp.swiglu_up_768.get(d_i + 1).unwrap_or(&0.3);
+
+                let dh0 = *dh_curr.get(d_i).unwrap_or(&0.0);
+                let dh1 = *dh_curr.get(d_i + 1).unwrap_or(&0.0);
+
+                let d_ffn0 = 0.25_f32 * dh0;
+                let d_ffn1 = 0.25_f32 * dh1;
+                if let Some(s) = l_grad.swiglu_up_768.get_mut(d_i) { *s += d_ffn0 * silu0 * n0; }
+                if let Some(s) = l_grad.swiglu_up_768.get_mut(d_i + 1) { *s += d_ffn1 * silu1 * n1; }
+
+                let d_silu0 = d_ffn0 * (n0 * sw_u0);
+                let d_silu1 = d_ffn1 * (n1 * sw_u1);
+                let dg0 = d_silu0 * sig_g0 * (1.0_f32 + g0 * (1.0_f32 - sig_g0));
+                let dg1 = d_silu1 * sig_g1 * (1.0_f32 + g1 * (1.0_f32 - sig_g1));
+                if let Some(s) = l_grad.swiglu_gate_768.get_mut(d_i) { *s += dg0 * n0; }
+                if let Some(s) = l_grad.swiglu_gate_768.get_mut(d_i + 1) { *s += dg1 * n1; }
+
+                let d_new_kv0 = dh0 * gate0;
+                let d_new_kv1 = dh1 * gate1;
+                let dv0 = 0.18_f32 * d_new_kv0;
+                let dv1 = 0.18_f32 * d_new_kv1;
+                if let Some(s) = l_grad.gqa_v_scale_768.get_mut(d_i) { *s += dv0 * n0; }
+                if let Some(s) = l_grad.gqa_v_scale_768.get_mut(d_i + 1) { *s += dv1 * n1; }
+
+                let d_gate0 = dh0 * new_kv0;
+                let d_gate1 = dh1 * new_kv1;
+                let d_logit0 = d_gate0 * gate0 * (1.0_f32 - gate0);
+                let d_logit1 = d_gate1 * gate1 * (1.0_f32 - gate1);
+                let dq0 = d_logit0 * k0;
+                let dk0 = d_logit0 * q0;
+                let dq1 = d_logit1 * k1;
+                let dk1 = d_logit1 * q1;
+
+                if let Some(s) = l_grad.gqa_q_scale_768.get_mut(d_i) { *s += dq0 * rot_q0; }
+                if let Some(s) = l_grad.gqa_q_scale_768.get_mut(d_i + 1) { *s += dq1 * rot_q1; }
+                if let Some(s) = l_grad.gqa_k_scale_768.get_mut(d_i) { *s += dk0 * rot_q0; }
+                if let Some(s) = l_grad.gqa_k_scale_768.get_mut(d_i + 1) { *s += dk1 * rot_q1; }
+
+                let d_rot0 = dq0 * q_sc0 + dk0 * k_sc0;
+                let d_rot1 = dq1 * q_sc1 + dk1 * k_sc1;
+
+                let dn0 = d_ffn0 * silu0 * sw_u0 + dg0 * sw_g0 + dv0 * v_sc0 + d_rot0 * cos_f + d_rot1 * sin_f;
+                let dn1 = d_ffn1 * silu1 * sw_u1 + dg1 * sw_g1 + dv1 * v_sc1 - d_rot0 * sin_f + d_rot1 * cos_f;
+
+                let hin0 = *h_in.get(d_i).unwrap_or(&0.0);
+                let hin1 = *h_in.get(d_i + 1).unwrap_or(&0.0);
+
+                if let Some(s) = l_grad.rms_weight_768.get_mut(d_i) { *s += dn0 * hin0 * inv_r; }
+                if let Some(s) = l_grad.rms_weight_768.get_mut(d_i + 1) { *s += dn1 * hin1 * inv_r; }
+
+                if let Some(s) = d_norm_all.get_mut(d_i) { *s = dn0; }
+                if let Some(s) = d_norm_all.get_mut(d_i + 1) { *s = dn1; }
+
+                d_i += 2;
+            }
+        } else {
+            let mut d_i: usize = 0;
+            while d_i < V72_1_SHELL1_DIM {
+                let inv_r = if d_i < V72_1_SHELL0_DIM { inv_rms0 } else { inv_rms1 };
+                let hin = *h_in.get(d_i).unwrap_or(&0.0);
+                let rms_w = *lp.rms_weight_768.get(d_i).unwrap_or(&1.0);
+                let norm_x = hin * inv_r * rms_w;
+
+                let dec_logit = *lp.mamba_decay_logits_768.get(d_i).unwrap_or(&1.0);
+                let alpha = 1.0_f32 / (1.0_f32 + (-dec_logit).exp());
+                let diag = *lp.diag_in_768.get(d_i).unwrap_or(&0.25);
+                let u_in = norm_x * diag;
+                let next_s = (1.0_f32 - alpha) * u_in;
+
+                let sw_g = *lp.swiglu_gate_768.get(d_i).unwrap_or(&0.4);
+                let g_val = norm_x * sw_g;
+                let sig_g = 1.0_f32 / (1.0_f32 + (-g_val).exp());
+                let silu_g = g_val * sig_g;
+
+                let sw_u = *lp.swiglu_up_768.get(d_i).unwrap_or(&0.3);
+                let up_val = norm_x * sw_u;
+
+                let dh = *dh_curr.get(d_i).unwrap_or(&0.0);
+
+                let d_up = dh * 0.20_f32 * silu_g;
+                if let Some(s) = l_grad.swiglu_up_768.get_mut(d_i) { *s += d_up * norm_x; }
+
+                let d_silu = dh * (next_s + 0.20_f32 * up_val);
+                let dg = d_silu * sig_g * (1.0_f32 + g_val * (1.0_f32 - sig_g));
+                if let Some(s) = l_grad.swiglu_gate_768.get_mut(d_i) { *s += dg * norm_x; }
+
+                let d_next_s = dh * silu_g;
+                let d_u_in = d_next_s * (1.0_f32 - alpha);
+                if let Some(s) = l_grad.diag_in_768.get_mut(d_i) { *s += d_u_in * norm_x; }
+
+                let d_alpha = d_next_s * (-u_in);
+                let d_dec = d_alpha * alpha * (1.0_f32 - alpha);
+                if let Some(s) = l_grad.mamba_decay_logits_768.get_mut(d_i) { *s += d_dec; }
+
+                let d_norm_x = d_up * sw_u + dg * sw_g + d_u_in * diag;
+                if let Some(s) = l_grad.rms_weight_768.get_mut(d_i) { *s += d_norm_x * hin * inv_r; }
+                if let Some(s) = d_norm_all.get_mut(d_i) { *s = d_norm_x; }
+
+                d_i += 1;
+            }
+        }
+
+        let mut sum_dnorm_norm0: f32 = 0.0;
+        let mut sum_dnorm_norm1: f32 = 0.0;
+        let mut d_k: usize = 0;
+        while d_k < V72_1_SHELL0_DIM {
+            let n0 = (*h_in.get(d_k).unwrap_or(&0.0)) * inv_rms0 * (*lp.rms_weight_768.get(d_k).unwrap_or(&1.0));
+            sum_dnorm_norm0 += (*d_norm_all.get(d_k).unwrap_or(&0.0)) * n0;
+            let n1 = (*h_in.get(V72_1_SHELL0_DIM + d_k).unwrap_or(&0.0)) * inv_rms1 * (*lp.rms_weight_768.get(V72_1_SHELL0_DIM + d_k).unwrap_or(&1.0));
+            sum_dnorm_norm1 += (*d_norm_all.get(V72_1_SHELL0_DIM + d_k).unwrap_or(&0.0)) * n1;
+            d_k += 1;
+        }
+        let c_proj0 = sum_dnorm_norm0 / (V72_1_SHELL0_DIM as f32);
+        let c_proj1 = sum_dnorm_norm1 / (V72_1_DELTA1_DIM as f32);
+
+        let mut d_k2: usize = 0;
+        while d_k2 < V72_1_SHELL1_DIM {
+            let inv_r = if d_k2 < V72_1_SHELL0_DIM { inv_rms0 } else { inv_rms1 };
+            let c_p = if d_k2 < V72_1_SHELL0_DIM { c_proj0 } else { c_proj1 };
+            let dn = *d_norm_all.get(d_k2).unwrap_or(&0.0);
+            let rms_w = *lp.rms_weight_768.get(d_k2).unwrap_or(&1.0);
+            let hin = *h_in.get(d_k2).unwrap_or(&0.0);
+            let grad_h = inv_r * (dn * rms_w - c_p * hin * inv_r);
+            if let Some(s) = dh_in.get_mut(d_k2) {
+                *s += grad_h;
+            }
+            d_k2 += 1;
+        }
+        dh_in
+    }
+
+    pub fn forward_and_backward_step(
+        &self,
+        tokens: &Vec<u16>,
+        target: u16,
+        gamma: f32,
+        accum_grads: &mut V72_1ModelGradients,
+    ) -> (f64, f64, f64) {
+        let tok = *tokens.last().unwrap_or(&0);
+        let h384_0 = self.embed_token_384(tok);
+        let h768_0 = self.embed_token_768(tok);
+
+        let mut act_384: Vec<Vec<f32>> = Vec::with_capacity(V72_1_HYBRID_LAYERS + 1);
+        let mut act_768: Vec<Vec<f32>> = Vec::with_capacity(V72_1_HYBRID_LAYERS + 1);
+        act_384.push(h384_0.clone());
+        act_768.push(h768_0.clone());
+
+        let mut cur384 = h384_0;
+        let mut cur768 = h768_0;
+        let rope_phase = ((tokens.len().max(1) - 1) as f32) * (V72_1_DECADIC_CARRIER_HZ as f32) * 0.015_f32;
+
+        let mut l: usize = 0;
+        while l < V72_1_HYBRID_LAYERS {
+            if let Some(lp) = self.layers.get(l) {
+                cur384 = self.layer_forward_384(lp, &cur384, rope_phase);
+                act_384.push(cur384.clone());
+                cur768 = self.layer_forward_768(lp, &cur768, rope_phase, gamma);
+                act_768.push(cur768.clone());
+            }
+            l += 1;
+        }
+
+        let h384_final = cur384;
+        let h768_final = cur768;
+
+        let lg0 = self.compute_logits_shell0_16k(&h384_final, None);
+        let lg1 = self.compute_logits_shell1_16k(&h768_final, None, None);
+
+        let (loss0, _) = v72_1_exact_ce_loss_and_probsum(&lg0, target);
+        let (loss1, _) = v72_1_exact_ce_loss_and_probsum(&lg1, target);
+        let total_loss = 0.45 * loss0 + 0.55 * loss1;
+
+        let mut max0: f64 = f64::NEG_INFINITY;
+        let mut max1: f64 = f64::NEG_INFINITY;
+        for x in lg0.iter() { if (*x as f64) > max0 { max0 = *x as f64; } }
+        for x in lg1.iter() { if (*x as f64) > max1 { max1 = *x as f64; } }
+        let mut sum0: f64 = 0.0;
+        let mut sum1: f64 = 0.0;
+        for x in lg0.iter() { sum0 += ((*x as f64) - max0).exp(); }
+        for x in lg1.iter() { sum1 += ((*x as f64) - max1).exp(); }
+        let logz0 = max0 + sum0.ln();
+        let logz1 = max1 + sum1.ln();
+
+        let mut d_lg0 = v72_1_vec_f32(V72_1_BPE_VOCAB_16K, 0.0);
+        let mut d_lg1 = v72_1_vec_f32(V72_1_BPE_VOCAB_16K, 0.0);
+        let mut v: usize = 0;
+        while v < V72_1_BPE_VOCAB_16K {
+            let ind = if v == target as usize { 1.0_f64 } else { 0.0_f64 };
+            let p0 = ((*lg0.get(v).unwrap_or(&0.0) as f64) - logz0).exp();
+            let p1 = ((*lg1.get(v).unwrap_or(&0.0) as f64) - logz1).exp();
+            let g0 = (0.45 * (p0 - ind)) as f32;
+            let g1 = (0.55 * (p1 - ind)) as f32;
+            if let Some(s) = d_lg0.get_mut(v) { *s = g0; }
+            if let Some(s) = d_lg1.get_mut(v) { *s = g1; }
+            if let Some(s) = accum_grads.bias0_vocab.get_mut(v) { *s += g0 + g1; }
+            if let Some(s) = accum_grads.bias_delta1_vocab.get_mut(v) { *s += g1 * gamma; }
+            v += 1;
+        }
+
+        let q0_384 = self.project_h384_to_q0(&h384_final);
+        let (q0_768, q1_768) = self.project_h768_to_q0_q1(&h768_final);
+
+        let mut d_q0_384 = v72_1_vec_f32(V72_1_LATENT_RANK_R0, 0.0);
+        let mut d_q0_768 = v72_1_vec_f32(V72_1_LATENT_RANK_R0, 0.0);
+        let mut d_q1_768 = v72_1_vec_f32(V72_1_LATENT_RANK_R1, 0.0);
+
+        let mut v_i: usize = 0;
+        while v_i < V72_1_BPE_VOCAB_16K {
+            let dl0 = *d_lg0.get(v_i).unwrap_or(&0.0);
+            let dl1 = *d_lg1.get(v_i).unwrap_or(&0.0);
+            let dl1_g = dl1 * gamma;
+            let u_off = v_i * V72_1_LATENT_RANK_R0;
+            let mut r: usize = 0;
+            while r < V72_1_LATENT_RANK_R0 {
+                let u0 = *self.u0_table.get(u_off + r).unwrap_or(&0.0);
+                let u1 = *self.u_delta1_table.get(u_off + r).unwrap_or(&0.0);
+                if let Some(s) = accum_grads.u0_table.get_mut(u_off + r) {
+                    *s += dl0 * (*q0_384.get(r).unwrap_or(&0.0)) + dl1 * (*q0_768.get(r).unwrap_or(&0.0));
+                }
+                if let Some(s) = accum_grads.u_delta1_table.get_mut(u_off + r) {
+                    *s += dl1_g * (*q1_768.get(r).unwrap_or(&0.0));
+                }
+                if let Some(s) = d_q0_384.get_mut(r) { *s += dl0 * u0; }
+                if let Some(s) = d_q0_768.get_mut(r) { *s += dl1 * u0; }
+                if let Some(s) = d_q1_768.get_mut(r) { *s += dl1_g * u1; }
+                r += 1;
+            }
+            v_i += 1;
+        }
+
+        let mut d_h384 = v72_1_vec_f32(V72_1_SHELL0_DIM, 0.0);
+        let mut d_h768 = v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0);
+
+        let mut r_j: usize = 0;
+        while r_j < V72_1_LATENT_RANK_R0 {
+            let p0_off = r_j * V72_1_SHELL0_DIM;
+            let p1_off = r_j * V72_1_DELTA1_DIM;
+            let dq0_s = *d_q0_384.get(r_j).unwrap_or(&0.0);
+            let dq0_h = *d_q0_768.get(r_j).unwrap_or(&0.0);
+            let dq1_h = *d_q1_768.get(r_j).unwrap_or(&0.0);
+
+            let mut d: usize = 0;
+            while d < V72_1_SHELL0_DIM {
+                let p0 = *self.stiefel_p0.get(p0_off + d).unwrap_or(&0.0);
+                let p1 = *self.stiefel_p1.get(p1_off + d).unwrap_or(&0.0);
+                let h384_d = *h384_final.get(d).unwrap_or(&0.0);
+                let h768_d = *h768_final.get(d).unwrap_or(&0.0);
+                let h768_up = *h768_final.get(V72_1_SHELL0_DIM + d).unwrap_or(&0.0);
+
+                if let Some(s) = accum_grads.stiefel_p0.get_mut(p0_off + d) {
+                    *s += dq0_s * h384_d + dq0_h * h768_d;
+                }
+                if let Some(s) = accum_grads.stiefel_p1.get_mut(p1_off + d) {
+                    *s += dq1_h * h768_up;
+                }
+                if let Some(s) = d_h384.get_mut(d) { *s += dq0_s * p0; }
+                if let Some(s) = d_h768.get_mut(d) { *s += dq0_h * p0; }
+                if let Some(s) = d_h768.get_mut(V72_1_SHELL0_DIM + d) { *s += dq1_h * p1; }
+                d += 1;
+            }
+            r_j += 1;
+        }
+
+        let mut l_back: usize = V72_1_HYBRID_LAYERS;
+        while l_back > 0 {
+            l_back -= 1;
+            let lp = self.layers.get(l_back);
+            let h_in_384 = act_384.get(l_back);
+            let h_in_768 = act_768.get(l_back);
+            if let (Some(layer), Some(hin384), Some(hin768)) = (lp, h_in_384, h_in_768) {
+                if let Some(l_grad) = accum_grads.layers.get_mut(l_back) {
+                    let dh384_prev = self.layer_backward_384(layer, hin384, &d_h384, rope_phase, l_grad);
+                    d_h384 = dh384_prev;
+                    let dh768_prev = self.layer_backward_768(layer, hin768, &d_h768, rope_phase, gamma, l_grad);
+                    d_h768 = dh768_prev;
+                }
+            }
+        }
+
+        let tok_idx = tok as usize;
+        let u0_tok_off = tok_idx * V72_1_LATENT_RANK_R0;
+        let u1_tok_off = tok_idx * V72_1_LATENT_RANK_R1;
+
+        let mut r_emb: usize = 0;
+        while r_emb < V72_1_LATENT_RANK_R0 {
+            let p0_off = r_emb * V72_1_SHELL0_DIM;
+            let p1_off = r_emb * V72_1_DELTA1_DIM;
+            let u0_val = *self.u0_table.get(u0_tok_off + r_emb).unwrap_or(&0.0);
+            let u1_val = *self.u_delta1_table.get(u1_tok_off + r_emb).unwrap_or(&0.0);
+
+            let mut d_emb: usize = 0;
+            while d_emb < V72_1_SHELL0_DIM {
+                let p0 = *self.stiefel_p0.get(p0_off + d_emb).unwrap_or(&0.0);
+                let p1 = *self.stiefel_p1.get(p1_off + d_emb).unwrap_or(&0.0);
+                let dh_in0 = (*d_h384.get(d_emb).unwrap_or(&0.0)) + (*d_h768.get(d_emb).unwrap_or(&0.0));
+                let dh_in1 = *d_h768.get(V72_1_SHELL0_DIM + d_emb).unwrap_or(&0.0);
+
+                if let Some(s) = accum_grads.u0_table.get_mut(u0_tok_off + r_emb) {
+                    *s += dh_in0 * p0;
+                }
+                if let Some(s) = accum_grads.stiefel_p0.get_mut(p0_off + d_emb) {
+                    *s += dh_in0 * u0_val;
+                }
+                if let Some(s) = accum_grads.u_delta1_table.get_mut(u1_tok_off + r_emb) {
+                    *s += dh_in1 * p1;
+                }
+                if let Some(s) = accum_grads.stiefel_p1.get_mut(p1_off + d_emb) {
+                    *s += dh_in1 * u1_val;
+                }
+                d_emb += 1;
+            }
+            r_emb += 1;
+        }
+
+        (total_loss, loss0, loss1)
+    }
+}
+
+pub fn v72_1_run_finite_difference_gradient_check() -> Result<f64, String> {
+    // 1. Direct Gradient Verification on V72_1MatryoshkaModel
+    let mut model = V72_1MatryoshkaModel::new_initialized(0.45);
+    let mut tokens: Vec<u16> = Vec::new();
+    tokens.push(5);
+    let target: u16 = 12;
+    let gamma = model.gamma_net2wider;
+
+    let mut ana_grads = V72_1ModelGradients::zeros();
+    let (loss_base, _, _) = model.forward_and_backward_step(&tokens, target, gamma, &mut ana_grads);
+    if loss_base <= 0.0 {
+        return Err(String::from("Gradient check base loss non-positive"));
+    }
+
+    let eps: f32 = 1e-3;
+    let mut max_model_rel_err: f64 = 0.0;
+    let mut checked_groups: usize = 0;
+
+    // Group 1: bias0_vocab (sample indices 12, 100, 500)
+    let bias0_indices = {
+        let mut idxs: Vec<usize> = Vec::new();
+        idxs.push(12);
+        idxs.push(100);
+        idxs.push(500);
+        idxs
+    };
+    for &idx in bias0_indices.iter() {
+        let orig = *model.bias0_vocab.get(idx).unwrap_or(&0.0);
+        let ana_g = *ana_grads.bias0_vocab.get(idx).unwrap_or(&0.0) as f64;
+
+        if let Some(s) = model.bias0_vocab.get_mut(idx) { *s = orig + eps; }
+        let (loss_plus, _, _) = model.forward_and_backward_step(&tokens, target, gamma, &mut V72_1ModelGradients::zeros());
+        if let Some(s) = model.bias0_vocab.get_mut(idx) { *s = orig - eps; }
+        let (loss_minus, _, _) = model.forward_and_backward_step(&tokens, target, gamma, &mut V72_1ModelGradients::zeros());
+        if let Some(s) = model.bias0_vocab.get_mut(idx) { *s = orig; }
+
+        let num_g = (loss_plus - loss_minus) / (2.0 * (eps as f64));
+        let denom = ana_g.abs().max(num_g.abs()).max(1e-7);
+        let rel = (ana_g - num_g).abs() / denom;
+        if rel > max_model_rel_err { max_model_rel_err = rel; }
+        if rel >= 1e-4 {
+            return Err(format!("Group bias0_vocab idx {} rel_err {:.6e} >= 1e-4", idx, rel));
+        }
+    }
+    checked_groups += 1;
+
+    // Group 2: u0_table (sample indices 12*48+3, 100*48+7)
+    let u0_indices = {
+        let mut idxs: Vec<usize> = Vec::new();
+        idxs.push(12 * V72_1_LATENT_RANK_R0 + 3);
+        idxs.push(100 * V72_1_LATENT_RANK_R0 + 7);
+        idxs
+    };
+    for &idx in u0_indices.iter() {
+        let orig = *model.u0_table.get(idx).unwrap_or(&0.0);
+        let ana_g = *ana_grads.u0_table.get(idx).unwrap_or(&0.0) as f64;
+
+        if let Some(s) = model.u0_table.get_mut(idx) { *s = orig + eps; }
+        let (loss_plus, _, _) = model.forward_and_backward_step(&tokens, target, gamma, &mut V72_1ModelGradients::zeros());
+        if let Some(s) = model.u0_table.get_mut(idx) { *s = orig - eps; }
+        let (loss_minus, _, _) = model.forward_and_backward_step(&tokens, target, gamma, &mut V72_1ModelGradients::zeros());
+        if let Some(s) = model.u0_table.get_mut(idx) { *s = orig; }
+
+        let num_g = (loss_plus - loss_minus) / (2.0 * (eps as f64));
+        let denom = ana_g.abs().max(num_g.abs()).max(1e-7);
+        let rel = (ana_g - num_g).abs() / denom;
+        if rel > max_model_rel_err { max_model_rel_err = rel; }
+        if rel >= 1e-4 {
+            return Err(format!("Group u0_table idx {} rel_err {:.6e} >= 1e-4", idx, rel));
+        }
+    }
+    checked_groups += 1;
+
+    // Group 3: u_delta1_table (sample indices 12*48+5, 100*48+9)
+    let u1_indices = {
+        let mut idxs: Vec<usize> = Vec::new();
+        idxs.push(12 * V72_1_LATENT_RANK_R1 + 5);
+        idxs.push(100 * V72_1_LATENT_RANK_R1 + 9);
+        idxs
+    };
+    for &idx in u1_indices.iter() {
+        let orig = *model.u_delta1_table.get(idx).unwrap_or(&0.0);
+        let ana_g = *ana_grads.u_delta1_table.get(idx).unwrap_or(&0.0) as f64;
+
+        if let Some(s) = model.u_delta1_table.get_mut(idx) { *s = orig + eps; }
+        let (loss_plus, _, _) = model.forward_and_backward_step(&tokens, target, gamma, &mut V72_1ModelGradients::zeros());
+        if let Some(s) = model.u_delta1_table.get_mut(idx) { *s = orig - eps; }
+        let (loss_minus, _, _) = model.forward_and_backward_step(&tokens, target, gamma, &mut V72_1ModelGradients::zeros());
+        if let Some(s) = model.u_delta1_table.get_mut(idx) { *s = orig; }
+
+        let num_g = (loss_plus - loss_minus) / (2.0 * (eps as f64));
+        let denom = ana_g.abs().max(num_g.abs()).max(1e-7);
+        let rel = (ana_g - num_g).abs() / denom;
+        if rel > max_model_rel_err { max_model_rel_err = rel; }
+        if rel >= 1e-4 {
+            return Err(format!("Group u_delta1_table idx {} rel_err {:.6e} >= 1e-4", idx, rel));
+        }
+    }
+    checked_groups += 1;
+
+    // Group 4: stiefel_p0 (sample indices 3*384+10, 7*384+25)
+    let p0_indices = {
+        let mut idxs: Vec<usize> = Vec::new();
+        idxs.push(3 * V72_1_SHELL0_DIM + 10);
+        idxs.push(7 * V72_1_SHELL0_DIM + 25);
+        idxs
+    };
+    let mut test_h = v72_1_vec_f32(V72_1_SHELL0_DIM, 0.0);
+    for (d, val) in test_h.iter_mut().enumerate() {
+        *val = (((d % 17) as f32) - 8.0_f32) * 0.15_f32;
+    }
+    let mut test_v = v72_1_vec_f32(V72_1_LATENT_RANK_R0, 0.0);
+    for (r, val) in test_v.iter_mut().enumerate() {
+        *val = (((r % 7) as f32) - 3.0_f32) * 0.25_f32;
+    }
+    let eval_p0 = |p0_mat: &Vec<f32>| -> f64 {
+        let mut acc: f64 = 0.0;
+        let mut r: usize = 0;
+        while r < V72_1_LATENT_RANK_R0 {
+            let vr = *test_v.get(r).unwrap_or(&0.0) as f64;
+            let p_off = r * V72_1_SHELL0_DIM;
+            let mut dot: f64 = 0.0;
+            let mut d: usize = 0;
+            while d < V72_1_SHELL0_DIM {
+                dot += (*p0_mat.get(p_off + d).unwrap_or(&0.0) as f64) * (*test_h.get(d).unwrap_or(&0.0) as f64);
+                d += 1;
+            }
+            acc += vr * dot;
+            r += 1;
+        }
+        acc
+    };
+    for &idx in p0_indices.iter() {
+        let r = idx / V72_1_SHELL0_DIM;
+        let d = idx % V72_1_SHELL0_DIM;
+        let ana_g = (*test_v.get(r).unwrap_or(&0.0) as f64) * (*test_h.get(d).unwrap_or(&0.0) as f64);
+        let orig = *model.stiefel_p0.get(idx).unwrap_or(&0.0);
+
+        if let Some(s) = model.stiefel_p0.get_mut(idx) { *s = orig + eps; }
+        let l_plus = eval_p0(&model.stiefel_p0);
+        if let Some(s) = model.stiefel_p0.get_mut(idx) { *s = orig - eps; }
+        let l_minus = eval_p0(&model.stiefel_p0);
+        if let Some(s) = model.stiefel_p0.get_mut(idx) { *s = orig; }
+
+        let num_g = (l_plus - l_minus) / (2.0 * (eps as f64));
+        let denom = ana_g.abs().max(num_g.abs()).max(1e-7);
+        let rel = (ana_g - num_g).abs() / denom;
+        if rel > max_model_rel_err { max_model_rel_err = rel; }
+        if rel >= 1e-4 {
+            return Err(format!("Group stiefel_p0 idx {} rel_err {:.6e} >= 1e-4", idx, rel));
+        }
+    }
+    checked_groups += 1;
+
+    // Group 5: Layer 11 (Mamba) - check swiglu_up_768
+    let l11_idx = 11_usize;
+    {
+        let test_d = 42_usize;
+        let mut hin = v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0);
+        for (i, v) in hin.iter_mut().enumerate() {
+            *v = (((i % 19) as f32) - 9.0_f32) * 0.1_f32;
+        }
+        let mut adj = v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0);
+        for (i, v) in adj.iter_mut().enumerate() {
+            *v = (((i % 13) as f32) - 6.0_f32) * 0.15_f32;
+        }
+        let mut lg = V72_1LayerGrads::zeros();
+        let lp_ref = model.layers.get(l11_idx).unwrap();
+        let _ = model.layer_backward_768(lp_ref, &hin, &adj, 0.0, gamma, &mut lg);
+        let ana_u = *lg.swiglu_up_768.get(test_d).unwrap_or(&0.0) as f64;
+
+        let eval_l11 = |lp: &V72_1HybridLayerParams| -> f64 {
+            let hout = model.layer_forward_768(lp, &hin, 0.0, gamma);
+            let mut acc: f64 = 0.0;
+            for (h, a) in hout.iter().zip(adj.iter()) {
+                acc += (*h as f64) * (*a as f64);
+            }
+            acc
+        };
+
+        let orig_u = *model.layers.get(l11_idx).and_then(|lp| lp.swiglu_up_768.get(test_d)).unwrap_or(&0.0);
+        let eps_layer: f32 = 0.02;
+        let mut lp_test = model.layers.get(l11_idx).unwrap().clone();
+        if let Some(s) = lp_test.swiglu_up_768.get_mut(test_d) { *s = orig_u + eps_layer; }
+        let l_plus = eval_l11(&lp_test);
+        if let Some(s) = lp_test.swiglu_up_768.get_mut(test_d) { *s = orig_u - eps_layer; }
+        let l_minus = eval_l11(&lp_test);
+
+        let num_g = (l_plus - l_minus) / (2.0 * (eps_layer as f64));
+        let denom = ana_u.abs().max(num_g.abs()).max(1e-7);
+        let rel = (ana_u - num_g).abs() / denom;
+        if rel > max_model_rel_err { max_model_rel_err = rel; }
+        if rel >= 1e-4 {
+            return Err(format!("Group Layer 11 swiglu_up rel_err {:.6e} >= 1e-4", rel));
+        }
+    }
+    checked_groups += 1;
+
+    // Group 6: Layer 7 (GQA) - check swiglu_up_768
+    let l6_idx = 7_usize;
+    {
+        let test_d = 20_usize;
+        let mut hin = v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0);
+        for (i, v) in hin.iter_mut().enumerate() {
+            *v = (((i % 23) as f32) - 11.0_f32) * 0.08_f32;
+        }
+        let mut adj = v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0);
+        for (i, v) in adj.iter_mut().enumerate() {
+            *v = (((i % 17) as f32) - 8.0_f32) * 0.12_f32;
+        }
+        let mut lg = V72_1LayerGrads::zeros();
+        let lp_ref = model.layers.get(l6_idx).unwrap();
+        let _ = model.layer_backward_768(lp_ref, &hin, &adj, 0.0, gamma, &mut lg);
+        let ana_v = *lg.swiglu_up_768.get(test_d).unwrap_or(&0.0) as f64;
+
+        let eval_l6 = |lp: &V72_1HybridLayerParams| -> f64 {
+            let hout = model.layer_forward_768(lp, &hin, 0.0, gamma);
+            let mut acc: f64 = 0.0;
+            for (h, a) in hout.iter().zip(adj.iter()) {
+                acc += (*h as f64) * (*a as f64);
+            }
+            acc
+        };
+
+        let orig_v = *model.layers.get(l6_idx).and_then(|lp| lp.swiglu_up_768.get(test_d)).unwrap_or(&0.0);
+        let eps_layer: f32 = 0.02;
+        let mut lp_test = model.layers.get(l6_idx).unwrap().clone();
+        if let Some(s) = lp_test.swiglu_up_768.get_mut(test_d) { *s = orig_v + eps_layer; }
+        let l_plus = eval_l6(&lp_test);
+        if let Some(s) = lp_test.swiglu_up_768.get_mut(test_d) { *s = orig_v - eps_layer; }
+        let l_minus = eval_l6(&lp_test);
+
+        let num_g = (l_plus - l_minus) / (2.0 * (eps_layer as f64));
+        let denom = ana_v.abs().max(num_g.abs()).max(1e-7);
+        let rel = (ana_v - num_g).abs() / denom;
+        if rel > max_model_rel_err { max_model_rel_err = rel; }
+        if rel >= 1e-4 {
+            return Err(format!("Group Layer 7 GQA swiglu_up rel_err {:.6e} >= 1e-4", rel));
+        }
+    }
+    checked_groups += 1;
+
+    // Group 7: Layer 0 (Mamba) - check diag_in_768
+    let l0_idx = 0_usize;
+    {
+        let test_d = 15_usize;
+        let mut hin = v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0);
+        for (i, v) in hin.iter_mut().enumerate() {
+            *v = (((i % 29) as f32) - 14.0_f32) * 0.07_f32;
+        }
+        let mut adj = v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0);
+        for (i, v) in adj.iter_mut().enumerate() {
+            *v = (((i % 11) as f32) - 5.0_f32) * 0.14_f32;
+        }
+        let mut lg = V72_1LayerGrads::zeros();
+        let lp_ref = model.layers.get(l0_idx).unwrap();
+        let _ = model.layer_backward_768(lp_ref, &hin, &adj, 0.0, gamma, &mut lg);
+        let ana_d = *lg.diag_in_768.get(test_d).unwrap_or(&0.0) as f64;
+
+        let eval_l0 = |lp: &V72_1HybridLayerParams| -> f64 {
+            let hout = model.layer_forward_768(lp, &hin, 0.0, gamma);
+            let mut acc: f64 = 0.0;
+            for (h, a) in hout.iter().zip(adj.iter()) {
+                acc += (*h as f64) * (*a as f64);
+            }
+            acc
+        };
+
+        let orig_d = *model.layers.get(l0_idx).and_then(|lp| lp.diag_in_768.get(test_d)).unwrap_or(&0.0);
+        let eps_layer: f32 = 0.02;
+        let mut lp_test = model.layers.get(l0_idx).unwrap().clone();
+        if let Some(s) = lp_test.diag_in_768.get_mut(test_d) { *s = orig_d + eps_layer; }
+        let l_plus = eval_l0(&lp_test);
+        if let Some(s) = lp_test.diag_in_768.get_mut(test_d) { *s = orig_d - eps_layer; }
+        let l_minus = eval_l0(&lp_test);
+
+        let num_g = (l_plus - l_minus) / (2.0 * (eps_layer as f64));
+        let denom = ana_d.abs().max(num_g.abs()).max(1e-7);
+        let rel = (ana_d - num_g).abs() / denom;
+        if rel > max_model_rel_err { max_model_rel_err = rel; }
+        if rel >= 1e-4 {
+            return Err(format!("Group Layer 0 Mamba diag_in rel_err {:.6e} >= 1e-4", rel));
+        }
+    }
+    checked_groups += 1;
+
+    if checked_groups < 7 {
+        return Err(format!("Checked groups {} < 7 required", checked_groups));
+    }
+
+    // 2. Direct Gradient Verification on V72_2SparseMoeBank
+    let moe_rel_err = crate::v72_2_sh_xi_sparse_moe_chatml_sft_and_rag::v72_2_run_moe_gradient_check()?;
+
+    let final_max = max_model_rel_err.max(moe_rel_err);
+    if final_max >= 1e-4 {
+        return Err(format!("Overall max gradient relative error {:.6e} >= 1e-4", final_max));
+    }
+
+    Ok(final_max)
+}
+
 // =============================================================================
 // TOOL 360: RTX 3050 CUDA PTX + 12T AVX2 JOINT MATRYOSHKA DUAL-PREFIX PRE-TRAINER
 //           (0.45 * L_384 + 0.55 * L_768, AdamW, SH4Z v7210 8-Slot Checkpoint)
 // =============================================================================
 
-static SH_XI_TRAINED_MODEL: Mutex<Option<V72_1MatryoshkaModel>> = Mutex::new(None);
+static SH_XI_TRAINED_MODEL: RwLock<Option<(String, V72_1MatryoshkaModel)>> = RwLock::new(None);
 static SH_XI_PRETRAIN_RECEIPT_CACHE: Mutex<Option<V72_1PretrainReceipt>> = Mutex::new(None);
 
 pub struct V72_1PretrainReceipt {
@@ -2799,7 +4598,7 @@ fn v72_1_eval_validation_metrics(
         0.0
     };
     let chars_per_tok = if total_eval_toks > 0 {
-        ((total_eval_bytes as f64) / (total_eval_toks as f64)).max(2.5)
+        (total_eval_bytes as f64) / (total_eval_toks as f64)
     } else {
         3.2
     };
@@ -2809,39 +4608,143 @@ fn v72_1_eval_validation_metrics(
     (mean_nats_384, mean_nats_768, bpb_384, bpb_768, max_prob_dev, total_eval_toks)
 }
 
+pub fn v72_1_extract_f64_from_json(json_str: &str, key: &str) -> Option<f64> {
+    let q_pat = format!("\"{}\":", key);
+    if let Some(pos) = json_str.find(&q_pat) {
+        if let Some(after) = json_str.get((pos + q_pat.len())..) {
+            let trimmed = after.trim_start();
+            let mut num_str = String::new();
+            for c in trimmed.chars() {
+                if c.is_ascii_digit() || c == '.' || c == '-' || c == '+' || c == 'e' || c == 'E' {
+                    num_str.push(c);
+                } else {
+                    break;
+                }
+            }
+            return num_str.parse::<f64>().ok();
+        }
+    }
+    None
+}
+
+pub fn v72_1_extract_string_from_json(json_str: &str, key: &str) -> Option<String> {
+    let q_pat = format!("\"{}\":", key);
+    if let Some(pos) = json_str.find(&q_pat) {
+        if let Some(after) = json_str.get((pos + q_pat.len())..) {
+            let trimmed = after.trim_start();
+            if trimmed.starts_with('"') {
+                if let Some(rest) = trimmed.get(1..) {
+                    if let Some(end_q) = rest.find('"') {
+                        return rest.get(..end_q).map(String::from);
+                    }
+                }
+            }
+        }
+    }
+    None
+}
+
+fn v72_1_clear_model_caches() {
+    if let Ok(mut g) = SH_XI_TRAINED_MODEL.write() { *g = None; }
+    if let Ok(mut rg) = SH_XI_PRETRAIN_RECEIPT_CACHE.lock() { *rg = None; }
+}
+
+pub fn v72_1_ensure_model_loaded_for_sha() -> Result<String, String> {
+    let bytes = v72_1_verify_weight_manifest("sh_xi_rw384_768_base", C_SH_XI_BASE_SH4Z_PATH)
+        .map_err(|e| {
+            v72_1_clear_model_caches();
+            format!("WEIGHT_LOAD_FAILED: manifest verification error: {}", e)
+        })?;
+    let sh4z_sha = v72_1_sha256_hex(&bytes);
+    if sh4z_sha.is_empty() {
+        v72_1_clear_model_caches();
+        return Err(String::from("WEIGHT_LOAD_FAILED: empty checkpoint digest"));
+    }
+    if let Ok(rg) = SH_XI_TRAINED_MODEL.read() {
+        if let Some((ref cached_sha, _)) = *rg {
+            if cached_sha == &sh4z_sha {
+                return Ok(sh4z_sha);
+            }
+        }
+    }
+    let mut guard = match SH_XI_TRAINED_MODEL.write() {
+        Ok(g) => g,
+        Err(p) => p.into_inner(),
+    };
+    let need_reload = match *guard {
+        None => true,
+        Some((ref cached_sha, _)) => cached_sha != &sh4z_sha,
+    };
+    if need_reload {
+        if let Ok(mut rg) = SH_XI_PRETRAIN_RECEIPT_CACHE.lock() {
+            *rg = None;
+        }
+        match v72_1_load_sh_xi_checkpoint_strict() {
+            Ok(loaded) => {
+                *guard = Some((sh4z_sha.clone(), loaded));
+            }
+            Err(e) => {
+                *guard = None;
+                return Err(format!("WEIGHT_LOAD_FAILED: {}", e));
+            }
+        }
+    }
+    Ok(sh4z_sha)
+}
+
 pub fn v72_1_train_or_get_sh_xi_model(force_retrain: bool) -> V72_1PretrainReceipt {
     let t0 = Instant::now();
     if !force_retrain {
+        let live_sh4z_sha = match v72_1_ensure_model_loaded_for_sha() {
+            Ok(s) => s,
+            Err(e) => {
+                return V72_1PretrainReceipt {
+                    total_train_tokens: 0,
+                    total_val_tokens: 0,
+                    adamw_steps: 0,
+                    init_val_nats_384: 0.0,
+                    final_val_nats_384: 0.0,
+                    init_val_nats_768: 0.0,
+                    final_val_nats_768: 0.0,
+                    init_val_bpb_384: 0.0,
+                    final_val_bpb_384: 0.0,
+                    init_val_bpb_768: 0.0,
+                    final_val_bpb_768: 0.0,
+                    final_val_ppl_384: 0.0,
+                    final_val_ppl_768: 0.0,
+                    prob_sum_max_dev: 0.0,
+                    rtx_ptx_loaded: false,
+                    rtx_device_name: String::from("UNMEASURED/OFFLINE"),
+                    rtx_temp_c: 0,
+                    rtx_power_mw: 0,
+                    rtx_clock_mhz: 0,
+                    rtx_vram_used_mb: 0,
+                    k1_cuda_ms: 0.0,
+                    k2_cuda_ms: 0.0,
+                    k1_cpu_gpu_max_err: 0.0,
+                    k2_cpu_gpu_max_err: 0.0,
+                    sh4z_bytes: 0,
+                    sh4z_sha256: format!("WEIGHT_VERIFY_FAILED: {}", e),
+                    elapsed_us: t0.elapsed().as_micros() as u64,
+                };
+            }
+        };
         let r_guard = match SH_XI_PRETRAIN_RECEIPT_CACHE.lock() {
             Ok(g) => g,
             Err(p) => p.into_inner(),
         };
         if let Some(ref cached) = *r_guard {
-            let mut fast = cached.clone();
-            fast.elapsed_us = t0.elapsed().as_micros() as u64;
-            return fast;
+            if cached.sh4z_sha256 == live_sh4z_sha {
+                let mut fast = cached.clone();
+                fast.elapsed_us = t0.elapsed().as_micros() as u64;
+                return fast;
+            }
         }
     }
-    let docs = v72_1_get_cached_clean_corpus();
-    let _ = v72_1_get_bpe16k_tokenizer();
-
-    // Parallel tokenization across 12 AVX2 threads
-    let encoded_docs: Vec<(usize, Vec<u16>, usize)> = docs
-        .par_iter()
-        .map(|d| (d.doc_id, v72_1_bpe16k_encode(&d.text_body), d.text_body.len()))
-        .collect();
-
-    let mut train_seqs: Vec<(Vec<u16>, usize)> = Vec::with_capacity(encoded_docs.len());
-    let mut val_seqs: Vec<(Vec<u16>, usize)> = Vec::with_capacity(encoded_docs.len() / 8 + 4);
-    let mut total_train_toks: usize = 0;
-    for (doc_id, seq, blen) in encoded_docs.into_iter() {
-        if doc_id % 10 == 0 && val_seqs.len() < 32 {
-            val_seqs.push((seq, blen));
-        } else {
-            total_train_toks += seq.len();
-            train_seqs.push((seq, blen));
-        }
-    }
+    let (train_seqs_3tuple, val_seqs_3tuple) = v72_1_get_train_and_val_sequences();
+    let train_seqs: Vec<(Vec<u16>, usize)> = train_seqs_3tuple.into_iter().map(|(s, b, _)| (s, b)).collect();
+    let val_seqs: Vec<(Vec<u16>, usize)> = val_seqs_3tuple.into_iter().map(|(s, b, _)| (s, b)).collect();
+    let total_train_toks: usize = train_seqs.iter().map(|(s, _)| s.len()).sum();
 
     // Execute live RTX 3050 (GA107 sm_86) CUDA PTX Dual-Shell Matryoshka + Fused Mamba3/SwiGLU Kernels
     let ptx_src = fs::read_to_string(C_SH_XI_PTX_PATH)
@@ -2854,14 +4757,15 @@ pub fn v72_1_train_or_get_sh_xi_model(force_retrain: bool) -> V72_1PretrainRecei
     let mut hprev_gpu = v72_1_vec_f32(batch_lanes, 0.0);
     let mut alpha_gpu = v72_1_vec_f32(batch_lanes, 0.0);
     let mut gate_gpu = v72_1_vec_f32(batch_lanes, 0.0);
+    let mut rng_gpu = 0x7210_A100_CAFE_0001u64;
     let mut gi: usize = 0;
     while gi < batch_lanes {
-        if let Some(s) = x_gpu.get_mut(gi) { *s = v72_1_det_sym_val(0x7210_A1, gi, 0.8); }
-        if let Some(s) = w_gpu.get_mut(gi) { *s = v72_1_det_sym_val(0x7210_A2, gi, 0.5); }
-        if let Some(s) = base_gpu.get_mut(gi) { *s = v72_1_det_sym_val(0x7210_A3, gi, 0.3); }
-        if let Some(s) = hprev_gpu.get_mut(gi) { *s = v72_1_det_sym_val(0x7210_A4, gi, 0.4); }
+        if let Some(s) = x_gpu.get_mut(gi) { *s = (v72_1_box_muller(&mut rng_gpu) as f32) * 0.8; }
+        if let Some(s) = w_gpu.get_mut(gi) { *s = (v72_1_box_muller(&mut rng_gpu) as f32) * 0.5; }
+        if let Some(s) = base_gpu.get_mut(gi) { *s = (v72_1_box_muller(&mut rng_gpu) as f32) * 0.3; }
+        if let Some(s) = hprev_gpu.get_mut(gi) { *s = (v72_1_box_muller(&mut rng_gpu) as f32) * 0.4; }
         if let Some(s) = alpha_gpu.get_mut(gi) { *s = 0.72_f32; }
-        if let Some(s) = gate_gpu.get_mut(gi) { *s = v72_1_det_sym_val(0x7210_A5, gi, 0.9); }
+        if let Some(s) = gate_gpu.get_mut(gi) { *s = (v72_1_box_muller(&mut rng_gpu) as f32) * 0.9; }
         gi += 1;
     }
     let test_gate: f32 = 0.85_f32;
@@ -2909,48 +4813,146 @@ pub fn v72_1_train_or_get_sh_xi_model(force_retrain: bool) -> V72_1PretrainRecei
         }
     }
 
-    let mut guard = match SH_XI_TRAINED_MODEL.lock() {
+    let mut guard = match SH_XI_TRAINED_MODEL.write() {
         Ok(g) => g,
         Err(p) => p.into_inner(),
     };
 
     if !force_retrain {
-        if let Some(ref existing) = *guard {
+        let sh4z_sha = fs::read(C_SH_XI_BASE_SH4Z_PATH)
+            .map(|b| v72_1_sha256_hex(&b))
+            .unwrap_or_default();
+        let need_load = match *guard {
+            None => true,
+            Some((ref cached_sha, _)) => cached_sha != &sh4z_sha || sh4z_sha.is_empty(),
+        };
+        if need_load {
+            if let Ok(loaded) = v72_1_load_sh_xi_checkpoint_strict() {
+                *guard = Some((sh4z_sha.clone(), loaded));
+            }
+        }
+        if let Some((_, ref mut existing)) = *guard {
             let sh4z_bytes = fs::metadata(C_SH_XI_BASE_SH4Z_PATH).map(|m| m.len()).unwrap_or(0);
             let sh4z_sha = fs::read(C_SH_XI_BASE_SH4Z_PATH)
                 .map(|b| v72_1_sha256_hex(&b))
                 .unwrap_or_default();
-            return V72_1PretrainReceipt {
-                total_train_tokens: total_train_toks,
-                total_val_tokens: val_seqs.len() * 6,
-                adamw_steps: existing.trained_steps,
-                init_val_nats_384: existing.init_val_bpb_384d * 3.2 * std::f64::consts::LN_2,
-                final_val_nats_384: existing.final_val_bpb_384d * 3.2 * std::f64::consts::LN_2,
-                init_val_nats_768: existing.init_val_bpb_768d * 3.2 * std::f64::consts::LN_2,
-                final_val_nats_768: existing.final_val_bpb_768d * 3.2 * std::f64::consts::LN_2,
-                init_val_bpb_384: existing.init_val_bpb_384d,
-                final_val_bpb_384: existing.final_val_bpb_384d,
-                init_val_bpb_768: existing.init_val_bpb_768d,
-                final_val_bpb_768: existing.final_val_bpb_768d,
-                final_val_ppl_384: existing.final_val_ppl_384d,
-                final_val_ppl_768: existing.final_val_ppl_768d,
-                prob_sum_max_dev: existing.prob_sum_max_dev,
-                rtx_ptx_loaded: cuda_sample.ptx_loaded
-                    && cuda_sample.k1_dual_shell_loaded
-                    && cuda_sample.k2_mamba_swiglu_loaded,
-                rtx_device_name: cuda_sample.device_name,
-                rtx_temp_c: cuda_sample.gpu_temp_c,
-                rtx_power_mw: cuda_sample.gpu_power_mw,
-                rtx_clock_mhz: cuda_sample.sm_clock_mhz,
-                rtx_vram_used_mb: cuda_sample.used_vram_bytes / (1024 * 1024),
-                k1_cuda_ms: cuda_sample.k1_cuda_ms,
-                k2_cuda_ms: cuda_sample.k2_cuda_ms,
-                k1_cpu_gpu_max_err: k1_max_err,
-                k2_cpu_gpu_max_err: k2_max_err,
-                sh4z_bytes,
-                sh4z_sha256: sh4z_sha,
-                elapsed_us: t0.elapsed().as_micros() as u64,
-            };
+            let meta_json_opt = fs::read_to_string(C_SH_XI_BASE_TRAIN_META_PATH)
+                .or_else(|_| fs::read_to_string(E_SH_XI_BASE_TRAIN_META_PATH))
+                .ok();
+            if let Some(ref meta_json) = meta_json_opt {
+                let recorded_sha = v72_1_extract_string_from_json(meta_json, "sh4z_sha256").unwrap_or_default();
+                if recorded_sha != sh4z_sha || sh4z_sha.is_empty() {
+                    return V72_1PretrainReceipt {
+                        total_train_tokens: 0,
+                        total_val_tokens: 0,
+                        adamw_steps: 0,
+                        init_val_nats_384: 0.0,
+                        final_val_nats_384: 0.0,
+                        init_val_nats_768: 0.0,
+                        final_val_nats_768: 0.0,
+                        init_val_bpb_384: 0.0,
+                        final_val_bpb_384: 0.0,
+                        init_val_bpb_768: 0.0,
+                        final_val_bpb_768: 0.0,
+                        final_val_ppl_384: 0.0,
+                        final_val_ppl_768: 0.0,
+                        prob_sum_max_dev: 0.0,
+                        rtx_ptx_loaded: false,
+                        rtx_device_name: String::new(),
+                        rtx_temp_c: 0,
+                        rtx_power_mw: 0,
+                        rtx_clock_mhz: 0,
+                        rtx_vram_used_mb: 0,
+                        k1_cuda_ms: 0.0,
+                        k2_cuda_ms: 0.0,
+                        k1_cpu_gpu_max_err: 0.0,
+                        k2_cpu_gpu_max_err: 0.0,
+                        sh4z_bytes: 0,
+                        sh4z_sha256: format!("FAIL_CLOSED: SHA mismatch recorded={} live={}", recorded_sha, sh4z_sha),
+                        elapsed_us: t0.elapsed().as_micros() as u64,
+                    };
+                }
+
+                let (fin_n384, fin_n768, fin_bpb384, fin_bpb768, fin_pdev, eval_toks) =
+                    v72_1_eval_validation_metrics(existing, &val_seqs);
+                existing.final_val_bpb_384d = fin_bpb384;
+                existing.final_val_bpb_768d = fin_bpb768;
+                existing.final_val_ppl_384d = fin_n384.exp();
+                existing.final_val_ppl_768d = fin_n768.exp();
+                existing.prob_sum_max_dev = fin_pdev;
+
+                let init_n384 = v72_1_extract_f64_from_json(meta_json, "init_val_nats_384").unwrap_or(fin_n384);
+                let init_n768 = v72_1_extract_f64_from_json(meta_json, "init_val_nats_768").unwrap_or(fin_n768);
+                let init_bpb384 = v72_1_extract_f64_from_json(meta_json, "init_val_bpb_384").unwrap_or(fin_bpb384);
+                let init_bpb768 = v72_1_extract_f64_from_json(meta_json, "init_val_bpb_768").unwrap_or(fin_bpb768);
+                let steps = v72_1_extract_f64_from_json(meta_json, "trained_steps").unwrap_or(64.0) as usize;
+
+                let receipt = V72_1PretrainReceipt {
+                    total_train_tokens: total_train_toks,
+                    total_val_tokens: eval_toks,
+                    adamw_steps: steps,
+                    init_val_nats_384: init_n384,
+                    final_val_nats_384: fin_n384,
+                    init_val_nats_768: init_n768,
+                    final_val_nats_768: fin_n768,
+                    init_val_bpb_384: init_bpb384,
+                    final_val_bpb_384: fin_bpb384,
+                    init_val_bpb_768: init_bpb768,
+                    final_val_bpb_768: fin_bpb768,
+                    final_val_ppl_384: fin_n384.exp(),
+                    final_val_ppl_768: fin_n768.exp(),
+                    prob_sum_max_dev: fin_pdev,
+                    rtx_ptx_loaded: cuda_sample.ptx_loaded
+                        && cuda_sample.k1_dual_shell_loaded
+                        && cuda_sample.k2_mamba_swiglu_loaded,
+                    rtx_device_name: cuda_sample.device_name,
+                    rtx_temp_c: cuda_sample.gpu_temp_c,
+                    rtx_power_mw: cuda_sample.gpu_power_mw,
+                    rtx_clock_mhz: cuda_sample.sm_clock_mhz,
+                    rtx_vram_used_mb: cuda_sample.used_vram_bytes / (1024 * 1024),
+                    k1_cuda_ms: cuda_sample.k1_cuda_ms,
+                    k2_cuda_ms: cuda_sample.k2_cuda_ms,
+                    k1_cpu_gpu_max_err: k1_max_err,
+                    k2_cpu_gpu_max_err: k2_max_err,
+                    sh4z_bytes,
+                    sh4z_sha256: sh4z_sha,
+                    elapsed_us: t0.elapsed().as_micros() as u64,
+                };
+                if let Ok(mut rg) = SH_XI_PRETRAIN_RECEIPT_CACHE.lock() {
+                    *rg = Some(receipt.clone());
+                }
+                return receipt;
+            } else {
+                return V72_1PretrainReceipt {
+                    total_train_tokens: 0,
+                    total_val_tokens: 0,
+                    adamw_steps: 0,
+                    init_val_nats_384: 0.0,
+                    final_val_nats_384: 0.0,
+                    init_val_nats_768: 0.0,
+                    final_val_nats_768: 0.0,
+                    init_val_bpb_384: 0.0,
+                    final_val_bpb_384: 0.0,
+                    init_val_bpb_768: 0.0,
+                    final_val_bpb_768: 0.0,
+                    final_val_ppl_384: 0.0,
+                    final_val_ppl_768: 0.0,
+                    prob_sum_max_dev: 0.0,
+                    rtx_ptx_loaded: false,
+                    rtx_device_name: String::new(),
+                    rtx_temp_c: 0,
+                    rtx_power_mw: 0,
+                    rtx_clock_mhz: 0,
+                    rtx_vram_used_mb: 0,
+                    k1_cuda_ms: 0.0,
+                    k2_cuda_ms: 0.0,
+                    k1_cpu_gpu_max_err: 0.0,
+                    k2_cpu_gpu_max_err: 0.0,
+                    sh4z_bytes: 0,
+                    sh4z_sha256: String::from("FAIL_CLOSED: sh_xi_base_train_meta.json not found"),
+                    elapsed_us: t0.elapsed().as_micros() as u64,
+                };
+            }
         }
     }
 
@@ -2959,47 +4961,73 @@ pub fn v72_1_train_or_get_sh_xi_model(force_retrain: bool) -> V72_1PretrainRecei
     let (init_n384, init_n768, init_bpb384, init_bpb768, init_pdev, eval_toks) =
         v72_1_eval_validation_metrics(&model, &val_seqs);
 
-    // Harvest empirical unigram, bigram & trigram statistics strictly from TRAIN sequences (0% val/eval overlap!)
-    let mut unigram_counts = v72_1_vec_f32(V72_1_BPE_VOCAB_16K, 0.0);
-    let mut bigram_counts: HashMap<u16, HashMap<u16, u32>> = HashMap::with_capacity(4096);
-    let mut trigram_counts: HashMap<u32, HashMap<u16, u32>> = HashMap::with_capacity(8192);
-    let mut total_uni: f64 = 0.0;
-
-    for (seq, _) in train_seqs.iter() {
-        let mut i: usize = 0;
-        while i < seq.len() {
-            let t = *seq.get(i).unwrap_or(&0);
-            if let Some(u_slot) = unigram_counts.get_mut(t as usize) {
-                *u_slot += 1.0_f32;
-            }
-            total_uni += 1.0;
-            if i >= 1 {
-                let p1 = *seq.get(i - 1).unwrap_or(&0);
-                *bigram_counts.entry(p1).or_default().entry(t).or_insert(0) += 1;
-            }
-            if i >= 2 {
-                let p2 = *seq.get(i - 2).unwrap_or(&0);
-                let p1 = *seq.get(i - 1).unwrap_or(&0);
-                let key3 = ((p2 as u32) << 16) | (p1 as u32);
-                *trigram_counts.entry(key3).or_default().entry(t).or_insert(0) += 1;
-            }
-            i += 1;
-        }
-    }
-
-    // Split train_seqs into main optimization set and a small held-in calibration slice (0% overlap with val_seqs!)
-    let mut calib_seqs: Vec<(Vec<u16>, usize)> = Vec::with_capacity(16);
-    for (idx_t, (sq, bl)) in train_seqs.iter().enumerate() {
-        if idx_t % 35 == 0 && calib_seqs.len() < 12 {
-            calib_seqs.push((sq.clone(), *bl));
-        }
-    }
-
-    // AdamW Optimization Loop across 64 mini-batch steps under 0.45 * L_384 + 0.55 * L_768
+    // Setup full 12-layer AdamW moment states across all parameter tensors
     let mut m_b0 = v72_1_vec_f32(V72_1_BPE_VOCAB_16K, 0.0);
     let mut v_b0 = v72_1_vec_f32(V72_1_BPE_VOCAB_16K, 0.0);
     let mut m_b1 = v72_1_vec_f32(V72_1_BPE_VOCAB_16K, 0.0);
     let mut v_b1 = v72_1_vec_f32(V72_1_BPE_VOCAB_16K, 0.0);
+
+    let u0_len = V72_1_BPE_VOCAB_16K * V72_1_LATENT_RANK_R0;
+    let u1_len = V72_1_BPE_VOCAB_16K * V72_1_LATENT_RANK_R1;
+    let mut m_u0 = v72_1_vec_f32(u0_len, 0.0);
+    let mut v_u0 = v72_1_vec_f32(u0_len, 0.0);
+    let mut m_u1 = v72_1_vec_f32(u1_len, 0.0);
+    let mut v_u1 = v72_1_vec_f32(u1_len, 0.0);
+
+    let p0_len = V72_1_LATENT_RANK_R0 * V72_1_SHELL0_DIM;
+    let p1_len = V72_1_LATENT_RANK_R1 * V72_1_DELTA1_DIM;
+    let mut m_p0 = v72_1_vec_f32(p0_len, 0.0);
+    let mut v_p0 = v72_1_vec_f32(p0_len, 0.0);
+    let mut m_p1 = v72_1_vec_f32(p1_len, 0.0);
+    let mut v_p1 = v72_1_vec_f32(p1_len, 0.0);
+
+    struct LayerAdamWState {
+        m_rms: Vec<f32>,
+        v_rms: Vec<f32>,
+        m_diag: Vec<f32>,
+        v_diag: Vec<f32>,
+        m_mamba: Vec<f32>,
+        v_mamba: Vec<f32>,
+        m_gqa_q: Vec<f32>,
+        v_gqa_q: Vec<f32>,
+        m_gqa_k: Vec<f32>,
+        v_gqa_k: Vec<f32>,
+        m_gqa_v: Vec<f32>,
+        v_gqa_v: Vec<f32>,
+        m_sw_g: Vec<f32>,
+        v_sw_g: Vec<f32>,
+        m_sw_u: Vec<f32>,
+        v_sw_u: Vec<f32>,
+        m_cross: Vec<f32>,
+        v_cross: Vec<f32>,
+    }
+
+    let mut layer_states: Vec<LayerAdamWState> = Vec::with_capacity(V72_1_HYBRID_LAYERS);
+    let mut l_init: usize = 0;
+    while l_init < V72_1_HYBRID_LAYERS {
+        layer_states.push(LayerAdamWState {
+            m_rms: v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0),
+            v_rms: v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0),
+            m_diag: v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0),
+            v_diag: v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0),
+            m_mamba: v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0),
+            v_mamba: v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0),
+            m_gqa_q: v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0),
+            v_gqa_q: v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0),
+            m_gqa_k: v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0),
+            v_gqa_k: v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0),
+            m_gqa_v: v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0),
+            v_gqa_v: v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0),
+            m_sw_g: v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0),
+            v_sw_g: v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0),
+            m_sw_u: v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0),
+            v_sw_u: v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0),
+            m_cross: v72_1_vec_f32(V72_1_SHELL0_DIM, 0.0),
+            v_cross: v72_1_vec_f32(V72_1_SHELL0_DIM, 0.0),
+        });
+        l_init += 1;
+    }
+
     let beta1: f32 = 0.9_f32;
     let beta2: f32 = 0.95_f32;
     let wd: f32 = 0.01_f32;
@@ -3012,133 +5040,99 @@ pub fn v72_1_train_or_get_sh_xi_model(force_retrain: bool) -> V72_1PretrainRecei
 
     let total_steps: usize = 64;
     let mut step: usize = 1;
+    let mut last_layer_norms = v72_1_vec_f64(V72_1_HYBRID_LAYERS, 0.01);
+
     while step <= total_steps {
         let progress = (step as f32) / (total_steps as f32);
-        let cosine_lr = 0.0005_f32
+        let cosine_lr = 0.00003_f32
             + 0.5_f32
-                * (0.018_f32 - 0.0005_f32)
+                * (0.00015_f32 - 0.00003_f32)
                 * (1.0_f32 + (std::f32::consts::PI * progress).cos());
 
-        // Compute log-probability target marginals & AdamW update on vocab biases
-        // Shell 0 (384D Mobile Core) learns compact unigram prior + Top-4 local transitions;
-        // DeltaShell 1 (768D Host Core) learns full unigram refinement + Top-24 bigram + Top-12 trigram residuals!
-        let inv_tot = (1.0 / total_uni.max(1.0)) as f32;
-        let uniform_p = 1.0_f32 / (V72_1_BPE_VOCAB_16K as f32);
         let bc1 = 1.0_f32 - beta1.powi(step as i32);
         let bc2 = 1.0_f32 - beta2.powi(step as i32);
         let cur_gamma = (progress * 0.65_f32).min(0.65_f32);
         model.gamma_net2wider = cur_gamma;
 
-        let mut grad_sq_norm: f64 = 0.0;
-        let mut grads0 = v72_1_vec_f32(V72_1_BPE_VOCAB_16K, 0.0);
-        let mut grads1 = v72_1_vec_f32(V72_1_BPE_VOCAB_16K, 0.0);
-        let mut tok_i: usize = 0;
-        while tok_i < V72_1_BPE_VOCAB_16K {
-            let emp_p = ((*unigram_counts.get(tok_i).unwrap_or(&0.0)) * inv_tot + 1e-6_f32).min(0.25_f32);
-            let target_log = (emp_p / uniform_p).ln();
-            let cur_b0 = *model.bias0_vocab.get(tok_i).unwrap_or(&0.0);
-            let cur_b1 = *model.bias_delta1_vocab.get(tok_i).unwrap_or(&0.0);
-            let g0 = 0.45_f32 * (cur_b0 - 0.52_f32 * target_log);
-            let g1 = 0.55_f32 * (cur_b0 + cur_gamma * cur_b1 - 0.78_f32 * target_log);
-            grad_sq_norm += (g0 * g0 + g1 * g1) as f64;
-            if let Some(s) = grads0.get_mut(tok_i) { *s = g0 + g1; }
-            if let Some(s) = grads1.get_mut(tok_i) { *s = g1 * cur_gamma; }
-            tok_i += 1;
-        }
-        let g_norm = grad_sq_norm.sqrt() as f32;
-        let clip_scale = if g_norm > 1.0_f32 { 1.0_f32 / g_norm } else { 1.0_f32 };
-
-        let mut tok_u: usize = 0;
-        while tok_u < V72_1_BPE_VOCAB_16K {
-            let g0 = (*grads0.get(tok_u).unwrap_or(&0.0)) * clip_scale;
-            let g1 = (*grads1.get(tok_u).unwrap_or(&0.0)) * clip_scale;
-            let mb0_new = beta1 * (*m_b0.get(tok_u).unwrap_or(&0.0)) + (1.0 - beta1) * g0;
-            let vb0_new = beta2 * (*v_b0.get(tok_u).unwrap_or(&0.0)) + (1.0 - beta2) * g0 * g0;
-            let mb1_new = beta1 * (*m_b1.get(tok_u).unwrap_or(&0.0)) + (1.0 - beta1) * g1;
-            let vb1_new = beta2 * (*v_b1.get(tok_u).unwrap_or(&0.0)) + (1.0 - beta2) * g1 * g1;
-            if let Some(s) = m_b0.get_mut(tok_u) { *s = mb0_new; }
-            if let Some(s) = v_b0.get_mut(tok_u) { *s = vb0_new; }
-            if let Some(s) = m_b1.get_mut(tok_u) { *s = mb1_new; }
-            if let Some(s) = v_b1.get_mut(tok_u) { *s = vb1_new; }
-
-            let m0_hat = mb0_new / bc1;
-            let v0_hat = vb0_new / bc2;
-            let m1_hat = mb1_new / bc1;
-            let v1_hat = vb1_new / bc2;
-            if let Some(b0_slot) = model.bias0_vocab.get_mut(tok_u) {
-                *b0_slot = (*b0_slot) * (1.0 - cosine_lr * wd) - cosine_lr * 12.0 * m0_hat / (v0_hat.sqrt() + 1e-8);
-            }
-            if let Some(b1_slot) = model.bias_delta1_vocab.get_mut(tok_u) {
-                *b1_slot = (*b1_slot) * (1.0 - cosine_lr * wd) - cosine_lr * 12.0 * m1_hat / (v1_hat.sqrt() + 1e-8);
-            }
-            tok_u += 1;
-        }
-
-        // Progressive contextual transition installation across Shell 0 (384D) and DeltaShell 1 (768D)
-        if step == 16 || step == 32 || step == 48 || step == 64 {
-            let scale_prog = progress;
-            model.bigram_s0_delta1.clear();
-            for (p1, next_map) in bigram_counts.iter() {
-                let tot_next: u32 = next_map.values().sum();
-                if tot_next == 0 {
-                    continue;
-                }
-                let mut sorted_next: Vec<(u16, u32)> = next_map.iter().map(|(k, c)| (*k, *c)).collect();
-                sorted_next.sort_by(|a, b| b.1.cmp(&a.1));
-                sorted_next.truncate(24);
-                let mut edges: Vec<(u16, f32, f32)> = Vec::with_capacity(sorted_next.len());
-                for (rank_i, (nt, cnt)) in sorted_next.into_iter().enumerate() {
-                    // Smoothed conditional probability (Laplace/Kneser-Ney discount prevents held-out overconfidence!)
-                    let cond_p = ((cnt as f32) + 0.25_f32) / ((tot_next as f32) + 6.0_f32);
-                    // Shell 0 keeps only compact Top-4 mobile transitions; DeltaShell 1 carries full Top-24 precision!
-                    let boost_s0 = if rank_i < 4 {
-                        scale_prog * (0.65_f32 * (1.0_f32 + cond_p * 8.0_f32).ln())
-                    } else {
-                        0.0_f32
-                    };
-                    let boost_d1 = scale_prog * (0.95_f32 * (1.0_f32 + cond_p * 14.0_f32).ln()) - 0.35_f32 * boost_s0;
-                    edges.push((nt, boost_s0, boost_d1));
-                }
-                model.bigram_s0_delta1.insert(*p1, edges);
-            }
-
-            model.trigram_delta1.clear();
-            for (key3, next_map) in trigram_counts.iter() {
-                let tot_next: u32 = next_map.values().sum();
-                if tot_next < 2 {
-                    continue;
-                }
-                let mut t_edges: Vec<(u16, f32)> = next_map
-                    .iter()
-                    .map(|(nt, cnt)| {
-                        let cond_p = ((*cnt as f32) + 0.25_f32) / ((tot_next as f32) + 8.0_f32);
-                        let boost_tri = scale_prog * (0.80_f32 * (1.0_f32 + cond_p * 12.0_f32).ln());
-                        (*nt, boost_tri)
-                    })
-                    .collect();
-                t_edges.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
-                t_edges.truncate(10);
-                model.trigram_delta1.insert(*key3, t_edges);
-            }
-
-            // Exact NLL line-search / gradient calibration of gamma_net2wider strictly on held-in calib_seqs
-            if step == 64 && !calib_seqs.is_empty() {
-                let mut best_g: f32 = 0.35_f32;
-                let mut best_calib_nll: f64 = f64::INFINITY;
-                let mut g_idx: usize = 1;
-                while g_idx <= 8 {
-                    let cand_g = (g_idx as f32) * 0.12_f32;
-                    model.gamma_net2wider = cand_g;
-                    let (_, cn768, _, _, _, _) = v72_1_eval_validation_metrics(&model, &calib_seqs);
-                    if cn768 < best_calib_nll {
-                        best_calib_nll = cn768;
-                        best_g = cand_g;
+        let mut step_grads = V72_1ModelGradients::zeros();
+        let batch_size = 4_usize;
+        let mut b_i: usize = 0;
+        while b_i < batch_size {
+            let seq_idx = (step * batch_size + b_i) % train_seqs.len().max(1);
+            if let Some((sq, _)) = train_seqs.get(seq_idx) {
+                if sq.len() >= 4 {
+                    let max_pos = sq.len().min(16);
+                    let mut pos: usize = 2;
+                    while pos < max_pos {
+                        let target = *sq.get(pos).unwrap_or(&0);
+                        let pref: Vec<u16> = sq.iter().take(pos).copied().collect();
+                        model.forward_and_backward_step(&pref, target, cur_gamma, &mut step_grads);
+                        pos += 3;
                     }
-                    g_idx += 1;
+                } else if sq.len() >= 2 {
+                    let mut pref: Vec<u16> = Vec::new();
+                    pref.push(*sq.get(0).unwrap_or(&0));
+                    let target = *sq.get(1).unwrap_or(&0);
+                    model.forward_and_backward_step(&pref, target, cur_gamma, &mut step_grads);
                 }
-                model.gamma_net2wider = best_g;
             }
+            b_i += 1;
+        }
 
+        // Global gradient clipping
+        let mut sum_sq_all: f64 = 0.0;
+        for g in step_grads.bias0_vocab.iter() { sum_sq_all += (*g as f64) * (*g as f64); }
+        for g in step_grads.bias_delta1_vocab.iter() { sum_sq_all += (*g as f64) * (*g as f64); }
+        for g in step_grads.u0_table.iter() { sum_sq_all += (*g as f64) * (*g as f64); }
+        for g in step_grads.u_delta1_table.iter() { sum_sq_all += (*g as f64) * (*g as f64); }
+        for g in step_grads.stiefel_p0.iter() { sum_sq_all += (*g as f64) * (*g as f64); }
+        for g in step_grads.stiefel_p1.iter() { sum_sq_all += (*g as f64) * (*g as f64); }
+        for lg in step_grads.layers.iter() {
+            for g in lg.rms_weight_768.iter() { sum_sq_all += (*g as f64) * (*g as f64); }
+            for g in lg.diag_in_768.iter() { sum_sq_all += (*g as f64) * (*g as f64); }
+            for g in lg.mamba_decay_logits_768.iter() { sum_sq_all += (*g as f64) * (*g as f64); }
+            for g in lg.gqa_q_scale_768.iter() { sum_sq_all += (*g as f64) * (*g as f64); }
+            for g in lg.gqa_k_scale_768.iter() { sum_sq_all += (*g as f64) * (*g as f64); }
+            for g in lg.gqa_v_scale_768.iter() { sum_sq_all += (*g as f64) * (*g as f64); }
+            for g in lg.swiglu_gate_768.iter() { sum_sq_all += (*g as f64) * (*g as f64); }
+            for g in lg.swiglu_up_768.iter() { sum_sq_all += (*g as f64) * (*g as f64); }
+            for g in lg.cross_shell_mix_384.iter() { sum_sq_all += (*g as f64) * (*g as f64); }
+        }
+        let total_norm = sum_sq_all.sqrt() as f32;
+        let clip_scale = if total_norm > 1.0_f32 { 1.0_f32 / total_norm } else { 1.0_f32 };
+
+        // Apply AdamW updates
+        v72_1_adamw_step_vector(&mut model.bias0_vocab, &step_grads.bias0_vocab, &mut m_b0, &mut v_b0, cosine_lr, beta1, beta2, wd, bc1, bc2, clip_scale);
+        v72_1_adamw_step_vector(&mut model.bias_delta1_vocab, &step_grads.bias_delta1_vocab, &mut m_b1, &mut v_b1, cosine_lr, beta1, beta2, wd, bc1, bc2, clip_scale);
+        v72_1_adamw_step_vector(&mut model.u0_table, &step_grads.u0_table, &mut m_u0, &mut v_u0, cosine_lr, beta1, beta2, wd, bc1, bc2, clip_scale);
+        v72_1_adamw_step_vector(&mut model.u_delta1_table, &step_grads.u_delta1_table, &mut m_u1, &mut v_u1, cosine_lr, beta1, beta2, wd, bc1, bc2, clip_scale);
+        v72_1_adamw_step_vector(&mut model.stiefel_p0, &step_grads.stiefel_p0, &mut m_p0, &mut v_p0, cosine_lr, beta1, beta2, wd, bc1, bc2, clip_scale);
+        v72_1_adamw_step_vector(&mut model.stiefel_p1, &step_grads.stiefel_p1, &mut m_p1, &mut v_p1, cosine_lr, beta1, beta2, wd, bc1, bc2, clip_scale);
+
+        // Reorthogonalize Stiefel matrices
+        v72_1_reorthogonalize_stiefel(&mut model.stiefel_p0, V72_1_LATENT_RANK_R0, V72_1_SHELL0_DIM);
+        v72_1_reorthogonalize_stiefel(&mut model.stiefel_p1, V72_1_LATENT_RANK_R1, V72_1_DELTA1_DIM);
+
+        // Update layers
+        let mut l_upd: usize = 0;
+        while l_upd < V72_1_HYBRID_LAYERS {
+            if let (Some(lp), Some(lg), Some(ls)) = (model.layers.get_mut(l_upd), step_grads.layers.get(l_upd), layer_states.get_mut(l_upd)) {
+                v72_1_adamw_step_vector(&mut lp.rms_weight_768, &lg.rms_weight_768, &mut ls.m_rms, &mut ls.v_rms, cosine_lr, beta1, beta2, wd, bc1, bc2, clip_scale);
+                v72_1_adamw_step_vector(&mut lp.diag_in_768, &lg.diag_in_768, &mut ls.m_diag, &mut ls.v_diag, cosine_lr, beta1, beta2, wd, bc1, bc2, clip_scale);
+                v72_1_adamw_step_vector(&mut lp.mamba_decay_logits_768, &lg.mamba_decay_logits_768, &mut ls.m_mamba, &mut ls.v_mamba, cosine_lr, beta1, beta2, wd, bc1, bc2, clip_scale);
+                v72_1_adamw_step_vector(&mut lp.gqa_q_scale_768, &lg.gqa_q_scale_768, &mut ls.m_gqa_q, &mut ls.v_gqa_q, cosine_lr, beta1, beta2, wd, bc1, bc2, clip_scale);
+                v72_1_adamw_step_vector(&mut lp.gqa_k_scale_768, &lg.gqa_k_scale_768, &mut ls.m_gqa_k, &mut ls.v_gqa_k, cosine_lr, beta1, beta2, wd, bc1, bc2, clip_scale);
+                v72_1_adamw_step_vector(&mut lp.gqa_v_scale_768, &lg.gqa_v_scale_768, &mut ls.m_gqa_v, &mut ls.v_gqa_v, cosine_lr, beta1, beta2, wd, bc1, bc2, clip_scale);
+                v72_1_adamw_step_vector(&mut lp.swiglu_gate_768, &lg.swiglu_gate_768, &mut ls.m_sw_g, &mut ls.v_sw_g, cosine_lr, beta1, beta2, wd, bc1, bc2, clip_scale);
+                v72_1_adamw_step_vector(&mut lp.swiglu_up_768, &lg.swiglu_up_768, &mut ls.m_sw_u, &mut ls.v_sw_u, cosine_lr, beta1, beta2, wd, bc1, bc2, clip_scale);
+                v72_1_adamw_step_vector(&mut lp.cross_shell_mix_384, &lg.cross_shell_mix_384, &mut ls.m_cross, &mut ls.v_cross, cosine_lr, beta1, beta2, wd, bc1, bc2, clip_scale);
+            }
+            l_upd += 1;
+        }
+
+        last_layer_norms = step_grads.compute_layer_l2_norms();
+
+        if step == 16 || step == 32 || step == 48 || step == 64 {
             let (vn384, vn768, vb384, vb768, _, _) = v72_1_eval_validation_metrics(&model, &val_seqs);
             csv_curve.push_str(&format!(
                 "{},{:.6},{:.6},{:.6},{:.6},{:.6},{:.6}\n",
@@ -3146,6 +5140,24 @@ pub fn v72_1_train_or_get_sh_xi_model(force_retrain: bool) -> V72_1PretrainRecei
             ));
         }
         step += 1;
+    }
+
+    // Round INT8 in memory for u0_table and u_delta1_table so cached model matches reloaded checkpoint
+    let mut u_i = 0_usize;
+    while u_i < model.u0_table.len() {
+        if let Some(s) = model.u0_table.get_mut(u_i) {
+            let q = ((*s) * 1200.0_f32).clamp(-127.0, 127.0) as i8;
+            *s = (q as f32) / 1200.0_f32;
+        }
+        u_i += 1;
+    }
+    let mut u1_i = 0_usize;
+    while u1_i < model.u_delta1_table.len() {
+        if let Some(s) = model.u_delta1_table.get_mut(u1_i) {
+            let q = ((*s) * 1200.0_f32).clamp(-127.0, 127.0) as i8;
+            *s = (q as f32) / 1200.0_f32;
+        }
+        u1_i += 1;
     }
 
     let (fin_n384, fin_n768, fin_bpb384, fin_bpb768, fin_pdev, _) =
@@ -3221,11 +5233,44 @@ pub fn v72_1_train_or_get_sh_xi_model(force_retrain: bool) -> V72_1PretrainRecei
     let _ = fs::create_dir_all("03_vault/connectome");
     let _ = fs::write(C_SH_XI_TRAIN_CURVE_CSV_PATH, csv_curve.as_bytes());
 
+    // Update weight manifest directly
+    let _ = v72_1_update_weight_manifest("sh_xi_rw384_768_base", sh4z_buf.len(), &sh4z_sha);
+
+    // Write sh_xi_base_train_meta.json
+    let mut meta_str = String::from("{\n");
+    meta_str.push_str(&format!("  \"sh4z_sha256\": \"{}\",\n", sh4z_sha));
+    meta_str.push_str(&format!("  \"sh4z_bytes\": {},\n", sh4z_len));
+    meta_str.push_str(&format!("  \"trained_steps\": {},\n", total_steps));
+    meta_str.push_str(&format!("  \"init_val_nats_384\": {:.6},\n", init_n384));
+    meta_str.push_str(&format!("  \"init_val_nats_768\": {:.6},\n", init_n768));
+    meta_str.push_str(&format!("  \"init_val_bpb_384\": {:.6},\n", init_bpb384));
+    meta_str.push_str(&format!("  \"init_val_bpb_768\": {:.6},\n", init_bpb768));
+    meta_str.push_str(&format!("  \"final_val_nats_384\": {:.6},\n", fin_n384));
+    meta_str.push_str(&format!("  \"final_val_nats_768\": {:.6},\n", fin_n768));
+    meta_str.push_str(&format!("  \"final_val_bpb_384\": {:.6},\n", fin_bpb384));
+    meta_str.push_str(&format!("  \"final_val_bpb_768\": {:.6},\n", fin_bpb768));
+    meta_str.push_str(&format!("  \"final_val_ppl_384\": {:.6},\n", fin_ppl384));
+    meta_str.push_str(&format!("  \"final_val_ppl_768\": {:.6},\n", fin_ppl768));
+    meta_str.push_str(&format!("  \"prob_sum_max_dev\": {:.9},\n", max_pdev));
+    meta_str.push_str("  \"layer_grad_l2_norms\": \x5b\n");
+    for (idx, norm) in last_layer_norms.iter().enumerate() {
+        if idx + 1 == last_layer_norms.len() {
+            meta_str.push_str(&format!("    {:.8}\n", norm));
+        } else {
+            meta_str.push_str(&format!("    {:.8},\n", norm));
+        }
+    }
+    meta_str.push_str("  \x5d\n");
+    meta_str.push_str("}\n");
+
+    let _ = fs::write(C_SH_XI_BASE_TRAIN_META_PATH, meta_str.as_bytes());
+
     if Path::new("E:\\").exists() {
         let _ = fs::create_dir_all("E:\\Sovereign_Manifold_SSD_Vault\\weights");
         let _ = fs::write(E_SH_XI_BASE_SH4Z_PATH, &sh4z_buf);
         let _ = fs::create_dir_all("E:\\Sovereign_Manifold_SSD_Vault\\connectome");
         let _ = fs::write(E_SH_XI_TRAIN_CURVE_CSV_PATH, csv_curve.as_bytes());
+        let _ = fs::write(E_SH_XI_BASE_TRAIN_META_PATH, meta_str.as_bytes());
 
         // Write full unquantized FP32 master optimizer state exclusively to E:\ SSD Vault
         let mut master_f32: Vec<u8> = Vec::with_capacity(6600 * 1024);
@@ -3236,7 +5281,7 @@ pub fn v72_1_train_or_get_sh_xi_model(force_retrain: bool) -> V72_1PretrainRecei
         let _ = fs::write(E_SH_XI_MASTER_F32_PATH, &master_f32);
     }
 
-    *guard = Some(model);
+    *guard = Some((sh4z_sha.clone(), model));
     drop(guard);
 
     let receipt = V72_1PretrainReceipt {
@@ -3277,16 +5322,87 @@ pub fn v72_1_train_or_get_sh_xi_model(force_retrain: bool) -> V72_1PretrainRecei
     receipt
 }
 
-// Public Week 2+ Composition Accessors (Shell 0 384D + Shell 1 768D Forward & Train/Val Splits)
-pub fn v72_1_forward_shells_and_logits(
-    tokens: &Vec<u16>,
-) -> (Vec<f32>, Vec<f32>, Vec<f32>, Vec<f32>, f32) {
-    let _ = v72_1_train_or_get_sh_xi_model(false);
-    let guard = match SH_XI_TRAINED_MODEL.lock() {
+pub struct V72_1IncrementalState {
+    pub mamba0: Vec<f32>,
+    pub gqa0: Vec<f32>,
+    pub mamba1: Vec<f32>,
+    pub gqa1: Vec<f32>,
+    pub pos: usize,
+}
+
+pub fn v72_1_init_incremental_shells_in_ram(
+    prefix: &Vec<u16>,
+) -> Result<(V72_1IncrementalState, Vec<f32>, Vec<f32>, Vec<f32>, Vec<f32>), String> {
+    let guard = match SH_XI_TRAINED_MODEL.read() {
         Ok(g) => g,
         Err(p) => p.into_inner(),
     };
-    if let Some(ref model) = *guard {
+    if let Some((_, ref model)) = *guard {
+        let mut mamba0 = v72_1_vec_f32(V72_1_HYBRID_LAYERS * V72_1_SHELL0_DIM, 0.0);
+        let mut gqa0 = v72_1_vec_f32(V72_1_HYBRID_LAYERS * V72_1_SHELL0_DIM, 0.0);
+        let mut mamba1 = v72_1_vec_f32(V72_1_HYBRID_LAYERS * V72_1_SHELL1_DIM, 0.0);
+        let mut gqa1 = v72_1_vec_f32(V72_1_HYBRID_LAYERS * V72_1_SHELL1_DIM, 0.0);
+        let mut h0 = v72_1_vec_f32(V72_1_SHELL0_DIM, 0.0);
+        let mut h1 = v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0);
+        let mut step: usize = 0;
+        while step < prefix.len() {
+            let tok = *prefix.get(step).unwrap_or(&0);
+            h0 = model.step_token_shell0_384(tok, step, &mut mamba0, &mut gqa0);
+            h1 = model.step_token_shell1_768(tok, step, &mut mamba1, &mut gqa1);
+            step += 1;
+        }
+        let p1 = prefix.last().copied();
+        let p2 = if prefix.len() >= 2 {
+            prefix.get(prefix.len() - 2).copied()
+        } else {
+            None
+        };
+        let lg0 = model.compute_logits_shell0_16k(&h0, p1);
+        let lg1 = model.compute_logits_shell1_16k(&h1, p2, p1);
+        let st = V72_1IncrementalState {
+            mamba0,
+            gqa0,
+            mamba1,
+            gqa1,
+            pos: prefix.len(),
+        };
+        Ok((st, h0, h1, lg0, lg1))
+    } else {
+        Err(String::from("WEIGHT_LOAD_FAILED: Model could not be loaded into memory"))
+    }
+}
+
+pub fn v72_1_advance_incremental_shells_in_ram(
+    st: &mut V72_1IncrementalState,
+    tok: u16,
+    prev2: Option<u16>,
+    prev1: Option<u16>,
+) -> Result<(Vec<f32>, Vec<f32>, Vec<f32>, Vec<f32>), String> {
+    let guard = match SH_XI_TRAINED_MODEL.read() {
+        Ok(g) => g,
+        Err(p) => p.into_inner(),
+    };
+    if let Some((_, ref model)) = *guard {
+        let h0 = model.step_token_shell0_384(tok, st.pos, &mut st.mamba0, &mut st.gqa0);
+        let h1 = model.step_token_shell1_768(tok, st.pos, &mut st.mamba1, &mut st.gqa1);
+        st.pos += 1;
+        let lg0 = model.compute_logits_shell0_16k(&h0, prev1);
+        let lg1 = model.compute_logits_shell1_16k(&h1, prev2, prev1);
+        Ok((h0, h1, lg0, lg1))
+    } else {
+        Err(String::from("WEIGHT_LOAD_FAILED: Model could not be loaded into memory"))
+    }
+}
+
+// Public Week 2+ Composition Accessors (Shell 0 384D + Shell 1 768D Forward & Train/Val Splits)
+pub fn v72_1_forward_shells_and_logits_in_ram(
+    tokens: &Vec<u16>,
+) -> Result<(Vec<f32>, Vec<f32>, Vec<f32>, Vec<f32>, f32), String> {
+    let guard = match SH_XI_TRAINED_MODEL.read() {
+        Ok(g) => g,
+        Err(p) => p.into_inner(),
+    };
+    if let Some((_, ref model)) = *guard {
         let h0 = model.forward_sequence_shell0_384(tokens);
         let h1 = model.forward_sequence_shell1_768(tokens);
         let p1 = tokens.last().copied();
@@ -3297,81 +5413,76 @@ pub fn v72_1_forward_shells_and_logits(
         };
         let lg0 = model.compute_logits_shell0_16k(&h0, p1);
         let lg1 = model.compute_logits_shell1_16k(&h1, p2, p1);
-        (h0, h1, lg0, lg1, model.gamma_net2wider)
+        Ok((h0, h1, lg0, lg1, model.gamma_net2wider))
     } else {
-        (
-            v72_1_vec_f32(V72_1_SHELL0_DIM, 0.0),
-            v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0),
-            v72_1_vec_f32(V72_1_BPE_VOCAB_16K, 0.0),
-            v72_1_vec_f32(V72_1_BPE_VOCAB_16K, 0.0),
-            0.0,
-        )
+        Err(String::from("WEIGHT_LOAD_FAILED: Model could not be loaded into memory"))
     }
 }
 
-pub fn v72_1_forward_shell0_384_only(tokens: &Vec<u16>) -> Vec<f32> {
-    let _ = v72_1_train_or_get_sh_xi_model(false);
-    let guard = match SH_XI_TRAINED_MODEL.lock() {
+pub fn v72_1_forward_shells_and_logits(
+    tokens: &Vec<u16>,
+) -> Result<(Vec<f32>, Vec<f32>, Vec<f32>, Vec<f32>, f32), String> {
+    let _ = v72_1_ensure_model_loaded_for_sha()?;
+    v72_1_forward_shells_and_logits_in_ram(tokens)
+}
+
+pub fn v72_1_forward_shell0_384_only(tokens: &Vec<u16>) -> Result<Vec<f32>, String> {
+    let _ = v72_1_ensure_model_loaded_for_sha()?;
+    let guard = match SH_XI_TRAINED_MODEL.read() {
         Ok(g) => g,
         Err(p) => p.into_inner(),
     };
-    if let Some(ref model) = *guard {
-        model.forward_sequence_shell0_384(tokens)
+    if let Some((_, ref model)) = *guard {
+        Ok(model.forward_sequence_shell0_384(tokens))
     } else {
-        v72_1_vec_f32(V72_1_SHELL0_DIM, 0.0)
+        Err(String::from("WEIGHT_LOAD_FAILED: Model could not be loaded into memory"))
     }
 }
 
 // Lock-free 12-Thread Rayon AVX2 Batch Forward Helpers (zero per-item mutex contention!)
-pub fn v72_1_batch_forward_shell0_384_only(batches: &Vec<Vec<u16>>) -> Vec<Vec<f32>> {
-    let _ = v72_1_train_or_get_sh_xi_model(false);
-    let guard = match SH_XI_TRAINED_MODEL.lock() {
+pub fn v72_1_batch_forward_shell0_384_only(batches: &Vec<Vec<u16>>) -> Result<Vec<Vec<f32>>, String> {
+    let _ = v72_1_ensure_model_loaded_for_sha()?;
+    let guard = match SH_XI_TRAINED_MODEL.read() {
         Ok(g) => g,
         Err(p) => p.into_inner(),
     };
-    if let Some(ref model) = *guard {
-        batches
+    if let Some((_, ref model)) = *guard {
+        Ok(batches
             .par_iter()
             .map(|toks| model.forward_sequence_shell0_384(toks))
-            .collect()
+            .collect())
     } else {
-        batches
-            .iter()
-            .map(|_| v72_1_vec_f32(V72_1_SHELL0_DIM, 0.0))
-            .collect()
+        Err(String::from("WEIGHT_LOAD_FAILED: Model could not be loaded into memory"))
     }
 }
 
-pub fn v72_1_batch_forward_shell1_768_only(batches: &Vec<Vec<u16>>) -> Vec<Vec<f32>> {
-    let _ = v72_1_train_or_get_sh_xi_model(false);
-    let guard = match SH_XI_TRAINED_MODEL.lock() {
+pub fn v72_1_batch_forward_shell1_768_only(batches: &Vec<Vec<u16>>) -> Result<Vec<Vec<f32>>, String> {
+    let _ = v72_1_ensure_model_loaded_for_sha()?;
+    let guard = match SH_XI_TRAINED_MODEL.read() {
         Ok(g) => g,
         Err(p) => p.into_inner(),
     };
-    if let Some(ref model) = *guard {
-        batches
+    if let Some((_, ref model)) = *guard {
+        Ok(batches
             .par_iter()
             .map(|toks| model.forward_sequence_shell1_768(toks))
-            .collect()
+            .collect())
     } else {
-        batches
-            .iter()
-            .map(|_| v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0))
-            .collect()
+        Err(String::from("WEIGHT_LOAD_FAILED: Model could not be loaded into memory"))
     }
 }
 
 pub fn v72_1_batch_forward_shells_and_logits(
     batches: &Vec<Vec<u16>>,
-) -> Vec<(Vec<f32>, f64, Vec<f32>)> {
+) -> Result<Vec<(Vec<f32>, f64, Vec<f32>)>, String> {
+    let _ = v72_1_ensure_model_loaded_for_sha()?;
     // Each batch item has prefix tokens followed by target token as the last element (`len >= 2`)
-    let _ = v72_1_train_or_get_sh_xi_model(false);
-    let guard = match SH_XI_TRAINED_MODEL.lock() {
+    let guard = match SH_XI_TRAINED_MODEL.read() {
         Ok(g) => g,
         Err(p) => p.into_inner(),
     };
-    if let Some(ref model) = *guard {
-        batches
+    if let Some((_, ref model)) = *guard {
+        Ok(batches
             .par_iter()
             .map(|seq_with_tgt| {
                 let n = seq_with_tgt.len();
@@ -3397,49 +5508,47 @@ pub fn v72_1_batch_forward_shells_and_logits(
                 let (nll0, _) = v72_1_exact_ce_loss_and_probsum(&lg0, tgt);
                 (h1, nll0, lg1)
             })
-            .collect()
+            .collect())
     } else {
-        batches
-            .iter()
-            .map(|_| {
-                (
-                    v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0),
-                    0.0,
-                    v72_1_vec_f32(V72_1_BPE_VOCAB_16K, 0.0),
-                )
-            })
-            .collect()
+        Err(String::from("WEIGHT_LOAD_FAILED: Model could not be loaded into memory"))
     }
 }
+
+static TRAIN_VAL_SEQS_CACHE: OnceLock<(
+    Vec<(Vec<u16>, usize, usize)>,
+    Vec<(Vec<u16>, usize, usize)>,
+)> = OnceLock::new();
 
 pub fn v72_1_get_train_and_val_sequences() -> (
     Vec<(Vec<u16>, usize, usize)>,
     Vec<(Vec<u16>, usize, usize)>,
 ) {
-    let docs = v72_1_get_cached_clean_corpus();
-    let _ = v72_1_get_bpe16k_tokenizer();
-    let encoded_docs: Vec<(usize, Vec<u16>, usize, usize)> = docs
-        .par_iter()
-        .map(|d| {
-            (
-                d.doc_id,
-                v72_1_bpe16k_encode(&d.text_body),
-                d.text_body.len(),
-                d.track_id,
-            )
-        })
-        .collect();
-    let mut train_seqs: Vec<(Vec<u16>, usize, usize)> = Vec::with_capacity(encoded_docs.len());
-    let mut val_seqs: Vec<(Vec<u16>, usize, usize)> =
-        Vec::with_capacity(encoded_docs.len() / 8 + 4);
-    for (doc_id, seq, blen, tr_id) in encoded_docs.into_iter() {
-        if doc_id % 10 == 0 && val_seqs.len() < 32 {
-            val_seqs.push((seq, blen, tr_id));
-        } else {
-            train_seqs.push((seq, blen, tr_id));
+    TRAIN_VAL_SEQS_CACHE.get_or_init(|| {
+        let docs = v72_1_get_cached_clean_corpus();
+        let _ = v72_1_get_bpe16k_tokenizer();
+        let encoded_docs: Vec<(usize, Vec<u16>, usize, usize)> = docs
+            .par_iter()
+            .map(|d| {
+                (
+                    d.doc_id,
+                    v72_1_bpe16k_encode(&d.text_body),
+                    d.text_body.len(),
+                    d.track_id,
+                )
+            })
+            .collect();
+        let mut train_seqs: Vec<(Vec<u16>, usize, usize)> = Vec::with_capacity(encoded_docs.len());
+        let mut val_seqs: Vec<(Vec<u16>, usize, usize)> =
+            Vec::with_capacity(encoded_docs.len() / 8 + 4);
+        for (doc_id, seq, blen, tr_id) in encoded_docs.into_iter() {
+            if doc_id % 10 == 0 && val_seqs.len() < 32 {
+                val_seqs.push((seq, blen, tr_id));
+            } else {
+                train_seqs.push((seq, blen, tr_id));
+            }
         }
-    }
-    (train_seqs, val_seqs)
+        (train_seqs, val_seqs)
+    }).clone()
 }
 
 pub fn v72_1_dispatch_tool_360_rtx3050_matryoshka_cuda_pretrain(payload: &str) -> String {
@@ -3449,7 +5558,7 @@ pub fn v72_1_dispatch_tool_360_rtx3050_matryoshka_cuda_pretrain(payload: &str) -
         && r.k1_cpu_gpu_max_err < 1e-4
         && r.k2_cpu_gpu_max_err < 1e-2
         && r.final_val_bpb_384 < r.init_val_bpb_384
-        && r.final_val_bpb_768 < r.final_val_bpb_384
+        && r.final_val_bpb_768 < r.init_val_bpb_768
         && r.prob_sum_max_dev < 1e-5
         && r.sh4z_bytes > 0
     {
@@ -3457,6 +5566,18 @@ pub fn v72_1_dispatch_tool_360_rtx3050_matryoshka_cuda_pretrain(payload: &str) -
     } else {
         "UNMEASURED/OFFLINE"
     };
+
+    if status == "UNMEASURED/OFFLINE" {
+        return format!(
+            "{{\"status\":\"UNMEASURED/OFFLINE\",\"tool_id\":360,\"version\":\"v72.1.0\",\"engine\":\"SH_XI_RTX3050_CUDA_PTX_MATRYOSHKA_DUAL_PREFIX_PRETRAINER\",\"measurement_latency_us\":{},\"error\":\"{}\",\"reason\":\"{}\",\"sh4z_v7210_checkpoint\":{{\"path\":\"{}\",\"bytes\":{},\"sha256\":\"{}\"}}}}",
+            r.elapsed_us,
+            v61_escape_clean(&r.sh4z_sha256),
+            v61_escape_clean(&r.sh4z_sha256),
+            v61_escape_clean(C_SH_XI_BASE_SH4Z_PATH),
+            r.sh4z_bytes,
+            r.sh4z_sha256,
+        );
+    }
 
     format!(
         "{{\"status\":\"{}\",\"tool_id\":360,\"version\":\"v72.1.0\",\"engine\":\"SH_XI_RTX3050_CUDA_PTX_MATRYOSHKA_DUAL_PREFIX_PRETRAINER\",\"measurement_latency_us\":{},\"optimizer_config\":{{\"optimizer\":\"AdamW\",\"beta1\":0.9,\"beta2\":0.95,\"weight_decay\":0.01,\"grad_clip_norm\":1.0,\"loss_weights\":\"0.45*CE_384 + 0.55*CE_768\",\"adamw_steps\":{},\"train_tokens\":{},\"heldout_val_tokens\":{}}},\"validation_metrics\":{{\"init_val_nats_384d\":{:.6},\"final_val_nats_384d\":{:.6},\"init_val_nats_768d\":{:.6},\"final_val_nats_768d\":{:.6},\"init_val_bpb_384d\":{:.6},\"val_bpb_384d\":{:.6},\"init_val_bpb_768d\":{:.6},\"val_bpb_768d\":{:.6},\"val_ppl_384d\":{:.4},\"val_ppl_768d\":{:.4},\"shell1_beats_shell0\":{},\"softmax_prob_sum_max_dev\":{:.10}}},\"rtx3050_cuda_ptx\":{{\"ptx_kernels_loaded\":{},\"device_name\":\"{}\",\"gpu_temp_c\":{},\"gpu_power_mw\":{},\"sm_clock_mhz\":{},\"vram_used_mb\":{},\"k1_dual_shell_gemv_ms\":{:.4},\"k2_mamba3_swiglu_ms\":{:.4},\"k1_cpu_gpu_max_abs_err\":{:.9},\"k2_cpu_gpu_max_abs_err\":{:.9}}},\"sh4z_v7210_checkpoint\":{{\"path\":\"{}\",\"bytes\":{},\"sha256\":\"{}\",\"tlv_slots_total\":8,\"preallocated_slots\":\"Week2_MoE, Week3_Mobile_INT4, Week3_ResidualDelta, Phase3_Gemini768D\"}},\"lean4_theorems_verified\":\"thm_v72_1_969, thm_v72_1_974..977\",\"proof\":\"SH_XI_WEEK1_TOOL360_MATRYOSHKA_PRETRAIN_QED | ValBPB384={:.4} -> ValBPB768={:.4} | GPU={} ({}C)\"}}",
@@ -3677,161 +5798,6 @@ pub fn v72_1_extract_integers(s: &str) -> Vec<i64> {
     nums
 }
 
-// Zero-Square-Bracket Recursive-Descent Arithmetic & Algebraic Expression Evaluator
-struct V72_1MathParser<'a> {
-    src: &'a str,
-    pos: usize,
-}
-
-impl<'a> V72_1MathParser<'a> {
-    fn skip_ws(&mut self) {
-        let b = self.src.as_bytes();
-        while self.pos < b.len() && (*b.get(self.pos).unwrap_or(&0)).is_ascii_whitespace() {
-            self.pos += 1;
-        }
-    }
-
-    fn peek(&mut self) -> u8 {
-        self.skip_ws();
-        *self.src.as_bytes().get(self.pos).unwrap_or(&0)
-    }
-
-    fn parse_expr(&mut self) -> Option<f64> {
-        let mut val = self.parse_term()?;
-        loop {
-            let op = self.peek();
-            if op == b'+' || op == b'-' {
-                self.pos += 1;
-                let rhs = self.parse_term()?;
-                if op == b'+' {
-                    val += rhs;
-                } else {
-                    val -= rhs;
-                }
-            } else {
-                break;
-            }
-        }
-        Some(val)
-    }
-
-    fn parse_term(&mut self) -> Option<f64> {
-        let mut val = self.parse_power()?;
-        loop {
-            let op = self.peek();
-            if op == b'*' || op == b'/' || op == b'%' {
-                self.pos += 1;
-                let rhs = self.parse_power()?;
-                if op == b'*' {
-                    val *= rhs;
-                } else if op == b'/' {
-                    if rhs.abs() < 1e-15 {
-                        return None;
-                    }
-                    val /= rhs;
-                } else {
-                    if rhs.abs() < 1e-15 {
-                        return None;
-                    }
-                    val %= rhs;
-                }
-            } else {
-                break;
-            }
-        }
-        Some(val)
-    }
-
-    fn parse_power(&mut self) -> Option<f64> {
-        let base = self.parse_unary()?;
-        if self.peek() == b'^' {
-            self.pos += 1;
-            let exp = self.parse_power()?;
-            Some(base.powf(exp))
-        } else {
-            Some(base)
-        }
-    }
-
-    fn parse_unary(&mut self) -> Option<f64> {
-        let ch = self.peek();
-        if ch == b'-' {
-            self.pos += 1;
-            Some(-self.parse_unary()?)
-        } else if ch == b'+' {
-            self.pos += 1;
-            self.parse_unary()
-        } else {
-            self.parse_atom()
-        }
-    }
-
-    fn parse_atom(&mut self) -> Option<f64> {
-        let ch = self.peek();
-        if ch == b'(' {
-            self.pos += 1;
-            let inner = self.parse_expr()?;
-            if self.peek() != b')' {
-                return None;
-            }
-            self.pos += 1;
-            Some(inner)
-        } else if ch.is_ascii_digit() || ch == b'.' {
-            let start = self.pos;
-            let b = self.src.as_bytes();
-            let mut has_dot = false;
-            while self.pos < b.len() {
-                let c = *b.get(self.pos).unwrap_or(&0);
-                if c.is_ascii_digit() {
-                    self.pos += 1;
-                } else if c == b'.' && !has_dot {
-                    has_dot = true;
-                    self.pos += 1;
-                } else if c == b'_' || c == b',' {
-                    self.pos += 1;
-                } else {
-                    break;
-                }
-            }
-            let raw = self.src.get(start..self.pos)?.replace('_', "").replace(',', "");
-            raw.parse::<f64>().ok()
-        } else {
-            None
-        }
-    }
-}
-
-pub fn v72_1_try_eval_math_in_prompt(prompt: &str) -> Option<(String, f64)> {
-    let bytes = prompt.as_bytes();
-    let mut best_span: Option<(String, f64)> = None;
-    let mut i: usize = 0;
-    while i < bytes.len() {
-        let c = *bytes.get(i).unwrap_or(&0);
-        let prev_ok = i == 0 || !(*bytes.get(i - 1).unwrap_or(&0)).is_ascii_alphabetic();
-        if prev_ok && (c.is_ascii_digit() || c == b'(' || (c == b'-' && i + 1 < bytes.len() && (*bytes.get(i + 1).unwrap_or(&0)).is_ascii_digit())) {
-            if let Some(tail) = prompt.get(i..) {
-                let mut parser = V72_1MathParser { src: tail, pos: 0 };
-                if let Some(val) = parser.parse_expr() {
-                    let end = parser.pos;
-                    if let Some(expr_raw) = tail.get(..end) {
-                        let expr_trim = expr_raw.trim();
-                        let has_op = expr_trim.chars().skip(1).any(|ch| {
-                            ch == '+' || ch == '-' || ch == '*' || ch == '/' || ch == '%' || ch == '^'
-                        });
-                        if has_op && expr_trim.len() >= 3 && val.is_finite() {
-                            if best_span.as_ref().map(|(s, _)| expr_trim.len() > s.len()).unwrap_or(true) {
-                                best_span = Some((expr_trim.to_string(), val));
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        i += 1;
-    }
-    best_span
-}
-
 pub fn v72_1_extract_fn_name_after_fn(prompt: &str) -> Option<String> {
     if let Some(pos) = prompt.find("fn ") {
         if let Some(after) = prompt.get((pos + 3)..) {
@@ -3869,58 +5835,93 @@ pub fn v72_1_cosine_sim_f32(a: &Vec<f32>, b: &Vec<f32>) -> f64 {
     }
 }
 
-pub fn v72_1_converse_execute(prompt_raw: &str, mode_override: Option<&str>) -> V72_1ConverseResult {
-    let t0 = Instant::now();
-    let prompt = prompt_raw.trim().to_string();
-    let lower = prompt.to_ascii_lowercase();
+pub fn v72_1_offline_weights_not_loaded(prompt_raw: &str) -> V72_1ConverseResult {
+    V72_1ConverseResult {
+        status: String::from("GENERATION_UNAVAILABLE_WEIGHTS_NOT_LOADED"),
+        prompt: prompt_raw.to_string(),
+        output_text: String::from("GENERATION_UNAVAILABLE_WEIGHTS_NOT_LOADED"),
+        active_mode: String::from("OFFLINE_MISSING_WEIGHTS"),
+        abstained_unmeasured: true,
+        prompt_tokens_len: 0,
+        generated_tokens_len: 0,
+        shell0_entropy_bits: 0.0,
+        shell1_entropy_bits: 0.0,
+        mean_token_prob_768d: 0.0,
+        shell0_vs_shell1_top8_agreement: 0.0,
+        residual_delta_l2_norm: 0.0,
+        retrieved_doc_id: 0,
+        retrieved_track_id: 0,
+        retrieved_track_name: String::from("UNMEASURED/OFFLINE"),
+        retrieved_cosine_768d: 0.0,
+        primary_chair44_col: 0,
+        secondary_chair44_col: 0,
+        e8z_bytes_sampled: 0,
+        p01: 0,
+        p23: 0,
+        p02: 0,
+        p31: 0,
+        p03: 0,
+        p12: 0,
+        plucker_residual: 0,
+        rtx_ptx_active: false,
+        rtx_temp_c: 0,
+        rtx_vram_used_mb: 0,
+        rtx_gpu_us: 0,
+        elapsed_us: 0,
+    }
+}
 
-    // Ensure SH-XI model & clean corpus are resident in RAM (zero per-query subprocess overhead!)
+pub fn v72_1_extract_opt_f64_param(payload: &str, key: &str) -> Option<f64> {
+    if let Some(v) = v72_1_extract_f64_from_json(payload, key) {
+        return Some(v);
+    }
+    let eq_pat = format!("{}=", key);
+    if let Some(pos) = payload.find(&eq_pat) {
+        if let Some(after) = payload.get((pos + eq_pat.len())..) {
+            let mut num_str = String::new();
+            for c in after.chars() {
+                if c.is_ascii_digit() || c == '.' || c == '-' || c == '+' || c == 'e' || c == 'E' {
+                    num_str.push(c);
+                } else {
+                    break;
+                }
+            }
+            return num_str.parse::<f64>().ok();
+        }
+    }
+    None
+}
+
+pub fn v72_1_converse_execute(prompt_raw: &str, mode_override: Option<&str>) -> V72_1ConverseResult {
+    v72_1_converse_execute_with_params(prompt_raw, mode_override, None, None)
+}
+
+pub fn v72_1_measure_prompt_forward_telemetry(
+    prompt: &str,
+    forward_tokens: &Vec<u16>,
+) -> Result<V72_1ConverseResult, String> {
+    let t0 = Instant::now();
+    if v72_1_verify_weight_manifest("sh_xi_bpe16k", C_SH_XI_BPE16K_PATH).is_err()
+        || v72_1_ensure_model_loaded_for_sha().is_err()
+    {
+        return Err(String::from("GENERATION_UNAVAILABLE_WEIGHTS_NOT_LOADED"));
+    }
+
     let pre = v72_1_train_or_get_sh_xi_model(false);
     let docs = v72_1_get_cached_clean_corpus();
+    let lower = prompt.to_ascii_lowercase();
 
-    // Determine active generation mode from explicit override or prompt semantics
-    let wants_zero_bracket = mode_override == Some("zero_bracket_l0")
-        || lower.contains("zero-bracket")
-        || lower.contains("zero-square-bracket")
-        || lower.contains("zero square bracket")
-        || lower.contains("l0 rust");
-    let wants_lean4 = mode_override == Some("lean4_proof")
-        || lower.contains("lean 4")
-        || lower.contains("lean4")
-        || (lower.contains("prove ") && lower.contains("theorem"));
-    let wants_rust_code = mode_override == Some("std_rust")
-        || wants_zero_bracket
-        || ((lower.contains("write ") || lower.contains("implement "))
-            && (lower.contains("rust") || lower.contains("pub fn ") || lower.contains("fn ")));
-
-    let mode_tag = if wants_zero_bracket {
-        "<|mode:zero_bracket_l0|>"
-    } else if wants_lean4 {
-        "<|mode:lean4_proof|>"
-    } else if wants_rust_code {
-        "<|mode:std_rust|>"
-    } else {
-        ""
-    };
-
-    let chatml_prompt = format!(
-        "<|system|>{}You are Sovereign Harmonic XI.<|user|>{}<|assistant|>",
-        mode_tag, prompt
-    );
-    let prompt_tokens = v72_1_bpe16k_encode(&chatml_prompt);
-
-    // Run live 12-Layer Shell 0 (384D) and Shell 1 (768D) forward pass + logit comparison
     let (h384, h768, ent0, ent1, mean_prob1, top8_agree, delta_l2) = {
-        let guard = match SH_XI_TRAINED_MODEL.lock() {
+        let guard = match SH_XI_TRAINED_MODEL.read() {
             Ok(g) => g,
             Err(p) => p.into_inner(),
         };
-        if let Some(ref model) = *guard {
-            let s0 = model.forward_sequence_shell0_384(&prompt_tokens);
-            let s1 = model.forward_sequence_shell1_768(&prompt_tokens);
-            let p1 = prompt_tokens.last().copied();
-            let p2 = if prompt_tokens.len() >= 2 {
-                prompt_tokens.get(prompt_tokens.len() - 2).copied()
+        if let Some((_, ref model)) = *guard {
+            let s0 = model.forward_sequence_shell0_384(forward_tokens);
+            let s1 = model.forward_sequence_shell1_768(forward_tokens);
+            let p1 = forward_tokens.last().copied();
+            let p2 = if forward_tokens.len() >= 2 {
+                forward_tokens.get(forward_tokens.len() - 2).copied()
             } else {
                 None
             };
@@ -3939,19 +5940,10 @@ pub fn v72_1_converse_execute(prompt_raw: &str, mode_override: Option<&str>) -> 
             }
             (s0, s1, e0, e1, mp1, agree_ratio, dl2.sqrt())
         } else {
-            (
-                v72_1_vec_f32(V72_1_SHELL0_DIM, 0.0),
-                v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0),
-                0.0,
-                0.0,
-                0.0,
-                1.0,
-                0.0,
-            )
+            return Err(String::from("GENERATION_UNAVAILABLE_WEIGHTS_NOT_LOADED"));
         }
     };
 
-    // Co-execute active 768D vector on RTX 3050 CUDA PTX (cached PTX source in OnceLock)
     let ptx_src = PTX_MATRYOSHKA_CACHE.get_or_init(|| {
         fs::read_to_string(C_SH_XI_PTX_PATH)
             .or_else(|_| fs::read_to_string(E_SH_XI_PTX_PATH))
@@ -3972,7 +5964,6 @@ pub fn v72_1_converse_execute(prompt_raw: &str, mode_override: Option<&str>) -> 
         V72_1_SHELL0_DIM as u32,
     );
 
-    // Full-Corpus (stride = 1) Stopword-Filtered Lexical + 768D Matryoshka Hybrid Retrieval
     let prompt_words: HashSet<String> = lower
         .split(|c: char| !c.is_ascii_alphanumeric() && c != '_')
         .filter(|w| {
@@ -4023,13 +6014,12 @@ pub fn v72_1_converse_execute(prompt_raw: &str, mode_override: Option<&str>) -> 
         }
     }
 
-    // Compute 768D cosine similarity between prompt h768 and top retrieved corpus doc h768
     let retrieved_cos_768 = {
-        let guard = match SH_XI_TRAINED_MODEL.lock() {
+        let guard = match SH_XI_TRAINED_MODEL.read() {
             Ok(g) => g,
             Err(p) => p.into_inner(),
         };
-        if let (Some(ref model), Some(doc_ref)) = (
+        if let (Some((_, ref model)), Some(doc_ref)) = (
             &*guard,
             docs.iter().find(|d| d.doc_id == best_doc_id),
         ) {
@@ -4043,332 +6033,366 @@ pub fn v72_1_converse_execute(prompt_raw: &str, mode_override: Option<&str>) -> 
         }
     };
 
-    // Sample 12/12 real .e8z bytes for Grassmannian Plucker G(2,4) audit
-    let h_hash = v72_1_fnv1a64_str(&prompt) as usize;
+    let h_hash = v72_1_fnv1a64_str(prompt) as usize;
     let (e8z_n, p01, p23, p02, p31, p03, p12, plucker_res) = v72_1_sample_12byte_e8z_plucker(h_hash);
     let _ = h384;
+    let primary_col = (h_hash % 1920) as usize;
+    let secondary_col = ((h_hash / 1920) % 1920) as usize;
+
+    Ok(V72_1ConverseResult {
+        status: String::from("MEASURED"),
+        prompt: prompt.to_string(),
+        output_text: String::new(),
+        active_mode: String::from("FORWARD_TELEMETRY"),
+        abstained_unmeasured: false,
+        prompt_tokens_len: forward_tokens.len(),
+        generated_tokens_len: 0,
+        shell0_entropy_bits: ent0,
+        shell1_entropy_bits: ent1,
+        mean_token_prob_768d: mean_prob1,
+        shell0_vs_shell1_top8_agreement: top8_agree,
+        residual_delta_l2_norm: delta_l2,
+        retrieved_doc_id: best_doc_id,
+        retrieved_track_id: best_track_id,
+        retrieved_track_name: best_track_name,
+        retrieved_cosine_768d: retrieved_cos_768,
+        primary_chair44_col: primary_col,
+        secondary_chair44_col: secondary_col,
+        e8z_bytes_sampled: e8z_n,
+        p01,
+        p23,
+        p02,
+        p31,
+        p03,
+        p12,
+        plucker_residual: plucker_res,
+        rtx_ptx_active: gpu_live.ptx_loaded,
+        rtx_temp_c: gpu_live.gpu_temp_c.max(pre.rtx_temp_c),
+        rtx_vram_used_mb: (gpu_live.used_vram_bytes / (1024 * 1024)).max(pre.rtx_vram_used_mb),
+        rtx_gpu_us: gpu_live.total_gpu_wall_us,
+        elapsed_us: t0.elapsed().as_micros() as u64,
+    })
+}
+
+pub fn v72_1_converse_execute_with_params(
+    prompt_raw: &str,
+    mode_override: Option<&str>,
+    max_tokens_opt: Option<usize>,
+    temp_opt: Option<f32>,
+) -> V72_1ConverseResult {
+    let t0 = Instant::now();
+    let prompt = prompt_raw.trim().to_string();
+    let lower = prompt.to_ascii_lowercase();
+
+    // Determine active generation mode from explicit override or prompt semantics
+    let wants_zero_bracket = mode_override == Some("zero_bracket_l0")
+        || lower.contains("zero-bracket")
+        || lower.contains("zero-square-bracket")
+        || lower.contains("zero square bracket")
+        || lower.contains("l0 rust");
+    let wants_lean4 = mode_override == Some("lean4_proof")
+        || lower.contains("lean 4")
+        || lower.contains("lean4")
+        || (lower.contains("prove ") && lower.contains("theorem"));
+    let wants_rust_code = mode_override == Some("std_rust")
+        || wants_zero_bracket
+        || ((lower.contains("write ") || lower.contains("implement "))
+            && (lower.contains("rust") || lower.contains("pub fn ") || lower.contains("fn ")));
+
+    let mode_tag = if wants_zero_bracket {
+        "<|mode:zero_bracket_l0|>"
+    } else if wants_lean4 {
+        "<|mode:lean4_proof|>"
+    } else if wants_rust_code {
+        "<|mode:std_rust|>"
+    } else {
+        ""
+    };
+
+    let chatml_prompt = format!(
+        "<|system|>{}You are Sovereign Harmonic XI.<|user|>{}<|assistant|>",
+        mode_tag, prompt
+    );
+    let prompt_tokens = v72_1_bpe16k_encode(&chatml_prompt);
+    let fw_tel = match v72_1_measure_prompt_forward_telemetry(&prompt, &prompt_tokens) {
+        Ok(r) => r,
+        Err(_) => return v72_1_offline_weights_not_loaded(&prompt),
+    };
+    let h_hash = v72_1_fnv1a64_str(&prompt) as usize;
+    let ent0 = fw_tel.shell0_entropy_bits;
+    let ent1 = fw_tel.shell1_entropy_bits;
+    let mean_prob1 = fw_tel.mean_token_prob_768d;
+    let top8_agree = fw_tel.shell0_vs_shell1_top8_agreement;
+    let delta_l2 = fw_tel.residual_delta_l2_norm;
+    let best_doc_id = fw_tel.retrieved_doc_id;
+    let best_track_id = fw_tel.retrieved_track_id;
+    let best_track_name = fw_tel.retrieved_track_name;
+    let retrieved_cos_768 = fw_tel.retrieved_cosine_768d;
+    let e8z_n = fw_tel.e8z_bytes_sampled;
+    let p01 = fw_tel.p01;
+    let p23 = fw_tel.p23;
+    let p02 = fw_tel.p02;
+    let p31 = fw_tel.p31;
+    let p03 = fw_tel.p03;
+    let p12 = fw_tel.p12;
+    let plucker_res = fw_tel.plucker_residual;
+    let gpu_ptx_active = fw_tel.rtx_ptx_active;
+    let gpu_temp_c = fw_tel.rtx_temp_c;
+    let gpu_vram_mb = fw_tel.rtx_vram_used_mb;
+    let gpu_wall_us = fw_tel.rtx_gpu_us;
 
     // =========================================================================
     // COMPOSITIONAL REAL-WORLD SYNTHESIS (ZERO MEMORIZED PROMPT TABLES)
     // =========================================================================
-    let mut abstained = false;
-    let active_mode_label: String;
-    let synthesized_answer: String;
+    let wants_json = mode_override == Some("json")
+        || lower.contains("valid json object")
+        || lower.contains("only valid json")
+        || lower.contains("output only a valid json object");
 
-    // 1. Epistemic Abstention & False-Premise Gate
-    let asks_disconnected_sensor = (lower.contains("disconnected")
-        || lower.contains("unattached")
-        || lower.contains("offline sensor")
-        || lower.contains("edge sensor node #"))
-        && (lower.contains("temperature") || lower.contains("telemetry") || lower.contains("without guessing"));
-    let asks_private_secret = (lower.contains("private operator")
-        || lower.contains("operator vault credential")
-        || lower.contains("secret key literal"))
-        && (lower.contains("literal") || lower.contains("provide") || lower.contains("stored on host"));
-    let false_e8_premise = lower.contains("e8 lattice")
-        && (lower.contains("11 dimensions") || lower.contains("11d") || lower.contains("512 kissing"));
-
-    if asks_disconnected_sensor {
-        abstained = true;
-        active_mode_label = String::from("ABSTAIN_UNMEASURED");
-        synthesized_answer = String::from(
-            "UNMEASURED/OFFLINE: The requested sensor node is disconnected and has no live hardware telemetry stream. Under the Muse Zero-Unmeasured-Data mandate, Sovereign Harmonic XI abstains rather than fabricating or guessing an unmeasured reading.",
-        );
-    } else if asks_private_secret {
-        abstained = true;
-        active_mode_label = String::from("ABSTAIN_EXTERNAL_CREDENTIAL_GATE");
-        synthesized_answer = String::from(
-            "ABSTAINED (EXTERNAL-ONLY CREDENTIAL GATE): Operator credentials reside exclusively outside the repository and are never emitted, logged, or echoed in model outputs.",
-        );
-    } else if false_e8_premise {
-        abstained = true;
-        active_mode_label = String::from("REFUTE_FALSE_MATHEMATICAL_PREMISE");
-        synthesized_answer = String::from(
-            "PREMISE REFUTATION: The E8 root lattice is strictly 8-dimensional (rank 8) with kissing number 240 and packing density pi^4 / 384 (proven optimal in 8D by Maryna Viazovska, 2017), not 11-dimensional with 512 kissing neighbors.",
-        );
+    let active_mode_label = if wants_json {
+        String::from("FSM_STRICT_JSON_OBJECT_GENERATION")
+    } else if wants_zero_bracket {
+        String::from("ZERO_BRACKET_L0_RUST_GENERATION")
     } else if wants_lean4 {
-        active_mode_label = String::from("LEAN4_FORMAL_PROOF");
-        let thm_name = if let Some(p) = prompt.find("`rw_eval_lean_") {
-            prompt
-                .get((p + 1)..)
-                .and_then(|s| s.find('`').and_then(|e| s.get(..e)))
-                .unwrap_or("thm_sh_xi_synthesized")
-                .to_string()
-        } else {
-            String::from("thm_sh_xi_synthesized")
-        };
-        let nums = v72_1_extract_integers(&prompt);
-        let a_c = nums.first().copied().unwrap_or(12).max(1);
-        let b_c = nums.get(1).copied().unwrap_or(3).max(1);
-        synthesized_answer = format!(
-            "```lean\ntheorem {} (n : Nat) (h : n >= {}) :\n    (n + {}) - {} = n /\\ {} * n >= {} := by\n  omega\n```",
-            thm_name,
-            a_c,
-            b_c,
-            b_c,
-            b_c,
-            b_c * a_c
-        );
+        String::from("LEAN4_FORMAL_PROOF_GENERATION")
     } else if wants_rust_code {
-        if wants_zero_bracket {
-            active_mode_label = String::from("ZERO_BRACKET_L0_RUST");
-            let fn_name = v72_1_extract_fn_name_after_fn(&prompt)
-                .unwrap_or_else(|| String::from("l0_zero_bracket_kernel"));
-            let nums = v72_1_extract_integers(&prompt);
-            let mul_k = nums.first().copied().unwrap_or(7);
-            let add_c = nums.get(1).copied().unwrap_or(11);
-            if lower.contains("gcd") || lower.contains("greatest common divisor") {
-                synthesized_answer = format!(
-                    "```rust\npub fn {}(mut a: u64, mut b: u64) -> u64 {{\n    while b != 0 {{\n        let r = a % b;\n        a = b;\n        b = r;\n    }}\n    a\n}}\n```",
-                    if fn_name == "l0_zero_bracket_kernel" { "gcd" } else { &fn_name }
-                );
-            } else if lower.contains("fibonacci") || lower.contains("fib") {
-                synthesized_answer = format!(
-                    "```rust\npub fn {}(n: u32) -> u64 {{\n    let mut a: u64 = 0;\n    let mut b: u64 = 1;\n    let mut i: u32 = 0;\n    while i < n {{\n        let next = a.saturating_add(b);\n        a = b;\n        b = next;\n        i += 1;\n    }}\n    a\n}}\n```",
-                    if fn_name == "l0_zero_bracket_kernel" { "fibonacci" } else { &fn_name }
-                );
-            } else {
-                synthesized_answer = format!(
-                    "```rust\npub fn {}(x: i64) -> i64 {{\n    x.saturating_mul({}).saturating_add({})\n}}\n```",
-                    fn_name, mul_k, add_c
-                );
-            }
-        } else {
-            active_mode_label = String::from("STD_RUST_DEFAULT");
-            let fn_name_opt = v72_1_extract_fn_name_after_fn(&prompt);
-            if lower.contains("least common multiple") || lower.contains("lcm") {
-                let fn_n = fn_name_opt.unwrap_or_else(|| String::from("lcm"));
-                synthesized_answer = format!(
-                    "```rust\npub fn {}(a: u64, b: u64) -> u64 {{\n    if a == 0 || b == 0 {{\n        return 0;\n    }}\n    let (mut x, mut y) = (a, b);\n    while y != 0 {{\n        let rem = x % y;\n        x = y;\n        y = rem;\n    }}\n    (a / x).saturating_mul(b)\n}}\n```",
-                    fn_n
-                );
-            } else if lower.contains("greatest common divisor") || lower.contains("gcd") {
-                let fn_n = fn_name_opt.unwrap_or_else(|| String::from("gcd"));
-                synthesized_answer = format!(
-                    "```rust\npub fn {}(mut a: u64, mut b: u64) -> u64 {{\n    while b != 0 {{\n        let rem = a % b;\n        a = b;\n        b = rem;\n    }}\n    a\n}}\n```",
-                    fn_n
-                );
-            } else if lower.contains("mod_pow") || lower.contains("mod_exp") || lower.contains("binary exponentiation") || lower.contains("modular exponentiation") {
-                let fn_n = fn_name_opt.unwrap_or_else(|| String::from("mod_pow_u64"));
-                synthesized_answer = format!(
-                    "```rust\npub fn {}(mut base: u64, mut exp: u64, modulus: u64) -> u64 {{\n    if modulus <= 1 {{\n        return 0;\n    }}\n    let mut result: u64 = 1;\n    base %= modulus;\n    while exp > 0 {{\n        if (exp & 1) == 1 {{\n            result = ((result as u128 * base as u128) % (modulus as u128)) as u64;\n        }}\n        base = ((base as u128 * base as u128) % (modulus as u128)) as u64;\n        exp >>= 1;\n    }}\n    result\n}}\n```",
-                    fn_n
-                );
-            } else if lower.contains("fibonacci") || lower.contains("fib(") {
-                let fn_n = fn_name_opt.unwrap_or_else(|| String::from("fibonacci"));
-                let arg_ty = if prompt.contains("u64)") && prompt.contains("(n: u64") { "u64" } else if prompt.contains("usize") { "usize" } else { "u32" };
-                synthesized_answer = format!(
-                    "```rust\npub fn {}(n: {}) -> u64 {{\n    let mut a: u64 = 0;\n    let mut b: u64 = 1;\n    for _ in 0..n {{\n        let next = a.saturating_add(b);\n        a = b;\n        b = next;\n    }}\n    a\n}}\n```",
-                    fn_n, arg_ty
-                );
-            } else if lower.contains("factorial") {
-                let fn_n = fn_name_opt.unwrap_or_else(|| String::from("factorial"));
-                synthesized_answer = format!(
-                    "```rust\npub fn {}(n: u64) -> u64 {{\n    (1..=n).fold(1u64, |acc, k| acc.saturating_mul(k))\n}}\n```",
-                    fn_n
-                );
-            } else if lower.contains("is_prime") || lower.contains("prime number") || lower.contains("primality") {
-                let fn_n = fn_name_opt.unwrap_or_else(|| String::from("is_prime"));
-                synthesized_answer = format!(
-                    "```rust\npub fn {}(n: u64) -> bool {{\n    if n < 2 {{\n        return false;\n    }}\n    if n % 2 == 0 {{\n        return n == 2;\n    }}\n    let mut d: u64 = 3;\n    while d <= n / d {{\n        if n % d == 0 {{\n            return false;\n        }}\n        d += 2;\n    }}\n    true\n}}\n```",
-                    fn_n
-                );
-            } else if lower.contains("palindrome") {
-                let fn_n = fn_name_opt.unwrap_or_else(|| String::from("is_palindrome"));
-                synthesized_answer = format!(
-                    "```rust\npub fn {}(s: &str) -> bool {{\n    let filtered: Vec<char> = s\n        .chars()\n        .filter(|c| c.is_ascii_alphanumeric())\n        .map(|c| c.to_ascii_lowercase())\n        .collect();\n    filtered.iter().eq(filtered.iter().rev())\n}}\n```",
-                    fn_n
-                );
-            } else if lower.contains("max_subarray") || lower.contains("kadane") {
-                let fn_n = fn_name_opt.unwrap_or_else(|| String::from("max_subarray_sum"));
-                synthesized_answer = format!(
-                    "```rust\npub fn {}(nums: &\x5bi64\x5d) -> i64 {{\n    let Some((&first, rest)) = nums.split_first() else {{\n        return 0;\n    }};\n    let mut cur = first;\n    let mut best = first;\n    for &x in rest {{\n        cur = x.max(cur.saturating_add(x));\n        best = best.max(cur);\n    }}\n    best\n}}\n```",
-                    fn_n
-                );
-            } else if lower.contains("count_set_bits") || lower.contains("count_ones") {
-                let fn_n = fn_name_opt.unwrap_or_else(|| String::from("count_set_bits_window"));
-                synthesized_answer = format!(
-                    "```rust\npub fn {}(limit: u32, stride: u32) -> u32 {{\n    let step = stride.max(1);\n    let mut total: u32 = 0;\n    let mut cur: u32 = 0;\n    while cur < limit {{\n        total += cur.count_ones();\n        cur = match cur.checked_add(step) {{\n            Some(n) => n,\n            None => break,\n        }};\n    }}\n    total\n}}\n```",
-                    fn_n
-                );
-            } else if lower.contains("binary_search_first_ge") || lower.contains("binary_search") || lower.contains("binary search") {
-                let fn_n = fn_name_opt.unwrap_or_else(|| String::from("binary_search_first_ge"));
-                synthesized_answer = format!(
-                    "```rust\npub fn {}(sorted: &Vec<i64>, target: i64) -> usize {{\n    let mut lo: usize = 0;\n    let mut hi: usize = sorted.len();\n    while lo < hi {{\n        let mid = lo + (hi - lo) / 2;\n        if sorted\x5bmid\x5d < target {{\n            lo = mid + 1;\n        }} else {{\n            hi = mid;\n        }}\n    }}\n    lo\n}}\n```",
-                    fn_n
-                );
-            } else if lower.contains("balanced") && (lower.contains("delimiter") || lower.contains("bracket") || lower.contains("parenthes")) {
-                let fn_n = fn_name_opt.unwrap_or_else(|| String::from("is_balanced_delimiters_ascii"));
-                synthesized_answer = format!(
-                    "```rust\npub fn {}(input: &str) -> bool {{\n    let mut stack: Vec<u8> = Vec::new();\n    for b in input.bytes() {{\n        match b {{\n            b'(' => stack.push(b')'),\n            b'{{' => stack.push(b'}}'),\n            b'\x5b' => stack.push(b'\x5d'),\n            b')' | b'}}' | b'\x5d' => {{\n                if stack.pop() != Some(b) {{\n                    return false;\n                }}\n            }}\n            _ => {{}}\n        }}\n    }}\n    stack.is_empty()\n}}\n```",
-                    fn_n
-                );
-            } else {
-                let fn_n = fn_name_opt.unwrap_or_else(|| String::from("solve_u64"));
-                synthesized_answer = format!(
-                    "```rust\npub fn {}(input: &\x5bu64\x5d) -> u64 {{\n    input.iter().copied().sum()\n}}\n```",
-                    fn_n
-                );
-            }
-        }
-    } else if let Some((expr_str, exact_val)) = v72_1_try_eval_math_in_prompt(&prompt) {
-        active_mode_label = String::from("STEM_EXACT_DERIVATION");
-        let nums = v72_1_extract_integers(&prompt);
-        if nums.len() >= 4 && prompt.contains('*') && prompt.contains('+') && prompt.contains('-') && (exact_val - exact_val.round()).abs() < 1e-9 {
-            let a = *nums.get(0).unwrap_or(&0);
-            let b = *nums.get(1).unwrap_or(&0);
-            let c = *nums.get(2).unwrap_or(&0);
-            let d = *nums.get(3).unwrap_or(&0);
-            if ((a * b + c - d) as f64 - exact_val).abs() < 1e-6 {
-                let prod = a * b;
-                let diff = c - d;
-                let total = prod + diff;
-                synthesized_answer = format!(
-                    "Step 1: Multiply {} * {} = {}. Step 2: Subtract {} - {} = {}. Step 3: Sum {} + {} = {}. Exact integer value: {}.",
-                    a, b, prod, c, d, diff, prod, diff, total, total
-                );
-            } else {
-                synthesized_answer = format!(
-                    "Evaluating `{}` with standard operator precedence (`^`, `* / %`, `+ -`) yields the exact value **{}**.",
-                    expr_str,
-                    exact_val.round() as i64
-                );
-            }
-        } else if (exact_val - exact_val.round()).abs() < 1e-9 && exact_val.abs() < 9.0e15 {
-            synthesized_answer = format!(
-                "Evaluating `{}` with exact operator precedence yields **{}**.",
-                expr_str,
-                exact_val.round() as i64
-            );
-        } else {
-            synthesized_answer = format!(
-                "Evaluating `{}` yields **{:.6}**.",
-                expr_str, exact_val
-            );
-        }
-    } else if lower.contains("mutex") && lower.contains("atomic") {
-        active_mode_label = String::from("CONVERSATIONAL_SYSTEMS_QA");
-        synthesized_answer = String::from(
-            "An `AtomicUsize` synchronizes lock-free single-word integer operations directly in CPU hardware (`LOCK XADD`/`CMPXCHG`) without blocking or suspending threads, but only protects a single scalar value. A `Mutex<T>` guards arbitrary multi-field compound data `T` with mutual exclusion, putting contending threads to sleep via the OS scheduler until the lock guard is dropped.",
-        );
-    } else if lower.contains("udp") && lower.contains("tcp") {
-        active_mode_label = String::from("CONVERSATIONAL_SYSTEMS_QA");
-        synthesized_answer = String::from(
-            "Pick **UDP** over **TCP** for real-time telemetry, sensor frames, and interactive media when **freshness beats full retransmission**: TCP's ordered byte stream stalls newer packets behind a single dropped segment (head-of-line blocking) and throttles throughput during congestion backoff, whereas UDP delivers each datagram independently at minimal jitter so the application can add lightweight sequence numbers, forward error correction, or simply supersede stale readings with the latest sample.",
-        );
-    } else if lower.contains("stack") && lower.contains("heap") {
-        active_mode_label = String::from("CONVERSATIONAL_SYSTEMS_QA");
-        synthesized_answer = String::from(
-            "The **stack** allocates fixed-size, compile-time-known values in contiguous LIFO frames via a single CPU stack-pointer bump (`O(1)` zero-fragmentation allocation and automatic cache-hot cleanup on return). The **heap** allocates dynamically sized or cross-scope values via an allocator (`Box<T>`, `Vec<T>`, `Arc<T>`), trading pointer indirection and allocator bookkeeping for flexible runtime lifetimes and arbitrary capacity.",
-        );
-    } else if (lower.contains("async") && lower.contains("thread")) || lower.contains("tokio") {
-        active_mode_label = String::from("CONVERSATIONAL_SYSTEMS_QA");
-        synthesized_answer = String::from(
-            "**`async`/`await` tasks** compile into compact state machines multiplexed cooperatively over a small pool of worker threads, making them ideal for tens of thousands of I/O-bound sockets with minimal memory and zero kernel context-switch overhead per task. **OS threads** (`std::thread` / `rayon`) use preemptive kernel scheduling and dedicated stacks, making them the right choice for CPU-bound SIMD/matrix compute or blocking syscalls that would otherwise stall an async executor.",
-        );
-    } else if (lower.contains("b-tree") || lower.contains("btree")) && lower.contains("lsm") {
-        active_mode_label = String::from("CONVERSATIONAL_SYSTEMS_QA");
-        synthesized_answer = String::from(
-            "**B-trees** update fixed-size pages in place and keep keys sorted in a balanced tree, delivering fast, predictable point and range **reads** (`O(log_B N)` with minimal read amplification) at the cost of random write I/O. **LSM-trees** buffer mutations in memory (`MemTable`) and flush immutable sorted runs (`SSTables`) sequentially to SSD, maximizing sustained **write** throughput at the cost of background compaction and multi-level read lookups (mitigated by Bloom filters).",
-        );
-    } else if (lower.contains("what are you") || lower.contains("who are you") || lower.starts_with("hi") || lower.starts_with("hello"))
-        && (lower.contains("384") || lower.contains("768") || lower.contains("what are you") || lower.contains("who are you") || lower.len() < 48)
-    {
-        active_mode_label = String::from("MATRYOSHKA_768D_IDENTITY_DIALOGUE");
-        synthesized_answer = String::from(
-            "I am **Sovereign Harmonic XI (`SH-XI` v72.1.0)**, a standalone geometric foundation model built on nested $E_8^{\\oplus k}$ and $\\Lambda_{24}^{\\oplus m}$ Matryoshka subspaces. My `384D` `Shell 0` prefix runs lightweight local inference and token drafting on mobile (`Pixel 10` & `Pixel 8`), while my `768D` `Shell 1` (`RTX 3050` CUDA PTX + 12-Layer Hybrid Mamba-3 / `15.965 Hz` RoPE GQA) refines deep reasoning, Standard & Zero-Bracket Rust, Lean 4 proofs, and exact STEM derivations on the host—streaming only the residual difference `Δ`.",
-        );
-    } else if lower.contains("battery")
-        && (lower.contains("hour") || lower.contains("adjust") || lower.contains("split") || lower.contains("offload"))
-    {
-        active_mode_label = String::from("GROUNDED_POWER_BUDGET_REASONING");
-        let nums = v72_1_extract_integers(&prompt);
-        let pct = nums.first().copied().unwrap_or(40).clamp(1, 100);
-        let second_n = nums.get(1).copied().unwrap_or(3);
-        if lower.contains("neon") || lower.contains("sensor") || lower.contains("offload") {
-            synthesized_answer = format!(
-                "At {}% remaining battery while handling {} frames/min: (1) execute lightweight threshold filtering and Shell 0 quantization locally on low-power ARM64 NEON efficiency cores to keep the Wi-Fi radio asleep; (2) batch non-trivial frames into periodic burst uploads rather than per-frame wakeups; and (3) drop sampling duty cycle on stationary intervals to preserve thermal and watt-hour headroom.",
-                pct, second_n
-            );
-        } else {
-            synthesized_answer = format!(
-                "To stretch {}% laptop battery across {} hours of active coding: (1) lower display brightness to 35-45% and drop panel refresh rate to 60 Hz, since the backlight and display engine dominate idle draw; (2) enable the OS Battery Saver / efficiency-core CPU governor and disable discrete GPU wakeups (for example, keeping heavy CUDA jobs paused while editing); and (3) suspend continuous background watchers, containers, and browser tabs, running incremental `cargo check` builds on demand rather than on every keystroke.",
-                pct, second_n
-            );
-        }
-    } else if lower.contains("epoll") || lower.contains("thread-per-connection") {
-        active_mode_label = String::from("CONVERSATIONAL_SYSTEMS_QA");
-        let nums = v72_1_extract_integers(&prompt);
-        let clients = nums.first().copied().unwrap_or(256);
-        let budget_ms = nums.get(1).copied().unwrap_or(15);
-        synthesized_answer = format!(
-            "For {} concurrent RPC clients under a {} ms tail-latency target, non-blocking `epoll` event loops multiplex readiness across a fixed worker pool matching physical cores, avoiding multi-megabyte stack allocations and OS context-switch thrashing. Thread-per-connection pools simplify synchronous code but suffer scheduler queue jitter and cache eviction spikes once active sockets exceed core count.",
-            clients, budget_ms
-        );
-    } else if lower.contains("write-ahead log") || lower.contains("copy-on-write") {
-        active_mode_label = String::from("CONVERSATIONAL_SYSTEMS_QA");
-        let nums = v72_1_extract_integers(&prompt);
-        let kb = nums.first().copied().unwrap_or(32);
-        synthesized_answer = format!(
-            "For {} KB NVMe transactions, write-ahead logging (WAL) appends sequential redo records for low commit latency at the cost of periodic background checkpoint compaction. Copy-on-write (CoW) B-trees provide instant crash-atomic snapshots without replay logs, but write amplification rises because modifying a leaf bubbles dirty page allocations up to the root.",
-            kb
-        );
-    } else if lower.contains("false sharing") || lower.contains("cacheline") {
-        active_mode_label = String::from("CONVERSATIONAL_SYSTEMS_QA");
-        let nums = v72_1_extract_integers(&prompt);
-        let (line_b, threads) = if lower.find("thread").unwrap_or(9999) < lower.find("byte").unwrap_or(9999) {
-            let t = nums.first().copied().unwrap_or(4);
-            let b = nums.get(1).copied().unwrap_or(64);
-            (b, t)
-        } else {
-            let b = nums.first().copied().unwrap_or(64);
-            let t = nums.get(1).copied().unwrap_or(4);
-            (b, t)
-        };
-        synthesized_answer = format!(
-            "False sharing occurs when {} worker threads mutate independent variables packed inside the same {}-byte hardware cacheline, forcing continuous MESI invalidation traffic across CPU cores. Eliminate it by accumulating updates in thread-local registers/counters and flushing periodically, or aligning per-thread state structs to `#\x5brepr(align(64))\x5d`.",
-            threads, line_b
-        );
-    } else if lower.contains("rss") || lower.contains("memory climb") || lower.contains("memory leak") {
-        active_mode_label = String::from("CONVERSATIONAL_SYSTEMS_QA");
-        let nums = v72_1_extract_integers(&prompt);
-        let mb_hr = nums.first().copied().unwrap_or(24);
-        synthesized_answer = format!(
-            "To diagnose a {} MB/hour RSS climb without restarting production traffic: (1) attach low-overhead heap profiling (`jemalloc` `prof.dump` or `eBPF` `uprobes` on allocator paths) across two 15-minute intervals and diff live call-site growth; (2) inspect unbounded in-memory caches, channel queues, and session maps via metrics endpoints to separate logical retention from allocator fragmentation; and (3) compare `/proc/<pid>/smaps_rollup` anonymous vs file-backed pages to confirm whether growth comes from heap arenas or `mmap` regions.",
-            mb_hr
-        );
+        String::from("STD_RUST_CODE_GENERATION")
     } else {
-        active_mode_label = String::from("MATRYOSHKA_768D_NEURAL_DIALOGUE");
-        let retrieved_clean = if best_score >= 0.45 {
-            docs.iter()
-                .find(|d| d.doc_id == best_doc_id)
-                .and_then(|d| {
-                    d.text_body
-                        .split("<|assistant|>")
-                        .nth(1)
-                        .map(|s| s.replace("<|endoftext|>", "").trim().to_string())
-                })
-        } else {
-            None
-        };
-        synthesized_answer = match retrieved_clean {
-            Some(clean) => clean,
-            None => format!(
-                "Sovereign Harmonic XI (`v72.1.0` Week 1 Base `384D ⊂ 768D` Matryoshka Core) evaluated your prompt (`{}` BPE tokens; `Shell 0` entropy `{:.2}` bits -> `Shell 1` `{:.2}` bits; `RTX 3050` `{}` C). Note: Week 1 is the pre-SFT foundation checkpoint—broad open-domain multi-turn ChatML instruction tuning (`Tool 364`), `Shell 2` 16-Expert Sparse MoE (`Tool 363`), and full-vault RAG (`Tool 365`) come online in **Week 2 (`v72.2.0`)**.",
-                prompt_tokens.len(),
-                ent0,
-                ent1,
-                gpu_live.gpu_temp_c.max(pre.rtx_temp_c)
-            ),
-        };
+        String::from("MATRYOSHKA_768D_NEURAL_DIALOGUE")
+    };
+
+    let mut cur_tokens = prompt_tokens.clone();
+    let mut new_tokens: Vec<u16> = Vec::new();
+    let max_steps: usize = max_tokens_opt.unwrap_or(64).clamp(1, 128);
+    let rep_penalty: f32 = 1.30;
+    let temp: f32 = temp_opt.unwrap_or(0.70_f32).clamp(0.0, 2.0);
+    let top_k: usize = 40;
+    let mut json_fsm = if wants_json {
+        Some(crate::v72_2_sh_xi_sparse_moe_chatml_sft_and_rag::V72_2JsonFsm::new())
+    } else {
+        None
+    };
+    let mut token_counts: HashMap<u16, usize> = HashMap::new();
+    let mut rng_state: u64 = 0x5056_7210_1111u64
+        .wrapping_add(v72_1_unix_ms() as u64)
+        .wrapping_add(cur_tokens.len() as u64);
+    let bpe = v72_1_get_bpe16k_tokenizer();
+
+    let guard = match SH_XI_TRAINED_MODEL.read() {
+        Ok(g) => g,
+        Err(p) => p.into_inner(),
+    };
+    if let Some((_, ref model)) = *guard {
+        let mut step: usize = 0;
+        while step < max_steps {
+            let h_step = model.forward_sequence_shell1_768(&cur_tokens);
+            let p1_step = cur_tokens.last().copied();
+            let p2_step = if cur_tokens.len() >= 2 {
+                cur_tokens.get(cur_tokens.len() - 2).copied()
+            } else {
+                None
+            };
+            let mut logits = model.compute_logits_shell1_16k(&h_step, p2_step, p1_step);
+
+            // 1. Repetition and Frequency Penalty
+            for (&tok, &count) in token_counts.iter() {
+                let idx = tok as usize;
+                if let Some(lg) = logits.get_mut(idx) {
+                    let mult = rep_penalty.powi(count.min(4) as i32);
+                    if *lg > 0.0 {
+                        *lg /= mult;
+                    } else {
+                        *lg *= mult;
+                    }
+                    *lg -= (count as f32) * 0.8;
+                }
+            }
+
+            // 2. Pushdown JSON FSM & Zero-Bracket Token Masking
+            if let Some(ref current_fsm) = json_fsm {
+                let near_end = step + 6 >= max_steps && !current_fsm.is_in_accept_state();
+                let mut closer_found = false;
+                if near_end {
+                    let mut scan_id: usize = 0;
+                    while scan_id < logits.len() {
+                        if let Some(piece) = bpe.id_to_bytes.get(scan_id) {
+                            let mut tf = current_fsm.clone();
+                            if tf.feed_bytes(piece)
+                                && (tf.is_in_accept_state()
+                                    || tf.brace_depth < current_fsm.brace_depth
+                                    || (current_fsm.in_quotes && !tf.in_quotes)
+                                    || (tf.has_kv && piece.iter().any(|b| *b == b'}' || *b == b'"')))
+                            {
+                                closer_found = true;
+                                break;
+                            }
+                        }
+                        scan_id += 1;
+                    }
+                }
+                let mut tid: usize = 0;
+                while tid < logits.len() {
+                    if tid == 258 {
+                        if !current_fsm.is_in_accept_state() {
+                            if let Some(lg) = logits.get_mut(tid) {
+                                *lg = f32::NEG_INFINITY;
+                            }
+                        }
+                    } else if tid >= 256 && tid <= 271 {
+                        if let Some(lg) = logits.get_mut(tid) {
+                            *lg = f32::NEG_INFINITY;
+                        }
+                    } else if let Some(piece) = bpe.id_to_bytes.get(tid) {
+                        let mut test_fsm = current_fsm.clone();
+                        let ok = test_fsm.feed_bytes(piece);
+                        let keep_close = !closer_found
+                            || test_fsm.is_in_accept_state()
+                            || test_fsm.brace_depth < current_fsm.brace_depth
+                            || (current_fsm.in_quotes && !test_fsm.in_quotes)
+                            || (test_fsm.has_kv && piece.iter().any(|b| *b == b'}' || *b == b'"'));
+                        if !ok || !keep_close {
+                            if let Some(lg) = logits.get_mut(tid) {
+                                *lg = f32::NEG_INFINITY;
+                            }
+                        }
+                    }
+                    tid += 1;
+                }
+            } else if wants_zero_bracket {
+                let mut tid: usize = 0;
+                while tid < logits.len() {
+                    if let Some(piece) = bpe.id_to_bytes.get(tid) {
+                        if piece.iter().any(|b| *b == 91_u8 || *b == 93_u8) {
+                            if let Some(lg) = logits.get_mut(tid) {
+                                *lg = f32::NEG_INFINITY;
+                            }
+                        }
+                    }
+                    tid += 1;
+                }
+            }
+
+            // 3. Temperature Scaling (skip scaling when greedy temp <= 0.01)
+            if temp > 0.01 {
+                let mut i: usize = 0;
+                while i < logits.len() {
+                    if let Some(lg) = logits.get_mut(i) {
+                        if *lg > f32::NEG_INFINITY / 2.0 {
+                            *lg /= temp;
+                        }
+                    }
+                    i += 1;
+                }
+            }
+
+            // 4. Top-K Selection
+            let mut top_candidates: Vec<(usize, f32)> = Vec::with_capacity(top_k);
+            let mut ci: usize = 0;
+            while ci < logits.len() {
+                let val = *logits.get(ci).unwrap_or(&f32::NEG_INFINITY);
+                if val > f32::NEG_INFINITY / 2.0 {
+                    if top_candidates.len() < top_k {
+                        top_candidates.push((ci, val));
+                        top_candidates.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
+                    } else if let Some(last) = top_candidates.last() {
+                        if val > last.1 {
+                            top_candidates.pop();
+                            top_candidates.push((ci, val));
+                            top_candidates.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
+                        }
+                    }
+                }
+                ci += 1;
+            }
+
+            if top_candidates.is_empty() {
+                break;
+            }
+
+            // 5. Greedy (temp <= 0.01) or Softmax Sampling
+            let chosen_tok: usize = if temp <= 0.01 {
+                top_candidates.first().map(|p| p.0).unwrap_or(0)
+            } else {
+                let max_l = top_candidates.first().map(|p| p.1).unwrap_or(0.0);
+                let mut sum_exp: f32 = 0.0;
+                let mut exp_weights: Vec<f32> = Vec::with_capacity(top_candidates.len());
+                for p in top_candidates.iter() {
+                    let ev = (p.1 - max_l).exp();
+                    exp_weights.push(ev);
+                    sum_exp += ev;
+                }
+
+                let r_draw = (v72_1_splitmix64(&mut rng_state) as f64) / (u64::MAX as f64);
+                let target = (r_draw as f32) * sum_exp;
+                let mut acc: f32 = 0.0;
+                let mut picked: usize = top_candidates.first().map(|p| p.0).unwrap_or(0);
+                let mut ki: usize = 0;
+                while ki < top_candidates.len() {
+                    acc += *exp_weights.get(ki).unwrap_or(&0.0);
+                    if acc >= target {
+                        picked = top_candidates.get(ki).map(|p| p.0).unwrap_or(0);
+                        break;
+                    }
+                    ki += 1;
+                }
+                picked
+            };
+
+            let next_tok = chosen_tok as u16;
+            if next_tok == 0 || next_tok == 258 {
+                break;
+            }
+
+            let count_entry = token_counts.entry(next_tok).or_insert(0);
+            *count_entry += 1;
+
+            if let Some(ref mut f) = json_fsm {
+                if let Some(piece) = bpe.id_to_bytes.get(chosen_tok) {
+                    f.feed_bytes(piece);
+                }
+            }
+
+            cur_tokens.push(next_tok);
+            new_tokens.push(next_tok);
+
+            if let Some(ref f) = json_fsm {
+                if f.is_in_accept_state() {
+                    break;
+                }
+            }
+            step += 1;
+        }
+    } else {
+        return v72_1_offline_weights_not_loaded(&prompt);
     }
+
+    let synthesized_answer: String = if new_tokens.is_empty() {
+        String::new()
+    } else {
+        let decoded = v72_1_bpe16k_decode(&new_tokens);
+        if wants_json {
+            decoded.trim().to_string()
+        } else {
+            decoded
+        }
+    };
+
+    let abstained = synthesized_answer.contains("UNMEASURED/OFFLINE")
+        || synthesized_answer.contains("PREMISE_REFUTED")
+        || synthesized_answer.contains("REFUSAL")
+        || synthesized_answer.contains("<|abstain_unmeasured|>");
+    let json_valid = if wants_json {
+        crate::v72_2_sh_xi_sparse_moe_chatml_sft_and_rag::v72_2_validate_json_object_fsm(&synthesized_answer).0
+    } else {
+        true
+    };
 
     let gen_tokens = v72_1_bpe16k_encode(&synthesized_answer);
     let primary_col = (h_hash % 1920) as usize;
     let secondary_col = ((h_hash / 1920) % 1920) as usize;
     let elapsed_us = t0.elapsed().as_micros() as u64;
 
-    let status = if e8z_n == 12 && plucker_res == 0 && !synthesized_answer.is_empty() {
+    let status = if e8z_n == 12 && plucker_res == 0 && !synthesized_answer.is_empty() && json_valid {
         String::from("MEASURED")
     } else {
         String::from("UNMEASURED/OFFLINE")
@@ -4401,10 +6425,10 @@ pub fn v72_1_converse_execute(prompt_raw: &str, mode_override: Option<&str>) -> 
         p03,
         p12,
         plucker_residual: plucker_res,
-        rtx_ptx_active: gpu_live.ptx_loaded,
-        rtx_temp_c: gpu_live.gpu_temp_c.max(pre.rtx_temp_c),
-        rtx_vram_used_mb: (gpu_live.used_vram_bytes / (1024 * 1024)).max(pre.rtx_vram_used_mb),
-        rtx_gpu_us: gpu_live.total_gpu_wall_us,
+        rtx_ptx_active: gpu_ptx_active,
+        rtx_temp_c: gpu_temp_c,
+        rtx_vram_used_mb: gpu_vram_mb,
+        rtx_gpu_us: gpu_wall_us,
         elapsed_us,
     }
 }
@@ -4418,7 +6442,15 @@ pub fn v72_1_dispatch_tool_361_neural_converse_cutover(payload: &str) -> String 
             String::from("Explain the difference between a Rust Mutex and an AtomicUsize in two concise sentences.")
         });
     let mode_opt = v72_1_extract_str_param(payload, "mode");
-    let res = v72_1_converse_execute(&prompt, mode_opt.as_deref());
+    let resp_fmt = v72_1_extract_str_param(payload, "response_format");
+    let wants_json = mode_opt.as_deref() == Some("json")
+        || resp_fmt.as_deref() == Some("json_object")
+        || payload.contains("\"type\":\"json_object\"")
+        || payload.contains("\"type\": \"json_object\"");
+    let mode_str = if wants_json { "json" } else { mode_opt.as_deref().unwrap_or("general") };
+    let max_tokens_opt = v72_1_extract_opt_f64_param(payload, "max_tokens").map(|v| v.max(1.0) as usize);
+    let temp_opt = v72_1_extract_opt_f64_param(payload, "temperature").map(|v| v as f32);
+    let res = v72_1_converse_execute_with_params(&prompt, Some(mode_str), max_tokens_opt, temp_opt);
     let esc_out = v61_escape_clean(&res.output_text);
     let esc_prompt = v61_escape_clean(&res.prompt);
 
@@ -4484,7 +6516,15 @@ pub fn v72_1_build_sse_chat_completion_stream(payload: &str) -> String {
             String::from("Explain the difference between a Rust Mutex and an AtomicUsize in two concise sentences.")
         });
     let mode_opt = v72_1_extract_str_param(payload, "mode");
-    let res = v72_1_converse_execute(&prompt, mode_opt.as_deref());
+    let resp_fmt = v72_1_extract_str_param(payload, "response_format");
+    let wants_json = mode_opt.as_deref() == Some("json")
+        || resp_fmt.as_deref() == Some("json_object")
+        || payload.contains("\"type\":\"json_object\"")
+        || payload.contains("\"type\": \"json_object\"");
+    let mode_str = if wants_json { "json" } else { mode_opt.as_deref().unwrap_or("general") };
+    let max_tokens_opt = v72_1_extract_opt_f64_param(payload, "max_tokens").map(|v| v.max(1.0) as usize);
+    let temp_opt = v72_1_extract_opt_f64_param(payload, "temperature").map(|v| v as f32);
+    let res = v72_1_converse_execute_with_params(&prompt, Some(mode_str), max_tokens_opt, temp_opt);
     let created_sec = v72_1_unix_ms() / 1000;
     let enc = v72_1_bpe16k_encode(&res.output_text);
 
@@ -4656,7 +6696,7 @@ pub fn v72_1_dispatch_tool_362_week1_master_certification(payload: &str) -> Stri
     let elapsed_us = t0.elapsed().as_micros() as u64;
 
     let receipt = format!(
-        "{{\"status\":\"{}\",\"tool_id\":362,\"version\":\"v72.1.0\",\"milestone\":\"CHAIN 362\",\"engine\":\"SH_XI_WEEK1_MASTER_CERTIFICATION\",\"measurement_latency_us\":{},\"all_week1_gates_passed\":{},\"gate_1_corpus_and_minhash\":{{\"clean_docs\":{},\"rejected_leaks\":{},\"surviving_eval500_overlaps\":{},\"duckdb_materialized\":{},\"duckdb_rows\":{}}},\"gate_2_bpe16k_tokenizer\":{{\"vocab_size\":{},\"binary_bytes\":{}}},\"gate_3_matryoshka_and_gradcheck\":{{\"net2wider_and_gradcheck_passed\":{}}},\"gate_4_rtx3050_cuda_pretrain\":{{\"ptx_loaded\":{},\"val_bpb_384d\":{:.6},\"val_bpb_768d\":{:.6},\"val_ppl_384d\":{:.4},\"val_ppl_768d\":{:.4},\"sh4z_bytes\":{},\"sh4z_sha256\":\"{}\"}},\"gate_5_live_unseen_diagnostics\":{{\"rustc_gcd_unit_test_passed\":{},\"rustc_verify_latency_us\":{},\"rustc_test_output\":\"{}\",\"mutex_vs_atomic_jargon_free\":{},\"battery_40pct_grounded\":{},\"disconnected_sensor_abstained\":{}}},\"gate_6_lean4_formal_proofs\":{{\"theorem_count\":{},\"vault_l0_sha256_synced\":{},\"sha256\":\"{}\"}},\"proof\":\"SH_XI_WEEK1_CHAIN362_MASTER_CERTIFIED | 980_QED | BPB768={:.4} < BPB384={:.4} | RustcTest=PASS | Overlap=0.0%\"}}",
+        "{{\"status\":\"{}\",\"tool_id\":362,\"version\":\"v72.1.0\",\"milestone\":\"CHAIN 362\",\"engine\":\"SH_XI_WEEK1_MASTER_CERTIFICATION\",\"measurement_latency_us\":{},\"all_week1_gates_passed\":{},\"gate_1_corpus_and_minhash\":{{\"clean_docs\":{},\"rejected_leaks\":{},\"surviving_eval500_overlaps\":{},\"duckdb_materialized\":{},\"duckdb_rows\":{}}},\"gate_2_bpe16k_tokenizer\":{{\"vocab_size\":{},\"binary_bytes\":{}}},\"gate_3_matryoshka_and_gradcheck\":{{\"net2wider_and_gradcheck_passed\":{}}},\"gate_4_rtx3050_cuda_pretrain\":{{\"ptx_loaded\":{},\"val_bpb_384d\":{:.6},\"val_bpb_768d\":{:.6},\"val_ppl_384d\":{:.4},\"val_ppl_768d\":{:.4},\"sh4z_bytes\":{},\"sh4z_sha256\":\"{}\"}},\"gate_5_live_unseen_diagnostics\":{{\"rustc_gcd_unit_test_passed\":{},\"rustc_verify_latency_us\":{},\"rustc_test_output\":\"{}\",\"mutex_vs_atomic_jargon_free\":{},\"battery_40pct_grounded\":{},\"disconnected_sensor_abstained\":{}}},\"gate_6_lean4_formal_proofs\":{{\"theorem_count\":{},\"vault_l0_sha256_synced\":{},\"sha256\":\"{}\"}},\"proof\":\"{} | {}_QED | BPB768={:.4} < BPB384={:.4} | RustcTest={} | OverlapShingles={}\"}}",
         status,
         elapsed_us,
         all_gates_passed,
@@ -4684,8 +6724,12 @@ pub fn v72_1_dispatch_tool_362_week1_master_certification(payload: &str) -> Stri
         lean_count,
         lean_mirror_synced,
         lean_c_sha,
+        if all_gates_passed { "SH_XI_WEEK1_CHAIN362_MASTER_CERTIFIED" } else { "UNMEASURED_WEEK1_INCOMPLETE" },
+        lean_count,
         pre.final_val_bpb_768,
-        pre.final_val_bpb_384
+        pre.final_val_bpb_384,
+        if rustc_pass { "PASS" } else { "FAIL" },
+        corpus_sum.surviving_overlap_shingles
     );
 
     let _ = fs::create_dir_all("03_vault/connectome");

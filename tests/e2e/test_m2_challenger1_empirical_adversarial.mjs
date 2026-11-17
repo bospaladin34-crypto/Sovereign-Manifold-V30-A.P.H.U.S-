@@ -37,18 +37,17 @@ console.log('   Focus: Fallbacks, Quota Hard-Cap Denial, Zero-Synthetic & Accoun
 console.log('==========================================================================');
 
 // ------------------------------------------------------------------------------
-// Import Edge Worker and Durable Object directly from 00_control/cloudflare_edge
+// Import Edge Worker and Durable Object strictly from canonical 00_control/cloudflare_edge (B9)
 // ------------------------------------------------------------------------------
 const edgeWorkerPath = path.join(repoRoot, '00_control', 'cloudflare_edge', 'worker_vpc_shadow_v3700.js');
 const rootWorkerPath = path.join(repoRoot, 'worker_vpc_shadow_v3700.js');
 const doModulePath = path.join(repoRoot, '00_control', 'cloudflare_edge', 'worker_continuum_do.js');
 
-assert(fs.existsSync(edgeWorkerPath), 'Edge worker exists at 00_control/cloudflare_edge/worker_vpc_shadow_v3700.js');
-assert(fs.existsSync(rootWorkerPath), 'Root worker exists at worker_vpc_shadow_v3700.js');
+assert(fs.existsSync(edgeWorkerPath), 'Canonical edge worker exists at 00_control/cloudflare_edge/worker_vpc_shadow_v3700.js');
+assert(!fs.existsSync(rootWorkerPath), 'Duplicate root worker_vpc_shadow_v3700.js does not exist (B9)');
 assert(fs.existsSync(doModulePath), 'DO continuum exists at 00_control/cloudflare_edge/worker_continuum_do.js');
 
 const edgeWorkerCode = fs.readFileSync(edgeWorkerPath, 'utf8');
-const rootWorkerCode = fs.readFileSync(rootWorkerPath, 'utf8');
 const doModuleCode = fs.readFileSync(doModulePath, 'utf8');
 
 // Dynamic import of modules
@@ -73,7 +72,6 @@ ${helperFunctionsSlice}
 
 testContext.SimpleLruCache = SimpleLruCache;
 testContext.computeCosineSimilarity = computeCosineSimilarity;
-testContext.generateDeterministic32DPolytonicE8 = generateDeterministic32DPolytonicE8;
 testContext.computeD1CosineSimilarityFallback = computeD1CosineSimilarityFallback;
 testContext.sha256HexWebCrypto = sha256HexWebCrypto;
 `;
@@ -90,7 +88,6 @@ try {
 const {
   computeD1CosineSimilarityFallback,
   computeCosineSimilarity,
-  generateDeterministic32DPolytonicE8,
   sha256HexWebCrypto
 } = testContext;
 
@@ -100,10 +97,9 @@ const {
 // ==============================================================================
 console.log('\n--- [SECTION 1] Static Code & Mirror Parity Invariants ---');
 
-// 1.1 SHA-256 Lockstep between root and 00_control/cloudflare_edge
-const rootHash = crypto.createHash('sha256').update(rootWorkerCode).digest('hex').toUpperCase();
+// 1.1 Single canonical worker SHA-256 verification (B9: duplicate root worker deleted)
 const edgeHash = crypto.createHash('sha256').update(edgeWorkerCode).digest('hex').toUpperCase();
-assert(rootHash === edgeHash, `1.1: Mirror lockstep: root SHA-256 == edge SHA-256 (${rootHash.slice(0, 16)}...)`);
+assert(edgeHash.length === 64 && !fs.existsSync(rootWorkerPath), `1.1: Single canonical worker verified (${edgeHash.slice(0, 16)}..., root duplicate absent)`);
 
 // 1.2 Absolute ban on CANDIDATE_ synthetic generator loop
 const hasSyntheticCandidate = /generateDeterministic32DPolytonicE8\s*\(\s*["'`]CANDIDATE_/i.test(edgeWorkerCode);

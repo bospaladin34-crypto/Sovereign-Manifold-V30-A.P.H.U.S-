@@ -195,8 +195,14 @@ function Invoke-SovereignContinuumHandover {
         }
     }
 
+    $cfHeaders = @{}
+    $opKeyFile = "C:\Users\Nbell\.act_omega_operator_vault_key"
+    if (Test-Path $opKeyFile) {
+        $opKey = (Get-Content $opKeyFile -Raw).Trim()
+        if ($opKey.Length -ge 24) { $cfHeaders["X-Sovereign-Operator-Key"] = $opKey }
+    }
     try {
-        $cfHandover = Invoke-RestMethod -Uri "https://sovereign-loq15-vpc-shadow.bospaladin34.workers.dev/api/v1/continuum/handover?node=host_loq15&host_state=$HandoverMode&temp=$rtxT" -TimeoutSec 5
+        $cfHandover = Invoke-RestMethod -Uri "https://sovereign-loq15-vpc-shadow.bospaladin34.workers.dev/api/v1/continuum/handover?node=host_loq15&host_state=$HandoverMode&temp=$rtxT" -Headers $cfHeaders -TimeoutSec 5
         Write-Host "  [3/3] Armed Cloudflare Edge DO & 10-Table D1 Continuum Relay ($($cfHandover.status))" -ForegroundColor Green
     } catch {
         Write-Host "  [3/3] Local Continuum Handover armed (WAN offline)" -ForegroundColor Yellow
@@ -289,9 +295,9 @@ function Invoke-SovereignSixLayerVerify {
     $failCount = 0
 
     # Layer 1: L0 Rust Zero-Square-Bracket & Live Endpoints
-    $v33to50 = Get-ChildItem "C:\sovereign_manifold_v31\01_l0_rust\src\v*.rs" | Where-Object { $_.Name -match "^v(3[3-9]|[4-9][0-9]|5[0-9]|6[0-9])_" }
+    $v33to99 = Get-ChildItem "C:\sovereign_manifold_v31\01_l0_rust\src\v*.rs" | Where-Object { $_.Name -match "^v(3[3-9]|[4-9][0-9])_" }
     $brackets = 0
-    foreach ($f in $v33to50) {
+    foreach ($f in $v33to99) {
         $b = [System.IO.File]::ReadAllBytes($f.FullName)
         $brackets += ($b | Where-Object { $_ -eq 0x5B -or $_ -eq 0x5D }).Count
     }
@@ -403,8 +409,14 @@ function Invoke-SovereignSixLayerVerify {
         $wanCode = [int]$rWan.StatusCode
     } catch {}
     $contRes = $null
+    $cfHdrs = @{}
+    $opKeyFile = "C:\Users\Nbell\.act_omega_operator_vault_key"
+    if (Test-Path $opKeyFile) {
+        $opKey = (Get-Content $opKeyFile -Raw).Trim()
+        if ($opKey.Length -ge 24) { $cfHdrs["X-Sovereign-Operator-Key"] = $opKey }
+    }
     try {
-        $contRes = Invoke-RestMethod -Uri "https://sovereign-loq15-vpc-shadow.bospaladin34.workers.dev/api/v1/continuum/handover" -TimeoutSec 5
+        $contRes = Invoke-RestMethod -Uri "https://sovereign-loq15-vpc-shadow.bospaladin34.workers.dev/api/v1/continuum/handover" -Headers $cfHdrs -TimeoutSec 5
     } catch {}
     $gscEdgeOk = $false
     try {

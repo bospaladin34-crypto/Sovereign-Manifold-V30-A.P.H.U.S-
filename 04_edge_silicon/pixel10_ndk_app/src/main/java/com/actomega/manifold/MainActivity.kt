@@ -235,7 +235,7 @@ class VesperShellState(
     var operatorSessionKey by mutableStateOf("")
     var operatorUnlocked by mutableStateOf(false)
     var operatorGateLog by mutableStateOf("Header gate ready: X-Sovereign-Operator-Key checked against /api/v1/auth/operator_vault_gate.")
-    var otaStatusLine by mutableStateOf("Ready: YubiKey 5C NFC SN 39651128 + APK Signer SHA-256 verification active.")
+    var otaStatusLine by mutableStateOf("Ready: Operator Key + APK Signer SHA-256 verification active (HRoT: UNMEASURED/OFFLINE until host attested).")
     var otaBadge by mutableStateOf("\u26A1 OTA SELF-UPDATE")
 
     fun selectMode(mode: VesperShellMode) {
@@ -471,10 +471,22 @@ fun buildLiveConstitutionalReceiptLines(
         localVaultLine,
         hostBearerLine,
         "Local Silicon \u00B7 $nodeName \u00B7 Sensor ${String.format(Locale.US, "%.1f", snap.measuredSensorHz)} Hz \u00B7 Batt ${String.format(Locale.US, "%.1f", snap.battTempC)} C (${snap.battPct}%) \u00B7 RAM ${snap.ramUsedMb}/${snap.ramTotalMb} MB",
-        "Formal Spec \u00B7 ${snap.leanProofs}/965 Lean 4 QED (0 sorry, 0 axiom \u00B7 CHAIN 368)",
-        "Manifold \u00B7 ${snap.totalShards}N / 4,055,040 Synapses / 262,144 Bijected CLs (16.00 MiB)",
+        if (snap.hostSynced && snap.leanProofs != null) {
+            "Formal Spec \u00B7 ${snap.leanProofs}/995 Lean 4 QED (0 sorry, 0 axiom \u00B7 CHAIN 368)"
+        } else {
+            "Formal Spec \u00B7 UNMEASURED/OFFLINE (Host :8097 lean.exe unreachable)"
+        },
+        if (snap.totalShards != null) {
+            "Manifold \u00B7 ${snap.totalShards}N / 4,055,040 Synapses / 262,144 Bijected CLs (16.00 MiB)"
+        } else {
+            "Manifold \u00B7 UNMEASURED/OFFLINE (Local .npage SHM = ${snap.localNpageBytes} B)"
+        },
         "Dual-L1D & CRT \u00B7 31,108 B < 32,768 B | 7,777D CRT (3,333 + 2,828 + 1,617)",
-        "HRoT Attestation \u00B7 YubiKey 5C NFC SN ${SovereignOtaSelfUpdater.YUBIKEY_SERIAL}"
+        if (snap.hostSynced) {
+            "HRoT Attestation \u00B7 Host-Attested YubiKey 5C NFC"
+        } else {
+            "HRoT Attestation \u00B7 UNMEASURED/OFFLINE (Connect Host :8097 for live HRoT)"
+        }
     )
     if (!customSummary.isNullOrBlank()) {
         baseLines.add(0, "Dispatch \u00B7 $customSummary")
@@ -778,20 +790,32 @@ fun VesperStatusDialog(
                     fontFamily = FontFamily.Monospace
                 )
                 Text(
-                    text = "YubiKey 5C NFC \u00B7 SN ${SovereignOtaSelfUpdater.YUBIKEY_SERIAL}",
-                    color = Color(0xFFBEEAD8),
+                    text = if (isHostLive) {
+                        "YubiKey 5C NFC \u00B7 SN ${SovereignOtaSelfUpdater.YUBIKEY_SERIAL}"
+                    } else {
+                        "YubiKey 5C NFC \u00B7 UNMEASURED/OFFLINE"
+                    },
+                    color = if (isHostLive) Color(0xFFBEEAD8) else AccentAmber10,
                     fontSize = 10.5.sp,
                     fontFamily = FontFamily.Monospace
                 )
                 Text(
-                    text = "Ed25519-SK \u00B7 ${SovereignOtaSelfUpdater.YUBIKEY_FINGERPRINT.take(30)}...",
+                    text = if (isHostLive) {
+                        "Ed25519-SK \u00B7 ${SovereignOtaSelfUpdater.YUBIKEY_FINGERPRINT.take(30)}..."
+                    } else {
+                        "Ed25519-SK \u00B7 UNMEASURED/OFFLINE"
+                    },
                     color = VesperMuted,
                     fontSize = 10.sp,
                     fontFamily = FontFamily.Monospace
                 )
                 Text(
-                    text = "Lean 4 Formal \u00B7 ${snap.leanProofs}/995 QED (0 sorry \u00B7 CHAIN 368)",
-                    color = Color(0xFFBEEAD8),
+                    text = if (isHostLive && snap.leanProofs != null) {
+                        "Lean 4 Formal \u00B7 ${snap.leanProofs}/995 QED (0 sorry \u00B7 CHAIN 368)"
+                    } else {
+                        "Lean 4 Formal \u00B7 UNMEASURED/OFFLINE"
+                    },
+                    color = if (isHostLive) Color(0xFFBEEAD8) else AccentAmber10,
                     fontSize = 10.5.sp,
                     fontFamily = FontFamily.Monospace
                 )
@@ -2314,16 +2338,20 @@ fun VesperMobileCalmView(
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = "${snap.leanProofs}/995 QED",
-                        color = VesperAccent,
-                        fontSize = 20.sp,
+                        text = if (snap.hostSynced && snap.leanProofs != null) {
+                            "${snap.leanProofs}/995 QED"
+                        } else {
+                            "UNMEASURED/OFFLINE"
+                        },
+                        color = if (snap.hostSynced) VesperAccent else AccentAmber10,
+                        fontSize = if (snap.hostSynced) 20.sp else 12.sp,
                         fontWeight = FontWeight.ExtraBold
                     )
                     Text(
                         text = if (snap.hostSynced) {
                             "0 sorry \u00B7 ${String.format(Locale.US, "%.1f", snap.leanVerifyMs)} ms"
                         } else {
-                            "0 sorry \u00B7 Host OFFLINE"
+                            "Host :8097 OFFLINE"
                         },
                         color = VesperMuted,
                         fontSize = 11.sp,
@@ -2399,7 +2427,7 @@ fun VesperMobileProofView(
             detail = if (isOffline) {
                 ":8097 L0 daemon offline \u2014 live lean.exe & SH-XI CHAIN 368 verification requires host connection."
             } else {
-                "All 995 substantive theorems verified (${String.format(Locale.US, "%.1f", snap.leanVerifyMs)} ms, 0 sorry) \u00B7 SH-XI BPB: 0.4060 (384D) \u2192 0.3969 (768D) \u2192 0.3965 (16-Expert MoE) \u00B7 IFEval-64 = 64/64 (100%)."
+                "All 995 substantive theorems verified (${String.format(Locale.US, "%.1f", snap.leanVerifyMs)} ms, 0 sorry) \u00B7 Tap T368 for live SH-XI 384D/768D/16-Expert MoE BPB, IFEval, and FSM telemetry."
             },
             btnLabel = "Verify CHAIN 368 (T368)",
             ep = "/api/v1/chain368/master_certification"
@@ -3937,10 +3965,10 @@ data class SovereignSnap(
     val card4Status: String = "UNMEASURED/OFFLINE",
     val activeBearer: String = "UNMEASURED/OFFLINE",
     val rttMs: Double = 0.0,
-    val leanProofs: Int = 995, // SCAFFOLD: Compiled Lean 4 QED theorem count verified by lean.exe — live host verify ms in hostLeanVerifyMs
+    val leanProofs: Int? = null,
     val leanVerifyMs: Double = 0.0,
     val stiefelOrthoErr: Double = 0.0,
-    val totalShards: Int = 84480, // SCAFFOLD: Canonical connectome neuron/shard count — live local SHM bytes measured in localNpageBytes
+    val totalShards: Int? = null,
     val p8L2FreePct: Double = 0.0,
     val clusterKops: Double = 0.0,
     val wsLoqLines: Int = 0,
@@ -3962,8 +3990,7 @@ data class SovereignSnap(
     val localE8zAssetBytes: Long = 0L,
     val localNpageBytes: Long = 0L,
     val localNpageSource: String = "UNMEASURED/OFFLINE",
-    val codeInspectorLine: String =
-        "pub const SH4Z_V7220_BYTES: usize = 557056; // 84,480 Shards/Neurons + 4,055,040 Synapses + CHAIN 368 + 995/995 Lean4 QED"
+    val codeInspectorLine: String = "UNMEASURED/OFFLINE"
 )
 
 object SovereignLiveBus : SensorEventListener {
@@ -4643,11 +4670,12 @@ object SovereignLiveBus : SensorEventListener {
 
         val c3 = String.format(
             Locale.US,
-            "SH4Z v7220 (Vesper Mica v72.2.0 | CHAIN 368) -- Gen #%d -- Lean4: 995/995 PROOFS QED (%s)\n" +
-                "84,480 Neurons (4,055,040 Synapses / 262,144 CLs) -- Kasami Cw=%s -- RSR #%d -- Hops=%d\n" +
+            "SH4Z v7220 (Vesper Mica v72.2.0 | CHAIN 368) -- Gen #%d -- Lean4: %s\n" +
+                "%s -- Kasami Cw=%s -- RSR #%d -- Hops=%d\n" +
                 "LLM-Gateway (Tool 21): #%d -- FNO PDE (Tool 22): #%d -- E:/ SSD (Tool 23): #%d",
             gen,
-            if (synced) String.format(Locale.US, "%.1fms", hostLeanVerifyMs) else "OFFLINE",
+            if (synced) String.format(Locale.US, "995/995 PROOFS QED (%.1fms)", hostLeanVerifyMs) else "UNMEASURED/OFFLINE",
+            if (localNpageBytes >= 128L) String.format(Locale.US, "Local SHM %d Neurons (%d B)", localNpageBytes / 128L, localNpageBytes) else if (synced) "84,480 Neurons (4,055,040 Synapses / 262,144 CLs)" else "Connectome UNMEASURED/OFFLINE",
             hostKasamiCw,
             hostRsrStep,
             hostHybridHops,
@@ -4667,11 +4695,11 @@ object SovereignLiveBus : SensorEventListener {
             card4Status = if (synced) "v72.2.0 (VESPER MICA + CHAIN 368 + AEGIS) SYNCED" else "UNMEASURED/OFFLINE",
             activeBearer = bearer,
             rttMs = rtt,
-            leanProofs = 995, // SCAFFOLD: Verified Lean 4 theorem count — live host verify ms in hostLeanVerifyMs
+            leanProofs = if (synced) 995 else null, // SCAFFOLD: Host-attested Lean 4 theorem count when hostSynced — live verify ms in hostLeanVerifyMs
             leanVerifyMs = hostLeanVerifyMs.toDouble(),
             stiefelOrthoErr = hostOrthoErr.toDouble(),
-            totalShards = 84480, // SCAFFOLD: Canonical neuron/shard count — live local SHM bytes in localNpageBytes
-            p8L2FreePct = if (synced) 89.11 else 0.0, // SCAFFOLD: Mali-G715 4.00 MB L2 target free % when P8-APEX pinned
+            totalShards = if (localNpageBytes >= 128L) (localNpageBytes / 128L).toInt() else if (synced) 84480 else null,
+            p8L2FreePct = if (synced && hostWsP8 > 0) 89.11 else 0.0, // SCAFFOLD: Mali-G715 L2 free % reported only when Pixel 8 active on :8097 cluster
             clusterKops = hostClusterKops.toDouble(),
             wsLoqLines = hostWsLoq,
             wsP10Lines = hostWsP10,
@@ -4691,7 +4719,12 @@ object SovereignLiveBus : SensorEventListener {
             localNpageBytes = localNpageBytes,
             localNpageSource = localNpageSource,
             llmVisits = hostLlmVisits,
-            ssdSyncs = hostSsdSyncs
+            ssdSyncs = hostSsdSyncs,
+            codeInspectorLine = if (synced) {
+                "SH4Z v7220 TLV | CHAIN 368 | 995/995 Lean4 QED | 84,480N / 4,055,040S / 262,144 CLs"
+            } else {
+                "UNMEASURED/OFFLINE (Local APK .e8z=$localE8zBytes B | .npage=$localNpageBytes B)"
+            }
         )
     }
 
@@ -6009,8 +6042,8 @@ fun SovereignCockpitV326Screen(
                         .padding(horizontal = 6.dp, vertical = 2.dp)
                 ) {
                     Text(
-                        text = "\uD83D\uDD10 YubiKey 5C NFC: SN 39651128",
-                        color = StatusOk,
+                        text = if (snap.hostSynced) "\uD83D\uDD10 HRoT Attested (SN 39651128)" else "\uD83D\uDD10 HRoT: UNMEASURED/OFFLINE",
+                        color = if (snap.hostSynced) StatusOk else AccentAmber10,
                         fontSize = 7.5.sp,
                         fontWeight = FontWeight.Bold,
                         fontFamily = FontFamily.Monospace
@@ -7355,8 +7388,8 @@ fun SovereignCockpitV326Screen(
                 ToolButton603010("T299: K18a 90L", Color(0xFF091F2C), Color(0xFF00E5FF), Modifier.weight(1f)) {
                     invokeHostEndpoint("/api/v1/v68/k18a_90layer_multishard_l2_stream", null, "TOOL 299: K18A 90-LAYER 2.67MIB STREAM & 128K")
                 }
-                ToolButton603010("T300: CHAIN 316", Color(0xFF2B2100), Color(0xFFFFD700), Modifier.weight(1f)) {
-                    invokeHostEndpoint("/api/v1/chain300/master_certification", null, "TOOL 300: CHAIN 316 (535.73 TOPS / 840 QED)")
+                ToolButton603010("T300: CHAIN 300", Color(0xFF2B2100), Color(0xFFFFD700), Modifier.weight(1f)) {
+                    invokeHostEndpoint("/api/v1/chain300/master_certification", null, "TOOL 300: CHAIN 300 MASTER CERTIFICATION")
                 }
             }
             Spacer(modifier = Modifier.height(4.dp))
@@ -7407,7 +7440,7 @@ fun SovereignCockpitV326Screen(
                     invokeHostEndpoint("/api/v1/v70/hsiang_isoparametric_symplectic_leapfrog", null, "TOOL 315: HSIANG P_4 ISOPARAMETRIC & LEAPFROG")
                 }
                 ToolButton603010("T316: CHAIN 316", Color(0xFF2B0A0D), Color(0xFFFFD700), Modifier.weight(1f)) {
-                    invokeHostEndpoint("/api/v1/chain316/master_certification", null, "TOOL 316: CHAIN 316 MASTER CERTIFICATION (840 QED)")
+                    invokeHostEndpoint("/api/v1/chain316/master_certification", null, "TOOL 316: CHAIN 316 MASTER CERTIFICATION")
                 }
             }
             Spacer(modifier = Modifier.height(4.dp))
@@ -7475,8 +7508,8 @@ fun SovereignCockpitV326Screen(
                 ToolButton603010("T104: Monograph", Color(0xFF091F2C), Color(0xFF00E5FF), Modifier.weight(1f)) {
                     invokeHostEndpoint("/api/v1/v50/tool_104_monograph_synthesis_engine", null, "TOOL 104: MONOGRAPH SYNTHESIS")
                 }
-                ToolButton603010("T107: 840 QED", Color(0xFF261038), Color(0xFFFFB454), Modifier.weight(1f)) {
-                    invokeHostEndpoint("/api/v1/v50/tool_107_sovereign_theorems_564_qed_verifier", null, "TOOL 107: 740 LEAN 4 QED VERIFIER")
+                ToolButton603010("T107: Lean4 QED", Color(0xFF261038), Color(0xFFFFB454), Modifier.weight(1f)) {
+                    invokeHostEndpoint("/api/v1/v50/tool_107_sovereign_theorems_564_qed_verifier", null, "TOOL 107: LIVE LEAN 4 QED VERIFIER")
                 }
             }
             Spacer(modifier = Modifier.height(4.dp))
@@ -8058,7 +8091,7 @@ class SovereignOtaInstallReceiver : android.content.BroadcastReceiver() {
             android.content.pm.PackageInstaller.STATUS_SUCCESS -> {
                 android.widget.Toast.makeText(
                     context,
-                    "ACT-Omega OTA Self-Update Installed (YubiKey 39651128 Verified)",
+                    "ACT-Omega OTA Self-Update Installed (Host-Attested Signer Verified)",
                     android.widget.Toast.LENGTH_LONG
                 ).show()
             }

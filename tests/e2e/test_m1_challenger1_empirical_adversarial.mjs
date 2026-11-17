@@ -38,9 +38,9 @@ console.log('   Target: Item 1 (JWT Verification & Constant-Time Operator Auth) 
 console.log('==========================================================================\n');
 
 // ------------------------------------------------------------------------------
-// Load worker functions from worker_vpc_shadow_v3700.js
+// Load worker functions from canonical 00_control/cloudflare_edge/worker_vpc_shadow_v3700.js
 // ------------------------------------------------------------------------------
-const workerPath = path.join(repoRoot, 'worker_vpc_shadow_v3700.js');
+const workerPath = path.join(repoRoot, '00_control', 'cloudflare_edge', 'worker_vpc_shadow_v3700.js');
 assert(fs.existsSync(workerPath), 'Target worker source file exists at ' + workerPath);
 
 const workerCode = fs.readFileSync(workerPath, 'utf8');

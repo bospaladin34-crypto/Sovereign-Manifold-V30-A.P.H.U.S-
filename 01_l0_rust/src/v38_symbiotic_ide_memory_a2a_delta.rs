@@ -55,7 +55,7 @@ pub struct AtomicDeltaEngineTelemetry {
     pub pipes_count: u32,
     pub quote_parity_even: bool,
     pub gzip_compression_ratio_pct: f64,
-    pub remote_d1_uuid: &'static str,
+    pub remote_d1_database: &'static str,
     pub delta_manifests_applied: u64,
 }
 
@@ -343,7 +343,7 @@ pub fn evaluate_atomic_delta_engine(_gen_counter: u64) -> AtomicDeltaEngineTelem
         pipes_count: pipes,
         quote_parity_even: (quotes % 2) == 0,
         gzip_compression_ratio_pct: compression_ratio_pct,
-        remote_d1_uuid: "9f46d56a-ef3e-4232-a9ac-c4bd12e20a87",
+        remote_d1_database: "act_omega_d1_vault",
         delta_manifests_applied: manifests_count,
     }
 }
@@ -378,8 +378,8 @@ pub fn execute_v38_symbiotic_slash(
     } else if prompt.starts_with("/delta_engine") || prompt.starts_with("/atomic_delta") {
         let de = evaluate_atomic_delta_engine(gen_counter);
         Some(format!(
-            "SLASH INTERRUPT /delta_engine (SH4Z v4420 Tool 54 Atomic Delta Engine): Mode={} | Backticks={} | Pipes={} | Even-Quote Parity={} | Weight Compression=-{:.1}% | Remote 5GB Cloudflare D1 UUID={} | Applied Manifests=#{}",
-            de.engine_mode, de.backticks_count, de.pipes_count, de.quote_parity_even, de.gzip_compression_ratio_pct, de.remote_d1_uuid, de.delta_manifests_applied
+            "SLASH INTERRUPT /delta_engine (SH4Z v4420 Tool 54 Atomic Delta Engine): Mode={} | Backticks={} | Pipes={} | Even-Quote Parity={} | Weight Compression=-{:.1}% | Remote 5GB Cloudflare D1 Vault='{}' | Applied Manifests=#{}",
+            de.engine_mode, de.backticks_count, de.pipes_count, de.quote_parity_even, de.gzip_compression_ratio_pct, de.remote_d1_database, de.delta_manifests_applied
         ))
     } else {
         None

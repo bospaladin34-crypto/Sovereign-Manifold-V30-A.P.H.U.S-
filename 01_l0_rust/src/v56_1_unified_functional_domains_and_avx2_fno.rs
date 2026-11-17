@@ -658,7 +658,7 @@ fn execute_domain_8_autopoietic_bus(method: &str, _body: &str, sub_epoch: u64) -
     let elapsed_us = t0.elapsed().as_micros() as f64;
 
     format!(
-        "{{\"status\":\"{}\",\"domain\":\"autopoietic_bus_vault_d1\",\"domain_id\":8,\"canonical_tool_id\":185,\"tool_id\":185,\"tool_count\":30,\"method\":\"{}\",\"sub_epoch\":{},\"total_codegen_sinks\":9,\"sinks_verified_active\":9,\"e_vault_mounted\":{},\"d1_vault_uuid\":\"9f46d56a-ef3e-4232-a9ac-c4bd12e20a87\",\"duckdb_engine_present\":{},\"duckdb_version\":\"v1.5.6\",\"coordinator_message_bus_ledger_synced\":true,\"writeback_category\":\"tool_outputs\",\"elapsed_us\":{:.2}}}",
+        "{{\"status\":\"{}\",\"domain\":\"autopoietic_bus_vault_d1\",\"domain_id\":8,\"canonical_tool_id\":185,\"tool_id\":185,\"tool_count\":30,\"method\":\"{}\",\"sub_epoch\":{},\"total_codegen_sinks\":9,\"sinks_verified_active\":9,\"e_vault_mounted\":{},\"duckdb_engine_present\":{},\"duckdb_version\":\"v1.5.6\",\"coordinator_message_bus_ledger_synced\":true,\"writeback_category\":\"tool_outputs\",\"elapsed_us\":{:.2}}}",
         status, method, sub_epoch, e_vault_mounted, duckdb_exists, elapsed_us
     )
 }

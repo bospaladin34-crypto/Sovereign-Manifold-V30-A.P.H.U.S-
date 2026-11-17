@@ -35,9 +35,9 @@ console.log('   MILESTONE 2: CHALLENGER 2 EMPIRICAL HARNESS & MATHEMATICAL PROBE
 console.log('==========================================================================');
 
 // ------------------------------------------------------------------------------
-// Load worker functions from worker_vpc_shadow_v3700.js
+// Load worker functions from canonical 00_control/cloudflare_edge/worker_vpc_shadow_v3700.js
 // ------------------------------------------------------------------------------
-const workerPath = path.join(repoRoot, 'worker_vpc_shadow_v3700.js');
+const workerPath = path.join(repoRoot, '00_control', 'cloudflare_edge', 'worker_vpc_shadow_v3700.js');
 assert(fs.existsSync(workerPath), 'Worker source file exists at ' + workerPath);
 
 const workerCode = fs.readFileSync(workerPath, 'utf8');

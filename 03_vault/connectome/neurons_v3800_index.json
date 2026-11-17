@@ -10,5 +10,5 @@
   "swr_sub_epochs_per_epoch": 8,
   "swr_compression_ratio": 20.0,
   "longterm_memory_file": "03_vault/connectome/episodic_longterm_memory_v3800.jsonl",
-  "remote_d1_uuid": "9f46d56a-ef3e-4232-a9ac-c4bd12e20a87"
+  "remote_d1_uuid": "act_omega_d1_vault"
 }

@@ -1,5 +1,5 @@
-// ACT-Omega Net v70.0.0 (SH4Z v7000 TLV | CHAIN 316 | 840/840 Lean 4 QED) Cloudflare Edge Durable Object Continuum
-// Account ID: a37cf8ab07e7c5f886c302be3f098744 | D1 UUID: 9f46d56a-ef3e-4232-a9ac-c4bd12e20a87
+// ACT-Omega Net Cloudflare Edge Durable Object Continuum (Dynamic D1/DO-Backed Telemetry)
+// D1 Vault: act_omega_d1_vault | Dynamic Version/Chain/Proof Metadata (Zero Hardcoded Counts)
 // Module: SovereignEdgeShadowDO — Persistent SQLite Ring Buffer (<= 8 rows), 60s Write Debounce & Quota Governor
 // Zero-Unmeasured Mandate: Strictly no synthetic telemetry constants or unmeasured fallbacks.
 
@@ -51,6 +51,19 @@ export class SovereignEdgeShadowDO {
             key TEXT PRIMARY KEY,
             last_write_ms INTEGER NOT NULL,
             write_count INTEGER NOT NULL DEFAULT 1
+          );`
+        );
+        // Table 3: Synced Cluster Metadata (replaces static version/chain/theorem literals)
+        this.sql.exec(
+          `CREATE TABLE IF NOT EXISTS edge_cluster_metadata (
+            id INTEGER PRIMARY KEY CHECK (id = 1),
+            version_name TEXT,
+            schema_version TEXT,
+            tlv_version INTEGER,
+            chain_milestone TEXT,
+            lean4_qed_count INTEGER,
+            tools_total INTEGER,
+            updated_at_ms INTEGER
           );`
         );
       }
@@ -125,6 +138,21 @@ export class SovereignEdgeShadowDO {
       this.sqlite_err_count = (this.sqlite_err_count || 0) + 1;
     }
 
+    // Hydrate cluster metadata strictly from SQLite (no hardcoded version/chain/theorem fallbacks)
+    this.clusterMeta = null;
+    try {
+      if (this.sql) {
+        const metaRow = this.sql
+          .exec(`SELECT version_name, schema_version, tlv_version, chain_milestone, lean4_qed_count, tools_total, updated_at_ms FROM edge_cluster_metadata WHERE id = 1;`)
+          .toArray();
+        if (metaRow.length > 0) {
+          this.clusterMeta = metaRow[0];
+        }
+      }
+    } catch {
+      this.sqlite_err_count = (this.sqlite_err_count || 0) + 1;
+    }
+
     // Hydrate in-memory quota cache for zero-latency point lookups
     this.quotaCache = new Map();
     try {
@@ -157,11 +185,15 @@ export class SovereignEdgeShadowDO {
         const coreN = Number(lastRow.core_neurons);
         const expN = Number(lastRow.exp_neurons);
         const vocSz = Number(lastRow.vocab_size);
+        const chainLabel = (this.clusterMeta && this.clusterMeta.chain_milestone)
+          ? `${this.clusterMeta.chain_milestone}_DO_ALARM`
+          : "UNSYNCED_DO_ALARM";
         const digest = await sha256HexWebCrypto(`ALARM:${atpVal}:${coreN}:${expN}:${vocSz}:${now}`);
         try {
           if (this.sql) {
             this.sql.exec(
-              `INSERT INTO edge_heartbeat (chain, atp, core_neurons, exp_neurons, vocab_size, payload_sha256, ts) VALUES ('CHAIN_316_DO_ALARM', ?, ?, ?, ?, ?, ?);`,
+              `INSERT INTO edge_heartbeat (chain, atp, core_neurons, exp_neurons, vocab_size, payload_sha256, ts) VALUES (?, ?, ?, ?, ?, ?, ?);`,
+              chainLabel,
               atpVal,
               coreN,
               expN,
@@ -480,13 +512,17 @@ export class SovereignEdgeShadowDO {
 
       // Serve continuum nodes strictly from memory cache (zero SQLite full-table scans)
       const rows = Array.from(this.nodeStateCache.values()).sort((a, b) => a.node_id.localeCompare(b.node_id));
+      const cm = this.clusterMeta;
+      const leanQedVal = (cm && cm.lean4_qed_count != null) ? `${cm.lean4_qed_count}/${cm.lean4_qed_count}` : "UNMEASURED/UNSYNCED";
 
       return Response.json({
         status: "SHM_CONTINUUM_RELAY_SYNCED",
-        schema: "SH4Z_v7000_TLV",
-        tlv_version: 7000,
-        lean4_theorems_qed: "840/840",
-        tools_total: 316,
+        version: (cm && cm.version_name) ? cm.version_name : "UNMEASURED/UNSYNCED",
+        schema: (cm && cm.schema_version) ? cm.schema_version : "UNMEASURED/UNSYNCED",
+        tlv_version: (cm && cm.tlv_version != null) ? Number(cm.tlv_version) : null,
+        chain: (cm && cm.chain_milestone) ? cm.chain_milestone : "UNMEASURED/UNSYNCED",
+        lean4_theorems_qed: leanQedVal,
+        tools_total: (cm && cm.tools_total != null) ? Number(cm.tools_total) : null,
         updated_node: nodeId,
         heartbeats_stored: this.cachedHeartbeatCounter,
         sqlite_err_count: this.sqlite_err_count || 0,
@@ -499,17 +535,48 @@ export class SovereignEdgeShadowDO {
 
     if (url.pathname === "/shadow/sync") {
       const lastRow = this.cachedLatestHeartbeat;
-      const atpParam = parseOptionalNumber(url.searchParams.get("atp")) ?? (lastRow ? Number(lastRow.atp) : null);
-      const coreParam = parseOptionalNumber(url.searchParams.get("core_neurons")) ?? (lastRow ? Number(lastRow.core_neurons) : 21120);
-      const expParam = parseOptionalNumber(url.searchParams.get("exp_neurons")) ?? (lastRow ? Number(lastRow.exp_neurons) : 21120);
-      const vocabParam = parseOptionalNumber(url.searchParams.get("vocab_size")) ?? (lastRow ? Number(lastRow.vocab_size) : 262144);
-      const digest = await sha256HexWebCrypto(`SYNC:${atpParam}:${coreParam}:${expParam}:${vocabParam}:${now}`);
+      const atpParam = parseOptionalNumber(url.searchParams.get("atp")) ?? (lastRow ? parseOptionalNumber(lastRow.atp) : null);
+      const coreParam = parseOptionalNumber(url.searchParams.get("core_neurons")) ?? (lastRow ? parseOptionalNumber(lastRow.core_neurons) : null);
+      const expParam = parseOptionalNumber(url.searchParams.get("exp_neurons")) ?? (lastRow ? parseOptionalNumber(lastRow.exp_neurons) : null);
+      const vocabParam = parseOptionalNumber(url.searchParams.get("vocab_size")) ?? (lastRow ? parseOptionalNumber(lastRow.vocab_size) : null);
+
+      const verParam = url.searchParams.get("version") || (this.clusterMeta ? this.clusterMeta.version_name : null);
+      const schemaParam = url.searchParams.get("schema") || (this.clusterMeta ? this.clusterMeta.schema_version : null);
+      const tlvParam = parseOptionalNumber(url.searchParams.get("tlv_version")) ?? (this.clusterMeta ? parseOptionalNumber(this.clusterMeta.tlv_version) : null);
+      const chainParam = url.searchParams.get("chain") || (this.clusterMeta ? this.clusterMeta.chain_milestone : null);
+      const leanParam = parseOptionalNumber(url.searchParams.get("lean_qed")) ?? (this.clusterMeta ? parseOptionalNumber(this.clusterMeta.lean4_qed_count) : null);
+      const toolsParam = parseOptionalNumber(url.searchParams.get("tools_total")) ?? (this.clusterMeta ? parseOptionalNumber(this.clusterMeta.tools_total) : null);
+
+      if (verParam || schemaParam || tlvParam !== null || chainParam || leanParam !== null || toolsParam !== null) {
+        this.clusterMeta = {
+          version_name: verParam,
+          schema_version: schemaParam,
+          tlv_version: tlvParam,
+          chain_milestone: chainParam,
+          lean4_qed_count: leanParam,
+          tools_total: toolsParam,
+          updated_at_ms: now
+        };
+        try {
+          if (this.sql) {
+            this.sql.exec(
+              `INSERT OR REPLACE INTO edge_cluster_metadata (id, version_name, schema_version, tlv_version, chain_milestone, lean4_qed_count, tools_total, updated_at_ms) VALUES (1, ?, ?, ?, ?, ?, ?, ?);`,
+              verParam, schemaParam, tlvParam, chainParam, leanParam, toolsParam, now
+            );
+          }
+        } catch {
+          this.sqlite_err_count = (this.sqlite_err_count || 0) + 1;
+        }
+      }
+
+      const digest = await sha256HexWebCrypto(`SYNC:${atpParam}:${coreParam}:${expParam}:${vocabParam}:${chainParam}:${leanParam}:${now}`);
 
       if (atpParam !== null && coreParam !== null && expParam !== null && vocabParam !== null) {
         try {
           if (this.sql) {
             this.sql.exec(
-              `INSERT INTO edge_heartbeat (chain, atp, core_neurons, exp_neurons, vocab_size, payload_sha256, ts) VALUES ('CHAIN_316', ?, ?, ?, ?, ?, ?);`,
+              `INSERT INTO edge_heartbeat (chain, atp, core_neurons, exp_neurons, vocab_size, payload_sha256, ts) VALUES (?, ?, ?, ?, ?, ?, ?);`,
+              chainParam || "UNSYNCED",
               atpParam,
               coreParam,
               expParam,
@@ -542,21 +609,22 @@ export class SovereignEdgeShadowDO {
       }
 
       const shmRows = Array.from(this.nodeStateCache.values()).sort((a, b) => a.node_id.localeCompare(b.node_id));
-      const combinedNeurons = (coreParam ?? 0) + (expParam ?? 0);
+      const combinedNeurons = (coreParam !== null && expParam !== null) ? (coreParam + expParam) : null;
       return Response.json({
-        status: "EDGE_SHADOW_AND_ALARM_SYNCED",
-        schema: "SH4Z_v7000_TLV",
-        tlv_version: 7000,
-        chain: "CHAIN_316",
-        lean4_theorems_qed: "840/840",
-        tools_total: 316,
+        status: (atpParam !== null || this.clusterMeta !== null) ? "EDGE_SHADOW_AND_ALARM_SYNCED" : "UNMEASURED/UNSYNCED",
+        version: verParam || "UNMEASURED/UNSYNCED",
+        schema: schemaParam || "UNMEASURED/UNSYNCED",
+        tlv_version: tlvParam,
+        chain: chainParam || "UNMEASURED/UNSYNCED",
+        lean4_theorems_qed: leanParam !== null ? `${leanParam}/${leanParam}` : "UNMEASURED/UNSYNCED",
+        tools_total: toolsParam,
         durable_object: "SovereignEdgeShadowDO_SQLite",
         vocab_size: vocabParam,
         core_neurons: coreParam,
         expansion_neurons: expParam,
-        combined_neurons: combinedNeurons > 0 ? combinedNeurons : null,
-        chair44_columns_total: combinedNeurons > 0 ? Math.floor(combinedNeurons / 44) : null,
-        synapses_total: combinedNeurons > 0 ? combinedNeurons * 16 : null,
+        combined_neurons: combinedNeurons,
+        chair44_columns_total: combinedNeurons !== null ? Math.floor(combinedNeurons / 44) : null,
+        synapses_total: combinedNeurons !== null ? combinedNeurons * 48 : null,
         measured_atp: atpParam,
         payload_sha256: digest,
         heartbeats_stored: this.cachedHeartbeatCounter,
@@ -628,12 +696,15 @@ export class SovereignEdgeShadowDO {
 
     // /shadow/status or root default path: served strictly from in-memory cache without SQLite storage operations
     const shmRows = Array.from(this.nodeStateCache.values()).sort((a, b) => a.node_id.localeCompare(b.node_id));
+    const cm = this.clusterMeta;
     return Response.json({
-      status: "READY",
-      schema: "SH4Z_v7000_TLV",
-      tlv_version: 7000,
-      lean4_theorems_qed: "840/840",
-      tools_total: 316,
+      status: cm ? "READY" : "UNMEASURED/UNSYNCED",
+      version: (cm && cm.version_name) ? cm.version_name : "UNMEASURED/UNSYNCED",
+      schema: (cm && cm.schema_version) ? cm.schema_version : "UNMEASURED/UNSYNCED",
+      tlv_version: (cm && cm.tlv_version != null) ? Number(cm.tlv_version) : null,
+      chain: (cm && cm.chain_milestone) ? cm.chain_milestone : "UNMEASURED/UNSYNCED",
+      lean4_theorems_qed: (cm && cm.lean4_qed_count != null) ? `${cm.lean4_qed_count}/${cm.lean4_qed_count}` : "UNMEASURED/UNSYNCED",
+      tools_total: (cm && cm.tools_total != null) ? Number(cm.tools_total) : null,
       latest_heartbeat: this.cachedLatestHeartbeat,
       sqlite_err_count: this.sqlite_err_count || 0,
       continuum_nodes: shmRows,

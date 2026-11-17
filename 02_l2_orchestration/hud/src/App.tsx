@@ -3912,10 +3912,10 @@ export function VesperProofView({
     },
     {
       title: "SH-XI Weeks 1-2 Empirical Gates (3-Shell Matryoshka + 16/256 MoE)",
-      status: isOffline ? "UNMEASURED/OFFLINE" : "BPB 0.3965 · 64/64",
+      status: isOffline ? "UNMEASURED/OFFLINE" : "LIVE VIA T368",
       detail: isOffline
         ? ":8097 L0 daemon offline — SH-XI 3-shell Matryoshka + Sparse MoE certification awaiting live local probe."
-        : "384D Mobile + 768D Host + 16/256 Disk-Backed MoE: Holdout BPB 0.4060 → 0.3969 → 0.3965, PromptGradNorm = 0.0, IFEval-Lite 64/64, MultiTurn 8/8, JSON FSM 100/100.",
+        : "384D Mobile + 768D Host + 16/256 Disk-Backed MoE · PromptGradNorm = 0.0 · Run T368 (CHAIN 368) for live measured BPB, IFEval-Lite, MultiTurn & JSON FSM scores.",
       btnLabel: "Verify CHAIN 368 (T368)",
       ep: "/api/v1/chain368/master_certification"
     },
@@ -8931,7 +8931,7 @@ export function App() {
                 SOVEREIGN MANIFOLD TELEMETRY CONSOLE — ACT-OMEGA NET v72.2.0 (SH4Z v7220 TLV | SH-XI 3-Shell + 16/256 MoE | 84,480 Neurons / 4,055,040 Synapses | 262,144 CLs | 524,288 BPE | CHAIN 368 | 995/995 Lean 4 QED | 4.235 POPS)
               </div>
               <div style={{ color: "#9AA0A6", fontSize: 10, fontFamily: "'JetBrains Mono', Consolas, monospace" }}>
-                SH-XI v72.2.0 + SH-Deep-12L Active: 384D Mobile / 768D Host / 16-of-256 Sparse MoE (BPB 0.3965) • ChatML Masked SFT • 384D WGSL RAG • JSON FSM • 262,144 (2^18) Bijected CLs (16.00 MiB) • Vesper Mica CLS 0.00
+                SH-XI v72.2.0 + SH-Deep-12L Active: 384D Mobile / 768D Host / 16-of-256 Sparse MoE • ChatML Masked SFT • 384D WGSL RAG • JSON FSM • 262,144 (2^18) Bijected CLs (16.00 MiB) • Vesper Mica CLS 0.00
               </div>
             </div>
           </div>
@@ -11600,7 +11600,7 @@ export function App() {
                   [v72.2.0 SOVEREIGN HARMONIC XI (SH-XI) WEEKS 1 &amp; 2 — 3-SHELL MATRYOSHKA (384D/768D) + 16/256 SPARSE MOE + CHATML SFT + WGSL RAG (TOOLS 357..368 | 995/995 QED)]:
                 </span>
                 <span style={{ color: "#FFB454", fontSize: 9.5, fontWeight: "bold" }}>
-                  BPB 0.4060 → 0.3969 → 0.3965 | PromptGradNorm = 0.0 | IFEval-Lite 64/64 | MultiTurn 8/8 | JSON FSM 100/100
+                  PromptGradNorm = 0.0 | Run T368 (CHAIN 368) for Live BPB / IFEval / FSM Metrics
                 </span>
               </div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
@@ -11858,7 +11858,7 @@ export function App() {
             <div style={{ background: "#0A0D12", border: "1px solid #2A3B4D", borderRadius: 4, padding: 6, marginBottom: 6, fontSize: 10.5 }}>
               <div style={{ color: "#FFFEFB" }}>&gt; PROMPT: {cmdPrompt}</div>
               <div style={{ color: "#FFB454", marginTop: 2 }}>
-                [SH4Z v7220 (16.00 MiB Bijected / 15.965 Hz Decadic Epoch HUD)]: Work-Stealing={tel.ws_loq_lines}+{tel.ws_p10_lines}+{tel.ws_p8_lines}=2,080 Lines ({tel.cluster_total_kops.toFixed(1)}k ops/s) -- 995/995 Lean 4 QED -- 84,480 Neurons (1,920x Chair44, 4,055,040 Synapses, 262,144 CLs) -- SH-XI 3-Shell + 16/256 MoE (BPB 0.3965) -- OmegaLang v16 (535.73 TOPS / 4.235 POPS) -- Tools 1..368 (CHAIN 368 Suite) -- PPL={e8LeechState.holdout_ppl.toFixed(6)}
+                [SH4Z v7220 (16.00 MiB Bijected / 15.965 Hz Decadic Epoch HUD)]: Work-Stealing={tel.ws_loq_lines}+{tel.ws_p10_lines}+{tel.ws_p8_lines}=2,080 Lines ({tel.cluster_total_kops.toFixed(1)}k ops/s) -- 995/995 Lean 4 QED -- 84,480 Neurons (1,920x Chair44, 4,055,040 Synapses, 262,144 CLs) -- SH-XI 3-Shell + 16/256 MoE -- OmegaLang v16 (535.73 TOPS / 4.235 POPS) -- Tools 1..368 (CHAIN 368 Suite) -- PPL={e8LeechState.holdout_ppl.toFixed(6)}
               </div>
               <div style={{ color: "#56D364", marginTop: 2 }}>&gt; OUTPUT: {termOut}</div>
             </div>

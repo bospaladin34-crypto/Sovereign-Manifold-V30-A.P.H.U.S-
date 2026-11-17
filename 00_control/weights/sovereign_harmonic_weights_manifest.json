@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "architect": "Donevin Frownfelter (@bospaladin34-crypto)",
+  "artifacts": {
+    "deep12l_weights": {
+      "expected_bytes": 110720,
+      "filename": "sovereign_harmonic_deep12l_weights.sh4z",
+      "magic": "0x53483132",
+      "relative_path": "00_control/weights/sovereign_harmonic_deep12l_weights.sh4z",
+      "sha256": "dfb60a527bcac96bd07c5d5bbb25e40afbd0107e23db97752f03d98b0a696832",
+      "version": 7110
+    },
+    "e8z_lattice": {
+      "expected_bytes": 557056,
+      "filename": "sovereign_harmonic_viii_v6900_8704cl.e8z",
+      "magic": "0x00000000",
+      "relative_path": "00_control/weights/sovereign_harmonic_viii_v6900_8704cl.e8z",
+      "sha256": "087a1bc61f4a850f2ab4a39726229296b8bf33665e28bde5e1f82c3a33f5430a",
+      "version": 6900
+    },
+    "npage_neurons": {
+      "expected_bytes": 10813440,
+      "filename": "neurons_v6900_84480.npage",
+      "magic": "0x00000000",
+      "relative_path": "00_control/weights/neurons_v6900_84480.npage",
+      "sha256": "1be33a601cf6ebfd778c08fc110d395ebcdaabde81fd71aa559a99fbf5c85e8e",
+      "version": 6900
+    },
+    "sh_ix_base": {
+      "expected_bytes": 330246,
+      "filename": "sovereign_harmonic_ix_weights.sh4z",
+      "magic": "0x5348345A",
+      "relative_path": "00_control/weights/sovereign_harmonic_ix_weights.sh4z",
+      "sha256": "53537033fd4eeffeddb265abd2b8ced169861f768710ae90d6507b71517e8f3a",
+      "version": 7100
+    },
+    "sh_week2_ast_bpe_16k_codebook": {
+      "expected_bytes": 1048608,
+      "filename": "sovereign_harmonic_week2_16384_codebook.sh4z",
+      "magic": "0x5348324B",
+      "relative_path": "00_control/weights/sovereign_harmonic_week2_16384_codebook.sh4z",
+      "sha256": "c115b746846609a4502c672532e655b412abfeefbfcd53aa994b6d90246dddf7",
+      "version": 7120
+    },
+    "sh_xi_bpe16k": {
+      "expected_bytes": 156792,
+      "filename": "sovereign_harmonic_xi_bpe16k.bin",
+      "magic": "0x00000000",
+      "relative_path": "00_control/weights/sovereign_harmonic_xi_bpe16k.bin",
+      "sha256": "101d3da7327db4cf49ba9312cbe4f182d8baed75e46fe92401980d19dd72b3f1",
+      "version": 7210
+    },
+    "sh_xi_moe_experts": {
+      "expected_bytes": 869328,
+      "filename": "sh_xi_moe_experts.sh4z",
+      "magic": "0x45583732",
+      "relative_path": "00_control/weights/sh_xi_moe_experts.sh4z",
+      "sha256": "7684d3aad2acf018f96dbd8a27c5f7182c6014d7f5c74e0c2471a16eceef390f",
+      "version": 7220
+    },
+    "sh_xi_moe_experts_dir": {
+      "expected_bytes": 16384,
+      "filename": "sh_xi_moe_experts_dir.sh4z",
+      "magic": "0x45583732",
+      "relative_path": "00_control/weights/sh_xi_moe_experts_dir.sh4z",
+      "sha256": "4d0ee482cd37cb8dbc3b61d1b81ade2c337ba088e4750b08080b02a722025625",
+      "version": 7220
+    },
+    "sh_xi_rw384_768_base": {
+      "expected_bytes": 2164864,
+      "filename": "sovereign_harmonic_xi_rw384_768_base.sh4z",
+      "magic": "0x53485849",
+      "relative_path": "00_control/weights/sovereign_harmonic_xi_rw384_768_base.sh4z",
+      "sha256": "ed1f9c5e29dd66fc1b6624635379ca48fd7ee207726947bc9f23f8271e6fa424",
+      "version": 7210
+    },
+    "sovereign_harmonic_deep12l_weights": {
+      "expected_bytes": 110720,
+      "filename": "sovereign_harmonic_deep12l_weights.sh4z",
+      "magic": "0x53483132",
+      "relative_path": "00_control/weights/sovereign_harmonic_deep12l_weights.sh4z",
+      "sha256": "dfb60a527bcac96bd07c5d5bbb25e40afbd0107e23db97752f03d98b0a696832",
+      "version": 7110
+    },
+    "sovereign_harmonic_ix_weights": {
+      "expected_bytes": 330246,
+      "filename": "sovereign_harmonic_ix_weights.sh4z",
+      "magic": "0x5348345A",
+      "relative_path": "00_control/weights/sovereign_harmonic_ix_weights.sh4z",
+      "sha256": "53537033fd4eeffeddb265abd2b8ced169861f768710ae90d6507b71517e8f3a",
+      "version": 7100
+    },
+    "spage_synapses": {
+      "expected_bytes": 5406720,
+      "filename": "synapses_v6900_2703360.spage",
+      "magic": "0x00000000",
+      "relative_path": "00_control/weights/synapses_v6900_2703360.spage",
+      "sha256": "f9b737f11fb701747dc4ea0748a6ab631e849989dd53bfb38ecd75bbde0f1da0",
+      "version": 6900
+    },
+    "week2_codebook": {
+      "expected_bytes": 1048608,
+      "filename": "sovereign_harmonic_week2_16384_codebook.sh4z",
+      "magic": "0x5348324B",
+      "relative_path": "00_control/weights/sovereign_harmonic_week2_16384_codebook.sh4z",
+      "sha256": "c115b746846609a4502c672532e655b412abfeefbfcd53aa994b6d90246dddf7",
+      "version": 7120
+    },
+    "week3_contrastive": {
+      "expected_bytes": 65568,
+      "filename": "sovereign_harmonic_week3_contrastive_weights.sh4z",
+      "magic": "0x53483344",
+      "relative_path": "00_control/weights/sovereign_harmonic_week3_contrastive_weights.sh4z",
+      "sha256": "c4f9cc3a8730453e601eaf1b59406cc24b52fd184c620568f0e6ffe5bf10203d",
+      "version": 7130
+    },
+    "week4_rlvf_sae": {
+      "expected_bytes": 32784,
+      "filename": "sovereign_harmonic_x_rlvf_sae_weights.sh4z",
+      "magic": "0x53485834",
+      "relative_path": "00_control/weights/sovereign_harmonic_x_rlvf_sae_weights.sh4z",
+      "sha256": "576ae45985009729952501ee9da2798562a39cf5d5a9aeb87a78420628c18cf7",
+      "version": 7140
+    }
+  },
+  "doi_osf": "10.17605/OSF.IO/2XQ5Z",
+  "doi_zenodo": "10.5281/zenodo.23651696",
+  "generated_at_utc": "2026-11-14T15:50:00Z",
+  "title": "SovereignHarmonicWeightsManifest",
+  "version": "v72.2.0",
+  "zero_unmeasured_mandate": "ENFORCED"
+}

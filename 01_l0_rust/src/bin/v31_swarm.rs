@@ -4530,6 +4530,41 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             continue;
         }
 
+        if clean_path == "/api/v1/gemma4/chat"
+            || clean_path == "/api/v1/gemma4/studio"
+            || clean_path == "/api/v1/tools/t303"
+        {
+            let has_query_key = !extract_query_param(raw_target, "key").is_empty();
+            let is_lan = stream
+                .peer_addr()
+                .map(|a| {
+                    let s = a.ip().to_string();
+                    s.starts_with("192.168.137.") || s.starts_with("192.168.") || s.starts_with("10.") || s.starts_with("172.16.")
+                })
+                .unwrap_or(false);
+            let is_loopback_or_lan = is_loopback || is_lan;
+            let auth_ok = !has_query_key && verify_operator_header_auth(&operator_header_key, is_loopback_or_lan);
+            if !auth_ok {
+                let reason = if !is_loopback_or_lan {
+                    "Gemma 4 Chat endpoint is restricted to 127.0.0.1 loopback or LAN peers."
+                } else if has_query_key {
+                    "Passing credentials via URL query parameter '?key=' is forbidden. Use 'X-Sovereign-Operator-Key' request header."
+                } else {
+                    "Invalid or missing 'X-Sovereign-Operator-Key' request header."
+                };
+                let trap_json = format!(
+                    "{{\"status\":\"HTTP_403_OPERATOR_AUTH_REQUIRED\",\"endpoint\":\"{}\",\"is_loopback\":{},\"operator_vault_verified\":false,\"reason\":\"{}\"}}",
+                    clean_path, is_loopback, reason
+                );
+                write_http_str(&mut stream, "403 Forbidden", "application/json; charset=utf-8", &trap_json);
+                continue;
+            }
+            let req_payload = if !post_body.trim().is_empty() { &post_body } else if !q_arg.is_empty() { &q_arg } else { raw_target };
+            let json = v68_5_dispatch_tool_303_gemma4_conversational_studio(req_payload);
+            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
+            continue;
+        }
+
         if clean_path == "/api/v1/shm/p8_npage_bridge" || clean_path == "/api/v1/tools/t77" {
             let mut st = match state.lock() {
                 Ok(g) => g,
@@ -4799,14 +4834,14 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.gen_counter += 1;
             let de = evaluate_atomic_delta_engine(st.gen_counter);
             let diag = format!(
-                "TOOL 54 ZERO-BACKTICK ATOMIC DELTA ENGINE: Mode={} | Backticks={} | Pipes={} | Even-Quote Parity={} | GZip Script Compression=-{:.1}% (922KB -> 116KB) | Remote 5GB Cloudflare D1 UUID={} | Applied Manifests=#{}",
-                de.engine_mode, de.backticks_count, de.pipes_count, de.quote_parity_even, de.gzip_compression_ratio_pct, de.remote_d1_uuid, de.delta_manifests_applied
+                "TOOL 54 ZERO-BACKTICK ATOMIC DELTA ENGINE: Mode={} | Backticks={} | Pipes={} | Even-Quote Parity={} | GZip Script Compression=-{:.1}% (922KB -> 116KB) | Remote 5GB Cloudflare D1 Vault='{}' | Applied Manifests=#{}",
+                de.engine_mode, de.backticks_count, de.pipes_count, de.quote_parity_even, de.gzip_compression_ratio_pct, de.remote_d1_database, de.delta_manifests_applied
             );
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"status\":\"ATOMIC_DELTA_ENGINE_VERIFIED\",\"version\":\"v44.0.0\",\"tool_index\":54,\"tool_name\":\"tool:atomic_delta_zero_backtick_engine\",\"engine_mode\":\"{}\",\"backticks_count\":0,\"pipes_count\":0,\"quote_parity_even\":true,\"gzip_compression_ratio_pct\":{:.1},\"remote_d1_uuid\":\"{}\",\"delta_manifests_applied\":{},\"diag\":\"{}\"}}",
-                de.engine_mode, de.gzip_compression_ratio_pct, de.remote_d1_uuid, de.delta_manifests_applied, json_escape_clean(&diag)
+                "{{\"status\":\"ATOMIC_DELTA_ENGINE_VERIFIED\",\"version\":\"v44.0.0\",\"tool_index\":54,\"tool_name\":\"tool:atomic_delta_zero_backtick_engine\",\"engine_mode\":\"{}\",\"backticks_count\":0,\"pipes_count\":0,\"quote_parity_even\":true,\"gzip_compression_ratio_pct\":{:.1},\"remote_d1_database\":\"{}\",\"delta_manifests_applied\":{},\"diag\":\"{}\"}}",
+                de.engine_mode, de.gzip_compression_ratio_pct, de.remote_d1_database, de.delta_manifests_applied, json_escape_clean(&diag)
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
             continue;
@@ -5076,6 +5111,31 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 }
             };
             if rpc_method == "tools/call" || rpc_method == "call" {
+                let has_query_key = !extract_query_param(raw_target, "key").is_empty();
+                let is_lan = stream
+                    .peer_addr()
+                    .map(|a| {
+                        let s = a.ip().to_string();
+                        s.starts_with("192.168.137.") || s.starts_with("192.168.") || s.starts_with("10.") || s.starts_with("172.16.")
+                    })
+                    .unwrap_or(false);
+                let is_loopback_or_lan = is_loopback || is_lan;
+                let auth_ok = !has_query_key && verify_operator_header_auth(&operator_header_key, is_loopback_or_lan);
+                if !auth_ok {
+                    let reason = if !is_loopback_or_lan {
+                        "MCP tools/call is restricted to 127.0.0.1 loopback or LAN peers."
+                    } else if has_query_key {
+                        "Passing credentials via URL query parameter '?key=' is forbidden. Use 'X-Sovereign-Operator-Key' request header."
+                    } else {
+                        "Invalid or missing 'X-Sovereign-Operator-Key' request header."
+                    };
+                    let trap_json = format!(
+                        "{{\"jsonrpc\":\"2.0\",\"id\":{},\"error\":{{\"code\":-32001,\"message\":\"OPERATOR_AUTH_REQUIRED: {}\"}}}}",
+                        id_raw, reason
+                    );
+                    write_http_str(&mut stream, "403 Forbidden", "application/json; charset=utf-8", &trap_json);
+                    continue;
+                }
                 let tool_called = {
                     let t_q = extract_query_param(raw_target, "tool");
                     if !t_q.is_empty() {
@@ -5222,7 +5282,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                     } else if tool_called == "nv_uefi_unlocker_ga107_audit" {
                         (v69_5_dispatch_tool_328_nv_uefi_unlocker_ga107_audit(req_body_str), 328u64, "tool_outputs")
                     } else {
-                        (format!("{{\"status\":\"MEASURED_CLOUDFLARE_D1_SHADOW_OK\",\"vault_uuid\":\"9f46d56a-ef3e-4232-a9ac-c4bd12e20a87\",\"tables_count\":10,\"sub_epoch\":{}}}", sub_ep), 55u64, "tool_outputs")
+                        (format!("{{\"status\":\"MEASURED_CLOUDFLARE_D1_SHADOW_OK\",\"d1_database\":\"act_omega_d1_vault\",\"tables_count\":10,\"sub_epoch\":{}}}", sub_ep), 55u64, "tool_outputs")
                     };
                     let bus_json = execute_universal_tool_bus_and_writeback(tid, clean_path, cat, &raw_out, sub_ep);
                     let json = format!(
@@ -5304,26 +5364,38 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 raw_target
             };
             if v72_1_extract_bool_param(req_payload_chat, "stream", false) {
-                let sse_body = v72_2_build_sse_chat_completion_stream(req_payload_chat);
-                let sub_epoch = {
-                    let mut st = match state.lock() {
-                        Ok(g) => g,
-                        Err(p) => p.into_inner(),
-                    };
-                    st.gen_counter += 1;
-                    st.decadic_sub_epoch
-                };
-                let _ = publish_coordinator_bus_envelope(
-                    "TOPIC_OPENAI_SSE_STREAM",
-                    clean_path,
-                    "Sovereign_Harmonic_XI_3Shell_MoE",
-                    "stream=true",
-                    E_BUS_LEDGER_JSONL,
-                    sse_body.len() as u64,
-                    sub_epoch,
-                );
-                REQ_CACHE_CONTROL.with(|c| c.set("no-cache"));
-                write_http_str(&mut stream, "200 OK", "text/event-stream; charset=utf-8", &sse_body);
+                match v72_2_build_sse_chat_completion_stream(req_payload_chat) {
+                    Ok(sse_body) => {
+                        let sub_epoch = {
+                            let mut st = match state.lock() {
+                                Ok(g) => g,
+                                Err(p) => p.into_inner(),
+                            };
+                            st.gen_counter += 1;
+                            st.decadic_sub_epoch
+                        };
+                        let _ = publish_coordinator_bus_envelope(
+                            "TOPIC_OPENAI_SSE_STREAM",
+                            clean_path,
+                            "Sovereign_Harmonic_XI_3Shell_MoE",
+                            "stream=true",
+                            E_BUS_LEDGER_JSONL,
+                            sse_body.len() as u64,
+                            sub_epoch,
+                        );
+                        REQ_CACHE_CONTROL.with(|c| c.set("no-cache"));
+                        write_http_str(&mut stream, "200 OK", "text/event-stream; charset=utf-8", &sse_body);
+                    }
+                    Err(_) => {
+                        REQ_CACHE_CONTROL.with(|c| c.set("no-store"));
+                        write_http_str(
+                            &mut stream,
+                            "503 Service Unavailable",
+                            "application/json; charset=utf-8",
+                            "{\"status\":\"GENERATION_UNAVAILABLE_WEIGHTS_NOT_LOADED\",\"error\":{\"code\":\"GENERATION_UNAVAILABLE_WEIGHTS_NOT_LOADED\",\"message\":\"Model weights missing or SHA-256 mismatch.\"}}",
+                        );
+                    }
+                }
                 continue;
             }
             let mut st = match state.lock() {
@@ -5335,7 +5407,10 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             let o = evaluate_openai_compat_surface(st.gen_counter);
             let parsed_msgs = v72_2_parse_openai_messages_array(&post_body);
             let session_opt = v72_1_sh_xi_matryoshka_384_768_cuda_pretrainer::v72_1_extract_str_param(&post_body, "session_id");
-            let mode_opt = v72_1_sh_xi_matryoshka_384_768_cuda_pretrainer::v72_1_extract_str_param(&post_body, "mode");
+            let mut mode_opt = v72_1_sh_xi_matryoshka_384_768_cuda_pretrainer::v72_1_extract_str_param(&post_body, "mode");
+            if mode_opt.is_none() && post_body.contains("json_object") {
+                mode_opt = Some(String::from("json"));
+            }
             let reset_sess = v72_1_extract_bool_param(&post_body, "reset_session", false);
             let user_prompt = if let Some(last_m) = parsed_msgs.last() {
                 last_m.content.clone()
@@ -5368,18 +5443,40 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             );
             let (_, aegis_col, aegis_neuron, aegis_cw24, _, _) =
                 v57_aegis_autonomous_agent_harness::v57_encode_bpe_and_leech24_modalities(&user_prompt);
-            let sh_xi = v72_2_converse_execute_full(
+            let max_tokens_opt = v72_1_sh_xi_matryoshka_384_768_cuda_pretrainer::v72_1_extract_opt_f64_param(&post_body, "max_tokens")
+                .map(|v| v.max(1.0) as usize);
+            let temp_opt = v72_1_sh_xi_matryoshka_384_768_cuda_pretrainer::v72_1_extract_opt_f64_param(&post_body, "temperature")
+                .map(|v| v as f32);
+            let sh_xi = v72_2_sh_xi_sparse_moe_chatml_sft_and_rag::v72_2_converse_execute_full_with_params(
                 &user_prompt,
                 mode_opt.as_deref(),
                 session_opt.as_deref(),
                 &parsed_msgs,
                 reset_sess,
+                max_tokens_opt,
+                temp_opt,
             );
-            let ep_turn = v71_multi_turn_episodic_step(&user_prompt, false, 56);
+            if sh_xi.status == "GENERATION_UNAVAILABLE_WEIGHTS_NOT_LOADED" {
+                let err_json = "{\"status\":\"GENERATION_UNAVAILABLE_WEIGHTS_NOT_LOADED\",\"error\":{\"code\":\"GENERATION_UNAVAILABLE_WEIGHTS_NOT_LOADED\",\"message\":\"Model weights are missing, corrupt, or uninitialized on disk.\"}}";
+                write_http_str(&mut stream, "503 Service Unavailable", "application/json; charset=utf-8", err_json);
+                continue;
+            }
+            let ep_state = v71_load_episodic_state(false);
+            let mut trit_sig = String::with_capacity(32);
+            for tr in ep_state.subternary_trits.iter() {
+                if *tr > 0 {
+                    trit_sig.push('+');
+                } else if *tr < 0 {
+                    trit_sig.push('-');
+                } else {
+                    trit_sig.push('0');
+                }
+            }
+            let ep_turn_index = ep_state.turn_count;
             let nl = sh_xi.output_text.clone();
             let diag = format!(
                 "TOOL 47 DROP-IN OPENAI /v1 API SURFACE + SOVEREIGN HARMONIC XI WEEK 2 (Visit #{}, Turn #{}): Model='sovereign-harmonic-xi-3shell-moe' (Mode={}, Top2=({}/{})) | AEGIS Col #{} Neuron N{:05} (Leech24=0x{:06X}) | Agreement={:.3}",
-                gw.visit_number, ep_turn.turn_index, sh_xi.active_mode, sh_xi.top1_expert_id, sh_xi.top2_expert_id, aegis_col, aegis_neuron, aegis_cw24, sh_xi.shell0_vs_shell1_top8_agreement
+                gw.visit_number, ep_turn_index, sh_xi.active_mode, sh_xi.top1_expert_id, sh_xi.top2_expert_id, aegis_col, aegis_neuron, aegis_cw24, sh_xi.shell0_vs_shell1_top8_agreement
             );
             st.nl_synthesis = nl.clone();
             st.last_card_diag = diag.clone();
@@ -5389,7 +5486,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             let created_sec = unix_ms() / 1000;
             let json = format!(
                 "{{\"id\":\"chatcmpl-shxi-v7220-{}\",\"object\":\"chat.completion\",\"created\":{},\"status\":\"OPENAI_V1_COMPAT_SURFACE_LOCKED\",\"version\":\"v72.2.0\",\"tool_index\":47,\"tool_name\":\"tool:openai_v1_compat_api\",\"model\":\"sovereign-harmonic-xi-3shell-moe\",\"choices\":\x5b{{\"index\":0,\"message\":{{\"role\":\"assistant\",\"content\":\"{}\"}},\"finish_reason\":\"stop\"}}\x5d,\"usage\":{{\"prompt_tokens\":{},\"completion_tokens\":{},\"total_tokens\":{}}},\"dendritic_neurons\":84480,\"synapses_total\":4055040,\"vocab_size\":16384,\"aegis_chair44_col\":{},\"aegis_target_neuron\":{},\"dominant_domain\":\"{}\",\"sovereign_harmonic_xi_mode\":\"{}\",\"sovereign_harmonic_xi_top1_expert\":\"{}\",\"sovereign_harmonic_xi_session_turn\":{},\"sovereign_harmonic_ix_track\":\"{}\",\"sovereign_harmonic_ix_generated\":\"{}\",\"matryoshka_shell0_vs_shell1_agreement\":{:.4},\"episodic_turn_index\":{},\"subternary_32trit_signature\":\"{}\",\"crystallized_neuron_id\":{},\"crystallized_shard_id\":{},\"holdout_ppl\":{:.6},\"completion_tokens_generated\":{},\"output_text\":\"{}\",\"nl_synthesis\":\"{}\",\"diag\":\"{}\"}}",
-                st.gen_counter, created_sec, esc_nl, sh_xi.prompt_tokens_len, comp_toks, sh_xi.prompt_tokens_len + comp_toks, aegis_col, aegis_neuron, gw.dominant_domain, sh_xi.active_mode, sh_xi.top1_expert_name, sh_xi.session_turn_count, sh_xi.retrieved_track_name, esc_nl, sh_xi.shell0_vs_shell1_top8_agreement, ep_turn.turn_index, ep_turn.trit_signature_str, gw.mapped_neuron_id, gw.crystallized_shard_id, o.holdout_ppl, comp_toks, esc_nl, esc_nl, json_escape_clean(&diag)
+                st.gen_counter, created_sec, esc_nl, sh_xi.prompt_tokens_len, comp_toks, sh_xi.prompt_tokens_len + comp_toks, aegis_col, aegis_neuron, gw.dominant_domain, sh_xi.active_mode, sh_xi.top1_expert_name, sh_xi.session_turn_count, sh_xi.retrieved_track_name, esc_nl, sh_xi.shell0_vs_shell1_top8_agreement, ep_turn_index, trit_sig, gw.mapped_neuron_id, gw.crystallized_shard_id, o.holdout_ppl, comp_toks, esc_nl, esc_nl, json_escape_clean(&diag)
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
             continue;
@@ -5404,14 +5501,14 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.gen_counter += 1;
             let cf = evaluate_cloudflare_d1_vpc_shadow(st.gen_counter);
             let diag = format!(
-                "TOOL 48 CLOUDFLARE D1 (5GB PROVISIONED, 10 TABLES) + WORKERS VPC + DURABLE OBJECT SHADOW: Account={} | D1 DB='{}' (UUID 9f46d56a-ef3e-4232-a9ac-c4bd12e20a87, {:.1}GB Free Tier, 10 Tables: harness_5w1h_audit_log, npage_tier_snapshots, wal_merkle_checkpoints, v40_qat_training_sessions, v40_shard_registry, v41_measured_sha256_audit, v42_5w1h_distributed_routes, v43_antigravity_agent_roster, v44_operationalized_research_shards, v44_multiturn_discourse_memory | {} WAL Rows & {} .npage Columns Synced) | Workers VPC Tunnel Bound={} | Durable Object='{}'",
-                cf.account_id, cf.d1_database_name, cf.d1_free_storage_gb, cf.d1_synced_wal_rows, cf.d1_synced_npage_cols, cf.workers_vpc_tunnel_bound, cf.durable_object_sqlite_shadow
+                "TOOL 48 CLOUDFLARE D1 (5GB PROVISIONED, 10 TABLES) + WORKERS VPC + DURABLE OBJECT SHADOW: D1 DB='{}' ({:.1}GB Free Tier, 10 Tables: harness_5w1h_audit_log, npage_tier_snapshots, wal_merkle_checkpoints, v40_qat_training_sessions, v40_shard_registry, v41_measured_sha256_audit, v42_5w1h_distributed_routes, v43_antigravity_agent_roster, v44_operationalized_research_shards, v44_multiturn_discourse_memory | {} WAL Rows & {} .npage Columns Synced) | Workers VPC Tunnel Bound={} | Durable Object='{}'",
+                cf.d1_database_name, cf.d1_free_storage_gb, cf.d1_synced_wal_rows, cf.d1_synced_npage_cols, cf.workers_vpc_tunnel_bound, cf.durable_object_sqlite_shadow
             );
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"status\":\"CLOUDFLARE_D1_VPC_SHADOW_SYNCED\",\"version\":\"v56.0.0\",\"tool_index\":48,\"tool_name\":\"tool:cloudflare_d1_vpc_durable_shadow\",\"account_id\":\"{}\",\"d1_database_name\":\"{}\",\"d1_uuid\":\"9f46d56a-ef3e-4232-a9ac-c4bd12e20a87\",\"d1_tables_synced\":10,\"d1_free_storage_gb\":{:.1},\"d1_synced_wal_rows\":{},\"d1_synced_npage_cols\":1440,\"core_neurons\":21120,\"expansion_neurons\":21120,\"tier3_neurons\":21120,\"combined_neurons\":63360,\"workers_vpc_tunnel_bound\":true,\"durable_object_sqlite_shadow\":\"{}\",\"zero_502_failover_active\":true,\"diag\":\"{}\"}}",
-                cf.account_id, cf.d1_database_name, cf.d1_free_storage_gb, cf.d1_synced_wal_rows, cf.durable_object_sqlite_shadow, json_escape_clean(&diag)
+                "{{\"status\":\"CLOUDFLARE_D1_VPC_SHADOW_SYNCED\",\"version\":\"v56.0.0\",\"tool_index\":48,\"tool_name\":\"tool:cloudflare_d1_vpc_durable_shadow\",\"d1_database_name\":\"{}\",\"d1_tables_synced\":10,\"d1_free_storage_gb\":{:.1},\"d1_synced_wal_rows\":{},\"d1_synced_npage_cols\":1440,\"core_neurons\":21120,\"expansion_neurons\":21120,\"tier3_neurons\":21120,\"combined_neurons\":63360,\"workers_vpc_tunnel_bound\":true,\"durable_object_sqlite_shadow\":\"{}\",\"zero_502_failover_active\":true,\"diag\":\"{}\"}}",
+                cf.d1_database_name, cf.d1_free_storage_gb, cf.d1_synced_wal_rows, cf.durable_object_sqlite_shadow, json_escape_clean(&diag)
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
             continue;
@@ -6452,7 +6549,12 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 sub_epoch,
             );
             REQ_CACHE_CONTROL.with(|c| c.set("no-store"));
-            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &final_json);
+            let http_status = if final_json.contains("GENERATION_UNAVAILABLE_WEIGHTS_NOT_LOADED") {
+                "503 Service Unavailable"
+            } else {
+                "200 OK"
+            };
+            write_http_str(&mut stream, http_status, "application/json; charset=utf-8", &final_json);
             continue;
         }
 
@@ -6534,7 +6636,12 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 sub_epoch,
             );
             REQ_CACHE_CONTROL.with(|c| c.set("no-store"));
-            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &final_json);
+            let http_status = if final_json.contains("GENERATION_UNAVAILABLE_WEIGHTS_NOT_LOADED") {
+                "503 Service Unavailable"
+            } else {
+                "200 OK"
+            };
+            write_http_str(&mut stream, http_status, "application/json; charset=utf-8", &final_json);
             continue;
         }
 
@@ -6557,26 +6664,38 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
         if clean_path == "/api/v1/sovereign_harmonic/converse" {
             let req_p = if !post_body.trim().is_empty() { post_body.as_str() } else { raw_target };
             if v72_1_extract_bool_param(req_p, "stream", false) {
-                let sse_body = v72_2_build_sse_chat_completion_stream(req_p);
-                let sub_epoch = {
-                    let mut st = match state.lock() {
-                        Ok(g) => g,
-                        Err(p) => p.into_inner(),
-                    };
-                    st.gen_counter += 1;
-                    st.decadic_sub_epoch
-                };
-                let _ = publish_coordinator_bus_envelope(
-                    "TOPIC_SH_XI_SSE_CONVERSE",
-                    clean_path,
-                    "Sovereign_Harmonic_XI_3Shell_MoE",
-                    "stream=true",
-                    E_BUS_LEDGER_JSONL,
-                    sse_body.len() as u64,
-                    sub_epoch,
-                );
-                REQ_CACHE_CONTROL.with(|c| c.set("no-cache"));
-                write_http_str(&mut stream, "200 OK", "text/event-stream; charset=utf-8", &sse_body);
+                match v72_2_build_sse_chat_completion_stream(req_p) {
+                    Ok(sse_body) => {
+                        let sub_epoch = {
+                            let mut st = match state.lock() {
+                                Ok(g) => g,
+                                Err(p) => p.into_inner(),
+                            };
+                            st.gen_counter += 1;
+                            st.decadic_sub_epoch
+                        };
+                        let _ = publish_coordinator_bus_envelope(
+                            "TOPIC_SH_XI_SSE_CONVERSE",
+                            clean_path,
+                            "Sovereign_Harmonic_XI_3Shell_MoE",
+                            "stream=true",
+                            E_BUS_LEDGER_JSONL,
+                            sse_body.len() as u64,
+                            sub_epoch,
+                        );
+                        REQ_CACHE_CONTROL.with(|c| c.set("no-cache"));
+                        write_http_str(&mut stream, "200 OK", "text/event-stream; charset=utf-8", &sse_body);
+                    }
+                    Err(_) => {
+                        REQ_CACHE_CONTROL.with(|c| c.set("no-store"));
+                        write_http_str(
+                            &mut stream,
+                            "503 Service Unavailable",
+                            "application/json; charset=utf-8",
+                            "{\"status\":\"GENERATION_UNAVAILABLE_WEIGHTS_NOT_LOADED\",\"error\":{\"code\":\"GENERATION_UNAVAILABLE_WEIGHTS_NOT_LOADED\",\"message\":\"Model weights missing or SHA-256 mismatch.\"}}",
+                        );
+                    }
+                }
                 continue;
             }
         }
@@ -6638,6 +6757,10 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             || clean_path == "/api/v1/sovereign_harmonic/compositional_reasoner"
             || clean_path == "/api/v1/sovereign_harmonic/generate"
             || clean_path == "/api/v1/sovereign_harmonic/xi/week2/converse"
+            || clean_path == "/api/v1/sh_xi/sparse_moe_chatml/converse"
+            || clean_path == "/converse"
+            || clean_path == "/api/v1/sh_xi/converse"
+            || clean_path == "/api/v1/sh_xi_sparse_moe_chatml/converse"
         {
             let req_payload = if !post_body.trim().is_empty() { &post_body } else { raw_target };
             Some(v72_2_dispatch_converse_route(req_payload))
@@ -6704,6 +6827,22 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
         {
             let req_payload = if !post_body.trim().is_empty() { &post_body } else { raw_target };
             Some(v72_1_dispatch_tool_359_matryoshka_384_768_gradcheck(req_payload))
+        } else if clean_path == "/api/v1/weights/verify"
+            || clean_path == "/api/v1/sovereign_harmonic/weights/verify"
+        {
+            let req_payload = if !post_body.trim().is_empty() { &post_body } else { raw_target };
+            let key = v72_1_sh_xi_matryoshka_384_768_cuda_pretrainer::v72_1_extract_str_param(req_payload, "key")
+                .unwrap_or_else(|| String::from("sh_xi_rw384_768_base"));
+            let path = v72_1_sh_xi_matryoshka_384_768_cuda_pretrainer::v72_1_extract_str_param(req_payload, "path")
+                .unwrap_or_else(|| String::from("00_control/weights/sovereign_harmonic_xi_rw384_768_base.sh4z"));
+            match v72_1_sh_xi_matryoshka_384_768_cuda_pretrainer::v72_1_verify_weight_manifest(&key, &path) {
+                Ok(bytes) => {
+                    Some(format!("{{\"status\":\"MEASURED\",\"verified\":true,\"key\":\"{}\",\"bytes\":{},\"sha256\":\"{}\"}}", key, bytes.len(), v72_1_sh_xi_matryoshka_384_768_cuda_pretrainer::v72_1_sha256_hex(&bytes)))
+                }
+                Err(e) => {
+                    Some(format!("{{\"status\":\"UNMEASURED/OFFLINE\",\"verified\":false,\"key\":\"{}\",\"reason\":\"{}\"}}", key, e))
+                }
+            }
         } else if clean_path == "/api/v1/sovereign_harmonic/xi/week1/rtx3050_matryoshka_cuda_pretrain"
             || clean_path == "/api/v1/tools/t360"
             || clean_path == "/api/v1/tool/360"
@@ -7010,12 +7149,6 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
         {
             let req_payload = if !post_body.trim().is_empty() { &post_body } else { raw_target };
             Some(v68_5_dispatch_tool_304_frontier_fb12_and_chain304_cert(req_payload))
-        } else if clean_path == "/api/v1/gemma4/chat"
-            || clean_path == "/api/v1/gemma4/studio"
-            || clean_path == "/api/v1/tools/t303"
-        {
-            let req_payload = if !post_body.trim().is_empty() { &post_body } else if !q_arg.is_empty() { &q_arg } else { raw_target };
-            Some(v68_5_dispatch_tool_303_gemma4_conversational_studio(req_payload))
         } else if clean_path == "/api/v1/audit/cern_lhcb_5mapping_auditor"
             || clean_path == "/api/v1/tools/t302"
         {
@@ -7208,7 +7341,12 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 sub_epoch,
             );
             REQ_CACHE_CONTROL.with(|c| c.set("no-store"));
-            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &final_json);
+            let http_status = if final_json.contains("GENERATION_UNAVAILABLE_WEIGHTS_NOT_LOADED") {
+                "503 Service Unavailable"
+            } else {
+                "200 OK"
+            };
+            write_http_str(&mut stream, http_status, "application/json; charset=utf-8", &final_json);
             continue;
         }
 
@@ -7306,7 +7444,12 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 sub_epoch,
             );
             REQ_CACHE_CONTROL.with(|c| c.set("no-store"));
-            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &final_json);
+            let http_status = if final_json.contains("GENERATION_UNAVAILABLE_WEIGHTS_NOT_LOADED") {
+                "503 Service Unavailable"
+            } else {
+                "200 OK"
+            };
+            write_http_str(&mut stream, http_status, "application/json; charset=utf-8", &final_json);
             continue;
         }
 
@@ -7341,7 +7484,12 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 sub_epoch,
             );
             REQ_CACHE_CONTROL.with(|c| c.set("no-store"));
-            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &final_json);
+            let http_status = if final_json.contains("GENERATION_UNAVAILABLE_WEIGHTS_NOT_LOADED") {
+                "503 Service Unavailable"
+            } else {
+                "200 OK"
+            };
+            write_http_str(&mut stream, http_status, "application/json; charset=utf-8", &final_json);
             continue;
         }
 
@@ -7421,7 +7569,12 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 sub_epoch,
             );
             REQ_CACHE_CONTROL.with(|c| c.set("no-store"));
-            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &final_json);
+            let http_status = if final_json.contains("GENERATION_UNAVAILABLE_WEIGHTS_NOT_LOADED") {
+                "503 Service Unavailable"
+            } else {
+                "200 OK"
+            };
+            write_http_str(&mut stream, http_status, "application/json; charset=utf-8", &final_json);
             continue;
         }
 
@@ -7460,7 +7613,12 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 sub_epoch,
             );
             REQ_CACHE_CONTROL.with(|c| c.set("no-store"));
-            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &final_json);
+            let http_status = if final_json.contains("GENERATION_UNAVAILABLE_WEIGHTS_NOT_LOADED") {
+                "503 Service Unavailable"
+            } else {
+                "200 OK"
+            };
+            write_http_str(&mut stream, http_status, "application/json; charset=utf-8", &final_json);
             continue;
         }
 
@@ -7538,7 +7696,12 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 sub_epoch,
             );
             REQ_CACHE_CONTROL.with(|c| c.set("no-store"));
-            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &final_json);
+            let http_status = if final_json.contains("GENERATION_UNAVAILABLE_WEIGHTS_NOT_LOADED") {
+                "503 Service Unavailable"
+            } else {
+                "200 OK"
+            };
+            write_http_str(&mut stream, http_status, "application/json; charset=utf-8", &final_json);
             continue;
         }
 
@@ -7737,6 +7900,81 @@ fn run_listener(addr: &'static str, state: Arc<Mutex<SwarmState>>) {
 }
 
 fn main() {
+    let args: Vec<String> = std::env::args().collect();
+    let mut check_verify = false;
+    let mut verify_all = false;
+    let mut check_gradients = false;
+    let mut key_arg = String::new();
+    let mut path_arg = String::new();
+    let mut arg_i: usize = 0;
+    while arg_i < args.len() {
+        if let Some(a) = args.get(arg_i) {
+            if a == "--verify-weights" {
+                check_verify = true;
+                let next1 = args.get(arg_i + 1);
+                let next2 = args.get(arg_i + 2);
+                match (next1, next2) {
+                    (Some(k), Some(p)) if !k.starts_with("--") && !p.starts_with("--") => {
+                        if k == "ALL" {
+                            verify_all = true;
+                        } else {
+                            key_arg = k.clone();
+                            path_arg = p.clone();
+                        }
+                    }
+                    (Some(k), _) if k == "ALL" => {
+                        verify_all = true;
+                    }
+                    _ => {
+                        verify_all = true;
+                    }
+                }
+            } else if a == "--verify-gradients" {
+                check_gradients = true;
+            }
+        }
+        arg_i += 1;
+    }
+
+    if check_gradients {
+        match v72_1_sh_xi_matryoshka_384_768_cuda_pretrainer::v72_1_run_finite_difference_gradient_check() {
+            Ok(max_err) => {
+                println!("VERIFY_GRADIENTS_OK: max relative error < 1e-4 ({:.6e})", max_err);
+                std::process::exit(0);
+            }
+            Err(e) => {
+                eprintln!("VERIFY_GRADIENTS_ERR: {}", e);
+                std::process::exit(1);
+            }
+        }
+    }
+
+    if check_verify {
+        if verify_all || key_arg.is_empty() {
+            match v72_1_sh_xi_matryoshka_384_768_cuda_pretrainer::v72_1_verify_entire_weight_manifest() {
+                Ok(count) => {
+                    println!("VERIFY_ALL_WEIGHTS_OK: {} artifacts verified in manifest", count);
+                    std::process::exit(0);
+                }
+                Err(e) => {
+                    eprintln!("VERIFY_ALL_WEIGHTS_ERR: {}", e);
+                    std::process::exit(1);
+                }
+            }
+        } else {
+            match v72_1_sh_xi_matryoshka_384_768_cuda_pretrainer::v72_1_verify_weight_manifest(&key_arg, &path_arg) {
+                Ok(bytes) => {
+                    println!("VERIFY_WEIGHTS_OK: {} bytes verified for {}", bytes.len(), key_arg);
+                    std::process::exit(0);
+                }
+                Err(e) => {
+                    eprintln!("VERIFY_WEIGHTS_ERR: {}", e);
+                    std::process::exit(1);
+                }
+            }
+        }
+    }
+
     println!("========================================================================");
     println!(" ACT-OMEGA NET v68.5.0 (SOVEREIGN HARMONIC VI / SH4Z v6850 TLV) SWARM");
     println!(" 15.965 Hz Decadic Epoch, 63,360 Neurons, 3.04M Synapses, 810 QED & CHAIN 304");
@@ -7856,6 +8094,7 @@ fn main() {
 
     spawn_background_aggregator(Arc::clone(&state));
     v57_aegis_autonomous_agent_harness::v57_spawn_aegis_autonomous_cron_daemon();
+    let _ = v72_2_ensure_moe_bank_loaded();
 
     let st_5173 = Arc::clone(&state);
     let _ = thread::Builder::new()

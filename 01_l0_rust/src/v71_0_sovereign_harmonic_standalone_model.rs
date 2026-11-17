@@ -17,6 +17,7 @@
 // =============================================================================
 
 use rayon::prelude::*;
+use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
 use std::time::Instant;
@@ -1767,13 +1768,22 @@ pub fn v71_save_sh4z_weights(weights: &mut V71SovereignHarmonicWeights) -> usize
     if Path::new("E:\\Sovereign_Manifold_SSD_Vault\\weights").exists() {
         let _ = fs::write(E_SH_IX_WEIGHTS_PATH, &out);
     }
+    let hash_hex = crate::v72_1_sh_xi_matryoshka_384_768_cuda_pretrainer::v72_1_sha256_hex(&out);
+    let _ = crate::v72_1_sh_xi_matryoshka_384_768_cuda_pretrainer::v72_1_update_weight_manifest(
+        "sovereign_harmonic_ix_weights",
+        out.len(),
+        &hash_hex,
+    );
     out.len()
 }
 
-pub fn v71_load_sh4z_weights(vocab: &V71BpeVocabulary) -> Option<V71SovereignHarmonicWeights> {
-    let bytes = fs::read(C_SH_IX_WEIGHTS_PATH).ok()?;
+pub fn v71_load_sh4z_weights_checked(vocab: &V71BpeVocabulary) -> Result<V71SovereignHarmonicWeights, String> {
+    let bytes = crate::v72_1_sh_xi_matryoshka_384_768_cuda_pretrainer::v72_1_verify_weight_manifest(
+        "sovereign_harmonic_ix_weights",
+        C_SH_IX_WEIGHTS_PATH,
+    )?;
     if bytes.len() < 64 {
-        return None;
+        return Err(format!("WEIGHT_SIZE_MISMATCH: {} header under 64 bytes", C_SH_IX_WEIGHTS_PATH));
     }
     let magic = v71_read_u32_le(&bytes, 0);
     let ver = v71_read_u32_le(&bytes, 4);
@@ -1794,14 +1804,14 @@ pub fn v71_load_sh4z_weights(vocab: &V71BpeVocabulary) -> Option<V71SovereignHar
         || emb_dim != V71_EMBED_DIM_32D
         || epochs == 0
     {
-        return None;
+        return Err(format!("WEIGHT_CORRUPT: Invalid header in {}", C_SH_IX_WEIGHTS_PATH));
     }
 
     let emb_count = active_vocab * emb_dim;
     let emb_bytes = emb_count * 2;
     let trans_bytes = num_trans * 22;
     if bytes.len() < 64 + emb_bytes + trans_bytes {
-        return None;
+        return Err(format!("WEIGHT_SIZE_MISMATCH: {} payload truncated", C_SH_IX_WEIGHTS_PATH));
     }
 
     let mut embeddings_32d: Vec<i16> = Vec::with_capacity(emb_count);
@@ -1836,7 +1846,7 @@ pub fn v71_load_sh4z_weights(vocab: &V71BpeVocabulary) -> Option<V71SovereignHar
         t += 1;
     }
 
-    Some(V71SovereignHarmonicWeights {
+    Ok(V71SovereignHarmonicWeights {
         active_vocab_size: active_vocab,
         epochs_trained: epochs,
         pre_train_loss_milli: pre_loss,
@@ -1847,6 +1857,10 @@ pub fn v71_load_sh4z_weights(vocab: &V71BpeVocabulary) -> Option<V71SovereignHar
         transitions,
         weights_fnv1a64: fnv,
     })
+}
+
+pub fn v71_load_sh4z_weights(vocab: &V71BpeVocabulary) -> Option<V71SovereignHarmonicWeights> {
+    v71_load_sh4z_weights_checked(vocab).ok()
 }
 
 // =============================================================================
@@ -1879,6 +1893,39 @@ pub fn v71_read_neuron_viviani_and_basal_drive(
     (d1 / 1000.0, d2 / 1000.0, d3 / 1000.0, basal_drive)
 }
 
+pub fn v71_precompute_neuron_viviani_and_basal32(
+    npage_bytes: &Vec<u8>,
+    spage_bytes: &Vec<u8>,
+    neuron_id: usize,
+) -> (f64, f64, f64, Vec<f64>) {
+    let n_off = (neuron_id % V69_TOTAL_NEURONS) * 128;
+    let s_off = (neuron_id % V69_TOTAL_NEURONS) * 64;
+
+    let d1 = v71_read_i32_le(npage_bytes, n_off).clamp(100, 800) as f64;
+    let d2 = v71_read_i32_le(npage_bytes, n_off + 4).clamp(100, 800) as f64;
+    let d3 = (1000.0 - d1 - d2).max(50.0);
+    let r1 = d1 / 1000.0;
+
+    let mut w_prim_slots: Vec<f64> = Vec::with_capacity(8);
+    let mut s_i: usize = 0;
+    while s_i < 8 {
+        w_prim_slots.push(v71_read_i32_le(npage_bytes, n_off + 12 + s_i * 4) as f64);
+        s_i += 1;
+    }
+
+    let mut basal32: Vec<f64> = Vec::with_capacity(32);
+    let mut sp_slot: usize = 0;
+    while sp_slot < 32 {
+        let w_primary = *w_prim_slots.get(sp_slot & 7).unwrap_or(&0.0);
+        let w_aux = (v71_read_u16_le(spage_bytes, s_off + sp_slot * 2) as i32 - 32768) as f64
+            / 32768.0;
+        basal32.push(((w_primary / 16.0) + w_aux * 0.25) * r1);
+        sp_slot += 1;
+    }
+
+    (r1, d2 / 1000.0, d3 / 1000.0, basal32)
+}
+
 pub fn v71_apical_ctx6_hash(tokens: &Vec<u32>, pos: usize) -> u32 {
     let start = pos.saturating_sub(V71_CONTEXT_WINDOW);
     let mut h: u64 = 0xcbf29ce484222325;
@@ -1890,6 +1937,24 @@ pub fn v71_apical_ctx6_hash(tokens: &Vec<u32>, pos: usize) -> u32 {
         i += 1;
     }
     ((h >> 32) ^ (h & 0xFFFFFFFF)) as u32
+}
+
+pub fn v71_precompute_embedding_inv_norms_32d(emb: &Vec<i16>, vocab_n: usize) -> Vec<f64> {
+    let mut norms: Vec<f64> = Vec::with_capacity(vocab_n);
+    let mut v: usize = 0;
+    while v < vocab_n {
+        let base = v.saturating_mul(V71_EMBED_DIM_32D);
+        let mut norm_sq: i64 = 0;
+        let mut d: usize = 0;
+        while d < V71_EMBED_DIM_32D {
+            let val = (*emb.get(base + d).unwrap_or(&0)) as i64;
+            norm_sq += val * val;
+            d += 1;
+        }
+        norms.push((norm_sq as f64).sqrt().max(1e-12));
+        v += 1;
+    }
+    norms
 }
 
 pub fn v71_evaluate_sequence_cross_entropy(
@@ -1905,6 +1970,7 @@ pub fn v71_evaluate_sequence_cross_entropy(
     let mut total_nll: f64 = 0.0;
     let mut count: usize = 0;
     let vocab_n = weights.active_vocab_size.max(256);
+    let emb_norms = v71_precompute_embedding_inv_norms_32d(&weights.embeddings_32d, vocab_n);
 
     let mut t: usize = 3;
     while t < tokens.len() {
@@ -1918,44 +1984,75 @@ pub fn v71_evaluate_sequence_cross_entropy(
             .wrapping_add((prev2 as usize).wrapping_mul(31))
             .wrapping_add(prev1 as usize))
             % V69_TOTAL_NEURONS;
-        let (_r1, r2, r3, basal_target) =
-            v71_read_neuron_viviani_and_basal_drive(npage_bytes, spage_bytes, neuron_id, target);
+        let (_r1, r2, r3, basal32) =
+            v71_precompute_neuron_viviani_and_basal32(npage_bytes, spage_bytes, neuron_id);
 
-        let mut target_logit: f64 = basal_target * 0.15;
-        let mut sum_exp: f64 = 0.0;
-        let mut matched_candidates: usize = 0;
+        let p1_idx = prev1 as usize;
+        let p1_base = p1_idx.saturating_mul(V71_EMBED_DIM_32D);
+        let p1_norm = if p1_idx < emb_norms.len() {
+            *emb_norms.get(p1_idx).unwrap_or(&1.0)
+        } else {
+            1.0
+        };
+        let mut p1_vec: Vec<i64> = Vec::with_capacity(V71_EMBED_DIM_32D);
+        let mut pd: usize = 0;
+        while pd < V71_EMBED_DIM_32D {
+            p1_vec.push((*weights.embeddings_32d.get(p1_base + pd).unwrap_or(&0)) as i64);
+            pd += 1;
+        }
+
+        let mut logits: Vec<f64> = Vec::with_capacity(vocab_n);
+        let mut v_i: usize = 0;
+        while v_i < vocab_n {
+            let basal_v = *basal32.get(v_i & 31).unwrap_or(&0.0);
+            let vb_base = v_i.saturating_mul(V71_EMBED_DIM_32D);
+            let mut dot: i64 = 0;
+            let mut d_e: usize = 0;
+            while d_e < V71_EMBED_DIM_32D {
+                let va = *p1_vec.get(d_e).unwrap_or(&0);
+                let vb = (*weights.embeddings_32d.get(vb_base + d_e).unwrap_or(&0)) as i64;
+                dot += va * vb;
+                d_e += 1;
+            }
+            let nb = *emb_norms.get(v_i).unwrap_or(&1.0);
+            let emb_sim = (dot as f64) / ((p1_norm * nb).max(1.0));
+            logits.push(basal_v * 0.15 + emb_sim * 0.25 * r3);
+            v_i += 1;
+        }
 
         for tr in weights.transitions.iter() {
+            let nxt = tr.next_tok as usize;
+            if nxt >= vocab_n {
+                continue;
+            }
             if tr.prev3_tok == prev3 && tr.prev2_tok == prev2 && tr.prev1_tok == prev1 {
                 let w_f = (tr.weight_q16 as f64) / 65536.0;
-                let emb_sim = v71_embedding_dot_32d(
-                    &weights.embeddings_32d,
-                    prev1 as usize,
-                    tr.next_tok as usize,
-                );
-                let branch_bonus = if tr.branch_id == branch_id { 0.85 } else { 0.0 };
-                let apical = w_f * (0.65 + 0.35 * r2) + emb_sim * 0.25 * r3 + branch_bonus;
-                if tr.next_tok == target {
-                    target_logit += apical;
-                } else {
-                    sum_exp += apical.clamp(-10.0, 20.0).exp();
+                let apical = w_f * (0.65 + 0.35 * r2);
+                if let Some(plgt) = logits.get_mut(nxt) {
+                    *plgt += apical;
                 }
-                matched_candidates += 1;
             } else if tr.prev2_tok == prev2 && tr.prev1_tok == prev1 && tr.branch_id == branch_id {
                 let w_f = ((tr.weight_q16 as f64) / 65536.0) * 0.55;
-                if tr.next_tok == target {
-                    target_logit += w_f;
-                } else {
-                    sum_exp += w_f.clamp(-10.0, 20.0).exp();
+                if let Some(plgt) = logits.get_mut(nxt) {
+                    *plgt += w_f;
                 }
-                matched_candidates += 1;
             }
         }
 
-        let unmatched_n = vocab_n.saturating_sub(matched_candidates.saturating_add(1)).max(1) as f64;
-        let z_target_exp = target_logit.clamp(-10.0, 20.0).exp();
-        let total_partition = z_target_exp + sum_exp + unmatched_n * 0.08;
-        let prob = (z_target_exp / total_partition).clamp(1e-9, 0.999999);
+        let mut max_l: f64 = -1e9;
+        for lgt in logits.iter() {
+            if *lgt > max_l {
+                max_l = *lgt;
+            }
+        }
+        let mut sum_exp: f64 = 0.0;
+        for lgt in logits.iter() {
+            sum_exp += (*lgt - max_l).clamp(-20.0, 20.0).exp();
+        }
+        let tgt_idx = target as usize;
+        let tgt_lgt = *logits.get(tgt_idx).unwrap_or(&0.0);
+        let tgt_exp = (tgt_lgt - max_l).clamp(-20.0, 20.0).exp();
+        let prob = (tgt_exp / sum_exp.max(1e-12)).clamp(1e-9, 0.999999);
         total_nll += -prob.ln();
         count += 1;
         t += 1;
@@ -1977,8 +2074,12 @@ pub fn v71_evaluate_holdout_sequence_cross_entropy(
     let mut total_nll: f64 = 0.0;
     let mut count: usize = 0;
     let vocab_n = weights.active_vocab_size.max(256);
-    let trk_u8 = track_id as u8;
     let trk_u32 = track_id as u32;
+    let emb_norms = if weights.epochs_trained > 0 {
+        v71_precompute_embedding_inv_norms_32d(&weights.embeddings_32d, vocab_n)
+    } else {
+        Vec::new()
+    };
 
     let mut t: usize = 3;
     while t < tokens.len() {
@@ -1993,31 +2094,64 @@ pub fn v71_evaluate_holdout_sequence_cross_entropy(
             .wrapping_add((prev2 as usize).wrapping_mul(31))
             .wrapping_add(track_id))
             % V69_TOTAL_NEURONS;
-        let (_r1, r2, r3, basal_target) = v71_read_neuron_viviani_and_basal_drive(
-            npage_bytes,
-            spage_bytes,
-            bigram_neuron_id,
-            target,
-        );
+        let (_r1, r2, r3, basal32) =
+            v71_precompute_neuron_viviani_and_basal32(npage_bytes, spage_bytes, bigram_neuron_id);
 
-        let mut target_logit: f64 = basal_target * 0.25;
-        let mut sum_exp: f64 = 0.0;
-        let mut matched_candidates: usize = 0;
-        let mut target_matched = false;
+        let p1_idx = prev1 as usize;
+        let p1_base = p1_idx.saturating_mul(V71_EMBED_DIM_32D);
+        let p1_norm = if weights.epochs_trained > 0 && p1_idx < emb_norms.len() {
+            *emb_norms.get(p1_idx).unwrap_or(&1.0)
+        } else {
+            1.0
+        };
+        let mut p1_vec: Vec<i64> = if weights.epochs_trained > 0 {
+            Vec::with_capacity(V71_EMBED_DIM_32D)
+        } else {
+            Vec::new()
+        };
+        if weights.epochs_trained > 0 {
+            let mut pd: usize = 0;
+            while pd < V71_EMBED_DIM_32D {
+                p1_vec.push((*weights.embeddings_32d.get(p1_base + pd).unwrap_or(&0)) as i64);
+                pd += 1;
+            }
+        }
+
+        let mut logits: Vec<f64> = Vec::with_capacity(vocab_n);
+        let mut v_i: usize = 0;
+        while v_i < vocab_n {
+            let basal_v = *basal32.get(v_i & 31).unwrap_or(&0.0);
+            let mut lgt = basal_v * 0.25;
+            if weights.epochs_trained > 0 {
+                let vb_base = v_i.saturating_mul(V71_EMBED_DIM_32D);
+                let mut dot: i64 = 0;
+                let mut d_e: usize = 0;
+                while d_e < V71_EMBED_DIM_32D {
+                    let va = *p1_vec.get(d_e).unwrap_or(&0);
+                    let vb = (*weights.embeddings_32d.get(vb_base + d_e).unwrap_or(&0)) as i64;
+                    dot += va * vb;
+                    d_e += 1;
+                }
+                let nb = *emb_norms.get(v_i).unwrap_or(&1.0);
+                let emb_sim = (dot as f64) / ((p1_norm * nb).max(1.0));
+                lgt += emb_sim * 0.25 * r3;
+            }
+            logits.push(lgt);
+            v_i += 1;
+        }
 
         for tr in weights.transitions.iter() {
+            let nxt = tr.next_tok as usize;
+            if nxt >= vocab_n {
+                continue;
+            }
             if tr.prev3_tok == prev3 && tr.prev2_tok == prev2 && tr.prev1_tok == prev1 {
                 // Level-3: Exact 10-token context match
                 let w_f = (tr.weight_q16 as f64) / 65536.0;
-                let trk_bonus = if tr.track_id == trk_u8 { 0.70 } else { 0.15 };
-                let apical = w_f * (0.70 + 0.30 * r2) + trk_bonus;
-                if tr.next_tok == target {
-                    target_logit += apical;
-                    target_matched = true;
-                } else {
-                    sum_exp += (apical * 0.45).clamp(-10.0, 16.0).exp();
+                let apical = w_f * (0.70 + 0.30 * r2);
+                if let Some(plgt) = logits.get_mut(nxt) {
+                    *plgt += apical;
                 }
-                matched_candidates += 1;
             } else if tr.prev3_tok != V71_BACKOFF_BIGRAM_TAG
                 && tr.prev3_tok != V71_BACKOFF_UNIGRAM_TAG
                 && tr.prev2_tok == prev2
@@ -2025,65 +2159,42 @@ pub fn v71_evaluate_holdout_sequence_cross_entropy(
             {
                 // Level-2: Trigram context match across cortical branches
                 let w_f = ((tr.weight_q16 as f64) / 65536.0) * 0.58;
-                let trk_bonus = if tr.track_id == trk_u8 { 0.50 } else { 0.10 };
-                let apical = w_f + trk_bonus;
-                if tr.next_tok == target {
-                    target_logit += apical;
-                    target_matched = true;
-                } else {
-                    sum_exp += (apical * 0.35).clamp(-10.0, 14.0).exp();
+                let apical = w_f;
+                if let Some(plgt) = logits.get_mut(nxt) {
+                    *plgt += apical;
                 }
-                matched_candidates += 1;
             } else if tr.prev3_tok == V71_BACKOFF_BIGRAM_TAG && tr.prev1_tok == prev1 {
                 // Level-1: Interpolated Kneser-Ney Bigram Backoff
                 let w_f = ((tr.weight_q16 as f64) / 65536.0) * 0.46;
-                let trk_scale = if tr.prev2_tok == trk_u32 { 1.15 } else { 0.65 };
-                let apical = w_f * trk_scale;
-                if tr.next_tok == target {
-                    target_logit += apical;
-                    target_matched = true;
-                } else {
-                    sum_exp += (apical * 0.28).clamp(-10.0, 12.0).exp();
+                let apical = w_f;
+                if let Some(plgt) = logits.get_mut(nxt) {
+                    *plgt += apical;
                 }
-                matched_candidates += 1;
             } else if tr.prev3_tok == V71_BACKOFF_UNIGRAM_TAG
                 && tr.prev2_tok == trk_u32
-                && tr.next_tok == target
             {
-                // Level-0: Track Unigram Prior for target token
+                // Level-0: Track Unigram Prior for candidate token
                 let w_f = ((tr.weight_q16 as f64) / 65536.0) * 0.38;
-                target_logit += w_f;
-                target_matched = true;
+                if let Some(plgt) = logits.get_mut(nxt) {
+                    *plgt += w_f;
+                }
             }
         }
 
-        // If weights have been trained (epochs > 0), add 32D E8^4 lattice contextual alignment
-        // and byte-level structural prior so unseen subword/byte sequences generalize smoothly
-        if weights.epochs_trained > 0 {
-            let emb_sim = v71_embedding_dot_32d(
-                &weights.embeddings_32d,
-                prev1 as usize,
-                target as usize,
-            );
-            let e8_resonance = (emb_sim.max(0.0) * 1.45 * r3)
-                + if target_matched { 1.15 } else { 0.68 }
-                + if (target as usize) < V71_BYTE_TOKENS {
-                    1.05
-                } else {
-                    0.82
-                };
-            target_logit += e8_resonance;
+        let mut max_l: f64 = -1e9;
+        for lgt in logits.iter() {
+            if *lgt > max_l {
+                max_l = *lgt;
+            }
         }
-
-        let unmatched_n = vocab_n.saturating_sub(matched_candidates.saturating_add(1)).max(1) as f64;
-        let z_target_exp = target_logit.clamp(-10.0, 20.0).exp();
-        let bg_mass = if weights.epochs_trained > 0 {
-            unmatched_n * 0.0085
-        } else {
-            unmatched_n * 0.08
-        };
-        let total_partition = z_target_exp + sum_exp + bg_mass;
-        let prob = (z_target_exp / total_partition).clamp(1e-9, 0.999999);
+        let mut sum_exp: f64 = 0.0;
+        for lgt in logits.iter() {
+            sum_exp += (*lgt - max_l).clamp(-20.0, 20.0).exp();
+        }
+        let tgt_idx = target as usize;
+        let tgt_lgt = *logits.get(tgt_idx).unwrap_or(&0.0);
+        let tgt_exp = (tgt_lgt - max_l).clamp(-20.0, 20.0).exp();
+        let prob = (tgt_exp / sum_exp.max(1e-12)).clamp(1e-9, 0.999999);
         total_nll += -prob.ln();
         count += 1;
         t += 1;
@@ -2818,48 +2929,85 @@ fn v71_is_salient_content_token(vocab: &V71BpeVocabulary, tok_id: u32) -> bool {
     false
 }
 
-fn v71_score_sample_against_prompt(
+fn v71_score_branches_from_weights(
     vocab: &V71BpeVocabulary,
     weights: &V71SovereignHarmonicWeights,
     prompt_tokens: &Vec<u32>,
     prompt_low: &str,
-    sample: &V71CurriculumSample,
-) -> f64 {
-    let sample_prompt_toks = v71_bpe_encode(vocab, &sample.prompt);
-    let sample_comp_toks = v71_bpe_encode(vocab, &sample.completion);
-    let mut score: f64 = 0.0;
-    for pt in prompt_tokens.iter() {
-        if v71_is_salient_content_token(vocab, *pt) {
-            let mut matched_prompt = false;
-            for st in sample_prompt_toks.iter() {
-                if *pt == *st {
-                    score += 4.5;
-                    matched_prompt = true;
-                    break;
-                } else if v71_is_salient_content_token(vocab, *st) {
-                    let sim = v71_embedding_dot_32d(
-                        &weights.embeddings_32d,
-                        *pt as usize,
-                        *st as usize,
-                    );
-                    if sim > 0.70 {
-                        score += sim * 0.45;
-                    }
+    n_branches: usize,
+) -> Vec<(usize, usize, f64)> {
+    let mut salient_pts: Vec<u32> = Vec::new();
+    let mut prompt_bigrams: Vec<(u32, u32)> = Vec::new();
+    let mut pi: usize = 0;
+    while pi < prompt_tokens.len() {
+        if let Some(&pt) = prompt_tokens.get(pi) {
+            if v71_is_salient_content_token(vocab, pt) && !salient_pts.contains(&pt) {
+                salient_pts.push(pt);
+            }
+            if pi + 1 < prompt_tokens.len() {
+                if let Some(&nxt) = prompt_tokens.get(pi + 1) {
+                    prompt_bigrams.push((pt, nxt));
                 }
             }
-            if !matched_prompt {
-                for ct in sample_comp_toks.iter() {
-                    if *pt == *ct {
-                        score += 3.0;
-                        break;
-                    }
+        }
+        pi += 1;
+    }
+
+    let mut branch_scores: Vec<f64> = v71_alloc_filled_vec(n_branches, 0.0f64);
+    let mut branch_tracks: Vec<usize> = v71_alloc_filled_vec(n_branches, 0usize);
+    let mut branch_active: Vec<bool> = v71_alloc_filled_vec(n_branches, false);
+    let mut branch_salient: Vec<Vec<u32>> = Vec::with_capacity(n_branches);
+    let mut bi: usize = 0;
+    while bi < n_branches {
+        branch_salient.push(Vec::new());
+        bi += 1;
+    }
+
+    for tr in weights.transitions.iter() {
+        let b = tr.branch_id as usize;
+        if b >= n_branches {
+            continue;
+        }
+        if let Some(act) = branch_active.get_mut(b) {
+            *act = true;
+        }
+        if let Some(trk) = branch_tracks.get_mut(b) {
+            *trk = tr.track_id as usize;
+        }
+        for &(bp, bn) in prompt_bigrams.iter() {
+            if tr.prev1_tok == bp && tr.next_tok == bn {
+                let w_f = ((tr.weight_q16 as f64) / 65536.0).max(0.0);
+                if let Some(sc) = branch_scores.get_mut(b) {
+                    *sc += w_f;
+                }
+            }
+        }
+        if v71_is_salient_content_token(vocab, tr.next_tok) {
+            if let Some(b_list) = branch_salient.get_mut(b) {
+                if !b_list.contains(&tr.next_tok) {
+                    b_list.push(tr.next_tok);
                 }
             }
         }
     }
-    // RT-9 Remediation: Head-Clause Imperative Weighting & Negation Suppression
-    let head_len = prompt_low.len().min(64);
-    let head_clause = prompt_low.get(0..head_len).unwrap_or(prompt_low);
+
+    let mut active_branch_count: usize = 0;
+    let mut df_map: HashMap<u32, usize> = HashMap::new();
+    let mut df_i: usize = 0;
+    while df_i < n_branches {
+        if *branch_active.get(df_i).unwrap_or(&false) {
+            active_branch_count += 1;
+            if let Some(b_toks) = branch_salient.get(df_i) {
+                for &bt in b_toks.iter() {
+                    let cur_df = df_map.get(&bt).copied().unwrap_or(0);
+                    df_map.insert(bt, cur_df + 1);
+                }
+            }
+        }
+        df_i += 1;
+    }
+
+    // Negation suppression: if prompt explicitly negates a track, suppress score to 0
     let neg_lean = prompt_low.contains("do not output lean")
         || prompt_low.contains("do not use lean")
         || prompt_low.contains("not lean 4")
@@ -2874,97 +3022,59 @@ fn v71_score_sample_against_prompt(
         || prompt_low.contains("without viazovska")
         || prompt_low.contains("not mit math");
 
-    if sample.track_id == 3 {
-        if neg_lean {
-            score -= 8.5;
-        } else {
-            if prompt_low.contains("lean")
-                || prompt_low.contains("theorem")
-                || prompt_low.contains("proof")
-                || prompt_low.contains("formal")
-                || prompt_low.contains("qed")
-            {
-                score += 3.2;
-            }
-            if head_clause.contains("prove in lean")
-                || head_clause.contains("formulate a lean")
-                || head_clause.contains("state a lean")
-                || prompt_low.contains("lean 4 theorem")
-                || prompt_low.contains("state and prove")
-            {
-                score += 12.0;
-            }
-        }
-    }
-    if sample.track_id == 2 {
-        if neg_rust {
-            score -= 8.5;
-        } else {
-            if prompt_low.contains("rust")
-                || prompt_low.contains("fn ")
-                || prompt_low.contains("omegalang")
-                || prompt_low.contains("code")
-                || prompt_low.contains("zero-bracket")
-                || prompt_low.contains("zero-square-bracket")
-                || prompt_low.contains("function")
-            {
-                score += 3.2;
-            }
-            if head_clause.contains("write a zero")
-                || head_clause.contains("implement a zero")
-                || head_clause.contains("write a rust")
-                || prompt_low.contains("write a zero-bracket rust")
-                || prompt_low.contains("write a zero-square-bracket rust")
-            {
-                score += 9.5;
+    let n_salient_sqrt = (salient_pts.len() as f64).sqrt().max(1.0);
+    let bigram_denom = prompt_bigrams.len().max(1) as f64;
+    let n_act_f = active_branch_count.max(1) as f64;
+
+    let mut out: Vec<(usize, usize, f64)> = Vec::with_capacity(n_branches);
+    let mut b_idx: usize = 0;
+    while b_idx < n_branches {
+        let active = *branch_active.get(b_idx).unwrap_or(&false);
+        let trk = *branch_tracks.get(b_idx).unwrap_or(&0);
+        let raw_bg = *branch_scores.get(b_idx).unwrap_or(&0.0) / bigram_denom;
+        let mut sc = raw_bg * 0.25;
+        if active {
+            if let Some(b_toks) = branch_salient.get(b_idx) {
+                let mut lexical_idf_sum: f64 = 0.0;
+                let mut sem_sum: f64 = 0.0;
+                for &pt in salient_pts.iter() {
+                    let df = *df_map.get(&pt).unwrap_or(&0) as f64;
+                    let idf = ((n_act_f + 1.0) / (df + 1.0)).ln() + 1.0;
+                    if b_toks.contains(&pt) {
+                        lexical_idf_sum += idf;
+                    } else {
+                        let mut best_sim: f64 = 0.0;
+                        for &bt in b_toks.iter() {
+                            let sim = v71_embedding_dot_32d(
+                                &weights.embeddings_32d,
+                                pt as usize,
+                                bt as usize,
+                            );
+                            if sim > best_sim {
+                                best_sim = sim;
+                            }
+                        }
+                        if best_sim > 0.65 {
+                            sem_sum += best_sim * 0.35;
+                        }
+                    }
+                }
+                let len_norm = (b_toks.len() as f64).sqrt().max(1.0) * n_salient_sqrt;
+                sc = (lexical_idf_sum + sem_sum) / len_norm
+                    + (raw_bg * 0.25) / (b_toks.len() as f64).sqrt().max(1.0);
             }
         }
-    }
-    if sample.track_id == 1 {
-        if neg_math {
-            score -= 8.5;
-        } else {
-            if prompt_low.contains("viazovska")
-                || prompt_low.contains("e8")
-                || prompt_low.contains("leech")
-                || prompt_low.contains("mit")
-                || prompt_low.contains("galois")
-                || prompt_low.contains("hsiang")
-                || prompt_low.contains("symplectic")
-                || prompt_low.contains("leapfrog")
-                || prompt_low.contains("chebyshev")
-                || prompt_low.contains("casimir")
-                || prompt_low.contains("plucker")
-                || prompt_low.contains("grassmann")
-                || prompt_low.contains("braid")
-                || prompt_low.contains("golay")
-                || prompt_low.contains("crt")
-            {
-                score += 3.2;
-            }
-            if head_clause.contains("derive")
-                || head_clause.contains("explain how maryna")
-                || head_clause.contains("why do viazovska")
-                || head_clause.contains("explain the reversible symplectic")
-            {
-                score += 7.5;
-            }
+        if !active
+            || (trk == 3 && neg_lean)
+            || (trk == 2 && neg_rust)
+            || (trk == 1 && neg_math)
+        {
+            sc = 0.0;
         }
+        out.push((b_idx, trk, sc));
+        b_idx += 1;
     }
-    if sample.track_id == 0
-        && (prompt_low.contains("sovereign")
-            || prompt_low.contains("harmonic")
-            || prompt_low.contains("dendritic")
-            || prompt_low.contains("cluster")
-            || prompt_low.contains("cloudflare")
-            || prompt_low.contains("bus")
-            || prompt_low.contains("tokenizer")
-            || prompt_low.contains("subternary")
-            || prompt_low.contains("episodic"))
-    {
-        score += 3.2;
-    }
-    score
+    out
 }
 
 pub fn v71_rollout_branch_tokens(
@@ -3019,13 +3129,6 @@ pub fn v71_rollout_branch_tokens(
                     prev1 as usize,
                     tr.next_tok as usize,
                 );
-                let branch_bonus = if tr.branch_id == active_branch_id {
-                    3.50
-                } else if tr.track_id as usize == dominant_track_id {
-                    0.75
-                } else {
-                    0.0
-                };
                 let mut rep_penalty: f64 = 0.0;
                 let gen_len = generated_tokens.len();
                 let lookback = gen_len.min(8);
@@ -3037,7 +3140,7 @@ pub fn v71_rollout_branch_tokens(
                     lb += 1;
                 }
 
-                let apical_val = w_f * (0.65 + 0.35 * r2) + branch_bonus;
+                let apical_val = w_f * (0.65 + 0.35 * r2);
                 let lateral_val = emb_sim * 0.35 * r3;
                 let total_logit = basal_val * r1 + apical_val + lateral_val - rep_penalty;
                 candidates.push((tr.next_tok, total_logit, basal_val, apical_val, lateral_val));
@@ -3065,8 +3168,7 @@ pub fn v71_rollout_branch_tokens(
                         prev1 as usize,
                         tr.next_tok as usize,
                     );
-                    let br_boost = if tr.branch_id == active_branch_id { 2.0 } else { 0.8 };
-                    let apical_val = w_f * r2 + br_boost;
+                    let apical_val = w_f * r2;
                     let lateral_val = emb_sim * 0.25 * r3;
                     let total_logit = basal_val * r1 + apical_val + lateral_val;
                     candidates.push((tr.next_tok, total_logit, basal_val, apical_val, lateral_val));
@@ -3103,8 +3205,7 @@ pub fn v71_rollout_branch_tokens(
                         prev1 as usize,
                         tr.next_tok as usize,
                     );
-                    let br_boost = if tr.branch_id == active_branch_id { 1.6 } else { 0.5 };
-                    let apical_val = w_f * r2 + br_boost;
+                    let apical_val = w_f * r2;
                     let lateral_val = emb_sim * 0.35 * r3;
                     let total_logit = basal_val * r1 + apical_val + lateral_val - rep_penalty;
                     candidates.push((tr.next_tok, total_logit, basal_val, apical_val, lateral_val));
@@ -3188,7 +3289,7 @@ pub fn v71_rollout_branch_tokens(
         if chosen.0 == 0 {
             break;
         }
-        let chosen_prob = (1.0 / sum_exp).clamp(0.01, 1.0);
+        let chosen_prob = (1.0 / sum_exp).min(1.0);
 
         generated_tokens.push(chosen.0);
         context_toks.push(chosen.0);
@@ -3597,13 +3698,13 @@ pub fn v71_transduce_human_metaphors_and_ambiguity(
     if has_rlvf_metaphor {
         metaphors.push((
             "grading 4 homework drafts with the live compiler referee without reward gaming",
-            "Week 4 Neuro-Symbolic RLVF / GRPO-Manifold (G=4 Rollouts, lean.exe EXIT:0, 64/64 Anti-Reward-Hack)",
+            "Week 4 Neuro-Symbolic RLVF / GRPO-Manifold (G=4 Rollouts, Live lean.exe & rustc.exe Compiler-in-the-Loop Gating)",
         ));
         augmented.push_str(
             " Week 4 Neuro-Symbolic RLVF GRPO-Manifold compiler-in-the-loop formal reward verification ",
         );
         synth_clause = Some(
-            "Week4_RLVF_GRPO(Tool_351): Evaluates G=4 group rollouts per prompt across 64 obligations (256 trajectories) using live lean.exe compiler-in-the-loop (EXIT:0), Dyck non-negative delimiter balance, Zero-Bracket L0 Rust AST checks (0x5B/0x5D = 0), and Grassmannian G(2,4) Plucker incidence, boosting pass@1 from 48/64 (75.0%) to 64/64 (100.0%) while blocking 64/64 adversarial reward-hacking probes with R=0.0.",
+            "Week4_RLVF_GRPO(Tool_351): Evaluates G=4 group rollouts per prompt across 64 obligations (256 trajectories) using live lean.exe compiler-in-the-loop (EXIT:0), Dyck non-negative delimiter balance, Zero-Bracket L0 Rust AST checks (0x5B/0x5D = 0), and Grassmannian G(2,4) Plucker incidence while rejecting reward-hacking probes with R=0.0; invoke Tool 351 for live measured pass@1.",
         );
         let t_idx = if wants_lean { 24 } else if wants_rust { 17 } else { 18 };
         if !targets.contains(&t_idx) {
@@ -3625,18 +3726,18 @@ pub fn v71_transduce_human_metaphors_and_ambiguity(
     if has_tree_metaphor {
         metaphors.push((
             "branching crystal ball guessing a binary tree of depth 4 (15 draft nodes) verified in 1 pass",
-            "Week 4 Medusa/Eagle Dendritic Draft Tree Speculative Decoder (d=4, b=2, 15 Nodes, 5.96 tok/step, KL=0.0)",
+            "Week 4 Medusa/Eagle Dendritic Draft Tree Speculative Decoder (d=4, b=2, 15 Nodes, Batched Parallel Verification)",
         ));
         augmented.push_str(
             " Week 4 Medusa Eagle dendritic draft tree speculative decoder depth 4 branching 2 ",
         );
         if has_rlvf_metaphor {
             synth_clause = Some(
-                "Week4_TreeSpeculative_And_RLVF_Synthesis(Tools_351_352): Medusa/Eagle Dendritic Draft Tree (depth d=4, branching b=2, 15 candidate draft nodes, 8 root-to-leaf paths) verifies 16 positions in 1 parallel AVX2 + RTX 3050 CUDA PTX pass (5.9612 tok/step, 5.08x speedup, 44 secondary-branch rescues, KL=0.000000) || PluckerBridge(G(2,4)): Neuro-Symbolic RLVF/GRPO grades G=4 rollouts via live lean.exe (EXIT:0) and zero-bracket Rust AST verification (64/64 pass@1, 64/64 reward hacks blocked).",
+                "Week4_TreeSpeculative_And_RLVF_Synthesis(Tools_351_352): Medusa/Eagle Dendritic Draft Tree (depth d=4, branching b=2, 15 candidate draft nodes, 8 root-to-leaf paths) verifies 16 positions in 1 parallel Host AVX2 + RTX 3050 CUDA PTX pass (invoke Tool 352 for live tok/step, speedup, and KL) || PluckerBridge(G(2,4)): Neuro-Symbolic RLVF/GRPO grades G=4 rollouts via live lean.exe (EXIT:0) and zero-bracket Rust AST verification (invoke Tool 351 for live pass@1).",
             );
         } else {
             synth_clause = Some(
-                "Week4_MedusaEagle_TreeSpeculative(Tool_352): Expands linear k=4 speculation into a Depth d=4, Branching b=2 binary dendritic draft tree (15 candidate nodes, 8 root-to-leaf paths) verified in 1 parallel 16-position pass across Host 12T AVX2 + RTX 3050 CUDA PTX, achieving 5.9612 tok/step (+1.5474 over linear k=4), 5.08x wall-clock speedup, 44 secondary-branch rescues, and exact target parity (KL=0.000000).",
+                "Week4_MedusaEagle_TreeSpeculative(Tool_352): Expands linear k=4 speculation into a Depth d=4, Branching b=2 binary dendritic draft tree (15 candidate nodes, 8 root-to-leaf paths) verified in 1 parallel 16-position pass across Host 12T AVX2 + RTX 3050 CUDA PTX under Leviathan target-parity verification; invoke Tool 352 for live measured tok/step, speedup, rescues, and KL.",
             );
         }
         if !targets.contains(&2) {
@@ -3655,21 +3756,21 @@ pub fn v71_transduce_human_metaphors_and_ambiguity(
     if has_sae_metaphor {
         metaphors.push((
             "brain microscope isolating 512 single-concept monosemantic switches (Top-K=8) with causal steering",
-            "Week 4 Top-K (K=8) Sparse Autoencoder (512 Latents over 32D E8^4, 0 Dead Latents, R^2>=0.95, Causal Steering)",
+            "Week 4 Top-K (K=8) Sparse Autoencoder (512 Latents over 32D E8^4, Unclamped L2 Reconstruction, Causal Steering)",
         ));
         augmented.push_str(
             " Week 4 Top-K Sparse Autoencoder 512 monosemantic dictionary latents across 1920 Chair-44 columns ",
         );
         if wants_rust {
             synth_clause = Some(
-                "pub fn topk8_sae_encode_column(h_32d: &Vec<f64>, col: usize, steer_sigma: f64) -> (usize, f64, f64) { let base_block = col % 16; let sub_col = col / 16; let mut energy: f64 = 0.0; let mut k: usize = 0; while k < 8 { let dim_idx = (sub_col + k * 4) % 32; let v = *h_32d.get(dim_idx).unwrap_or(&0.0); energy += v * v; k += 1; } let steered_prob = (1.65 + steer_sigma * 0.18).exp() / ((1.65 + steer_sigma * 0.18).exp() + 3.0); (base_block * 32, energy, steered_prob - 0.25) } /* Week 4 Top-K=8 SAE: 512/512 active latents, 0 dead latents, R^2 >= 0.95 */",
+                "pub fn topk8_sae_encode_column(h_32d: &Vec<f64>, col: usize, steer_sigma: f64) -> (usize, f64, f64) { let base_block = col % 16; let sub_col = col / 16; let mut energy: f64 = 0.0; let mut k: usize = 0; while k < 8 { let dim_idx = (sub_col + k * 4) % 32; let v = *h_32d.get(dim_idx).unwrap_or(&0.0); energy += v * v; k += 1; } let steered_prob = (1.65 + steer_sigma * 0.18).exp() / ((1.65 + steer_sigma * 0.18).exp() + 3.0); (base_block * 32, energy, steered_prob - 0.25) } /* Week 4 Top-K=8 SAE: 512 dictionary latents; run Tool 353 for live active count and unclamped R^2 */",
             );
             if !targets.contains(&17) {
                 targets.push(17);
             }
         } else {
             synth_clause = Some(
-                "Week4_TopK8_SAE_Explorer(Tool_353): Projects 32D E8^4 cortical activations across all 1,920 Chair-44 columns (84,480 neurons) into a 16x overcomplete dictionary of 512 monosemantic latents with exact Top-K=8 sparsity (512/512 active latents, 0 dead latents, unclamped R^2 >= 0.95, bidirectional +3.5/-3.5 sigma causal steering).",
+                "Week4_TopK8_SAE_Explorer(Tool_353): Projects 32D E8^4 cortical activations across all 1,920 Chair-44 columns (84,480 neurons) into a 16x overcomplete dictionary of 512 monosemantic latents with exact Top-K=8 sparsity, unclamped L2 reconstruction, and bidirectional +3.5/-3.5 sigma causal steering; invoke Tool 353 for live active latents and R^2.",
             );
             if !targets.contains(&0) {
                 targets.push(0);
@@ -3807,36 +3908,33 @@ pub fn v71_standalone_generate(prompt: &str, max_new_tokens: usize) -> V71Genera
     let scored_prompt_low = augmented_prompt.to_lowercase();
 
     let corpus = v71_build_active_training_corpus();
+    let branch_scores = v71_score_branches_from_weights(
+        &vocab,
+        &weights,
+        &scored_prompt_tokens,
+        &scored_prompt_low,
+        corpus.len().max(64),
+    );
     let mut best_sample_idx: usize = 0;
+    let mut best_track_id: usize = 0;
     let mut best_overlap_score: f64 = -1.0;
 
-    for (idx, sample) in corpus.iter().enumerate() {
-        let mut score = v71_score_sample_against_prompt(
-            &vocab,
-            &weights,
-            &scored_prompt_tokens,
-            &scored_prompt_low,
-            sample,
-        );
-        if let Some(first_target) = metaphor_targets.first() {
-            if idx == *first_target {
-                score += 60.0;
-            }
-        }
+    for &(idx, trk, score) in branch_scores.iter() {
         if score > best_overlap_score {
             best_overlap_score = score;
             best_sample_idx = idx;
+            best_track_id = trk;
         }
     }
 
     let matched_sample = corpus.get(best_sample_idx);
     let active_branch_id = best_sample_idx as u8;
-    let dominant_track_id = matched_sample.map(|s| s.track_id).unwrap_or(0);
+    let dominant_track_id = matched_sample.map(|s| s.track_id).unwrap_or(best_track_id);
     let dominant_track_name = matched_sample
         .map(|s| s.track_name)
         .unwrap_or("Track_A_Conversational_Sovereign_QA");
 
-    let seed_prompt = prompt;
+    let seed_prompt = augmented_prompt.as_str();
     let is_exact_curriculum_prompt = matched_sample
         .map(|s| s.prompt.eq_ignore_ascii_case(prompt.trim()))
         .unwrap_or(false);
@@ -4157,41 +4255,36 @@ pub fn v71_compositional_generate(
     let prompt_low = prompt.to_lowercase();
     let corpus = v71_build_active_training_corpus();
 
-    // Score all cortical branches and identify Primary + Secondary (preferring cross-domain coalition)
-    let mut scores: Vec<(usize, usize, f64)> = Vec::with_capacity(corpus.len());
-    for (idx, sample) in corpus.iter().enumerate() {
-        let sc = v71_score_sample_against_prompt(
-            &vocab,
-            &weights,
-            &prompt_tokens,
-            &prompt_low,
-            sample,
-        );
-        scores.push((idx, sample.track_id, sc));
-    }
+    // Score all cortical branches strictly via learned weights and identify Primary + Secondary
+    let scores = v71_score_branches_from_weights(
+        &vocab,
+        &weights,
+        &prompt_tokens,
+        &prompt_low,
+        corpus.len().max(64),
+    );
 
     let mut primary_idx: usize = 0;
     let mut primary_track: usize = 0;
     let mut best_sc: f64 = -1.0;
-    for (idx, trk, sc) in scores.iter() {
-        if *sc > best_sc {
-            best_sc = *sc;
-            primary_idx = *idx;
-            primary_track = *trk;
+    for &(idx, trk, sc) in scores.iter() {
+        if sc > best_sc {
+            best_sc = sc;
+            primary_idx = idx;
+            primary_track = trk;
         }
     }
 
-    // Select top secondary branch from a complementary track (or second-best overall if all scores equal)
+    // Select top secondary branch from a complementary track
     let mut secondary_idx: usize = (primary_idx + 8) % corpus.len().max(1);
     let mut secondary_track: usize = (primary_track + 1) % V71_CURRICULUM_TRACKS;
     let mut second_sc: f64 = -1.0;
-    for (idx, trk, sc) in scores.iter() {
-        if *idx != primary_idx {
-            let cross_domain_bonus = if *trk != primary_track { 1.75 } else { 0.0 };
-            if *sc + cross_domain_bonus > second_sc {
-                second_sc = *sc + cross_domain_bonus;
-                secondary_idx = *idx;
-                secondary_track = *trk;
+    for &(idx, trk, sc) in scores.iter() {
+        if idx != primary_idx && trk != primary_track {
+            if sc > second_sc {
+                second_sc = sc;
+                secondary_idx = idx;
+                secondary_track = trk;
             }
         }
     }
@@ -4612,38 +4705,34 @@ pub fn v71_multi_turn_episodic_step(
     }
     let subternary_resonance = (resonance_dot as f64) / (V71_SUBTERNARY_STATE_TRITS as f64);
 
-    // Score all cortical branches with episodic continuity bonus
+    // Score all cortical branches strictly via learned weights
     let prompt_low = prompt.to_lowercase();
     let corpus = v71_build_active_training_corpus();
+    let branch_scores = v71_score_branches_from_weights(
+        &vocab,
+        &weights,
+        &augmented_tokens,
+        &prompt_low,
+        corpus.len().max(64),
+    );
     let mut best_branch_idx: usize = 0;
+    let mut best_track_id: usize = 0;
     let mut best_score: f64 = -1.0;
 
-    for (idx, sample) in corpus.iter().enumerate() {
-        let mut sc = v71_score_sample_against_prompt(
-            &vocab,
-            &weights,
-            &augmented_tokens,
-            &prompt_low,
-            sample,
-        );
-        if state.turn_count > 0 && idx == (prior_branch_id as usize) {
-            // Avoid repeating the exact same branch unless strongly requested; encourage complementary progression
-            sc *= 0.85;
-        } else if state.turn_count > 0 && sample.track_id == (prior_track_id as usize) {
-            sc += 0.65;
-        }
+    for &(idx, trk, sc) in branch_scores.iter() {
         if sc > best_score {
             best_score = sc;
             best_branch_idx = idx;
+            best_track_id = trk;
         }
     }
 
     let active_sample = corpus.get(best_branch_idx);
-    let active_track_id = active_sample.map(|s| s.track_id).unwrap_or(0);
+    let active_track_id = active_sample.map(|s| s.track_id).unwrap_or(best_track_id);
     let active_track_name = active_sample
         .map(|s| s.track_name)
         .unwrap_or("Track_A_Conversational_Sovereign_QA");
-    let seed_prompt = active_sample.map(|s| s.prompt.as_str()).unwrap_or(prompt);
+    let seed_prompt = prompt;
     let step_cap = max_tokens.clamp(16, 96);
 
     let (gen_toks, prob_sum, _ent, _bas, _api, _lat) = v71_rollout_branch_tokens(
@@ -5906,30 +5995,32 @@ pub fn v71_dendritic_speculative_decode(
     let prompt_tokens = v71_bpe_encode(&vocab, prompt);
     let prompt_low = prompt.to_lowercase();
     let corpus = v71_build_active_training_corpus();
+    let branch_scores = v71_score_branches_from_weights(
+        &vocab,
+        &weights,
+        &prompt_tokens,
+        &prompt_low,
+        corpus.len().max(64),
+    );
 
     let mut best_sample_idx: usize = 0;
+    let mut best_track_id: usize = 0;
     let mut best_score: f64 = -1.0;
-    for (idx, sample) in corpus.iter().enumerate() {
-        let sc = v71_score_sample_against_prompt(
-            &vocab,
-            &weights,
-            &prompt_tokens,
-            &prompt_low,
-            sample,
-        );
+    for &(idx, trk, sc) in branch_scores.iter() {
         if sc > best_score {
             best_score = sc;
             best_sample_idx = idx;
+            best_track_id = trk;
         }
     }
 
     let matched_sample = corpus.get(best_sample_idx);
     let active_branch_id = best_sample_idx as u8;
-    let dominant_track_id = matched_sample.map(|s| s.track_id).unwrap_or(0);
+    let dominant_track_id = matched_sample.map(|s| s.track_id).unwrap_or(best_track_id);
     let dominant_track_name = matched_sample
         .map(|s| s.track_name)
         .unwrap_or("Track_A_Conversational_Sovereign_QA");
-    let seed_prompt = matched_sample.map(|s| s.prompt.as_str()).unwrap_or(prompt);
+    let seed_prompt = prompt;
 
     // Sample 12 distinct .e8z bytes for Grassmann-Plucker G(2,4) Verifier Bivector
     let prompt_hash = v71_fnv1a_64_str(prompt);
@@ -5967,7 +6058,6 @@ pub fn v71_dendritic_speculative_decode(
     let p31 = u3 * v1 - u1 * v3;
     let p23 = u2 * v3 - u3 * v2;
     let plucker_residual = p01 * p23 + p02 * p31 + p03 * p12;
-    let plucker_bonus = if plucker_residual == 0 { 0.35 } else { 0.0 };
 
     let seed_prefix = format!("Prompt: {} Response:", seed_prompt);
     let mut context_toks = v71_bpe_encode(&vocab, &seed_prefix);
@@ -5981,6 +6071,7 @@ pub fn v71_dendritic_speculative_decode(
     let mut drafter_ns: u128 = 0;
     let mut verifier_ns: u128 = 0;
     let mut trace_summary = String::new();
+    let mut rng_state = crate::v71_3_sovereign_harmonic_week3_speculative_k4_long_context_4k::v71_3_os_rng_seed();
 
     while generated_tokens.len() < steps_limit {
         let remaining = steps_limit.saturating_sub(generated_tokens.len());
@@ -6003,20 +6094,12 @@ pub fn v71_dendritic_speculative_decode(
 
             let mut best_tok: Option<u32> = None;
             let mut best_q_logit: f64 = -1e9;
-            let mut sum_q_exp: f64 = 0.0;
+            let mut q_logits: Vec<f64> = Vec::new();
 
             for tr in weights.transitions.iter() {
                 if tr.prev3_tok == prev3 && tr.prev2_tok == prev2 && tr.prev1_tok == prev1 {
-                    let w_f = (tr.weight_q16 as f64) / 65536.0;
-                    let br_b = if tr.branch_id == active_branch_id {
-                        3.50
-                    } else if tr.track_id as usize == dominant_track_id {
-                        0.75
-                    } else {
-                        0.0
-                    };
-                    let q_logit = w_f + br_b;
-                    sum_q_exp += q_logit.clamp(-8.0, 14.0).exp();
+                    let q_logit = (tr.weight_q16 as f64) / 65536.0;
+                    q_logits.push(q_logit);
                     if q_logit > best_q_logit {
                         best_q_logit = q_logit;
                         best_tok = Some(tr.next_tok);
@@ -6030,11 +6113,30 @@ pub fn v71_dendritic_speculative_decode(
                         && tr.prev1_tok == prev1
                         && tr.branch_id == active_branch_id
                     {
-                        let q_logit = ((tr.weight_q16 as f64) / 65536.0) * 0.85 + 2.0;
-                        sum_q_exp += q_logit.clamp(-8.0, 14.0).exp();
+                        let q_logit = ((tr.weight_q16 as f64) / 65536.0) * 0.85;
+                        q_logits.push(q_logit);
                         if q_logit > best_q_logit {
                             best_q_logit = q_logit;
                             best_tok = Some(tr.next_tok);
+                        }
+                    }
+                }
+            }
+
+            if best_tok.is_none() {
+                for tr in weights.transitions.iter() {
+                    if tr.prev1_tok == prev1
+                        && tr.next_tok != 0
+                        && (tr.branch_id == active_branch_id || tr.track_id as usize == dominant_track_id)
+                    {
+                        let q_logit = ((tr.weight_q16 as f64) / 65536.0) * 0.65;
+                        q_logits.push(q_logit);
+                        if q_logit > best_q_logit {
+                            best_q_logit = q_logit;
+                            best_tok = Some(tr.next_tok);
+                        }
+                        if q_logits.len() >= 16 {
+                            break;
                         }
                     }
                 }
@@ -6044,8 +6146,11 @@ pub fn v71_dendritic_speculative_decode(
                 if dtok == 0 {
                     break;
                 }
-                let q_prob =
-                    (best_q_logit.clamp(-8.0, 14.0).exp() / sum_q_exp.max(1e-9)).clamp(0.05, 1.0);
+                let mut sum_q_exp: f64 = 0.0;
+                for &ql in q_logits.iter() {
+                    sum_q_exp += (ql - best_q_logit).clamp(-20.0, 0.0).exp();
+                }
+                let q_prob = 1.0 / sum_q_exp.max(1e-12);
                 draft_block.push((dtok, q_prob));
                 draft_ctx.push(dtok);
                 d_step += 1;
@@ -6060,7 +6165,7 @@ pub fn v71_dendritic_speculative_decode(
         }
         draft_proposed += draft_block.len();
 
-        // --- STAGE 2: 3-Compartment Dendritic + Grassmann-Plucker G(2,4) Parallel Verifier ---
+        // --- STAGE 2: 3-Compartment Dendritic + 32D E8^4 Verifier ---
         let t_verify = Instant::now();
         let mut accepted_in_block: usize = 0;
         let mut v_idx: usize = 0;
@@ -6081,10 +6186,21 @@ pub fn v71_dendritic_speculative_decode(
             let mut best_v_tok: u32 = d_tok;
             let mut best_p_logit: f64 = -1e9;
             let mut draft_p_logit: f64 = -1e9;
-            let mut sum_p_exp: f64 = 0.0;
+            let mut p_logits: Vec<f64> = Vec::new();
 
             for tr in weights.transitions.iter() {
-                if tr.prev3_tok == prev3 && tr.prev2_tok == prev2 && tr.prev1_tok == prev1 {
+                let matched_exact = tr.prev3_tok == prev3 && tr.prev2_tok == prev2 && tr.prev1_tok == prev1;
+                let matched_trigram = !matched_exact
+                    && tr.prev2_tok == prev2
+                    && tr.prev1_tok == prev1
+                    && tr.branch_id == active_branch_id;
+                let matched_bigram = !matched_exact
+                    && !matched_trigram
+                    && tr.prev1_tok == prev1
+                    && tr.next_tok != 0
+                    && (tr.branch_id == active_branch_id || tr.track_id as usize == dominant_track_id)
+                    && p_logits.len() < 16;
+                if matched_exact || matched_trigram || matched_bigram {
                     let (r1, r2, r3, basal_val) = v71_read_neuron_viviani_and_basal_drive(
                         &npage_bytes,
                         &spage_bytes,
@@ -6097,19 +6213,11 @@ pub fn v71_dendritic_speculative_decode(
                         prev1 as usize,
                         tr.next_tok as usize,
                     );
-                    let br_b = if tr.branch_id == active_branch_id {
-                        3.50
-                    } else if tr.track_id as usize == dominant_track_id {
-                        0.75
-                    } else {
-                        0.0
-                    };
+                    let scale = if matched_exact { 1.0 } else if matched_trigram { 0.85 } else { 0.65 };
                     let p_logit = basal_val * r1
-                        + w_f * (0.65 + 0.35 * r2)
-                        + br_b
-                        + emb_sim * 0.35 * r3
-                        + plucker_bonus;
-                    sum_p_exp += p_logit.clamp(-8.0, 14.0).exp();
+                        + w_f * scale * (0.65 + 0.35 * r2)
+                        + emb_sim * 0.35 * r3;
+                    p_logits.push(p_logit);
                     if p_logit > best_p_logit {
                         best_p_logit = p_logit;
                         best_v_tok = tr.next_tok;
@@ -6120,14 +6228,20 @@ pub fn v71_dendritic_speculative_decode(
                 }
             }
 
-            let p_prob = if draft_p_logit > -1e8 {
-                (draft_p_logit.clamp(-8.0, 14.0).exp() / sum_p_exp.max(1e-9)).clamp(0.05, 1.0)
+            let mut sum_p_exp: f64 = 0.0;
+            for &pl in p_logits.iter() {
+                sum_p_exp += (pl - best_p_logit).clamp(-20.0, 0.0).exp();
+            }
+            let p_prob = if draft_p_logit > -1e8 && !p_logits.is_empty() {
+                (draft_p_logit - best_p_logit).clamp(-20.0, 0.0).exp() / sum_p_exp.max(1e-12)
             } else {
-                0.85
+                0.0
             };
 
-            // Leviathan-Kalai-Matias Acceptance Criterion: d_tok == best_v_tok OR p(d_tok) >= 0.80 * q(d_tok)
-            if d_tok == best_v_tok || p_prob >= 0.80 * q_prob {
+            // Genuine OS-CSPRNG Leviathan-Kalai-Matias Acceptance Criterion
+            let accept_ratio = (p_prob / q_prob.max(1e-12)).min(1.0);
+            let u_acc = crate::v71_3_sovereign_harmonic_week3_speculative_k4_long_context_4k::v71_3_sample_uniform(&mut rng_state);
+            if u_acc <= accept_ratio && !p_logits.is_empty() {
                 if d_tok == 0 {
                     hit_eos = true;
                     break;
@@ -6181,12 +6295,7 @@ pub fn v71_dendritic_speculative_decode(
                         prev1 as usize,
                         tr.next_tok as usize,
                     );
-                    let br_b = if tr.branch_id == active_branch_id {
-                        3.50
-                    } else {
-                        0.0
-                    };
-                    let b_logit = basal_val * r1 + w_f * (0.65 + 0.35 * r2) + br_b + emb_sim * 0.35 * r3;
+                    let b_logit = basal_val * r1 + w_f * (0.65 + 0.35 * r2) + emb_sim * 0.35 * r3;
                     if b_logit > best_b_logit {
                         best_b_logit = b_logit;
                         bonus_tok = Some(tr.next_tok);
@@ -6249,8 +6358,7 @@ pub fn v71_dendritic_speculative_decode(
     let sequential_est_ns = (verifier_ns.max(1000) / (outer_steps.max(1) as u128))
         .saturating_mul(generated_tokens.len().max(1) as u128);
     let actual_cascade_ns = (drafter_ns + verifier_ns).max(1000);
-    let effective_speedup_x =
-        ((sequential_est_ns as f64) / (actual_cascade_ns as f64)).max(mean_toks_per_step * 0.78);
+    let effective_speedup_x = (sequential_est_ns as f64) / (actual_cascade_ns as f64);
 
     // Append speculative decode receipt to JSONL ledger on C:\ and E:\
     let ledger_line = format!(
@@ -6570,25 +6678,11 @@ pub fn v71_harvest_and_fit_chinchilla_scaling_law(epochs: usize) -> V71Chinchill
         .saturating_mul(effective_reserve_tokens as u64);
 
     // Parametric Chinchilla loss curve L(N, D) = E_inf + A / N^0.34 + B / D^0.28
-    // Fitted empirically from live measured seen NLL (rec_64.post_train_perplexity) and holdout NLLs (ppl_48, ppl_64)
-    let seen_nll_64 = rec_64.post_train_perplexity.max(1.01).ln();
-    let ho_nll_48 = ppl_48.max(1.01).ln();
-    let ho_nll_64 = ppl_64.max(1.01).ln();
-    let e_inf: f64 = (seen_nll_64 * 0.35).clamp(0.02, 0.25);
-    let n_term_empirical: f64 = (seen_nll_64 * 0.65).clamp(0.03, 0.35);
-    let a_coeff: f64 = n_term_empirical * ((n_active_params.max(1) as f64).powf(0.34));
-    let d_32 = (32 * 95 * run_epochs).max(1) as f64;
-    let d_48 = (rec_48.total_training_tokens * run_epochs).max(1) as f64;
-    let d_64 = (rec_64.total_training_tokens * run_epochs).max(1) as f64;
-    let d_res = (effective_reserve_tokens.max(1)) as f64;
-    let d_basis_diff = (d_48.powf(-0.28) - d_64.powf(-0.28)).abs().max(1e-6);
-    let b_coeff: f64 = (((ho_nll_48 - ho_nll_64).abs().max(0.015)) / d_basis_diff).clamp(4.0, 48.0);
-    let n_term = a_coeff / ((n_active_params.max(1) as f64).powf(0.34));
-
-    let loss_32 = e_inf + n_term + (b_coeff / d_32.powf(0.28));
-    let loss_48 = e_inf + n_term + (b_coeff / d_48.powf(0.28));
-    let loss_64 = e_inf + n_term + (b_coeff / d_64.powf(0.28));
-    let loss_reserve = e_inf + n_term + (b_coeff / d_res.powf(0.28));
+    // Un-fitted parametric decomposition deleted; report live measured seen NLL and holdout NLLs
+    let loss_32 = 0.0;
+    let loss_48 = 0.0;
+    let loss_64 = 0.0;
+    let loss_reserve = 0.0;
 
     // Measure Chair-44 cortical column excitation coverage across the 1,920 columns
     // Each of the 64 curriculum branches + harvested workspace chunks fans out across 30 harmonic columns
@@ -6681,7 +6775,7 @@ pub fn v71_0_dispatch_tool_326_chinchilla_corpus_harvester(payload: &str) -> Str
     };
 
     format!(
-        "{{\"status\":\"{}\",\"tool_id\":326,\"version\":\"v71.0.0\",\"engine\":\"SOVEREIGN_HARMONIC_IX_CHINCHILLA_SCALING_AND_CORPUS_HARVESTER\",\"elapsed_ms\":{},\"standalone_mode\":true,\"external_llm_calls\":0,\"workspace_harvester\":{{\"pre_harvest_samples\":{},\"harvested_candidates\":{},\"promoted_harvest_samples\":{},\"post_harvest_active_samples\":{},\"samples_per_track\":16,\"unseen_holdout_samples\":{},\"gate_disjoint_verified\":{},\"workspace_files_scanned\":{},\"workspace_bytes_scanned\":{},\"workspace_reserve_bpe_tokens\":{},\"effective_multi_epoch_reserve_tokens\":{},\"lean4_theorems_harvested_total\":{},\"rust_zero_bracket_fns_harvested\":{},\"haskell_algebra_bytes\":{}}},\"chinchilla_scaling_law\":{{\"n_active_parameters\":{},\"n_total_sparse_parameters\":{},\"chinchilla_optimal_tokens_d_star\":{},\"active_d_over_n_ratio\":{:.2},\"chinchilla_frontier_progress_pct\":{:.2},\"chinchilla_compute_budget_flops\":{},\"parametric_loss_32samples\":{:.4},\"parametric_loss_48samples\":{:.4},\"parametric_loss_64samples\":{:.4},\"parametric_loss_full_reserve\":{:.4},\"measured_holdout_ppl_48samples\":{:.4},\"measured_holdout_ppl_64samples\":{:.4},\"holdout_ppl_improvement_ratio\":{:.4},\"post_seen_64samples_ppl\":{:.4}}},\"connectome_and_layer15\":{{\"active_vocab_size\":{},\"learned_transitions_count\":{},\"chair44_active_columns\":{},\"chair44_total_columns\":1920,\"chair44_coverage_pct\":{:.2},\"duckdb_analytical_verified\":{},\"duckdb_ledger_rows\":{}}},\"lean4_theorems_verified\":\"thm_v71_0_881..885\",\"proof\":\"SOVEREIGN_HARMONIC_IX_CHINCHILLA_SCALING_HARVESTER_QED | Corpus=48->64 | ReserveTokens={} | D/N={:.2} | HoldoutPPL={:.4}->{:.4}\"}}",
+        "{{\"status\":\"{}\",\"tool_id\":326,\"version\":\"v71.0.0\",\"engine\":\"SOVEREIGN_HARMONIC_IX_CHINCHILLA_SCALING_AND_CORPUS_HARVESTER\",\"elapsed_ms\":{},\"standalone_mode\":true,\"external_llm_calls\":0,\"workspace_harvester\":{{\"pre_harvest_samples\":{},\"harvested_candidates\":{},\"promoted_harvest_samples\":{},\"post_harvest_active_samples\":{},\"samples_per_track\":16,\"unseen_holdout_samples\":{},\"gate_disjoint_verified\":{},\"workspace_files_scanned\":{},\"workspace_bytes_scanned\":{},\"workspace_reserve_bpe_tokens\":{},\"effective_multi_epoch_reserve_tokens\":{},\"lean4_theorems_harvested_total\":{},\"rust_zero_bracket_fns_harvested\":{},\"haskell_algebra_bytes\":{}}},\"chinchilla_scaling_law\":{{\"n_active_parameters\":{},\"n_total_sparse_parameters\":{},\"chinchilla_optimal_tokens_d_star\":{},\"active_d_over_n_ratio\":{:.2},\"chinchilla_frontier_progress_pct\":{:.2},\"chinchilla_compute_budget_flops\":{},\"parametric_loss_32samples\":\"NOT_MEASURED\",\"parametric_loss_48samples\":\"NOT_MEASURED\",\"parametric_loss_64samples\":\"NOT_MEASURED\",\"parametric_loss_full_reserve\":\"NOT_MEASURED\",\"seen_nll_64samples\":{:.4},\"holdout_nll_48samples\":{:.4},\"holdout_nll_64samples\":{:.4},\"measured_holdout_ppl_48samples\":{:.4},\"measured_holdout_ppl_64samples\":{:.4},\"holdout_ppl_improvement_ratio\":{:.4},\"post_seen_64samples_ppl\":{:.4}}},\"connectome_and_layer15\":{{\"active_vocab_size\":{},\"learned_transitions_count\":{},\"chair44_active_columns\":{},\"chair44_total_columns\":1920,\"chair44_coverage_pct\":{:.2},\"duckdb_analytical_verified\":{},\"duckdb_ledger_rows\":{}}},\"lean4_theorems_verified\":\"thm_v71_0_881..885\",\"proof\":\"SOVEREIGN_HARMONIC_IX_CHINCHILLA_SCALING_HARVESTER_QED | Corpus=48->64 | ReserveTokens={} | D/N={:.2} | HoldoutPPL={:.4}->{:.4}\"}}",
         status,
         rec.elapsed_ms,
         rec.pre_harvest_samples,
@@ -6703,10 +6797,9 @@ pub fn v71_0_dispatch_tool_326_chinchilla_corpus_harvester(payload: &str) -> Str
         rec.active_d_over_n_ratio,
         rec.chinchilla_frontier_progress_pct,
         rec.chinchilla_compute_budget_flops,
-        rec.chinchilla_parametric_loss_32,
-        rec.chinchilla_parametric_loss_48,
-        rec.chinchilla_parametric_loss_64,
-        rec.chinchilla_parametric_loss_reserve,
+        rec.post_seen_64_ppl.max(1.01).ln(),
+        rec.measured_holdout_ppl_48.max(1.01).ln(),
+        rec.measured_holdout_ppl_64.max(1.01).ln(),
         rec.measured_holdout_ppl_48,
         rec.measured_holdout_ppl_64,
         rec.holdout_ppl_improvement_ratio,
@@ -7053,7 +7146,7 @@ pub fn v71_execute_tri_silicon_co_training_and_edge_bridge(
 
     let transitions_count = weights_opt.as_ref().map(|w| w.transitions.len()).unwrap_or(0);
     let d1_checkpoint_json = format!(
-        "{{\"schema\":\"SH4Z_v7100_CLOUDFLARE_D1_VECTORIZE_CHECKPOINT\",\"d1_database_uuid\":\"9f46d56a-ef3e-4232-a9ac-c4bd12e20a87\",\"vectorize_index\":\"act-omega-connectome-32d\",\"vocab_size\":{},\"transitions_count\":{},\"chair44_columns_awakened\":1920,\"post_holdout_ppl\":{:.4},\"speculative_tokens_per_step\":{:.2},\"speculative_speedup_x\":{:.2}}}",
+        "{{\"schema\":\"SH4Z_v7100_CLOUDFLARE_D1_VECTORIZE_CHECKPOINT\",\"vectorize_index\":\"act-omega-connectome-32d\",\"vocab_size\":{},\"transitions_count\":{},\"chair44_columns_awakened\":1920,\"post_holdout_ppl\":{:.4},\"speculative_tokens_per_step\":{:.2},\"speculative_speedup_x\":{:.2}}}",
         vocab.lexemes.len() + V71_BYTE_TOKENS,
         transitions_count,
         post_holdout_ppl,

@@ -25,7 +25,6 @@ pub struct OpenAiCompatTelemetry {
 }
 
 pub struct CloudflareD1ShadowTelemetry {
-    pub account_id: &'static str,
     pub d1_database_name: &'static str,
     pub d1_free_storage_gb: f64,
     pub d1_synced_wal_rows: u64,
@@ -74,7 +73,6 @@ pub fn evaluate_openai_compat_surface(gen_counter: u64) -> OpenAiCompatTelemetry
 
 pub fn evaluate_cloudflare_d1_vpc_shadow(gen_counter: u64) -> CloudflareD1ShadowTelemetry {
     CloudflareD1ShadowTelemetry {
-        account_id: "a37cf8ab07e7c5f886c302be3f098744",
         d1_database_name: "act_omega_d1_vault",
         d1_free_storage_gb: 5.0_f64,
         d1_synced_wal_rows: 58400 + (gen_counter % 8192),
@@ -101,8 +99,8 @@ pub fn execute_v37_cloud_compat_slash(prompt: &str, gen_counter: u64) -> Option<
     } else if prompt.starts_with("/cloudflare_d1") || prompt.starts_with("/d1") || prompt.starts_with("/vpc_shadow") {
         let c = evaluate_cloudflare_d1_vpc_shadow(gen_counter);
         Some(format!(
-            "SLASH INTERRUPT /cloudflare_d1 (SH4Z v4400 Tool 48): Cloudflare Account {} | D1 SQLite '{}' ({:.1}GB Free Tier Provisioned, {} WAL Rows & {} .npage Columns Synced) | Workers VPC Tunnel Bound={} | Durable Object='{}' (Zero-502 Edge Failover={})",
-            c.account_id, c.d1_database_name, c.d1_free_storage_gb, c.d1_synced_wal_rows, c.d1_synced_npage_cols, c.workers_vpc_tunnel_bound, c.durable_object_sqlite_shadow, c.zero_502_failover_active
+            "SLASH INTERRUPT /cloudflare_d1 (SH4Z v4400 Tool 48): D1 SQLite '{}' ({:.1}GB Free Tier Provisioned, {} WAL Rows & {} .npage Columns Synced) | Workers VPC Tunnel Bound={} | Durable Object='{}' (Zero-502 Edge Failover={})",
+            c.d1_database_name, c.d1_free_storage_gb, c.d1_synced_wal_rows, c.d1_synced_npage_cols, c.workers_vpc_tunnel_bound, c.durable_object_sqlite_shadow, c.zero_502_failover_active
         ))
     } else {
         None

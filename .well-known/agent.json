@@ -27,7 +27,7 @@
   "pixel10_ops_sec": 642000,
   "pixel8_ops_sec": 588000,
   "google_tasks_certified": "260 / 260",
-  "cloudflare_d1_uuid": "9f46d56a-ef3e-4232-a9ac-c4bd12e20a87",
+  "cloudflare_d1_database": "act_omega_d1_vault",
   "cloudflare_d1_tables": [
     "harness_5w1h_audit_log",
     "npage_tier_snapshots",

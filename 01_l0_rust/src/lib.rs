@@ -239,6 +239,7 @@ pub use v71_0_sovereign_harmonic_standalone_model::{
     v71_train_balanced_4domain_curriculum,
     v71_standalone_generate,
     v71_compositional_generate,
+    v71_load_episodic_state,
     v71_multi_turn_episodic_step,
     v71_verify_and_expand_selfplay_curriculum,
     v71_dendritic_speculative_decode,
@@ -400,6 +401,10 @@ pub use v72_1_sh_xi_matryoshka_384_768_cuda_pretrainer::{
     v72_1_dispatch_tool_361_neural_converse_cutover,
     v72_1_dispatch_tool_362_week1_master_certification,
     v72_1_extract_bool_param,
+    v72_1_load_sh_xi_checkpoint_strict,
+    v72_1_sha256_hex,
+    v72_1_update_weight_manifest,
+    v72_1_verify_weight_manifest,
 };
 
 // Sovereign Harmonic XI Week 2 (v72.2.0 | SH-XI-SPARSE-MOE-SFT-RAG | Tools 363..368 | CHAIN 368 | 995/995 QED):
@@ -427,6 +432,7 @@ pub use v72_2_sh_xi_sparse_moe_chatml_sft_and_rag::{
     v72_2_build_sse_chat_completion_stream,
     v72_2_converse_execute_full,
     v72_2_dispatch_converse_route,
+    v72_2_ensure_moe_bank_loaded,
     v72_2_dispatch_tool_363_shell2_cpu_ssd_sparse_moe_bank,
     v72_2_dispatch_tool_364_chatml_masked_sft_trainer,
     v72_2_dispatch_tool_365_igpu_grounded_rag_and_telemetry,

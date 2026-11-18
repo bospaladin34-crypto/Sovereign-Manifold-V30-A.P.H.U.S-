@@ -732,6 +732,9 @@ pub struct V71_3LongHorizon4KMetrics {
     pub basal_subternary_bytes: usize,
     pub apical_mamba3_bytes: usize,
     pub total_recurrent_state_bytes: usize,
+    pub deltanet_f32_bytes: usize,
+    pub deltanet_i8_checkpoint_bytes: usize,
+    pub o1_448b_shannon_bound_recalls: usize,
     pub kv_cache_fp16_equivalent_bytes: usize,
     pub memory_compression_factor: usize,
     pub rope_4096_max_symplectic_drift: f64,
@@ -967,6 +970,50 @@ fn v71_3_token_unit_emb_32d(
     vec
 }
 
+fn v71_3_deltanet_simhash_8_8192(k_vec: &Vec<f64>) -> Vec<(usize, f64)> {
+    // Token-blind 8-bank x 1024-slot (= 8192 rows) SimHash projection strictly over the 32D vector
+    let mut active: Vec<(usize, f64)> = Vec::with_capacity(8);
+    let w_mag = 1.0_f64 / 8.0_f64.sqrt();
+    let mut bank: usize = 0;
+    while bank < 8 {
+        let mut slot: usize = 0;
+        let mut b_bit: usize = 0;
+        while b_bit < 10 {
+            let mut dot: f64 = 0.0;
+            let mut d: usize = 0;
+            while d < V71_EMBED_DIM_32D {
+                let mut h = ((bank as u64).wrapping_mul(0x9E37_79B9_7F4A_7C15))
+                    ^ ((b_bit as u64).wrapping_mul(0xBF58_476D_1CE4_E5B9))
+                    ^ ((d as u64).wrapping_mul(0x94D0_49BB_1331_11EB));
+                h = (h ^ (h >> 30)).wrapping_mul(0xBF58_476D_1CE4_E5B9);
+                h ^= h >> 27;
+                let coeff = if (h & 1) == 0 { 1.0 } else { -1.0 };
+                let scale = 1.0 + (((h >> 1) & 3) as f64) * 0.25;
+                dot += coeff * scale * (*k_vec.get(d).unwrap_or(&0.0));
+                d += 1;
+            }
+            if dot >= 0.0 {
+                slot |= 1usize << b_bit;
+            }
+            b_bit += 1;
+        }
+        let mut sign_dot: f64 = 0.0;
+        let mut d_s: usize = 0;
+        while d_s < V71_EMBED_DIM_32D {
+            let mut hs = ((bank as u64).wrapping_mul(0xD6E8_FEB8_6659_FD93))
+                ^ ((d_s as u64).wrapping_mul(0xA076_1D64_78BD_642F));
+            hs = (hs ^ (hs >> 30)).wrapping_mul(0xBF58_476D_1CE4_E5B9);
+            let sc = if (hs & 1) == 0 { 1.0 } else { -1.0 };
+            sign_dot += sc * (*k_vec.get(d_s).unwrap_or(&0.0));
+            d_s += 1;
+        }
+        let val = if sign_dot >= 0.0 { w_mag } else { -w_mag };
+        active.push((bank * 1024 + slot, val));
+        bank += 1;
+    }
+    active
+}
+
 pub fn v71_3_run_long_horizon_4096_and_niah_gauntlet(
     enable_ntk_yarn_rope: bool,
     enable_apical_mamba3: bool,
@@ -979,6 +1026,14 @@ pub fn v71_3_run_long_horizon_4096_and_niah_gauntlet(
 
     let mut basal_64b: Vec<i8> = v71_3_alloc_i8(V71_3_BASAL_SUBTERNARY_BYTES, 0i8);
     let mut apical_384b: Vec<i8> = v71_3_alloc_i8(V71_3_APICAL_TOTAL_BYTES, 0i8);
+    let deltanet_rows: usize = 8192;
+    let deltanet_total: usize = deltanet_rows * V71_EMBED_DIM_32D;
+    let mut deltanet_s: Vec<f32> = Vec::with_capacity(deltanet_total);
+    let mut ds_i: usize = 0;
+    while ds_i < deltanet_total {
+        deltanet_s.push(0.0_f32);
+        ds_i += 1;
+    }
 
     let mut max_rope_drift: f64 = 0.0;
     let mut max_apical_norm: f64 = 0.0;
@@ -1035,7 +1090,7 @@ pub fn v71_3_run_long_horizon_4096_and_niah_gauntlet(
             }
         }
 
-        // Uniform 4,096-token associative recurrent propagation across ALL tokens & all 384 apical bytes (zero needle whitelist)
+        // Uniform 4,096-token recurrent update across BOTH hardware 448B baseline and Gated DeltaNet 8192x32 matrix (zero whitelist)
         if enable_apical_mamba3 {
             let mut l_idx: usize = 0;
             while l_idx < V71_1_DEEP_LAYERS {
@@ -1062,10 +1117,62 @@ pub fn v71_3_run_long_horizon_4096_and_niah_gauntlet(
                 }
                 l_idx += 1;
             }
+
+            // Uniform Gated DeltaNet Kaczmarz rank-1 associative matrix step S_t = S_{t-1} + phi (v - S_{t-1}^T phi)^T
+            let active_phi = v71_3_deltanet_simhash_8_8192(&prev_emb);
+            let mut pred_v = v71_3_alloc_f64(V71_EMBED_DIM_32D, 0.0);
+            for &(row_idx, w_r) in active_phi.iter() {
+                let row_base = row_idx * V71_EMBED_DIM_32D;
+                let mut c: usize = 0;
+                while c < V71_EMBED_DIM_32D {
+                    let sv = *deltanet_s.get(row_base + c).unwrap_or(&0.0_f32) as f64;
+                    if let Some(pv) = pred_v.get_mut(c) {
+                        *pv += w_r * sv;
+                    }
+                    c += 1;
+                }
+            }
+            let beta = 1.0_f64;
+            for &(row_idx, w_r) in active_phi.iter() {
+                let row_base = row_idx * V71_EMBED_DIM_32D;
+                let mut c: usize = 0;
+                while c < V71_EMBED_DIM_32D {
+                    let err_c = (*cur_emb.get(c).unwrap_or(&0.0)) - (*pred_v.get(c).unwrap_or(&0.0));
+                    if let Some(slot) = deltanet_s.get_mut(row_base + c) {
+                        *slot += (beta * w_r * err_c) as f32;
+                    }
+                    c += 1;
+                }
+            }
         }
 
         prev_emb = cur_emb;
         step_t += 1;
+    }
+
+    // Quantize Gated DeltaNet matrix once after full 4096-token sequence into INT8 checkpoint buffer
+    let mut deltanet_row_max: Vec<f32> = Vec::with_capacity(deltanet_rows);
+    let mut deltanet_i8: Vec<i8> = Vec::with_capacity(deltanet_total);
+    let mut r_q: usize = 0;
+    while r_q < deltanet_rows {
+        let row_base = r_q * V71_EMBED_DIM_32D;
+        let mut amax: f32 = 1e-6_f32;
+        let mut c: usize = 0;
+        while c < V71_EMBED_DIM_32D {
+            let av = deltanet_s.get(row_base + c).copied().unwrap_or(0.0_f32).abs();
+            if av > amax { amax = av; }
+            c += 1;
+        }
+        let scale = amax / 127.0_f32;
+        deltanet_row_max.push(scale);
+        let mut c2: usize = 0;
+        while c2 < V71_EMBED_DIM_32D {
+            let fv = deltanet_s.get(row_base + c2).copied().unwrap_or(0.0_f32);
+            let q = (fv / scale).round().clamp(-127.0, 127.0) as i8;
+            deltanet_i8.push(q);
+            c2 += 1;
+        }
+        r_q += 1;
     }
 
     // Collect all distinct candidate tokens present in the 4,096-token haystack for honest distractor scoring
@@ -1078,6 +1185,7 @@ pub fn v71_3_run_long_horizon_4096_and_niah_gauntlet(
         .collect();
 
     let mut exact_recalls: usize = 0;
+    let mut o1_448b_recalls: usize = 0;
     let mut margin_sum: f64 = 0.0;
 
     let mut n_idx: usize = 0;
@@ -1085,27 +1193,35 @@ pub fn v71_3_run_long_horizon_4096_and_niah_gauntlet(
         if let Some(&(_depth, k_tok, v_tok)) = needles.get(n_idx) {
             let k_vec = v71_3_token_unit_emb_32d(emb_ref, k_tok);
             let v_vec = v71_3_token_unit_emb_32d(emb_ref, v_tok);
-
-            let score_candidate = |c_vec: &Vec<f64>| -> f64 {
-                let mut acc: f64 = 0.0;
-                let mut l_idx: usize = 0;
-                while l_idx < V71_1_DEEP_LAYERS {
-                    let mut d_c: usize = 0;
-                    while d_c < V71_3_APICAL_BYTES_PER_LAYER {
-                        let a_idx = l_idx * V71_3_APICAL_BYTES_PER_LAYER + d_c;
-                        let s_val = (*apical_384b.get(a_idx).unwrap_or(&0) as f64) / 127.0;
-                        let psi_k = *k_vec.get((d_c + l_idx * 3) % V71_EMBED_DIM_32D).unwrap_or(&0.0);
-                        let phi_c = *c_vec.get(d_c % V71_EMBED_DIM_32D).unwrap_or(&0.0);
-                        acc += s_val * psi_k * phi_c;
-                        d_c += 1;
+            let phi_k = v71_3_deltanet_simhash_8_8192(&k_vec);
+            let mut retrieved_v = v71_3_alloc_f64(V71_EMBED_DIM_32D, 0.0);
+            if enable_ntk_yarn_rope && enable_apical_mamba3 {
+                for &(row_idx, w_r) in phi_k.iter() {
+                    let row_scale = deltanet_row_max.get(row_idx).copied().unwrap_or(0.0_f32) as f64;
+                    let row_base = row_idx * V71_EMBED_DIM_32D;
+                    let mut c: usize = 0;
+                    while c < V71_EMBED_DIM_32D {
+                        let qv = (*deltanet_i8.get(row_base + c).unwrap_or(&0) as f64) * row_scale;
+                        if let Some(rv) = retrieved_v.get_mut(c) {
+                            *rv += w_r * qv;
+                        }
+                        c += 1;
                     }
-                    l_idx += 1;
                 }
-                acc / (V71_1_DEEP_LAYERS as f64)
+            }
+
+            let dot_32 = |a: &Vec<f64>, b: &Vec<f64>| -> f64 {
+                let mut acc: f64 = 0.0;
+                let mut c: usize = 0;
+                while c < V71_EMBED_DIM_32D {
+                    acc += (*a.get(c).unwrap_or(&0.0)) * (*b.get(c).unwrap_or(&0.0));
+                    c += 1;
+                }
+                acc
             };
 
             let target_affinity = if enable_ntk_yarn_rope && enable_apical_mamba3 {
-                score_candidate(&v_vec)
+                dot_32(&retrieved_v, &v_vec)
             } else {
                 0.0
             };
@@ -1116,7 +1232,7 @@ pub fn v71_3_run_long_horizon_4096_and_niah_gauntlet(
                     continue;
                 }
                 let sc = if enable_ntk_yarn_rope && enable_apical_mamba3 {
-                    score_candidate(cand_vec)
+                    dot_32(&retrieved_v, cand_vec)
                 } else {
                     0.0
                 };
@@ -1133,6 +1249,35 @@ pub fn v71_3_run_long_horizon_4096_and_niah_gauntlet(
                 exact_recalls += 1;
             }
             margin_sum += margin;
+
+            // Measure honest 448B Shannon-bound control too
+            let score_448b = |c_vec: &Vec<f64>| -> f64 {
+                let mut acc: f64 = 0.0;
+                let mut l_idx: usize = 0;
+                while l_idx < V71_1_DEEP_LAYERS {
+                    let mut d_c: usize = 0;
+                    while d_c < V71_3_APICAL_BYTES_PER_LAYER {
+                        let a_idx = l_idx * V71_3_APICAL_BYTES_PER_LAYER + d_c;
+                        let s_val = (*apical_384b.get(a_idx).unwrap_or(&0) as f64) / 127.0;
+                        let psi_k = *k_vec.get((d_c + l_idx * 3) % V71_EMBED_DIM_32D).unwrap_or(&0.0);
+                        let phi_c = *c_vec.get(d_c % V71_EMBED_DIM_32D).unwrap_or(&0.0);
+                        acc += s_val * psi_k * phi_c;
+                        d_c += 1;
+                    }
+                    l_idx += 1;
+                }
+                acc / (V71_1_DEEP_LAYERS as f64)
+            };
+            let t448 = score_448b(&v_vec);
+            let mut cmax448 = f64::NEG_INFINITY;
+            for (cand_id, cand_vec) in cand_embs.iter() {
+                if *cand_id == v_tok { continue; }
+                let s448 = score_448b(cand_vec);
+                if s448 > cmax448 { cmax448 = s448; }
+            }
+            if enable_ntk_yarn_rope && enable_apical_mamba3 && t448 > cmax448 {
+                o1_448b_recalls += 1;
+            }
         }
         n_idx += 1;
     }
@@ -1154,6 +1299,10 @@ pub fn v71_3_run_long_horizon_4096_and_niah_gauntlet(
         hash_state ^= (*a as u8) as u64;
         hash_state = hash_state.wrapping_mul(0x100000001b3);
     }
+    for q in deltanet_i8.iter().step_by(64) {
+        hash_state ^= (*q as u8) as u64;
+        hash_state = hash_state.wrapping_mul(0x100000001b3);
+    }
 
     V71_3LongHorizon4KMetrics {
         horizon_tokens_stepped: V71_3_HORIZON_4096_TOKENS,
@@ -1161,6 +1310,9 @@ pub fn v71_3_run_long_horizon_4096_and_niah_gauntlet(
         basal_subternary_bytes: basal_64b.len(),
         apical_mamba3_bytes: apical_384b.len(),
         total_recurrent_state_bytes: basal_64b.len() + apical_384b.len(),
+        deltanet_f32_bytes: deltanet_total * 4,
+        deltanet_i8_checkpoint_bytes: deltanet_i8.len(),
+        o1_448b_shannon_bound_recalls: o1_448b_recalls,
         kv_cache_fp16_equivalent_bytes: V71_3_FP16_KV_CACHE_BYTES_4096,
         memory_compression_factor: V71_3_KV_COMPRESSION_RATIO,
         rope_4096_max_symplectic_drift: max_rope_drift,
@@ -1213,7 +1365,7 @@ pub fn v71_3_dispatch_tool_342_long_horizon_4096_memory(payload: &str) -> String
     let recall_acc = (m.niah_exact_recalls as f64) / (m.niah_depths_tested.max(1) as f64);
 
     format!(
-        "{{\"status\":\"{}\",\"tool_id\":342,\"chain\":\"CHAIN_346\",\"version\":\"v71.3.0\",\"engine\":\"LONG_HORIZON_4096_O1_448B_DUAL_RECURRENT_MEMORY_AND_NIAH_GAUNTLET\",\"measurement_latency_us\":{},\"o1_recurrent_memory\":{{\"horizon_tokens_stepped\":{},\"conversational_turns\":{},\"basal_subternary_bytes\":{},\"apical_mamba3_12l_bytes\":{},\"total_recurrent_state_bytes\":{},\"l1d_cachelines_occupied\":{},\"fp16_kv_cache_4096_bytes\":{},\"memory_compression_factor_x\":{},\"subternary_cubic_t3_eq_t_violations\":{},\"rope_4096_max_symplectic_drift\":{:.15},\"mamba3_4096_max_apical_norm\":{:.4},\"state_digest_fnv1a64_hex\":\"0x{:016X}\"}},\"needle_in_4096_haystack_gauntlet\":{{\"depths_tested\":\"410, 1229, 2048, 2867, 3686\",\"exact_recalls\":\"{}/5\",\"recall_accuracy\":{:.4},\"mean_needle_logit_margin\":{:.4},\"adversarial_64_distractor_flood_survived\":{}}},\"recurrent_buffer_roundtrip_fixture\":{{\"verified\":{},\"distractors_rejected\":{}}},\"lean4_theorems_verified\":\"thm_v71_3_924..926,929,932\",\"proof\":\"WEEK3_4096_HORIZON_448B_O1_MEMORY_NIAH_{}OF5 | Bytes={} | Compression={}x | NIAH={}/5 | Margin={:.4}\"}}",
+        "{{\"status\":\"{}\",\"tool_id\":342,\"chain\":\"CHAIN_346\",\"version\":\"v71.3.0\",\"engine\":\"LONG_HORIZON_4096_O1_448B_PLUS_DELTANET_8192X32_NIAH_GAUNTLET\",\"measurement_latency_us\":{},\"o1_recurrent_memory\":{{\"horizon_tokens_stepped\":{},\"conversational_turns\":{},\"basal_subternary_bytes\":{},\"apical_mamba3_12l_bytes\":{},\"total_recurrent_state_bytes\":{},\"o1_448b_shannon_bound_recalls\":\"{}/5\",\"l1d_cachelines_occupied\":{},\"fp16_kv_cache_4096_bytes\":{},\"memory_compression_factor_x\":{},\"subternary_cubic_t3_eq_t_violations\":{},\"rope_4096_max_symplectic_drift\":{:.15},\"mamba3_4096_max_apical_norm\":{:.4},\"state_digest_fnv1a64_hex\":\"0x{:016X}\"}},\"needle_in_4096_haystack_gauntlet\":{{\"active_associative_tier\":\"GATED_DELTANET_8192X32_SPARSE8\",\"active_associative_f32_bytes\":{},\"active_associative_i8_bytes\":{},\"deltanet_kv_compression_x\":24.0,\"zero_needle_whitelist\":true,\"depths_tested\":\"410, 1229, 2048, 2867, 3686\",\"exact_recalls\":\"{}/5\",\"recall_accuracy\":{:.4},\"mean_needle_logit_margin\":{:.4},\"adversarial_64_distractor_flood_survived\":{}}},\"recurrent_buffer_roundtrip_fixture\":{{\"verified\":{},\"distractors_rejected\":{}}},\"lean4_theorems_verified\":\"thm_v71_3_924..926,929,932\",\"proof\":\"WEEK3_4096_HORIZON_448B_O1_PLUS_DELTANET_8192X32_NIAH_{}OF5 | Hardware448B={} ({}x) | DeltaNetI8={} (24x) | NIAH={}/5 | Margin={:.4}\"}}",
         status,
         elapsed_us,
         m.horizon_tokens_stepped,
@@ -1221,6 +1373,7 @@ pub fn v71_3_dispatch_tool_342_long_horizon_4096_memory(payload: &str) -> String
         m.basal_subternary_bytes,
         m.apical_mamba3_bytes,
         m.total_recurrent_state_bytes,
+        m.o1_448b_shannon_bound_recalls,
         cachelines,
         m.kv_cache_fp16_equivalent_bytes,
         m.memory_compression_factor,
@@ -1228,6 +1381,8 @@ pub fn v71_3_dispatch_tool_342_long_horizon_4096_memory(payload: &str) -> String
         m.rope_4096_max_symplectic_drift,
         m.mamba3_4096_max_apical_norm,
         m.state_digest_fnv1a64,
+        m.deltanet_f32_bytes,
+        m.deltanet_i8_checkpoint_bytes,
         m.niah_exact_recalls,
         recall_acc,
         m.mean_needle_logit_margin,
@@ -1237,6 +1392,7 @@ pub fn v71_3_dispatch_tool_342_long_horizon_4096_memory(payload: &str) -> String
         m.niah_exact_recalls,
         m.total_recurrent_state_bytes,
         m.memory_compression_factor,
+        m.deltanet_i8_checkpoint_bytes,
         m.niah_exact_recalls,
         m.mean_needle_logit_margin
     )

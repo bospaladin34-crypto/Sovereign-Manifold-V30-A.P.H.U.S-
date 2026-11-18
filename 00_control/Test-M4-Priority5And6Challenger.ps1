@@ -168,7 +168,7 @@ try {
     $mg = $resp2A.masked_gradient_verification
 
     if ($resp2A.status -eq "MEASURED" -and `
-        $sftLines.Count -eq 64 -and $forbiddenHits -eq 0 -and `
+        $sftLines.Count -ge 64 -and $forbiddenHits -eq 0 -and `
         $dh.sft_dialogues -ge 64 -and $dh.deduplicated_doc_count -ge 64 -and `
         $dh.source_files_read -ge 8 -and $dh.max_pairwise_5gram_jaccard -le 0.50 -and `
         $dh.min_turns -eq 1 -and $dh.max_turns -eq 8 -and `

@@ -1,4 +1,4 @@
-# Build-SovereignTray.ps1 - Compiles SovereignTrayAndHud.exe & SovereignCockpitHUD.exe (v72.2.0 / Ω72)
+﻿# Build-SovereignTray.ps1 - Compiles SovereignTrayAndHud.exe & SovereignCockpitHUD.exe (v73.2.0 / Ω73.2)
 $ErrorActionPreference = "Stop"
 $csc = "C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe"
 $src = "C:\sovereign_manifold_v31\00_control\Win11_Native_Tray_HUD\SovereignTrayAndHud.cs"
@@ -12,7 +12,7 @@ cmd.exe /c "taskkill /F /IM SovereignCockpitHUD.exe /T >nul 2>&1"
 cmd.exe /c "taskkill /F /IM SovereignTrayAndHud.exe /T >nul 2>&1"
 Start-Sleep -Milliseconds 400
 
-Write-Host "Compiling SovereignTrayAndHud.exe (v72.2.0 / Ω72)..." -ForegroundColor Cyan
+Write-Host "Compiling SovereignTrayAndHud.exe (v73.2.0 / Ω73.2)..." -ForegroundColor Cyan
 & $csc /nologo /target:winexe /optimize+ /out:$out1 $src
 if ($LASTEXITCODE -ne 0) { throw "CSC compilation failed with code $LASTEXITCODE" }
 
@@ -21,4 +21,4 @@ Copy-Item $out1 $outRoot -Force
 Copy-Item $out1 $outDocs -Force
 Copy-Item $src $mirrorCs -Force
 $resHud = Invoke-CimMethod -ClassName Win32_Process -MethodName Create -Arguments @{ CommandLine = $outRoot }
-Write-Host "[OK] SovereignCockpitHUD.exe (v72.2.0 / Ω72) compiled, mirrored across all targets, and launched (PID: $($resHud.ProcessId))." -ForegroundColor Green
+Write-Host "[OK] SovereignCockpitHUD.exe (v73.2.0 / Ω73.2) compiled, mirrored across all targets, and launched (PID: $($resHud.ProcessId))." -ForegroundColor Green

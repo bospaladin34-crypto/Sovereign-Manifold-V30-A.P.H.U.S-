@@ -3,6 +3,13 @@ main = "worker_vpc_shadow_v3700.js"
 compatibility_date = "2026-07-28"
 account_id = "a37cf8ab07e7c5f886c302be3f098744"
 
+[limits]
+cpu_ms = 30000
+
+[observability]
+enabled = true
+head_sampling_rate = 1.0
+
 # --- Cloudflare Tier 4: Zero Trust & Turnstile Variables ---
 # NOTE: Production TURNSTILE_SITE_KEY and TURNSTILE_SECRET_KEY as well as SOVEREIGN_OPERATOR_KEY
 # are provisioned exclusively via encrypted Cloudflare secrets (wrangler secret put)
@@ -51,6 +58,52 @@ id = "65bc6848257345ce988e31a8b6571b6d" # act_omega_kv_vault
 binding = "ACT_OMEGA_ANALYTICS"
 dataset = "act_omega_edge_telemetry"
 
-# --- Cloudflare Cron Triggers (15-Minute Sync Pulse) ---
+# --- Cloudflare Workers Paid: Queues Telemetry WAL & DLQ ---
+[[queues.producers]]
+binding = "ACT_OMEGA_WAL_QUEUE"
+queue = "act-omega-telemetry-wal-queue"
+
+[[queues.consumers]]
+queue = "act-omega-telemetry-wal-queue"
+max_batch_size = 25
+max_batch_timeout = 5
+max_retries = 3
+dead_letter_queue = "act-omega-dlq"
+
+# --- Cloudflare Workers Paid: Cross-Script Workflow Binding ---
+[[workflows]]
+name = "act-omega-audit-sync-workflow"
+binding = "ACT_OMEGA_WORKFLOW"
+class_name = "SovereignAuditSyncWorkflow"
+script_name = "sovereign-paid-workflow"
+
+# --- Cloudflare Cron Triggers (5-Minute Paid Sync Pulse) ---
 [triggers]
-crons = ["*/15 * * * *"]
+crons = ["*/5 * * * *"]
+
+# --- Cloudflare Workers Paid: Hyperdrive -> Local TLS PGWire DuckDB (:5439) ---
+[[hyperdrive]]
+binding = "ACT_OMEGA_HYPERDRIVE"
+id = "934af8d9f02d471cb383cb8c90ddfe51"
+
+# --- Cloudflare Workers VPC Services (Tunnel da52a9b3 sovereign-vpc-mesh QUIC) ---
+[[vpc_services]]
+binding = "ANCHOR_L0_VPC"
+service_id = "01a1ed54-a2aa-75a1-b26d-87a034b759be"
+
+[[vpc_services]]
+binding = "DENO_L2_VPC"
+service_id = "01a1ed54-b4ba-7730-914d-31040f471569"
+
+[[vpc_services]]
+binding = "PIXEL10_EDGE_VPC"
+service_id = "01a1ed54-c4be-7112-97b3-7a563ab6ba16"
+
+[[vpc_services]]
+binding = "PIXEL8_APEX_VPC"
+service_id = "01a1ed54-d351-7fc3-aed2-3989d5385ddc"
+
+# --- Service Binding to Isolated Paid Workflow/Sockets Worker ---
+[[services]]
+binding = "ACT_OMEGA_WORKFLOW_SVC"
+service = "sovereign-paid-workflow"

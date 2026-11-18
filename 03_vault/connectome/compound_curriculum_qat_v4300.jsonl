@@ -3919,3 +3919,4 @@
 {"epoch":3919,"domains":24,"vocab_size":131072,"combined_neurons":63360,"holdout_ppl":1.108830,"compound_transfer_pct":98.870,"cacheline_speedup_pct":13379.87,"dag_latency_ms":0.405,"m_atp":0.7775,"kops":461011.4}
 {"epoch":3920,"domains":24,"vocab_size":131072,"combined_neurons":63360,"holdout_ppl":1.108635,"compound_transfer_pct":98.968,"cacheline_speedup_pct":10105.70,"dag_latency_ms":0.623,"m_atp":0.7976,"kops":349035.1}
 {"epoch":3921,"domains":24,"vocab_size":131072,"combined_neurons":63360,"holdout_ppl":1.109025,"compound_transfer_pct":98.558,"cacheline_speedup_pct":35758.21,"dag_latency_ms":8.194,"m_atp":0.7135,"kops":1226350.8}
+{"epoch":3922,"domains":24,"vocab_size":131072,"combined_neurons":63360,"holdout_ppl":1.108608,"compound_transfer_pct":98.877,"cacheline_speedup_pct":413062.21,"dag_latency_ms":11.341,"m_atp":0.7790,"kops":14130147.4}

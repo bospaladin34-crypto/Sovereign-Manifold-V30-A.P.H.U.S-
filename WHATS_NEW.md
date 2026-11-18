@@ -1,7 +1,7 @@
-# 🌌 What's New in ACT-Omega Net `v72.2.0` (`Sovereign Harmonic XI` 3-Shell Matryoshka `384D`/`768D` + `16/256` Sparse MoE, ChatML SFT, WGSL `384D` RAG & JSON FSM | `Vesper Multi-Mode Mica Shell CLS 0.00` | `SH4Z v7220 TLV` | `CHAIN 368` | `995/995 Lean 4 QED` | `262,144 Bijected Cachelines` | `84,480 Neurons` | `4,055,040 Synapses`)
+# 🌌 What's New in ACT-Omega Net `v73.2.0` (`Unified Standalone Lab`, `Cloudflare Paid Workflows`, `5-Service QUIC VPC Mesh` & `Hyperdrive TLS PGWire -> DuckDB`, `Two-Phase Q8_0 Matryoshka Pretraining 0.242909 -> 0.104339 BPB` | `Vesper Multi-Mode Mica Shell CLS 0.00` | `SH4Z v7320 TLV` | `CHAIN 404` | `1,010/1,010 Lean 4 QED` | `262,144 Bijected Cachelines` | `84,480 Neurons` | `4,055,040 Synapses` | `59 Gemini MCP Tools`)
 
 - **Primary Author & Principal Systems Architect**: **Donevin Frownfelter** (`@bospaladin34-crypto`)
-- **Release Tag**: `v72.2.0` (`2026-11-10`)
+- **Release Tag**: `v73.2.0` (`2026-11-18`)
 - **Zenodo Permanent DOI**: [`10.5281/zenodo.23651696`](https://doi.org/10.5281/zenodo.23651696)
 - **OSF Permanent DOI**: [`10.17605/OSF.IO/2XQ5Z`](https://osf.io/2xq5z/overview)
 - **Hardware Point-of-Origin**: YubiKey 5C NFC (`Serial: 39651128`, Resident `ED25519-SK` `SHA256:KwsDUzdrEWHpWFSt0BXhx0ryT/tOM78n0mlhwgLAzBo`)

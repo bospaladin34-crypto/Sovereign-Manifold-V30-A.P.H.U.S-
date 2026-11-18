@@ -673,7 +673,7 @@ export default {
                 ? `D1 Scheduled Verification (Tools 1..${synced.tools_total})`
                 : "D1 Scheduled Verification (Unsynced)";
               await env.ACT_OMEGA_D1.prepare(
-                "INSERT INTO harness_5w1h_audit_log (chain_level, metabolic_band, atp_score, why_motivation, what_tools_invoked, where_silicon_target, when_schedule_window, how_execution_kernel, recorded_at_ms) VALUES (?, 'BAND_CRON_OBSERVED_D1', ?, ?, ?, 'Cloudflare-D1+DurableObject', '*/15 * * * * Cron', 'D1_DYNAMIC_CRON_TRIGGER', ?);"
+                "INSERT INTO harness_5w1h_audit_log (chain_level, metabolic_band, atp_score, why_motivation, what_tools_invoked, where_silicon_target, when_schedule_window, how_execution_kernel, recorded_at_ms) VALUES (?, 'BAND_CRON_OBSERVED_D1', ?, ?, ?, 'Cloudflare-D1+DurableObject', '*/5 * * * * Cron', 'D1_DYNAMIC_CRON_TRIGGER', ?);"
               )
                 .bind(chainLvl, measuredAtp, `Observed D1 Snapshot total_neurons=${totalNeurons}`, toolsDesc, now)
                 .run();
@@ -699,6 +699,55 @@ export default {
     }
     if (gAnalyticsBatchBuffer.length > 0 && env && env.ACT_OMEGA_D1) {
       ctx.waitUntil(flushAnalyticsBatchBufferToD1(env));
+    }
+  },
+
+  async queue(batch, env, _ctx) {
+    const messages = batch && Array.isArray(batch.messages) ? batch.messages : [];
+    if (messages.length === 0) return;
+    if (!env || !env.ACT_OMEGA_D1) {
+      for (const msg of messages) {
+        try { msg.retry(); } catch {}
+      }
+      return;
+    }
+
+    const statements = [];
+    const now = Date.now();
+    for (const msg of messages) {
+      const body = msg && msg.body && typeof msg.body === "object" ? msg.body : { raw: msg ? msg.body : null };
+      const chainLvl = body.chain_level ? String(body.chain_level) : "CHAIN_404_WAL";
+      const atpScore = Number.isFinite(Number(body.atp_score)) ? Number(body.atp_score) : 0.0;
+      const whyMot = body.why_motivation ? String(body.why_motivation) : `WAL Batch Msg ${msg.id || "queued"}`;
+      const whatTools = body.what_tools_invoked ? String(body.what_tools_invoked) : "Queue Consumer Batch Write";
+      const whereTarget = body.where_silicon_target ? String(body.where_silicon_target) : "Cloudflare-Queues+D1";
+      const howKernel = body.how_execution_kernel ? String(body.how_execution_kernel) : "ACT_OMEGA_WAL_QUEUE";
+      const ts = Number.isFinite(Number(body.recorded_at_ms)) ? Number(body.recorded_at_ms) : now;
+      statements.push(
+        env.ACT_OMEGA_D1.prepare(
+          "INSERT INTO harness_5w1h_audit_log (chain_level, metabolic_band, atp_score, why_motivation, what_tools_invoked, where_silicon_target, when_schedule_window, how_execution_kernel, recorded_at_ms) VALUES (?, 'BAND_QUEUE_WAL_D1', ?, ?, ?, ?, 'Workers-Paid-Queue', ?, ?);"
+        ).bind(chainLvl, atpScore, whyMot, whatTools, whereTarget, howKernel, ts)
+      );
+    }
+
+    try {
+      await env.ACT_OMEGA_D1.batch(statements);
+      if (env.SOVEREIGN_EDGE_SHADOW_DO) {
+        try {
+          const doId = env.SOVEREIGN_EDGE_SHADOW_DO.idFromName("GLOBAL_SOVEREIGN_SHADOW_V4400");
+          const stub = env.SOVEREIGN_EDGE_SHADOW_DO.get(doId);
+          await stub.fetch(`https://sovereign-internal/shadow/quota_check?tier=queues_ops&units=${messages.length}`);
+          await stub.fetch(`https://sovereign-internal/shadow/quota_check?tier=d1_rows_written&units=${statements.length}`);
+        } catch {}
+      }
+      for (const msg of messages) {
+        try { msg.ack(); } catch {}
+      }
+    } catch {
+      gWorkerSqliteErrCount++;
+      for (const msg of messages) {
+        try { msg.retry(); } catch {}
+      }
     }
   },
 
@@ -738,6 +787,11 @@ export default {
       url.pathname === "/api/v1/cloudflare/d1_all10tables" ||
       url.pathname === "/api/v1/cloudflare/cron_sync" ||
       url.pathname === "/api/v1/cloudflare/shm_relay" ||
+      url.pathname === "/api/v1/cloudflare/free_tier_governor" ||
+      url.pathname === "/api/v1/cloudflare/paid_tier_governor" ||
+      url.pathname === "/api/v1/cloudflare/wal_enqueue" ||
+      url.pathname === "/api/v1/cloudflare/workflow_trigger" ||
+      url.pathname === "/api/v1/cloudflare/shadow_ws" ||
       url.pathname === "/api/v1/continuum/handover" ||
       url.pathname === "/api/v1/edge_continuum/status" ||
       url.pathname === "/api/v1/ota/pixel_manifest" ||
@@ -811,7 +865,7 @@ export default {
           version: synced.version,
           chain_milestone: synced.chain_milestone,
           lean4_theorems_qed: synced.lean4_qed_label,
-          tools_total: 20,
+          tools_total: 59,
           resources_total: 6,
           prompts_total: 4,
           endpoints: ["/mcp", "/api/v1/mcp/rpc"]
@@ -1062,7 +1116,46 @@ export default {
                 { name: "dual_pixel_edge_hardware_governor", description: "Probe and control dual Google Pixel 8 (Tensor G3) and Pixel 10 (Tensor G5) edge cluster telemetry and governors (/api/v1/tools/t279).", inputSchema: { type: "object", properties: { action: { type: "string", description: "Governor action: status, audit, frequency_probe, or memory_pin" } } } },
                 { name: "unified_8domain_chain292_dispatcher", description: `Unified dispatcher across all 8 functional domains and ${chainLbl} with 256-bit AVX2/FMA neural FNO routing (/api/v1/chain316/master_certification).`, inputSchema: { type: "object", properties: { domain: { type: "string", description: "Target domain (1..8) or master certification command" }, query: { type: "string", description: "Optional parameters or input for unified domain dispatcher" } } } },
                 { name: "vesper_arachne_ik_swarm_companion", description: "Procedural 8-leg 3-jointed E8 Inverse Kinematics (IK), 6-clone mitotic swarm formations, Win32 click-through gating, and mandible BPE hygiene (/api/v1/vesper_arachne/ik_swarm_companion).", inputSchema: { type: "object", properties: { action: { type: "string", description: "Companion action: ik_gait, swarm_formation, click_through_test, mandible_hygiene, or portal_jump" }, query: { type: "string", description: "Optional command, payload text, or formation parameter for Vesper-Arachne companion" } } } },
-                { name: "polytope_7777d_crt_rvq_router", description: "7777D Coprime CRT (7x11x101) bijection, 3-Stage Least-Squares RVQ, and Two-Level Block-Sparse MatVec Router with Orthoplex codebook classification (/api/v1/polytope7777/crt_rvq_router).", inputSchema: { type: "object", properties: { action: { type: "string", description: "Router action: route, crt_project, rvq_encode, matvec_sparse, or audit_gates" }, query: { type: "string", description: "Optional prompt, vector identifier, or telemetry payload to route through the 7777D polytope" }, stages: { type: "integer", description: "Number of LS-RVQ residual stages (default: 3, range: 1..4)" }, active_micro_blocks: { type: "integer", description: "Number of active 256D micro-blocks to evaluate (default: 16, range: 1..31)" } } } }
+                { name: "polytope_7777d_crt_rvq_router", description: "7777D Coprime CRT (7x11x101) bijection, 3-Stage Least-Squares RVQ, and Two-Level Block-Sparse MatVec Router with Orthoplex codebook classification (/api/v1/polytope7777/crt_rvq_router).", inputSchema: { type: "object", properties: { action: { type: "string", description: "Router action: route, crt_project, rvq_encode, matvec_sparse, or audit_gates" }, query: { type: "string", description: "Optional prompt, vector identifier, or telemetry payload to route through the 7777D polytope" }, stages: { type: "integer", description: "Number of LS-RVQ residual stages (default: 3, range: 1..4)" }, active_micro_blocks: { type: "integer", description: "Number of active 256D micro-blocks to evaluate (default: 16, range: 1..31)" } } } },
+                { name: "omegalang_v15_k19_535tops_infer", description: "Execute OmegaLang v15.0 8-Target Zero-Drift Compiler, K16a Quarter-Block L1D AVX2 Kernel, and 90-Layer K19+K20 Harmonic Superposition (/api/v1/v68/k19_k20_subnanosecond_535tops_superposition).", inputSchema: { type: "object", properties: { action: { type: "string", description: "Kernel mode" }, query: { type: "string", description: "Optional prompt or benchmark selector" } } } },
+                { name: "omega_lab_mirror_stream", description: "Probe Station 01 Omega Mirror Stream (:19777) in Unified Standalone Lab v3.0.0 (/api/v1/tools/t369).", inputSchema: { type: "object", properties: { query: { type: "string", description: "Optional probe payload" } } } },
+                { name: "omega_lab_browser_harvest", description: "Probe Station 02 Omega Browser Harvest (:9778) in Unified Standalone Lab v3.0.0 (/api/v1/tools/t370).", inputSchema: { type: "object", properties: { query: { type: "string", description: "Optional probe payload" } } } },
+                { name: "omega_lab_av_leech_shader", description: "Probe Station 03 Omega AV Leech Shader (:19779) in Unified Standalone Lab v3.0.0 (/api/v1/tools/t371).", inputSchema: { type: "object", properties: { query: { type: "string", description: "Optional probe payload" } } } },
+                { name: "omega_lab_synth_wavefield", description: "Probe Station 04 Omega Synth Wavefield (:19782) in Unified Standalone Lab v3.0.0 (/api/v1/tools/t372).", inputSchema: { type: "object", properties: { query: { type: "string", description: "Optional probe payload" } } } },
+                { name: "omega_lab_sonar_golay_radar", description: "Probe Station 05 Omega Sonar Golay Radar (:19783) in Unified Standalone Lab v3.0.0 (/api/v1/tools/t373).", inputSchema: { type: "object", properties: { query: { type: "string", description: "Optional probe payload" } } } },
+                { name: "omega_lab_sheaf_cohomology", description: "Probe Station 06 Omega Sheaf Cohomology (:19784) in Unified Standalone Lab v3.0.0 (/api/v1/tools/t374).", inputSchema: { type: "object", properties: { query: { type: "string", description: "Optional probe payload" } } } },
+                { name: "omega_lab_penrose_quasicrystal", description: "Probe Station 07 Omega Penrose Quasicrystal (:19785) in Unified Standalone Lab v3.0.0 (/api/v1/tools/t375).", inputSchema: { type: "object", properties: { query: { type: "string", description: "Optional probe payload" } } } },
+                { name: "omega_lab_sec_steg_vault", description: "Probe Station 08 Omega Sec Steg Vault (:19786) with omega_sec_manifold self-test (/api/v1/tools/t376).", inputSchema: { type: "object", properties: { query: { type: "string", description: "Optional probe payload" } } } },
+                { name: "omega_lab_forge_compile_verify", description: "Probe Station 09 Omega Forge (:19780) in Unified Standalone Lab v3.0.0 (/api/v1/tools/t377).", inputSchema: { type: "object", properties: { query: { type: "string", description: "Optional probe payload" } } } },
+                { name: "omega_lab_shell_pipeline", description: "Probe Station 10 Omega Shell Pipeline (:19781) in Unified Standalone Lab v3.0.0 (/api/v1/tools/t378).", inputSchema: { type: "object", properties: { query: { type: "string", description: "Optional probe payload" } } } },
+                { name: "omega_lab_p10_tpu_vulkan_dispatch", description: "Probe Station 11 Pixel 10 Tensor G5 native/AVF workers (:19788/:19789) (/api/v1/tools/t379).", inputSchema: { type: "object", properties: { query: { type: "string", description: "Optional probe payload" } } } },
+                { name: "omega_lab_conductor_hopf_bus", description: "Probe Station 12 Omega Conductor (:19790) and live OMC6 6-DoF Seqlock bus (/api/v1/tools/t380).", inputSchema: { type: "object", properties: { query: { type: "string", description: "Optional probe payload" } } } },
+                { name: "omega_lab_tensor_5silicon_split", description: "Probe Station 13 Omega Tensor (:19791) in Unified Standalone Lab v3.0.0 (/api/v1/tools/t381).", inputSchema: { type: "object", properties: { query: { type: "string", description: "Optional probe payload" } } } },
+                { name: "bitcos_sub158_ternary_codec", description: "Run T382 BITCOS sub-1.58-bit ternary presence-bitmap codec (/api/v1/tools/t382).", inputSchema: { type: "object", properties: { query: { type: "string", description: "Optional benchmark query" } } } },
+                { name: "curvetq_rotation_free_trellis", description: "Run T383 CurveTQ Hessian-weighted rotation-free trellis quantizer (/api/v1/tools/t383).", inputSchema: { type: "object", properties: { query: { type: "string", description: "Optional benchmark query" } } } },
+                { name: "ube_dual_alphabet_bpe_router", description: "Run T384 UBE dual-alphabet lossless encoder/decoder (/api/v1/tools/t384).", inputSchema: { type: "object", properties: { query: { type: "string", description: "Optional input text" } } } },
+                { name: "volk_o1_incremental_sheaf_audit", description: "Run T385 Volk O(1) lazy incremental sheaf coboundary audit (/api/v1/tools/t385).", inputSchema: { type: "object", properties: { query: { type: "string", description: "Optional audit query" } } } },
+                { name: "csnn_clifford_reversion_stalk", description: "Run T386 CSNN Cl(3,0,0) normalized reversion sandwich stalk operator (/api/v1/tools/t386).", inputSchema: { type: "object", properties: { query: { type: "string", description: "Optional operator query" } } } },
+                { name: "braid_nonhomogeneous_burau_guard", description: "Run T387 Non-Homogeneous Braid Group B_5 strand-labeled Burau guard mod 65521 (/api/v1/tools/t387).", inputSchema: { type: "object", properties: { query: { type: "string", description: "Optional braid query" } } } },
+                { name: "comixkv_lcdf_shared_budget_ctrl", description: "Run T388 CoMixKV paired Q/K/V budget allocator + LCDF gate (/api/v1/tools/t388).", inputSchema: { type: "object", properties: { query: { type: "string", description: "Optional KV budget query" } } } },
+                { name: "disco_d3d_async_spec_bridge", description: "Run T389 DISCO 8-byte speculative codec and live Tensor/Pixel10 probe (/api/v1/tools/t389).", inputSchema: { type: "object", properties: { query: { type: "string", description: "Optional probe query" } } } },
+                { name: "ppc_bar_rabitq_ssd_prefetcher", description: "Run T390 PPC-BAR shard prefetcher and RaBitQ 1-bit coarse estimator (/api/v1/tools/t390).", inputSchema: { type: "object", properties: { query: { type: "string", description: "Optional prefetch query" } } } },
+                { name: "directkv_ubep_atomic_rebar_ring", description: "Run T391 DirectKV + UBEP data-as-flag atomic ring verifier (/api/v1/tools/t391).", inputSchema: { type: "object", properties: { query: { type: "string", description: "Optional ring query" } } } },
+                { name: "flash_so2_ozaki_chebyshev_dsp", description: "Run T392 FlashSO(2) integer Ozaki splitting and Chebyshev semigroup check (/api/v1/tools/t392).", inputSchema: { type: "object", properties: { query: { type: "string", description: "Optional DSP query" } } } },
+                { name: "crustify_ffibox_lean_comparator", description: "Run T393 Crustify FfiBox coboundary and live Lean 4 sorry-count audit (/api/v1/tools/t393).", inputSchema: { type: "object", properties: { query: { type: "string", description: "Optional comparator query" } } } },
+                { name: "omega_rnd_chaos_deck", description: "Probe Station 00 Omega R&D Chaos Deck (:19800) with Golay24 self-test (/api/v1/tools/t394).", inputSchema: { type: "object", properties: { query: { type: "string", description: "Optional probe payload" } } } },
+                { name: "omega_lab_native_workbench", description: "Probe Station 14 Omega Native Workbench (:19801) with Chebyshev Q15/Q12 self-test (/api/v1/tools/t395).", inputSchema: { type: "object", properties: { query: { type: "string", description: "Optional probe payload" } } } },
+                { name: "omega_lab_pocket_7tier_fusion", description: "Probe Station 15 Pocket Fusion (:19802) and Pixel 8 native/AVF workers (:19792/:19793) (/api/v1/tools/t396).", inputSchema: { type: "object", properties: { query: { type: "string", description: "Optional probe payload" } } } },
+                { name: "omega_lab_seqlock_crdt_vault", description: "Probe Station 16 Omega Local Vault (:19803) with Seqlock CRDT audit (/api/v1/tools/t397).", inputSchema: { type: "object", properties: { query: { type: "string", description: "Optional probe payload" } } } },
+                { name: "omega_lab_spatial_acoustic_rig", description: "Probe Station 17 Omega Spatial Rig (:19804) with Golay64 and Hopf Q14 audit (/api/v1/tools/t398).", inputSchema: { type: "object", properties: { query: { type: "string", description: "Optional probe payload" } } } },
+                { name: "omega_lab_sheaf_ffi_surgeon", description: "Probe Station 18 Omega Sheaf FFI Surgeon (:19805) with sheaf coboundary audit (/api/v1/tools/t399).", inputSchema: { type: "object", properties: { query: { type: "string", description: "Optional probe payload" } } } },
+                { name: "omega_lab_unified_deck", description: "Execute concurrent live telemetry probe across all 18 Unified Lab stations, Pixel 10/8, and OMC6 Seqlock (/api/v1/lab/deck).", inputSchema: { type: "object", properties: { query: { type: "string", description: "Optional filter query" } } } },
+                { name: "chain399_master_certification", description: "Certify CHAIN 399 Nov 12-15 research kernels (T382..T393) and Unified Standalone Lab Deck (/api/v1/chain399/master_certification).", inputSchema: { type: "object", properties: { query: { type: "string", description: "Optional certification filter" } } } },
+                { name: "cloudflare_vpc_service_registry_probe", description: "Probe Cloudflare Workers VPC Services and sovereign-vpc-mesh QUIC endpoints (/api/v1/tools/t400).", inputSchema: { type: "object", properties: { query: { type: "string", description: "Optional VPC service filter" } } } },
+                { name: "cloudflare_mesh_cluster_device_roster", description: "Audit Cloudflare Mesh /32 cluster routes and live Tri-Silicon socket latencies (/api/v1/tools/t401).", inputSchema: { type: "object", properties: { query: { type: "string", description: "Optional cluster roster query" } } } },
+                { name: "pgwire_duckdb_tls_bridge_audit", description: "Audit local zero-dependency TLS PGWire v3 bridge and native DuckDB corpus (/api/v1/tools/t402).", inputSchema: { type: "object", properties: { query: { type: "string", description: "Optional PGWire audit query" } } } },
+                { name: "cloudflare_hyperdrive_duckdb_query", description: "Execute read-only SQL query against sh_rw_corpus_v7210.duckdb for Hyperdrive/PGWire analytics (/api/v1/tools/t403).", inputSchema: { type: "object", properties: { sql: { type: "string", description: "Read-only SELECT/WITH/EXPLAIN/SHOW query" } } } },
+                { name: "chain404_master_certification", description: "Certify CHAIN 404 across Tools 1..404, Cloudflare VPC/Mesh/Hyperdrive, Unified Lab, and Lean 4 QED (/api/v1/chain404/master_certification).", inputSchema: { type: "object", properties: { query: { type: "string", description: "Optional certification filter" } } } }
               ]
             }
           }, { headers: corsHeaders });
@@ -1085,7 +1178,7 @@ export default {
         service: `ACT-Omega Net (${syncedGetFallback.version}) Gemini MCP JSON-RPC 2.0 Shadow Gateway`,
         version: syncedGetFallback.version,
         lean4_theorems_qed: syncedGetFallback.lean4_qed_label,
-        tools_total: 20,
+        tools_total: 59,
         resources_total: 6,
         prompts_total: 4,
         endpoints: ["/mcp", "/api/v1/mcp/rpc"]
@@ -1861,7 +1954,7 @@ export default {
         d1_tables_count: 10,
         sqlite_err_count: gWorkerSqliteErrCount,
         workers_vpc_tunnel: "sovereign-loq15-vpc-binding",
-        cron_schedule: "*/15 * * * *",
+        cron_schedule: "*/5 * * * *",
         p8_npage_shm_bytes: liveNpageBytes ?? synced.npage_bytes,
         p8_shm_kops: liveP8ShmKops,
         base_trisilicon_kops: liveKops,
@@ -2600,6 +2693,450 @@ export default {
       });
     }
 
+    // ==============================================================================
+    // ROUTE: /api/v1/cloudflare/paid_tier_governor (Workers Paid $5/mo Governance)
+    // ==============================================================================
+    if (url.pathname === "/api/v1/cloudflare/paid_tier_governor") {
+      let quotaData = null;
+      let wsStatus = { status: "DO_UNBOUND", active_websockets: null };
+      if (env && env.SOVEREIGN_EDGE_SHADOW_DO) {
+        try {
+          const doId = env.SOVEREIGN_EDGE_SHADOW_DO.idFromName("GLOBAL_SOVEREIGN_SHADOW_V4400");
+          const stub = env.SOVEREIGN_EDGE_SHADOW_DO.get(doId);
+          const [qRes, wRes] = await Promise.all([
+            stub.fetch("https://sovereign-internal/shadow/quota_status"),
+            stub.fetch("https://sovereign-internal/shadow/ws_status")
+          ]);
+          if (qRes.ok) quotaData = await qRes.json();
+          if (wRes.ok) wsStatus = await wRes.json();
+        } catch {
+          gWorkerSqliteErrCount++;
+        }
+      }
+
+      const tiers = quotaData && quotaData.tiers ? quotaData.tiers : {};
+      let globalStatus = quotaData ? "NOMINAL" : "UNMEASURED/DO_UNBOUND";
+      const tierVals = Object.values(tiers);
+      if (tierVals.some((t) => t && t.status === "HARD_CAP_DENIED")) {
+        globalStatus = "HARD_CAP_DENIED";
+      } else if (tierVals.some((t) => t && (t.status === "QUOTA_EXHAUSTED" || t.status === "DAILY_BUDGET_EXHAUSTED"))) {
+        globalStatus = "SOFT_CAP_WARNING";
+      }
+
+      const queuesWalBound = Boolean(env && env.ACT_OMEGA_WAL_QUEUE);
+      const workflowBound = Boolean(env && env.ACT_OMEGA_WORKFLOW);
+      const d1Bound = Boolean(env && env.ACT_OMEGA_D1);
+      const doBound = Boolean(env && env.SOVEREIGN_EDGE_SHADOW_DO);
+      const r2Bound = Boolean(env && env.ACT_OMEGA_R2_VAULT);
+      const kvBound = Boolean(env && env.ACT_OMEGA_KV);
+      const vectorizeBound = Boolean(env && env.ACT_OMEGA_VECTORIZE);
+      const aiBound = Boolean(env && env.AI);
+
+      const hyperdriveBound = Boolean(env && env.ACT_OMEGA_HYPERDRIVE);
+      const workflowSvcBound = Boolean(env && env.ACT_OMEGA_WORKFLOW_SVC);
+      const vpcServicesBound = {
+        anchor_l0: Boolean(env && env.ANCHOR_L0_VPC),
+        deno_l2: Boolean(env && env.DENO_L2_VPC),
+        pixel10_edge: Boolean(env && env.PIXEL10_EDGE_VPC),
+        pixel8_apex: Boolean(env && env.PIXEL8_APEX_VPC)
+      };
+
+      const paidPayload = {
+        plan: "WORKERS_PAID_5USD_MONTHLY",
+        cpu_ms_limit: 30000,
+        cron_schedule: "*/5 * * * *",
+        observability_enabled: true,
+        accounting_basis: "DO_METERED_REQUEST_UNITS_UNRECONCILED_WITH_CF_BILLING",
+        global_status: globalStatus,
+        queues_wal_bound: queuesWalBound,
+        workflow_bound: workflowBound,
+        workflow_svc_bound: workflowSvcBound,
+        hyperdrive_bound: hyperdriveBound,
+        vpc_services_bound: vpcServicesBound,
+        d1_bound: d1Bound,
+        do_bound: doBound,
+        r2_bound: r2Bound,
+        kv_bound: kvBound,
+        vectorize_bound: vectorizeBound,
+        ai_bound: aiBound,
+        do_websockets: wsStatus,
+        tiers,
+        timestamp_ms: Date.now()
+      };
+      const paidSha = await sha256HexWebCrypto(JSON.stringify(paidPayload));
+      paidPayload.response_sha256 = paidSha;
+
+      return Response.json(paidPayload, {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json; charset=utf-8",
+          "Cache-Control": "no-store",
+          "X-Sovereign-Sha256": paidSha
+        }
+      });
+    }
+
+    // ==============================================================================
+    // ROUTE: /api/v1/cloudflare/wal_enqueue (Workers Paid Queues WAL Producer)
+    // ==============================================================================
+    if (url.pathname === "/api/v1/cloudflare/wal_enqueue") {
+      const hasQueryKey = url.searchParams.has("key");
+      const auth = await verifyZeroTrustAndOperatorHeaders(request, env);
+      if (hasQueryKey || !auth.authorized) {
+        return Response.json(
+          { error: "OPERATOR_AUTH_REQUIRED", status: 403 },
+          { status: 403, headers: { "Cache-Control": "no-store" } }
+        );
+      }
+      if (request.method !== "POST") {
+        return Response.json({ error: "METHOD_NOT_ALLOWED" }, { status: 405 });
+      }
+      let body = {};
+      try {
+        const raw = await request.text();
+        if (raw && raw.trim().length > 0) body = JSON.parse(raw);
+      } catch {
+        return Response.json({ error: "INVALID_JSON_BODY" }, { status: 400 });
+      }
+      if (!env || !env.ACT_OMEGA_WAL_QUEUE || typeof env.ACT_OMEGA_WAL_QUEUE.send !== "function") {
+        return Response.json(
+          { ok: false, error: "ACT_OMEGA_WAL_QUEUE_UNBOUND", status: "UNMEASURED/OFFLINE" },
+          { status: 503, headers: { "Cache-Control": "no-store" } }
+        );
+      }
+      if (env.SOVEREIGN_EDGE_SHADOW_DO) {
+        try {
+          const doId = env.SOVEREIGN_EDGE_SHADOW_DO.idFromName("GLOBAL_SOVEREIGN_SHADOW_V4400");
+          const stub = env.SOVEREIGN_EDGE_SHADOW_DO.get(doId);
+          const qRes = await stub.fetch("https://sovereign-internal/shadow/quota_check?tier=queues_ops&units=1");
+          if (qRes.ok) {
+            const qData = await qRes.json();
+            if (qData.allowed === false) {
+              return Response.json(
+                { ok: false, error: "QUEUES_QUOTA_EXHAUSTED", status: qData.status || "QUOTA_EXHAUSTED" },
+                { status: 429, headers: { "Cache-Control": "no-store" } }
+              );
+            }
+          }
+        } catch {}
+      }
+
+      const now = Date.now();
+      const entry = {
+        chain_level: body.chain_level || "CHAIN_404_WAL",
+        atp_score: body.atp_score ?? 0.0,
+        why_motivation: body.why_motivation || "Authenticated WAL Enqueue",
+        what_tools_invoked: body.what_tools_invoked || "POST /api/v1/cloudflare/wal_enqueue",
+        where_silicon_target: body.where_silicon_target || "Cloudflare-Queues",
+        how_execution_kernel: body.how_execution_kernel || "ACT_OMEGA_WAL_QUEUE",
+        recorded_at_ms: now,
+        payload: body
+      };
+      const entrySha = await sha256HexWebCrypto(JSON.stringify(entry));
+      await env.ACT_OMEGA_WAL_QUEUE.send(entry);
+
+      return Response.json(
+        {
+          ok: true,
+          status: "WAL_ENQUEUED",
+          queue: "act-omega-telemetry-wal-queue",
+          entry_sha256: entrySha,
+          timestamp_ms: now
+        },
+        { status: 200, headers: { "Cache-Control": "no-store" } }
+      );
+    }
+
+    // ==============================================================================
+    // ROUTE: /api/v1/cloudflare/workflow_trigger (Workers Paid Workflows)
+    // ==============================================================================
+    if (url.pathname === "/api/v1/cloudflare/workflow_trigger") {
+      const hasQueryKey = url.searchParams.has("key");
+      const auth = await verifyZeroTrustAndOperatorHeaders(request, env);
+      if (hasQueryKey || !auth.authorized) {
+        return Response.json(
+          { error: "OPERATOR_AUTH_REQUIRED", status: 403 },
+          { status: 403, headers: { "Cache-Control": "no-store" } }
+        );
+      }
+      if (request.method !== "POST") {
+        return Response.json({ error: "METHOD_NOT_ALLOWED" }, { status: 405 });
+      }
+      let body = {};
+      try {
+        const raw = await request.text();
+        if (raw && raw.trim().length > 0) body = JSON.parse(raw);
+      } catch {
+        return Response.json({ error: "INVALID_JSON_BODY" }, { status: 400 });
+      }
+      if (!env || !env.ACT_OMEGA_WORKFLOW || typeof env.ACT_OMEGA_WORKFLOW.create !== "function") {
+        return Response.json(
+          { ok: false, error: "ACT_OMEGA_WORKFLOW_UNBOUND", status: "UNMEASURED/OFFLINE" },
+          { status: 503, headers: { "Cache-Control": "no-store" } }
+        );
+      }
+      if (env.SOVEREIGN_EDGE_SHADOW_DO) {
+        try {
+          const doId = env.SOVEREIGN_EDGE_SHADOW_DO.idFromName("GLOBAL_SOVEREIGN_SHADOW_V4400");
+          const stub = env.SOVEREIGN_EDGE_SHADOW_DO.get(doId);
+          const qRes = await stub.fetch("https://sovereign-internal/shadow/quota_check?tier=workflows_steps&units=2");
+          if (qRes.ok) {
+            const qData = await qRes.json();
+            if (qData.allowed === false) {
+              return Response.json(
+                { ok: false, error: "WORKFLOWS_QUOTA_EXHAUSTED", status: qData.status || "QUOTA_EXHAUSTED" },
+                { status: 429, headers: { "Cache-Control": "no-store" } }
+              );
+            }
+          }
+        } catch {}
+      }
+
+      const now = Date.now();
+      const inst = await env.ACT_OMEGA_WORKFLOW.create({
+        params: {
+          source: "api_trigger",
+          requested_at_ms: now,
+          payload: body
+        }
+      });
+
+      return Response.json(
+        {
+          ok: true,
+          status: "WORKFLOW_TRIGGERED",
+          workflow: "act-omega-audit-sync-workflow",
+          instance_id: inst && inst.id ? inst.id : null,
+          timestamp_ms: now
+        },
+        { status: 200, headers: { "Cache-Control": "no-store" } }
+      );
+    }
+
+    // ==============================================================================
+    // ROUTE: /api/v1/cloudflare/shadow_ws (DO WebSocket Hibernation Gateway)
+    // ==============================================================================
+    if (url.pathname === "/api/v1/cloudflare/shadow_ws") {
+      const hasQueryKey = url.searchParams.has("key");
+      const auth = await verifyZeroTrustAndOperatorHeaders(request, env);
+      if (hasQueryKey || !auth.authorized) {
+        return Response.json(
+          { error: "OPERATOR_AUTH_REQUIRED", status: 403 },
+          { status: 403, headers: { "Cache-Control": "no-store" } }
+        );
+      }
+      if (!env || !env.SOVEREIGN_EDGE_SHADOW_DO) {
+        return Response.json(
+          { ok: false, error: "SOVEREIGN_EDGE_SHADOW_DO_UNBOUND", status: "UNMEASURED/OFFLINE" },
+          { status: 503, headers: { "Cache-Control": "no-store" } }
+        );
+      }
+      const doId = env.SOVEREIGN_EDGE_SHADOW_DO.idFromName("GLOBAL_SOVEREIGN_SHADOW_V4400");
+      const stub = env.SOVEREIGN_EDGE_SHADOW_DO.get(doId);
+      const wsReq = new Request("https://sovereign-internal/shadow/ws", request);
+      return await stub.fetch(wsReq);
+    }
+
+    // ==============================================================================
+    // ROUTE: /api/v1/cloudflare/vpc_mesh_status (Mesh Registry & VPC Bindings)
+    // ==============================================================================
+    if (url.pathname === "/api/v1/cloudflare/vpc_mesh_status") {
+      let meshData = { ok: false, status: "UNMEASURED/DO_UNBOUND", device_count: 0, devices: [] };
+      if (env && env.SOVEREIGN_EDGE_SHADOW_DO) {
+        try {
+          const doId = env.SOVEREIGN_EDGE_SHADOW_DO.idFromName("GLOBAL_SOVEREIGN_SHADOW_V4400");
+          const stub = env.SOVEREIGN_EDGE_SHADOW_DO.get(doId);
+          const mRes = await stub.fetch("https://sovereign-internal/shadow/mesh_status");
+          if (mRes.ok) meshData = await mRes.json();
+        } catch {
+          gWorkerSqliteErrCount++;
+        }
+      }
+      return Response.json(
+        {
+          ok: true,
+          status: meshData.device_count > 0 ? "MEASURED_VPC_MESH_ACTIVE" : "UNMEASURED/UNSYNCED",
+          tunnel_name: "sovereign-vpc-mesh",
+          cf_vnet: "default",
+          hyperdrive_bound: Boolean(env && env.ACT_OMEGA_HYPERDRIVE),
+          workflow_svc_bound: Boolean(env && env.ACT_OMEGA_WORKFLOW_SVC),
+          vpc_services_bound: {
+            ANCHOR_L0_VPC: Boolean(env && env.ANCHOR_L0_VPC),
+            DENO_L2_VPC: Boolean(env && env.DENO_L2_VPC),
+            PIXEL10_EDGE_VPC: Boolean(env && env.PIXEL10_EDGE_VPC),
+            PIXEL8_APEX_VPC: Boolean(env && env.PIXEL8_APEX_VPC)
+          },
+          mesh: meshData,
+          timestamp_ms: Date.now()
+        },
+        { status: 200, headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" } }
+      );
+    }
+
+    // ==============================================================================
+    // ROUTE: /api/v1/cloudflare/mesh_register (Authenticated Cluster Mesh Roster)
+    // ==============================================================================
+    if (url.pathname === "/api/v1/cloudflare/mesh_register") {
+      const hasQueryKey = url.searchParams.has("key");
+      const auth = await verifyZeroTrustAndOperatorHeaders(request, env);
+      if (hasQueryKey || !auth.authorized) {
+        return Response.json(
+          { error: "OPERATOR_AUTH_REQUIRED", status: 403 },
+          { status: 403, headers: { "Cache-Control": "no-store" } }
+        );
+      }
+      if (request.method !== "POST") {
+        return Response.json({ error: "METHOD_NOT_ALLOWED" }, { status: 405 });
+      }
+      let rawText = "";
+      try {
+        rawText = await request.text();
+        JSON.parse(rawText);
+      } catch {
+        return Response.json({ error: "INVALID_JSON_BODY" }, { status: 400 });
+      }
+      if (!env || !env.SOVEREIGN_EDGE_SHADOW_DO) {
+        return Response.json(
+          { ok: false, error: "SOVEREIGN_EDGE_SHADOW_DO_UNBOUND", status: "UNMEASURED/OFFLINE" },
+          { status: 503, headers: { "Cache-Control": "no-store" } }
+        );
+      }
+      const doId = env.SOVEREIGN_EDGE_SHADOW_DO.idFromName("GLOBAL_SOVEREIGN_SHADOW_V4400");
+      const stub = env.SOVEREIGN_EDGE_SHADOW_DO.get(doId);
+      const regRes = await stub.fetch("https://sovereign-internal/shadow/mesh_register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: rawText
+      });
+      const regJson = await regRes.json();
+      return Response.json(regJson, {
+        status: regRes.status,
+        headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" }
+      });
+    }
+
+    // ==============================================================================
+    // ROUTE: /api/v1/cloudflare/vpc_probe (Direct Cloudflare Workers VPC Service Probes)
+    // ==============================================================================
+    if (url.pathname === "/api/v1/cloudflare/vpc_probe") {
+      if (env && env.SOVEREIGN_EDGE_SHADOW_DO) {
+        try {
+          const doId = env.SOVEREIGN_EDGE_SHADOW_DO.idFromName("GLOBAL_SOVEREIGN_SHADOW_V4400");
+          const stub = env.SOVEREIGN_EDGE_SHADOW_DO.get(doId);
+          await stub.fetch("https://sovereign-internal/shadow/quota_check?tier=vpc_requests&units=4");
+        } catch {}
+      }
+      const vpcTargets = [
+        { service: "act-omega-anchor-l0-vpc", binding: "ANCHOR_L0_VPC", url: "http://127.0.0.1:8097/api/v1/status" },
+        { service: "act-omega-deno-l2-vpc", binding: "DENO_L2_VPC", url: "http://127.0.0.1:8099/api/v1/pgwire/status" },
+        { service: "act-omega-pixel10-edge-vpc", binding: "PIXEL10_EDGE_VPC", url: "http://127.0.0.1:19788/api/health" },
+        { service: "act-omega-pixel8-apex-vpc", binding: "PIXEL8_APEX_VPC", url: "http://127.0.0.1:19792/api/health" }
+      ];
+      const probes = await Promise.all(
+        vpcTargets.map(async (t) => {
+          const b = env ? env[t.binding] : null;
+          if (!b || typeof b.fetch !== "function") {
+            return { service: t.service, binding: t.binding, status: "UNMEASURED/OFFLINE", http_status: null, latency_ms: null };
+          }
+          const t0 = Date.now();
+          try {
+            const resp = await b.fetch(t.url, {
+              method: "GET",
+              headers: { "Accept": "application/json" },
+              signal: AbortSignal.timeout(5000)
+            });
+            const latencyMs = Date.now() - t0;
+            const bodyTxt = await resp.text();
+            return {
+              service: t.service,
+              binding: t.binding,
+              status: resp.ok ? "MEASURED_VPC_ONLINE" : "VPC_HTTP_ERROR",
+              http_status: resp.status,
+              latency_ms: latencyMs,
+              body_bytes: bodyTxt.length
+            };
+          } catch (err) {
+            return {
+              service: t.service,
+              binding: t.binding,
+              status: "UNMEASURED/OFFLINE",
+              http_status: null,
+              latency_ms: Date.now() - t0,
+              error: String(err)
+            };
+          }
+        })
+      );
+      const onlineCount = probes.filter((p) => p.status === "MEASURED_VPC_ONLINE").length;
+      return Response.json(
+        {
+          ok: onlineCount === probes.length,
+          status: onlineCount === probes.length ? "MEASURED_ALL_4_VPC_ONLINE" : (onlineCount > 0 ? "DEGRADED_VPC_PARTIAL" : "UNMEASURED/OFFLINE"),
+          online_count: onlineCount,
+          total_services: probes.length,
+          tunnel_name: "sovereign-vpc-mesh",
+          probes,
+          timestamp_ms: Date.now()
+        },
+        { status: 200, headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" } }
+      );
+    }
+
+    // ==============================================================================
+    // ROUTE: /api/v1/cloudflare/hyperdrive_query (Authenticated Hyperdrive -> PGWire DuckDB)
+    // ==============================================================================
+    if (url.pathname === "/api/v1/cloudflare/hyperdrive_query") {
+      const hasQueryKey = url.searchParams.has("key");
+      const auth = await verifyZeroTrustAndOperatorHeaders(request, env);
+      if (hasQueryKey || !auth.authorized) {
+        return Response.json(
+          { error: "OPERATOR_AUTH_REQUIRED", status: 403 },
+          { status: 403, headers: { "Cache-Control": "no-store" } }
+        );
+      }
+      if (request.method !== "POST") {
+        return Response.json({ error: "METHOD_NOT_ALLOWED" }, { status: 405 });
+      }
+      let body = {};
+      try {
+        const raw = await request.text();
+        if (raw && raw.trim().length > 0) body = JSON.parse(raw);
+      } catch {
+        return Response.json({ error: "INVALID_JSON_BODY" }, { status: 400 });
+      }
+      const sql = String(body.sql || "SELECT count(*) AS docs_count FROM corpus_docs;").trim();
+      const trimmed = sql.replace(/;+\s*$/, "");
+      if (!trimmed || trimmed.includes(";") || !/^(SELECT|WITH|EXPLAIN|SHOW)\b/i.test(trimmed) || /\b(INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|TRUNCATE|ATTACH|DETACH|COPY|EXPORT|IMPORT|CALL|MERGE|REPLACE)\b/i.test(trimmed)) {
+        return Response.json(
+          { ok: false, error: "READ_ONLY_SQL_REQUIRED", status: "REJECTED_NON_READONLY_SQL" },
+          { status: 400, headers: { "Cache-Control": "no-store" } }
+        );
+      }
+      if (env && env.SOVEREIGN_EDGE_SHADOW_DO) {
+        try {
+          const doId = env.SOVEREIGN_EDGE_SHADOW_DO.idFromName("GLOBAL_SOVEREIGN_SHADOW_V4400");
+          const stub = env.SOVEREIGN_EDGE_SHADOW_DO.get(doId);
+          await stub.fetch("https://sovereign-internal/shadow/quota_check?tier=hyperdrive_queries&units=1");
+        } catch {}
+      }
+      if (!env || !env.ACT_OMEGA_WORKFLOW_SVC || typeof env.ACT_OMEGA_WORKFLOW_SVC.fetch !== "function") {
+        return Response.json(
+          { ok: false, error: "ACT_OMEGA_WORKFLOW_SVC_UNBOUND", status: "UNMEASURED/OFFLINE" },
+          { status: 503, headers: { "Cache-Control": "no-store" } }
+        );
+      }
+      const svcRes = await env.ACT_OMEGA_WORKFLOW_SVC.fetch("https://workflow.internal/hyperdrive/query", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sql })
+      });
+      const svcJson = await svcRes.json();
+      return Response.json(svcJson, {
+        status: svcRes.status,
+        headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" }
+      });
+    }
+
     const isHtmlReq =
       !url.pathname.startsWith("/api/") && (
         url.pathname === "/" ||
@@ -2625,7 +3162,7 @@ export default {
       const colsDisp = syncedTail.chair44_columns !== null ? syncedTail.chair44_columns.toLocaleString("en-US") : "UNMEASURED/UNSYNCED";
       const synDisp = syncedTail.active_synapses !== null ? syncedTail.active_synapses.toLocaleString("en-US") : "UNMEASURED/UNSYNCED";
       const toolsDisp = syncedTail.tools_total !== null ? `${syncedTail.tools_total}` : "UNMEASURED/UNSYNCED";
-      const ssrVerAttr = verStr !== "UNMEASURED/UNSYNCED" ? verStr : "v72.2.0";
+      const ssrVerAttr = verStr !== "UNMEASURED/UNSYNCED" ? verStr : "v73.2.0";
       const htmlBody = `<!DOCTYPE html>
 <html lang="en">
 <head>

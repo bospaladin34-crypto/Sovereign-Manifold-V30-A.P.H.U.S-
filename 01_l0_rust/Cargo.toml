@@ -7,6 +7,8 @@ description = "ACT-Omega v30.0 Deterministic Topological Compute Core"
 
 [dependencies]
 bytemuck = { version = "1.18", features = ["derive"] }
+omega_rnd_core_audit = { path = "../crates/omega_rnd_core_audit" }
+omega_sec_manifold = { path = "../crates/omega_sec_manifold", features = ["std"] }
 rayon = "1.10"
 serde_json = "1.0"
 

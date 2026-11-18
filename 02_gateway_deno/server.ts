@@ -1,6 +1,7 @@
 import { VOCAB_240, FREE_WORD_SET, SVO_SLOT_SETS, tokenizeSubwords240, detokenizeSubwords240, extractSemanticPromptRoots, recombineAndStitchSubwords } from "./tokenizer_240.ts";
+import { getPgWireStatus, startPgWireDuckdbServer } from "./pgwire_duckdb_server.ts";
 
-const PORT_TCP = 8098;
+const PORT_TCP = Number(Deno.env.get("DENO_TCP_PORT") || "18098");
 const PORT_HTTP = 8099;
 const MODEL_PATH = "C:\\sovereign_manifold_v31\\03_vault\\models\\model_harmonic_iii_240.e8q";
 
@@ -108,7 +109,7 @@ console.log(`[Vault Synchronizer] Active Baseline: ${cachedVaultStats.shards_tot
 let latestTelemetry = {
   carrier_hz: 15,
   carrier_phase_rad: 0.17259,
-  thalamic_phase_rad: 0.17259, s_chsh: 2.828427, ab_flux_rad: 0.02259, focus_gain: 4.52, cft_delta: 0.1250, cutler_config: 199, tangram_units: 32, chair44_shards: 415, v4_sheaf_clashes: 0, braid_reduced_len: 2, packed_ternary_bytes: 13056, mali_l2_headroom_pct: 99.69, tokens_total: 308936, shards_total: 440, holdout_ppl: 1.199, qat_shielded_pressure: 0.8250, beaming_contrast: 27.00, svo_overlap: 0,
+  thalamic_phase_rad: 0.17259, s_chsh: 2.828427, ab_flux_rad: 0.02259, focus_gain: 4.52, cft_delta: 0.1250, cutler_config: 199, tangram_units: 32, chair44_shards: 415, v4_sheaf_clashes: 0, braid_reduced_len: 2, packed_ternary_bytes: 13056, mali_l2_headroom_pct: 99.69, holdout_ppl: 1.199, qat_shielded_pressure: 0.8250, beaming_contrast: 27.00, svo_overlap: 0,
   b_field_ut: { x: 184.06, y: -135.94, z: -40.73 },
   b_norm_ut: 52.3,
   norm_ut: 52.3,
@@ -335,12 +336,17 @@ startTcpListener();
 
 async function startUdpDiscovery() {
   try {
-    const socket = Deno.listenDatagram({ port: PORT_TCP, transport: "udp", hostname: "0.0.0.0" });
+    const listenDg = (Deno as unknown as { listenDatagram?: Function }).listenDatagram;
+    if (typeof listenDg !== "function") {
+      console.log(`[mDNS Discovery] UDP datagram skipped (requires --unstable-net); TCP :${PORT_TCP} + HTTP :${PORT_HTTP} + PGWire :5439 active.`);
+      return;
+    }
+    const socket = listenDg({ port: PORT_TCP, transport: "udp", hostname: "0.0.0.0" });
     console.log(`[mDNS Discovery] UDP discovery responder active on 0.0.0.0:${PORT_TCP}`);
     for await (const [data, remoteAddr] of socket) {
       const msg = new TextDecoder().decode(data);
       if (msg.includes("ACTOMEGA_PROBE") || msg.includes("SWARM_PROBE")) {
-        const resp = new TextEncoder().encode(`ACTOMEGA_HOST:garlock00,PORT=8098,HTTP=8099,SHARDS=${cachedVaultStats.shards_total}\n`);
+        const resp = new TextEncoder().encode(`ACTOMEGA_HOST:garlock00,PORT=${PORT_TCP},HTTP=${PORT_HTTP},SHARDS=${cachedVaultStats.shards_total}\n`);
         await socket.send(resp, remoteAddr);
       }
     }
@@ -349,6 +355,100 @@ async function startUdpDiscovery() {
   }
 }
 startUdpDiscovery();
+startPgWireDuckdbServer();
+
+let omegaSecFfiCache: {
+  lib: Deno.DynamicLibrary<{ omega_sec_self_test: { parameters: []; result: "i32" } }> | null;
+  path: string;
+} = { lib: null, path: "" };
+
+function callOmegaSecFfiSelfTest(): {
+  ok: boolean;
+  status: string;
+  rc: number;
+  dll_path: string;
+  elapsed_us: number;
+  error?: string;
+} {
+  const t0 = performance.now();
+  const candidates = [
+    "../crates/omega_sec_manifold/target/release/omega_sec_manifold.dll",
+    "C:\\sovereign_manifold_v31\\crates\\omega_sec_manifold\\target\\release\\omega_sec_manifold.dll",
+  ];
+  try {
+    if (!omegaSecFfiCache.lib) {
+      let chosen = "";
+      for (const cand of candidates) {
+        try {
+          Deno.statSync(cand);
+          chosen = cand;
+          break;
+        } catch (_) {}
+      }
+      if (!chosen) {
+        return {
+          ok: false,
+          status: "UNMEASURED/OFFLINE",
+          rc: -1,
+          dll_path: candidates[0],
+          elapsed_us: Math.round((performance.now() - t0) * 1000.0 * 100) / 100,
+          error: "omega_sec_manifold.dll not found",
+        };
+      }
+      omegaSecFfiCache.lib = Deno.dlopen(chosen, {
+        omega_sec_self_test: { parameters: [], result: "i32" },
+      });
+      omegaSecFfiCache.path = chosen;
+    }
+    const rc = omegaSecFfiCache.lib.symbols.omega_sec_self_test();
+    return {
+      ok: rc === 0,
+      status: rc === 0 ? "MEASURED_FFI_OK" : "FFI_SELF_TEST_FAILED",
+      rc,
+      dll_path: omegaSecFfiCache.path,
+      elapsed_us: Math.round((performance.now() - t0) * 1000.0 * 100) / 100,
+    };
+  } catch (e) {
+    return {
+      ok: false,
+      status: "UNMEASURED/OFFLINE",
+      rc: -1,
+      dll_path: omegaSecFfiCache.path || candidates[0],
+      elapsed_us: Math.round((performance.now() - t0) * 1000.0 * 100) / 100,
+      error: String(e),
+    };
+  }
+}
+
+async function proxyToAnchorL0(req: Request, url: URL): Promise<Response> {
+  const target = `http://127.0.0.1:8097${url.pathname}${url.search}`;
+  try {
+    const fwdHeaders = new Headers();
+    const ct = req.headers.get("content-type");
+    if (ct) fwdHeaders.set("Content-Type", ct);
+    const opKey = req.headers.get("x-sovereign-operator-key");
+    if (opKey) fwdHeaders.set("X-Sovereign-Operator-Key", opKey);
+    const bodyText = req.method === "GET" || req.method === "HEAD" ? undefined : await req.text();
+    const upstream = await fetch(target, {
+      method: req.method,
+      headers: fwdHeaders,
+      body: bodyText,
+    });
+    const respText = await upstream.text();
+    return new Response(respText, {
+      status: upstream.status,
+      headers: {
+        "Content-Type": upstream.headers.get("content-type") || "application/json; charset=utf-8",
+        "Access-Control-Allow-Origin": "*",
+      },
+    });
+  } catch (e) {
+    return new Response(
+      JSON.stringify({ ok: false, status: "UNMEASURED/OFFLINE", upstream: target, error: String(e) }),
+      { status: 503, headers: { "Content-Type": "application/json; charset=utf-8", "Access-Control-Allow-Origin": "*" } },
+    );
+  }
+}
 
 Deno.serve({ port: PORT_HTTP, hostname: "0.0.0.0" }, async (req) => {
   const url = new URL(req.url);
@@ -360,7 +460,7 @@ Deno.serve({ port: PORT_HTTP, hostname: "0.0.0.0" }, async (req) => {
       headers: {
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type",
+        "Access-Control-Allow-Headers": "Content-Type, X-Sovereign-Operator-Key",
       }
     });
   }
@@ -509,9 +609,11 @@ Deno.serve({ port: PORT_HTTP, hostname: "0.0.0.0" }, async (req) => {
   }
 
   if (req.method === "POST" && pathname === "/api/v1/web/search") {
+    let webSearchQuery = "";
     try {
       const body = await req.json();
       const query = (body.query || "").trim();
+      webSearchQuery = query;
       if (!query) {
         return new Response(JSON.stringify({ error: "Empty query" }), {
           status: 400,
@@ -547,7 +649,7 @@ Deno.serve({ port: PORT_HTTP, hostname: "0.0.0.0" }, async (req) => {
     } catch (e) {
       return new Response(JSON.stringify({
         status: "OFFLINE_FALLBACK",
-        query: body?.query,
+        query: webSearchQuery,
         error: String(e),
         results: []
       }), {
@@ -555,6 +657,28 @@ Deno.serve({ port: PORT_HTTP, hostname: "0.0.0.0" }, async (req) => {
         headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
       });
     }
+  }
+
+  if (req.method === "GET" && pathname === "/api/v1/pgwire/status") {
+    return new Response(JSON.stringify(getPgWireStatus()), {
+      status: 200,
+      headers: { "Content-Type": "application/json; charset=utf-8", "Access-Control-Allow-Origin": "*" }
+    });
+  }
+
+  if (req.method === "GET" && pathname === "/api/v1/sec/ffi_self_test") {
+    const ffiRes = callOmegaSecFfiSelfTest();
+    return new Response(JSON.stringify(ffiRes), {
+      status: ffiRes.ok ? 200 : 503,
+      headers: { "Content-Type": "application/json; charset=utf-8", "Access-Control-Allow-Origin": "*" }
+    });
+  }
+
+  if (
+    pathname === "/mcp" ||
+    /^\/api\/v1\/(?:lab\/|chain399\/|tools\/t3(?:69|[789]\d)|tool\/3(?:69|[789]\d))/.test(pathname)
+  ) {
+    return await proxyToAnchorL0(req, url);
   }
 
   if (pathname.startsWith("/api/")) {

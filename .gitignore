@@ -43,5 +43,7 @@ target_stage/
 f4se_rust_governor/target/
 **/ACT_Omega_Sovereign_HUD_Mobile.apk
 **/act-omega-mobile.apk
+crates/*/target/
+
 
 

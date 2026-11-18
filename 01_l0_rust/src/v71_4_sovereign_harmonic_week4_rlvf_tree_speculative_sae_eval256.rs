@@ -23,7 +23,7 @@
 // =============================================================================
 
 use rayon::prelude::*;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::fs;
 use std::io::{Read, Write};
 use std::net::{SocketAddr, TcpStream};
@@ -42,7 +42,7 @@ use crate::v69_5_heterogeneous_cpu_rtx3050_cuda_coexec::{
     v69_5_build_gpu_s24_s47_batch, v69_5_load_connectome_and_ptx,
 };
 use crate::v71_0_sovereign_harmonic_standalone_model::{
-    v71_0_dispatch_tool_322_unseen_holdout_evaluator, v71_bpe_encode, v71_embedding_dot_32d,
+    v71_0_dispatch_tool_322_unseen_holdout_evaluator, v71_bpe_encode,
     v71_extract_json_str, v71_extract_json_usize, v71_fnv1a_64_str,
     v71_load_or_build_bpe_vocabulary, v71_load_sh4z_weights, v71_precompute_embedding_inv_norms_32d,
     v71_standalone_generate, v71_transduce_human_metaphors_and_ambiguity, V71_EMBED_DIM_32D,
@@ -51,18 +51,21 @@ use crate::v71_1_sovereign_harmonic_week1_deep12l_bptt_eval256::{
     v71_1_apply_15965hz_decadic_rope_32d, v71_1_build_sh_eval_256_suite,
     v71_1_evaluate_deep12l_sequence_cross_entropy, v71_1_load_deep12l_stack_strict,
     v71_1_save_deep12l_stack, v71_1_stiefel_cayley_retraction_step, V71_1Deep12LStack,
-    V71_1_DEEP_LAYERS,
+    V71_1ShEval256Item, V71_1_DEEP_LAYERS,
 };
 use crate::v71_2_sovereign_harmonic_week2_chinchilla_16k_bpe_leech::{
     v71_2_encode_16384_ast_bpe, v71_2_evaluate_week2_16k_sequence_cross_entropy,
-    v71_2_load_16k_codebook_strict, V71_2_BPE_16K_VOCAB, V71_2_CURRICULUM_TOTAL_SAMPLES,
+    v71_2_load_16k_codebook_strict, V71_2AstBpeCodebook16K, V71_2_BPE_16K_VOCAB,
+    V71_2_CURRICULUM_TOTAL_SAMPLES,
 };
 use crate::v71_3_sovereign_harmonic_week3_speculative_k4_long_context_4k::{
     v71_3_compute_step_token_probs, v71_3_evaluate_week3_sequence_cross_entropy,
     v71_3_os_rng_seed, v71_3_run_tool_343_core, v71_3_run_tool_350_core, v71_3_sample_uniform,
 };
 use crate::v72_1_sh_xi_matryoshka_384_768_cuda_pretrainer::{
-    v72_1_sha256_hex, v72_1_update_weight_manifest, v72_1_verify_weight_manifest,
+    v72_1_push_f32_le, v72_1_push_u32_le, v72_1_push_u64_le, v72_1_read_f32_le, v72_1_read_u32_le,
+    v72_1_register_or_update_weight_manifest, v72_1_sha256_hex, v72_1_update_weight_manifest,
+    v72_1_verify_weight_manifest,
 };
 
 // --- Week 4 Sovereign Harmonic X Constants (Strictly Zero Square Brackets) ---
@@ -1185,6 +1188,363 @@ fn v71_4_tree_children_indices(node_idx: usize) -> Option<(usize, Option<usize>)
     }
 }
 
+const C_TREE_DRAFTER_2L_SH4Z: &str = "00_control/weights/sovereign_harmonic_tree_drafter_2l.sh4z";
+const E_TREE_DRAFTER_2L_SH4Z: &str = "E:\\Sovereign_Manifold_SSD_Vault\\weights\\sovereign_harmonic_tree_drafter_2l.sh4z";
+const V71_4_TREE_BRIDGE_MAGIC: u32 = 0x5348_4432;
+const V71_4_TREE_BRIDGE_VER: u32 = 7320;
+const V71_4_TREE_BRIDGE_SLOTS: usize = 32;
+const V71_4_TREE_BRIDGE_TRAIN_TOKS: usize = 64;
+static TREE_DRAFTER_2L_CACHE: RwLock<Option<(String, Vec<Vec<f32>>)>> = RwLock::new(None);
+
+fn v71_4_deep_state_vec(
+    stack: &V71_1Deep12LStack,
+    cb_16k: &V71_2AstBpeCodebook16K,
+    prev_tok: usize,
+    step_pos: usize,
+    active_layers: usize,
+) -> Vec<f64> {
+    let dim = V71_EMBED_DIM_32D;
+    let mut x_vec = v71_4_alloc_vec(dim, 0.0);
+    let base_e = (prev_tok % V71_2_BPE_16K_VOCAB) * dim;
+    let mut d: usize = 0;
+    while d < dim {
+        let coord = (*cb_16k.e8_32d_coords.get(base_e + d).unwrap_or(&0) as f64) / 8.0;
+        if let Some(px) = x_vec.get_mut(d) {
+            *px = coord;
+        }
+        d += 1;
+    }
+
+    let mut l: usize = 0;
+    while l < active_layers && l < stack.layers.len() {
+        let (rope_v, _) = v71_1_apply_15965hz_decadic_rope_32d(&x_vec, step_pos, l, true);
+        let mut y_proj = v71_4_alloc_vec(dim, 0.0);
+        if let Some(lyr) = stack.layers.get(l) {
+            let mut r: usize = 0;
+            while r < dim {
+                let mut dot: f64 = 0.0;
+                let mut c: usize = 0;
+                while c < dim {
+                    let w = *lyr.stiefel_w.get(r * dim + c).unwrap_or(&0.0);
+                    let xv = *rope_v.get(c).unwrap_or(&0.0);
+                    dot += w * xv;
+                    c += 1;
+                }
+                if let Some(py) = y_proj.get_mut(r) {
+                    *py = dot;
+                }
+                r += 1;
+            }
+        }
+        let mut sq_sum: f64 = 0.0;
+        for v in y_proj.iter() {
+            sq_sum += (*v) * (*v);
+        }
+        let rms = ((sq_sum / (dim as f64)) + 1e-6).sqrt();
+        let mut i: usize = 0;
+        while i < dim {
+            if let Some(px) = x_vec.get_mut(i) {
+                let yv = *y_proj.get(i).unwrap_or(&0.0);
+                *px = yv / rms;
+            }
+            i += 1;
+        }
+        l += 1;
+    }
+    x_vec
+}
+
+fn v71_4_probs_from_state_vec(
+    x_vec: &Vec<f64>,
+    cb_16k: &V71_2AstBpeCodebook16K,
+) -> (u16, f64, Vec<f64>) {
+    let dim = V71_EMBED_DIM_32D;
+    let vocab_n = V71_2_BPE_16K_VOCAB;
+    let mut max_logit: f64 = -1e9;
+    let mut logits: Vec<f64> = Vec::with_capacity(vocab_n);
+    let mut v_i: usize = 0;
+    while v_i < vocab_n {
+        let base_c = v_i * dim;
+        let mut logit: f64 = 0.0;
+        let mut d_c: usize = 0;
+        while d_c < dim {
+            let xv = *x_vec.get(d_c).unwrap_or(&0.0);
+            let cv = (*cb_16k.e8_32d_coords.get(base_c + d_c).unwrap_or(&0) as f64) / 8.0;
+            logit += xv * cv;
+            d_c += 1;
+        }
+        if logit > max_logit {
+            max_logit = logit;
+        }
+        logits.push(logit);
+        v_i += 1;
+    }
+
+    let mut sum_exp: f64 = 0.0;
+    let mut probs: Vec<f64> = Vec::with_capacity(vocab_n);
+    for logit in logits.iter() {
+        let ep = (*logit - max_logit).exp();
+        sum_exp += ep;
+        probs.push(ep);
+    }
+    let inv_sum = 1.0 / sum_exp.max(1e-12);
+    let mut best_tok: u16 = 256;
+    let mut best_prob: f64 = 0.0;
+    let mut vi: usize = 0;
+    while vi < probs.len() {
+        if let Some(p) = probs.get_mut(vi) {
+            *p *= inv_sum;
+            if *p > best_prob {
+                best_prob = *p;
+                best_tok = vi as u16;
+            }
+        }
+        vi += 1;
+    }
+    (best_tok, best_prob, probs)
+}
+
+fn v71_4_train_and_save_tree_drafter_2l(
+    stack: &V71_1Deep12LStack,
+    cb_16k: &V71_2AstBpeCodebook16K,
+    eval_suite: &Vec<V71_1ShEval256Item>,
+) -> Result<Vec<Vec<f32>>, String> {
+    let mut eval_tok_blacklist: HashSet<usize> = HashSet::with_capacity(2048);
+    for item in eval_suite.iter() {
+        for t in v71_2_encode_16384_ast_bpe(&cb_16k.vocab_strings, &item.prompt).into_iter() {
+            eval_tok_blacklist.insert(t as usize);
+        }
+        for t in v71_2_encode_16384_ast_bpe(&cb_16k.vocab_strings, &item.reference_target).into_iter() {
+            eval_tok_blacklist.insert(t as usize);
+        }
+    }
+
+    let mut train_toks: Vec<usize> = Vec::with_capacity(V71_4_TREE_BRIDGE_TRAIN_TOKS);
+    let mut cand: usize = 256;
+    let mut guard: usize = 0;
+    while train_toks.len() < V71_4_TREE_BRIDGE_TRAIN_TOKS && guard < V71_2_BPE_16K_VOCAB {
+        let probe_id = 256 + ((cand.wrapping_mul(251).wrapping_add(17)) % (V71_2_BPE_16K_VOCAB - 256));
+        if !eval_tok_blacklist.contains(&probe_id) && !train_toks.iter().any(|x| *x == probe_id) {
+            train_toks.push(probe_id);
+        }
+        cand += 1;
+        guard += 1;
+    }
+    if train_toks.is_empty() {
+        return Err(String::from("TREE_DRAFTER_2L_NO_DISJOINT_TRAIN_TOKENS"));
+    }
+
+    let dim = V71_EMBED_DIM_32D;
+    let n_toks_f = train_toks.len() as f64;
+    let slots_f32: Vec<Vec<f32>> = (0..V71_4_TREE_BRIDGE_SLOTS)
+        .into_par_iter()
+        .map(|pos_slot| {
+            let mut g22 = v71_4_alloc_vec(dim * dim, 0.0);
+            let mut c12 = v71_4_alloc_vec(dim * dim, 0.0);
+            let mut diag_idx: usize = 0;
+            while diag_idx < dim {
+                if let Some(s) = g22.get_mut(diag_idx * dim + diag_idx) {
+                    *s = 1e-4;
+                }
+                diag_idx += 1;
+            }
+            for &tk in train_toks.iter() {
+                let x2 = v71_4_deep_state_vec(stack, cb_16k, tk, pos_slot, 2);
+                let x12 = v71_4_deep_state_vec(stack, cb_16k, tk, pos_slot, V71_1_DEEP_LAYERS);
+                let mut r: usize = 0;
+                while r < dim {
+                    let xr12 = *x12.get(r).unwrap_or(&0.0);
+                    let xr2 = *x2.get(r).unwrap_or(&0.0);
+                    let mut c: usize = 0;
+                    while c < dim {
+                        let xc2 = *x2.get(c).unwrap_or(&0.0);
+                        if let Some(gs) = g22.get_mut(r * dim + c) {
+                            *gs += (xr2 * xc2) / n_toks_f;
+                        }
+                        if let Some(cs) = c12.get_mut(r * dim + c) {
+                            *cs += (xr12 * xc2) / n_toks_f;
+                        }
+                        c += 1;
+                    }
+                    r += 1;
+                }
+            }
+
+            let mut g_row_max: f64 = 1.0;
+            let mut r_g: usize = 0;
+            while r_g < dim {
+                let mut rs: f64 = 0.0;
+                let mut c_g: usize = 0;
+                while c_g < dim {
+                    rs += (*g22.get(r_g * dim + c_g).unwrap_or(&0.0)).abs();
+                    c_g += 1;
+                }
+                if rs > g_row_max {
+                    g_row_max = rs;
+                }
+                r_g += 1;
+            }
+
+            let mut w_mat = v71_4_alloc_vec(dim * dim, 0.0);
+            let mut vel = v71_4_alloc_vec(dim * dim, 0.0);
+            let mut id_i: usize = 0;
+            while id_i < dim {
+                if let Some(ws) = w_mat.get_mut(id_i * dim + id_i) {
+                    *ws = 1.0;
+                }
+                id_i += 1;
+            }
+            let eta = 0.90 / g_row_max.max(1.0);
+            let mut gd_step: usize = 0;
+            while gd_step < 160 {
+                let mut r: usize = 0;
+                while r < dim {
+                    let mut c: usize = 0;
+                    while c < dim {
+                        let mut wg: f64 = 0.0;
+                        let mut k: usize = 0;
+                        while k < dim {
+                            wg += (*w_mat.get(r * dim + k).unwrap_or(&0.0))
+                                * (*g22.get(k * dim + c).unwrap_or(&0.0));
+                            k += 1;
+                        }
+                        let grad_rc = wg - (*c12.get(r * dim + c).unwrap_or(&0.0));
+                        let v_new = 0.80 * (*vel.get(r * dim + c).unwrap_or(&0.0)) + grad_rc;
+                        if let Some(vs) = vel.get_mut(r * dim + c) {
+                            *vs = v_new;
+                        }
+                        if let Some(ws) = w_mat.get_mut(r * dim + c) {
+                            *ws -= eta * v_new;
+                        }
+                        c += 1;
+                    }
+                    r += 1;
+                }
+                gd_step += 1;
+            }
+
+            w_mat.into_iter().map(|v| v as f32).collect()
+        })
+        .collect();
+
+    let mut payload_bytes: Vec<u8> = Vec::with_capacity(V71_4_TREE_BRIDGE_SLOTS * dim * dim * 4);
+    for slot in slots_f32.iter() {
+        for v in slot.iter() {
+            v72_1_push_f32_le(&mut payload_bytes, *v);
+        }
+    }
+    let fnv = v71_4_fnv1a64_bytes(&payload_bytes);
+    let mut buf: Vec<u8> = Vec::with_capacity(32 + payload_bytes.len());
+    v72_1_push_u32_le(&mut buf, V71_4_TREE_BRIDGE_MAGIC);
+    v72_1_push_u32_le(&mut buf, V71_4_TREE_BRIDGE_VER);
+    v72_1_push_u32_le(&mut buf, V71_4_TREE_BRIDGE_SLOTS as u32);
+    v72_1_push_u32_le(&mut buf, dim as u32);
+    v72_1_push_u32_le(&mut buf, train_toks.len() as u32);
+    v72_1_push_u32_le(&mut buf, 0_u32);
+    v72_1_push_u64_le(&mut buf, fnv);
+    buf.extend_from_slice(&payload_bytes);
+
+    let _ = fs::create_dir_all("00_control/weights");
+    fs::write(C_TREE_DRAFTER_2L_SH4Z, &buf)
+        .map_err(|e| format!("TREE_DRAFTER_2L_WRITE_ERR: {}", e))?;
+    if Path::new("E:\\").exists() {
+        let _ = fs::create_dir_all("E:\\Sovereign_Manifold_SSD_Vault\\weights");
+        let _ = fs::write(E_TREE_DRAFTER_2L_SH4Z, &buf);
+    }
+    let sha = v72_1_sha256_hex(&buf);
+    v72_1_register_or_update_weight_manifest(
+        "tree_drafter_2l",
+        C_TREE_DRAFTER_2L_SH4Z,
+        "sovereign_harmonic_tree_drafter_2l.sh4z",
+        buf.len(),
+        &sha,
+        "0x53484432",
+    )?;
+    if let Ok(mut g) = TREE_DRAFTER_2L_CACHE.write() {
+        *g = Some((sha, slots_f32.clone()));
+    }
+    Ok(slots_f32)
+}
+
+fn v71_4_load_or_cached_tree_drafter_2l() -> Option<Vec<Vec<f32>>> {
+    let bytes = v72_1_verify_weight_manifest("tree_drafter_2l", C_TREE_DRAFTER_2L_SH4Z).ok()?;
+    let expected_len = 32 + V71_4_TREE_BRIDGE_SLOTS * V71_EMBED_DIM_32D * V71_EMBED_DIM_32D * 4;
+    if bytes.len() != expected_len {
+        return None;
+    }
+    if v72_1_read_u32_le(&bytes, 0) != V71_4_TREE_BRIDGE_MAGIC {
+        return None;
+    }
+    let sha = v72_1_sha256_hex(&bytes);
+    if let Ok(g) = TREE_DRAFTER_2L_CACHE.read() {
+        if let Some((ref c_sha, ref c_slots)) = *g {
+            if c_sha == &sha {
+                return Some(c_slots.clone());
+            }
+        }
+    }
+    let dim = V71_EMBED_DIM_32D;
+    let slot_f32_n = dim * dim;
+    let mut slots: Vec<Vec<f32>> = Vec::with_capacity(V71_4_TREE_BRIDGE_SLOTS);
+    let mut off: usize = 32;
+    let mut s_i: usize = 0;
+    while s_i < V71_4_TREE_BRIDGE_SLOTS {
+        let mut mat: Vec<f32> = Vec::with_capacity(slot_f32_n);
+        let mut k: usize = 0;
+        while k < slot_f32_n {
+            mat.push(v72_1_read_f32_le(&bytes, off));
+            off += 4;
+            k += 1;
+        }
+        slots.push(mat);
+        s_i += 1;
+    }
+    if let Ok(mut g) = TREE_DRAFTER_2L_CACHE.write() {
+        *g = Some((sha, slots.clone()));
+    }
+    Some(slots)
+}
+
+fn v71_4_drafter_step_probs(
+    stack: &V71_1Deep12LStack,
+    trained_weights: &crate::v71_0_sovereign_harmonic_standalone_model::V71SovereignHarmonicWeights,
+    cb_16k: &V71_2AstBpeCodebook16K,
+    bridge_slots_opt: Option<&Vec<Vec<f32>>>,
+    prev_tok: usize,
+    step_pos: usize,
+) -> (u16, f64, Vec<f64>) {
+    if let Some(slots) = bridge_slots_opt {
+        if let Some(w_slot) = slots.get(step_pos % V71_4_TREE_BRIDGE_SLOTS) {
+            let dim = V71_EMBED_DIM_32D;
+            let x2 = v71_4_deep_state_vec(stack, cb_16k, prev_tok, step_pos, 2);
+            let mut y = v71_4_alloc_vec(dim, 0.0);
+            let mut sq_sum: f64 = 0.0;
+            let mut r: usize = 0;
+            while r < dim {
+                let mut dot: f64 = 0.0;
+                let mut c: usize = 0;
+                while c < dim {
+                    let w = *w_slot.get(r * dim + c).unwrap_or(&0.0) as f64;
+                    let xv = *x2.get(c).unwrap_or(&0.0);
+                    dot += w * xv;
+                    c += 1;
+                }
+                sq_sum += dot * dot;
+                if let Some(ys) = y.get_mut(r) {
+                    *ys = dot;
+                }
+                r += 1;
+            }
+            let rms = ((sq_sum / (dim as f64)) + 1e-6).sqrt();
+            for ys in y.iter_mut() {
+                *ys /= rms;
+            }
+            return v71_4_probs_from_state_vec(&y, cb_16k);
+        }
+    }
+    v71_3_compute_step_token_probs(stack, trained_weights, cb_16k, prev_tok, step_pos, 2)
+}
+
 pub fn v71_4_run_tool_352_core(payload: &str) -> V71_4Tool352Receipt {
     let t0 = Instant::now();
     let force_poison_tree = payload.contains("\"poison_draft_tree\":true");
@@ -1250,6 +1610,13 @@ pub fn v71_4_run_tool_352_core(payload: &str) -> V71_4Tool352Receipt {
             };
         }
     };
+    let train_bridge = payload.contains("\"action\":\"train\"") || payload.contains("\"force_retrain\":true");
+    let bridge_opt: Option<Vec<Vec<f32>>> = if train_bridge {
+        v71_4_train_and_save_tree_drafter_2l(&stack, &codebook, &eval_suite).ok()
+    } else {
+        v71_4_load_or_cached_tree_drafter_2l()
+    };
+    let active_bridge = if force_poison_tree { None } else { bridge_opt.as_ref() };
     let vocab_bpe = v71_load_or_build_bpe_vocabulary(false);
     let trained_weights = match v71_load_sh4z_weights(&vocab_bpe) {
         Some(w) => w,
@@ -1296,13 +1663,13 @@ pub fn v71_4_run_tool_352_core(payload: &str) -> V71_4Tool352Receipt {
 
                 // Build genuine 15-node depth-4 binary draft tree (nodes 0..14) from 2-layer drafter
                 let mut tree_nodes: Vec<V71_4DraftTreeNode> = Vec::with_capacity(V71_4_TREE_DRAFT_NODES_15);
-                let (_r_tok, _r_prob, d_root) = v71_3_compute_step_token_probs(
+                let (_r_tok, _r_prob, d_root) = v71_4_drafter_step_probs(
                     &stack,
                     &trained_weights,
                     &codebook,
+                    active_bridge,
                     cur_tok,
                     pos,
-                    2,
                 );
                 let (t1_r, q1_r, t2_r, q2_r, min_r) = v71_4_top2_and_min_tok(&d_root);
                 if force_poison_tree {
@@ -1319,13 +1686,13 @@ pub fn v71_4_run_tool_352_core(payload: &str) -> V71_4Tool352Receipt {
                 let mut p_expand: usize = 0;
                 while p_expand < 2 {
                     let p_tok = tree_nodes.get(p_expand).map(|n| n.token_id as usize).unwrap_or(cur_tok);
-                    let (_dt, _dp, d_sub) = v71_3_compute_step_token_probs(
+                    let (_dt, _dp, d_sub) = v71_4_drafter_step_probs(
                         &stack,
                         &trained_weights,
                         &codebook,
+                        active_bridge,
                         p_tok,
                         pos + 1,
-                        2,
                     );
                     let (t1, q1, t2, q2, min_sub) = v71_4_top2_and_min_tok(&d_sub);
                     if force_poison_tree {
@@ -1344,13 +1711,13 @@ pub fn v71_4_run_tool_352_core(payload: &str) -> V71_4Tool352Receipt {
                 let mut p3_expand: usize = 2;
                 while p3_expand < 6 {
                     let p_tok = tree_nodes.get(p3_expand).map(|n| n.token_id as usize).unwrap_or(cur_tok);
-                    let (_dt, _dp, d_sub) = v71_3_compute_step_token_probs(
+                    let (_dt, _dp, d_sub) = v71_4_drafter_step_probs(
                         &stack,
                         &trained_weights,
                         &codebook,
+                        active_bridge,
                         p_tok,
                         pos + 2,
-                        2,
                     );
                     let (t1, q1, t2, q2, min_sub) = v71_4_top2_and_min_tok(&d_sub);
                     if force_poison_tree {
@@ -1367,13 +1734,13 @@ pub fn v71_4_run_tool_352_core(payload: &str) -> V71_4Tool352Receipt {
 
                 // Depth 4: expand node 6 -> node 14 (at pos + 3), completing all 15 draft nodes
                 let p6_tok = tree_nodes.get(6).map(|n| n.token_id as usize).unwrap_or(cur_tok);
-                let (_dt14, _dp14, d_14) = v71_3_compute_step_token_probs(
+                let (_dt14, _dp14, d_14) = v71_4_drafter_step_probs(
                     &stack,
                     &trained_weights,
                     &codebook,
+                    active_bridge,
                     p6_tok,
                     pos + 3,
-                    2,
                 );
                 let (t14, q14, _t14_2, _q14_2, min_14) = v71_4_top2_and_min_tok(&d_14);
                 if force_poison_tree {
@@ -2298,7 +2665,7 @@ pub fn v71_4_run_tool_353_core(payload: &str) -> V71_4Tool353Receipt {
     }
 
     // Measure genuine forward unembedding causal steering (+3.5 sigma vs -3.5 sigma) across 8 monosemantic slices
-    let mut circuits_json = String::new();
+    let circuits_json = String::new();
     let mut min_steering_delta_prob: f64 = 1.0;
     let mut max_negative_suppression_delta: f64 = -1.0;
     let mut max_simplex_conservation_err: f64 = 0.0;

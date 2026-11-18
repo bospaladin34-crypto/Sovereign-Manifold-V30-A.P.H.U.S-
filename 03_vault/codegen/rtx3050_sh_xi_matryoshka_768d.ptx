@@ -135,3 +135,86 @@ L_EXIT_SH_K1:
 L_EXIT_SH_K2:
     ret;
 }
+
+.visible .entry rtx3050_sh_xi_adamw_q8_rowscale_step_f32(
+    .param .u64 param_w_ptr,
+    .param .u64 param_g_ptr,
+    .param .u64 param_m_ptr,
+    .param .u64 param_v_ptr,
+    .param .f32 param_lr,
+    .param .f32 param_beta1,
+    .param .f32 param_beta2,
+    .param .f32 param_wd,
+    .param .f32 param_inv_bc1,
+    .param .f32 param_inv_bc2,
+    .param .f32 param_eps,
+    .param .u32 param_total_count
+)
+{
+    .reg .pred %p<2>;
+    .reg .b32  %r<6>;
+    .reg .f32  %f<22>;
+    .reg .b64  %rd<10>;
+
+    ld.param.u64 %rd1, [param_w_ptr];
+    ld.param.u64 %rd2, [param_g_ptr];
+    ld.param.u64 %rd3, [param_m_ptr];
+    ld.param.u64 %rd4, [param_v_ptr];
+    ld.param.f32 %f1,  [param_lr];
+    ld.param.f32 %f2,  [param_beta1];
+    ld.param.f32 %f3,  [param_beta2];
+    ld.param.f32 %f4,  [param_wd];
+    ld.param.f32 %f5,  [param_inv_bc1];
+    ld.param.f32 %f6,  [param_inv_bc2];
+    ld.param.f32 %f7,  [param_eps];
+    ld.param.u32 %r1,  [param_total_count];
+
+    mov.u32 %r2, %ctaid.x;
+    mov.u32 %r3, %ntid.x;
+    mov.u32 %r4, %tid.x;
+    mad.lo.u32 %r5, %r2, %r3, %r4;
+
+    setp.ge.u32 %p1, %r5, %r1;
+    @%p1 bra L_EXIT_SH_K3;
+
+    mul.wide.u32 %rd5, %r5, 4;
+    add.u64 %rd6, %rd1, %rd5;
+    add.u64 %rd7, %rd2, %rd5;
+    add.u64 %rd8, %rd3, %rd5;
+    add.u64 %rd9, %rd4, %rd5;
+
+    ld.global.f32 %f8,  [%rd6]; // w
+    ld.global.f32 %f9,  [%rd7]; // g
+    ld.global.f32 %f10, [%rd8]; // m
+    ld.global.f32 %f11, [%rd9]; // v
+
+    mov.f32 %f12, 0f3F800000; // 1.0f
+    sub.rn.f32 %f13, %f12, %f2; // 1 - beta1
+    mul.rn.f32 %f14, %f2, %f10;
+    fma.rn.f32 %f14, %f13, %f9, %f14; // m_new
+
+    sub.rn.f32 %f15, %f12, %f3; // 1 - beta2
+    mul.rn.f32 %f16, %f9, %f9;  // g*g
+    mul.rn.f32 %f17, %f3, %f11;
+    fma.rn.f32 %f17, %f15, %f16, %f17; // v_new
+
+    st.global.f32 [%rd8], %f14;
+    st.global.f32 [%rd9], %f17;
+
+    mul.rn.f32 %f18, %f14, %f5; // m_hat
+    mul.rn.f32 %f19, %f17, %f6; // v_hat
+    sqrt.rn.f32 %f19, %f19;
+    add.rn.f32 %f19, %f19, %f7; // sqrt(v_hat) + eps
+    div.rn.f32 %f20, %f18, %f19;
+
+    mul.rn.f32 %f21, %f1, %f4; // lr * wd
+    sub.rn.f32 %f21, %f12, %f21; // 1 - lr*wd
+    mul.rn.f32 %f8, %f8, %f21;
+    neg.f32 %f20, %f20;
+    fma.rn.f32 %f8, %f1, %f20, %f8;
+
+    st.global.f32 [%rd6], %f8;
+
+L_EXIT_SH_K3:
+    ret;
+}

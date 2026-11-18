@@ -3,7 +3,7 @@ $vFiles = Get-ChildItem -Path "$baseDir\01_l0_rust\src\" -Filter "*.rs" | Where-
     $n = $_.Name
     if ($n -match "^v(\d+)") {
         $num = [int]$matches[1]
-        $num -ge 33 -and $num -le 72
+        $num -ge 33 -and $num -le 79
     } else {
         $false
     }

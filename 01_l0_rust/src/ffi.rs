@@ -800,6 +800,7 @@ pub struct Rtx3050ShXiMatryoshkaSample {
     pub ptx_loaded: bool,
     pub k1_dual_shell_loaded: bool,
     pub k2_mamba_swiglu_loaded: bool,
+    pub k3_adamw_q8_loaded: bool,
     pub device_name: String,
     pub sm_count: i32,
     pub cuda_cores: usize,
@@ -823,6 +824,7 @@ struct PersistentShXiCudaState {
     h_mod: usize,
     fn_k1: usize,
     fn_k2: usize,
+    fn_k3: usize,
     d_buf0: u64,
     d_buf1: u64,
     d_buf2: u64,
@@ -866,6 +868,7 @@ pub fn execute_rtx3050_sh_xi_matryoshka_f32_ptx(
         ptx_loaded: false,
         k1_dual_shell_loaded: false,
         k2_mamba_swiglu_loaded: false,
+        k3_adamw_q8_loaded: false,
         device_name: String::from("UNMEASURED/OFFLINE"),
         sm_count: 0,
         cuda_cores: 0,
@@ -1069,6 +1072,7 @@ pub fn execute_rtx3050_sh_xi_matryoshka_f32_ptx(
                             {
                                 let mut fn_k1: *mut c_void = ptr::null_mut();
                                 let mut fn_k2: *mut c_void = ptr::null_mut();
+                                let mut fn_k3: *mut c_void = ptr::null_mut();
                                 let r1 = fn_cu_mod_func(
                                     &mut fn_k1,
                                     h_mod,
@@ -1079,7 +1083,13 @@ pub fn execute_rtx3050_sh_xi_matryoshka_f32_ptx(
                                     h_mod,
                                     b"rtx3050_sh_xi_swiglu_mamba3_fused_step_f32\0".as_ptr(),
                                 );
+                                let r3 = fn_cu_mod_func(
+                                    &mut fn_k3,
+                                    h_mod,
+                                    b"rtx3050_sh_xi_adamw_q8_rowscale_step_f32\0".as_ptr(),
+                                );
                                 if r1 == 0 && !fn_k1.is_null() && r2 == 0 && !fn_k2.is_null() {
+                                    let k3_ptr = if r3 == 0 { fn_k3 as usize } else { 0usize };
                                     let cap = count.max(65536);
                                     let byte_cap = cap * std::mem::size_of::<f32>();
                                     let mut d0: u64 = 0;
@@ -1099,6 +1109,7 @@ pub fn execute_rtx3050_sh_xi_matryoshka_f32_ptx(
                                             h_mod: h_mod as usize,
                                             fn_k1: fn_k1 as usize,
                                             fn_k2: fn_k2 as usize,
+                                            fn_k3: k3_ptr,
                                             d_buf0: d0,
                                             d_buf1: d1,
                                             d_buf2: d2,
@@ -1130,6 +1141,7 @@ pub fn execute_rtx3050_sh_xi_matryoshka_f32_ptx(
             sample.ptx_loaded = st.h_mod != 0;
             sample.k1_dual_shell_loaded = st.fn_k1 != 0;
             sample.k2_mamba_swiglu_loaded = st.fn_k2 != 0;
+            sample.k3_adamw_q8_loaded = st.fn_k3 != 0;
             sample.device_name = st.device_name.clone();
             sample.sm_count = st.sm_count;
             sample.cuda_cores = st.cuda_cores;

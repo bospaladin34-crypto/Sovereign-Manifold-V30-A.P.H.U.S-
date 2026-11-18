@@ -66,6 +66,19 @@ export class SovereignEdgeShadowDO {
             updated_at_ms INTEGER
           );`
         );
+        // Table 4: Registered Cloudflare Mesh Cluster Devices
+        this.sql.exec(
+          `CREATE TABLE IF NOT EXISTS edge_mesh_devices (
+            device_id TEXT PRIMARY KEY,
+            role TEXT NOT NULL,
+            mesh_cidr TEXT NOT NULL,
+            vnet_name TEXT NOT NULL,
+            vpc_service_name TEXT,
+            status TEXT NOT NULL,
+            rtt_ms REAL,
+            updated_at_ms INTEGER NOT NULL
+          );`
+        );
       }
     } catch {
       this.sqlite_err_count = (this.sqlite_err_count || 0) + 1;
@@ -113,7 +126,22 @@ export class SovereignEdgeShadowDO {
       this.sqlite_err_count = (this.sqlite_err_count || 0) + 1;
     }
 
-    // Seed default quota rows on startup (6 rows strictly)
+    // Hydrate registered Cloudflare Mesh cluster devices
+    this.meshDevices = new Map();
+    try {
+      if (this.sql) {
+        const meshRows = this.sql
+          .exec(`SELECT device_id, role, mesh_cidr, vnet_name, vpc_service_name, status, rtt_ms, updated_at_ms FROM edge_mesh_devices ORDER BY device_id ASC;`)
+          .toArray();
+        for (const m of meshRows) {
+          this.meshDevices.set(m.device_id, m);
+        }
+      }
+    } catch {
+      this.sqlite_err_count = (this.sqlite_err_count || 0) + 1;
+    }
+
+    // Seed default quota rows on startup (12 tiers: 6 base + 4 Workers Paid + 2 VPC/Hyperdrive)
     const now = Date.now();
     const currentMonth = new Date(now).toISOString().slice(0, 7);
     const currentDate = new Date(now).toISOString().slice(0, 10);
@@ -123,7 +151,13 @@ export class SovereignEdgeShadowDO {
       { tier: "r2_class_b", period_key: currentMonth, soft_cap: 8000000, hard_cap: 10000000 },
       { tier: "workers_ai", period_key: currentDate, soft_cap: 8500, hard_cap: 10000 },
       { tier: "workers_kv_write", period_key: currentDate, soft_cap: 720, hard_cap: 1000 },
-      { tier: "analytics_engine", period_key: currentMonth, soft_cap: 10000000, hard_cap: 10000000 }
+      { tier: "analytics_engine", period_key: currentMonth, soft_cap: 10000000, hard_cap: 10000000 },
+      { tier: "queues_ops", period_key: currentMonth, soft_cap: 800000, hard_cap: 1000000 },
+      { tier: "workflows_steps", period_key: currentMonth, soft_cap: 8000000, hard_cap: 10000000 },
+      { tier: "durable_objects_req", period_key: currentMonth, soft_cap: 800000, hard_cap: 1000000 },
+      { tier: "d1_rows_written", period_key: currentMonth, soft_cap: 40000000, hard_cap: 50000000 },
+      { tier: "vpc_requests", period_key: currentMonth, soft_cap: 800000, hard_cap: 1000000 },
+      { tier: "hyperdrive_queries", period_key: currentMonth, soft_cap: 800000, hard_cap: 1000000 }
     ];
     try {
       if (this.sql) {
@@ -160,6 +194,19 @@ export class SovereignEdgeShadowDO {
         const rows = this.sql.exec(`SELECT tier, period_key, usage_units, soft_cap, hard_cap, fallback_count, last_op_ms, updated_at_ms FROM edge_quota_governor;`).toArray();
         for (const r of rows) {
           this.quotaCache.set(r.tier, r);
+        }
+      } else {
+        for (const dt of defaultTiers) {
+          this.quotaCache.set(dt.tier, {
+            tier: dt.tier,
+            period_key: dt.period_key,
+            usage_units: 0,
+            soft_cap: dt.soft_cap,
+            hard_cap: dt.hard_cap,
+            fallback_count: 0,
+            last_op_ms: now,
+            updated_at_ms: now
+          });
         }
       }
     } catch {
@@ -461,6 +508,47 @@ export class SovereignEdgeShadowDO {
     const url = new URL(request.url);
     const now = Date.now();
 
+    if (url.pathname === "/shadow/ws_status") {
+      const activeWs =
+        this.state && typeof this.state.getWebSockets === "function"
+          ? this.state.getWebSockets().length
+          : 0;
+      return Response.json(
+        {
+          status: "DO_WS_HIBERNATION_READY",
+          active_websockets: activeWs,
+          timestamp_ms: now
+        },
+        { headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" } }
+      );
+    }
+
+    if (url.pathname === "/shadow/ws") {
+      const upgradeHdr = request.headers.get("Upgrade") || "";
+      if (upgradeHdr.toLowerCase() !== "websocket") {
+        return Response.json(
+          { ok: false, status: "UPGRADE_REQUIRED", expected: "websocket" },
+          { status: 426, headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" } }
+        );
+      }
+      if (
+        typeof WebSocketPair === "undefined" ||
+        !this.state ||
+        typeof this.state.acceptWebSocket !== "function"
+      ) {
+        return Response.json(
+          { ok: false, status: "WEBSOCKET_PAIR_UNAVAILABLE_IN_RUNTIME" },
+          { status: 501, headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" } }
+        );
+      }
+      const pair = new WebSocketPair();
+      const client = pair[0];
+      const server = pair[1];
+      this.state.acceptWebSocket(server);
+      this.checkAndConsumeQuota("durable_objects_req", 1);
+      return new Response(null, { status: 101, webSocket: client });
+    }
+
     if (url.pathname === "/shadow/shm_update") {
       const nodeId = url.searchParams.get("node") || "edge_node";
       const bearer = url.searchParams.get("bearer") || "DO_SQLITE_RELAY";
@@ -637,6 +725,74 @@ export class SovereignEdgeShadowDO {
       });
     }
 
+    if (url.pathname === "/shadow/mesh_register" && request.method === "POST") {
+      let body = {};
+      try {
+        body = await request.json();
+      } catch {
+        return Response.json({ ok: false, error: "INVALID_JSON" }, { status: 400 });
+      }
+      const items = Array.isArray(body.devices) ? body.devices : (body.device_id ? [body] : []);
+      const registered = [];
+      for (const item of items) {
+        const deviceId = String(item.device_id || "").trim();
+        if (!deviceId) continue;
+        const row = {
+          device_id: deviceId,
+          role: String(item.role || "cluster-node"),
+          mesh_cidr: String(item.mesh_cidr || ""),
+          vnet_name: String(item.vnet_name || "default"),
+          vpc_service_name: item.vpc_service_name ? String(item.vpc_service_name) : null,
+          status: String(item.status || "MESH_ROUTE_REGISTERED"),
+          rtt_ms: parseOptionalNumber(item.rtt_ms),
+          updated_at_ms: now
+        };
+        this.meshDevices.set(deviceId, row);
+        registered.push(row);
+        try {
+          if (this.sql) {
+            this.sql.exec(
+              `INSERT OR REPLACE INTO edge_mesh_devices (device_id, role, mesh_cidr, vnet_name, vpc_service_name, status, rtt_ms, updated_at_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?);`,
+              row.device_id,
+              row.role,
+              row.mesh_cidr,
+              row.vnet_name,
+              row.vpc_service_name,
+              row.status,
+              row.rtt_ms,
+              row.updated_at_ms
+            );
+          }
+        } catch {
+          this.sqlite_err_count = (this.sqlite_err_count || 0) + 1;
+        }
+      }
+      return Response.json(
+        {
+          ok: true,
+          status: "MESH_DEVICES_REGISTERED",
+          registered_count: registered.length,
+          devices: Array.from(this.meshDevices.values()).sort((a, b) => a.device_id.localeCompare(b.device_id)),
+          timestamp_ms: now
+        },
+        { headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" } }
+      );
+    }
+
+    if (url.pathname === "/shadow/mesh_status") {
+      const devices = Array.from(this.meshDevices.values()).sort((a, b) => a.device_id.localeCompare(b.device_id));
+      return Response.json(
+        {
+          ok: true,
+          status: devices.length > 0 ? "MESH_DEVICES_ACTIVE" : "UNMEASURED/UNSYNCED",
+          device_count: devices.length,
+          devices,
+          timestamp_ms: now
+        },
+        { headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "public, max-age=5" } }
+      );
+    }
+
     if (url.pathname === "/shadow/quota_check") {
       const tier = url.searchParams.get("tier") || "vectorize";
       const units = parseOptionalNumber(url.searchParams.get("units")) ?? 1;
@@ -712,6 +868,53 @@ export class SovereignEdgeShadowDO {
     }, {
       headers: { "Cache-Control": "public, max-age=30" }
     });
+  }
+
+  async webSocketMessage(ws, message) {
+    const now = Date.now();
+    this.checkAndConsumeQuota("durable_objects_req", 1);
+    const text = typeof message === "string" ? message : new TextDecoder().decode(message);
+    let parsed = null;
+    try {
+      parsed = JSON.parse(text);
+    } catch {}
+
+    if (text.trim() === "ping" || (parsed && parsed.type === "ping")) {
+      const shmRows = Array.from(this.nodeStateCache.values()).sort((a, b) =>
+        a.node_id.localeCompare(b.node_id)
+      );
+      ws.send(
+        JSON.stringify({
+          type: "pong",
+          status: this.clusterMeta ? "READY" : "UNMEASURED/UNSYNCED",
+          version: (this.clusterMeta && this.clusterMeta.version_name) ? this.clusterMeta.version_name : "UNMEASURED/UNSYNCED",
+          chain: (this.clusterMeta && this.clusterMeta.chain_milestone) ? this.clusterMeta.chain_milestone : "UNMEASURED/UNSYNCED",
+          latest_heartbeat: this.cachedLatestHeartbeat,
+          continuum_nodes: shmRows,
+          timestamp_ms: now
+        })
+      );
+      return;
+    }
+
+    if (parsed && parsed.type === "shm_broadcast" && this.state && typeof this.state.getWebSockets === "function") {
+      const frame = JSON.stringify({
+        type: "shm_broadcast",
+        payload: parsed.payload ?? null,
+        timestamp_ms: now
+      });
+      for (const peer of this.state.getWebSockets()) {
+        try {
+          peer.send(frame);
+        } catch {}
+      }
+    }
+  }
+
+  async webSocketClose(ws, code, _reason, _wasClean) {
+    try {
+      ws.close(code, "closed");
+    } catch {}
   }
 }
 

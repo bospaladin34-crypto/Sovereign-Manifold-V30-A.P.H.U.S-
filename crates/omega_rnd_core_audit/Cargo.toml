@@ -1,0 +1,14 @@
+[package]
+name = "omega_rnd_core_audit"
+version = "0.1.0"
+edition = "2021"
+description = "Zero-crate #![no_std] edge-case & ABI invariant verifier for E:\\OMEGA_RND_LAB"
+
+[lib]
+path = "src/lib.rs"
+
+[profile.dev]
+incremental = false
+
+[profile.test]
+incremental = false

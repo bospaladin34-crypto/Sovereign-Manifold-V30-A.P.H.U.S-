@@ -55,7 +55,7 @@
       "filename": "sh_xi_moe_experts.sh4z",
       "magic": "0x45583732",
       "relative_path": "00_control/weights/sh_xi_moe_experts.sh4z",
-      "sha256": "7684d3aad2acf018f96dbd8a27c5f7182c6014d7f5c74e0c2471a16eceef390f",
+      "sha256": "e1392367d4cd095719ece153c53317acfb869ffec2bd1c9fcfead1dc18ea23c9",
       "version": 7220
     },
     "sh_xi_moe_experts_dir": {
@@ -63,15 +63,15 @@
       "filename": "sh_xi_moe_experts_dir.sh4z",
       "magic": "0x45583732",
       "relative_path": "00_control/weights/sh_xi_moe_experts_dir.sh4z",
-      "sha256": "4d0ee482cd37cb8dbc3b61d1b81ade2c337ba088e4750b08080b02a722025625",
+      "sha256": "85e434346596617888f87b3a1dec9227248338cd25700289e1130070d3ea79db",
       "version": 7220
     },
     "sh_xi_rw384_768_base": {
-      "expected_bytes": 2164864,
+      "expected_bytes": 2295936,
       "filename": "sovereign_harmonic_xi_rw384_768_base.sh4z",
       "magic": "0x53485849",
       "relative_path": "00_control/weights/sovereign_harmonic_xi_rw384_768_base.sh4z",
-      "sha256": "ed1f9c5e29dd66fc1b6624635379ca48fd7ee207726947bc9f23f8271e6fa424",
+      "sha256": "68c207850b41d50ac7e2f0614e445cb65e1d2c6f0ce17d6ab406815149cd2029",
       "version": 7210
     },
     "sovereign_harmonic_deep12l_weights": {
@@ -97,6 +97,13 @@
       "relative_path": "00_control/weights/synapses_v6900_2703360.spage",
       "sha256": "f9b737f11fb701747dc4ea0748a6ab631e849989dd53bfb38ecd75bbde0f1da0",
       "version": 6900
+    },
+    "tree_drafter_2l": {
+      "expected_bytes": 131104,
+      "filename": "sovereign_harmonic_tree_drafter_2l.sh4z",
+      "magic": "0x53484432",
+      "relative_path": "00_control/weights/sovereign_harmonic_tree_drafter_2l.sh4z",
+      "sha256": "1eddab34efe549e161b532ebce9bb18135f1a876e23975b203b3fee316dccf32"
     },
     "week2_codebook": {
       "expected_bytes": 1048608,
@@ -125,8 +132,8 @@
   },
   "doi_osf": "10.17605/OSF.IO/2XQ5Z",
   "doi_zenodo": "10.5281/zenodo.23651696",
-  "generated_at_utc": "2026-11-14T15:50:00Z",
+  "generated_at_utc": "2026-11-18T08:55:00Z",
   "title": "SovereignHarmonicWeightsManifest",
-  "version": "v72.2.0",
+  "version": "v73.2.0",
   "zero_unmeasured_mandate": "ENFORCED"
 }

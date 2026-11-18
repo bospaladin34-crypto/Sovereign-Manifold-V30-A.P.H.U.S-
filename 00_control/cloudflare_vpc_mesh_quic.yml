@@ -1,0 +1,4 @@
+tunnel: da52a9b3-4f92-4348-a6dd-6fe1b4a7558c
+credentials-file: C:/Users/Nbell/.cloudflared/da52a9b3-4f92-4348-a6dd-6fe1b4a7558c.json
+protocol: quic
+grace-period: 30s

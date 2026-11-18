@@ -1,0 +1,15 @@
+[package]
+name = "omega_sec_manifold"
+version = "0.2.0"
+edition = "2021"
+description = "ACT-Omega SH4Z-SEC1 5-Layer Geometric-Topological Security Layer (#![no_std] Rust L0 + C-ABI FFI)"
+license = "MIT"
+
+[lib]
+name = "omega_sec_manifold"
+crate-type = ["cdylib", "rlib"]
+
+[features]
+default = []
+alloc = []
+std = []

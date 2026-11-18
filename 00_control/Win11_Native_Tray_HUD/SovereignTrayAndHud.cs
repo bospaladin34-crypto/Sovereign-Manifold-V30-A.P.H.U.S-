@@ -123,7 +123,7 @@ namespace SovereignManifoldDesktop
             _onRunAction = onRunAction;
             _onLaunchVesperIk = onLaunchVesperIk;
 
-            this.Text = "ACT-Omega v72.2.0 Live Desktop Widget (SH4Z v7220 | SH-XI MoE | CHAIN 368 | 995 QED)";
+            this.Text = "ACT-Omega v73.2.0 Live Desktop Widget (SH4Z v7320 | Unified Lab + VPC Mesh | SH-XI MoE | CHAIN 404 | 1,010 QED)";
             this.FormBorderStyle = FormBorderStyle.None;
             this.StartPosition = FormStartPosition.Manual;
             this.Size = new Size(430, 295);
@@ -290,11 +290,11 @@ namespace SovereignManifoldDesktop
                     {
                         g.FillRectangle(bBg, badgeRect);
                         g.DrawRectangle(pB, badgeRect);
-                        g.DrawString("\u03A972", fBdg, brAmber, 12, 10);
+                        g.DrawString("\u03A973.2", fBdg, brAmber, 12, 10);
                     }
 
                     // Status ticker
-                    string line1 = "ACT-OMEGA v72.2.0 (SH-XI MoE | VESPER MICA | CHAIN 368 | 995/995 QED)";
+                    string line1 = "ACT-OMEGA v73.2.0 (UNIFIED LAB + VPC MESH | SH-XI MoE | CHAIN 404 | 1,010/1,010 QED)";
                     string line2 = _tel.Online
                         ? string.Format("{0:0.0}k ops | RTX {1:0}C | P10 {2:0}C | P8 {3:0}C | FNO={4:0.0000}",
                             _tel.ClusterKops, _tel.RtxTemp, _tel.P10Temp, _tel.P8Temp, _tel.FnoL2Err)
@@ -317,11 +317,11 @@ namespace SovereignManifoldDesktop
                         g.DrawRectangle(borderPen, 1, 1, this.Width - 3, this.Height - 3);
                     }
 
-                    g.DrawString("ACT-OMEGA v72.2.0 (SH-XI v7220 | CHAIN 368 | 995 QED) [MINI-HUD]", fTitle, brAmber, 12, 10);
+                    g.DrawString("ACT-OMEGA v73.2.0 (SH-XI v7320 | CHAIN 404 | 1,010 QED) [MINI-HUD]", fTitle, brAmber, 12, 10);
 
                     Brush statusBr = _tel.Online ? brGreen : brRed;
                     string statusTxt = _tel.Online
-                        ? string.Format("ONLINE | Tick #{0} | {1:0.0}k ops/s | 995/995 QED | 368 Tools (4.05M Syn)", _tel.Generation, _tel.ClusterKops)
+                        ? string.Format("ONLINE | Tick #{0} | {1:0.0}k ops/s | 1,010/1,010 QED | 404 Tools (4.05M Syn)", _tel.Generation, _tel.ClusterKops)
                         : "UNMEASURED/OFFLINE | AWAITING LOCALHOST :8097 TELEMETRY";
                     g.DrawString(statusTxt, fSub, statusBr, 12, 28);
 
@@ -423,24 +423,28 @@ namespace SovereignManifoldDesktop
             }
 
             ContextMenu menu = new ContextMenu();
-            _miStatus = new MenuItem("ACT-Omega v72.2.0 | Awaiting :8097 Telemetry...");
+            _miStatus = new MenuItem("ACT-Omega v73.2.0 | Awaiting :8097 Telemetry...");
             _miStatus.Enabled = false;
             menu.MenuItems.Add(_miStatus);
             menu.MenuItems.Add("-");
 
-            // Feature 11: 8 Unified Functional Domains Submenu + SH-XI v72.2.0 Suite
-            MenuItem miShXi = new MenuItem("Sovereign Harmonic XI (SH-XI v72.2.0 — Tools 357..368)");
-            miShXi.MenuItems.Add(new MenuItem("SH-XI 3-Shell + 16/256 MoE Converse (T361)", (s, e) => ExecuteClusterAction("/api/v1/sovereign_harmonic/xi/week2/converse?prompt=Verify+SH-XI+v72.2.0+status", "SH-XI CONVERSE T361")));
+            // Feature 11: 8 Unified Functional Domains Submenu + v73.2.0 Unified Lab / VPC Mesh / SH-XI Suite
+            MenuItem miShXi = new MenuItem("ACT-Omega v73.2.0 (Unified Lab, VPC Mesh & SH-XI MoE — T357..T404)");
+            miShXi.MenuItems.Add(new MenuItem("SH-XI 3-Shell + 16/256 MoE Converse (T361)", (s, e) => ExecuteClusterAction("/api/v1/sovereign_harmonic/xi/week2/converse?prompt=Verify+SH-XI+v73.2.0+status", "SH-XI CONVERSE T361")));
             miShXi.MenuItems.Add(new MenuItem("SH-XI Shell 2 Disk-Backed 16/256 Sparse MoE (T363)", (s, e) => ExecuteClusterAction("/api/v1/sovereign_harmonic/xi/week2/shell2_sparse_moe", "SH-XI 16/256 MOE T363")));
             miShXi.MenuItems.Add(new MenuItem("SH-XI ChatML Masked Assistant SFT (T364)", (s, e) => ExecuteClusterAction("/api/v1/sovereign_harmonic/xi/week2/chatml_masked_sft", "SH-XI MASKED SFT T364")));
             miShXi.MenuItems.Add(new MenuItem("SH-XI 384D Intel UHD WebGPU WGSL Grounded RAG (T365)", (s, e) => ExecuteClusterAction("/api/v1/sovereign_harmonic/xi/week2/igpu_grounded_rag?q=Leech+lattice+bijection", "SH-XI 384D WGSL RAG T365")));
             miShXi.MenuItems.Add(new MenuItem("SH-XI Deterministic JSON FSM Grammar Caller (T366)", (s, e) => ExecuteClusterAction("/api/v1/sovereign_harmonic/xi/week2/fsm_json_tool", "SH-XI JSON FSM T366")));
             miShXi.MenuItems.Add(new MenuItem("SH-XI IFEval-Lite 64/64 & Multi-Turn Gauntlet (T367)", (s, e) => ExecuteClusterAction("/api/v1/sovereign_harmonic/xi/week2/ifeval_lite_64", "SH-XI IFEVAL 64/64 T367")));
-            miShXi.MenuItems.Add(new MenuItem("CHAIN 368 Master Certification (T368 — 995/995 QED)", (s, e) => ExecuteClusterAction("/api/v1/chain368/master_certification", "CHAIN 368 MASTER CERT")));
+            miShXi.MenuItems.Add(new MenuItem("CHAIN 368 Master Certification (T368)", (s, e) => ExecuteClusterAction("/api/v1/chain368/master_certification", "CHAIN 368 MASTER CERT")));
+            miShXi.MenuItems.Add(new MenuItem("Unified Standalone Lab Deck (T369..T381)", (s, e) => ExecuteClusterAction("/api/v1/tools/t370", "UNIFIED STANDALONE LAB")));
+            miShXi.MenuItems.Add(new MenuItem("Cloudflare VPC Mesh Registry Probe (T400)", (s, e) => ExecuteClusterAction("/api/v1/tools/t400", "VPC MESH PROBE T400")));
+            miShXi.MenuItems.Add(new MenuItem("Hyperdrive PGWire -> DuckDB Query (T403)", (s, e) => ExecuteClusterAction("/api/v1/tools/t403", "HYPERDRIVE DUCKDB T403")));
+            miShXi.MenuItems.Add(new MenuItem("CHAIN 404 Master Certification (T404 — 1,010/1,010 QED)", (s, e) => ExecuteClusterAction("/api/v1/tools/t404", "CHAIN 404 MASTER CERT")));
             menu.MenuItems.Add(miShXi);
 
-            MenuItem miUnified = new MenuItem("Unified Functional Domains (8 Groups / 368 Tools / CHAIN 368)");
-            miUnified.MenuItems.Add(new MenuItem("Unified Catalog (8 Domains / 368 Tools)", (s, e) => ExecuteClusterAction("/api/v1/unified/catalog", "UNIFIED CATALOG")));
+            MenuItem miUnified = new MenuItem("Unified Functional Domains (8 Groups / 404 Tools / CHAIN 404)");
+            miUnified.MenuItems.Add(new MenuItem("Unified Catalog (8 Domains / 404 Tools)", (s, e) => ExecuteClusterAction("/api/v1/unified/catalog", "UNIFIED CATALOG")));
             miUnified.MenuItems.Add(new MenuItem("OmegaLang v16.0 9-Target Primary TLV Compiler (T305)", (s, e) => ExecuteClusterAction("/api/v1/tools/t305", "OMEGALANG V16 COMPILER")));
             miUnified.MenuItems.Add(new MenuItem("84,480-Neuron Tier-4 Connectome & 4.05M Synapses (T306)", (s, e) => ExecuteClusterAction("/api/v1/tools/t306", "84,480 NEURON CONNECTOME")));
             miUnified.MenuItems.Add(new MenuItem("524,288 (19-Bit) Open-Vocab BPE & 192 Sub-Domains (T307)", (s, e) => ExecuteClusterAction("/api/v1/tools/t307", "524K BPE & 192 SUB-DOMAINS")));
@@ -451,7 +455,7 @@ namespace SovereignManifoldDesktop
             miUnified.MenuItems.Add(new MenuItem("Trigger AEGIS Autonomous Cron Tick Now", (s, e) => ExecuteClusterAction("/api/v1/aegis/cron_status?action=trigger_now", "AEGIS CRON TRIGGER")));
             miUnified.MenuItems.Add(new MenuItem("Gemma 4 Dual .sh4z Surgical Layer Mixer (5.30 GB)", (s, e) => ExecuteClusterAction("/api/v1/gemma4/sh4z_layer_mixer", "GEMMA 4 .SH4Z MIXER")));
             miUnified.MenuItems.Add("-");
-            miUnified.MenuItems.Add(new MenuItem("1. Lattice, Algebra & Formal Proofs (995 QED)", (s, e) => ExecuteClusterAction("/api/v1/unified/lattice_algebra_proofs", "DOMAIN 1: LATTICE & PROOFS")));
+            miUnified.MenuItems.Add(new MenuItem("1. Lattice, Algebra & Formal Proofs (1,010 QED)", (s, e) => ExecuteClusterAction("/api/v1/unified/lattice_algebra_proofs", "DOMAIN 1: LATTICE & PROOFS")));
             miUnified.MenuItems.Add(new MenuItem("2. 84.4K Connectome, 4.05M Synapses (.spage) & 524K BPE", (s, e) => ExecuteClusterAction("/api/v1/unified/connectome_qat_memory", "DOMAIN 2: CONNECTOME QAT")));
             miUnified.MenuItems.Add(new MenuItem("3. Multi-Physics, 16D Vectorized FNO & Cymatic Speech", (s, e) => ExecuteClusterAction("/api/v1/unified/physics_16d_fno_speech", "DOMAIN 3: PHYSICS FNO SPEECH")));
             miUnified.MenuItems.Add(new MenuItem("4. AVX2/WebGPU Hardware & Elastic Work-Stealing", (s, e) => ExecuteClusterAction("/api/v1/unified/avx2_webgpu_worksteal", "DOMAIN 4: AVX2 WEBGPU WORKSTEAL")));
@@ -481,32 +485,33 @@ namespace SovereignManifoldDesktop
             menu.MenuItems.Add("-");
             menu.MenuItems.Add(new MenuItem("Sync 16.00MiB Bijected .npage+.spage+.e8z SHM (P8 + P10)", (s, e) => ExecuteClusterAction("/api/v1/shm/p8_npage_bridge", "SYNC .NPAGE+.SPAGE SHM")));
             menu.MenuItems.Add(new MenuItem("Handover Continuum State to Phones + Cloudflare DO", (s, e) => ExecuteClusterAction("HANDOVER_PHONES", "HANDOVER TO PHONES")));
-            menu.MenuItems.Add(new MenuItem("Run 6-Layer True-Data Audit (368 Tools / 995 QED)", (s, e) => ExecuteClusterAction("/api/v1/diagnostics/v44_self_profiler", "6-LAYER AUDIT")));
-            menu.MenuItems.Add(new MenuItem("Run CHAIN 368 Master Certification (Tools 1..368)", (s, e) => ExecuteClusterAction("/api/v1/chain368/master_certification", "CHAIN 368 MASTER CERT")));
+            menu.MenuItems.Add(new MenuItem("Run 6-Layer True-Data Audit (404 Tools / 1,010 QED)", (s, e) => ExecuteClusterAction("/api/v1/diagnostics/v44_self_profiler", "6-LAYER AUDIT")));
+            menu.MenuItems.Add(new MenuItem("Run CHAIN 404 Master Certification (Tools 1..404)", (s, e) => ExecuteClusterAction("/api/v1/tools/t404", "CHAIN 404 MASTER CERT")));
             menu.MenuItems.Add(new MenuItem("Trigger AEGIS Autonomous Cron Tick", (s, e) => ExecuteClusterAction("/api/v1/aegis/cron_status?action=trigger_now", "AEGIS CRON TICK")));
             menu.MenuItems.Add("-");
             menu.MenuItems.Add(new MenuItem("Zenodo DOI: 10.5281/zenodo.23651696", (s, e) => Process.Start("https://doi.org/10.5281/zenodo.23651696")));
             menu.MenuItems.Add(new MenuItem("OSF DOI: 10.17605/OSF.IO/2XQ5Z", (s, e) => Process.Start("https://osf.io/2xq5z/overview")));
-            menu.MenuItems.Add(new MenuItem("Architecture Specifications (v72.2.0)", (s, e) =>
+            menu.MenuItems.Add(new MenuItem("Architecture Specifications (v73.2.0)", (s, e) =>
             {
                 MessageBox.Show(
-                    "ACT-Omega Net v72.2.0 (SH4Z v7220 TLV | Vesper Multi-Mode Mica Shell | CLS 0.00 | CHAIN 368 | 995/995 QED)\n\n" +
+                    "ACT-Omega Net v73.2.0 (SH4Z v7320 TLV | Unified Lab + VPC Mesh + Hyperdrive | Vesper Mica CLS 0.00 | CHAIN 404 | 1,010/1,010 QED)\n\n" +
                     "\u2022 Primary Author: Donevin Frownfelter (bospaladin34-crypto)\n" +
                     "\u2022 Vesper Shell Modes: Calm | HUD (Engineer) | Proof | Vault | Tools | Settings (CLS 0.00)\n" +
                     "\u2022 Shards / Neurons: 84,480 (Core 21,120 + Exp 21,120 + Tier-3 21,120 + Tier-4 21,120)\n" +
                     "\u2022 Bijected 64B Cachelines: 262,144 (168,960 .npage + 84,480 .spage + 8,704 .e8z = 16.00 MiB)\n" +
                     "\u2022 Synapses: 4,055,040 Synapses (1.35M .npage + 2.70M .spage Auxiliary Bank)\n" +
-                    "\u2022 Sovereign Harmonic XI: 3-Shell 384D/768D + 16/256 Sparse MoE (BPB 0.3965, ChatML Masked SFT, 384D WGSL RAG, JSON FSM)\n" +
+                    "\u2022 Sovereign Harmonic XI: Two-Phase Q8_0 384D/768D + 16/256 Sparse MoE (BPB 0.2429 -> 0.104339, ChatML SFT, 384D WGSL RAG, JSON FSM)\n" +
+                    "\u2022 Unified Lab & Cloud VPC: 58-File Lab (T369..T381), Research Kernels (T382..T399), 5-Service QUIC Mesh & TLS PGWire :5439 -> DuckDB + Hyperdrive\n" +
                     "\u2022 Native Gemma 4 Vaults: E4B-it (2.12 GB) + 12B-it (3.17 GB) = 5.30 GB .sh4z\n" +
                     "\u2022 Columns: 1,920 Chair-44 Columns | Sub-Domains: 192 (48 x 4)\n" +
                     "\u2022 Vocabulary: 524,288 (19-bit) Open-Vocab BPE (4,096 Compounds)\n" +
-                    "\u2022 Formal Proofs: 995 / 995 Substantive Lean 4 Proofs QED (0 sorry, 0 axiom)\n" +
-                    "\u2022 Tools: 368 Native Tools (CHAIN 368) + 21 Gemini MCP Tools\n" +
+                    "\u2022 Formal Proofs: 1,010 / 1,010 Substantive Lean 4 Proofs QED (0 sorry, 0 axiom)\n" +
+                    "\u2022 Tools: 404 Native Tools (CHAIN 404) + 59 Gemini MCP Tools\n" +
                     "\u2022 Foundational Citations: Maryna S. Viazovska (E8 & Leech Sphere Packing & Universal Optimality)\n\n" +
                     "Permanent Archival DOIs:\n" +
                     "\u2022 Zenodo: 10.5281/zenodo.23651696\n" +
                     "\u2022 OSF: 10.17605/OSF.IO/2XQ5Z",
-                    "ACT-Omega Net v72.2.0 Architecture Specifications",
+                    "ACT-Omega Net v73.2.0 Architecture Specifications",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Information
                 );
@@ -696,7 +701,7 @@ namespace SovereignManifoldDesktop
             if (endpointOrCmd == "HANDOVER_PHONES")
             {
                 RunLifecycleScript("handover");
-                _trayIcon.ShowBalloonTip(2000, "ACT-Omega v72.2.0 Continuum Handover", "16.00MiB Bijected .npage+.spage+.e8z SHM & 6-Layer state handed over to Pixel 8, Pixel 10 & Cloudflare DO.", ToolTipIcon.Info);
+                _trayIcon.ShowBalloonTip(2000, "ACT-Omega v73.2.0 Continuum Handover", "16.00MiB Bijected .npage+.spage+.e8z SHM & 6-Layer state handed over to Pixel 8, Pixel 10 & Cloudflare DO.", ToolTipIcon.Info);
                 return;
             }
             ThreadPool.QueueUserWorkItem(_ =>
@@ -805,14 +810,14 @@ namespace SovereignManifoldDesktop
                         {
                             _widgetForm.UpdateTelemetry(_tel);
                             string tip = _tel.Online
-                                ? string.Format("\u03A972.2 | {0:0}k ops | FNO L2={1:0.0000} Re={2:0} | RTX {3:0}C",
+                                ? string.Format("\u03A973.2 | {0:0}k ops | FNO L2={1:0.0000} Re={2:0} | RTX {3:0}C",
                                     _tel.ClusterKops, _tel.FnoL2Err, _tel.NavierReynolds, _tel.RtxTemp)
-                                : "\u03A972.2 | UNMEASURED/OFFLINE (:8097)";
+                                : "\u03A973.2 | UNMEASURED/OFFLINE (:8097)";
                             if (tip.Length > 63) tip = tip.Substring(0, 63);
                             _trayIcon.Text = tip;
                             _miStatus.Text = _tel.Online
-                                ? string.Format("ACT-Omega v72.2.0 | {0:0.0}k ops/s | 995/995 QED | 368 Tools (4.05M Syn)", _tel.ClusterKops)
-                                : "ACT-Omega v72.2.0 | UNMEASURED/OFFLINE (:8097)";
+                                ? string.Format("ACT-Omega v73.2.0 | {0:0.0}k ops/s | 1,010/1,010 QED | 404 Tools (4.05M Syn)", _tel.ClusterKops)
+                                : "ACT-Omega v73.2.0 | UNMEASURED/OFFLINE (:8097)";
                         });
                     }
                 }

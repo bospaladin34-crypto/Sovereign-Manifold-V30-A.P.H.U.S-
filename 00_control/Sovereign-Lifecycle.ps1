@@ -1,5 +1,5 @@
 # C:\sovereign_manifold_v31\00_control\Sovereign-Lifecycle.ps1
-# ACT-Omega Net v72.2.0 (SH4Z v7220 TLV | CHAIN 368 | 995/995 Lean 4 QED) -- Unified Safe Cluster Start / Stop / Handover / Verify / Status Controller
+# ACT-Omega Net v73.2.0 (SH4Z v7320 TLV | CHAIN 404 | 1,010/1,010 Lean 4 QED) -- Unified Safe Cluster Start / Stop / Handover / Verify / Status Controller
 param(
     [ValidateSet("start", "stop", "stop-all", "restart", "status", "handover", "verify")]
     [string]$Action = "status",
@@ -156,7 +156,7 @@ function Invoke-SovereignContinuumHandover {
 
     $capsuleObj = [ordered]@{
         status = "CONTINUUM_HANDOVER_CAPSULE_READY"
-        version = "ACT-Omega Net v72.2.0 (SH4Z v7220 TLV | 995/995 Lean 4 QED)"
+        version = "ACT-Omega Net v73.2.0 (SH4Z v7320 TLV | CHAIN 404 | 1,010/1,010 Lean 4 QED)"
         handover_mode = $HandoverMode
         timestamp_utc = $tsUtc
         shm_npage_bytes = 8110080
@@ -212,7 +212,7 @@ function Invoke-SovereignContinuumHandover {
 function Show-SovereignStatus {
     Write-Host ""
     Write-Host "==========================================================================" -ForegroundColor Cyan
-    Write-Host "   ACT-OMEGA NET v72.2.0 (SH4Z v7220 | CHAIN 368) -- TRI-SILICON CLUSTER STATUS       " -ForegroundColor Cyan
+    Write-Host "   ACT-OMEGA NET v73.2.0 (SH4Z v7320 | CHAIN 404) -- TRI-SILICON CLUSTER STATUS       " -ForegroundColor Cyan
     Write-Host "==========================================================================" -ForegroundColor Cyan
 
     $isPaused = Test-Path $pauseFile
@@ -289,7 +289,7 @@ function Show-SovereignClusterStatus {
 function Invoke-SovereignSixLayerVerify {
     Write-Host ""
     Write-Host "==========================================================================" -ForegroundColor Cyan
-    Write-Host "   ACT-OMEGA v72.2.0: 6-LAYER TRUE-DATA & ANTI-502 VERIFICATION AUDIT     " -ForegroundColor Cyan
+    Write-Host "   ACT-OMEGA v73.2.0: 6-LAYER TRUE-DATA & ANTI-502 VERIFICATION AUDIT     " -ForegroundColor Cyan
     Write-Host "==========================================================================" -ForegroundColor Cyan
 
     $failCount = 0
@@ -441,7 +441,7 @@ function Stop-SovereignClusterSafely {
     param([bool]$StopPhonesToo = $false)
     Write-Host ""
     Write-Host "==========================================================================" -ForegroundColor Yellow
-    Write-Host "   SAFE GRACEFUL SHUTDOWN: ACT-OMEGA NET v63.2.0 (SH4Z v6200 | CHAIN 296)             " -ForegroundColor Yellow
+    Write-Host "   SAFE GRACEFUL SHUTDOWN: ACT-OMEGA NET v73.2.0 (SH4Z v7320 | CHAIN 404)             " -ForegroundColor Yellow
     Write-Host "==========================================================================" -ForegroundColor Yellow
 
     # 1. Hand over state to Pixel 8, Pixel 10 & Cloudflare Edge DO before stopping Host

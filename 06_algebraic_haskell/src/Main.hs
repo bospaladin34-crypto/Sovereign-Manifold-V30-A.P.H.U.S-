@@ -15,7 +15,7 @@ import Sovereign.Codegen.ZeroBracketRustAndLean4
 -- | Deterministic projection of an arbitrary query string into 24 exact Rationals
 queryToRationalVec24 :: String -> (RationalVec24, Int)
 queryToRationalVec24 q =
-  let chars = if null q then "ACT-Omega Net v70.0.0 (SH4Z v7000 TLV | CHAIN 316 | 840/840 Lean 4 QED | 262,144 Bijected Cachelines) Layer 1.5 Haskell" else q
+  let chars = if null q then "ACT-Omega Net v73.2.0 (SH4Z v7320 TLV | CHAIN 404 | 1,010/1,010 Lean 4 QED | 262,144 Bijected Cachelines) Layer 1.5 Haskell" else q
       codes = map (fromIntegral . ord) chars :: [Integer]
       total = sum codes
       len   = fromIntegral (length codes) :: Integer

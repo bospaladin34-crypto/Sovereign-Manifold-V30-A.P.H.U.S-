@@ -162,6 +162,7 @@ struct SwarmState {
     p10_ram_used_mb: u64,
     p10_ram_total_mb: u64,
     p10_sensor_hz: f64,
+    p10_raw_sensor_hz: f64,
     p10_stream_hz: f64,
     p10_rtt_ms: f64,
     p10_bearer: String,
@@ -355,11 +356,19 @@ fn extract_query_param(path_and_query: &str, key: &str) -> String {
                 let replaced = val
                     .replace('+', " ")
                     .replace("%20", " ")
+                    .replace("%28", "(")
+                    .replace("%29", ")")
                     .replace("%3A", ":")
+                    .replace("%3a", ":")
                     .replace("%2F", "/")
+                    .replace("%2f", "/")
                     .replace("%3F", "?")
                     .replace("%3D", "=")
                     .replace("%26", "&")
+                    .replace("%2B", "+")
+                    .replace("%2b", "+")
+                    .replace("%2C", ",")
+                    .replace("%2c", ",")
                     .replace("%5C", "\\");
                 return json_escape_clean(&replaced);
             }
@@ -1142,7 +1151,7 @@ fn write_http_str(stream: &mut TcpStream, status: &str, ctype: &str, body: &str)
         REQ_CACHE_CONTROL.with(|c| c.get())
     };
     let header = format!(
-        "HTTP/1.1 {}\r\nContent-Type: {}\r\nContent-Length: {}\r\nAccess-Control-Allow-Origin: *\r\nAccess-Control-Allow-Methods: GET, POST, HEAD, PUT, DELETE, PATCH, OPTIONS\r\nAccess-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, Anthropic-Version, X-Api-Key, Mcp-Session-Id, Accept\r\nTiming-Allow-Origin: *\r\nCache-Control: {}\r\n{}{}\r\n",
+        "HTTP/1.1 {}\r\nContent-Type: {}\r\nContent-Length: {}\r\nAccess-Control-Allow-Origin: *\r\nAccess-Control-Allow-Methods: GET, POST, HEAD, PUT, DELETE, PATCH, OPTIONS\r\nAccess-Control-Allow-Headers: Content-Type, Authorization, X-Sovereign-Operator-Key, X-Requested-With, Anthropic-Version, X-Api-Key, Mcp-Session-Id, Accept\r\nAccess-Control-Allow-Private-Network: true\r\nTiming-Allow-Origin: *\r\nCache-Control: {}\r\n{}{}\r\n",
         status,
         ctype,
         body.len(),
@@ -1185,7 +1194,7 @@ fn write_http_vec(stream: &mut TcpStream, status: &str, ctype: &str, body: &Vec<
         REQ_CACHE_CONTROL.with(|c| c.get())
     };
     let header = format!(
-        "HTTP/1.1 {}\r\nContent-Type: {}\r\nContent-Length: {}\r\nAccess-Control-Allow-Origin: *\r\nAccess-Control-Allow-Methods: GET, POST, HEAD, PUT, DELETE, PATCH, OPTIONS\r\nAccess-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, Anthropic-Version, X-Api-Key, Mcp-Session-Id, Accept\r\nTiming-Allow-Origin: *\r\nCache-Control: {}\r\n{}{}\r\n",
+        "HTTP/1.1 {}\r\nContent-Type: {}\r\nContent-Length: {}\r\nAccess-Control-Allow-Origin: *\r\nAccess-Control-Allow-Methods: GET, POST, HEAD, PUT, DELETE, PATCH, OPTIONS\r\nAccess-Control-Allow-Headers: Content-Type, Authorization, X-Sovereign-Operator-Key, X-Requested-With, Anthropic-Version, X-Api-Key, Mcp-Session-Id, Accept\r\nAccess-Control-Allow-Private-Network: true\r\nTiming-Allow-Origin: *\r\nCache-Control: {}\r\n{}{}\r\n",
         status,
         ctype,
         body.len(),
@@ -3171,7 +3180,12 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 if let Some(v) = extract_query_u64(raw_target, "bat") { st.p10_batt_pct = v; }
                 if let Some(v) = extract_query_u64(raw_target, "ram_u") { st.p10_ram_used_mb = v; }
                 if let Some(v) = extract_query_u64(raw_target, "ram_t") { st.p10_ram_total_mb = v; }
-                if let Some(v) = extract_query_f64(raw_target, "shz") { st.p10_sensor_hz = if (v - 15.965).abs() < 0.5 { v } else { 15.965 }; }
+                if let Some(v) = extract_query_f64(raw_target, "shz") {
+                    if v.is_finite() && v > 0.0 {
+                        st.p10_raw_sensor_hz = v;
+                    }
+                    st.p10_sensor_hz = if (v - 15.965).abs() < 0.5 { v } else { 15.965 };
+                }
                 if let Some(v) = extract_query_f64(raw_target, "thz") { st.p10_stream_hz = v; }
                 if let Some(v) = extract_query_f64(raw_target, "rtt") { st.p10_rtt_ms = v; }
                 let b_str = extract_query_param(raw_target, "bearer");
@@ -3222,7 +3236,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             let ws_tri_p10 = st.ws_p10_lines * 3;
             let ws_tri_p8 = st.ws_p8_lines * 3;
             let json = format!(
-                "{{\"status\":\"LAMINAR_V73_2_DECADIC_15965HZ_LOCKSTEP\",\"version\":\"ACT-Omega Net v73.2.0 (SH4Z v7320 TLV | CHAIN 404 | 1,010 QED)\",\"tlv_magic\":\"0x5348345A\",\"tlv_version\":7320,\"official_domain\":\"https://act-omega-net.dev\",\"generation\":{},\"timestamp_ms\":{},\"carrier_clock_hz\":15.965,\"carrier_period_us\":62637,\"decadic_epoch_sec\":10.0,\"decadic_sub_epoch\":{},\"laplacian_face\":\"{}\",\"qm_field_eq\":\"{}\",\"total_shards\":21120,\"expansion_shards\":21120,\"tier3_shards\":21120,\"tier4_shards\":21120,\"combined_shards\":84480,\"chair44_multiplier\":480,\"combined_chair44_multiplier\":1920,\"total_synapses\":4055040,\"nl_tokenizer_vocab\":524288,\"nl_bpe_subwords\":65536,\"compound_braid_tokens\":65536,\"dendritic_concept_tokens\":84480,\"oov_morphological_tokens\":308736,\"domains_count\":48,\"subdomains_count\":192,\"compound_phrases_count\":4096,\"holdout_ppl\":{:.6},\"lean4_base_theorems\":1010,\"lean4_runtime_obligations\":1010,\"lean4_qed\":true,\"tools_count\":404,\"chain_mode\":\"CHAIN_404_PARALLEL_DAG\",\"bput_act_omega_gib\":1.607,\"bput_efficiency_advantage_x\":13.86,\"omegalang_v15_k16a_ns\":78.0,\"omegalang_v15_k19_90l_ns\":83.6,\"omegalang_v15_k19_tops\":535.73,\"omegalang_v15_k20_pops\":4.235,\"mit_hot_index_shards\":10,\"mit_hot_index_bytes\":640,\"galois_tower_degree\":256,\"cern_lhcb_5mappings_verified\":true,\"fdrive_3tb_worm_online\":true,\"yubikey_5c_nfc_serial\":39651128,\"fno_modes\":16,\"fno_cachelines\":2080,\"e8z_tribank_cachelines\":6240,\"e8z_quadbank_cachelines\":8704,\"npage_64b_cachelines\":126720,\"npage_v69_cachelines\":168960,\"spage_v69_cachelines\":84480,\"composite_bijected_cachelines\":132960,\"v70_bijected_cachelines_262144\":262144,\"fno_l2_rel_error\":{:.5},\"fno_l2_err\":{:.5},\"navier_stokes_reynolds\":{:.1},\"vorticity_norm\":{:.4},\"active_shard_id\":{},\"acoustic_carrier_hz\":1728.0,\"acoustic_ultrasonic_hz\":18500.0,\"acoustic_snr_db\":{:.1},\"cutler_idx\":{},\"cluster_total_kops\":{:.1},\"base_trisilicon_kops\":{:.1},\"webgpu_leased_kops\":{:.1},\"webgpu_active_leases\":{},\"loq15_rtx3050_kops\":{:.1},\"pixel10_g5_kops\":{:.1},\"pixel8_l2_kops\":{:.1},\"neurons_per_sec\":{:.2},\"cachelines_per_sec\":{:.2},\"host_neurons_per_sec\":{:.2},\"host_cachelines_per_sec\":{:.2},\"ws_loq_lines\":{},\"ws_p10_lines\":{},\"ws_p8_lines\":{},\"ws_tribank_loq_lines\":{},\"ws_tribank_p10_lines\":{},\"ws_tribank_p8_lines\":{},\"pixel8_l2_total_bytes\":4194304,\"pixel8_l2_mlock_bytes\":3737600,\"pixel8_l2_free_pct\":10.89,\"pixel8_npage_shm_active\":true,\"pixel8_npage_shm_bytes\":10813440,\"pixel8_spage_shm_bytes\":5406720,\"pixel8_sensor_bypass\":true,\"ssd_tier2_active_path\":\"{}\",\"ssd_tier2_drive_e_mounted\":{},\"ssd_tier2_mirrored_shards\":84480,\"ssd_tier2_merkle_nodes\":32,\"llm_agent_gateway_status\":\"ZERO_TRUST_READ_COMPUTE_AND_EXPANSION_CRYSTALLIZE\",\"fno_solve_runs\":{},\"agent_gateway_visits\":{},\"ssd_tier2_syncs\":{},\"nl_transduce_calls\":{},\"harvest_runs\":{},\"nl_converse_runs\":{},\"episodic_queries\":{},\"anomaly_checks\":{},\"decadic_synth_runs\":{},\"always_on_active\":{},\"always_on_ticks\":{},\"nl_synthesis\":\"{}\",\"episodic_search_out\":\"{}\",\"anomaly_banner\":\"{}\",\"physics_10pillar\":\"{}\",\"p10_broadcasts\":{},\"p8_broadcasts\":{},\"mag_x\":{:.1},\"mag_y\":{:.1},\"mag_z\":{:.1},\"b_norm\":{:.1},\"mag_norm\":{:.1},\"baro_hpa\":{:.1},\"light_lx\":{:.0},\"acc_norm\":{:.2},\"gyro_norm\":{:.3},\"p10_temp_c\":{:.1},\"p8_temp_c\":{:.1},\"p10_batt_mv\":{},\"p10_batt_pct\":{},\"p10_ram_used_mb\":{},\"p10_ram_total_mb\":{},\"p10_sensor_hz\":{:.3},\"p10_stream_hz\":{:.2},\"p10_rtt_ms\":{:.1},\"p10_bearer\":\"{}\",\"p8_batt_mv\":{},\"p8_batt_pct\":{},\"p8_ram_used_mb\":{},\"p8_ram_total_mb\":{},\"p8_stream_hz\":{:.2},\"p8_rtt_ms\":{:.1},\"p8_bearer\":\"{}\",\"rtx_temp_c\":{:.0},\"rtx_clock_mhz\":{},\"rtx_vram_used_mb\":{},\"rtx_vram_total_mb\":{},\"rtx_power_w\":{:.1},\"coherence_mult\":{:.2},\"coherence_mode\":\"{}\",\"kasami_cw_hex\":\"{}\",\"kasami_ecc_fixes\":{},\"stiefel_ortho_err\":{:.7},\"lean4_verify_ms\":{:.1},\"siem_entropy_bits\":{:.3},\"siem_pkts\":{},\"opto_state\":\"{}\",\"prox_cm\":{:.1},\"omega_lt\":{:.5},\"rsr_step\":{},\"hybrid_hops\":{},\"sector_norms_csv\":\"{}\",\"sector_hashes_csv\":\"{}\",\"inspected_sector\":{},\"inspected_line\":{},\"inspected_hex\":\"{}\",\"inspected_trits\":\"{}\",\"last_card_idx\":{},\"last_card_diag\":\"{}\",\"last_browser_url\":\"{}\",\"last_browser_trace\":\"{}\",\"last_lean_query\":\"{}\",\"last_lean_trace\":\"{}\",\"last_term_cmd\":\"{}\",\"last_term_out\":\"{}\"}}",
+                "{{\"status\":\"LAMINAR_V73_2_DECADIC_15965HZ_LOCKSTEP\",\"version\":\"ACT-Omega Net v73.2.0 (SH4Z v7320 TLV | CHAIN 404 | 1,010 QED)\",\"tlv_magic\":\"0x5348345A\",\"tlv_version\":7320,\"official_domain\":\"https://act-omega-net.dev\",\"generation\":{},\"timestamp_ms\":{},\"carrier_clock_hz\":15.965,\"carrier_period_us\":62637,\"decadic_epoch_sec\":10.0,\"decadic_sub_epoch\":{},\"laplacian_face\":\"{}\",\"qm_field_eq\":\"{}\",\"total_shards\":21120,\"expansion_shards\":21120,\"tier3_shards\":21120,\"tier4_shards\":21120,\"combined_shards\":84480,\"chair44_multiplier\":480,\"combined_chair44_multiplier\":1920,\"total_synapses\":4055040,\"nl_tokenizer_vocab\":524288,\"nl_bpe_subwords\":65536,\"compound_braid_tokens\":65536,\"dendritic_concept_tokens\":84480,\"oov_morphological_tokens\":308736,\"domains_count\":48,\"subdomains_count\":192,\"compound_phrases_count\":4096,\"holdout_ppl\":{:.6},\"lean4_base_theorems\":1010,\"lean4_runtime_obligations\":1010,\"lean4_qed\":true,\"tools_count\":404,\"chain_mode\":\"CHAIN_404_PARALLEL_DAG\",\"bput_act_omega_gib\":1.607,\"bput_efficiency_advantage_x\":13.86,\"omegalang_v15_k16a_ns\":78.0,\"omegalang_v15_k19_90l_ns\":83.6,\"omegalang_v15_k19_tops\":535.73,\"omegalang_v15_k20_pops\":4.235,\"mit_hot_index_shards\":10,\"mit_hot_index_bytes\":640,\"galois_tower_degree\":256,\"cern_lhcb_5mappings_verified\":true,\"fdrive_3tb_worm_online\":true,\"yubikey_5c_nfc_serial\":39651128,\"fno_modes\":16,\"fno_cachelines\":2080,\"e8z_tribank_cachelines\":6240,\"e8z_quadbank_cachelines\":8704,\"npage_64b_cachelines\":126720,\"npage_v69_cachelines\":168960,\"spage_v69_cachelines\":84480,\"composite_bijected_cachelines\":132960,\"v70_bijected_cachelines_262144\":262144,\"fno_l2_rel_error\":{:.5},\"fno_l2_err\":{:.5},\"navier_stokes_reynolds\":{:.1},\"vorticity_norm\":{:.4},\"active_shard_id\":{},\"acoustic_carrier_hz\":1728.0,\"acoustic_ultrasonic_hz\":18500.0,\"acoustic_snr_db\":{:.1},\"cutler_idx\":{},\"cluster_total_kops\":{:.1},\"base_trisilicon_kops\":{:.1},\"webgpu_leased_kops\":{:.1},\"webgpu_active_leases\":{},\"loq15_rtx3050_kops\":{:.1},\"pixel10_g5_kops\":{:.1},\"pixel8_l2_kops\":{:.1},\"neurons_per_sec\":{:.2},\"cachelines_per_sec\":{:.2},\"host_neurons_per_sec\":{:.2},\"host_cachelines_per_sec\":{:.2},\"ws_loq_lines\":{},\"ws_p10_lines\":{},\"ws_p8_lines\":{},\"ws_tribank_loq_lines\":{},\"ws_tribank_p10_lines\":{},\"ws_tribank_p8_lines\":{},\"pixel8_l2_total_bytes\":4194304,\"pixel8_l2_mlock_bytes\":3737600,\"pixel8_l2_free_pct\":10.89,\"pixel8_npage_shm_active\":true,\"pixel8_npage_shm_bytes\":10813440,\"pixel8_spage_shm_bytes\":5406720,\"pixel8_sensor_bypass\":true,\"ssd_tier2_active_path\":\"{}\",\"ssd_tier2_drive_e_mounted\":{},\"ssd_tier2_mirrored_shards\":84480,\"ssd_tier2_merkle_nodes\":32,\"llm_agent_gateway_status\":\"ZERO_TRUST_READ_COMPUTE_AND_EXPANSION_CRYSTALLIZE\",\"fno_solve_runs\":{},\"agent_gateway_visits\":{},\"ssd_tier2_syncs\":{},\"nl_transduce_calls\":{},\"harvest_runs\":{},\"nl_converse_runs\":{},\"episodic_queries\":{},\"anomaly_checks\":{},\"decadic_synth_runs\":{},\"always_on_active\":{},\"always_on_ticks\":{},\"nl_synthesis\":\"{}\",\"episodic_search_out\":\"{}\",\"anomaly_banner\":\"{}\",\"physics_10pillar\":\"{}\",\"p10_broadcasts\":{},\"p8_broadcasts\":{},\"mag_x\":{:.1},\"mag_y\":{:.1},\"mag_z\":{:.1},\"b_norm\":{:.1},\"mag_norm\":{:.1},\"baro_hpa\":{:.1},\"light_lx\":{:.0},\"acc_norm\":{:.2},\"gyro_norm\":{:.3},\"p10_temp_c\":{:.1},\"p8_temp_c\":{:.1},\"p10_batt_mv\":{},\"p10_batt_pct\":{},\"p10_ram_used_mb\":{},\"p10_ram_total_mb\":{},\"p10_sensor_hz\":{:.3},\"p10_raw_sensor_hz\":{:.2},\"p10_stream_hz\":{:.2},\"p10_rtt_ms\":{:.1},\"p10_bearer\":\"{}\",\"p8_batt_mv\":{},\"p8_batt_pct\":{},\"p8_ram_used_mb\":{},\"p8_ram_total_mb\":{},\"p8_stream_hz\":{:.2},\"p8_rtt_ms\":{:.1},\"p8_bearer\":\"{}\",\"rtx_temp_c\":{:.0},\"rtx_clock_mhz\":{},\"rtx_vram_used_mb\":{},\"rtx_vram_total_mb\":{},\"rtx_power_w\":{:.1},\"coherence_mult\":{:.2},\"coherence_mode\":\"{}\",\"kasami_cw_hex\":\"{}\",\"kasami_ecc_fixes\":{},\"stiefel_ortho_err\":{:.7},\"lean4_verify_ms\":{:.1},\"siem_entropy_bits\":{:.3},\"siem_pkts\":{},\"opto_state\":\"{}\",\"prox_cm\":{:.1},\"omega_lt\":{:.5},\"rsr_step\":{},\"hybrid_hops\":{},\"sector_norms_csv\":\"{}\",\"sector_hashes_csv\":\"{}\",\"inspected_sector\":{},\"inspected_line\":{},\"inspected_hex\":\"{}\",\"inspected_trits\":\"{}\",\"last_card_idx\":{},\"last_card_diag\":\"{}\",\"last_browser_url\":\"{}\",\"last_browser_trace\":\"{}\",\"last_lean_query\":\"{}\",\"last_lean_trace\":\"{}\",\"last_term_cmd\":\"{}\",\"last_term_out\":\"{}\"}}",
                 gen_now,
                 unix_ms(),
                 st.decadic_sub_epoch,
@@ -3288,6 +3302,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 st.p10_ram_used_mb,
                 st.p10_ram_total_mb,
                 st.p10_sensor_hz,
+                st.p10_raw_sensor_hz,
                 st.p10_stream_hz,
                 st.p10_rtt_ms,
                 json_escape_clean(&st.p10_bearer),
@@ -8311,6 +8326,7 @@ fn main() {
         p10_ram_used_mb: 8840,
         p10_ram_total_mb: 11544,
         p10_sensor_hz: 15.965,
+        p10_raw_sensor_hz: 0.0,
         p10_stream_hz: 2.00,
         p10_rtt_ms: 1.3,
         p10_bearer: String::from("B1:USB(:8097) HOST-SYNC"),

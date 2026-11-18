@@ -520,8 +520,33 @@ Deno.serve({ port: PORT_HTTP, hostname: "0.0.0.0" }, async (req) => {
   }
 
   if (req.method === "GET" && pathname === "/api/v1/telemetry") {
-    return new Response(JSON.stringify(latestTelemetry), {
-      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+    try {
+      const liveRes = await fetch("http://127.0.0.1:8097/api/v1/telemetry", {
+        signal: AbortSignal.timeout(1200)
+      });
+      if (liveRes.ok) {
+        const liveL0 = await liveRes.json();
+        if (
+          typeof liveL0.mag_x === "number" &&
+          typeof liveL0.mag_y === "number" &&
+          typeof liveL0.mag_z === "number" &&
+          Number.isFinite(liveL0.mag_x) &&
+          Number.isFinite(liveL0.mag_y) &&
+          Number.isFinite(liveL0.mag_z)
+        ) {
+          latestTelemetry.b_field_ut = { x: liveL0.mag_x, y: liveL0.mag_y, z: liveL0.mag_z };
+        }
+        if (typeof liveL0.b_norm === "number" && Number.isFinite(liveL0.b_norm)) {
+          latestTelemetry.b_norm_ut = liveL0.b_norm;
+          latestTelemetry.norm_ut = liveL0.b_norm;
+        }
+        return new Response(JSON.stringify({ ...latestTelemetry, ...liveL0, gateway_port: PORT_HTTP }), {
+          headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*", "Cache-Control": "no-store" }
+        });
+      }
+    } catch (_) {}
+    return new Response(JSON.stringify({ ...latestTelemetry, status: "UNMEASURED/OFFLINE", gateway_port: PORT_HTTP }), {
+      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*", "Cache-Control": "no-store" }
     });
   }
 

@@ -44,6 +44,8 @@ f4se_rust_governor/target/
 **/ACT_Omega_Sovereign_HUD_Mobile.apk
 **/act-omega-mobile.apk
 crates/*/target/
+03_vault/connectome/episodic_longterm_memory_v4300.jsonl
+03_vault/logs/wal_bitemporal_v35.jsonl
 
 
 

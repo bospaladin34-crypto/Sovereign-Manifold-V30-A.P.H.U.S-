@@ -68,6 +68,7 @@ interface TelemetryState {
   p10_ram_used_mb: number;
   p10_ram_total_mb: number;
   p10_sensor_hz: number;
+  p10_raw_sensor_hz: number;
   p10_stream_hz: number;
   p10_rtt_ms: number;
   p10_bearer: string;
@@ -802,36 +803,39 @@ export function VesperArachneHudShimeji({
   useEffect(() => {
     let mounted = true;
     const pollTelemetry = async () => {
-      try {
-        const resp = await fetch("/api/v1/vesper_arachne/ik_swarm_companion", {
-          signal: AbortSignal.timeout(1800)
-        });
-        if (!mounted) return;
-        if (resp.ok) {
-          const json = await resp.json();
-          setTelemetry({
-            status: json.status || "NOMINAL",
-            gaitGroup: json.gait_group || "TETRAPOD_LOCKED",
-            golay: json.vesper_heal_status || json.golay_status || "NOMINAL_ZERO_SYNDROME",
-            bpeHygiene: json.bpe_hygiene || "262,144_CLEAN",
-            lastPoll: new Date().toLocaleTimeString(),
-            error: null
+      const companionUrls = [
+        "/api/v1/vesper_arachne/ik_swarm_companion",
+        "http://127.0.0.1:8097/api/v1/vesper_arachne/ik_swarm_companion"
+      ];
+      for (const cu of companionUrls) {
+        try {
+          const resp = await fetch(cu, {
+            cache: "no-store",
+            signal: AbortSignal.timeout(1800)
           });
-        } else {
-          setTelemetry(prev => ({
-            ...prev,
-            error: "UNMEASURED/OFFLINE",
-            lastPoll: new Date().toLocaleTimeString()
-          }));
+          if (!mounted) return;
+          if (resp.ok) {
+            const json = await resp.json();
+            setTelemetry({
+              status: json.status || "NOMINAL",
+              gaitGroup: json.gait_group || "TETRAPOD_LOCKED",
+              golay: json.vesper_heal_status || json.golay_status || "NOMINAL_ZERO_SYNDROME",
+              bpeHygiene: json.bpe_hygiene || "262,144_CLEAN",
+              lastPoll: new Date().toLocaleTimeString(),
+              error: null
+            });
+            return;
+          }
+        } catch {
+          // continue loopback fallback
         }
-      } catch {
-        if (!mounted) return;
-        setTelemetry(prev => ({
-          ...prev,
-          error: "UNMEASURED/OFFLINE",
-          lastPoll: new Date().toLocaleTimeString()
-        }));
       }
+      if (!mounted) return;
+      setTelemetry(prev => ({
+        ...prev,
+        error: "UNMEASURED/OFFLINE",
+        lastPoll: new Date().toLocaleTimeString()
+      }));
     };
 
     pollTelemetry();
@@ -2973,7 +2977,16 @@ export function VesperHeaderBar({
   statusPopoverOpen,
   onToggleStatusPopover,
   generation,
-  busSha256
+  busSha256,
+  p10TempC,
+  p8TempC,
+  p10BattPct,
+  p8BattPct,
+  bNorm,
+  p10Broadcasts,
+  p8Broadcasts,
+  p10RttMs,
+  p8RttMs
 }: {
   mode: VesperShellMode;
   onSelectMode: (m: VesperShellMode, rail?: VesperRailLabel) => void;
@@ -2986,6 +2999,15 @@ export function VesperHeaderBar({
   onToggleStatusPopover: (next?: boolean) => void;
   generation: number;
   busSha256: string;
+  p10TempC: number;
+  p8TempC: number;
+  p10BattPct: number;
+  p8BattPct: number;
+  bNorm: number;
+  p10Broadcasts: number;
+  p8Broadcasts: number;
+  p10RttMs: number;
+  p8RttMs: number;
 }) {
   const modeTabs: Array<{ id: VesperShellMode; label: string; rail: VesperRailLabel }> = [
     { id: "calm", label: "Calm", rail: "Chat" },
@@ -3163,8 +3185,30 @@ export function VesperHeaderBar({
         </button>
       </nav>
 
-      {/* Right Reserved 210x36 Status Pill & Local Ownership Popover */}
-      <div style={{ position: "relative", display: "flex", height: 36, alignItems: "center" }}>
+      {/* Right Dual-Pixel Live Telemetry Chip + Reserved 210x36 Status Pill & Local Ownership Popover */}
+      <div style={{ position: "relative", display: "flex", height: 36, alignItems: "center", gap: 8 }}>
+        <div
+          className="vesper-mono"
+          title="Live Pixel 10 Tensor G5 & Pixel 8 P8-APEX Telemetry Sync"
+          style={{
+            display: "inline-flex",
+            height: 36,
+            alignItems: "center",
+            gap: 6,
+            borderRadius: 999,
+            border: `1px solid ${pillBorder}`,
+            background: "rgba(0, 0, 0, 0.28)",
+            padding: "0 10px",
+            fontSize: 10.5,
+            fontWeight: 700,
+            color: isOffline ? "#FF9B6B" : "#BEEAD8",
+            whiteSpace: "nowrap"
+          }}
+        >
+          {isOffline
+            ? "P10/P8 · UNMEASURED/OFFLINE"
+            : `P10 #${p10Broadcasts} (${p10TempC.toFixed(1)}°C, ${bNorm.toFixed(1)}µT) · P8 #${p8Broadcasts} (${p8TempC.toFixed(1)}°C)`}
+        </div>
         {showSkeleton ? (
           <div
             className="vesper-skeleton"
@@ -3264,6 +3308,18 @@ export function VesperHeaderBar({
               }}
             >
               <div>Source · {telemetrySource}</div>
+              <div>
+                Pixel 10 ·{" "}
+                {isOffline
+                  ? "UNMEASURED/OFFLINE"
+                  : `${p10TempC.toFixed(1)}°C (${p10BattPct}%) · |B|=${bNorm.toFixed(1)}µT · #${p10Broadcasts} (${p10RttMs.toFixed(1)}ms)`}
+              </div>
+              <div>
+                Pixel 8 ·{" "}
+                {isOffline
+                  ? "UNMEASURED/OFFLINE"
+                  : `${p8TempC.toFixed(1)}°C (${p8BattPct}%) · #${p8Broadcasts} (${p8RttMs.toFixed(1)}ms)`}
+              </div>
               <div>YubiKey 5C NFC · Serial 39651128</div>
               <div>Lean 4 Formal · 1,010/1,010 QED (0 sorry)</div>
               <div>Carrier · 15.965 Hz (Gen #{generation})</div>
@@ -3429,7 +3485,13 @@ export function VesperCalmView({
   sessionId,
   sessionTurnCount,
   onResetSession,
-  onSelectMode
+  onSelectMode,
+  p10TempC,
+  p8TempC,
+  bNorm,
+  p10Broadcasts,
+  p8Broadcasts,
+  p10RttMs
 }: {
   showSkeleton: boolean;
   telemetrySource: "LIVE_L0_SWARM" | "SNAPSHOT_FALLBACK" | "UNMEASURED/OFFLINE";
@@ -3449,6 +3511,12 @@ export function VesperCalmView({
   sessionTurnCount: number;
   onResetSession: () => void;
   onSelectMode: (mode: VesperShellMode, rail: VesperRailLabel) => void;
+  p10TempC: number;
+  p8TempC: number;
+  bNorm: number;
+  p10Broadcasts: number;
+  p8Broadcasts: number;
+  p10RttMs: number;
 }) {
   const now = new Date();
   const hr = now.getHours();
@@ -3578,7 +3646,7 @@ export function VesperCalmView({
           >
             {isOffline
               ? ":8097 L0 daemon UNMEASURED/OFFLINE · Zero cloud calls · Honest fallback active"
-              : `Session ${sessionId.slice(0, 18)} · 384D WGSL RAG + ChatML SFT · 1,010/1,010 Lean 4 QED`}
+              : `P10 ${p10TempC.toFixed(1)}°C · |B|=${bNorm.toFixed(1)}µT (#${p10Broadcasts}, ${p10RttMs.toFixed(1)}ms) · P8 ${p8TempC.toFixed(1)}°C (#${p8Broadcasts}) · 1,010/1,010 QED`}
           </div>
         </div>
         <button
@@ -5129,7 +5197,7 @@ export function App() {
   const [helpSidebarOpen, setHelpSidebarOpen] = useState<boolean>(false);
   const [helpSection, setHelpSection] = useState<string>("QUICKSTART");
   const [helpSearch, setHelpSearch] = useState<string>("");
-  const [ideConsoleLog, setIdeConsoleLog] = useState<string>("[OPERATOR & ANTIGRAVITY VAULT READY] Gemini 4 Argon (10 Subagents) + Goose v1.55.0 + Zed v1.24.4 + VSCodium/Cline locked to SH4Z-v7320-TriSilicon (C:\\sovereign_manifold_v31). All 15 Telemetry Cards, 3D Stiefel Scope, 16x130 Bijection Heatmap (262,144 Bijected 64B CLs = 16.00 MiB), SH-XI 3-Shell + 16/256 Sparse MoE, OmegaLang v16 (535.73 TOPS / 4.235 POPS) & 368 Tools (CHAIN 368 | 1,010/1,010 QED) active.");
+  const [ideConsoleLog, setIdeConsoleLog] = useState<string>("[OPERATOR & ANTIGRAVITY VAULT READY] Gemini 4 Argon (10 Subagents) + Goose v1.55.0 + Zed v1.24.4 + VSCodium/Cline locked to SH4Z-v7320-TriSilicon (C:\\sovereign_manifold_v31). All 15 Telemetry Cards, 3D Stiefel Scope, 16x130 Bijection Heatmap (262,144 Bijected 64B CLs = 16.00 MiB), SH-XI 3-Shell + 16/256 Sparse MoE, OmegaLang v16 (535.73 TOPS / 4.235 POPS) & 404 Tools (CHAIN 404 | 1,010/1,010 QED) active.");
   const [vesperDocked, setVesperDocked] = useState<boolean>(false);
   const [tel, setTel] = useState<TelemetryState>({
     generation: 745000,
@@ -5173,6 +5241,7 @@ export function App() {
     p10_ram_used_mb: 8840,
     p10_ram_total_mb: 11544,
     p10_sensor_hz: 15.965,
+    p10_raw_sensor_hz: 0.0,
     p10_stream_hz: 2.00,
     p10_rtt_ms: 1.3,
     p10_bearer: "B1:USB(:8097) HOST-SYNC",
@@ -6329,25 +6398,30 @@ export function App() {
         const urls =
           typeof window !== "undefined" && window.location.protocol === "https:"
             ? [
+                "http://127.0.0.1:8097/api/v1/telemetry",
+                "./api/v1/StateGraph",
+                "/api/v1/StateGraph",
+                "https://api.act-omega-net.dev/api/v1/StateGraph",
                 "./api/v1/telemetry",
                 "/api/v1/telemetry",
-                "https://api.act-omega-net.dev/api/v1/telemetry",
                 "./telemetry_snapshot.json",
                 "telemetry_snapshot.json"
               ]
             : [
+                "http://127.0.0.1:8097/api/v1/telemetry",
                 "./api/v1/telemetry",
                 "/api/v1/telemetry",
-                "http://127.0.0.1:8097/api/v1/telemetry",
+                "./api/v1/StateGraph",
+                "/api/v1/StateGraph",
                 "./telemetry_snapshot.json",
                 "telemetry_snapshot.json"
               ];
         for (const u of urls) {
           try {
-            const r = await fetch(u, { cache: "no-store" });
+            const r = await fetch(u, { cache: "no-store", signal: AbortSignal.timeout(1500) });
             if (r.ok) {
               const d = await r.json();
-            if (active && d) {
+            if (active && d && typeof d.generation === "number" && typeof d.p10_broadcasts === "number") {
               setTel((prev) => ({
                 generation: d.generation ?? prev.generation + 1,
                 decadic_sub_epoch: d.decadic_sub_epoch ?? prev.decadic_sub_epoch,
@@ -6386,6 +6460,7 @@ export function App() {
                 p10_ram_used_mb: d.p10_ram_used_mb ?? prev.p10_ram_used_mb,
                 p10_ram_total_mb: d.p10_ram_total_mb ?? prev.p10_ram_total_mb,
                 p10_sensor_hz: d.p10_sensor_hz ?? 15.965,
+                p10_raw_sensor_hz: d.p10_raw_sensor_hz ?? prev.p10_raw_sensor_hz,
                 p10_stream_hz: d.p10_stream_hz ?? 2.00,
                 p10_rtt_ms: d.p10_rtt_ms ?? prev.p10_rtt_ms,
                 p10_bearer: d.p10_bearer ?? prev.p10_bearer,
@@ -6446,7 +6521,9 @@ export function App() {
               if (d.last_term_out) setTermOut(d.last_term_out);
               if (d.last_browser_trace) setBrowserTrace(d.last_browser_trace);
               setVesperTelemetrySource(
-                u.includes("/api/v1/telemetry") ? "LIVE_L0_SWARM" : "SNAPSHOT_FALLBACK"
+                u.includes("/api/v1/telemetry") || u.includes("/api/v1/StateGraph")
+                  ? "LIVE_L0_SWARM"
+                  : "SNAPSHOT_FALLBACK"
               );
               return;
             }
@@ -6463,7 +6540,7 @@ export function App() {
         pollInFlight = false;
       }
     };
-    document.title = "ACT-Omega Net v73.2.0 (SH4Z v7320 Vesper Multi-Mode Mica HUD) -- Sovereign Harmonic XI (384D/768D + 16/256 MoE), 84,480 Neurons, 4,055,040 Synapses, 262,144 Bijected Cachelines (16.00 MiB), 1,010/1,010 Lean 4 QED & Tools 1..404 (CHAIN 368 Suite)";
+    document.title = "ACT-Omega Net v73.2.0 (SH4Z v7320 Vesper Multi-Mode Mica HUD) -- Sovereign Harmonic XI (384D/768D + 16/256 MoE), 84,480 Neurons, 4,055,040 Synapses, 262,144 Bijected Cachelines (16.00 MiB), 1,010/1,010 Lean 4 QED & Tools 1..404 (CHAIN 404 Suite)";
     pollTelemetry();
     runE8LeechFluencyBridge(e8LeechQuery);
     const id = window.setInterval(pollTelemetry, 500);
@@ -7672,7 +7749,7 @@ export function App() {
     {
       title: "1,010/1,010 LEAN 4 PROOFS & MEASURED QAT",
       primary: `Seen PPL ${sh9State.post_train_perplexity.toFixed(4)} | Holdout PPL ${sh9State.post_holdout_perplexity.toFixed(4)} -- 1,010 / 1,010 QED`,
-      secondary: `1,010 Formal Theorems (SH-XI 3-Shell MoE + SH-Deep-12L RLVF + 262,144 CLs | CHAIN 368) -- ${tel.lean4_verify_ms.toFixed(1)}ms`,
+      secondary: `1,010 Formal Theorems (SH-XI 3-Shell MoE + SH-Deep-12L RLVF + 262,144 CLs | CHAIN 404) -- ${tel.lean4_verify_ms.toFixed(1)}ms`,
       sector: 9,
       endpoint: "/api/v1/card/execute?card_id=7"
     },
@@ -7693,7 +7770,7 @@ export function App() {
     {
       title: "SECTOR 8_-: TENSOR G5 & ALWAYS-ON",
       primary: `${tel.p10_temp_c.toFixed(1)} C -- ${tel.p10_batt_mv} mV -- ${tel.p10_batt_pct}% BAT`,
-      secondary: `${tel.p10_sensor_hz.toFixed(3)}Hz Decadic -- Always-On #${tel.always_on_ticks} (${tel.p10_rtt_ms.toFixed(1)}ms)`,
+      secondary: `${tel.p10_sensor_hz.toFixed(3)}Hz Decadic -- ${tel.p10_raw_sensor_hz > 0 ? `Raw ${tel.p10_raw_sensor_hz.toFixed(1)}Hz / ` : ""}Always-On #${tel.always_on_ticks} (${tel.p10_rtt_ms.toFixed(1)}ms)`,
       sector: 11,
       endpoint: "/api/v1/card/execute?card_id=10"
     },
@@ -8485,6 +8562,15 @@ export function App() {
             }
             generation={tel.generation}
             busSha256={writebackStatus.sha256}
+            p10TempC={tel.p10_temp_c}
+            p8TempC={tel.p8_temp_c}
+            p10BattPct={tel.p10_batt_pct}
+            p8BattPct={tel.p8_batt_pct}
+            bNorm={tel.b_norm}
+            p10Broadcasts={tel.p10_broadcasts}
+            p8Broadcasts={tel.p8_broadcasts}
+            p10RttMs={tel.p10_rtt_ms}
+            p8RttMs={tel.p8_rtt_ms}
           />
         )}
 
@@ -8581,6 +8667,12 @@ export function App() {
                 sessionTurnCount={vesperSessionTurns}
                 onResetSession={resetVesperCalmSession}
                 onSelectMode={selectVesperMode}
+                p10TempC={tel.p10_temp_c}
+                p8TempC={tel.p8_temp_c}
+                bNorm={tel.b_norm}
+                p10Broadcasts={tel.p10_broadcasts}
+                p8Broadcasts={tel.p8_broadcasts}
+                p10RttMs={tel.p10_rtt_ms}
               />
             )}
 
@@ -8804,7 +8896,7 @@ export function App() {
                       metric:
                         vesperTelemetrySource === "UNMEASURED/OFFLINE"
                           ? "UNMEASURED/OFFLINE"
-                          : `${tel.p10_sensor_hz.toFixed(3)} Hz · 1,010/1,010 QED`,
+                          : `${tel.p10_sensor_hz.toFixed(3)} Hz · P10 #${tel.p10_broadcasts} / P8 #${tel.p8_broadcasts}`,
                       active: drawerAOpen,
                       toggle: () => setDrawerAOpen(!drawerAOpen)
                     },
@@ -8824,7 +8916,7 @@ export function App() {
                       metric:
                         vesperTelemetrySource === "UNMEASURED/OFFLINE"
                           ? "UNMEASURED/OFFLINE"
-                          : `1.728/18.5 kHz I/Q · Re ${tel.navier_reynolds.toFixed(1)}`,
+                          : `|B|=${tel.b_norm.toFixed(1)}µT (${tel.mag_x.toFixed(1)},${tel.mag_y.toFixed(1)},${tel.mag_z.toFixed(1)}) · Baro ${tel.baro_hpa.toFixed(1)}hPa`,
                       active: drawer1Open && drawer2Open,
                       toggle: () => {
                         const next = !(drawer1Open && drawer2Open);
@@ -9103,8 +9195,22 @@ export function App() {
             >
               {vesperDocked ? "[🕷️ VESPER IK SHIMEJI: DOCKED]" : "[🕷️ VESPER IK SHIMEJI: ACTIVE]"}
             </button>
-            <div style={{ background: "#1C2632", border: "1px solid #56D364", color: "#56D364", padding: "2px 8px", borderRadius: 4, fontSize: 11, fontWeight: "bold" }}>
-              LIVE PHONE BROADCAST SYNC (P10 #{tel.p10_broadcasts} / P8 #{tel.p8_broadcasts})
+            <div
+              style={{
+                background: vesperTelemetrySource === "UNMEASURED/OFFLINE" ? "#2E1512" : "#1C2632",
+                border: vesperTelemetrySource === "UNMEASURED/OFFLINE" ? "1px solid #FF9B6B" : "1px solid #56D364",
+                color: vesperTelemetrySource === "UNMEASURED/OFFLINE" ? "#FF9B6B" : "#56D364",
+                padding: "2px 8px",
+                borderRadius: 4,
+                fontSize: 11,
+                fontWeight: "bold"
+              }}
+            >
+              {vesperTelemetrySource === "UNMEASURED/OFFLINE"
+                ? "PHONE BROADCAST SYNC: UNMEASURED/OFFLINE"
+                : vesperTelemetrySource === "SNAPSHOT_FALLBACK"
+                ? `SNAPSHOT CACHED (P10 #${tel.p10_broadcasts} / P8 #${tel.p8_broadcasts})`
+                : `LIVE PHONE BROADCAST SYNC (P10 #${tel.p10_broadcasts} [${tel.p10_rtt_ms.toFixed(1)}ms] / P8 #${tel.p8_broadcasts} [${tel.p8_rtt_ms.toFixed(1)}ms] | |B|=${tel.b_norm.toFixed(1)}uT)`}
             </div>
             <button
               onClick={() => setHelpSidebarOpen(!helpSidebarOpen)}
@@ -9124,7 +9230,7 @@ export function App() {
           </div>
         </div>
         <div style={{ color: "#FFFEFB", fontSize: 11, marginTop: 2 }}>
-          15.965 Hz (62,637 us) Decadic Epoch E{tel.decadic_sub_epoch}/9 -- {tel.laplacian_face} -- 84,480 Neurons (4x 21,120 Tiers, 1,920x Chair-44, 4,055,040 Synapses, 262,144 Bijected 64B Cachelines = 16.00 MiB across 168,960 .npage + 84,480 .spage + 8,704 .e8z CLs) -- 5-Pool Tri-Silicon Conservation (t_A+F+t_B=1.00000) -- Dual CPU AVX2 (S00..S23) + RTX 3050 CUDA PTX (S24..S47) Co-Execution -- Hsiang P_4(x) Focal Harmonics &amp; Reversible Symplectic Leapfrog -- OmegaLang v16.0 Primary TLV Compiler (9 Targets + sm_86 PTX) -- 48 Macro-Domains (192 Sub-Domains) -- 524,288 (19-Bit) Open-Vocab BPE -- PPL={e8LeechState.holdout_ppl > 0 ? e8LeechState.holdout_ppl.toFixed(6) : Math.exp(tel.stiefel_ortho_err * 100.0 + tel.fno_l2_err * 50.0 + 0.082).toFixed(6)} -- 1,010/1,010 Lean 4 QED -- Tools 1..404 (CHAIN 368 Suite)
+          15.965 Hz (62,637 us) Decadic Epoch E{tel.decadic_sub_epoch}/9 -- {tel.laplacian_face} -- 84,480 Neurons (4x 21,120 Tiers, 1,920x Chair-44, 4,055,040 Synapses, 262,144 Bijected 64B Cachelines = 16.00 MiB across 168,960 .npage + 84,480 .spage + 8,704 .e8z CLs) -- 5-Pool Tri-Silicon Conservation (t_A+F+t_B=1.00000) -- Dual CPU AVX2 (S00..S23) + RTX 3050 CUDA PTX (S24..S47) Co-Execution -- Hsiang P_4(x) Focal Harmonics &amp; Reversible Symplectic Leapfrog -- OmegaLang v16.0 Primary TLV Compiler (9 Targets + sm_86 PTX) -- 48 Macro-Domains (192 Sub-Domains) -- 524,288 (19-Bit) Open-Vocab BPE -- PPL={e8LeechState.holdout_ppl > 0 ? e8LeechState.holdout_ppl.toFixed(6) : Math.exp(tel.stiefel_ortho_err * 100.0 + tel.fno_l2_err * 50.0 + 0.082).toFixed(6)} -- 1,010/1,010 Lean 4 QED -- Tools 1..404 (CHAIN 404 Suite)
         </div>
         <div style={{ background: "#0A0D12", border: "1px solid #56D364", borderRadius: 4, padding: "4px 8px", marginTop: 5, color: "#56D364", fontSize: 10.5 }}>
           [TOOL 29 REAL-TIME PHYSICAL &amp; U(1) GAUGE ALERT BANNER]: {tel.anomaly_banner}
@@ -9147,9 +9253,9 @@ export function App() {
             <div style={{ color: "#B388FF", fontWeight: "bold", fontSize: 9.5 }}>NODE 4: 262,144-CL (16.00 MiB) MANIFOLD</div>
             <div style={{ color: "#FFFEFB", fontSize: 10 }}>168,960 .npage + 84,480 .spage + 8,704 .e8z</div>
           </div>
-          <div onClick={() => callEndpoint("/api/v1/chain368/master_certification", "CHAIN 368: v72.2 MASTER CERT")} style={{ cursor: "pointer", borderLeft: "3px solid #00FFCC", paddingLeft: 6 }}>
+          <div onClick={() => callEndpoint("/api/v1/tools/t404", "CHAIN 404: v73.2 MASTER CERT")} style={{ cursor: "pointer", borderLeft: "3px solid #00FFCC", paddingLeft: 6 }}>
             <div style={{ color: "#00FFCC", fontWeight: "bold", fontSize: 9.5 }}>NODE 5: 5-POOL WORKSTEAL + 524K BPE</div>
-            <div style={{ color: "#FFFEFB", fontSize: 10 }}>SH-XI 3-Shell MoE | 1,010/1,010 Lean 4 QED | CHAIN 368</div>
+            <div style={{ color: "#FFFEFB", fontSize: 10 }}>SH-XI 3-Shell MoE | 1,010/1,010 Lean 4 QED | CHAIN 404</div>
           </div>
         </div>
         {/* v63.0-v63.2 Top-Strip 5-Metric Observability Bar (Gates, Parity, BPUT Win Metric, 15.965 Hz Clock, Drift & F:\ WORM + YubiKey 39651128) */}

@@ -4064,6 +4064,7 @@ object SovereignLiveBus : SensorEventListener {
     @Volatile private var localNpageBytes = 0L
     @Volatile private var localNpageSource = "UNMEASURED/OFFLINE"
     @Volatile private var stickyBearerIdx = 0
+    @Volatile private var lastMeasuredRttMs = 0.0
     @Volatile var lastInspectedHex = "UNMEASURED/OFFLINE"
     @Volatile var hostLastCardIdx = 0
     @Volatile var hostLastCardDiag = "[VESPER MICA v73.2.0]: Awaiting live host :8097 sync -- local 24D sensors & .e8z/.npage SHM active."
@@ -4334,18 +4335,25 @@ object SovereignLiveBus : SensorEventListener {
                     val bUrl = baseHosts[idx].first
                     val bLabel = baseHosts[idx].second
                     val tOut = baseHosts[idx].third
+                    val epPath = if (bUrl.contains("act-omega-net.dev")) "/api/v1/StateGraph" else "/api/v1/telemetry"
+                    val encBearer = try {
+                        java.net.URLEncoder.encode(bLabel, "UTF-8")
+                    } catch (_: Throwable) {
+                        "HOST-SYNC"
+                    }
+                    val sendRtt = if (lastMeasuredRttMs > 0.0) lastMeasuredRttMs else rtt
                     val querySuffix = if (isPixel8ComputeNode) {
                         String.format(
                             Locale.US,
-                            "/api/v1/telemetry?node=pixel8&kops=1140.0&p8_kops=1140.0&p8_free=89.11&col=%d&temp=%.1f&mv=%d&bat=%d&ram_u=%d&ram_t=%d&thz=2.00&rtt=%.1f",
-                            dirtyCol, battTempC, battMv, battPct, ramUsedMb, ramTotalMb, rtt
+                            "%s?node=pixel8&kops=1140.0&p8_kops=1140.0&p8_free=89.11&col=%d&temp=%.1f&mv=%d&bat=%d&ram_u=%d&ram_t=%d&thz=2.00&rtt=%.1f&bearer=%s",
+                            epPath, dirtyCol, battTempC, battMv, battPct, ramUsedMb, ramTotalMb, sendRtt, encBearer
                         )
                     } else {
                         String.format(
                             Locale.US,
-                            "/api/v1/telemetry?node=pixel10&col=%d&mx=%.1f&my=%.1f&mz=%.1f&bn=%.1f&baro=%.1f&lux=%.0f&acc=%.2f&gyro=%.3f&temp=%.1f&mv=%d&bat=%d&ram_u=%d&ram_t=%d&shz=%.2f&thz=2.00&rtt=%.1f",
-                            dirtyCol, magX, magY, magZ, bNormNow, baroHpa, lightLx, accNorm, gyroNorm,
-                            battTempC, battMv, battPct, ramUsedMb, ramTotalMb, measuredSensorHz, rtt
+                            "%s?node=pixel10&col=%d&mx=%.1f&my=%.1f&mz=%.1f&bn=%.1f&baro=%.1f&lux=%.0f&acc=%.2f&gyro=%.3f&temp=%.1f&mv=%d&bat=%d&ram_u=%d&ram_t=%d&shz=%.2f&thz=2.00&rtt=%.1f&bearer=%s",
+                            epPath, dirtyCol, magX, magY, magZ, bNormNow, baroHpa, lightLx, accNorm, gyroNorm,
+                            battTempC, battMv, battPct, ramUsedMb, ramTotalMb, measuredSensorHz, sendRtt, encBearer
                         )
                     }
                     val t0 = SystemClock.elapsedRealtime()
@@ -4360,6 +4368,7 @@ object SovereignLiveBus : SensorEventListener {
                         if (conn.responseCode in 200..299) {
                             val body = conn.inputStream.bufferedReader().use { it.readText() }
                             rtt = (SystemClock.elapsedRealtime() - t0).toDouble().coerceAtLeast(1.0)
+                            lastMeasuredRttMs = rtt
                             bearer = bLabel
                             stickyBearerIdx = idx
                             synced = true

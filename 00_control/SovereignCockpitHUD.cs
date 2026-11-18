@@ -33,6 +33,10 @@ namespace SovereignManifoldDesktop
         public long WsLoqLines = 0;
         public long WsP10Lines = 0;
         public long WsP8Lines = 0;
+        public long P10Broadcasts = 0;
+        public long P8Broadcasts = 0;
+        public double P10RttMs = 0.0;
+        public double P8RttMs = 0.0;
         public bool Online = false;
         public string ActiveSector = "S0:HDR";
         public double[] SectorNorms = new double[16];
@@ -337,7 +341,10 @@ namespace SovereignManifoldDesktop
                         : "84,480N (4.05M Syn) | 262,144 CLs (16MB) | Live Physics: UNMEASURED/OFFLINE";
                     g.DrawString(hwLine2, fSub, brAmber, 12, 64);
 
-                    string vesperLine = "SH-XI v7220 (384D/768D + 16/256 MoE | BPB 0.3965) | Vesper Mica CLS 0.00";
+                    string vesperLine = _tel.Online
+                        ? string.Format("SH-XI v7320 (BPB 0.1043) | Sync P10#{0}({1:0.0}ms) P8#{2}({3:0.0}ms)",
+                            _tel.P10Broadcasts, _tel.P10RttMs, _tel.P8Broadcasts, _tel.P8RttMs)
+                        : "SH-XI v7320 (BPB 0.1043) | Vesper Mica CLS 0.00 | UNMEASURED";
                     g.DrawString(vesperLine, fSub, brCyan, 12, 80);
 
                     // 16x65 Measured .e8z Cacheline + Live Telemetry Sector Norm Heatmap (Zero sin/cos waves)
@@ -529,7 +536,7 @@ namespace SovereignManifoldDesktop
 
             _trayIcon = new NotifyIcon();
             _trayIcon.Icon = BuildDynamicSovereignIcon(false);
-            _trayIcon.Text = "ACT-Omega v72.2.0 | Connecting to :8097...";
+            _trayIcon.Text = "ACT-Omega v73.2.0 | Connecting to :8097...";
             _trayIcon.ContextMenu = menu;
             _trayIcon.Visible = true;
             _trayIcon.DoubleClick += (s, e) => LaunchNativeDesktopHudWindow();
@@ -639,7 +646,7 @@ namespace SovereignManifoldDesktop
                 using (SolidBrush br = new SolidBrush(online ? Color.FromArgb(0, 229, 160) : Color.FromArgb(233, 78, 52)))
                 using (Font f = new Font("Consolas", 9.0f, FontStyle.Bold))
                 {
-                    g.DrawString("\u03A972", f, br, 3, 9);
+                    g.DrawString("\u03A973", f, br, 3, 9);
                 }
                 IntPtr hIcon = bmp.GetHicon();
                 return Icon.FromHandle(hIcon);
@@ -794,6 +801,10 @@ namespace SovereignManifoldDesktop
                         _tel.WsLoqLines = ExtractLong(json, "ws_loq_lines", _tel.WsLoqLines);
                         _tel.WsP10Lines = ExtractLong(json, "ws_p10_lines", _tel.WsP10Lines);
                         _tel.WsP8Lines = ExtractLong(json, "ws_p8_lines", _tel.WsP8Lines);
+                        _tel.P10Broadcasts = ExtractLong(json, "p10_broadcasts", _tel.P10Broadcasts);
+                        _tel.P8Broadcasts = ExtractLong(json, "p8_broadcasts", _tel.P8Broadcasts);
+                        _tel.P10RttMs = ExtractDouble(json, "p10_rtt_ms", _tel.P10RttMs);
+                        _tel.P8RttMs = ExtractDouble(json, "p8_rtt_ms", _tel.P8RttMs);
                         ExtractSectorNormsCsv(json);
                     }
                 }

@@ -1,10 +1,15 @@
 // ==============================================================================
-// ACT-OMEGA NET v70.0.0 — CHALLENGER 2 LIVE ADVERSARIAL PROBES
+// ACT-OMEGA NET v73.2.1 — CHALLENGER 2 LIVE ADVERSARIAL PROBES
 // Empirical direct HTTP testing of live edge worker and local host :8097
 // ==============================================================================
+import fs from 'node:fs';
 
 const edgeBase = 'https://act-omega-net.dev';
 const hostBase = 'http://127.0.0.1:8097';
+const opKeyPath = 'C:\\Users\\Nbell\\.act_omega_operator_vault_key';
+const opKey = fs.existsSync(opKeyPath)
+  ? fs.readFileSync(opKeyPath, 'utf8').trim()
+  : (process.env.ACT_OMEGA_OPERATOR_KEY || '').trim();
 
 console.log('--- EXECUTING LIVE ADVERSARIAL PROBES ---');
 
@@ -131,12 +136,17 @@ async function runProbes() {
     check('P4b: Turnstile test token rejected', false, err.message);
   }
 
-  // Probe 5: Live DO hard-cap enforcement & accounting basis
+  // Probe 5: Live DO hard-cap enforcement & accounting basis (E1: unauth -> 403, auth -> 200)
   try {
-    const res = await fetch(`${edgeBase}/api/v1/cloudflare/free_tier_governor`);
+    const resUnauth = await fetch(`${edgeBase}/api/v1/cloudflare/free_tier_governor`);
+    check('P5a-Neg: Unauthenticated Live DO Governor returns HTTP 403 (E1)', resUnauth.status === 403, `Got status ${resUnauth.status}`);
+
+    const res = await fetch(`${edgeBase}/api/v1/cloudflare/free_tier_governor`, {
+      headers: { 'X-Sovereign-Operator-Key': opKey }
+    });
     const data = await res.json();
     const basisExpected = 'DO_METERED_REQUEST_UNITS_UNRECONCILED_WITH_CF_BILLING';
-    check('P5a: Live DO Governor returns HTTP 200', res.status === 200, `Got status ${res.status}`);
+    check('P5a: Authenticated Live DO Governor returns HTTP 200', res.status === 200, `Got status ${res.status}`);
     check('P5b: Live DO Governor reports accounting_basis correctly',
       data.accounting_basis === basisExpected,
       `Got accounting_basis: ${data.accounting_basis}`);
@@ -152,14 +162,16 @@ async function runProbes() {
 
   // Probe 6: Tool 317 local response over port :8097
   try {
-    const res = await fetch(`${hostBase}/api/v1/cloudflare/free_tier_governor`);
+    const res = await fetch(`${hostBase}/api/v1/cloudflare/free_tier_governor`, {
+      headers: { 'X-Sovereign-Operator-Key': opKey }
+    });
     const data = await res.json();
     check('P6a: Host port :8097 returns HTTP 200 for Tool 317', res.status === 200, `Got status ${res.status}`);
-    check('P6b: Host Tool 317 reports 965/965 Lean 4 QED theorems',
-      data.lean4_theorems_qed === '965/965',
+    check('P6b: Host Tool 317 reports 1010/1010 Lean 4 QED theorems',
+      data.lean4_theorems_qed === '1010/1010',
       `Got theorems: ${data.lean4_theorems_qed}`);
-    check('P6c: Host Tool 317 reports tool_id 317 and tools_total 317',
-      data.tool_id === 317 && data.tools_total === 317,
+    check('P6c: Host Tool 317 reports tool_id 317 and tools_total >= 317',
+      data.tool_id === 317 && data.tools_total >= 317,
       `Got tool_id: ${data.tool_id}, tools_total: ${data.tools_total}`);
     check('P6d: Host Tool 317 reports E:\\ vault writeback digest',
       data.e_vault_writeback_sha256 && data.e_vault_writeback_sha256.length === 64,

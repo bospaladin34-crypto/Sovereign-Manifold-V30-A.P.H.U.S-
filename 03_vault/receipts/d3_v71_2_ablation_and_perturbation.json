@@ -1,0 +1,28 @@
+{
+    "schema":  "ACT_OMEGA_D3_ABLATION_PERTURBATION_RECEIPT_V1",
+    "version":  "v73.2.1",
+    "baseline_matrix":  {
+                            "passed":  true,
+                            "full_week2_ppl":  993.3759,
+                            "no_leech_24d_e8_only_ppl":  3460.6435,
+                            "no_ast_concept_tiers_ppl":  986.5078,
+                            "unpaced_random_order_ppl":  548.8409,
+                            "reverse_curriculum_antipaced_ppl":  370.8124,
+                            "d64_seed_only_ppl":  600.8563,
+                            "leech_24d_ppl_gain":  2467.2676,
+                            "ast_tiers_ppl_gain":  -6.8681,
+                            "forward_vs_reverse_curriculum_gain":  -622.5635
+                        },
+    "perturbed_d64_samples_8_matrix":  {
+                                           "passed":  true,
+                                           "full_week2_ppl":  993.3759,
+                                           "no_leech_24d_e8_only_ppl":  3460.6435,
+                                           "no_ast_concept_tiers_ppl":  986.5078,
+                                           "unpaced_random_order_ppl":  548.8409,
+                                           "reverse_curriculum_antipaced_ppl":  370.8124,
+                                           "d64_seed_only_ppl":  277.5751,
+                                           "leech_24d_ppl_gain":  2467.2676,
+                                           "ast_tiers_ppl_gain":  -6.8681,
+                                           "forward_vs_reverse_curriculum_gain":  -622.5635
+                                       }
+}

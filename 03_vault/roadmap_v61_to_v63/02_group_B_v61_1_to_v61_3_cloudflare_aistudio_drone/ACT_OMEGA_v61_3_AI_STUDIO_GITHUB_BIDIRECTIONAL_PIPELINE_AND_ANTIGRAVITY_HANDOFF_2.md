@@ -6,7 +6,7 @@
 * **Live Backend Endpoints Consumed by All AI Studio Micro-Apps:**
   * **Primary Public MCP Gateway (`19/19` Tools):** `https://mcp.act-omega-net.dev/mcp` (`http://127.0.0.1:8097/mcp`)
   * **Cloudflare Edge R2 HTTP-206 Slicer & API:** `https://api.act-omega-net.dev/api/v1/edge/r2_slice`
-  * **Cloudflare Account & D1 Vault:** Account `a37cf8ab07e7c5f886c302be3f098744` \| D1 Vault `9f46d56a-ef3e-4232-a9ac-c4bd12e20a87`
+  * **Cloudflare Account & D1 Vault:** Account `<EXTERNAL_CF_ACCOUNT_ID>` \| D1 Vault `<EXTERNAL_D1_DATABASE_ID>`
 
 ## 1. Architecture Overview: Why the Pipeline Starts in Antigravity (`LENOVO LOQ 15`)
 

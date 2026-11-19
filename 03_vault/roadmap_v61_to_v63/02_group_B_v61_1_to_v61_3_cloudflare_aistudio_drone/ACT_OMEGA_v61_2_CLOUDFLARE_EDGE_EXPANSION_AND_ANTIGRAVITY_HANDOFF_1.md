@@ -2,14 +2,14 @@
 
 * **Target Release:** `ACT-Omega Net v61.2.0` (`Sovereign Harmonic IV` / `SH4Z v6120 TLV` / `Cloudflare Full-Stack Edge Sentinel & Zero-Trust Auth Shield`)  
 * **Target Formal Proof Milestone:** **`CHAIN 284` (`Tools 281–284`, `704/704` Lean 4 Theorems QED — `0` `sorry`, `0` `axiom`)**  
-* **Cloudflare Account ID:** `a37cf8ab07e7c5f886c302be3f098744` (`Bospaladin34@gmail.com`)  
-* **Existing D1 SQLite Vault UUID:** `9f46d56a-ef3e-4232-a9ac-c4bd12e20a87` (`10` tables active, verified at `Bus Seq #25,956`)  
-* **R2 S3 API Endpoint:** `https://a37cf8ab07e7c5f886c302be3f098744.r2.cloudflarestorage.com`  
+* **Cloudflare Account ID:** `<EXTERNAL_CF_ACCOUNT_ID>` (`Bospaladin34@gmail.com`)  
+* **Existing D1 SQLite Vault UUID:** `<EXTERNAL_D1_DATABASE_ID>` (`10` tables active, verified at `Bus Seq #25,956`)  
+* **R2 S3 API Endpoint:** `https://<EXTERNAL_CF_ACCOUNT_ID>.r2.cloudflarestorage.com`  
 * **Production Domain & 5 Declared Hostnames:** `act-omega-net.dev`, `api.act-omega-net.dev`, `mcp.act-omega-net.dev`, `wiki.act-omega-net.dev`, `agent.act-omega-net.dev`
 
 ## 1\. Executive Summary & Live Audit Findings (`PXL_20261031_215114527.jpg` – `PXL_20261031_220147645.jpg`)
 
-A full inspection of the Cloudflare dashboard (`a37cf8ab07e7c5f886c302be3f098744`) alongside live telemetry from `ACT Omega Sovereign Manifold MCP` (`https://mcp.act-omega-net.dev/mcp`, `18/18` tools verified through `Bus Seq #25,956`) and today's `muse-2026-10-31-sweep` identified **one active security/crawler boundary violation**, **six unconfigured high-leverage Cloudflare edge subsystems**, and **four L0 Rust hygiene remediations**:
+A full inspection of the Cloudflare dashboard (`<EXTERNAL_CF_ACCOUNT_ID>`) alongside live telemetry from `ACT Omega Sovereign Manifold MCP` (`https://mcp.act-omega-net.dev/mcp`, `18/18` tools verified through `Bus Seq #25,956`) and today's `muse-2026-10-31-sweep` identified **one active security/crawler boundary violation**, **six unconfigured high-leverage Cloudflare edge subsystems**, and **four L0 Rust hygiene remediations**:
 
 | Category | Source Evidence | Current State | Target `v61.2.0` (`CHAIN 284`) State |
 | :---- | :---- | :---- | :---- |
@@ -97,9 +97,9 @@ In the `act-omega-edge-sentinel` Cloudflare Worker (and Cloudflare WAF Custom Ru
 
 Execute the following Wrangler CLI commands from `C:\sovereign_manifold_v31_cloudflare_edge\` on `LENOVO LOQ 15`:
 
-\# 1\. Verify Wrangler authentication on Account a37cf8ab07e7c5f886c302be3f098744
+\# 1\. Verify Wrangler authentication on Account <EXTERNAL_CF_ACCOUNT_ID>
 
-\$env:CLOUDFLARE\_ACCOUNT\_ID \= "a37cf8ab07e7c5f886c302be3f098744"
+\$env:CLOUDFLARE\_ACCOUNT\_ID \= "<EXTERNAL_CF_ACCOUNT_ID>"
 
 npx wrangler whoami
 
@@ -135,7 +135,7 @@ main \= "src/index.js"
 
 compatibility\_date \= "2026-10-31"
 
-account\_id \= "a37cf8ab07e7c5f886c302be3f098744"
+account\_id \= "<EXTERNAL_CF_ACCOUNT_ID>"
 
 \# Bind Workers Routes directly to act-omega-net.dev (Fixes empty Workers Routes in PXL\_20261031\_220041197.jpg)
 
@@ -155,7 +155,7 @@ binding \= "D1\_VAULT"
 
 database\_name \= "act\_omega\_d1\_vault"
 
-database\_id \= "9f46d56a-ef3e-4232-a9ac-c4bd12e20a87"
+database\_id \= "<EXTERNAL_D1_DATABASE_ID>"
 
 \[\[r2\_buckets\]\]
 
@@ -472,9 +472,9 @@ Add **`cloudflare_r2_kv_edge_sentinel`** (`Tool 283`, endpoint `/api/v1/cloudfla
   }  
     
 * **Measured Telemetry Fields Returned:**  
-  * `account_id`: `"a37cf8ab07e7c5f886c302be3f098744"`  
-  * `d1_vault_uuid`: `"9f46d56a-ef3e-4232-a9ac-c4bd12e20a87"` (`10` tables)  
-  * `r2_bucket`: `"act-omega-sovereign-vault"` (`r2_endpoint`: `"https://a37cf8ab07e7c5f886c302be3f098744.r2.cloudflarestorage.com"`)  
+  * `account_id`: `"<EXTERNAL_CF_ACCOUNT_ID>"`  
+  * `d1_vault_uuid`: `"<EXTERNAL_D1_DATABASE_ID>"` (`10` tables)  
+  * `r2_bucket`: `"act-omega-sovereign-vault"` (`r2_endpoint`: `"https://<EXTERNAL_CF_ACCOUNT_ID>.r2.cloudflarestorage.com"`)  
   * `kv_namespace`: `"ACT_OMEGA_EDGE_KV"`  
   * `analytics_engine_dataset`: `"ACT_OMEGA_TELEMETRY_AE"`  
   * `auth_shield_route`: `"*act-omega-net.dev/api/v1/auth/*"` (`googlebot_violation_mitigated`: `true`, `tool183_empty_hmac_rejected`: `true`)  

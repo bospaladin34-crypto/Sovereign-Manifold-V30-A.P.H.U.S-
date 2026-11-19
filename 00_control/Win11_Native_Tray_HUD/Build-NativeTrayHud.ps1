@@ -1,4 +1,4 @@
-﻿# Build-NativeTrayHud.ps1 - Compiles SovereignCockpitHUD.exe & VesperArachneSwarmDroneOverlay.exe across all canonical targets
+# Build-NativeTrayHud.ps1 - Compiles SovereignCockpitHUD.exe & VesperArachneSwarmDroneOverlay.exe across all canonical targets
 param(
     [switch]$NoRestart
 )
@@ -34,8 +34,8 @@ if (-not (Test-Path $droneDir2)) {
 
 $csc = "C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe"
 
-# 2. Compile SovereignCockpitHUD.exe (v73.2.0 / Ω73.2)
-Write-Host "Compiling SovereignCockpitHUD.exe (v73.2.0 / Ω73.2) with csc.exe..." -ForegroundColor Cyan
+# 2. Compile SovereignCockpitHUD.exe (v73.2.1 / Ω73.2.1)
+Write-Host "Compiling SovereignCockpitHUD.exe (v73.2.1 / Ω73.2.1) with csc.exe..." -ForegroundColor Cyan
 & $csc /nologo /target:winexe /optimize+ /out:$targetHud1 $srcHud
 if ($LASTEXITCODE -ne 0) { throw "CSC compilation of SovereignCockpitHUD.exe failed with code $LASTEXITCODE" }
 

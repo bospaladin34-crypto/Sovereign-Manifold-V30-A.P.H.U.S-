@@ -1,0 +1,14 @@
+EXIT_CODE: 0
+==========================================================================
+   SOVEREIGN HARMONIC X (WEEK 4 PROPERTY & NEGATIVE-INJECTION SUITE)      
+==========================================================================
+  [STAGE 1 - HYGIENE]        [PASS] Brackets(v71_0+v71_4)=0 | StaticWeek4ClaimsAbsent=True
+  [STAGE 2 - TOOL 351 RLVF]  [PASS] Status=MEASURED | PreReward=0.2500 -> PostReward=1.0000 | Pass@1=64/64 | HacksBlocked=64/64 | OrthoErr=0.00000000
+  [STAGE 3 - TOOL 352 TREE]  [PASS] Status=MEASURED | Certified=True | Tok/Step=5.0000 | Speedup=0.3785x | AltBranchRescues=0 | KL=0.01290892
+  [STAGE 4 - TOOL 353 SAE]   [PASS] Status=MEASURED | ActiveLatents=512/512 | Dead=0 | R^2=0.979216 | PosDelta=+0.1661 | InhibDelta=-0.0877
+  [STAGE 5 - TOOL 354 EVAL]  [PASS] Status=MEASURED | Pass@1=256/256 (100.00%) | Eval256 PPL(S0->W1->W2->W4): 1513.6560 -> 5359.1182 -> 16321.7036 -> 16321.7036 | Corrupted=16361.0016 | HoldoutV2(ZeroOverlap=True): 1513.2039 -> 16726.9495
+  [STAGE 6 - TOOL 355 W4-12] [PASS] Status=MEASURED | TortureTests=12/12 | All12Passed=True | Note: Honest component pass count reported
+  [STAGE 7 - TOOL 356 CERT]  [PASS] Status=MEASURED | QED=1010 | Tools=356 | AllGates=True
+  [STAGE 8 - RED-TEAM RT-W4] [PASS] Sorry/Dyck/Comment/TrivialReward=0.0 | Lean4NegCanaryRejected=True | PoisonTreeStep=1.0 (EmpKL=0.01760703 <= 0.06; UnrejectedEmpKL=2.93307226 REJECTED) | UnclampedSAE=True (InhibDelta=-0.0877) | CorruptedPPL=16361.0016 > W4=16321.7036 | W4MetaphorGroundedNoStaticClaims=True
+==========================================================================
+  [WEEK 4 PROPERTY & NEGATIVE-INJECTION SUITE RESULT: PASSED (8/8 STAGES)]

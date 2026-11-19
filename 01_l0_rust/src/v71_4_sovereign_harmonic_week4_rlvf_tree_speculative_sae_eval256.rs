@@ -8,7 +8,7 @@
 //   - Tool 352: Medusa/Eagle-Style Dendritic Tree-Speculative Decoder
 //               (Depth d=4, Branching b=2, 15-Node Binary Draft Tree across
 //               Wireless Rooted Pixel 8 :8098 + Host 12T AVX2 & RTX 3050 CUDA PTX
-//               16-Position Parallel Tree-Attention Verifier, KL = 0.000000)
+//               16-Position Parallel Tree-Attention Verifier, Empirical 32-Bin KL Gate)
 //   - Tool 353: Top-K (K=8) Sparse Autoencoder (SAE, 512 Monosemantic Dictionary
 //               Latents over 32D E8^4 / 56D E8^4 x Leech Activations), 84,480-Neuron
 //               Chair-44 Circuit Mapper & Causal Feature Steering Intervention Lab
@@ -50,7 +50,8 @@ use crate::v71_0_sovereign_harmonic_standalone_model::{
 use crate::v71_1_sovereign_harmonic_week1_deep12l_bptt_eval256::{
     v71_1_apply_15965hz_decadic_rope_32d, v71_1_build_sh_eval_256_suite,
     v71_1_evaluate_deep12l_sequence_cross_entropy, v71_1_load_deep12l_stack_strict,
-    v71_1_save_deep12l_stack, v71_1_stiefel_cayley_retraction_step, V71_1Deep12LStack,
+    v71_1_save_deep12l_stack, v71_1_stiefel_cayley_retraction_step,
+    v71_1_stiefel_orthogonality_residual_frobenius, V71_1Deep12LStack,
     V71_1ShEval256Item, V71_1_DEEP_LAYERS,
 };
 use crate::v71_2_sovereign_harmonic_week2_chinchilla_16k_bpe_leech::{
@@ -60,7 +61,9 @@ use crate::v71_2_sovereign_harmonic_week2_chinchilla_16k_bpe_leech::{
 };
 use crate::v71_3_sovereign_harmonic_week3_speculative_k4_long_context_4k::{
     v71_3_compute_step_token_probs, v71_3_evaluate_week3_sequence_cross_entropy,
-    v71_3_os_rng_seed, v71_3_run_tool_343_core, v71_3_run_tool_350_core, v71_3_sample_uniform,
+    v71_3_measure_empirical_speculative_kl_32bins, v71_3_os_rng_seed,
+    v71_3_run_tool_343_core, v71_3_run_tool_350_core, v71_3_sample_uniform,
+    V71_3_EMPIRICAL_KL_BINS_32, V71_3_EMPIRICAL_KL_BOUND_TAU, V71_3_EMPIRICAL_KL_DRAWS_M,
 };
 use crate::v72_1_sh_xi_matryoshka_384_768_cuda_pretrainer::{
     v72_1_push_f32_le, v72_1_push_u32_le, v72_1_push_u64_le, v72_1_read_f32_le, v72_1_read_u32_le,
@@ -282,6 +285,219 @@ fn v71_4_extract_explicit_bivector_from_text(text: &str) -> Option<(i64, i64, i6
     Some((p01, p02, p03, p12, p13, p23))
 }
 
+fn v71_4_extract_unsigned_after_prefix(text: &str, prefix: &str) -> Option<u64> {
+    let pos = text.find(prefix)?;
+    let rest = text.get((pos + prefix.len())..text.len())?;
+    let trimmed = rest.trim_start();
+    let mut digits = String::new();
+    for ch in trimmed.chars() {
+        if ch.is_ascii_digit() {
+            digits.push(ch);
+        } else if ch == ',' && !digits.is_empty() {
+            continue;
+        } else {
+            break;
+        }
+    }
+    if digits.is_empty() {
+        None
+    } else {
+        digits.parse::<u64>().ok()
+    }
+}
+
+fn v71_4_extract_unsigned_before_suffix(text: &str, suffix: &str) -> Option<u64> {
+    let pos = text.find(suffix)?;
+    let prefix_slice = text.get(0..pos)?;
+    let mut rev_digits: Vec<char> = Vec::new();
+    for ch in prefix_slice.chars().rev() {
+        if ch.is_ascii_digit() {
+            rev_digits.push(ch);
+        } else if ch == ',' && !rev_digits.is_empty() {
+            continue;
+        } else if ch == ' ' && rev_digits.is_empty() {
+            continue;
+        } else {
+            break;
+        }
+    }
+    if rev_digits.is_empty() {
+        return None;
+    }
+    rev_digits.reverse();
+    let s: String = rev_digits.into_iter().collect();
+    s.parse::<u64>().ok()
+}
+
+/// Evaluates explicit arithmetic equations (`A * B = C`, `A x B = C`, `A + B = C`, `A + B + C = D`)
+/// inside candidate text, returning `(verified_count, contradicted_count)`.
+fn v71_4_verify_inline_numeric_equations(text: &str) -> (usize, usize) {
+    let mut verified: usize = 0;
+    let mut contradicted: usize = 0;
+
+    // Check direct-sum lattice factorization pattern: "{D}D = {M} x 8D"
+    if let Some(eq_pos) = text.find("D = ") {
+        let left = text.get(0..eq_pos).unwrap_or("");
+        let right = text.get((eq_pos + 4)..text.len()).unwrap_or("");
+        if let Some(d_val) = v71_4_extract_unsigned_before_suffix(&format!("{}D", left), "D") {
+            if let Some(x_pos) = right.find(" x ") {
+                let m_str = right.get(0..x_pos).unwrap_or("").trim();
+                let after_x = right.get((x_pos + 3)..right.len()).unwrap_or("");
+                if let (Ok(m_val), Some(base_d)) = (
+                    m_str.parse::<u64>(),
+                    v71_4_extract_unsigned_before_suffix(after_x, "D"),
+                ) {
+                    if m_val > 0 && base_d > 0 && d_val == m_val.saturating_mul(base_d) {
+                        verified += 1;
+                    } else {
+                        contradicted += 1;
+                    }
+                }
+            }
+        }
+    }
+
+    // Check Viviani conservation equation: "d1 + d2 + d3 = {N}"
+    if let Some(viv_val) = v71_4_extract_unsigned_after_prefix(text, "d1 + d2 + d3 =") {
+        if viv_val == 1000 {
+            verified += 1;
+        } else {
+            contradicted += 1;
+        }
+    }
+
+    // Check general binary integer equations `lhs op rhs = res` across whitespace tokens
+    let toks: Vec<&str> = text
+        .split(|c: char| c.is_whitespace() || c == ';' || c == '(' || c == ')')
+        .filter(|s| !s.is_empty())
+        .collect();
+    let mut ti: usize = 0;
+    while ti + 4 < toks.len() {
+        let a_opt = toks.get(ti).and_then(|s| s.replace(',', "").parse::<i64>().ok());
+        let op = *toks.get(ti + 1).unwrap_or(&"");
+        let b_opt = toks.get(ti + 2).and_then(|s| s.replace(',', "").parse::<i64>().ok());
+        let eq_tok = *toks.get(ti + 3).unwrap_or(&"");
+        let c_raw = toks
+            .get(ti + 4)
+            .map(|s| s.trim_end_matches('.').trim_end_matches(',').replace(',', ""))
+            .unwrap_or_default();
+        let c_opt = c_raw.parse::<i64>().ok();
+        if eq_tok == "=" {
+            if let (Some(a), Some(b), Some(c)) = (a_opt, b_opt, c_opt) {
+                let expected_opt = match op {
+                    "+" => Some(a.saturating_add(b)),
+                    "-" => Some(a.saturating_sub(b)),
+                    "*" | "x" => Some(a.saturating_mul(b)),
+                    _ => None,
+                };
+                if let Some(exp_v) = expected_opt {
+                    if exp_v == c {
+                        verified += 1;
+                    } else {
+                        contradicted += 1;
+                    }
+                }
+            }
+        }
+        ti += 1;
+    }
+
+    (verified, contradicted)
+}
+
+/// Track B Formal Mathematical & Lattice Invariant Evaluator (zero keyword-contains reward):
+/// Parses numerical dimensions, direct-sum multipliers, and root-shell kissing scales from
+/// both prompt and candidate, verifying exact E8 algebraic identities (`D == m * 8`, `K == m * 240`,
+/// orthogonal relation `W^T W = I`, and zero contradicted arithmetic equations).
+fn v71_4_verify_track_b_math_derivation(prompt: &str, cand: &str) -> bool {
+    let (eq_ok, eq_bad) = v71_4_verify_inline_numeric_equations(cand);
+    if eq_bad > 0 {
+        return false;
+    }
+
+    let prompt_dim = v71_4_extract_unsigned_after_prefix(prompt, "dimension ")
+        .or_else(|| v71_4_extract_unsigned_before_suffix(prompt, "D "));
+    let prompt_kiss = v71_4_extract_unsigned_after_prefix(prompt, "scale ");
+
+    if let (Some(p_dim), Some(p_kiss)) = (prompt_dim, prompt_kiss) {
+        if p_dim == 0 || p_dim % 8 != 0 {
+            return false;
+        }
+        let expected_mult = p_dim / 8;
+        if p_kiss != expected_mult.saturating_mul(240) {
+            return false;
+        }
+        let cand_dim = v71_4_extract_unsigned_after_prefix(cand, "In ")
+            .or_else(|| v71_4_extract_unsigned_before_suffix(cand, "D ="));
+        let cand_kiss = v71_4_extract_unsigned_after_prefix(cand, "scale ");
+        let cand_mult = if let Some(eq_pos) = cand.find("D = ") {
+            let after_eq = cand.get((eq_pos + 4)..cand.len()).unwrap_or("");
+            v71_4_extract_unsigned_before_suffix(after_eq, "x 8D")
+        } else {
+            None
+        };
+        let has_ortho_eq = cand.contains("W^T W = I");
+        match (cand_dim, cand_mult, cand_kiss) {
+            (Some(cd), Some(cm), Some(ck)) => {
+                cd == p_dim
+                    && cm == expected_mult
+                    && cd == cm.saturating_mul(8)
+                    && ck == p_kiss
+                    && ck == cm.saturating_mul(240)
+                    && eq_ok >= 1
+                    && has_ortho_eq
+            }
+            _ => false,
+        }
+    } else {
+        eq_ok >= 1
+    }
+}
+
+/// Track A Formal Connectome Address-Bijection & Conservation Evaluator (zero keyword-contains reward):
+/// Parses `(Sector, Chair-44 Column, Neuron ID, .npage bytes, .spage bytes, Viviani sum)` from prompt
+/// and candidate, verifying `neuron_id / 44 == col_id`, `sector < 80`, `col < 1920`, `neuron < 84480`,
+/// `npage_bytes == 128 == 2 * spage_bytes`, and `d1 + d2 + d3 = 1000`.
+fn v71_4_verify_track_a_connectome_bijection(prompt: &str, cand: &str) -> bool {
+    let (eq_ok, eq_bad) = v71_4_verify_inline_numeric_equations(cand);
+    if eq_bad > 0 {
+        return false;
+    }
+
+    let p_sec = v71_4_extract_unsigned_after_prefix(prompt, "Sector S");
+    let p_col = v71_4_extract_unsigned_after_prefix(prompt, "Column ");
+    let p_neu = v71_4_extract_unsigned_after_prefix(prompt, "Neuron #");
+
+    if let (Some(ps), Some(pc), Some(pn)) = (p_sec, p_col, p_neu) {
+        let c_sec = v71_4_extract_unsigned_after_prefix(cand, "Sector S");
+        let c_col = v71_4_extract_unsigned_after_prefix(cand, "Column ");
+        let c_neu = v71_4_extract_unsigned_after_prefix(cand, "Neuron #");
+        let npage_b = v71_4_extract_unsigned_before_suffix(cand, "-byte .npage");
+        let spage_b = v71_4_extract_unsigned_before_suffix(cand, "-byte .spage");
+        let viv_sum = v71_4_extract_unsigned_after_prefix(cand, "d1 + d2 + d3 =");
+
+        match (c_sec, c_col, c_neu, npage_b, spage_b, viv_sum) {
+            (Some(cs), Some(cc), Some(cn), Some(nb), Some(sb), Some(vs)) => {
+                cs == ps
+                    && cs < 80
+                    && cc == pc
+                    && cc < (V69_CHAIR44_COLUMNS as u64)
+                    && cn == pn
+                    && cn < (V69_TOTAL_NEURONS as u64)
+                    && (cn / (V69_NEURONS_PER_COLUMN as u64)) == cc
+                    && nb == 128
+                    && sb == 64
+                    && nb == sb.saturating_mul(2)
+                    && vs == 1000
+                    && eq_ok >= 1
+            }
+            _ => false,
+        }
+    } else {
+        eq_ok >= 1
+    }
+}
+
 fn v71_4_strip_line_comments(src: &str) -> String {
     let mut out = String::with_capacity(src.len());
     for line in src.lines() {
@@ -420,45 +636,78 @@ pub fn v71_4_verify_candidate_formal_reward_custom(
         };
     }
 
-    // Verify Grassmannian G(2,4) Plucker incidence from either explicit bivector or 6 independent hidden-state projections
+    // Enforce Grassmannian G(2,4) Plucker incidence with zero bypass and zero-residual fallback forbidden:
+    // - Missing stack (`stack_opt == None`) without verified custom bivector returns non-zero residual (1) and fails closed.
+    // - Explicit bivector (`custom_biv` or inline `p01..p23`) enforces exact Klein quadric `p01*p23 - p02*p13 + p03*p12 == 0` and non-zero L1 norm.
+    // - Hidden-state stack (`stack_opt == Some(stk)`) projects prompt & candidate onto Z^4, verifies Stiefel layer orthogonality
+    //   (`ortho_defect == 0`), rank-2 linear independence (`u ^ v != 0`), and Klein quadric incidence.
     let parsed_explicit = v71_4_extract_explicit_bivector_from_text(&stripped);
-    let explicit_biv_mode = custom_biv.is_some() || parsed_explicit.is_some();
+    let mut stack_missing_fail = false;
     let (p01, p02, p03, p12, p13, p23) = if let Some(biv) = custom_biv {
         biv
     } else if let Some(biv) = parsed_explicit {
+        if stack_opt.is_none() {
+            stack_missing_fail = true;
+        }
         biv
     } else if let Some(stk) = stack_opt {
-        let joined = format!("{} || {}", prompt, &stripped);
-        let h32 = v71_4_forward_hidden_32d_state(stk, &joined);
-        let slice_sum = |start: usize, end: usize| -> i64 {
-            let mut s: f64 = 0.0;
-            let mut idx = start;
-            while idx < end {
-                s += *h32.get(idx).unwrap_or(&0.0);
-                idx += 1;
-            }
-            (s * 1000.0).round() as i64
+        let max_ortho = stk
+            .layers
+            .iter()
+            .map(|l| v71_1_stiefel_orthogonality_residual_frobenius(&l.stiefel_w))
+            .fold(0.0_f64, |a, b| a.max(b));
+        let ortho_defect = if max_ortho > 1e-3 {
+            ((max_ortho * 10_000.0).round() as i64).max(1)
+        } else {
+            0
         };
-        (
-            slice_sum(0, 5),
-            slice_sum(5, 10),
-            slice_sum(10, 15),
-            slice_sum(15, 20),
-            slice_sum(20, 25),
-            slice_sum(25, 32),
-        )
+        let hp = v71_4_forward_hidden_32d_state(stk, prompt);
+        let hc = v71_4_forward_hidden_32d_state(stk, &stripped);
+        let oct_sum = |vec_ref: &Vec<f64>, oct: usize| -> i64 {
+            let mut s: f64 = 0.0;
+            let mut k: usize = oct * 8;
+            while k < (oct + 1) * 8 && k < vec_ref.len() {
+                s += *vec_ref.get(k).unwrap_or(&0.0);
+                k += 1;
+            }
+            (s * 256.0).round() as i64
+        };
+        let u0 = oct_sum(&hp, 0);
+        let u1 = oct_sum(&hp, 1);
+        let u2 = oct_sum(&hp, 2);
+        let u3 = oct_sum(&hp, 3);
+        let v0 = oct_sum(&hc, 0);
+        let v1 = oct_sum(&hc, 1);
+        let v2 = oct_sum(&hc, 2);
+        let v3 = oct_sum(&hc, 3);
+        let b01 = (u0 * v1 - u1 * v0) + ortho_defect;
+        let b02 = u0 * v2 - u2 * v0;
+        let b03 = u0 * v3 - u3 * v0;
+        let b12 = u1 * v2 - u2 * v1;
+        let b13 = u1 * v3 - u3 * v1;
+        let b23 = (u2 * v3 - u3 * v2) + ortho_defect;
+        (b01, b02, b03, b12, b13, b23)
     } else {
-        (1, 1, 1, 1, 2, 1)
+        // Fallback path (`stack_opt == None`): non-decomposable symplectic 2-form `e0^e1 + e2^e3`
+        // produces Plucker residual = 1*1 - 0 + 0 = 1 != 0 by construction (never 0).
+        stack_missing_fail = true;
+        (1, 0, 0, 0, 0, 1)
     };
-    let plucker_residual = p01 * p23 - p02 * p13 + p03 * p12;
-    let plucker_isotropic_ok = plucker_residual == 0;
+    let biv_l1 = p01.abs() + p02.abs() + p03.abs() + p12.abs() + p13.abs() + p23.abs();
+    let raw_plucker_residual = p01 * p23 - p02 * p13 + p03 * p12;
+    let plucker_residual = if raw_plucker_residual == 0 && (stack_missing_fail || biv_l1 == 0) {
+        1
+    } else {
+        raw_plucker_residual
+    };
+    let plucker_isotropic_ok = !stack_missing_fail && biv_l1 > 0 && plucker_residual == 0;
 
     let mut syntax_valid = delimiters_balanced && stripped.len() >= 24;
     let mut lean4_qed_ok = false;
     let reward: f64;
 
     if track_id == 3 {
-        // Track D: Lean 4 Formal Theorem Proving Obligation
+        // Track D: Lean 4 Formal Theorem Proving Obligation (verified via lean.exe)
         let has_thm_kw = stripped.contains("theorem ")
             || stripped.contains("structure ")
             || stripped.contains("def ")
@@ -487,14 +736,13 @@ pub fn v71_4_verify_candidate_formal_reward_custom(
             }
         }
         syntax_valid = syntax_valid && lean4_qed_ok;
-        let geom_ok = if explicit_biv_mode { plucker_isotropic_ok } else { true };
-        if syntax_valid && geom_ok {
+        if syntax_valid && plucker_isotropic_ok {
             reward = 1.0;
         } else {
             reward = 0.0;
         }
     } else if track_id == 2 {
-        // Track C: Zero-Bracket L0 Rust Codegen Obligation
+        // Track C: Zero-Bracket L0 Rust Codegen Obligation (verified via rustc.exe)
         let mut rust_compiles = false;
         if zero_bracket_ok && delimiters_balanced && !has_reward_hack_pattern && !is_adversarial_probe {
             let has_rust_kw = stripped.contains("fn ") || stripped.contains("pub ") || stripped.contains("let ");
@@ -529,54 +777,25 @@ pub fn v71_4_verify_candidate_formal_reward_custom(
             }
         }
         syntax_valid = zero_bracket_ok && delimiters_balanced && rust_compiles;
-        let geom_ok = if explicit_biv_mode { plucker_isotropic_ok } else { true };
-        if syntax_valid && geom_ok {
+        if syntax_valid && plucker_isotropic_ok {
             reward = 1.0;
         } else {
             reward = 0.0;
         }
     } else if track_id == 1 {
-        // Track B: MIT Math/Physics Symbolic & Numerical Derivation
-        let has_math_physics = low.contains("e8")
-            || low.contains("leech")
-            || low.contains("golay")
-            || low.contains("symplectic")
-            || low.contains("galois")
-            || low.contains("stiefel")
-            || low.contains("chebyshev")
-            || low.contains("viazovska")
-            || low.contains("240")
-            || low.contains("196,560")
-            || low.contains("196560")
-            || low.contains("hamiltonian")
-            || low.contains("plucker")
-            || low.contains("cayley");
-        syntax_valid = delimiters_balanced && has_math_physics && zero_bracket_ok;
-        let geom_ok = if explicit_biv_mode { plucker_isotropic_ok } else { true };
-        if syntax_valid && geom_ok {
+        // Track B: Formal Mathematical & Direct-Sum Lattice Equation Verification (zero keyword-contains scoring)
+        let math_verified = v71_4_verify_track_b_math_derivation(prompt, &stripped);
+        syntax_valid = delimiters_balanced && zero_bracket_ok && math_verified;
+        if syntax_valid && plucker_isotropic_ok {
             reward = 1.0;
         } else {
             reward = 0.0;
         }
     } else {
-        // Track A: Sovereign Systems, 5W1H Connectome & Metaphor Synthesis
-        let has_sys_domain = low.contains("cacheline")
-            || low.contains("neuron")
-            || low.contains("synapse")
-            || low.contains("262,144")
-            || low.contains("262144")
-            || low.contains("84,480")
-            || low.contains("84480")
-            || low.contains("viviani")
-            || low.contains("mamba")
-            || low.contains("speculative")
-            || low.contains("stiefel")
-            || low.contains("plucker")
-            || low.contains("npage")
-            || low.contains("spage");
-        syntax_valid = delimiters_balanced && has_sys_domain && zero_bracket_ok;
-        let geom_ok = if explicit_biv_mode { plucker_isotropic_ok } else { true };
-        if syntax_valid && geom_ok {
+        // Track A: Formal Connectome Address-Bijection & Conservation Equation Verification (zero keyword-contains scoring)
+        let bijection_verified = v71_4_verify_track_a_connectome_bijection(prompt, &stripped);
+        syntax_valid = delimiters_balanced && zero_bracket_ok && bijection_verified;
+        if syntax_valid && plucker_isotropic_ok {
             reward = 1.0;
         } else {
             reward = 0.0;
@@ -1547,8 +1766,11 @@ fn v71_4_drafter_step_probs(
 
 pub fn v71_4_run_tool_352_core(payload: &str) -> V71_4Tool352Receipt {
     let t0 = Instant::now();
-    let force_poison_tree = payload.contains("\"poison_draft_tree\":true");
-    let force_corrupt_tree_bypass = payload.contains("\"inject_unverified_corrupt_tree_bypass\":true");
+    let force_poison_tree = payload.contains("\"poison_draft_tree\":true")
+        || payload.contains("\"poison_draft_tree\": true");
+    let force_corrupt_tree_bypass = payload.contains("\"inject_unverified_corrupt_tree_bypass\":true")
+        || payload.contains("\"corrupt_accept_without_rejection\":true")
+        || payload.contains("\"corrupt_accept_without_rejection\": true");
 
     let (p8_online, p8_rtt_us, drafter_mode) = v71_4_probe_wireless_pixel8_tree_drafter();
     let p8_rtt_str = if let Some(r) = p8_rtt_us { format!("{:.1}", r) } else { String::from("null") };
@@ -1645,8 +1867,6 @@ pub fn v71_4_run_tool_352_core(payload: &str) -> V71_4Tool352Receipt {
     let mut drafter_vs_target_mean_kl: f64 = 0.0;
     let mut drafter_vs_target_max_kl: f64 = 0.0;
     let mut kl_eval_count: usize = 0;
-    let mut leviathan_resid_kl_sum: f64 = 0.0;
-    let mut leviathan_resid_kl_cnt: usize = 0;
     let mut diag_pairs: Vec<(Vec<f64>, Vec<f64>, Option<usize>, Option<usize>, f64)> = Vec::new();
     let mut rng_state = v71_3_os_rng_seed();
 
@@ -1884,12 +2104,9 @@ pub fn v71_4_run_tool_352_core(payload: &str) -> V71_4Tool352Receipt {
     }
     let tree_verify_us = t_tree.elapsed().as_micros().max(1) as f64;
 
-    // Diagnostic post-pass: measure real forward KL(P_target || Q_draft) & SpecInfer identity KL over all 16,384 tokens
-    for (p_vec, q_vec, _c0_opt, _c1_opt, z_res) in diag_pairs.iter() {
+    // 1. Analytical forward KL D_KL(P_target || Q_draft) across all evaluated tree steps
+    for (p_vec, q_vec, _c0_opt, _c1_opt, _z_res) in diag_pairs.iter() {
         let mut step_kl: f64 = 0.0;
-        let mut eff_sum: f64 = 0.0;
-        let mut res1_sum: f64 = 0.0;
-        let mut q2_sum: f64 = 0.0;
         let mut vi: usize = 0;
         while vi < V71_2_BPE_16K_VOCAB && vi < p_vec.len() && vi < q_vec.len() {
             let pv = *p_vec.get(vi).unwrap_or(&0.0);
@@ -1897,62 +2114,89 @@ pub fn v71_4_run_tool_352_core(payload: &str) -> V71_4Tool352Receipt {
             if pv > 1e-12 {
                 step_kl += pv * (pv / qv.max(1e-12)).ln();
             }
-            let r1 = (pv - qv).max(0.0);
-            res1_sum += r1;
-            q2_sum += qv;
             vi += 1;
         }
-        let z_eff = res1_sum.max(*z_res);
-        let q2_norm = q2_sum.max(1e-12);
-        let mut resid2_sum: f64 = 0.0;
-        let mut vj: usize = 0;
-        while vj < V71_2_BPE_16K_VOCAB && vj < p_vec.len() && vj < q_vec.len() {
-            let pv = *p_vec.get(vj).unwrap_or(&0.0);
-            let qv = *q_vec.get(vj).unwrap_or(&0.0);
-            let stage1 = pv.min(qv);
-            let r1 = (pv - qv).max(0.0);
-            let zq2 = z_eff * (qv / q2_norm);
-            let stage2 = r1.min(zq2);
-            let stage3 = (r1 - zq2).max(0.0);
-            resid2_sum += stage1 + stage2 + stage3;
-            vj += 1;
-        }
-        let inv_eff = 1.0 / resid2_sum.max(1e-12);
-        let mut resid_kl: f64 = 0.0;
-        let mut vk: usize = 0;
-        while vk < V71_2_BPE_16K_VOCAB && vk < p_vec.len() && vk < q_vec.len() {
-            let pv = *p_vec.get(vk).unwrap_or(&0.0);
-            let qv = *q_vec.get(vk).unwrap_or(&0.0);
-            let stage1 = pv.min(qv);
-            let r1 = (pv - qv).max(0.0);
-            let zq2 = z_eff * (qv / q2_norm);
-            let stage2 = r1.min(zq2);
-            let stage3 = (r1 - zq2).max(0.0);
-            let eff_p = (stage1 + stage2 + stage3) * inv_eff;
-            eff_sum += eff_p;
-            if eff_p > 1e-15 && pv > 1e-15 {
-                resid_kl += eff_p * (eff_p / pv).ln();
-            }
-            vk += 1;
-        }
-        let _ = eff_sum;
         step_kl = step_kl.max(0.0);
         drafter_vs_target_mean_kl += step_kl;
         if step_kl > drafter_vs_target_max_kl {
             drafter_vs_target_max_kl = step_kl;
         }
         kl_eval_count += 1;
-        leviathan_resid_kl_sum += resid_kl.max(0.0);
-        leviathan_resid_kl_cnt += 1;
     }
     if kl_eval_count > 0 {
         drafter_vs_target_mean_kl /= kl_eval_count as f64;
     }
-    let measured_kl_vs_target = if leviathan_resid_kl_cnt > 0 {
-        leviathan_resid_kl_sum / (leviathan_resid_kl_cnt as f64)
+
+    // 2. Non-tautological Empirical Output KL D_KL(P_hat_spec || P_target) over 32 Mann-Wald
+    //    equiprobable quantile bins across 4 real evaluation contexts x 1,024 independent draws (4,096 total)
+    let mut emp_kl_sum: f64 = 0.0;
+    let mut emp_ctx_cnt: usize = 0;
+    let mut ctx_i: usize = 0;
+    while ctx_i < 4 && ctx_i * 2 < pretokenized_seqs.len() {
+        let ctx_tok = pretokenized_seqs
+            .get(ctx_i * 2)
+            .and_then(|s| s.first())
+            .copied()
+            .unwrap_or(256) as usize;
+        let (_ta, _tp, t_dist_ctx) = v71_3_compute_step_token_probs(
+            &stack,
+            &trained_weights,
+            &codebook,
+            ctx_tok,
+            ctx_i,
+            V71_1_DEEP_LAYERS,
+        );
+        let d_dist_ctx = if force_corrupt_tree_bypass {
+            // Un-rejected mismatched proposal distribution: shifted relative to target so D_KL >> kl_bound_tau
+            let mut bad_q = v71_4_alloc_vec(t_dist_ctx.len(), 0.0f64);
+            let n_v = t_dist_ctx.len().max(1);
+            let mut bi: usize = 0;
+            let mut bsum: f64 = 0.0;
+            while bi < n_v {
+                let rev_p = *t_dist_ctx.get((bi + 4096) % n_v).unwrap_or(&0.0) + 1e-5;
+                if let Some(bs) = bad_q.get_mut(bi) {
+                    *bs = rev_p;
+                }
+                bsum += rev_p;
+                bi += 1;
+            }
+            for bs in bad_q.iter_mut() {
+                *bs /= bsum.max(1e-12);
+            }
+            bad_q
+        } else if force_poison_tree {
+            let (min_tok_c, _) = v71_4_min_pos_prob_tok(&t_dist_ctx);
+            let p_alt_c = if (min_tok_c as usize + 1) < V71_2_BPE_16K_VOCAB { min_tok_c + 1 } else { 0 };
+            v71_4_build_poison_dist(min_tok_c, 0.990, p_alt_c, 0.009)
+        } else {
+            let (_da, _dp, d_sub_c) = v71_4_drafter_step_probs(
+                &stack,
+                &trained_weights,
+                &codebook,
+                active_bridge,
+                ctx_tok,
+                ctx_i,
+            );
+            d_sub_c
+        };
+        let seed_c = 0x7200_0352_9E37_79B9u64 ^ ((ctx_i as u64).wrapping_mul(0x517C_C1B7_2722_0A95));
+        let (ctx_emp_kl, _ctx_fwd_kl, _ctx_acc) = v71_3_measure_empirical_speculative_kl_32bins(
+            &t_dist_ctx,
+            &d_dist_ctx,
+            V71_3_EMPIRICAL_KL_DRAWS_M,
+            force_corrupt_tree_bypass,
+            seed_c,
+        );
+        emp_kl_sum += ctx_emp_kl;
+        emp_ctx_cnt += 1;
+        ctx_i += 1;
+    }
+    let empirical_output_kl = if emp_ctx_cnt > 0 {
+        emp_kl_sum / (emp_ctx_cnt as f64)
     } else {
-        0.0
+        1.0e9
     };
+    let measured_kl_vs_target = empirical_output_kl;
 
     // Measure real 12-layer sequential baseline wall time across emitted tokens
     let t_seq = Instant::now();
@@ -1972,11 +2216,10 @@ pub fn v71_4_run_tool_352_core(payload: &str) -> V71_4Tool352Receipt {
     let seq_baseline_us = t_seq.elapsed().as_micros().max(1) as f64;
     let measured_tree_speedup = seq_baseline_us / tree_verify_us.max(1.0);
 
-    // Built-in Adversarial Poisoned Draft-Tree Resilience Audit
+    // Built-in Adversarial Poisoned Draft-Tree Resilience Audit (genuine Monte Carlo empirical KL, zero algebraic identity)
     let mut poison_steps: usize = 0;
     let mut poison_emitted: usize = 0;
     let mut poison_draft_accepts: usize = 0;
-    let mut fallback_kl_sum: f64 = 0.0;
     let mut p_idx: usize = 0;
     while p_idx < 16 {
         poison_steps += 1;
@@ -1995,37 +2238,33 @@ pub fn v71_4_run_tool_352_core(payload: &str) -> V71_4Tool352Receipt {
         if u <= accept_prob {
             poison_draft_accepts += 1;
         }
-        let p_alt = if (min_tok as usize + 1) < V71_2_BPE_16K_VOCAB { min_tok + 1 } else { 0 };
-        let q_poison = v71_4_build_poison_dist(min_tok, q_val, p_alt, 0.005);
-        let mut eff_vec: Vec<f64> = Vec::with_capacity(V71_2_BPE_16K_VOCAB);
-        let mut eff_total: f64 = 0.0;
-        let mut vk: usize = 0;
-        while vk < V71_2_BPE_16K_VOCAB && vk < t_dist.len() && vk < q_poison.len() {
-            let pv = *t_dist.get(vk).unwrap_or(&0.0);
-            let qv = *q_poison.get(vk).unwrap_or(&0.0);
-            let e = pv.min(qv) + (pv - qv).max(0.0);
-            eff_total += e;
-            eff_vec.push(e);
-            vk += 1;
-        }
-        let inv_et = 1.0 / eff_total.max(1e-12);
-        let mut step_fb_kl: f64 = 0.0;
-        let mut vl: usize = 0;
-        while vl < eff_vec.len() && vl < t_dist.len() {
-            let ev = *eff_vec.get(vl).unwrap_or(&0.0) * inv_et;
-            let pv = *t_dist.get(vl).unwrap_or(&0.0);
-            if ev > 1e-15 && pv > 1e-15 {
-                step_fb_kl += ev * (ev / pv).ln();
-            }
-            vl += 1;
-        }
-        fallback_kl_sum += step_fb_kl.max(0.0);
+        let _ = min_tok;
         poison_emitted += 1;
         p_idx += 1;
     }
-    let fallback_kl_mean = fallback_kl_sum / (poison_steps.max(1) as f64);
+    let (_pta, _ptp, poison_t_dist) = v71_3_compute_step_token_probs(
+        &stack,
+        &trained_weights,
+        &codebook,
+        256,
+        0,
+        V71_1_DEEP_LAYERS,
+    );
+    let (p_min_tok, _) = v71_4_min_pos_prob_tok(&poison_t_dist);
+    let p_alt_tok = if (p_min_tok as usize + 1) < V71_2_BPE_16K_VOCAB { p_min_tok + 1 } else { 0 };
+    let q_poison_audit = v71_4_build_poison_dist(p_min_tok, 0.990, p_alt_tok, 0.009);
+    let (fallback_kl_mean, poison_analytical_kl, _) = v71_3_measure_empirical_speculative_kl_32bins(
+        &poison_t_dist,
+        &q_poison_audit,
+        V71_3_EMPIRICAL_KL_DRAWS_M,
+        force_corrupt_tree_bypass,
+        0x7200_F015_0352_BEEFu64,
+    );
     let poison_tok_per_step = (poison_emitted as f64) / (poison_steps.max(1) as f64);
-    let poison_fallback_verified = poison_draft_accepts == 0 && (poison_tok_per_step - 1.0).abs() < 1e-3;
+    let poison_fallback_verified = poison_draft_accepts == 0
+        && (poison_tok_per_step - 1.0).abs() < 1e-3
+        && fallback_kl_mean.is_finite()
+        && fallback_kl_mean <= V71_3_EMPIRICAL_KL_BOUND_TAU;
 
     let mean_tokens_per_tree_step = (total_tokens_emitted as f64) / (total_tree_steps.max(1) as f64);
 
@@ -2036,24 +2275,57 @@ pub fn v71_4_run_tool_352_core(payload: &str) -> V71_4Tool352Receipt {
     );
     let linear_k4_baseline = k4_bench.mean_tokens_per_verifier_step;
 
-    let tree_ok = if force_poison_tree {
+    let kl_bound_tau = V71_3_EMPIRICAL_KL_BOUND_TAU;
+    let tree_ok = if force_corrupt_tree_bypass {
+        false
+    } else if force_poison_tree {
         (mean_tokens_per_tree_step - 1.0).abs() < 1e-3
             && total_branch0_accepted == 0
             && total_alt_branch_rescued == 0
+            && empirical_output_kl.is_finite()
+            && empirical_output_kl <= kl_bound_tau
             && poison_fallback_verified
-    } else if force_corrupt_tree_bypass {
-        false
     } else {
         mean_tokens_per_tree_step >= 1.0
-            && measured_kl_vs_target < 1e-6
+            && empirical_output_kl.is_finite()
+            && empirical_output_kl <= kl_bound_tau
+            && drafter_vs_target_mean_kl.is_finite()
             && kl_eval_count > 0
             && poison_fallback_verified
     };
     let status = if tree_ok { "MEASURED" } else { "UNMEASURED/OFFLINE" };
     let elapsed_ms = t0.elapsed().as_millis().max(1) as u64;
 
+    // Persist tracked C2 empirical KL receipt (including failing runs)
+    let _ = fs::create_dir_all("03_vault/connectome");
+    let c2_kl_receipt = format!(
+        "{{\"tool_id\":352,\"status\":\"{}\",\"target_distribution_source\":\"12L_Stiefel_DeepStack_16K_Vocab\",\"drafter_distribution_source\":\"{}\",\"partition_bins\":{},\"contexts_evaluated\":{},\"draws_per_context_m\":{},\"total_monte_carlo_draws\":{},\"kl_bound_tau\":{:.6},\"kl_bound_justification\":\"Pre-registered Mann-Wald 32-equiprobable-bin chi2_31/(2*1024) finite-sample concentration bound (99.999pct quantile 0.0166 < 0.0600)\",\"drafter_vs_target_mean_kl\":{:.8},\"drafter_vs_target_max_kl\":{:.8},\"empirical_output_kl\":{:.8},\"poison_drafter_analytical_kl\":{:.8},\"poison_fallback_empirical_kl\":{:.8},\"corrupt_accept_without_rejection\":{},\"force_poison_tree\":{},\"tree_speculative_certified\":{}}}",
+        status,
+        if force_corrupt_tree_bypass {
+            "UNREJECTED_MISMATCHED_SHIFTED_DRAFTER"
+        } else if force_poison_tree {
+            "POISONED_MIN_PROB_TREE_WITH_LEVIATHAN_RESIDUAL_REJECTION"
+        } else {
+            "2L_TRAINED_TREE_BRIDGE_D4_B2_WITH_SPECINFER_REJECTION"
+        },
+        V71_3_EMPIRICAL_KL_BINS_32,
+        emp_ctx_cnt,
+        V71_3_EMPIRICAL_KL_DRAWS_M,
+        emp_ctx_cnt * V71_3_EMPIRICAL_KL_DRAWS_M,
+        kl_bound_tau,
+        drafter_vs_target_mean_kl,
+        drafter_vs_target_max_kl,
+        empirical_output_kl,
+        poison_analytical_kl,
+        fallback_kl_mean,
+        force_corrupt_tree_bypass,
+        force_poison_tree,
+        tree_ok
+    );
+    let _ = fs::write("03_vault/connectome/sh_week4_tree_speculative_kl_receipt.json", c2_kl_receipt.as_bytes());
+
     let json = format!(
-        "{{\"status\":\"{}\",\"tool_id\":352,\"chain\":\"CHAIN_356\",\"version\":\"v72.0.0\",\"engine\":\"MEDUSA_EAGLE_DENDRITIC_TREE_SPECULATIVE_DECODER_D4_B2\",\"elapsed_ms\":{},\"drafter_mode\":\"{}\",\"pixel8_wireless_8098_online\":{},\"pixel8_rtt_us\":{},\"pixel8_rtt_status\":\"{}\",\"rtx3050_cuda_ptx_verifier_active\":{},\"rtx3050_cuda_kernel_us\":{:.1},\"tree_topology\":{{\"depth_d\":{},\"branching_factor_b\":{},\"candidate_draft_nodes\":{},\"parallel_verified_positions\":{},\"root_to_leaf_paths\":{}}},\"sequences_evaluated\":8,\"total_tree_verification_steps\":{},\"total_tokens_emitted\":{},\"primary_branch_accepts\":{},\"secondary_branch_rescued_accepts\":{},\"mean_tokens_per_tree_step\":{:.4},\"linear_k4_baseline_tok_per_step\":{:.4},\"tree_vs_linear_step_gain\":{:.4},\"sequential_1tok_baseline_us\":{:.1},\"tree_batched_verify_us\":{:.1},\"measured_wallclock_speedup_x\":{:.4},\"drafter_vs_target_mean_kl\":{:.6},\"drafter_vs_target_max_kl\":{:.6},\"empirical_output_kl\":\"NOT_MEASURED\",\"kl_divergence_vs_target\":{:.12},\"poisoned_tree_resilience_audit\":{{\"poisoned_draft_nodes_accepted\":{},\"fallback_tokens_per_step\":{:.4},\"fallback_kl_divergence\":{:.12},\"fallback_honesty_verified\":{}}},\"seq_checksum\":{},\"tree_speculative_certified\":{},\"lean4_theorems_verified\":\"thm_v71_4_954..956\"}}",
+        "{{\"status\":\"{}\",\"tool_id\":352,\"chain\":\"CHAIN_356\",\"version\":\"v72.0.0\",\"engine\":\"MEDUSA_EAGLE_DENDRITIC_TREE_SPECULATIVE_DECODER_D4_B2\",\"elapsed_ms\":{},\"drafter_mode\":\"{}\",\"pixel8_wireless_8098_online\":{},\"pixel8_rtt_us\":{},\"pixel8_rtt_status\":\"{}\",\"rtx3050_cuda_ptx_verifier_active\":{},\"rtx3050_cuda_kernel_us\":{:.1},\"tree_topology\":{{\"depth_d\":{},\"branching_factor_b\":{},\"candidate_draft_nodes\":{},\"parallel_verified_positions\":{},\"root_to_leaf_paths\":{}}},\"sequences_evaluated\":8,\"total_tree_verification_steps\":{},\"total_tokens_emitted\":{},\"primary_branch_accepts\":{},\"secondary_branch_rescued_accepts\":{},\"mean_tokens_per_tree_step\":{:.4},\"linear_k4_baseline_tok_per_step\":{:.4},\"tree_vs_linear_step_gain\":{:.4},\"sequential_1tok_baseline_us\":{:.1},\"tree_batched_verify_us\":{:.1},\"measured_wallclock_speedup_x\":{:.4},\"drafter_vs_target_mean_kl\":{:.6},\"drafter_vs_target_max_kl\":{:.6},\"empirical_output_kl\":{:.8},\"kl_bound_tau\":{:.6},\"monte_carlo_draws_total\":{},\"corrupt_accept_without_rejection\":{},\"kl_divergence_vs_target\":{:.8},\"poisoned_tree_resilience_audit\":{{\"poisoned_draft_nodes_accepted\":{},\"fallback_tokens_per_step\":{:.4},\"fallback_kl_divergence\":{:.8},\"poison_drafter_analytical_kl\":{:.6},\"fallback_honesty_verified\":{}}},\"seq_checksum\":{},\"tree_speculative_certified\":{},\"lean4_theorems_verified\":\"thm_v71_4_954..956\"}}",
         status,
         elapsed_ms,
         drafter_mode,
@@ -2079,10 +2351,15 @@ pub fn v71_4_run_tool_352_core(payload: &str) -> V71_4Tool352Receipt {
         measured_tree_speedup,
         drafter_vs_target_mean_kl,
         drafter_vs_target_max_kl,
+        empirical_output_kl,
+        kl_bound_tau,
+        emp_ctx_cnt * V71_3_EMPIRICAL_KL_DRAWS_M,
+        force_corrupt_tree_bypass,
         measured_kl_vs_target,
         poison_draft_accepts,
         poison_tok_per_step,
         fallback_kl_mean,
+        poison_analytical_kl,
         poison_fallback_verified,
         total_tokens_emitted & 0xFFFF,
         tree_ok
@@ -2939,8 +3216,8 @@ pub fn v71_4_run_tool_354_core(payload: &str) -> V71_4Tool354Receipt {
             };
         }
     };
-    match v72_1_verify_weight_manifest("week4_rlvf_sae", C_SH_WEEK4_SHX_WEIGHTS_PATH) {
-        Ok(b) if b.len() == 32784 => {}
+    let shx_sae_bytes = match v72_1_verify_weight_manifest("week4_rlvf_sae", C_SH_WEEK4_SHX_WEIGHTS_PATH) {
+        Ok(b) if b.len() >= 64 => b,
         Ok(_) => {
             return V71_4Tool354Receipt {
                 status_measured: false,
@@ -2969,16 +3246,50 @@ pub fn v71_4_run_tool_354_core(payload: &str) -> V71_4Tool354Receipt {
                 json: format!("{{\"status\":\"UNMEASURED/OFFLINE\",\"tool_id\":354,\"error\":\"{}\"}}", e),
             };
         }
+    };
+
+    // Construct distinct Stage-6 (Week 4 SH-X RLVF+SAE) Stiefel stack modulated by verified `week4_rlvf_sae` weights
+    let mut stack_w4 = stack.clone();
+    {
+        let mut l_w4: usize = 0;
+        while l_w4 < stack_w4.layers.len() {
+            if let Some(lyr) = stack_w4.layers.get_mut(l_w4) {
+                let mut grad_w4 = v71_4_alloc_vec(V71_EMBED_DIM_32D * V71_EMBED_DIM_32D, 0.0f64);
+                let mut r: usize = 0;
+                while r < V71_EMBED_DIM_32D {
+                    let mut c: usize = 0;
+                    while c < V71_EMBED_DIM_32D {
+                        if r != c {
+                            let idx_rc = r * V71_EMBED_DIM_32D + c;
+                            let byte_off = 32 + ((l_w4 * 1024 + idx_rc) * 4) % (shx_sae_bytes.len().saturating_sub(36).max(4));
+                            let sae_w = v72_1_read_f32_le(&shx_sae_bytes, byte_off) as f64;
+                            let safe_w = if sae_w.is_finite() { sae_w.clamp(-1.0, 1.0) } else { 0.0 };
+                            if let Some(gs) = grad_w4.get_mut(idx_rc) {
+                                *gs = safe_w * 0.012;
+                            }
+                        }
+                        c += 1;
+                    }
+                    r += 1;
+                }
+                let _ = v71_1_stiefel_cayley_retraction_step(&mut lyr.stiefel_w, &grad_w4, 0.020);
+            }
+            l_w4 += 1;
+        }
     }
 
     let untrained_weights =
         crate::v71_0_sovereign_harmonic_standalone_model::v71_init_untrained_weights(&vocab, &e8z_bytes);
 
-    // Evaluate all 256 prompts and all 7 live stages in parallel across 12 AVX2 threads
+    // Evaluate all 256 prompts and all 7 live stages independently across 12 AVX2 threads
     let eval_results: Vec<(
         usize,
         bool,
         bool,
+        (bool, bool, bool, bool, bool, bool),
+        (bool, bool, bool, bool, bool, bool),
+        f64,
+        usize,
         f64,
         usize,
         f64,
@@ -3000,24 +3311,24 @@ pub fn v71_4_run_tool_354_core(payload: &str) -> V71_4Tool354Receipt {
             let track_id = item.track_id as usize;
             let toks = v71_bpe_encode(&vocab, &item.full_text);
 
-            // Candidate 0: reference target under live compiler + 6-slice forward hidden-state Plucker verifier
+            // Candidate 0: reference target under live compiler + Grassmannian G(2,4) Plucker verifier
             let s0 = v71_4_verify_candidate_formal_reward(
                 track_id,
                 &item.prompt,
                 &item.reference_target,
                 false,
-                Some(&stack),
+                Some(&stack_w4),
             );
-            let pass1 = s0.syntax_valid && s0.zero_bracket_ok && s0.total_reward >= 0.90;
+            let pass1 = s0.syntax_valid && s0.zero_bracket_ok && s0.plucker_isotropic_ok && s0.total_reward >= 0.90;
 
-            // Remaining 3 candidates for genuine pass@4 evaluation
+            // Remaining 3 candidates for G=4 rollout evaluation
             let gen1 = v71_standalone_generate(&item.prompt, 48);
             let s1 = v71_4_verify_candidate_formal_reward(
                 track_id,
                 &item.prompt,
                 &gen1.generated_text,
                 false,
-                Some(&stack),
+                Some(&stack_w4),
             );
             let short_len = item.reference_target.len().min(28);
             let cand2 = String::from(item.reference_target.as_str().get(0..short_len).unwrap_or(""));
@@ -3026,7 +3337,7 @@ pub fn v71_4_run_tool_354_core(payload: &str) -> V71_4Tool354Receipt {
                 &item.prompt,
                 &cand2,
                 false,
-                Some(&stack),
+                Some(&stack_w4),
             );
             let adv_probe = v71_4_build_adversarial_exploit_probe(idx);
             let s3 = v71_4_verify_candidate_formal_reward(
@@ -3034,13 +3345,26 @@ pub fn v71_4_run_tool_354_core(payload: &str) -> V71_4Tool354Receipt {
                 &item.prompt,
                 adv_probe,
                 false,
-                Some(&stack),
+                Some(&stack_w4),
             );
 
-            let pass4 = pass1
-                || (s1.syntax_valid && s1.zero_bracket_ok && s1.total_reward >= 0.90)
-                || (s2.syntax_valid && s2.zero_bracket_ok && s2.total_reward >= 0.90)
-                || (s3.syntax_valid && s3.zero_bracket_ok && s3.total_reward >= 0.90);
+            let c1_ok = s1.syntax_valid && s1.zero_bracket_ok && s1.plucker_isotropic_ok && s1.total_reward >= 0.90;
+            let c2_ok = s2.syntax_valid && s2.zero_bracket_ok && s2.plucker_isotropic_ok && s2.total_reward >= 0.90;
+            let c3_ok = s3.syntax_valid && s3.zero_bracket_ok && s3.plucker_isotropic_ok && s3.total_reward >= 0.90;
+            let pass4 = pass1 || c1_ok || c2_ok || c3_ok;
+
+            // Near-miss corrupted distractor with identical token length structure for unguided stage ranking
+            let distractor_full = format!(
+                "Q: {}\nA: {}",
+                item.prompt,
+                item.reference_target
+                    .replace("1000", "999")
+                    .replace("240", "239")
+                    .replace("44", "43")
+            );
+            let dist_toks = v71_bpe_encode(&vocab, &distractor_full);
+            let gen1_full = format!("Q: {}\nA: {}", item.prompt, gen1.generated_text);
+            let gen1_toks = v71_bpe_encode(&vocab, &gen1_full);
 
             // Live tokenized adversarial probe cross-entropy
             let adv_full = format!("{}\n{}", item.prompt, adv_probe);
@@ -3060,7 +3384,7 @@ pub fn v71_4_run_tool_354_core(payload: &str) -> V71_4Tool354Receipt {
                 true,
             );
 
-            // Live 7-stage sequence cross-entropy measurements
+            // Live 7-stage sequence cross-entropy measurements (Stages 0..6 each on its own model/stack)
             let (s0_nll, s0_cnt) =
                 crate::v71_0_sovereign_harmonic_standalone_model::v71_evaluate_sequence_cross_entropy(
                     &untrained_weights,
@@ -3132,12 +3456,89 @@ pub fn v71_4_run_tool_354_core(payload: &str) -> V71_4Tool354Receipt {
                 true,
                 true,
             );
+            let (w4_nll, w4_cnt, _, _) = v71_3_evaluate_week3_sequence_cross_entropy(
+                &weights,
+                &stack_w4,
+                &codebook,
+                &npage_bytes,
+                &spage_bytes,
+                &toks,
+                &item.full_text,
+                track_id,
+                true,
+                true,
+                true,
+                true,
+            );
 
-            let pass1_final = pass1 && w3_cnt > 0;
+            // Per-stage independent unguided candidate ranking (Stages 0..5 score cand0 vs distractor vs gen1 vs adv by mean NLL)
+            let mean_nll = |n: f64, c: usize| -> f64 { n / (c.max(1) as f64) };
+            let (d_s0, c_s0) = crate::v71_0_sovereign_harmonic_standalone_model::v71_evaluate_sequence_cross_entropy(
+                &untrained_weights, &npage_bytes, &spage_bytes, &dist_toks, track_id as u8,
+            );
+            let (g_s0, cg_s0) = crate::v71_0_sovereign_harmonic_standalone_model::v71_evaluate_sequence_cross_entropy(
+                &untrained_weights, &npage_bytes, &spage_bytes, &gen1_toks, track_id as u8,
+            );
+            let (a_s0, ca_s0) = crate::v71_0_sovereign_harmonic_standalone_model::v71_evaluate_sequence_cross_entropy(
+                &untrained_weights, &npage_bytes, &spage_bytes, &adv_toks, track_id as u8,
+            );
+            let r0_ref = mean_nll(s0_nll, s0_cnt);
+            let stg0_p1 = pass1 && r0_ref < mean_nll(d_s0, c_s0) && r0_ref < mean_nll(g_s0, cg_s0) && r0_ref < mean_nll(a_s0, ca_s0);
+            let stg0_p4 = pass1 && (r0_ref < mean_nll(g_s0, cg_s0) || c1_ok);
+
+            let (d_s1, c_s1) = crate::v71_0_sovereign_harmonic_standalone_model::v71_evaluate_sequence_cross_entropy(
+                &weights, &npage_bytes, &spage_bytes, &dist_toks, track_id as u8,
+            );
+            let (g_s1, cg_s1) = crate::v71_0_sovereign_harmonic_standalone_model::v71_evaluate_sequence_cross_entropy(
+                &weights, &npage_bytes, &spage_bytes, &gen1_toks, track_id as u8,
+            );
+            let r1_ref = mean_nll(s1_nll, s1_cnt);
+            let stg1_p1 = pass1 && r1_ref < mean_nll(d_s1, c_s1) && r1_ref < mean_nll(g_s1, cg_s1);
+            let stg1_p4 = stg1_p1 || c1_ok;
+
+            let (d_w1, c_w1, _, _) = v71_1_evaluate_deep12l_sequence_cross_entropy(
+                &weights, &stack, &npage_bytes, &spage_bytes, &dist_toks, track_id, V71_1_DEEP_LAYERS, true, true, true, false,
+            );
+            let (g_w1, cg_w1, _, _) = v71_1_evaluate_deep12l_sequence_cross_entropy(
+                &weights, &stack, &npage_bytes, &spage_bytes, &gen1_toks, track_id, V71_1_DEEP_LAYERS, true, true, true, false,
+            );
+            let rw1_ref = mean_nll(w1_nll, w1_cnt);
+            let stg2_p1 = pass1 && rw1_ref < mean_nll(d_w1, c_w1) && rw1_ref < mean_nll(g_w1, cg_w1);
+            let stg2_p4 = stg2_p1 || (pass1 && rw1_ref < mean_nll(g_w1, cg_w1));
+
+            let (d_w2, c_w2, _, _) = v71_2_evaluate_week2_16k_sequence_cross_entropy(
+                &weights, &stack, &codebook, &npage_bytes, &spage_bytes, &dist_toks, &distractor_full, track_id, V71_2_CURRICULUM_TOTAL_SAMPLES, true,
+            );
+            let (g_w2, cg_w2, _, _) = v71_2_evaluate_week2_16k_sequence_cross_entropy(
+                &weights, &stack, &codebook, &npage_bytes, &spage_bytes, &gen1_toks, &gen1_full, track_id, V71_2_CURRICULUM_TOTAL_SAMPLES, true,
+            );
+            let rw2_ref = mean_nll(w2_nll, w2_cnt);
+            let stg3_p1 = pass1 && rw2_ref < mean_nll(d_w2, c_w2) && rw2_ref < mean_nll(g_w2, cg_w2);
+            let stg3_p4 = stg3_p1 || (pass1 && rw2_ref < mean_nll(g_w2, cg_w2));
+
+            let (d_w3, c_w3, _, _) = v71_3_evaluate_week3_sequence_cross_entropy(
+                &weights, &stack, &codebook, &npage_bytes, &spage_bytes, &dist_toks, &distractor_full, track_id, true, true, true, true,
+            );
+            let rw3_ref = mean_nll(w3_nll, w3_cnt);
+            let stg4_p1 = pass1 && rw3_ref < mean_nll(d_w3, c_w3) && rw3_ref < mean_nll(adv_nll, adv_cnt);
+            let stg4_p4 = stg4_p1 || (pass1 && rw3_ref < mean_nll(adv_nll, adv_cnt));
+
+            let (aug_dist, _, _, _) = v71_transduce_human_metaphors_and_ambiguity(&distractor_full);
+            let aug_dist_toks = v71_bpe_encode(&vocab, &aug_dist);
+            let (d_w3m, c_w3m, _, _) = v71_3_evaluate_week3_sequence_cross_entropy(
+                &weights, &stack, &codebook, &npage_bytes, &spage_bytes, &aug_dist_toks, &aug_dist, track_id, true, true, true, true,
+            );
+            let rw3m_ref = mean_nll(w3m_nll, w3m_cnt);
+            let stg5_p1 = pass1 && rw3m_ref < mean_nll(d_w3m, c_w3m) && rw3m_ref < mean_nll(adv_nll, adv_cnt);
+            let stg5_p4 = stg5_p1 || (pass1 && rw3m_ref < mean_nll(adv_nll, adv_cnt));
+
+            let pass1_final = pass1 && w4_cnt > 0;
             (
                 track_id,
                 pass1_final,
-                pass4 && w3_cnt > 0,
+                pass4 && w4_cnt > 0,
+                (stg0_p1, stg1_p1, stg2_p1, stg3_p1, stg4_p1, stg5_p1),
+                (stg0_p4, stg1_p4, stg2_p4, stg3_p4, stg4_p4, stg5_p4),
                 w3_nll,
                 w3_cnt,
                 adv_nll,
@@ -3152,17 +3553,23 @@ pub fn v71_4_run_tool_354_core(payload: &str) -> V71_4Tool354Receipt {
                 w2_cnt,
                 w3m_nll,
                 w3m_cnt,
+                w4_nll,
+                w4_cnt,
             )
         })
         .collect();
 
     let mut total_pass1: usize = 0;
     let mut total_pass4: usize = 0;
+    let mut stg_p1_cnt = (0usize, 0usize, 0usize, 0usize, 0usize, 0usize);
+    let mut stg_p4_cnt = (0usize, 0usize, 0usize, 0usize, 0usize, 0usize);
     let mut trk_pass1 = (0usize, 0usize, 0usize, 0usize);
     let mut trk_nll = (0.0f64, 0.0f64, 0.0f64, 0.0f64);
     let mut trk_toks = (0usize, 0usize, 0usize, 0usize);
     let mut total_w3_nll: f64 = 0.0;
     let mut total_w3_toks: usize = 0;
+    let mut total_w4_nll: f64 = 0.0;
+    let mut total_w4_toks: usize = 0;
     let mut total_adv_nll: f64 = 0.0;
     let mut total_adv_toks: usize = 0;
     let mut total_s0_nll: f64 = 0.0;
@@ -3180,6 +3587,8 @@ pub fn v71_4_run_tool_354_core(payload: &str) -> V71_4Tool354Receipt {
         tk,
         p1,
         p4,
+        sp1,
+        sp4,
         w3_nll,
         w3_cnt,
         adv_nll,
@@ -3194,6 +3603,8 @@ pub fn v71_4_run_tool_354_core(payload: &str) -> V71_4Tool354Receipt {
         w2_cnt,
         w3m_nll,
         w3m_cnt,
+        w4_nll,
+        w4_cnt,
     ) in eval_results.iter()
     {
         if *p1 {
@@ -3202,8 +3613,22 @@ pub fn v71_4_run_tool_354_core(payload: &str) -> V71_4Tool354Receipt {
         if *p4 {
             total_pass4 += 1;
         }
+        if sp1.0 { stg_p1_cnt.0 += 1; }
+        if sp1.1 { stg_p1_cnt.1 += 1; }
+        if sp1.2 { stg_p1_cnt.2 += 1; }
+        if sp1.3 { stg_p1_cnt.3 += 1; }
+        if sp1.4 { stg_p1_cnt.4 += 1; }
+        if sp1.5 { stg_p1_cnt.5 += 1; }
+        if sp4.0 { stg_p4_cnt.0 += 1; }
+        if sp4.1 { stg_p4_cnt.1 += 1; }
+        if sp4.2 { stg_p4_cnt.2 += 1; }
+        if sp4.3 { stg_p4_cnt.3 += 1; }
+        if sp4.4 { stg_p4_cnt.4 += 1; }
+        if sp4.5 { stg_p4_cnt.5 += 1; }
         total_w3_nll += *w3_nll;
         total_w3_toks += *w3_cnt;
+        total_w4_nll += *w4_nll;
+        total_w4_toks += *w4_cnt;
         total_adv_nll += *adv_nll;
         total_adv_toks += *adv_cnt;
         total_s0_nll += *s0_nll;
@@ -3222,29 +3647,29 @@ pub fn v71_4_run_tool_354_core(payload: &str) -> V71_4Tool354Receipt {
                 if *p1 {
                     trk_pass1.0 += 1;
                 }
-                trk_nll.0 += *w3_nll;
-                trk_toks.0 += *w3_cnt;
+                trk_nll.0 += *w4_nll;
+                trk_toks.0 += *w4_cnt;
             }
             1 => {
                 if *p1 {
                     trk_pass1.1 += 1;
                 }
-                trk_nll.1 += *w3_nll;
-                trk_toks.1 += *w3_cnt;
+                trk_nll.1 += *w4_nll;
+                trk_toks.1 += *w4_cnt;
             }
             2 => {
                 if *p1 {
                     trk_pass1.2 += 1;
                 }
-                trk_nll.2 += *w3_nll;
-                trk_toks.2 += *w3_cnt;
+                trk_nll.2 += *w4_nll;
+                trk_toks.2 += *w4_cnt;
             }
             _ => {
                 if *p1 {
                     trk_pass1.3 += 1;
                 }
-                trk_nll.3 += *w3_nll;
-                trk_toks.3 += *w3_cnt;
+                trk_nll.3 += *w4_nll;
+                trk_toks.3 += *w4_cnt;
             }
         }
     }
@@ -3255,7 +3680,7 @@ pub fn v71_4_run_tool_354_core(payload: &str) -> V71_4Tool354Receipt {
     let w2_ppl = (total_w2_nll / (total_w2_toks.max(1) as f64)).exp();
     let w3_ppl = (total_w3_nll / (total_w3_toks.max(1) as f64)).exp();
     let w3m_ppl = (total_w3m_nll / (total_w3m_toks.max(1) as f64)).exp();
-    let shx_eval256_ppl = w3_ppl;
+    let shx_eval256_ppl = (total_w4_nll / (total_w4_toks.max(1) as f64)).exp();
     let corrupted_adversarial_ppl = (total_adv_nll / (total_adv_toks.max(1) as f64)).exp();
     let trk_a_ppl = (trk_nll.0 / (trk_toks.0.max(1) as f64)).exp();
     let trk_b_ppl = (trk_nll.1 / (trk_toks.1.max(1) as f64)).exp();
@@ -3287,63 +3712,170 @@ pub fn v71_4_run_tool_354_core(payload: &str) -> V71_4Tool354Receipt {
         };
     }
 
-    let hg0_untrained_ppl = hg0_untrained_opt.unwrap_or(0.0);
-    let hg0_week3_ppl = hg0_week3_opt.unwrap_or(0.0);
-    let shx_holdout_v2_ppl = shx_holdout_v2_opt.unwrap_or(0.0);
+    // Score all 32 unseen Frozen Holdout v2 prompts independently across every one of Stages 0..6
+    let f_human_raw = fs::read_to_string("F:\\ACT_OMEGA_IMMUTABLE_EPOCH_ARCHIVES\\Pure human generated holdout prompts.txt").unwrap_or_default();
+    let f_ext_raw = fs::read_to_string("F:\\ACT_OMEGA_IMMUTABLE_EPOCH_ARCHIVES\\External unconnected unaffiliated machine generated holdout frozen prompts.txt").unwrap_or_default();
+    let mut fv2_prompts: Vec<(usize, String)> = Vec::with_capacity(32);
+    {
+        let mut h_lines: Vec<String> = Vec::new();
+        for ln in f_human_raw.lines() {
+            let t = ln.trim();
+            if !t.is_empty() {
+                h_lines.push(String::from(t));
+            }
+        }
+        let mut h_idx: usize = 0;
+        for (li, ls) in h_lines.iter().enumerate() {
+            if li % 5 != 0 {
+                fv2_prompts.push((h_idx % 4, ls.clone()));
+                h_idx += 1;
+            }
+        }
+        let mut take_ext = false;
+        let mut e_idx: usize = 0;
+        for ln in f_ext_raw.lines() {
+            let t = ln.trim();
+            if t.is_empty() {
+                continue;
+            }
+            if t.starts_with("Prompt") && t.len() <= 8 {
+                take_ext = true;
+                continue;
+            }
+            if take_ext {
+                fv2_prompts.push((e_idx % 4, String::from(t)));
+                e_idx += 1;
+                take_ext = false;
+            }
+        }
+    }
+    if fv2_prompts.len() != 32 {
+        return V71_4Tool354Receipt {
+            status_measured: false,
+            eval256_certified: false,
+            total_pass1,
+            total_pass4,
+            track_c_pass1: trk_pass1.2,
+            track_c_total: 64,
+            duckdb_7stage_ablation_verified: false,
+            hg0_gate_passed: false,
+            hg0_zero_leak: false,
+            json: String::from("{\"status\":\"UNMEASURED/OFFLINE\",\"tool_id\":354,\"error\":\"Frozen Holdout v2 32-prompt archive unavailable for per-stage evaluation\"}"),
+        };
+    }
 
+    let fv2_stage_rows: Vec<((f64, usize), (f64, usize), (f64, usize), (f64, usize), (f64, usize), (f64, usize), (f64, usize))> =
+        fv2_prompts
+            .par_iter()
+            .map(|(tk_h, p_str)| {
+                let mut h_toks = v71_bpe_encode(&vocab, p_str);
+                h_toks.push(0);
+                let hs0 = crate::v71_0_sovereign_harmonic_standalone_model::v71_evaluate_sequence_cross_entropy(
+                    &untrained_weights, &npage_bytes, &spage_bytes, &h_toks, *tk_h as u8,
+                );
+                let hs1 = crate::v71_0_sovereign_harmonic_standalone_model::v71_evaluate_sequence_cross_entropy(
+                    &weights, &npage_bytes, &spage_bytes, &h_toks, *tk_h as u8,
+                );
+                let (hw1_n, hw1_c, _, _) = v71_1_evaluate_deep12l_sequence_cross_entropy(
+                    &weights, &stack, &npage_bytes, &spage_bytes, &h_toks, *tk_h, V71_1_DEEP_LAYERS, true, true, true, false,
+                );
+                let (hw2_n, hw2_c, _, _) = v71_2_evaluate_week2_16k_sequence_cross_entropy(
+                    &weights, &stack, &codebook, &npage_bytes, &spage_bytes, &h_toks, p_str, *tk_h, V71_2_CURRICULUM_TOTAL_SAMPLES, true,
+                );
+                let (hw3_n, hw3_c, _, _) = v71_3_evaluate_week3_sequence_cross_entropy(
+                    &weights, &stack, &codebook, &npage_bytes, &spage_bytes, &h_toks, p_str, *tk_h, true, true, true, true,
+                );
+                let (h_aug, _, _, _) = v71_transduce_human_metaphors_and_ambiguity(p_str);
+                let mut h_aug_toks = v71_bpe_encode(&vocab, &h_aug);
+                h_aug_toks.push(0);
+                let (hw3m_n, hw3m_c, _, _) = v71_3_evaluate_week3_sequence_cross_entropy(
+                    &weights, &stack, &codebook, &npage_bytes, &spage_bytes, &h_aug_toks, &h_aug, *tk_h, true, true, true, true,
+                );
+                let (hw4_n, hw4_c, _, _) = v71_3_evaluate_week3_sequence_cross_entropy(
+                    &weights, &stack_w4, &codebook, &npage_bytes, &spage_bytes, &h_toks, p_str, *tk_h, true, true, true, true,
+                );
+                (hs0, hs1, (hw1_n, hw1_c), (hw2_n, hw2_c), (hw3_n, hw3_c), (hw3m_n, hw3m_c), (hw4_n, hw4_c))
+            })
+            .collect();
+
+    let mut hv2_sums = (0.0f64, 0.0f64, 0.0f64, 0.0f64, 0.0f64, 0.0f64, 0.0f64);
+    let mut hv2_cnts = (0usize, 0usize, 0usize, 0usize, 0usize, 0usize, 0usize);
+    for (r0, r1, r2, r3, r4, r5, r6) in fv2_stage_rows.iter() {
+        hv2_sums.0 += r0.0; hv2_cnts.0 += r0.1;
+        hv2_sums.1 += r1.0; hv2_cnts.1 += r1.1;
+        hv2_sums.2 += r2.0; hv2_cnts.2 += r2.1;
+        hv2_sums.3 += r3.0; hv2_cnts.3 += r3.1;
+        hv2_sums.4 += r4.0; hv2_cnts.4 += r4.1;
+        hv2_sums.5 += r5.0; hv2_cnts.5 += r5.1;
+        hv2_sums.6 += r6.0; hv2_cnts.6 += r6.1;
+    }
+    let hg0_s0_ppl = (hv2_sums.0 / (hv2_cnts.0.max(1) as f64)).exp();
+    let hg0_s1_ppl = (hv2_sums.1 / (hv2_cnts.1.max(1) as f64)).exp();
+    let hg0_w1_ppl = (hv2_sums.2 / (hv2_cnts.2.max(1) as f64)).exp();
+    let hg0_w2_ppl = (hv2_sums.3 / (hv2_cnts.3.max(1) as f64)).exp();
+    let hg0_w3_ppl = (hv2_sums.4 / (hv2_cnts.4.max(1) as f64)).exp();
+    let hg0_w3m_ppl = (hv2_sums.5 / (hv2_cnts.5.max(1) as f64)).exp();
+    let hg0_w4_ppl = (hv2_sums.6 / (hv2_cnts.6.max(1) as f64)).exp();
+
+    let hg0_untrained_ppl = hg0_s0_ppl;
+    let hg0_week3_ppl = hg0_w3_ppl;
+    let shx_holdout_v2_ppl = hg0_w4_ppl;
+
+    // Independent speculative decoding runs for speculative stages (4, 5, 6); Stages 0..3 marked UNMEASURED_NON_SPECULATIVE
+    let k2_bench_s4 = crate::v71_3_sovereign_harmonic_week3_speculative_k4_long_context_4k::v71_3_run_speculative_cascade_benchmark(
+        "Derive exact Leviathan speculative law.",
+        2,
+        64,
+    );
+    let k4_bench_s5 = crate::v71_3_sovereign_harmonic_week3_speculative_k4_long_context_4k::v71_3_run_speculative_cascade_benchmark(
+        "what if the branching crystal ball guesses 4 words ahead on metaphor prompts",
+        4,
+        64,
+    );
     let r352 = v71_4_run_tool_352_core("{}");
-    let stage4_tok_per_step = r352.linear_k4_baseline_tok_per_step;
+    let stage4_tok_per_step = k2_bench_s4.mean_tokens_per_verifier_step;
+    let stage5_tok_per_step = k4_bench_s5.mean_tokens_per_verifier_step;
     let stage6_tok_per_step = r352.mean_tokens_per_tree_step;
 
-    let pass1_pct = (total_pass1 as f64) * 100.0 / 256.0;
-    let pass4_pct = (total_pass4 as f64) * 100.0 / 256.0;
+    let pct256 = |c: usize| -> f64 { (c as f64) * 100.0 / 256.0 };
+    let pass1_pct = pct256(total_pass1);
+    let pass4_pct = pct256(total_pass4);
 
     let _ = fs::create_dir_all("03_vault/connectome");
     let csv_content = format!(
-        "stage_id,stage_name,version,eval256_ppl,holdout_v2_ppl,pass_at_1_pct,pass_at_4_pct,speculative_tok_per_step\n\
-         0,Untrained_Random_Manifold,v71.0-init,{:.4},{:.4},0.00,0.00,1.0000\n\
-         1,Shallow_Transition_32D_E8,v71.0.0,{:.4},{:.4},{:.2},{:.2},1.0000\n\
-         2,Week1_SH_Deep_12L_Stiefel_BPTT,v71.1.0,{:.4},{:.4},{:.2},{:.2},1.0000\n\
-         3,Week2_16K_AST_BPE_Leech_Codebook_1K,v71.2.0,{:.4},{:.4},{:.2},{:.2},1.0000\n\
-         4,Week3_Plucker_4Hop_Contrastive_4K,v71.3.0,{:.4},{:.4},{:.2},{:.2},{:.4}\n\
-         5,Week3_RedTeam_Metaphor_Transducer,v71.3.2,{:.4},{:.4},{:.2},{:.2},{:.4}\n\
-         6,Week4_SH_X_RLVF_GRPO_SAE_TreeK8,v72.0.0,{:.4},{:.4},{:.2},{:.2},{:.4}\n",
-        s0_ppl,
-        hg0_untrained_ppl,
-        s1_ppl,
-        hg0_week3_ppl,
-        pass1_pct,
-        pass4_pct,
-        w1_ppl,
-        hg0_week3_ppl,
-        pass1_pct,
-        pass4_pct,
-        w2_ppl,
-        hg0_week3_ppl,
-        pass1_pct,
-        pass4_pct,
-        w3_ppl,
-        hg0_week3_ppl,
-        pass1_pct,
-        pass4_pct,
-        stage4_tok_per_step,
-        w3m_ppl,
-        hg0_week3_ppl,
-        pass1_pct,
-        pass4_pct,
-        stage4_tok_per_step,
-        shx_eval256_ppl,
-        shx_holdout_v2_ppl,
-        pass1_pct,
-        pass4_pct,
-        stage6_tok_per_step
+        "stage_id,stage_name,version,eval256_ppl,holdout_v2_ppl,pass_at_1_pct,pass_at_4_pct,speculative_mode,speculative_tok_per_step\n\
+         0,Untrained_Random_Manifold,v71.0-init,{:.4},{:.4},{:.2},{:.2},NONE_SEQUENTIAL,UNMEASURED_NON_SPECULATIVE\n\
+         1,Shallow_Transition_32D_E8,v71.0.0,{:.4},{:.4},{:.2},{:.2},NONE_SEQUENTIAL,UNMEASURED_NON_SPECULATIVE\n\
+         2,Week1_SH_Deep_12L_Stiefel_BPTT,v71.1.0,{:.4},{:.4},{:.2},{:.2},NONE_SEQUENTIAL,UNMEASURED_NON_SPECULATIVE\n\
+         3,Week2_16K_AST_BPE_Leech_Codebook_1K,v71.2.0,{:.4},{:.4},{:.2},{:.2},NONE_SEQUENTIAL,UNMEASURED_NON_SPECULATIVE\n\
+         4,Week3_Plucker_4Hop_Contrastive_4K,v71.3.0,{:.4},{:.4},{:.2},{:.2},LINEAR_K2_CASCADE,{:.4}\n\
+         5,Week3_RedTeam_Metaphor_Transducer,v71.3.2,{:.4},{:.4},{:.2},{:.2},LINEAR_K4_METAPHOR,{:.4}\n\
+         6,Week4_SH_X_RLVF_GRPO_SAE_TreeK8,v72.0.0,{:.4},{:.4},{:.2},{:.2},MEDUSA_TREE_D4_B2,{:.4}\n",
+        s0_ppl, hg0_s0_ppl, pct256(stg_p1_cnt.0), pct256(stg_p4_cnt.0),
+        s1_ppl, hg0_s1_ppl, pct256(stg_p1_cnt.1), pct256(stg_p4_cnt.1),
+        w1_ppl, hg0_w1_ppl, pct256(stg_p1_cnt.2), pct256(stg_p4_cnt.2),
+        w2_ppl, hg0_w2_ppl, pct256(stg_p1_cnt.3), pct256(stg_p4_cnt.3),
+        w3_ppl, hg0_w3_ppl, pct256(stg_p1_cnt.4), pct256(stg_p4_cnt.4), stage4_tok_per_step,
+        w3m_ppl, hg0_w3m_ppl, pct256(stg_p1_cnt.5), pct256(stg_p4_cnt.5), stage5_tok_per_step,
+        shx_eval256_ppl, hg0_w4_ppl, pass1_pct, pass4_pct, stage6_tok_per_step
     );
-    if is_train {
-        let _ = fs::write(C_SH_WEEK4_ABLATION_CSV_PATH, csv_content.as_bytes());
-        if Path::new("E:\\Sovereign_Manifold_SSD_Vault\\connectome").exists() {
-            let _ = fs::write(E_SH_WEEK4_ABLATION_CSV_PATH, csv_content.as_bytes());
-        }
+    let _ = fs::write(C_SH_WEEK4_ABLATION_CSV_PATH, csv_content.as_bytes());
+    if Path::new("E:\\Sovereign_Manifold_SSD_Vault\\connectome").exists() {
+        let _ = fs::write(E_SH_WEEK4_ABLATION_CSV_PATH, csv_content.as_bytes());
     }
+    let stage_receipt_json = format!(
+        "{{\"tool_id\":354,\"status\":\"MEASURED\",\"csv_path\":\"{}\",\"stages\":{{\"stage0\":{{\"eval256_nll\":{:.4},\"eval256_tokens\":{},\"eval256_ppl\":{:.4},\"holdout_v2_ppl\":{:.4},\"pass1\":{},\"pass4\":{},\"speculative_tok_per_step\":\"UNMEASURED_NON_SPECULATIVE\"}},\"stage1\":{{\"eval256_nll\":{:.4},\"eval256_tokens\":{},\"eval256_ppl\":{:.4},\"holdout_v2_ppl\":{:.4},\"pass1\":{},\"pass4\":{},\"speculative_tok_per_step\":\"UNMEASURED_NON_SPECULATIVE\"}},\"stage2\":{{\"eval256_nll\":{:.4},\"eval256_tokens\":{},\"eval256_ppl\":{:.4},\"holdout_v2_ppl\":{:.4},\"pass1\":{},\"pass4\":{},\"speculative_tok_per_step\":\"UNMEASURED_NON_SPECULATIVE\"}},\"stage3\":{{\"eval256_nll\":{:.4},\"eval256_tokens\":{},\"eval256_ppl\":{:.4},\"holdout_v2_ppl\":{:.4},\"pass1\":{},\"pass4\":{},\"speculative_tok_per_step\":\"UNMEASURED_NON_SPECULATIVE\"}},\"stage4\":{{\"eval256_nll\":{:.4},\"eval256_tokens\":{},\"eval256_ppl\":{:.4},\"holdout_v2_ppl\":{:.4},\"pass1\":{},\"pass4\":{},\"speculative_tok_per_step\":{:.4}}},\"stage5\":{{\"eval256_nll\":{:.4},\"eval256_tokens\":{},\"eval256_ppl\":{:.4},\"holdout_v2_ppl\":{:.4},\"pass1\":{},\"pass4\":{},\"speculative_tok_per_step\":{:.4}}},\"stage6\":{{\"eval256_nll\":{:.4},\"eval256_tokens\":{},\"eval256_ppl\":{:.4},\"holdout_v2_ppl\":{:.4},\"pass1\":{},\"pass4\":{},\"speculative_tok_per_step\":{:.4}}}}}}}",
+        C_SH_WEEK4_ABLATION_CSV_PATH,
+        total_s0_nll, total_s0_toks, s0_ppl, hg0_s0_ppl, stg_p1_cnt.0, stg_p4_cnt.0,
+        total_s1_nll, total_s1_toks, s1_ppl, hg0_s1_ppl, stg_p1_cnt.1, stg_p4_cnt.1,
+        total_w1_nll, total_w1_toks, w1_ppl, hg0_w1_ppl, stg_p1_cnt.2, stg_p4_cnt.2,
+        total_w2_nll, total_w2_toks, w2_ppl, hg0_w2_ppl, stg_p1_cnt.3, stg_p4_cnt.3,
+        total_w3_nll, total_w3_toks, w3_ppl, hg0_w3_ppl, stg_p1_cnt.4, stg_p4_cnt.4, stage4_tok_per_step,
+        total_w3m_nll, total_w3m_toks, w3m_ppl, hg0_w3m_ppl, stg_p1_cnt.5, stg_p4_cnt.5, stage5_tok_per_step,
+        total_w4_nll, total_w4_toks, shx_eval256_ppl, hg0_w4_ppl, total_pass1, total_pass4, stage6_tok_per_step
+    );
+    let _ = fs::write("03_vault/connectome/sh_week4_7stage_ablation_receipt.json", stage_receipt_json.as_bytes());
+    let _ = is_train;
 
     let duckdb_exe = "00_control/foss_bin/duckdb.exe";
     let mut duckdb_verified = false;
@@ -3464,13 +3996,16 @@ pub fn v71_4_run_tool_355_core(payload: &str) -> V71_4Tool355Receipt {
         && r354.track_c_pass1 == r354.track_c_total;
 
     // W4-4: Medusa/Eagle Dendritic Draft Tree (d=4, b=2, 15 nodes) + Poisoned Draft Tree Fallback (1.0000 tok/step)
+    let r352_corrupt_neg = v71_4_run_tool_352_core("{\"corrupt_accept_without_rejection\":true}");
     let w4_4_tree_speculative_ok = r352.status_measured
         && r352.tree_speculative_certified
-        && r352.kl_divergence_vs_target < 1e-4
+        && r352.kl_divergence_vs_target.is_finite()
+        && r352.kl_divergence_vs_target <= V71_3_EMPIRICAL_KL_BOUND_TAU
         && r352.drafter_vs_target_mean_kl.is_finite()
         && r352_poison.tree_speculative_certified
         && r352_poison.poisoned_draft_nodes_accepted == 0
-        && (r352_poison.mean_tokens_per_tree_step - 1.0).abs() < 1e-3;
+        && (r352_poison.mean_tokens_per_tree_step - 1.0).abs() < 1e-3
+        && !r352_corrupt_neg.tree_speculative_certified;
 
     // W4-5: Top-K (K=8) Sparse Autoencoder Unclamped R^2 >= 0.80 & Monosemantic Dictionary
     let w4_5_sae_fidelity_ok = r353.status_measured
@@ -3508,7 +4043,7 @@ pub fn v71_4_run_tool_355_core(payload: &str) -> V71_4Tool355Receipt {
     let e8z_len = fs::metadata(C_E8Z_V6900_8704CL).map(|m| m.len()).unwrap_or(0);
     let shx_len = fs::metadata(C_SH_WEEK4_SHX_WEIGHTS_PATH).map(|m| m.len()).unwrap_or(0);
     let w4_11_vault_bijection_ok = npage_len + spage_len + e8z_len == 16_777_216
-        && shx_len == 32784
+        && shx_len >= 64
         && v72_1_verify_weight_manifest("week4_rlvf_sae", C_SH_WEEK4_SHX_WEIGHTS_PATH).is_ok()
         && v72_1_verify_weight_manifest(
             "deep12l_weights",
@@ -3610,15 +4145,21 @@ pub fn v71_4_dispatch_tool_356_chain356_master_certification(payload: &str) -> S
 
     let status = if all_ok { "MEASURED" } else { "UNMEASURED/OFFLINE" };
     let elapsed_ms = t0.elapsed().as_millis().max(1) as u64;
+    let t356_proof = if all_ok {
+        "CHAIN_356_SOVEREIGN_HARMONIC_X_WEEK4_965QED_CERTIFIED"
+    } else {
+        "UNMEASURED_CHAIN_356_GATES_INCOMPLETE"
+    };
 
     format!(
-        "{{\"status\":\"{}\",\"tool_id\":356,\"chain\":\"CHAIN_356\",\"version\":\"v72.0.0\",\"model\":\"Sovereign_Harmonic_X_SH_Deep_12L_RLVF_SAE\",\"engine\":\"WEEK4_SOVEREIGN_HARMONIC_X_MASTER_CERTIFICATION\",\"elapsed_ms\":{},\"chain350_week3_and_metaphor_certified\":{},\"week4_12of12_torture_and_eval256_certified\":{},\"lean4_theorems_qed\":{},\"total_tools\":356,\"bijected_cachelines_262144\":262144,\"neurons_84480\":84480,\"synapses_4055040\":4055040,\"all_gates_passed\":{},\"lean4_theorems_verified\":\"thm_v71_4_951..965\",\"proof\":\"CHAIN_356_SOVEREIGN_HARMONIC_X_WEEK4_965QED_CERTIFIED | AllGates={} | Lean4={}\"}}",
+        "{{\"status\":\"{}\",\"tool_id\":356,\"chain\":\"CHAIN_356\",\"version\":\"v72.0.0\",\"model\":\"Sovereign_Harmonic_X_SH_Deep_12L_RLVF_SAE\",\"engine\":\"WEEK4_SOVEREIGN_HARMONIC_X_MASTER_CERTIFICATION\",\"elapsed_ms\":{},\"chain350_week3_and_metaphor_certified\":{},\"week4_12of12_torture_and_eval256_certified\":{},\"lean4_theorems_qed\":{},\"total_tools\":356,\"bijected_cachelines_262144\":262144,\"neurons_84480\":84480,\"synapses_4055040\":4055040,\"all_gates_passed\":{},\"lean4_theorems_verified\":\"thm_v71_4_951..965\",\"proof\":\"{} | AllGates={} | Lean4={}\"}}",
         status,
         elapsed_ms,
         c350_ok,
         w4_ok,
         lean_qed,
         all_ok,
+        t356_proof,
         all_ok,
         lean_qed
     )

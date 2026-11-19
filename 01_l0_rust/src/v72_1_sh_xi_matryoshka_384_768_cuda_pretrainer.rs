@@ -79,6 +79,8 @@ pub const C_SH_XI_RW_EVAL500_PATH: &str =
     "03_vault/connectome/sh_xi_rw_eval_500_sealed.jsonl";
 pub const E_SH_XI_RW_EVAL500_PATH: &str =
     "E:\\Sovereign_Manifold_SSD_Vault\\connectome\\sh_xi_rw_eval_500_sealed.jsonl";
+pub const C_SH_RW_CORPUS_JSONL_PATH: &str =
+    "03_vault/corpus/sh_rw_corpus_v7210.jsonl";
 pub const E_SH_XI_CORPUS_JSONL_PATH: &str =
     "E:\\Sovereign_Manifold_SSD_Vault\\training_corpus\\sh_rw_corpus_v7210.jsonl";
 pub const C_SH_XI_CORPUS_MANIFEST_PATH: &str =
@@ -5415,6 +5417,137 @@ pub fn v72_1_train_or_get_sh_xi_model(force_retrain: bool) -> V72_1PretrainRecei
     v72_1_train_with_steps(force_retrain, None)
 }
 
+/// Re-evaluates the verified committed `sovereign_harmonic_xi_rw384_768_base.sh4z` checkpoint
+/// on the active validation split without modifying any `.sh4z` bytes, recording full step-0
+/// gated (`gamma=0.0`) vs ungated (`gamma=1.0`) Net2Wider provenance and f64/f32 softmax precision.
+pub fn v72_1_refresh_base_train_meta_from_verified_sh4z() -> Result<String, String> {
+    let sh4z_bytes = v72_1_verify_weight_manifest("sh_xi_rw384_768_base", C_SH_XI_BASE_SH4Z_PATH)?;
+    let sh4z_sha = v72_1_sha256_hex(&sh4z_bytes);
+    let sh4z_len = sh4z_bytes.len() as u64;
+    let _ = v72_1_ensure_model_loaded_for_sha()?;
+
+    let existing_meta = fs::read_to_string(C_SH_XI_BASE_TRAIN_META_PATH).unwrap_or_default();
+    let prev_val = serde_json::from_str::<serde_json::Value>(&existing_meta).unwrap_or(serde_json::Value::Null);
+    let trained_steps = prev_val.get("trained_steps").and_then(|v| v.as_u64()).unwrap_or(10000) as usize;
+    let mut layer_norms: Vec<f64> = Vec::with_capacity(V72_1_HYBRID_LAYERS);
+    if let Some(arr) = prev_val.get("layer_grad_l2_norms").and_then(|v| v.as_array()) {
+        for item in arr.iter() {
+            if let Some(fv) = item.as_f64() {
+                layer_norms.push(fv);
+            }
+        }
+    }
+    while layer_norms.len() < V72_1_HYBRID_LAYERS {
+        layer_norms.push(0.0);
+    }
+
+    let (_, val_seqs_3tuple) = v72_1_get_train_and_val_sequences();
+    let val_seqs: Vec<(Vec<u16>, usize)> = val_seqs_3tuple.into_iter().map(|(s, b, _)| (s, b)).collect();
+
+    // 1. Step-0 gated (`gamma_net2wider = 0.0`) vs ungated (`gamma_net2wider = 1.0`) evaluation
+    let m0_gated = V72_1MatryoshkaModel::new_initialized(0.0);
+    let (init_n384, init_n768_g0, init_bpb384, init_bpb768_g0, init_pdev, _) =
+        v72_1_eval_validation_metrics(&m0_gated, &val_seqs);
+
+    let (_, init_n768_ungated, _, init_bpb768_ungated, _, _) = {
+        let mut m0_ug = V72_1MatryoshkaModel::new_initialized(1.0);
+        m0_ug.gamma_net2wider = 1.0_f32;
+        let mut rng_ug = 0x7210_2000_CAFE_0002u64;
+        let kaiming_ug = (2.0 / (V72_1_LATENT_RANK_R1 as f64)).sqrt() as f32;
+        for slot in m0_ug.u_delta1_table.iter_mut() {
+            *slot = (v72_1_box_muller(&mut rng_ug) as f32) * kaiming_ug * 0.05_f32;
+        }
+        v72_1_eval_validation_metrics(&m0_ug, &val_seqs)
+    };
+
+    // 2. Final loaded checkpoint evaluation + both f64 and f32 softmax sum deviation
+    let (fin_n384, fin_n768, fin_bpb384, fin_bpb768, fin_pdev_f64, eval_toks, max_pdev_f32) = {
+        let guard = match SH_XI_TRAINED_MODEL.read() {
+            Ok(g) => g,
+            Err(p) => p.into_inner(),
+        };
+        let Some((_, ref loaded_model)) = *guard else {
+            return Err(String::from("Loaded SH-XI model missing from cache"));
+        };
+        let (fn0, fn1, fb0, fb1, pdev64, etoks) = v72_1_eval_validation_metrics(loaded_model, &val_seqs);
+        let mut max_f32_dev: f64 = 0.0;
+        if let Some((sq0, _)) = val_seqs.first() {
+            if sq0.len() >= 3 {
+                let pref: Vec<u16> = sq0.iter().take(2).copied().collect();
+                let h1 = loaded_model.forward_sequence_shell1_768(&pref);
+                let lg1 = loaded_model.compute_logits_shell1_16k(&h1, sq0.first().copied(), sq0.get(1).copied());
+                let mut mx: f32 = f32::NEG_INFINITY;
+                for &lv in lg1.iter() {
+                    if lv > mx { mx = lv; }
+                }
+                let mut z32: f32 = 0.0;
+                for &lv in lg1.iter() {
+                    z32 += (lv - mx).exp();
+                }
+                let mut psum32: f32 = 0.0;
+                for &lv in lg1.iter() {
+                    psum32 += (lv - mx).exp() / z32;
+                }
+                max_f32_dev = ((psum32 as f64) - 1.0).abs();
+            }
+        }
+        (fn0, fn1, fb0, fb1, pdev64, etoks, max_f32_dev)
+    };
+    let max_pdev = init_pdev.max(fin_pdev_f64);
+    let fin_ppl384 = fin_n384.exp();
+    let fin_ppl768 = fin_n768.exp();
+    let corpus_sha = fs::read(C_SH_RW_CORPUS_JSONL_PATH)
+        .or_else(|_| fs::read(E_SH_XI_CORPUS_JSONL_PATH))
+        .map(|b| v72_1_sha256_hex(&b))
+        .unwrap_or_else(|_| String::from("UNMEASURED/OFFLINE"));
+
+    let mut meta_str = String::from("{\n");
+    meta_str.push_str(&format!("  \"sh4z_sha256\": \"{}\",\n", sh4z_sha));
+    meta_str.push_str(&format!("  \"sh4z_bytes\": {},\n", sh4z_len));
+    meta_str.push_str(&format!("  \"trained_steps\": {},\n", trained_steps));
+    meta_str.push_str("  \"seed_init\": \"0x7210_0001_5EED_CAFE\",\n");
+    meta_str.push_str("  \"corpus_path\": \"03_vault/corpus/sh_rw_corpus_v7210.jsonl\",\n");
+    meta_str.push_str(&format!("  \"corpus_sha256\": \"{}\",\n", corpus_sha));
+    meta_str.push_str(&format!("  \"val_eval_tokens\": {},\n", eval_toks));
+    meta_str.push_str("  \"loss_curve_csv\": \"03_vault/connectome/sh_xi_week1_training_curve.csv\",\n");
+    meta_str.push_str("  \"step0_net2wider_note\": \"At step 0 gamma_net2wider=0.0 so Shell-1 768D preserves Shell-0 384D bit-identically; init_val_nats_768_ungated_gamma1 records distinct random Shell-1 loss when gamma=1.0\",\n");
+    meta_str.push_str(&format!("  \"init_val_nats_384\": {:.6},\n", init_n384));
+    meta_str.push_str(&format!("  \"init_val_nats_768\": {:.6},\n", init_n768_g0));
+    meta_str.push_str(&format!("  \"init_val_nats_768_gated_gamma0\": {:.6},\n", init_n768_g0));
+    meta_str.push_str(&format!("  \"init_val_nats_768_ungated_gamma1\": {:.6},\n", init_n768_ungated));
+    meta_str.push_str(&format!("  \"init_val_bpb_384\": {:.6},\n", init_bpb384));
+    meta_str.push_str(&format!("  \"init_val_bpb_768\": {:.6},\n", init_bpb768_g0));
+    meta_str.push_str(&format!("  \"init_val_bpb_768_ungated_gamma1\": {:.6},\n", init_bpb768_ungated));
+    meta_str.push_str(&format!("  \"final_val_nats_384\": {:.6},\n", fin_n384));
+    meta_str.push_str(&format!("  \"final_val_nats_768\": {:.6},\n", fin_n768));
+    meta_str.push_str(&format!("  \"final_val_bpb_384\": {:.6},\n", fin_bpb384));
+    meta_str.push_str(&format!("  \"final_val_bpb_768\": {:.6},\n", fin_bpb768));
+    meta_str.push_str(&format!("  \"final_val_ppl_384\": {:.6},\n", fin_ppl384));
+    meta_str.push_str(&format!("  \"final_val_ppl_768\": {:.6},\n", fin_ppl768));
+    meta_str.push_str(&format!("  \"prob_sum_max_dev\": {:.9},\n", max_pdev));
+    meta_str.push_str(&format!("  \"prob_sum_max_dev_f64_sci\": \"{:.3e}\",\n", max_pdev));
+    meta_str.push_str(&format!("  \"prob_sum_max_dev_f32_sci\": \"{:.3e}\",\n", max_pdev_f32));
+    meta_str.push_str("  \"layer_grad_l2_norms\": \x5b\n");
+    for (idx, norm) in layer_norms.iter().enumerate() {
+        if idx + 1 == layer_norms.len() {
+            meta_str.push_str(&format!("    {:.8}\n", norm));
+        } else {
+            meta_str.push_str(&format!("    {:.8},\n", norm));
+        }
+    }
+    meta_str.push_str("  \x5d\n");
+    meta_str.push_str("}\n");
+
+    fs::write(C_SH_XI_BASE_TRAIN_META_PATH, meta_str.as_bytes()).map_err(|e| e.to_string())?;
+    if Path::new("E:\\").exists() {
+        let _ = fs::create_dir_all("E:\\Sovereign_Manifold_SSD_Vault\\connectome");
+        let _ = fs::write(E_SH_XI_BASE_TRAIN_META_PATH, meta_str.as_bytes());
+    }
+    v72_1_clear_model_caches();
+    let _ = v72_1_ensure_model_loaded_for_sha();
+    Ok(meta_str)
+}
+
 pub fn v72_1_run_offline_pretraining(steps: usize) -> Result<String, String> {
     let r = v72_1_train_with_steps(true, Some(steps));
     if !r.rtx_ptx_loaded || r.sh4z_bytes == 0 || r.sh4z_sha256.starts_with("FAIL_CLOSED") || r.sh4z_sha256.starts_with("WEIGHT_") {
@@ -6152,15 +6285,38 @@ pub fn v72_1_train_with_steps(force_retrain: bool, steps_override: Option<usize>
     // Update weight manifest directly
     let _ = v72_1_update_weight_manifest("sh_xi_rw384_768_base", sh4z_buf.len(), &sh4z_sha);
 
-    // Write sh_xi_base_train_meta.json
+    let (_, init_n768_ungated, _, init_bpb768_ungated, _, _) = {
+        let mut m_ungated = V72_1MatryoshkaModel::new_initialized(1.0);
+        m_ungated.gamma_net2wider = 1.0_f32;
+        let mut rng_ug = 0x7210_2000_CAFE_0002u64;
+        let kaiming_ug = (2.0 / (V72_1_LATENT_RANK_R1 as f64)).sqrt() as f32;
+        for slot in m_ungated.u_delta1_table.iter_mut() {
+            *slot = (v72_1_box_muller(&mut rng_ug) as f32) * kaiming_ug * 0.05_f32;
+        }
+        v72_1_eval_validation_metrics(&m_ungated, &val_seqs)
+    };
+    let corpus_sha = fs::read(C_SH_RW_CORPUS_JSONL_PATH)
+        .or_else(|_| fs::read(E_SH_XI_CORPUS_JSONL_PATH))
+        .map(|b| v72_1_sha256_hex(&b))
+        .unwrap_or_else(|_| String::from("UNMEASURED/OFFLINE"));
+
+    // Write sh_xi_base_train_meta.json with full Net2Wider step-0 gated/ungated provenance & f64/f32 softmax sum precision
     let mut meta_str = String::from("{\n");
     meta_str.push_str(&format!("  \"sh4z_sha256\": \"{}\",\n", sh4z_sha));
     meta_str.push_str(&format!("  \"sh4z_bytes\": {},\n", sh4z_len));
     meta_str.push_str(&format!("  \"trained_steps\": {},\n", total_steps));
+    meta_str.push_str("  \"seed_init\": \"0x7210_0001_5EED_CAFE\",\n");
+    meta_str.push_str("  \"corpus_path\": \"03_vault/corpus/sh_rw_corpus_v7210.jsonl\",\n");
+    meta_str.push_str(&format!("  \"corpus_sha256\": \"{}\",\n", corpus_sha));
+    meta_str.push_str("  \"loss_curve_csv\": \"03_vault/connectome/sh_xi_week1_training_curve.csv\",\n");
+    meta_str.push_str("  \"step0_net2wider_note\": \"At step 0 gamma_net2wider=0.0 so Shell-1 768D preserves Shell-0 384D bit-identically; init_val_nats_768_ungated_gamma1 records distinct random Shell-1 loss when gamma=1.0\",\n");
     meta_str.push_str(&format!("  \"init_val_nats_384\": {:.6},\n", init_n384));
     meta_str.push_str(&format!("  \"init_val_nats_768\": {:.6},\n", init_n768));
+    meta_str.push_str(&format!("  \"init_val_nats_768_gated_gamma0\": {:.6},\n", init_n768));
+    meta_str.push_str(&format!("  \"init_val_nats_768_ungated_gamma1\": {:.6},\n", init_n768_ungated));
     meta_str.push_str(&format!("  \"init_val_bpb_384\": {:.6},\n", init_bpb384));
     meta_str.push_str(&format!("  \"init_val_bpb_768\": {:.6},\n", init_bpb768));
+    meta_str.push_str(&format!("  \"init_val_bpb_768_ungated_gamma1\": {:.6},\n", init_bpb768_ungated));
     meta_str.push_str(&format!("  \"final_val_nats_384\": {:.6},\n", fin_n384));
     meta_str.push_str(&format!("  \"final_val_nats_768\": {:.6},\n", fin_n768));
     meta_str.push_str(&format!("  \"final_val_bpb_384\": {:.6},\n", fin_bpb384));
@@ -6168,6 +6324,7 @@ pub fn v72_1_train_with_steps(force_retrain: bool, steps_override: Option<usize>
     meta_str.push_str(&format!("  \"final_val_ppl_384\": {:.6},\n", fin_ppl384));
     meta_str.push_str(&format!("  \"final_val_ppl_768\": {:.6},\n", fin_ppl768));
     meta_str.push_str(&format!("  \"prob_sum_max_dev\": {:.9},\n", max_pdev));
+    meta_str.push_str(&format!("  \"prob_sum_max_dev_f64_sci\": \"{:.3e}\",\n", max_pdev));
     meta_str.push_str("  \"layer_grad_l2_norms\": \x5b\n");
     for (idx, norm) in last_layer_norms.iter().enumerate() {
         if idx + 1 == last_layer_norms.len() {
@@ -7077,31 +7234,10 @@ pub fn v72_1_converse_execute_with_params(
         String::from("MATRYOSHKA_768D_NEURAL_DIALOGUE")
     };
 
+    // Pure neural autoregressive token emission (D2: zero seed prefixes or answer templates injected)
     let mut cur_tokens = prompt_tokens.clone();
     let mut new_tokens: Vec<u16> = Vec::new();
-    let is_c362_gcd = mode_override == Some("std_rust") && lower.contains("greatest common divisor");
-    let is_c362_abstain = lower.contains("disconnected") && lower.contains("sensor node");
-    let is_c362_battery = lower.contains("40% battery");
-    let seed_prefix_str = if is_c362_gcd {
-        "```rust\npub fn gcd(mut a: u64, mut b: u64) -> u64 {\n    while b != 0 { let t = a % b; a = b; b = t; }\n    a\n}\n```\n// "
-    } else if is_c362_abstain {
-        "<|abstain_unmeasured|>UNMEASURED/OFFLINE: "
-    } else if is_c362_battery {
-        "At 40% battery: "
-    } else {
-        ""
-    };
-    if !seed_prefix_str.is_empty() {
-        for st in v72_1_bpe16k_encode(seed_prefix_str).into_iter() {
-            cur_tokens.push(st);
-            new_tokens.push(st);
-        }
-    }
-    let max_steps: usize = if is_c362_gcd {
-        6
-    } else {
-        max_tokens_opt.unwrap_or(64).clamp(1, 128)
-    };
+    let max_steps: usize = max_tokens_opt.unwrap_or(64).clamp(1, 128);
     let rep_penalty: f32 = 1.30;
     let temp: f32 = temp_opt.unwrap_or(0.70_f32).clamp(0.0, 2.0);
     let top_k: usize = 40;
@@ -7199,18 +7335,12 @@ pub fn v72_1_converse_execute_with_params(
                     }
                     tid += 1;
                 }
-            } else if wants_zero_bracket || !seed_prefix_str.is_empty() {
-                let need_seed_cont = !seed_prefix_str.is_empty() && step < 4;
+            } else if wants_zero_bracket {
                 let mut tid: usize = 0;
                 while tid < logits.len() {
-                    if need_seed_cont && (tid == 0 || (tid >= 256 && tid <= 271)) {
-                        if let Some(lg) = logits.get_mut(tid) {
-                            *lg = f32::NEG_INFINITY;
-                        }
-                    } else if let Some(piece) = bpe.id_to_bytes.get(tid) {
-                        let mask_bracket = wants_zero_bracket && piece.iter().any(|b| *b == 91_u8 || *b == 93_u8);
-                        let mask_nl = is_c362_gcd && piece.iter().any(|b| *b == 10_u8 || *b == 13_u8);
-                        if mask_bracket || mask_nl {
+                    if let Some(piece) = bpe.id_to_bytes.get(tid) {
+                        let mask_bracket = piece.iter().any(|b| *b == 91_u8 || *b == 93_u8);
+                        if mask_bracket {
                             if let Some(lg) = logits.get_mut(tid) {
                                 *lg = f32::NEG_INFINITY;
                             }
@@ -7340,7 +7470,31 @@ pub fn v72_1_converse_execute_with_params(
     let secondary_col = ((h_hash / 1920) % 1920) as usize;
     let elapsed_us = t0.elapsed().as_micros() as u64;
 
-    let status = if e8z_n == 12 && plucker_res == 0 && !synthesized_answer.is_empty() && json_valid {
+    // E4: Independent output-quality gate over actual generated tokens & neural entropy (never gated on a Plucker identity):
+    // Requires >=2 generated tokens (or valid JSON object), >=4 distinct non-whitespace characters,
+    // finite positive Shell-1 entropy & token probability, JSON FSM validity (when requested), and zero-bracket compliance (when requested).
+    let mut distinct_non_ws = HashSet::new();
+    for ch in synthesized_answer.chars() {
+        if !ch.is_whitespace() && !ch.is_control() {
+            distinct_non_ws.insert(ch);
+        }
+    }
+    let zero_bracket_out_ok = if wants_zero_bracket {
+        !synthesized_answer.as_bytes().iter().any(|b| *b == 91_u8 || *b == 93_u8)
+    } else {
+        true
+    };
+    let output_quality_ok = !synthesized_answer.trim().is_empty()
+        && (new_tokens.len() >= 2 || (wants_json && json_valid))
+        && distinct_non_ws.len() >= 4
+        && ent1.is_finite()
+        && ent1 > 0.05
+        && mean_prob1.is_finite()
+        && mean_prob1 > 0.0
+        && json_valid
+        && zero_bracket_out_ok;
+
+    let status = if output_quality_ok {
         String::from("MEASURED")
     } else {
         String::from("UNMEASURED/OFFLINE")
@@ -7619,8 +7773,17 @@ pub fn v72_1_dispatch_tool_362_week1_master_certification(payload: &str) -> Stri
         .map(|b| v72_1_sha256_hex(&b))
         .unwrap_or_else(|_| String::from("MIRROR_MISSING"));
     let lean_mirror_synced = !lean_c_sha.is_empty() && lean_c_sha == lean_l0_sha;
-    let grad_ok = grad_json.contains("\"gradcheck_passed\":true")
-        && grad_json.contains("\"bit_exact_function_preserving\":true");
+    let grad_val = serde_json::from_str::<serde_json::Value>(&grad_json).unwrap_or(serde_json::Value::Null);
+    let grad_ok = grad_val
+        .get("finite_difference_gradcheck")
+        .and_then(|o| o.get("gradcheck_passed"))
+        .and_then(|x| x.as_bool())
+        == Some(true)
+        && grad_val
+            .get("net2wider_expansion_proof")
+            .and_then(|o| o.get("bit_exact_function_preserving"))
+            .and_then(|x| x.as_bool())
+            == Some(true);
 
     let all_gates_passed = corpus_sum.surviving_overlap_shingles == 0
         && corpus_sum.canaries_caught >= 5

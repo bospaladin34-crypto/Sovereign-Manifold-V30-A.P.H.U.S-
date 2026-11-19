@@ -1,8 +1,8 @@
 cff-version: 1.2.0
-message: "If you use the ACT-Omega / Sovereign Manifold runtime (v73.2.0 | Unified Standalone Lab, Cloudflare VPC Mesh & Hyperdrive PGWire -> DuckDB, Two-Phase Q8_0 Matryoshka Pretraining & 16/256 Sparse MoE | SH4Z v7320 TLV | CHAIN 404 | 1,010/1,010 Lean 4 QED | 262,144 Bijected Cachelines | 84,480 Neurons | 4,055,040 Synapses | 59 MCP Tools), please cite both this repository (Donevin Frownfelter) and the foundational E8 / Leech lattice optimality papers by Maryna S. Viazovska et al."
-title: "ACT-Omega Net v73.2.0 (Unified Standalone Lab, Cloudflare Paid Workflows, 5-Service QUIC VPC Mesh & Hyperdrive PGWire -> DuckDB, Two-Phase Q8_0 Matryoshka Pretraining & 16/256 Sparse MoE | SH4Z v7320 TLV | CHAIN 404 | 1,010/1,010 Lean 4 QED | 262,144 Bijected Cachelines | 84,480 Neurons | 4,055,040 Synapses): Tri-Silicon Topological & E8/Leech Lattice Compute Manifold"
+message: "If you use the ACT-Omega / Sovereign Manifold runtime (v73.2.1 | Unified Standalone Lab, Cloudflare VPC Mesh & Hyperdrive PGWire -> DuckDB, Two-Phase Q8_0 Matryoshka Pretraining 0.244138 -> 0.113064 BPB & 16/256 Sparse MoE | SH4Z v7321 TLV | CHAIN 404 | 1,010/1,010 Lean 4 QED | 262,144 Bijected Cachelines | 84,480 Neurons | 4,055,040 Synapses | 59 MCP Tools), please cite both this repository (Donevin Frownfelter) and the foundational E8 / Leech lattice optimality papers by Maryna S. Viazovska et al."
+title: "ACT-Omega Net v73.2.1 (Unified Standalone Lab, Cloudflare Paid Workflows, 5-Service QUIC VPC Mesh & Hyperdrive PGWire -> DuckDB, Two-Phase Q8_0 Matryoshka Pretraining 0.244138 -> 0.113064 BPB & 16/256 Sparse MoE | SH4Z v7321 TLV | CHAIN 404 | 1,010/1,010 Lean 4 QED | 262,144 Bijected Cachelines | 84,480 Neurons | 4,055,040 Synapses): Tri-Silicon Topological & E8/Leech Lattice Compute Manifold"
 type: software
-version: "73.2.0"
+version: "73.2.1"
 doi: "10.5281/zenodo.23651696"
 identifiers:
   - type: doi

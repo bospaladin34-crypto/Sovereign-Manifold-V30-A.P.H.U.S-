@@ -1,0 +1,137 @@
+{
+    "schema":  "ACT_OMEGA_S1_E2_SECURITY_RECEIPT_V1",
+    "version":  "v73.2.1",
+    "listeners":  [
+                      {
+                          "LocalAddress":  "127.0.0.1",
+                          "LocalPort":  8097
+                      },
+                      {
+                          "LocalAddress":  "127.0.0.1",
+                          "LocalPort":  5173
+                      }
+                  ],
+    "s1_unauthenticated_rejected":  {
+                                        "http_status":  403,
+                                        "body":  ""
+                                    },
+    "s1_unknown_query_id_rejected":  {
+                                         "http_status":  400,
+                                         "body":  ""
+                                     },
+    "s1_scalar_read_text_rejected":  {
+                                         "http_status":  400,
+                                         "body":  ""
+                                     },
+    "s1_scalar_read_blob_rejected":  {
+                                         "http_status":  400,
+                                         "body":  ""
+                                     },
+    "s1_scalar_glob_rejected":  {
+                                    "http_status":  400,
+                                    "body":  ""
+                                },
+    "s1_scalar_http_get_rejected":  {
+                                        "http_status":  400,
+                                        "body":  ""
+                                    },
+    "s1_write_sql_rejected":  {
+                                  "http_status":  400,
+                                  "body":  ""
+                              },
+    "s1_allowlisted_corpus_doc_count_ok":  {
+                                               "http_status":  200,
+                                               "body":  "{\"ok\":true,\"status\":\"MEASURED_DUCKDB_HYPERDRIVE_READY\",\"tool_id\":403,\"tool_name\":\"cloudflare_hyperdrive_duckdb_query\",\"query_id\":\"corpus_doc_count\",\"external_access_disabled\":true,\"hyperdrive_config_present\":true,\"elapsed_ms\":55.317,\"rows\":[{\"docs_count\":821,\"total_char_bytes\":\"821469\"}],\"autopoietic_bus_seq\":93475,\"e_vault_writeback_path\":\"E:\\\\Sovereign_Manifold_SSD_Vault\\\\autopoietic_codegen\\\\tool_outputs\\\\tool_403_1795047615860426.json\",\"e_vault_writeback_bytes\":289,\"e_vault_writeback_sha256\":\"65b0d13c770a5c9b7d13f0e991bd8f32e634d5ccb4b69b31ac0c1249e3fda308\",\"e_vault_mounted\":true}"
+                                           },
+    "s1_allowlisted_corpus_docs_by_track_ok":  {
+                                                   "http_status":  200,
+                                                   "body":  "{\"ok\":true,\"status\":\"MEASURED_DUCKDB_HYPERDRIVE_READY\",\"tool_id\":403,\"tool_name\":\"cloudflare_hyperdrive_duckdb_query\",\"query_id\":\"corpus_docs_by_track\",\"external_access_disabled\":true,\"hyperdrive_config_present\":true,\"elapsed_ms\":62.892,\"rows\":[{\"doc_id\":134,\"track_id\":1,\"track_name\":\"Rust_Std_And_L0\",\"char_bytes\":979,\"is_zero_bracket\":false,\"minhash64\":\"0x0082b241eb60fb38\"},\r\n{\"doc_id\":135,\"track_id\":1,\"track_name\":\"Rust_Std_And_L0\",\"char_bytes\":1015,\"is_zero_bracket\":true,\"minhash64\":\"0x013d7afdac2626c8\"},\r\n{\"doc_id\":136,\"track_id\":1,\"track_name\":\"Rust_Std_And_L0\",\"char_bytes\":1005,\"is_zero_bracket\":true,\"minhash64\":\"0x030da128d45ea391\"}],\"autopoietic_bus_seq\":93477,\"e_vault_writeback_path\":\"E:\\\\Sovereign_Manifold_SSD_Vault\\\\autopoietic_codegen\\\\tool_outputs\\\\tool_403_1795047616162269.json\",\"e_vault_writeback_bytes\":649,\"e_vault_writeback_sha256\":\"ee369f6ff28393051e968f9e27aa36720146945d48c392490918f23d5239559f\",\"e_vault_mounted\":true}"
+                                               },
+    "e2_per_route_disposition":  [
+                                     {
+                                         "route":  "/api/v1/tools/t382",
+                                         "disposition":  "OPERATOR_AUTH_GATED",
+                                         "unauth_status":  403
+                                     },
+                                     {
+                                         "route":  "/api/v1/tools/t383",
+                                         "disposition":  "OPERATOR_AUTH_GATED",
+                                         "unauth_status":  403
+                                     },
+                                     {
+                                         "route":  "/api/v1/tools/t384",
+                                         "disposition":  "OPERATOR_AUTH_GATED",
+                                         "unauth_status":  403
+                                     },
+                                     {
+                                         "route":  "/api/v1/tools/t385",
+                                         "disposition":  "OPERATOR_AUTH_GATED",
+                                         "unauth_status":  403
+                                     },
+                                     {
+                                         "route":  "/api/v1/tools/t386",
+                                         "disposition":  "OPERATOR_AUTH_GATED",
+                                         "unauth_status":  403
+                                     },
+                                     {
+                                         "route":  "/api/v1/tools/t387",
+                                         "disposition":  "OPERATOR_AUTH_GATED",
+                                         "unauth_status":  403
+                                     },
+                                     {
+                                         "route":  "/api/v1/tools/t388",
+                                         "disposition":  "OPERATOR_AUTH_GATED",
+                                         "unauth_status":  403
+                                     },
+                                     {
+                                         "route":  "/api/v1/tools/t389",
+                                         "disposition":  "OPERATOR_AUTH_GATED",
+                                         "unauth_status":  403
+                                     },
+                                     {
+                                         "route":  "/api/v1/tools/t390",
+                                         "disposition":  "OPERATOR_AUTH_GATED",
+                                         "unauth_status":  403
+                                     },
+                                     {
+                                         "route":  "/api/v1/tools/t391",
+                                         "disposition":  "OPERATOR_AUTH_GATED",
+                                         "unauth_status":  403
+                                     },
+                                     {
+                                         "route":  "/api/v1/tools/t392",
+                                         "disposition":  "OPERATOR_AUTH_GATED",
+                                         "unauth_status":  403
+                                     },
+                                     {
+                                         "route":  "/api/v1/tools/t393",
+                                         "disposition":  "OPERATOR_AUTH_GATED",
+                                         "unauth_status":  403
+                                     },
+                                     {
+                                         "route":  "/api/v1/chain399",
+                                         "disposition":  "OPERATOR_AUTH_GATED",
+                                         "unauth_status":  403
+                                     },
+                                     {
+                                         "route":  "/api/v1/tools/t400",
+                                         "disposition":  "OPERATOR_AUTH_GATED",
+                                         "unauth_status":  403
+                                     },
+                                     {
+                                         "route":  "/api/v1/tools/t401",
+                                         "disposition":  "OPERATOR_AUTH_GATED",
+                                         "unauth_status":  403
+                                     },
+                                     {
+                                         "route":  "/api/v1/tools/t402",
+                                         "disposition":  "OPERATOR_AUTH_GATED",
+                                         "unauth_status":  403
+                                     },
+                                     {
+                                         "route":  "/api/v1/tools/t404",
+                                         "disposition":  "OPERATOR_AUTH_GATED",
+                                         "unauth_status":  403
+                                     }
+                                 ]
+}

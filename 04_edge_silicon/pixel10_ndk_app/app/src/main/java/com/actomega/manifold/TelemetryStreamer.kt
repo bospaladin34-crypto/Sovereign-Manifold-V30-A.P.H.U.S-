@@ -17,7 +17,7 @@ import java.net.Socket
 class TelemetryStreamer(
     private val context: Context? = null,
     private val loopbackIp: String = "127.0.0.1",
-    private val wifiLanIp: String = "10.0.24.243",
+    private val wifiLanIp: String? = null,
     private val port: Int = 8098
 ) {
     private val channel = Channel<String>(capacity = 256, onBufferOverflow = BufferOverflow.DROP_OLDEST)
@@ -113,7 +113,7 @@ class TelemetryStreamer(
                             s.connect(InetSocketAddress(loopbackIp, port), 300)
                             activeHostIp = loopbackIp
                         } catch (_: Exception) {
-                            val targetIp = discoveredIp ?: wifiLanIp
+                            val targetIp = discoveredIp ?: wifiLanIp ?: throw java.io.IOException("No LAN host discovered")
                             s.connect(InetSocketAddress(targetIp, port), 1000)
                             activeHostIp = targetIp
                         }

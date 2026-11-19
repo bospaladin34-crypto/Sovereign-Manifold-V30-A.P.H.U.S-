@@ -1,5 +1,5 @@
 -- ACT-Omega Net v37.0.0 Cloudflare D1 Serverless SQLite Schema (act_omega_d1_vault)
--- Account ID: a37cf8ab07e7c5f886c302be3f098744 -- Free Tier: 5 GB Storage, 5M Reads/Day, 100k Writes/Day
+-- Account ID: <EXTERNAL_CF_ACCOUNT_ID> -- Free Tier: 5 GB Storage, 5M Reads/Day, 100k Writes/Day
 
 CREATE TABLE IF NOT EXISTS npage_tier_snapshots (
     snapshot_id INTEGER PRIMARY KEY AUTOINCREMENT,

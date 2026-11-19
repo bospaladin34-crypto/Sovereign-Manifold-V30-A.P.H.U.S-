@@ -1,5 +1,5 @@
 # C:\sovereign_manifold_v31\00_control\Sovereign-Lifecycle.ps1
-# ACT-Omega Net v73.2.0 (SH4Z v7320 TLV | CHAIN 404 | 1,010/1,010 Lean 4 QED) -- Unified Safe Cluster Start / Stop / Handover / Verify / Status Controller
+# ACT-Omega Net v73.2.1 (SH4Z v7320 TLV | CHAIN 404 | 1,010/1,010 Lean 4 QED) -- Unified Safe Cluster Start / Stop / Handover / Verify / Status Controller
 param(
     [ValidateSet("start", "stop", "stop-all", "restart", "status", "handover", "verify")]
     [string]$Action = "status",
@@ -202,7 +202,7 @@ function Invoke-SovereignContinuumHandover {
         if ($opKey.Length -ge 24) { $cfHeaders["X-Sovereign-Operator-Key"] = $opKey }
     }
     try {
-        $cfHandover = Invoke-RestMethod -Uri "https://sovereign-loq15-vpc-shadow.bospaladin34.workers.dev/api/v1/continuum/handover?node=host_loq15&host_state=$HandoverMode&temp=$rtxT" -Headers $cfHeaders -TimeoutSec 5
+        $cfHandover = Invoke-RestMethod -Uri "https://act-omega-net.dev/api/v1/continuum/handover?node=host_loq15&host_state=$HandoverMode&temp=$rtxT" -Headers $cfHeaders -TimeoutSec 5
         Write-Host "  [3/3] Armed Cloudflare Edge DO & 10-Table D1 Continuum Relay ($($cfHandover.status))" -ForegroundColor Green
     } catch {
         Write-Host "  [3/3] Local Continuum Handover armed (WAN offline)" -ForegroundColor Yellow
@@ -212,7 +212,7 @@ function Invoke-SovereignContinuumHandover {
 function Show-SovereignStatus {
     Write-Host ""
     Write-Host "==========================================================================" -ForegroundColor Cyan
-    Write-Host "   ACT-OMEGA NET v73.2.0 (SH4Z v7320 | CHAIN 404) -- TRI-SILICON CLUSTER STATUS       " -ForegroundColor Cyan
+    Write-Host "   ACT-OMEGA NET v73.2.1 (SH4Z v7320 | CHAIN 404) -- TRI-SILICON CLUSTER STATUS       " -ForegroundColor Cyan
     Write-Host "==========================================================================" -ForegroundColor Cyan
 
     $isPaused = Test-Path $pauseFile
@@ -289,7 +289,7 @@ function Show-SovereignClusterStatus {
 function Invoke-SovereignSixLayerVerify {
     Write-Host ""
     Write-Host "==========================================================================" -ForegroundColor Cyan
-    Write-Host "   ACT-OMEGA v73.2.0: 6-LAYER TRUE-DATA & ANTI-502 VERIFICATION AUDIT     " -ForegroundColor Cyan
+    Write-Host "   ACT-OMEGA v73.2.1: 6-LAYER TRUE-DATA & ANTI-502 VERIFICATION AUDIT     " -ForegroundColor Cyan
     Write-Host "==========================================================================" -ForegroundColor Cyan
 
     $failCount = 0
@@ -416,7 +416,7 @@ function Invoke-SovereignSixLayerVerify {
         if ($opKey.Length -ge 24) { $cfHdrs["X-Sovereign-Operator-Key"] = $opKey }
     }
     try {
-        $contRes = Invoke-RestMethod -Uri "https://sovereign-loq15-vpc-shadow.bospaladin34.workers.dev/api/v1/continuum/handover" -Headers $cfHdrs -TimeoutSec 5
+        $contRes = Invoke-RestMethod -Uri "https://act-omega-net.dev/api/v1/continuum/handover" -Headers $cfHdrs -TimeoutSec 5
     } catch {}
     $gscEdgeOk = $false
     try {

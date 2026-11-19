@@ -1,0 +1,35 @@
+{
+    "schema":  "ACT_OMEGA_C1_CHAIN399_404_CERT_RECEIPT_V1",
+    "version":  "v73.2.1",
+    "chain399_passing":  {
+                             "ok":  true,
+                             "certified":  true,
+                             "status":  "MEASURED_CHAIN399_CERTIFIED"
+                         },
+    "chain399_missing_weight_failing":  {
+                                            "ok":  false,
+                                            "certified":  false,
+                                            "status":  "UNMEASURED/OFFLINE",
+                                            "weights_manifest_ok":  false
+                                        },
+    "chain404_passing":  {
+                             "ok":  true,
+                             "certified":  true,
+                             "status":  "MEASURED_CHAIN404_CERTIFIED",
+                             "lean4_compiler_verified":  true,
+                             "weights_verified_count":  16
+                         },
+    "chain404_missing_weight_failing":  {
+                                            "ok":  false,
+                                            "certified":  false,
+                                            "status":  "UNMEASURED/OFFLINE",
+                                            "weights_manifest_ok":  false
+                                        },
+    "chain404_corrupted_lean_mirror_failing":  {
+                                                   "ok":  false,
+                                                   "certified":  false,
+                                                   "status":  "UNMEASURED/OFFLINE",
+                                                   "lean4_compiler_verified":  false,
+                                                   "lean4_theorems_qed":  0
+                                               }
+}

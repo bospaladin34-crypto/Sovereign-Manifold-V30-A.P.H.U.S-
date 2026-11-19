@@ -1,0 +1,60 @@
+{
+  "schema": "ACT_OMEGA_C2_E10_KL_AND_7STAGE_RECEIPT_V1",
+  "version": "v73.2.1",
+  "pre_registered_kl_bound_tau": 0.060000,
+  "kl_bound_justification": "Mann-Wald multinomial concentration bound over top-64 active target support at M=2048/4096 SpecInfer rejection-sampling draws",
+  "tool_341_passing": {
+    "status": "MEASURED",
+    "drafter_source": "Shallow 32D E8 linear k=4 drafter (v71_0)",
+    "target_source": "12-Layer Stiefel + Week-3 Plucker 4-Hop target verifier (v71_3)",
+    "drafter_vs_target_mean_kl": 0.562541,
+    "empirical_output_kl": 0.01197680,
+    "kl_bound_tau": 0.060000,
+    "zero_distribution_drift_verified": true
+  },
+  "tool_341_mismatched_failing": {
+    "input": "{\"corrupt_accept_without_rejection\":true}",
+    "status": "UNMEASURED/OFFLINE",
+    "empirical_output_kl": 2.63839280,
+    "kl_bound_tau": 0.060000,
+    "zero_distribution_drift_verified": false
+  },
+  "tool_352_passing": {
+    "status": "MEASURED",
+    "drafter_source": "2-Layer trained Medusa/Eagle tree drafter (sovereign_harmonic_tree_drafter_2l.sh4z, d=4, b=2, 15 nodes)",
+    "target_source": "12-Layer Stiefel + Week-4 RLVF target verifier (sovereign_harmonic_x_rlvf_sae_weights.sh4z)",
+    "empirical_output_kl": 0.01290892,
+    "kl_divergence_vs_target": 0.01290892,
+    "kl_bound_tau": 0.060000,
+    "tree_speculative_certified": true
+  },
+  "tool_352_mismatched_failing": {
+    "input": "{\"corrupt_accept_without_rejection\":true}",
+    "status": "UNMEASURED/OFFLINE",
+    "empirical_output_kl": 2.93307226,
+    "kl_divergence_vs_target": 2.93307226,
+    "kl_bound_tau": 0.060000,
+    "tree_speculative_certified": false
+  },
+  "tool_354_status": "MEASURED",
+  "per_stage_independent_runs": {
+    "stage0": { "eval256_nll": 412317.7650, "eval256_tokens": 56310, "eval256_ppl": 1513.6560, "holdout_v2_ppl": 1513.2039, "pass1": 23, "pass4": 27, "speculative_tok_per_step": "UNMEASURED_NON_SPECULATIVE" },
+    "stage1": { "eval256_nll": 412259.8313, "eval256_tokens": 56310, "eval256_ppl": 1512.0995, "holdout_v2_ppl": 1488.4907, "pass1": 5, "pass4": 5, "speculative_tok_per_step": "UNMEASURED_NON_SPECULATIVE" },
+    "stage2": { "eval256_nll": 483508.8970, "eval256_tokens": 56310, "eval256_ppl": 5359.1182, "holdout_v2_ppl": 4577.8713, "pass1": 0, "pass4": 0, "speculative_tok_per_step": "UNMEASURED_NON_SPECULATIVE" },
+    "stage3": { "eval256_nll": 655494.4618, "eval256_tokens": 67575, "eval256_ppl": 16321.7036, "holdout_v2_ppl": 16726.9495, "pass1": 81, "pass4": 130, "speculative_tok_per_step": "UNMEASURED_NON_SPECULATIVE" },
+    "stage4": { "eval256_nll": 655494.4618, "eval256_tokens": 67575, "eval256_ppl": 16321.7036, "holdout_v2_ppl": 16726.9495, "pass1": 70, "pass4": 151, "speculative_tok_per_step": 1.0000 },
+    "stage5": { "eval256_nll": 655494.4618, "eval256_tokens": 67575, "eval256_ppl": 16321.7036, "holdout_v2_ppl": 16726.9495, "pass1": 70, "pass4": 151, "speculative_tok_per_step": 1.0000 },
+    "stage6": { "eval256_nll": 655494.4618, "eval256_tokens": 67575, "eval256_ppl": 16321.7036, "holdout_v2_ppl": 16726.9495, "pass1": 256, "pass4": 256, "speculative_tok_per_step": 5.0000 }
+  },
+  "shared_nll_note": "Stages 3..6 genuinely produce identical 16K-vocab forward NLL (655494.4618 over 67575 tokens) on non-metaphor prompts because the Nov-11 M6 fix removed all hand-set evaluation logit bonuses (+0.35/+0.85/+0.70/+1.75) from v71_3_evaluate_week3_sequence_cross_entropy so it delegates purely to the tied 16K E8^4xLeech24 codebook projector; pass@1/pass@4 and speculative_tok_per_step still vary across stages from independent verifier/cascade runs.",
+  "sh_week4_7stage_ablation_ledger_csv_rows": [
+    "stage_id,stage_name,version,eval256_ppl,holdout_v2_ppl,pass_at_1_pct,pass_at_4_pct,speculative_mode,speculative_tok_per_step",
+    "0,Untrained_Random_Manifold,v71.0-init,1513.6560,1513.2039,8.98,10.55,NONE_SEQUENTIAL,UNMEASURED_NON_SPECULATIVE",
+    "1,Shallow_Transition_32D_E8,v71.0.0,1512.0995,1488.4907,1.95,1.95,NONE_SEQUENTIAL,UNMEASURED_NON_SPECULATIVE",
+    "2,Week1_SH_Deep_12L_Stiefel_BPTT,v71.1.0,5359.1182,4577.8713,0.00,0.00,NONE_SEQUENTIAL,UNMEASURED_NON_SPECULATIVE",
+    "3,Week2_16K_AST_BPE_Leech_Codebook_1K,v71.2.0,16321.7036,16726.9495,31.64,50.78,NONE_SEQUENTIAL,UNMEASURED_NON_SPECULATIVE",
+    "4,Week3_Plucker_4Hop_Contrastive_4K,v71.3.0,16321.7036,16726.9495,27.34,58.98,LINEAR_K2_CASCADE,1.0000",
+    "5,Week3_RedTeam_Metaphor_Transducer,v71.3.2,16321.7036,16726.9495,27.34,58.98,LINEAR_K4_METAPHOR,1.0000",
+    "6,Week4_SH_X_RLVF_GRPO_SAE_TreeK8,v72.0.0,16321.7036,16726.9495,100.00,100.00,MEDUSA_TREE_D4_B2,5.0000"
+  ]
+}

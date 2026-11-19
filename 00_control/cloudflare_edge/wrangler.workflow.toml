@@ -1,7 +1,7 @@
 name = "sovereign-paid-workflow"
 main = "worker_paid_workflow.js"
 compatibility_date = "2026-07-28"
-account_id = "a37cf8ab07e7c5f886c302be3f098744"
+account_id = "<EXTERNAL_CF_ACCOUNT_ID>"
 workers_dev = false
 
 [limits]
@@ -17,7 +17,7 @@ CF_VNET_NAME = "default"
 [[d1_databases]]
 binding = "ACT_OMEGA_D1"
 database_name = "act_omega_d1_vault"
-database_id = "9f46d56a-ef3e-4232-a9ac-c4bd12e20a87"
+database_id = "<EXTERNAL_D1_DATABASE_ID>"
 
 [[workflows]]
 name = "act-omega-audit-sync-workflow"
@@ -26,20 +26,20 @@ class_name = "SovereignAuditSyncWorkflow"
 
 [[hyperdrive]]
 binding = "ACT_OMEGA_HYPERDRIVE"
-id = "934af8d9f02d471cb383cb8c90ddfe51"
+id = "<EXTERNAL_HYPERDRIVE_ID>"
 
 [[vpc_services]]
 binding = "ANCHOR_L0_VPC"
-service_id = "01a1ed54-a2aa-75a1-b26d-87a034b759be"
+service_id = "<EXTERNAL_VPC_ANCHOR_ID>"
 
 [[vpc_services]]
 binding = "DENO_L2_VPC"
-service_id = "01a1ed54-b4ba-7730-914d-31040f471569"
+service_id = "<EXTERNAL_VPC_DENO_ID>"
 
 [[vpc_services]]
 binding = "PIXEL10_EDGE_VPC"
-service_id = "01a1ed54-c4be-7112-97b3-7a563ab6ba16"
+service_id = "<EXTERNAL_VPC_P10_ID>"
 
 [[vpc_services]]
 binding = "PIXEL8_APEX_VPC"
-service_id = "01a1ed54-d351-7fc3-aed2-3989d5385ddc"
+service_id = "<EXTERNAL_VPC_P8_ID>"

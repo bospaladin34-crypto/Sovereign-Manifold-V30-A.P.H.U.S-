@@ -1,0 +1,103 @@
+EXIT_CODE: 1
+=================================================================
+  ACT-Omega Net v73.2.1 -- Milestone M2 Full Verification Gauntlet
+=================================================================
+Using binary: c:\sovereign_manifold_v31\01_l0_rust\target_stage\release\v31_swarm.exe
+
+--- Test 1: Full-Manifest CLI Verification (v31_swarm.exe --verify-weights) ---
+VERIFY_ALL_WEIGHTS_OK: 16 artifacts verified in manifest
+>>> Test 1 PASS: Full manifest verified on disk with 0 exit code (16/16 artifacts valid).
+
+--- Test 2: Multi-Alias Manifest Consistency & Vault Mirroring ---
+>>> Test 2 PASS: Multi-alias manifest entries and E:\ vault mirror are consistent.
+
+--- Test 3: Failure Injection Across 4 Critical Artifacts (Mode 1 & Mode 2) ---
+
+  =======================================================
+  [Artifact: deep12l_weights]
+  =======================================================
+    [Mode 1: Missing File Failure Injection]
+      [E13 FAIL] Live server :8097 control probe FAILED (SERVER_UNREACHABLE_CONTROL_PROBE_FAILED) -- dead server cannot score as fail-closed!
+VERIFY_WEIGHTS_OK: 110720 bytes verified for deep12l_weights
+      Restored HTTP probe error: Unable to connect to the remote server
+      Mode 1 (Missing): FAIL (cliFail=True, httpFail=False, weightErr=False, zeroResynth=True, cliRest=True, httpRest=False)
+    [Mode 2: Corrupted Byte Failure Injection (XOR 0xFF at offset 64)]
+      [E13 FAIL] Live server :8097 control probe FAILED (SERVER_UNREACHABLE_CONTROL_PROBE_FAILED) -- dead server cannot score as fail-closed!
+VERIFY_WEIGHTS_OK: 110720 bytes verified for deep12l_weights
+      Restored HTTP probe error: Unable to connect to the remote server
+      Mode 2 (Corrupted): FAIL (cliFail=True, httpFail=False, weightErr=False, stillCorrupt=True, cliRest=True, httpRest=False)
+  >>> deep12l_weights: FAILED! (Mode1=False, Mode2=False)
+
+  =======================================================
+  [Artifact: week2_codebook]
+  =======================================================
+    [Mode 1: Missing File Failure Injection]
+      [E13 FAIL] Live server :8097 control probe FAILED (SERVER_UNREACHABLE_CONTROL_PROBE_FAILED) -- dead server cannot score as fail-closed!
+VERIFY_WEIGHTS_OK: 1048608 bytes verified for week2_codebook
+      Restored HTTP probe error: Unable to connect to the remote server
+      Mode 1 (Missing): FAIL (cliFail=True, httpFail=False, weightErr=False, zeroResynth=True, cliRest=True, httpRest=False)
+    [Mode 2: Corrupted Byte Failure Injection (XOR 0xFF at offset 64)]
+      [E13 FAIL] Live server :8097 control probe FAILED (SERVER_UNREACHABLE_CONTROL_PROBE_FAILED) -- dead server cannot score as fail-closed!
+VERIFY_WEIGHTS_OK: 1048608 bytes verified for week2_codebook
+      Restored HTTP probe error: Unable to connect to the remote server
+      Mode 2 (Corrupted): FAIL (cliFail=True, httpFail=False, weightErr=False, stillCorrupt=True, cliRest=True, httpRest=False)
+  >>> week2_codebook: FAILED! (Mode1=False, Mode2=False)
+
+  =======================================================
+  [Artifact: sh_xi_rw384_768_base]
+  =======================================================
+    [Mode 1: Missing File Failure Injection]
+      [E13 FAIL] Live server :8097 control probe FAILED (SERVER_UNREACHABLE_CONTROL_PROBE_FAILED) -- dead server cannot score as fail-closed!
+VERIFY_WEIGHTS_OK: 2295936 bytes verified for sh_xi_rw384_768_base
+      Restored HTTP probe error: Unable to connect to the remote server
+      Mode 1 (Missing): FAIL (cliFail=True, httpFail=False, weightErr=False, zeroResynth=True, cliRest=True, httpRest=False)
+    [Mode 2: Corrupted Byte Failure Injection (XOR 0xFF at offset 64)]
+      [E13 FAIL] Live server :8097 control probe FAILED (SERVER_UNREACHABLE_CONTROL_PROBE_FAILED) -- dead server cannot score as fail-closed!
+VERIFY_WEIGHTS_OK: 2295936 bytes verified for sh_xi_rw384_768_base
+      Restored HTTP probe error: Unable to connect to the remote server
+      Mode 2 (Corrupted): FAIL (cliFail=True, httpFail=False, weightErr=False, stillCorrupt=True, cliRest=True, httpRest=False)
+  >>> sh_xi_rw384_768_base: FAILED! (Mode1=False, Mode2=False)
+
+  =======================================================
+  [Artifact: sh_xi_moe_experts]
+  =======================================================
+    [Mode 1: Missing File Failure Injection]
+      [E13 FAIL] Live server :8097 control probe FAILED (SERVER_UNREACHABLE_CONTROL_PROBE_FAILED) -- dead server cannot score as fail-closed!
+VERIFY_WEIGHTS_OK: 869328 bytes verified for sh_xi_moe_experts
+      Restored HTTP probe error: Unable to connect to the remote server
+      Mode 1 (Missing): FAIL (cliFail=True, httpFail=False, weightErr=False, zeroResynth=True, cliRest=True, httpRest=False)
+    [Mode 2: Corrupted Byte Failure Injection (XOR 0xFF at offset 64)]
+      [E13 FAIL] Live server :8097 control probe FAILED (SERVER_UNREACHABLE_CONTROL_PROBE_FAILED) -- dead server cannot score as fail-closed!
+VERIFY_WEIGHTS_OK: 869328 bytes verified for sh_xi_moe_experts
+      Restored HTTP probe error: Unable to connect to the remote server
+      Mode 2 (Corrupted): FAIL (cliFail=True, httpFail=False, weightErr=False, stillCorrupt=True, cliRest=True, httpRest=False)
+  >>> sh_xi_moe_experts: FAILED! (Mode1=False, Mode2=False)
+
+--- Test 4: Rust Gradient Verification CLI (v31_swarm.exe --verify-gradients) ---
+powershell.exe : MOE_G1 (w_out): sp_i=0 tok_id=10 ana=1.23427462e-5 num=1.23424873e-5 rel=2.097564e-5
+At line:5 char:12
++ $deadOut = & powershell -NoProfile -ExecutionPolicy Bypass -File "C:\ ...
++            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (MOE_G1 (w_out):...rel=2.097564e-5:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+MOE_G1 (w_out): sp_i=1 tok_id=25 ana=-1.80235788e-1 num=-1.80232009e-1 rel=2.096906e-5
+MOE_G1 (w_out): sp_i=2 tok_id=50 ana=1.16003039e-5 num=1.16005422e-5 rel=2.054380e-5
+MOE_G1 (w_out): sp_i=3 tok_id=100 ana=1.17927111e-5 num=1.17924651e-5 rel=2.086119e-5
+VERIFY_GRADIENTS_OK: max relative error < 1e-4 (2.097564e-5)
+>>> Test 4 PASS: Reverse-mode finite-difference gradient check passed (< 1e-4 tolerance).
+
+--- Test 5: Zero Square Brackets Check (01_l0_rust\src\v33*.rs .. v99*.rs) ---
+>>> Test 5 PASS: 63 files scanned, exactly 0 square brackets found!
+
+=================================================================
+  Final Summary of M2 Verification Results:
+  - Test1_FullManifestCLI : PASS (0 exit code, 16/16 artifacts valid)
+  - Test2_MultiAliasConsistency : PASS (All aliases and E:\ mirror in sync)
+  - Test3_FailInject_deep12l_weights : FAIL (Mode 1 Missing: False, Mode 2 Corrupted: False)
+  - Test3_FailInject_week2_codebook : FAIL (Mode 1 Missing: False, Mode 2 Corrupted: False)
+  - Test3_FailInject_sh_xi_rw384_768_base : FAIL (Mode 1 Missing: False, Mode 2 Corrupted: False)
+  - Test3_FailInject_sh_xi_moe_experts : FAIL (Mode 1 Missing: False, Mode 2 Corrupted: False)
+  - Test4_GradientCheckCLI : PASS (max relative error < 1e-4)
+  - Test5_ZeroSquareBrackets : PASS (63 files verified, 0 brackets)
+=================================================================

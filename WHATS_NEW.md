@@ -1,16 +1,16 @@
-# 🌌 What's New in ACT-Omega Net `v73.2.0` (`Unified Standalone Lab`, `Cloudflare Paid Workflows`, `5-Service QUIC VPC Mesh` & `Hyperdrive TLS PGWire -> DuckDB`, `Two-Phase Q8_0 Matryoshka Pretraining 0.242909 -> 0.104339 BPB` | `Vesper Multi-Mode Mica Shell CLS 0.00` | `SH4Z v7320 TLV` | `CHAIN 404` | `1,010/1,010 Lean 4 QED` | `262,144 Bijected Cachelines` | `84,480 Neurons` | `4,055,040 Synapses` | `59 Gemini MCP Tools`)
+# 🌌 What's New in ACT-Omega Net `v73.2.1` (`27-Item Muse Strict Remediation`, `Unified Standalone Lab`, `Cloudflare Paid Workflows`, `5-Service QUIC VPC Mesh` & `Hyperdrive TLS PGWire -> DuckDB`, `Two-Phase Q8_0 Matryoshka Pretraining 0.244138 -> 0.132292 -> 0.113401 -> 0.113064 BPB` | `Vesper Multi-Mode Mica Shell CLS 0.00` | `SH4Z v7321 TLV` | `CHAIN 404` | `1,010/1,010 Lean 4 QED` | `262,144 Bijected Cachelines` | `84,480 Neurons` | `4,055,040 Synapses` | `59 Gemini MCP Tools`)
 
 - **Primary Author & Principal Systems Architect**: **Donevin Frownfelter** (`@bospaladin34-crypto`)
-- **Release Tag**: `v73.2.0` (`2026-11-18`)
+- **Release Tag**: `v73.2.1` (`2026-11-18`)
 - **Zenodo Permanent DOI**: [`10.5281/zenodo.23651696`](https://doi.org/10.5281/zenodo.23651696)
 - **OSF Permanent DOI**: [`10.17605/OSF.IO/2XQ5Z`](https://osf.io/2xq5z/overview)
-- **Hardware Point-of-Origin**: YubiKey 5C NFC (`Serial: 39651128`, Resident `ED25519-SK` `SHA256:KwsDUzdrEWHpWFSt0BXhx0ryT/tOM78n0mlhwgLAzBo`)
+- **Hardware Point-of-Origin**: YubiKey 5C NFC (Dynamic FIDO2 Resident `ED25519-SK` verified via `.ssh/allowed_signers`)
 
 ---
 
 ## 🏛️ Foundational Mathematical Citations — Maryna S. Viazovska ($E_8$ & $\Lambda_{24}$ Sphere Packing & Universal Optimality)
 
-The `SH4Z v7320` lattice vector quantizer, the constructive $E_8 \oplus E_8 \oplus E_8 \to \Lambda_{24}$ Turyn–Golay bridge, and the tied $E_8^{\oplus 4} \times \Lambda_{24}$ 56D Lattice Codebook across our `84,480`-neuron / `262,144`-cacheline connectome are grounded in the landmark theorems of **Maryna S. Viazovska** (2022 Fields Medalist) and collaborators establishing optimal sphere packing and universal optimality in dimensions $8$ and $24$:
+The `SH4Z v7321` lattice vector quantizer, the constructive $E_8 \oplus E_8 \oplus E_8 \to \Lambda_{24}$ Turyn–Golay bridge, and the tied $E_8^{\oplus 4} \times \Lambda_{24}$ 56D Lattice Codebook across our `84,480`-neuron / `262,144`-cacheline connectome are grounded in the landmark theorems of **Maryna S. Viazovska** (2022 Fields Medalist) and collaborators establishing optimal sphere packing and universal optimality in dimensions $8$ and $24$:
 
 1. **Viazovska, Maryna S. (2017)**. *"The sphere packing problem in dimension 8."* **Annals of Mathematics**, Vol. 185, Issue 3, pp. 991–1015. DOI: [`10.4007/annals.2017.185.3.7`](https://doi.org/10.4007/annals.2017.185.3.7)
 2. **Cohn, Henry; Kumar, Abhinav; Miller, Stephen D.; Radchenko, Danylo; Viazovska, Maryna S. (2017)**. *"The sphere packing problem in dimension 24."* **Annals of Mathematics**, Vol. 185, Issue 3, pp. 1017–1033. DOI: [`10.4007/annals.2017.185.3.8`](https://doi.org/10.4007/annals.2017.185.3.8)
@@ -20,17 +20,17 @@ See [`CITATION.cff`](./CITATION.cff) for machine-readable BibTeX/CFF attribution
 
 ---
 
-## 🚀 Key Architectural Milestones in `v73.2.0` (`v72.2.0` $\to$ `v73.2.0` | `Tools 369–404` | `CHAIN 404` | `1,010/1,010 Lean 4 QED`)
+## 🚀 Key Architectural & Remediation Milestones in `v73.2.1` (`e9804bf` $\to$ `v73.2.1` | `Tools 369–404` | `CHAIN 404` | `1,010/1,010 Lean 4 QED`)
 
-### 000. Unified Standalone Lab (`Suite v3.0.0`), Nov 12–15 Research Kernels (`T382..T399`), Cloudflare Paid (`$5/mo`) VPC Mesh & Hyperdrive PGWire (`T400..T404`), and Two-Phase `Q8_0` Matryoshka Convergence
+### 000. 27-Item Muse Audit Remediation (`S1–S6`, `M1–M2`, `C1–C2`, `D1–D4`, `E1–E13`), Unified Standalone Lab (`Suite v3.0.0`), Cloudflare Paid (`$5/mo`) VPC Mesh & Hyperdrive PGWire (`T400..T404`), and Receipt-Reconciled Two-Phase `Q8_0` Matryoshka
+- **Gate 1–5 Security, Measurement & Certification Hardening ([`COMPLETION_REPORT_V73_MUSE.md`](./COMPLETION_REPORT_V73_MUSE.md))**:
+  - Closed unauthenticated SQL/D1/Vectorize/AI/Hyperdrive/Governor/Mesh doors (`S1–S6`, `E1–E2`), bound `:8097`/`:5173` to `127.0.0.1` by default, replaced free-form `T403` SQL with a 4-query parameterized allowlist under `enable_external_access=false`, enforced strict MCP origin allowlisting with zero operator-key injection (`S5`), externalized Cloudflare IDs (`S6`), implemented empirical diagonal Fisher curvature + 4-state Viterbi TCQ in `T383` (`M1`), and made every certification gate (`C1`, `C2`, `D4`, `E3`, `E4`, `E5`) fail-closed on corrupted or unverified inputs.
 - **Unified Standalone Lab (`E:\ACT_OMEGA_STANDALONE_LAB`, `01_l0_rust/src/v73_0_unified_standalone_lab_bridge.rs`)**:
-  - Consolidated `58` conserved files across `E:\OMEGA_RND_LAB` and `E:\ACT_OMEGA_STANDALONE_LAB` (`OmegaRnDDeck.exe` `8/8` R&D chaos vectors PASS, `OmegaLabLauncher.exe` `v3.0.0`, `OmegaShell.exe`, `OmegaBrowser.exe`), plus workspace crates `crates/omega_rnd_core_audit` (`10/10` unit tests) and `crates/omega_sec_manifold` (`2/2` unit tests, Deno FFI `/api/v1/sec/ffi_self_test`).
-- **Nov 12–15 Research Kernels & Cloudflare VPC Mesh + Hyperdrive PGWire (`v73_1` & `v73_2`, `59` Gemini MCP Tools)**:
-  - Activated `T382..T393` mathematical/security kernels, 5-stage Deep Research, Cloudflare Paid Workers (`cpu_ms = 30000`, `*/5 * * * *` Cron, `act-omega-telemetry-wal-queue` + `act-omega-dlq`, `worker_paid_workflow.js`), `sovereign-vpc-mesh` QUIC tunnel (`4/4` VPC Services `MEASURED_VPC_ONLINE` across `:8097`/`:8099`/`:19788`/`:19792`), and Deno TLS PGWire `:5439` $\to$ DuckDB (`819` corpus docs) queried live via Hyperdrive `934af8d9f02d471cb383cb8c90ddfe51`.
-- **Two-Phase `Q8_0` Matryoshka Convergence (`v31_swarm.exe --train-offline --steps 10000`) & Downstream Recertification**:
-  - Verified finite-difference gradients (`MaxRelGradErr = 2.097564e-5 < 1e-4`), monotonic `RW-Eval-500` validation `BPB` **`0.242909` $\to$ `0.126839` (`384D`, `ppl = 154.710096`) $\to$ `0.104651` (`768D`, `ppl = 64.048689`) $\to$ `0.104339` (`768D + Top-2 of 16/256 MoE`, `ppl = 63.2581`)**, `96`-dialogue masked ChatML SFT (`PromptGradNorm = 0.0`, CE `9.704061 -> 9.173949`, `0` holdout overlap), `0x53484432` 2L tree drafter (`5.0000` tok/step, `KL = 0.0`), `IFEval-Lite-64 = 64/64`, `JSON FSM = 100/100`, `16/16` manifest-verified weights, and **`1,010/1,010` substantive Lean 4 theorems QED** (`thm_v73_2_996..thm_v73_2_1010`, `0 sorry`).
-- **Live Dual-Pixel $\to$ Host HUD (`:5173` & `https://act-omega-net.dev`) Telemetry Fix & Periphery Lockstep**:
-  - Upgraded `App.tsx` telemetry polling (`127.0.0.1:8097` PNA + `/api/v1/StateGraph` tunnel passthrough + strict payload guard), `MainActivity.kt` RTT/bearer/WAN `/api/v1/StateGraph` roaming, `SovereignTrayAndHud.cs` (`Ω73`), and `02_gateway_deno/server.ts` `:8099/api/v1/telemetry` live L0 merge.
+  - Consolidated `58` conserved files across `E:\OMEGA_RND_LAB` and `E:\ACT_OMEGA_STANDALONE_LAB` (`OmegaRnDDeck.exe`, `OmegaLabLauncher.exe`, `OmegaShell.exe`, `OmegaBrowser.exe`), plus workspace crates `crates/omega_rnd_core_audit` (`10/10` unit tests) and `crates/omega_sec_manifold` (`2/2` unit tests), with honest top-level rollup status (`E6`) when lab stations are offline.
+- **Receipt-Reconciled Two-Phase `Q8_0` Matryoshka Ladder (`M2`, `E11`) & Deterministic `64`-Dialogue Workspace SFT (`D1`, `D2`)**:
+  - Reconciled validation `BPB` across `00_control/weights/sh_xi_base_train_meta.json` and `00_control/weights/sh_xi_moe_train_meta.json`: Step-0 **`0.244138` (`gamma=0.0` Net2Wider; `0.245257` `gamma=1.0` ungated) $\to$ `0.132292` (`384D`, `ppl = 187.526750`) $\to$ `0.113401` (`768D`, `ppl = 88.815700`) $\to$ `0.113064` (`768D + Top-2 of 16/256 MoE`, `ppl = 87.638513`)**; regenerated deterministic **`64`-dialogue (`1..8` turns, `288` unique turns) workspace-harvested ChatML SFT** (`00_control/generate_sft_corpus.mjs`, `PromptGradNorm = 0.0`, CE `9.704061 -> 9.097826`, `0` holdout overlap); stripped all answer-seeding (`D2`); verified `JSON FSM = 100/100`; attached explicit per-blob provenance across `16/16` manifest weights (`E11`); and compiler-verified **`1,010/1,010` substantive Lean 4 theorems QED** (`thm_v73_2_996..thm_v73_2_1010`, `0 sorry`).
+- **Live Dual-Pixel $\to$ Host HUD (`:5173` & `https://act-omega-net.dev`) Telemetry & Periphery Lockstep (`E9`)**:
+  - Synchronized `App.tsx`, `MainActivity.kt` (`v73.2.1`, `versionCode = 74`), `SovereignTrayAndHud.cs` (`Ω73.2`), `.zenodo.json`, and `CITATION.cff` with zero unmeasured fallbacks or hardcoded device serials.
 
 ---
 

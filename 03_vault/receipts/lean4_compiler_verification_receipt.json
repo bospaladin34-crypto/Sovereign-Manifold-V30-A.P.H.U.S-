@@ -1,0 +1,13 @@
+{
+    "schema":  "ACT_OMEGA_LEAN4_COMPILER_VERIFICATION_RECEIPT_V1",
+    "version":  "v73.2.1",
+    "lean_file":  "03_vault/lean4/SovereignManifoldTheorems.lean",
+    "lean_mirror":  "01_l0_rust/lean4/SovereignManifoldTheorems.lean",
+    "lean_sha256":  "07f281865f2405216b79c5bc0218ea7a2ff4f6719c6a649494d56745fb51f445",
+    "theorems_verified":  1010,
+    "sorry_count":  0,
+    "axiom_count":  0,
+    "compiler_exit_code":  0,
+    "compiler_elapsed_ms":  37751,
+    "verified_at_utc":  "2026-11-19T00:11:45Z"
+}

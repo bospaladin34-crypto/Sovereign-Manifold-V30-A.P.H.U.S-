@@ -3017,7 +3017,7 @@ pub fn v62_measure_vesper_swarm_formations_and_chain288_cert(input: &str) -> Str
     let cert_status = if cert_ok {
         "CHAIN_288_MASTER_CERTIFIED_OK"
     } else {
-        "CHAIN_CERTIFICATION_EVALUATING"
+        "CHAIN_288_NOT_CERTIFIED"
     };
 
     let clones_joined = clones_json.join(",");

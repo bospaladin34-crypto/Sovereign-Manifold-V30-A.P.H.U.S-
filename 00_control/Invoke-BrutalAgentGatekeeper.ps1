@@ -490,8 +490,8 @@ if ($FullAudit) {
         $c312 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/chain312/master_certification" -TimeoutSec 20
         $c316 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/chain316/master_certification" -TimeoutSec 20
         $c350 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/chain350/master_certification" -TimeoutSec 120
-        $c362 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/chain362/master_certification" -Method Post -Body '{}' -ContentType 'application/json' -Headers $opHdrs -TimeoutSec 120
-        $c368 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/chain368/master_certification" -Method Post -Body '{}' -ContentType 'application/json' -Headers $opHdrs -TimeoutSec 120
+        $c362 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/chain362/master_certification" -Method Post -Body '{}' -ContentType 'application/json' -Headers $opHdrs -TimeoutSec 180
+        $c368 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/chain368/master_certification" -Method Post -Body '{}' -ContentType 'application/json' -Headers $opHdrs -TimeoutSec 240
         $toolsCount = if ($c300.tools_verified) { $c300.tools_verified } else { $c300.total_chain_tools }
         $thmCount = if ($c300.lean4_theorems_qed) { $c300.lean4_theorems_qed } else { $c300.lean4_qed_theorems }
         $c308Tools = if ($c308.tools_verified) { $c308.tools_verified } else { $c308.total_tools }

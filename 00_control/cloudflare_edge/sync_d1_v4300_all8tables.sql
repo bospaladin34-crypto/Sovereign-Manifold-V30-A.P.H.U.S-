@@ -1,6 +1,6 @@
 -- =============================================================================
 -- ACT-OMEGA NET v47.0.0 (SH4Z v4700 TLV) - FULL 10-TABLE CLOUDFLARE D1 SYNC
--- Synchronizes all 10 tables in act_omega_d1_vault (9f46d56a-ef3e-4232-a9ac-c4bd12e20a87):
+-- Synchronizes all 10 tables in act_omega_d1_vault (<EXTERNAL_D1_DATABASE_ID>):
 -- 1. harness_5w1h_audit_log
 -- 2. npage_tier_snapshots
 -- 3. wal_merkle_checkpoints

@@ -1,0 +1,46 @@
+{
+    "schema":  "ACT_OMEGA_E6_E7_LAB_AND_SELFTEST_RECEIPT_V1",
+    "version":  "v73.2.1",
+    "e6_all_stations_offline":  {
+                                    "ok":  false,
+                                    "status":  "UNMEASURED/OFFLINE",
+                                    "measured_live":  false,
+                                    "online_count":  0,
+                                    "offline_count":  22
+                                },
+    "e6_with_station_live":  {
+                                 "ok":  true,
+                                 "status":  "MEASURED",
+                                 "measured_live":  true,
+                                 "online_count":  1,
+                                 "offline_count":  21
+                             },
+    "e7_self_tests_passing":  {
+                                  "t385":  {
+                                               "ok":  true,
+                                               "status":  "SELF_TEST"
+                                           },
+                                  "t389":  {
+                                               "ok":  true,
+                                               "status":  "SELF_TEST"
+                                           },
+                                  "t391":  {
+                                               "ok":  true,
+                                               "status":  "SELF_TEST"
+                                           }
+                              },
+    "e7_bad_inputs_failing":  {
+                                  "t385_cell_a_99":  {
+                                                         "ok":  false,
+                                                         "status":  "SELF_TEST_FAILED"
+                                                     },
+                                  "t389_token_neg5":  {
+                                                          "ok":  false,
+                                                          "status":  "SELF_TEST_FAILED"
+                                                      },
+                                  "t391_corrupt_test":  {
+                                                            "ok":  false,
+                                                            "status":  "SELF_TEST_FAILED"
+                                                        }
+                              }
+}

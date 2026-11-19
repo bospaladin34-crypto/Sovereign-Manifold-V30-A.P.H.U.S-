@@ -1,0 +1,113 @@
+{
+    "watermark_commit":  "e9804bf2",
+    "captured_at_utc":  "2026-11-18T21:28:59Z",
+    "items":  {
+                  "S1":  {
+                             "snippet":  "{\"ok\":true,\"status\":\"MEASURED_DUCKDB_HYPERDRIVE_READY\",\"tool_id\":403,\"tool_name\":\"cloudflare_hyperdrive_duckdb_query\",\"hyperdrive_config_present\":true,\"elapsed_ms\":892.227,\"sql\":\"SELECT size FROM read_text(\u002701_l0_rust/Cargo.toml\u0027)\",\"rows\":[",
+                             "http_status":  200
+                         },
+                  "S2":  {
+                             "has_operator_auth_in_paid_workflow":  false,
+                             "has_raw_sql_exec":  true
+                         },
+                  "S3":  {
+                             "d1_all10tables":  200,
+                             "d1_all8tables":  200,
+                             "d1_vpc_shadow":  200
+                         },
+                  "S4":  {
+                             "/api/v1/vectorize/query":  400,
+                             "/api/v1/ai/embed":  200
+                         },
+                  "S5":  {
+                             "mcp_wildcard_cors":  true,
+                             "mcp_auto_injects_operator_key":  true
+                         },
+                  "S6":  {
+                             "tracked_git_grep_hits":  86
+                         },
+                  "M1":  {
+                             "distortion_reduction_pct":  14.95,
+                             "status":  "MEASURED"
+                         },
+                  "M2":  {
+                             "stale_0104_339_stale_hits":  86,
+                             "moe_meta_val_bpb_3shell":  0.075261
+                         },
+                  "C1":  {
+                             "uses_string_contains_ok":  true,
+                             "unauth_http_status":  200
+                         },
+                  "C2":  {
+                             "kl_divergence_vs_target":  0.000000000000,
+                             "empirical_output_kl":  "NOT_MEASURED"
+                         },
+                  "D1":  {
+                             "has_sorry_in_generator":  true,
+                             "reads_workspace_files":  false
+                         },
+                  "D2":  {
+                             "starts_with_hardcoded_seed":  true,
+                             "snippet":  "At 40% battery: `.  `vganacci__i64starionpage__distmplype26214455unt46 |per_root"
+                         },
+                  "D3":  {
+                             "ignores_pacing_and_active_d":  true
+                         },
+                  "D4":  {
+                             "catchall_status":  "OK_V44_0_0"
+                         },
+                  "E6":  {
+                             "ok":  true,
+                             "online_stations":  null,
+                             "measured_live":  true
+                         },
+                  "E7":  {
+                             "status":  "MEASURED"
+                         },
+                  "E1":  {
+                             "/api/v1/chain316/master_certification":  200,
+                             "/api/v1/cloudflare/vpc_probe":  200,
+                             "/api/v1/vesper_arachne/e8_ik":  200,
+                             "/api/v1/synthesis/bleeding_edge_1":  200,
+                             "/api/v1/cloudflare/free_tier_governor":  200,
+                             "/api/v1/cloudflare/paid_tier_governor":  200,
+                             "/api/v1/cloudflare/vpc_mesh_status":  200
+                         },
+                  "E2":  {
+                             "unauth_t382_http":  200,
+                             "unauth_t400_http":  200
+                         },
+                  "E3":  {
+                             "has_zero_residual_tuple_fallback":  true,
+                             "has_explicit_biv_bypass":  true
+                         },
+                  "E4":  {
+                             "gates_measured_on_tautological_plucker":  true
+                         },
+                  "E5":  {
+                             "uses_contains_valid_json_parses":  true
+                         },
+                  "E8":  {
+                             "hardcodes_kl_eq_0":  true,
+                             "hardcodes_32784":  true
+                         },
+                  "E9":  {
+                             "synthetic_holdout_ppl":  1.102154,
+                             "worker_has_adb_serials":  true
+                         },
+                  "E10":  {
+                              "t341_empirical_output_kl_is_null":  true
+                          },
+                  "E11":  {
+                              "init_384_eq_768":  true,
+                              "manifest_has_provenance":  false
+                          },
+                  "E12":  {
+                              "has_d1_cosine_known_vector_test":  false
+                          },
+                  "E13":  {
+                              "catch_treats_exception_as_pass":  true,
+                              "hardcoded_15_of_15":  true
+                          }
+              }
+}

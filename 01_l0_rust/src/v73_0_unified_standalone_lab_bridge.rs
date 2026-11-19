@@ -547,10 +547,18 @@ pub fn v73_0_dispatch_unified_lab_deck(_payload: &str) -> String {
     let manifest_present = fs::metadata(V73_0_UNIFIED_MANIFEST_PATH).is_ok();
     let elapsed_ms = t0.elapsed().as_secs_f64() * 1000.0;
 
+    let deck_live_ok = online_count > 0;
+    let deck_status = if deck_live_ok { "MEASURED" } else { "UNMEASURED/OFFLINE" };
+
     format!(
-        "{{\"ok\":true,\"suite\":\"ACT-Omega Unified Standalone & R&D Lab v3.0.0\",\"lab_root\":\"E:\\\\ACT_OMEGA_STANDALONE_LAB\",\"manifest_present\":{},\"measured_live\":true,\"online_count\":{},\"offline_count\":{},\"total_endpoints\":{},\"probe_elapsed_ms\":{:.3},\"seqlock_bus\":{},\"ssh_tunnels\":{{\"pixel10_22222\":\"{}\",\"pixel8_22223\":\"{}\"}},\"stations\":{}}}",
+        "{{\"ok\":{},\"status\":\"{}\",\"suite\":\"ACT-Omega Unified Standalone & R&D Lab v3.0.0\",\"lab_root\":\"E:\\\\ACT_OMEGA_STANDALONE_LAB\",\"manifest_present\":{},\"measured_live\":{},\"online_count\":{},\"online_stations\":{},\"offline_count\":{},\"offline_stations\":{},\"total_endpoints\":{},\"probe_elapsed_ms\":{:.3},\"seqlock_bus\":{},\"ssh_tunnels\":{{\"pixel10_22222\":\"{}\",\"pixel8_22223\":\"{}\"}},\"stations\":{}}}",
+        deck_live_ok,
+        deck_status,
         manifest_present,
+        deck_live_ok,
         online_count,
+        online_count,
+        offline_count,
         offline_count,
         results.len(),
         elapsed_ms,

@@ -127,7 +127,7 @@ namespace SovereignManifoldDesktop
             _onRunAction = onRunAction;
             _onLaunchVesperIk = onLaunchVesperIk;
 
-            this.Text = "ACT-Omega v73.2.0 Live Desktop Widget (SH4Z v7320 | Unified Lab + VPC Mesh | SH-XI MoE | CHAIN 404 | 1,010 QED)";
+            this.Text = "ACT-Omega v73.2.1 Live Desktop Widget (SH4Z v7321 | Unified Lab + VPC Mesh | SH-XI MoE | CHAIN 404 | 1,010 QED)";
             this.FormBorderStyle = FormBorderStyle.None;
             this.StartPosition = FormStartPosition.Manual;
             this.Size = new Size(430, 295);
@@ -294,11 +294,11 @@ namespace SovereignManifoldDesktop
                     {
                         g.FillRectangle(bBg, badgeRect);
                         g.DrawRectangle(pB, badgeRect);
-                        g.DrawString("\u03A973.2", fBdg, brAmber, 12, 10);
+                        g.DrawString("\u03A973.2.1", fBdg, brAmber, 12, 10);
                     }
 
                     // Status ticker
-                    string line1 = "ACT-OMEGA v73.2.0 (UNIFIED LAB + VPC MESH | SH-XI MoE | CHAIN 404 | 1,010/1,010 QED)";
+                    string line1 = "ACT-OMEGA v73.2.1 (UNIFIED LAB + VPC MESH | SH-XI MoE | CHAIN 404 | 1,010/1,010 QED)";
                     string line2 = _tel.Online
                         ? string.Format("{0:0.0}k ops | RTX {1:0}C | P10 {2:0}C | P8 {3:0}C | FNO={4:0.0000}",
                             _tel.ClusterKops, _tel.RtxTemp, _tel.P10Temp, _tel.P8Temp, _tel.FnoL2Err)
@@ -321,7 +321,7 @@ namespace SovereignManifoldDesktop
                         g.DrawRectangle(borderPen, 1, 1, this.Width - 3, this.Height - 3);
                     }
 
-                    g.DrawString("ACT-OMEGA v73.2.0 (SH-XI v7320 | CHAIN 404 | 1,010 QED) [MINI-HUD]", fTitle, brAmber, 12, 10);
+                    g.DrawString("ACT-OMEGA v73.2.1 (SH-XI v7321 | CHAIN 404 | 1,010 QED) [MINI-HUD]", fTitle, brAmber, 12, 10);
 
                     Brush statusBr = _tel.Online ? brGreen : brRed;
                     string statusTxt = _tel.Online
@@ -342,9 +342,9 @@ namespace SovereignManifoldDesktop
                     g.DrawString(hwLine2, fSub, brAmber, 12, 64);
 
                     string vesperLine = _tel.Online
-                        ? string.Format("SH-XI v7320 (BPB 0.1043) | Sync P10#{0}({1:0.0}ms) P8#{2}({3:0.0}ms)",
+                        ? string.Format("SH-XI v7321 (BPB 0.113064) | Sync P10#{0}({1:0.0}ms) P8#{2}({3:0.0}ms)",
                             _tel.P10Broadcasts, _tel.P10RttMs, _tel.P8Broadcasts, _tel.P8RttMs)
-                        : "SH-XI v7320 (BPB 0.1043) | Vesper Mica CLS 0.00 | UNMEASURED";
+                        : "SH-XI v7321 (BPB 0.113064) | Vesper Mica CLS 0.00 | UNMEASURED";
                     g.DrawString(vesperLine, fSub, brCyan, 12, 80);
 
                     // 16x65 Measured .e8z Cacheline + Live Telemetry Sector Norm Heatmap (Zero sin/cos waves)
@@ -430,14 +430,14 @@ namespace SovereignManifoldDesktop
             }
 
             ContextMenu menu = new ContextMenu();
-            _miStatus = new MenuItem("ACT-Omega v73.2.0 | Awaiting :8097 Telemetry...");
+            _miStatus = new MenuItem("ACT-Omega v73.2.1 | Awaiting :8097 Telemetry...");
             _miStatus.Enabled = false;
             menu.MenuItems.Add(_miStatus);
             menu.MenuItems.Add("-");
 
-            // Feature 11: 8 Unified Functional Domains Submenu + v73.2.0 Unified Lab / VPC Mesh / SH-XI Suite
-            MenuItem miShXi = new MenuItem("ACT-Omega v73.2.0 (Unified Lab, VPC Mesh & SH-XI MoE — T357..T404)");
-            miShXi.MenuItems.Add(new MenuItem("SH-XI 3-Shell + 16/256 MoE Converse (T361)", (s, e) => ExecuteClusterAction("/api/v1/sovereign_harmonic/xi/week2/converse?prompt=Verify+SH-XI+v73.2.0+status", "SH-XI CONVERSE T361")));
+            // Feature 11: 8 Unified Functional Domains Submenu + v73.2.1 Unified Lab / VPC Mesh / SH-XI Suite
+            MenuItem miShXi = new MenuItem("ACT-Omega v73.2.1 (Unified Lab, VPC Mesh & SH-XI MoE — T357..T404)");
+            miShXi.MenuItems.Add(new MenuItem("SH-XI 3-Shell + 16/256 MoE Converse (T361)", (s, e) => ExecuteClusterAction("/api/v1/sovereign_harmonic/xi/week2/converse?prompt=Verify+SH-XI+v73.2.1+status", "SH-XI CONVERSE T361")));
             miShXi.MenuItems.Add(new MenuItem("SH-XI Shell 2 Disk-Backed 16/256 Sparse MoE (T363)", (s, e) => ExecuteClusterAction("/api/v1/sovereign_harmonic/xi/week2/shell2_sparse_moe", "SH-XI 16/256 MOE T363")));
             miShXi.MenuItems.Add(new MenuItem("SH-XI ChatML Masked Assistant SFT (T364)", (s, e) => ExecuteClusterAction("/api/v1/sovereign_harmonic/xi/week2/chatml_masked_sft", "SH-XI MASKED SFT T364")));
             miShXi.MenuItems.Add(new MenuItem("SH-XI 384D Intel UHD WebGPU WGSL Grounded RAG (T365)", (s, e) => ExecuteClusterAction("/api/v1/sovereign_harmonic/xi/week2/igpu_grounded_rag?q=Leech+lattice+bijection", "SH-XI 384D WGSL RAG T365")));
@@ -498,16 +498,16 @@ namespace SovereignManifoldDesktop
             menu.MenuItems.Add("-");
             menu.MenuItems.Add(new MenuItem("Zenodo DOI: 10.5281/zenodo.23651696", (s, e) => Process.Start("https://doi.org/10.5281/zenodo.23651696")));
             menu.MenuItems.Add(new MenuItem("OSF DOI: 10.17605/OSF.IO/2XQ5Z", (s, e) => Process.Start("https://osf.io/2xq5z/overview")));
-            menu.MenuItems.Add(new MenuItem("Architecture Specifications (v73.2.0)", (s, e) =>
+            menu.MenuItems.Add(new MenuItem("Architecture Specifications (v73.2.1)", (s, e) =>
             {
                 MessageBox.Show(
-                    "ACT-Omega Net v73.2.0 (SH4Z v7320 TLV | Unified Lab + VPC Mesh + Hyperdrive | Vesper Mica CLS 0.00 | CHAIN 404 | 1,010/1,010 QED)\n\n" +
+                    "ACT-Omega Net v73.2.1 (SH4Z v7321 TLV | Unified Lab + VPC Mesh + Hyperdrive | Vesper Mica CLS 0.00 | CHAIN 404 | 1,010/1,010 QED)\n\n" +
                     "\u2022 Primary Author: Donevin Frownfelter (bospaladin34-crypto)\n" +
                     "\u2022 Vesper Shell Modes: Calm | HUD (Engineer) | Proof | Vault | Tools | Settings (CLS 0.00)\n" +
                     "\u2022 Shards / Neurons: 84,480 (Core 21,120 + Exp 21,120 + Tier-3 21,120 + Tier-4 21,120)\n" +
                     "\u2022 Bijected 64B Cachelines: 262,144 (168,960 .npage + 84,480 .spage + 8,704 .e8z = 16.00 MiB)\n" +
                     "\u2022 Synapses: 4,055,040 Synapses (1.35M .npage + 2.70M .spage Auxiliary Bank)\n" +
-                    "\u2022 Sovereign Harmonic XI: Two-Phase Q8_0 384D/768D + 16/256 Sparse MoE (BPB 0.2429 -> 0.104339, ChatML SFT, 384D WGSL RAG, JSON FSM)\n" +
+                    "\u2022 Sovereign Harmonic XI: Two-Phase Q8_0 384D/768D + 16/256 Sparse MoE (BPB 0.244138 -> 0.113064, 64-Dialogue ChatML SFT, 384D WGSL RAG, JSON FSM)\n" +
                     "\u2022 Unified Lab & Cloud VPC: 58-File Lab (T369..T381), Research Kernels (T382..T399), 5-Service QUIC Mesh & TLS PGWire :5439 -> DuckDB + Hyperdrive\n" +
                     "\u2022 Native Gemma 4 Vaults: E4B-it (2.12 GB) + 12B-it (3.17 GB) = 5.30 GB .sh4z\n" +
                     "\u2022 Columns: 1,920 Chair-44 Columns | Sub-Domains: 192 (48 x 4)\n" +
@@ -518,7 +518,7 @@ namespace SovereignManifoldDesktop
                     "Permanent Archival DOIs:\n" +
                     "\u2022 Zenodo: 10.5281/zenodo.23651696\n" +
                     "\u2022 OSF: 10.17605/OSF.IO/2XQ5Z",
-                    "ACT-Omega Net v73.2.0 Architecture Specifications",
+                    "ACT-Omega Net v73.2.1 Architecture Specifications",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Information
                 );
@@ -536,7 +536,7 @@ namespace SovereignManifoldDesktop
 
             _trayIcon = new NotifyIcon();
             _trayIcon.Icon = BuildDynamicSovereignIcon(false);
-            _trayIcon.Text = "ACT-Omega v73.2.0 | Connecting to :8097...";
+            _trayIcon.Text = "ACT-Omega v73.2.1 | Connecting to :8097...";
             _trayIcon.ContextMenu = menu;
             _trayIcon.Visible = true;
             _trayIcon.DoubleClick += (s, e) => LaunchNativeDesktopHudWindow();
@@ -708,7 +708,7 @@ namespace SovereignManifoldDesktop
             if (endpointOrCmd == "HANDOVER_PHONES")
             {
                 RunLifecycleScript("handover");
-                _trayIcon.ShowBalloonTip(2000, "ACT-Omega v73.2.0 Continuum Handover", "16.00MiB Bijected .npage+.spage+.e8z SHM & 6-Layer state handed over to Pixel 8, Pixel 10 & Cloudflare DO.", ToolTipIcon.Info);
+                _trayIcon.ShowBalloonTip(2000, "ACT-Omega v73.2.1 Continuum Handover", "16.00MiB Bijected .npage+.spage+.e8z SHM & 6-Layer state handed over to Pixel 8, Pixel 10 & Cloudflare DO.", ToolTipIcon.Info);
                 return;
             }
             ThreadPool.QueueUserWorkItem(_ =>
@@ -821,14 +821,14 @@ namespace SovereignManifoldDesktop
                         {
                             _widgetForm.UpdateTelemetry(_tel);
                             string tip = _tel.Online
-                                ? string.Format("\u03A973.2 | {0:0}k ops | FNO L2={1:0.0000} Re={2:0} | RTX {3:0}C",
+                                ? string.Format("\u03A973.2.1 | {0:0}k ops | FNO L2={1:0.0000} Re={2:0} | RTX {3:0}C",
                                     _tel.ClusterKops, _tel.FnoL2Err, _tel.NavierReynolds, _tel.RtxTemp)
-                                : "\u03A973.2 | UNMEASURED/OFFLINE (:8097)";
+                                : "\u03A973.2.1 | UNMEASURED/OFFLINE (:8097)";
                             if (tip.Length > 63) tip = tip.Substring(0, 63);
                             _trayIcon.Text = tip;
                             _miStatus.Text = _tel.Online
-                                ? string.Format("ACT-Omega v73.2.0 | {0:0.0}k ops/s | 1,010/1,010 QED | 404 Tools (4.05M Syn)", _tel.ClusterKops)
-                                : "ACT-Omega v73.2.0 | UNMEASURED/OFFLINE (:8097)";
+                                ? string.Format("ACT-Omega v73.2.1 | {0:0.0}k ops/s | 1,010/1,010 QED | 404 Tools (4.05M Syn)", _tel.ClusterKops)
+                                : "ACT-Omega v73.2.1 | UNMEASURED/OFFLINE (:8097)";
                         });
                     }
                 }

@@ -1,0 +1,266 @@
+{
+  "schema": "ACT_OMEGA_D4_CERTIFIED_LITERALS_DISPOSITION_V1",
+  "version": "v73.2.1",
+  "item_code": "D4",
+  "search_command": "git grep -n \"_CERTIFIED\" -- 01_l0_rust/src/",
+  "ungated_literals_remaining": 0,
+  "total_certified_literals_audited": 29,
+  "dispositions": [
+    {
+      "file": "01_l0_rust/src/v58_v60_chain270_vector_and_gemma4_synthesis.rs",
+      "line": 1229,
+      "literal": "CHAIN_270_MASTER_DUAL_SH4Z_CERTIFIED_OK",
+      "disposition": "COMPUTED_GATED",
+      "computed_gate": "c262 && c264 && c266 && c268 && lean_qed >= 690",
+      "fail_closed_branch": "UNMEASURED_CHAIN_270_INCOMPLETE"
+    },
+    {
+      "file": "01_l0_rust/src/v58_v60_chain270_vector_and_gemma4_synthesis.rs",
+      "line": 1277,
+      "literal": "CHAIN_280_MASTER_CERTIFIED_OK",
+      "disposition": "COMPUTED_GATED",
+      "computed_gate": "c270_ok && c272 && c274 && c276 && lean_qed >= 700",
+      "fail_closed_branch": "UNMEASURED_CHAIN_280_INCOMPLETE"
+    },
+    {
+      "file": "01_l0_rust/src/v61_14_formal_crt_rvq_pvq_sparse_matvec_runtime.rs",
+      "line": 1082,
+      "literal": "CHAIN_292_MASTER_CERTIFIED_OK",
+      "disposition": "COMPUTED_GATED",
+      "computed_gate": "all_12_gates_passed",
+      "fail_closed_branch": "CHAIN_292_NOT_CERTIFIED"
+    },
+    {
+      "file": "01_l0_rust/src/v62_bleeding_edge_synthesis_1_to_5.rs",
+      "line": 416,
+      "literal": "MEASURED_BLEEDING_EDGE_SYNTHESIS_1_CERTIFIED",
+      "disposition": "COMPUTED_GATED",
+      "computed_gate": "s1_ok (leech + sheaf + burau + ffi_ring + landauer)",
+      "fail_closed_branch": "UNMEASURED/OFFLINE"
+    },
+    {
+      "file": "01_l0_rust/src/v62_bleeding_edge_synthesis_1_to_5.rs",
+      "line": 792,
+      "literal": "MEASURED_BLEEDING_EDGE_SYNTHESIS_2_CERTIFIED",
+      "disposition": "COMPUTED_GATED",
+      "computed_gate": "s2_ok (ricci + clifford + skyrmion + mamba3)",
+      "fail_closed_branch": "UNMEASURED/OFFLINE"
+    },
+    {
+      "file": "01_l0_rust/src/v62_bleeding_edge_synthesis_1_to_5.rs",
+      "line": 1404,
+      "literal": "MEASURED_BLEEDING_EDGE_SYNTHESIS_3_CERTIFIED",
+      "disposition": "COMPUTED_GATED",
+      "computed_gate": "s3_ok (hodge + khovanov + poincare + fhn + snn)",
+      "fail_closed_branch": "UNMEASURED/OFFLINE"
+    },
+    {
+      "file": "01_l0_rust/src/v62_bleeding_edge_synthesis_1_to_5.rs",
+      "line": 2076,
+      "literal": "MEASURED_BLEEDING_EDGE_SYNTHESIS_4_CERTIFIED",
+      "disposition": "COMPUTED_GATED",
+      "computed_gate": "s4_ok (uintr + spectre + poisson + symplectic + babai)",
+      "fail_closed_branch": "UNMEASURED/OFFLINE"
+    },
+    {
+      "file": "01_l0_rust/src/v62_bleeding_edge_synthesis_1_to_5.rs",
+      "line": 2653,
+      "literal": "MEASURED_BLEEDING_EDGE_SYNTHESIS_5_CERTIFIED",
+      "disposition": "COMPUTED_GATED",
+      "computed_gate": "s5_ok (sheaf_laplacian + kuramoto + jordan + polarquant)",
+      "fail_closed_branch": "UNMEASURED/OFFLINE"
+    },
+    {
+      "file": "01_l0_rust/src/v62_bleeding_edge_synthesis_1_to_5.rs",
+      "line": 3018,
+      "literal": "CHAIN_288_MASTER_CERTIFIED_OK",
+      "disposition": "COMPUTED_GATED",
+      "computed_gate": "s1_ok && s2_ok && s3_ok && s4_ok && s5_ok && ik_ok && swarm_ok && lean_qed >= 730",
+      "fail_closed_branch": "CHAIN_288_NOT_CERTIFIED"
+    },
+    {
+      "file": "01_l0_rust/src/v63_0_capability_parity_bput_and_fdrive_epoch_vault.rs",
+      "line": 761,
+      "literal": "CHAIN_296_MASTER_CERTIFIED_OK",
+      "disposition": "COMPUTED_GATED",
+      "computed_gate": "bput_ok && epoch_ok && parity_ok && lean_qed >= 760",
+      "fail_closed_branch": "CHAIN_296_NOT_CERTIFIED"
+    },
+    {
+      "file": "01_l0_rust/src/v68_0_omegalang_v15_unified_compiler_and_k16a_k20_engine.rs",
+      "line": 769,
+      "literal": "CHAIN_300_OMEGALANG_V15_SUPERPOSITION_CERTIFIED_QED",
+      "disposition": "COMPUTED_GATED",
+      "computed_gate": "k19_cs == 1406172 && k18b_cs == 13585768992 && k20_cs == -170119 && lean_bytes > 0 && lean_theorems >= 800",
+      "fail_closed_branch": "CHAIN_300_NOT_CERTIFIED"
+    },
+    {
+      "file": "01_l0_rust/src/v68_5_mit_hot_index_galois_cern_and_gemma4_studio.rs",
+      "line": 649,
+      "literal": "CERN_LHCB_5MAPPING_AUDITOR_CERTIFIED_QED",
+      "disposition": "COMPUTED_GATED",
+      "computed_gate": "observed_z_sigma >= 5.0 && lipschitz_ok && decorrelated_flat && r_tail_in_band && lean_theorems >= 810",
+      "fail_closed_branch": "CERN_LHCB_5MAPPING_GATE_FAILED_NOT_CERTIFIED"
+    },
+    {
+      "file": "01_l0_rust/src/v68_5_mit_hot_index_galois_cern_and_gemma4_studio.rs",
+      "line": 1030,
+      "literal": "CHAIN_304_TRACK1_V68_5_MASTER_CERTIFIED_QED",
+      "disposition": "COMPUTED_GATED",
+      "computed_gate": "all_metrics_valid && checksums_matched && artworks_verified == 5 && mit_shards == 10 && lean_theorems >= 810",
+      "fail_closed_branch": "NOT_CERTIFIED_RECEIPT_MISSING_OR_MISMATCH"
+    },
+    {
+      "file": "01_l0_rust/src/v69_0_omegalang_v16_primary_tlv_compiler_and_84480_connectome.rs",
+      "line": 507,
+      "literal": "OMEGALANG_V16_PRIMARY_TLV_COMPILER_9TARGETS_CERTIFIED_QED",
+      "disposition": "COMPUTED_GATED",
+      "computed_gate": "certified (e8z_bytes == 557056 && polyglot_targets_verified == 9 && ptx_exists)",
+      "fail_closed_branch": "UNVERIFIED_MISSING_OR_MISMATCHED_WEIGHTS"
+    },
+    {
+      "file": "01_l0_rust/src/v69_0_omegalang_v16_primary_tlv_compiler_and_84480_connectome.rs",
+      "line": 791,
+      "literal": "OPEN_VOCAB_524K_192SUBDOMAINS_FLUENCY_CERTIFIED_QED",
+      "disposition": "COMPUTED_GATED",
+      "computed_gate": "t307_ok (vocab == 524288 && subdomains == 192 && distilled_ppl > 0.0)",
+      "fail_closed_branch": "UNMEASURED_FLUENCY_OR_WEIGHTS_INCOMPLETE"
+    },
+    {
+      "file": "01_l0_rust/src/v69_0_omegalang_v16_primary_tlv_compiler_and_84480_connectome.rs",
+      "line": 857,
+      "literal": "CHAIN_308_TRACK2_V69_0_MASTER_CERTIFIED_QED",
+      "disposition": "COMPUTED_GATED",
+      "computed_gate": "all_t2_ok (npage + spage + e8z + 9 targets + lean_qed >= 820)",
+      "fail_closed_branch": "UNMEASURED_CHAIN_308_INCOMPLETE"
+    },
+    {
+      "file": "01_l0_rust/src/v69_5_heterogeneous_cpu_rtx3050_cuda_coexec.rs",
+      "line": 433,
+      "literal": "PROTEUS_GKSM_AND_LARK_EQUIV_CERTIFIED_QED",
+      "disposition": "COMPUTED_GATED",
+      "computed_gate": "status == MEASURED (k1_bit_drift == 0 && k2_bit_drift == 0)",
+      "fail_closed_branch": "UNMEASURED_PROTEUS_LARK_EQUIV_FAILED"
+    },
+    {
+      "file": "01_l0_rust/src/v69_5_heterogeneous_cpu_rtx3050_cuda_coexec.rs",
+      "line": 614,
+      "literal": "SIMULTANEOUS_CPU_GPU_SPLIT_BATCH_COEXEC_CERTIFIED_QED",
+      "disposition": "COMPUTED_GATED",
+      "computed_gate": "status == MEASURED (cpu_neurons + gpu_neurons == 84480 && gpu_loaded)",
+      "fail_closed_branch": "UNMEASURED_SPLIT_BATCH_COEXEC_INCOMPLETE"
+    },
+    {
+      "file": "01_l0_rust/src/v69_5_heterogeneous_cpu_rtx3050_cuda_coexec.rs",
+      "line": 706,
+      "literal": "CHAIN_312_TRACK3_V69_5_MASTER_CERTIFIED_QED",
+      "disposition": "COMPUTED_GATED",
+      "computed_gate": "all_t3_ok (t309_ok && t310_ok && t311_ok && lean_qed >= 830)",
+      "fail_closed_branch": "UNMEASURED_CHAIN_312_INCOMPLETE"
+    },
+    {
+      "file": "01_l0_rust/src/v70_0_exponential_worksteal_262144cl_bijection.rs",
+      "line": 515,
+      "literal": "HSIANG_G4_CHEBYSHEV_AND_SYMPLECTIC_LEAPFROG_CERTIFIED_QED",
+      "disposition": "COMPUTED_GATED",
+      "computed_gate": "status == MEASURED (q_drift == 0 && p_drift == 0 && h_drift == 0)",
+      "fail_closed_branch": "UNMEASURED_HSIANG_SYMPLECTIC_INCOMPLETE"
+    },
+    {
+      "file": "01_l0_rust/src/v70_0_exponential_worksteal_262144cl_bijection.rs",
+      "line": 593,
+      "literal": "CHAIN_316_TRACK4_V70_0_MASTER_CERTIFIED_QED",
+      "disposition": "COMPUTED_GATED",
+      "computed_gate": "all_t4_ok (bijected_cls == 262144 && conservation_exact && symplectic_ok && lean_qed >= 840)",
+      "fail_closed_branch": "UNMEASURED_CHAIN_316_INCOMPLETE"
+    },
+    {
+      "file": "01_l0_rust/src/v70_0_exponential_worksteal_262144cl_bijection.rs",
+      "line": 860,
+      "literal": "TOOL_317_CLOUDFLARE_FREE_TIER_GOVERNOR_CERTIFIED",
+      "disposition": "COMPUTED_GATED",
+      "computed_gate": "overall_status == ONLINE && raw_theorems > 0",
+      "fail_closed_branch": "TOOL_317_CLOUDFLARE_FREE_TIER_GOVERNOR_UNMEASURED"
+    },
+    {
+      "file": "01_l0_rust/src/v71_1_sovereign_harmonic_week1_deep12l_bptt_eval256.rs",
+      "line": 2692,
+      "literal": "WEEK1_SH_DEEP_12L_BPTT_EVAL256_CHAIN334_905QED_CERTIFIED",
+      "disposition": "COMPUTED_GATED",
+      "computed_gate": "all_passed (g1..g6 && lean4 >= 905)",
+      "fail_closed_branch": "UNMEASURED_WEEK1_CHAIN334_GATES_INCOMPLETE"
+    },
+    {
+      "file": "01_l0_rust/src/v71_2_sovereign_harmonic_week2_chinchilla_16k_bpe_leech.rs",
+      "line": 3041,
+      "literal": "WEEK2_CHINCHILLA_16K_BPE_LEECH_CHAIN340_920QED_CERTIFIED",
+      "disposition": "COMPUTED_GATED",
+      "computed_gate": "all_passed (g1..g7 && lean4 >= 920)",
+      "fail_closed_branch": "UNMEASURED_WEEK2_CHAIN340_GATES_INCOMPLETE"
+    },
+    {
+      "file": "01_l0_rust/src/v71_3_sovereign_harmonic_week3_speculative_k4_long_context_4k.rs",
+      "line": 2778,
+      "literal": "WEEK3_SPECULATIVE_K4_4096_HORIZON_CHAIN346_935QED_CERTIFIED",
+      "disposition": "COMPUTED_GATED",
+      "computed_gate": "all_passed (g1..g7 && lean4 >= 935)",
+      "fail_closed_branch": "UNMEASURED_WEEK3_CHAIN346_GATES_INCOMPLETE"
+    },
+    {
+      "file": "01_l0_rust/src/v71_3_sovereign_harmonic_week3_speculative_k4_long_context_4k.rs",
+      "line": 3485,
+      "literal": "CHAIN_348_REDTEAM_10OF10_REMEDIATED_945QED_CERTIFIED",
+      "disposition": "COMPUTED_GATED",
+      "computed_gate": "all_ok (chain346 && redteam_10of10 && lean4 >= 945)",
+      "fail_closed_branch": "UNMEASURED_CHAIN_348_GATES_INCOMPLETE"
+    },
+    {
+      "file": "01_l0_rust/src/v71_3_sovereign_harmonic_week3_speculative_k4_long_context_4k.rs",
+      "line": 3856,
+      "literal": "CHAIN_350_WEEK3_REDTEAM_AND_METAPHOR_TRANSDUCER_950QED_CERTIFIED",
+      "disposition": "COMPUTED_GATED",
+      "computed_gate": "all_ok (chain348 && metaphor_12of12 && lean4 >= 950)",
+      "fail_closed_branch": "UNMEASURED_CHAIN_350_GATES_INCOMPLETE"
+    },
+    {
+      "file": "01_l0_rust/src/v71_4_sovereign_harmonic_week4_rlvf_tree_speculative_sae_eval256.rs",
+      "line": 4149,
+      "literal": "CHAIN_356_SOVEREIGN_HARMONIC_X_WEEK4_965QED_CERTIFIED",
+      "disposition": "COMPUTED_GATED",
+      "computed_gate": "all_ok (rlvf && tree_spec_kl && sae && eval256 && ablation7 && lean4 >= 965)",
+      "fail_closed_branch": "UNMEASURED_CHAIN_356_GATES_INCOMPLETE"
+    },
+    {
+      "file": "01_l0_rust/src/v72_1_sh_xi_matryoshka_384_768_cuda_pretrainer.rs",
+      "line": 7835,
+      "literal": "SH_XI_WEEK1_CHAIN362_MASTER_CERTIFIED",
+      "disposition": "COMPUTED_GATED",
+      "computed_gate": "all_gates_passed (currently false on un-seeded Euclid GCD -> returns UNMEASURED_WEEK1_INCOMPLETE)",
+      "fail_closed_branch": "UNMEASURED_WEEK1_INCOMPLETE"
+    },
+    {
+      "file": "01_l0_rust/src/v72_2_sh_xi_sparse_moe_chatml_sft_and_rag.rs",
+      "line": 5998,
+      "literal": "SH_XI_WEEK2_CHAIN368_MASTER_CERTIFIED",
+      "disposition": "COMPUTED_GATED",
+      "computed_gate": "all_passed (serde_json parsed gates; currently false on un-seeded Gate 5 -> returns UNMEASURED_WEEK2_GATES_INCOMPLETE)",
+      "fail_closed_branch": "UNMEASURED_WEEK2_GATES_INCOMPLETE"
+    },
+    {
+      "file": "01_l0_rust/src/v73_1_nov12_15_research_kernels.rs",
+      "line": 1244,
+      "literal": "MEASURED_CHAIN399_CERTIFIED",
+      "disposition": "COMPUTED_GATED",
+      "computed_gate": "all_research_ok (serde_json parsed ok==true across live artifact-backed research kernels + crate audits + lean4)",
+      "fail_closed_branch": "UNMEASURED/OFFLINE"
+    },
+    {
+      "file": "01_l0_rust/src/v73_2_cloudflare_vpc_mesh_and_pgwire_hyperdrive.rs",
+      "line": 423,
+      "literal": "MEASURED_CHAIN404_CERTIFIED",
+      "disposition": "COMPUTED_GATED",
+      "computed_gate": "all_ok (16/16 weights_manifest_ok && lean4_compiler_verified_sha256_match && chain399_ok && p35_ok)",
+      "fail_closed_branch": "UNMEASURED/OFFLINE"
+    }
+  ]
+}

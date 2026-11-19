@@ -23,12 +23,20 @@ const workerSource = edgeCode.toString("utf8");
 assert.equal(workerSource.includes("generateDeterministic32DPolytonicE8"), false, "generateDeterministic32DPolytonicE8 MUST be deleted");
 console.log("PASS: generateDeterministic32DPolytonicE8 is completely absent from worker.");
 
-console.log("=== [3] Verifying Zero Leaks of account_id and d1_uuid ===");
-const accountId = "a37cf8ab07e7c5f886c302be3f098744";
-const d1Uuid = "9f46d56a-ef3e-4232-a9ac-c4bd12e20a87";
-assert.equal(workerSource.includes(accountId), false, "Worker MUST NOT leak account_id");
-assert.equal(workerSource.includes(d1Uuid), false, "Worker MUST NOT leak d1_uuid");
-console.log("PASS: Zero leaks of account_id and d1_uuid in worker.");
+console.log("=== [3] Verifying Zero Leaks of account_id, d1_uuid, and hyperdrive_id across Worker & Wrangler Configs (S6) ===");
+const edgeWranglerToml = fs.readFileSync(path.join(repoRoot, "00_control", "cloudflare_edge", "wrangler.toml"), "utf8");
+const wfWranglerToml = fs.readFileSync(path.join(repoRoot, "00_control", "cloudflare_edge", "wrangler.workflow.toml"), "utf8");
+const rootWranglerToml = fs.readFileSync(path.join(repoRoot, "wrangler.toml"), "utf8");
+assert.equal(/account_id\s*=\s*"[0-9a-f]{32}"/i.test(edgeWranglerToml), false, "edge wrangler.toml MUST NOT commit hex account_id");
+assert.equal(/database_id\s*=\s*"[0-9a-f-]{36}"/i.test(edgeWranglerToml), false, "edge wrangler.toml MUST NOT commit UUID database_id");
+assert.equal(/id\s*=\s*"[0-9a-f]{32}"/i.test(edgeWranglerToml), false, "edge wrangler.toml MUST NOT commit hex hyperdrive/kv id");
+assert.equal(/account_id\s*=\s*"[0-9a-f]{32}"/i.test(wfWranglerToml), false, "wrangler.workflow.toml MUST NOT commit hex account_id");
+assert.equal(/database_id\s*=\s*"[0-9a-f-]{36}"/i.test(wfWranglerToml), false, "wrangler.workflow.toml MUST NOT commit UUID database_id");
+assert.equal(/workers_dev\s*=\s*false/.test(wfWranglerToml), true, "wrangler.workflow.toml MUST keep workers_dev = false");
+assert.equal(/\broutes?\s*=/.test(wfWranglerToml), false, "wrangler.workflow.toml MUST NOT attach public routes");
+assert.equal(/account_id\s*=\s*"[0-9a-f]{32}"/i.test(rootWranglerToml), false, "root wrangler.toml MUST NOT commit hex account_id");
+assert.equal(/database_id\s*=\s*"[0-9a-f-]{36}"/i.test(rootWranglerToml), false, "root wrangler.toml MUST NOT commit UUID database_id");
+console.log("PASS: Zero plaintext cloud resource IDs across worker and all wrangler*.toml files.");
 
 console.log("=== [4] Verifying Deletion of TOOL_CALLED_OK Mocks ===");
 assert.equal(workerSource.includes("TOOL_CALLED_OK"), false, "Worker MUST NOT contain TOOL_CALLED_OK mocks");
@@ -236,6 +244,68 @@ const env = {
   assert.equal(dataCallAuth.error.code, -32002, "Offline origin should return JSON-RPC error -32002");
   assert.ok(dataCallAuth.error.message.startsWith("TOOL_EXECUTION_UNAVAILABLE"), "Error message must start with TOOL_EXECUTION_UNAVAILABLE");
   console.log("PASS: N4 MCP tools/call gating and error -32002 confirmed.");
+}
+
+// Test S2-S5 & E1: Muse v73.2.1 Edge Gate Regression Checks
+{
+  console.log("Testing S2-S5 & E1: Hyperdrive SQL allowlist, D1 dumps, Vectorize/AI rate+fail-closed, MCP CORS/no-key-inject, and E1 status routes...");
+  const gatedGetRoutes = [
+    "/api/v1/cloudflare/d1_vpc_shadow",
+    "/api/v1/cloudflare/d1_all8tables",
+    "/api/v1/cloudflare/d1_all10tables",
+    "/api/v1/cloudflare/free_tier_governor",
+    "/api/v1/cloudflare/paid_tier_governor",
+    "/api/v1/cloudflare/vpc_mesh_status",
+    "/api/v1/cloudflare/vpc_probe",
+    "/api/v1/vesper_arachne/ik_swarm_companion",
+    "/api/v1/cert/chain404",
+    "/api/v1/research/bleeding_edge_5_syntheses"
+  ];
+  for (const r of gatedGetRoutes) {
+    const resUnauth = await worker.fetch(new Request("https://act-omega-net.dev" + r), env);
+    assert.equal(resUnauth.status, 403, `Unauthenticated GET ${r} MUST return 403`);
+    const resQueryKey = await worker.fetch(new Request(`https://act-omega-net.dev${r}?key=${validOpKey}`), env);
+    assert.equal(resQueryKey.status, 403, `?key= query param on ${r} MUST return 403`);
+  }
+
+  // S2: /api/v1/cloudflare/hyperdrive_query rejects raw sql and unauthenticated calls
+  const hdUnauth = await worker.fetch(new Request("https://act-omega-net.dev/api/v1/cloudflare/hyperdrive_query", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ query_id: "pgwire_ping" })
+  }), env);
+  assert.equal(hdUnauth.status, 403, "Unauthenticated hyperdrive_query MUST return 403");
+
+  const hdRawSql = await worker.fetch(new Request("https://act-omega-net.dev/api/v1/cloudflare/hyperdrive_query", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "X-Sovereign-Operator-Key": validOpKey },
+    body: JSON.stringify({ sql: "SELECT 1" })
+  }), env);
+  assert.equal(hdRawSql.status, 400, "Raw sql field on hyperdrive_query MUST return 400");
+
+  // S4: /api/v1/vectorize/query & /api/v1/ai/embed fail closed (403 unauth, 503 when upstream & D1 unavailable)
+  const vecUnauth = await worker.fetch(new Request("https://act-omega-net.dev/api/v1/vectorize/query", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ vector: [1, 0, 0] })
+  }), env);
+  assert.equal(vecUnauth.status, 403, "Unauthenticated /api/v1/vectorize/query MUST return 403");
+
+  const aiFailClosed = await worker.fetch(new Request("https://act-omega-net.dev/api/v1/ai/embed", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "X-Sovereign-Operator-Key": validOpKey },
+    body: JSON.stringify({ text: "test embedding" })
+  }), env);
+  assert.equal(aiFailClosed.status, 503, "Authenticated /api/v1/ai/embed without AI binding MUST fail closed with 503 (zero synthetic vector)");
+
+  // S5: /mcp rejects untrusted Origin with 403 and worker source has zero auto-injection of SOVEREIGN_OPERATOR_KEY
+  const mcpBadOrigin = await worker.fetch(new Request("https://act-omega-net.dev/mcp", {
+    method: "OPTIONS",
+    headers: { "Origin": "https://evil.example.com" }
+  }), env);
+  assert.equal(mcpBadOrigin.status, 403, "Untrusted Origin on /mcp MUST return 403");
+  assert.equal(workerSource.includes('fwdHeaders.set("X-Sovereign-Operator-Key"'), false, "Worker MUST NOT auto-inject X-Sovereign-Operator-Key onto origin proxy");
+  console.log("PASS: S2-S5 & E1 edge security gates verified.");
 }
 
 console.log("\n>>> ALL M1 WORKER DISPATCH VERIFICATIONS PASSED SUCCESSFULLY! <<<");

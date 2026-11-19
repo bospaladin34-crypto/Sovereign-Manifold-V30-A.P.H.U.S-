@@ -1225,7 +1225,7 @@ pub fn dispatch_chain270_suite() -> String {
         .filter(|l| l.trim().starts_with("theorem "))
         .count();
 
-    let status = if total_sh4z_bytes == 5300782580 && conn.npage_bytes == 8110080 && conn.spage_bytes == 4055040 {
+    let status = if total_sh4z_bytes == 5300782580 && conn.npage_bytes == 8110080 && conn.spage_bytes == 4055040 && conn.canary_verified && lean_theorems >= 680 {
         "CHAIN_270_MASTER_DUAL_SH4Z_CERTIFIED_OK"
     } else {
         "UNMEASURED/OFFLINE"
@@ -1273,7 +1273,7 @@ pub fn dispatch_chain280_suite() -> String {
         .filter(|l| l.trim().starts_with("theorem "))
         .count();
 
-    let status = if total_sh4z_bytes == 5300782580 && conn.npage_bytes == 8110080 && conn.spage_bytes == 4055040 && lean_theorems >= 700 {
+    let status = if total_sh4z_bytes == 5300782580 && conn.npage_bytes == 8110080 && conn.spage_bytes == 4055040 && conn.canary_verified && lean_theorems >= 700 {
         "CHAIN_280_MASTER_CERTIFIED_OK"
     } else {
         "UNMEASURED/OFFLINE"

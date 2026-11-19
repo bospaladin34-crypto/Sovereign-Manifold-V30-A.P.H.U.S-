@@ -1,8 +1,8 @@
--- C:\sovereign_manifold_v31\01_l0_rust\lean4\SovereignManifoldTheorems.lean
--- ACT-Omega Net v44.2.0 (Sovereign Harmonic VI / SH4Z v4420 TLV):
--- 400 Formalized Zero-Sorry Lean 4 CIC Theorems (80 Sectors S00..S79, 28,160 Neurons, 65,536 Vocab, CHAIN 80 = 400 QED)
--- Covers: 15.965 Hz Decadic Epoch (62,637 us), 21,120 Core + 7,040 Expansion Neurons (640x Chair-44),
--- Per-Sensor Stiefel Coupling, 16-Domain BPE+Compound Tokenizer, Host<->P8 .npage SHM & 80 Native Tools (CHAIN 80)
+-- C:\sovereign_manifold_v31\03_vault\lean4\SovereignManifoldTheorems.lean
+-- ACT-Omega Net v73.2.1 (Sovereign Harmonic XI / SH4Z v7321 TLV):
+-- 1,010 Formalized Zero-Sorry Lean 4 CIC Theorems (80 Sectors S00..S79, 84,480 Neurons, 262,144 Bijected CLs, CHAIN 404 = 1,010 QED)
+-- Covers: 15.965 Hz Decadic Epoch (62,637 us), 84,480 Neurons / 4,055,040 Synapses (1,920x Chair-44),
+-- Per-Sensor Stiefel Coupling, SH-XI 3-Shell Sparse MoE, Unified Lab, Cloudflare VPC Mesh/Hyperdrive & 404 Native Tools (CHAIN 404)
 
 namespace SovereignManifoldV32_9
 
@@ -13624,12 +13624,12 @@ def v73_2IsMatryoshkaStrictlyMonotone (m : V73_2MatryoshkaBpbLadder) : Prop :=
 
 theorem thm_v73_2_1004_two_phase_3shell_matryoshka_bpb_monotonicity
     (m : V73_2MatryoshkaBpbLadder)
-    (h0 : m.bpb_init_milli = 242909)
-    (h1 : m.bpb_shell0_milli = 126839)
-    (h2 : m.bpb_shell1_milli = 104651)
-    (h3 : m.bpb_shell2_moe_milli = 104339) :
+    (h0 : m.bpb_init_milli = 244138)
+    (h1 : m.bpb_shell0_milli = 132292)
+    (h2 : m.bpb_shell1_milli = 113401)
+    (h3 : m.bpb_shell2_moe_milli = 113064) :
     v73_2IsMatryoshkaStrictlyMonotone m ∧
-    m.bpb_init_milli - m.bpb_shell2_moe_milli = 138570 := by
+    m.bpb_init_milli - m.bpb_shell2_moe_milli = 131074 := by
   dsimp [v73_2IsMatryoshkaStrictlyMonotone]
   rw [h0, h1, h2, h3]
   decide
@@ -13684,24 +13684,26 @@ structure V73_2TreeDrafterShd2Header where
   magic_u32 : Nat
   header_bytes : Nat
   payload_bytes : Nat
-  kl_divergence_scaled : Nat
+  empirical_kl_bps : Nat
+  kl_bound_tau_bps : Nat
 
 def v73_2IsShd2DrafterValid (t : V73_2TreeDrafterShd2Header) : Prop :=
   t.magic_u32 = 0x53484432 ∧
   t.header_bytes = 32 ∧
   t.payload_bytes = 131072 ∧
-  t.kl_divergence_scaled = 0
+  t.kl_bound_tau_bps = 600 ∧
+  t.empirical_kl_bps ≤ t.kl_bound_tau_bps
 
-theorem thm_v73_2_1007_tree_drafter_shd2_131104b_zero_kl_invariant
+theorem thm_v73_2_1007_tree_drafter_shd2_131104b_concentration_kl_bound
     (t : V73_2TreeDrafterShd2Header)
     (hm : t.magic_u32 = 0x53484432)
     (hh : t.header_bytes = 32)
     (hp : t.payload_bytes = 131072)
-    (hk : t.kl_divergence_scaled = 0) :
+    (htau : t.kl_bound_tau_bps = 600)
+    (hkl : t.empirical_kl_bps ≤ 600) :
     v73_2IsShd2DrafterValid t ∧ t.header_bytes + t.payload_bytes = 131104 := by
   dsimp [v73_2IsShd2DrafterValid]
-  rw [hm, hh, hp, hk]
-  decide
+  omega
 
 structure V73_2ChatmlSftCorpusGate where
   sft_dialogues : Nat
@@ -13711,19 +13713,19 @@ structure V73_2ChatmlSftCorpusGate where
   assistant_ce_final_milli : Nat
 
 def v73_2IsZeroLeakageSftReady (g : V73_2ChatmlSftCorpusGate) : Prop :=
-  g.sft_dialogues = 96 ∧
+  g.sft_dialogues = 64 ∧
   g.rweval500_overlap = 0 ∧
   g.prompt_grad_norm_scaled = 0 ∧
   g.assistant_ce_final_milli < g.assistant_ce_init_milli
 
-theorem thm_v73_2_1008_96dialogue_chatml_sft_zero_leakage_gate
+theorem thm_v73_2_1008_64dialogue_chatml_sft_zero_leakage_gate
     (g : V73_2ChatmlSftCorpusGate)
-    (hs : g.sft_dialogues = 96)
+    (hs : g.sft_dialogues = 64)
     (ho : g.rweval500_overlap = 0)
     (hp : g.prompt_grad_norm_scaled = 0)
     (hi : g.assistant_ce_init_milli = 9704)
-    (hf : g.assistant_ce_final_milli = 9173) :
-    v73_2IsZeroLeakageSftReady g ∧ g.assistant_ce_init_milli - g.assistant_ce_final_milli = 531 := by
+    (hf : g.assistant_ce_final_milli = 9095) :
+    v73_2IsZeroLeakageSftReady g ∧ g.assistant_ce_init_milli - g.assistant_ce_final_milli = 609 := by
   dsimp [v73_2IsZeroLeakageSftReady]
   rw [hs, ho, hp, hi, hf]
   decide

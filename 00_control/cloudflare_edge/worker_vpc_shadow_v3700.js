@@ -113,7 +113,79 @@ const max_daily_kv_writes = 720; // 720 max_daily_kv_writes soft cap
 let gAnalyticsBatchBuffer = [];
 let batchLogBuffer = gAnalyticsBatchBuffer; // batchLogBuffer flushLogs alarm alias
 
-function computeCosineSimilarity(vecA, vecB) {
+// Per-Caller Sliding-Window Rate Limiter & Explicit MCP Origin Allowlist (Gate 1 S4 & S5)
+const gCallerRateWindows = new Map();
+const CALLER_RATE_WINDOW_MS = 60000;
+function checkCallerRateLimit(request, bucket, maxRequests = 30) {
+  const now = Date.now();
+  const ip = request.headers.get("CF-Connecting-IP") || request.headers.get("X-Forwarded-For") || "local";
+  const opPrefix = (request.headers.get("X-Sovereign-Operator-Key") || "").slice(0, 12);
+  const key = `${bucket}:${ip}:${opPrefix}`;
+  let entry = gCallerRateWindows.get(key);
+  if (!entry || now - entry.windowStart >= CALLER_RATE_WINDOW_MS) {
+    entry = { windowStart: now, count: 0 };
+  }
+  entry.count += 1;
+  gCallerRateWindows.set(key, entry);
+  if (gCallerRateWindows.size > 1024) {
+    const oldest = gCallerRateWindows.keys().next().value;
+    if (oldest !== undefined) gCallerRateWindows.delete(oldest);
+  }
+  if (entry.count > maxRequests) {
+    return {
+      allowed: false,
+      count: entry.count,
+      limit: maxRequests,
+      retry_after_ms: Math.max(1, CALLER_RATE_WINDOW_MS - (now - entry.windowStart))
+    };
+  }
+  return { allowed: true, count: entry.count, limit: maxRequests, retry_after_ms: 0 };
+}
+
+const ALLOWED_MCP_ORIGINS = new Set([
+  "https://act-omega-net.dev",
+  "https://api.act-omega-net.dev",
+  "https://mcp.act-omega-net.dev",
+  "http://127.0.0.1:5173",
+  "http://localhost:5173",
+  "http://127.0.0.1:8097"
+]);
+
+function resolveMcpCorsHeaders(request) {
+  const origin = request.headers.get("Origin");
+  if (origin !== null && origin !== "") {
+    if (!ALLOWED_MCP_ORIGINS.has(origin)) {
+      return { allowed: false, headers: { "Vary": "Origin", "Cache-Control": "no-store" } };
+    }
+    return {
+      allowed: true,
+      headers: {
+        "Access-Control-Allow-Origin": origin,
+        "Vary": "Origin",
+        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Sovereign-Operator-Key",
+        "Access-Control-Max-Age": "86400"
+      }
+    };
+  }
+  return {
+    allowed: true,
+    headers: {
+      "Vary": "Origin",
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Sovereign-Operator-Key"
+    }
+  };
+}
+
+const ALLOWED_HYPERDRIVE_QUERY_IDS = new Set([
+  "corpus_doc_count",
+  "corpus_track_summary",
+  "corpus_docs_by_track",
+  "corpus_zero_bracket_stats"
+]);
+
+export function computeCosineSimilarity(vecA, vecB) {
   if (!vecA || !vecB || vecA.length === 0 || vecA.length !== vecB.length) return 0.0;
   let dot = 0.0, normA = 0.0, normB = 0.0;
   for (let i = 0; i < vecA.length; i++) {
@@ -470,7 +542,7 @@ async function flushAnalyticsBatchBufferToD1(env) {
   } catch {}
 }
 
-async function computeD1CosineSimilarityFallback(queryVec, topK, env) {
+export async function computeD1CosineSimilarityFallback(queryVec, topK, env) {
   let candidates = [];
   if (env && env.ACT_OMEGA_D1) {
     try {
@@ -792,6 +864,10 @@ export default {
       url.pathname === "/api/v1/cloudflare/wal_enqueue" ||
       url.pathname === "/api/v1/cloudflare/workflow_trigger" ||
       url.pathname === "/api/v1/cloudflare/shadow_ws" ||
+      url.pathname === "/api/v1/cloudflare/vpc_mesh_status" ||
+      url.pathname === "/api/v1/cloudflare/mesh_register" ||
+      url.pathname === "/api/v1/cloudflare/vpc_probe" ||
+      url.pathname === "/api/v1/cloudflare/hyperdrive_query" ||
       url.pathname === "/api/v1/continuum/handover" ||
       url.pathname === "/api/v1/edge_continuum/status" ||
       url.pathname === "/api/v1/ota/pixel_manifest" ||
@@ -801,6 +877,38 @@ export default {
       url.pathname === "/api/v1/kv/get" ||
       url.pathname === "/api/v1/kv/put" ||
       url.pathname === "/api/v1/cloudflare/turnstile_verify";
+
+    // Edge Pre-Proxy Defense-in-Depth (Gate 1 & E1/E2): Enforce operator auth BEFORE origin tunnel pass-through!
+    const toolNumMatch = url.pathname.match(/^\/api\/v1\/tools?\/t?(\d+)$/);
+    const parsedToolNum = toolNumMatch ? Number(toolNumMatch[1]) : 0;
+    const isEdgeGatedBeforeOrigin =
+      url.pathname.startsWith("/api/v1/admin/") ||
+      url.pathname.startsWith("/api/v1/router/") ||
+      url.pathname === "/api/v1/auth/operator_vault_gate" ||
+      url.pathname.startsWith("/api/v1/lab/") ||
+      url.pathname.startsWith("/api/v1/research/") ||
+      url.pathname.startsWith("/api/v1/pgwire/") ||
+      (url.pathname.startsWith("/api/v1/cloudflare/") && url.pathname !== "/api/v1/cloudflare/turnstile_verify") ||
+      url.pathname.startsWith("/api/v1/vesper_arachne/") ||
+      url.pathname.startsWith("/api/v1/chain") ||
+      url.pathname.startsWith("/api/v1/cert/") ||
+      url.pathname.startsWith("/api/v1/synthesis/bleeding_edge_") ||
+      url.pathname.startsWith("/api/v1/bleeding_edge/synthesis_") ||
+      parsedToolNum === 287 ||
+      parsedToolNum === 288 ||
+      parsedToolNum === 292 ||
+      parsedToolNum === 316 ||
+      (parsedToolNum >= 369 && parsedToolNum <= 404);
+
+    if (isEdgeGatedBeforeOrigin) {
+      const preAuth = await verifyZeroTrustAndOperatorHeaders(request, env);
+      if (!preAuth.authorized) {
+        return Response.json(
+          { error: preAuth.error || "OPERATOR_AUTH_REQUIRED", status: 403 },
+          { status: 403, headers: { "Cache-Control": "no-store" } }
+        );
+      }
+    }
 
     if (isCustomDomain && !isEdgeNativeRoute) {
       try {
@@ -829,26 +937,16 @@ export default {
       }
     }
 
-    // Edge Defense-in-Depth: Guard unproxied privileged admin/router/auth endpoints (Finding 2)
-    if (
-      url.pathname.startsWith("/api/v1/admin/") ||
-      url.pathname.startsWith("/api/v1/router/") ||
-      url.pathname === "/api/v1/auth/operator_vault_gate"
-    ) {
-      const auth = await verifyZeroTrustAndOperatorHeaders(request, env);
-      if (!auth.authorized) {
-        return Response.json({ error: "OPERATOR_AUTH_REQUIRED", status: 403 }, { status: 403 });
-      }
-    }
-
     // FEATURE F13 & F14: Model Context Protocol (MCP) JSON-RPC 2.0 Surface (/mcp and /api/v1/mcp/rpc)
     if (url.pathname === "/mcp" || url.pathname === "/api/v1/mcp/rpc") {
-      const corsHeaders = {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Sovereign-Operator-Key",
-        "Access-Control-Max-Age": "86400"
-      };
+      const corsCheck = resolveMcpCorsHeaders(request);
+      if (!corsCheck.allowed) {
+        return Response.json(
+          { error: "CORS_ORIGIN_FORBIDDEN", status: 403 },
+          { status: 403, headers: corsCheck.headers }
+        );
+      }
+      const corsHeaders = corsCheck.headers;
 
       if (request.method === "OPTIONS") {
         return new Response(null, { status: 204, headers: corsHeaders });
@@ -857,7 +955,7 @@ export default {
       if (request.method === "GET") {
         const auth = await verifyZeroTrustAndOperatorHeaders(request, env);
         if (!auth.authorized) {
-          return Response.json({ error: "OPERATOR_AUTH_REQUIRED", status: 403 }, { status: 403, headers: corsHeaders });
+          return Response.json({ error: auth.error || "OPERATOR_AUTH_REQUIRED", status: 403 }, { status: 403, headers: { ...corsHeaders, "Cache-Control": "no-store" } });
         }
         const synced = await getSyncedEdgeMetadata(env);
         return Response.json({
@@ -865,11 +963,11 @@ export default {
           version: synced.version,
           chain_milestone: synced.chain_milestone,
           lean4_theorems_qed: synced.lean4_qed_label,
-          tools_total: 59,
+          tools_total: synced.mcp_tools_total ?? synced.tools_total,
           resources_total: 6,
           prompts_total: 4,
           endpoints: ["/mcp", "/api/v1/mcp/rpc"]
-        }, { headers: corsHeaders });
+        }, { headers: { ...corsHeaders, "Cache-Control": "no-store" } });
       }
 
       if (request.method === "POST") {
@@ -900,6 +998,7 @@ export default {
           const toolName = reqBody.params?.name || "chain292_master_certification";
 
           // Attempt live origin proxy dispatch (guarded against self-loop if url.hostname === "api.act-omega-net.dev")
+          // S5 invariant: NEVER inject env.SOVEREIGN_OPERATOR_KEY; forward only caller-provided credentials.
           if (url.hostname !== "api.act-omega-net.dev") {
             try {
               const forwardedAuthAndJsonHeaders = {
@@ -909,8 +1008,6 @@ export default {
               const opKey = request.headers.get("X-Sovereign-Operator-Key");
               if (opKey) {
                 forwardedAuthAndJsonHeaders["X-Sovereign-Operator-Key"] = opKey;
-              } else if (env && env.SOVEREIGN_OPERATOR_KEY) {
-                forwardedAuthAndJsonHeaders["X-Sovereign-Operator-Key"] = env.SOVEREIGN_OPERATOR_KEY;
               }
               const cfJwt = request.headers.get("Cf-Access-Jwt-Assertion");
               if (cfJwt) {
@@ -1154,7 +1251,7 @@ export default {
                 { name: "cloudflare_vpc_service_registry_probe", description: "Probe Cloudflare Workers VPC Services and sovereign-vpc-mesh QUIC endpoints (/api/v1/tools/t400).", inputSchema: { type: "object", properties: { query: { type: "string", description: "Optional VPC service filter" } } } },
                 { name: "cloudflare_mesh_cluster_device_roster", description: "Audit Cloudflare Mesh /32 cluster routes and live Tri-Silicon socket latencies (/api/v1/tools/t401).", inputSchema: { type: "object", properties: { query: { type: "string", description: "Optional cluster roster query" } } } },
                 { name: "pgwire_duckdb_tls_bridge_audit", description: "Audit local zero-dependency TLS PGWire v3 bridge and native DuckDB corpus (/api/v1/tools/t402).", inputSchema: { type: "object", properties: { query: { type: "string", description: "Optional PGWire audit query" } } } },
-                { name: "cloudflare_hyperdrive_duckdb_query", description: "Execute read-only SQL query against sh_rw_corpus_v7210.duckdb for Hyperdrive/PGWire analytics (/api/v1/tools/t403).", inputSchema: { type: "object", properties: { sql: { type: "string", description: "Read-only SELECT/WITH/EXPLAIN/SHOW query" } } } },
+                { name: "cloudflare_hyperdrive_duckdb_query", description: "Execute allowlisted parameterized read-only analytical query against sh_rw_corpus_v7210.duckdb (/api/v1/tools/t403).", inputSchema: { type: "object", properties: { query_id: { type: "string", description: "Allowlisted query_id: corpus_doc_count, corpus_track_summary, corpus_docs_by_track, or corpus_zero_bracket_stats" }, track_id: { type: "integer", description: "Optional track_id (0..15) for corpus_docs_by_track" }, limit: { type: "integer", description: "Optional row limit (1..50) for corpus_docs_by_track" } } } },
                 { name: "chain404_master_certification", description: "Certify CHAIN 404 across Tools 1..404, Cloudflare VPC/Mesh/Hyperdrive, Unified Lab, and Lean 4 QED (/api/v1/chain404/master_certification).", inputSchema: { type: "object", properties: { query: { type: "string", description: "Optional certification filter" } } } }
               ]
             }
@@ -1173,24 +1270,35 @@ export default {
         }, { headers: corsHeaders });
       }
 
+      const authFallback = await verifyZeroTrustAndOperatorHeaders(request, env);
+      if (!authFallback.authorized) {
+        return Response.json({ error: authFallback.error || "OPERATOR_AUTH_REQUIRED", status: 403 }, { status: 403, headers: { ...corsHeaders, "Cache-Control": "no-store" } });
+      }
       const syncedGetFallback = await getSyncedEdgeMetadata(env);
       return Response.json({
         service: `ACT-Omega Net (${syncedGetFallback.version}) Gemini MCP JSON-RPC 2.0 Shadow Gateway`,
         version: syncedGetFallback.version,
         lean4_theorems_qed: syncedGetFallback.lean4_qed_label,
-        tools_total: 59,
+        tools_total: syncedGetFallback.mcp_tools_total ?? syncedGetFallback.tools_total,
         resources_total: 6,
         prompts_total: 4,
         endpoints: ["/mcp", "/api/v1/mcp/rpc"]
-      }, { headers: corsHeaders });
+      }, { headers: { ...corsHeaders, "Cache-Control": "no-store" } });
     }
 
-    // Tool 287: Vesper-Arachne E8 Inverse Kinematics & Click-Through Companion Route Handler
+    // Tool 287: Vesper-Arachne E8 Inverse Kinematics & Click-Through Companion Route Handler (Gated per E1)
     if (
       url.pathname === "/api/v1/vesper_arachne/ik_swarm_companion" ||
       url.pathname === "/api/v1/vesper_arachne/e8_ik" ||
       url.pathname === "/api/v1/tools/t287"
     ) {
+      const auth = await verifyZeroTrustAndOperatorHeaders(request, env);
+      if (!auth.authorized) {
+        return Response.json(
+          { error: auth.error || "OPERATOR_AUTH_REQUIRED", status: 403 },
+          { status: 403, headers: { "Cache-Control": "no-store" } }
+        );
+      }
       let reqPayload = {};
       if (request.method === "POST") {
         try { reqPayload = await request.json(); } catch {}
@@ -1302,14 +1410,13 @@ export default {
       };
       return Response.json(respData, {
         headers: {
-          "Access-Control-Allow-Origin": "*",
           "Content-Type": "application/json; charset=utf-8",
-          "Cache-Control": "public, max-age=15"
+          "Cache-Control": "no-store"
         }
       });
     }
 
-    // Tools 292..316+: Mitotic Swarm & Master Certification Route Handler (with backward compat aliases)
+    // Tools 292..316+: Mitotic Swarm & Master Certification Route Handler (Gated per E1)
     if (
       url.pathname === "/api/v1/chain316/master_certification" ||
       url.pathname === "/api/v1/chain312/master_certification" ||
@@ -1329,6 +1436,13 @@ export default {
       url.pathname === "/api/v1/tools/t292" ||
       url.pathname === "/api/v1/tools/t288"
     ) {
+      const auth = await verifyZeroTrustAndOperatorHeaders(request, env);
+      if (!auth.authorized) {
+        return Response.json(
+          { error: auth.error || "OPERATOR_AUTH_REQUIRED", status: 403 },
+          { status: 403, headers: { "Cache-Control": "no-store" } }
+        );
+      }
       let reqPayload = {};
       if (request.method === "POST") {
         try { reqPayload = await request.json(); } catch {}
@@ -1399,18 +1513,25 @@ export default {
       };
       return Response.json(certData, {
         headers: {
-          "Access-Control-Allow-Origin": "*",
           "Content-Type": "application/json; charset=utf-8",
-          "Cache-Control": "public, max-age=15"
+          "Cache-Control": "no-store"
         }
       });
     }
 
-    // Bleeding-Edge Synthesis Tools 281..286 Route Handlers
+    // Bleeding-Edge Synthesis Tools 281..286 Route Handlers (Gated per E1)
     if (
       url.pathname.startsWith("/api/v1/synthesis/bleeding_edge_") ||
-      url.pathname.startsWith("/api/v1/bleeding_edge/synthesis_")
+      url.pathname.startsWith("/api/v1/bleeding_edge/synthesis_") ||
+      url.pathname === "/api/v1/research/bleeding_edge_5_syntheses"
     ) {
+      const auth = await verifyZeroTrustAndOperatorHeaders(request, env);
+      if (!auth.authorized) {
+        return Response.json(
+          { error: auth.error || "OPERATOR_AUTH_REQUIRED", status: 403 },
+          { status: 403, headers: { "Cache-Control": "no-store" } }
+        );
+      }
       const seg = url.pathname.split("/").pop();
       const synthIdx = parseInt(seg.replace(/[^0-9]/g, ""), 10) || 1;
       const toolMap = { 1: 281, 2: 282, 3: 283, 4: 285, 5: 286 };
@@ -1427,19 +1548,18 @@ export default {
         timestamp_ms: Date.now()
       }, {
         headers: {
-          "Access-Control-Allow-Origin": "*",
           "Content-Type": "application/json; charset=utf-8",
-          "Cache-Control": "public, max-age=15"
+          "Cache-Control": "no-store"
         }
       });
     }
 
-    // Tool 284: Authenticated Dynamic Checksummed Pixel OTA Manifest (Fail-Closed 503 if Unsynced)
+    // Tool 284: Authenticated Dynamic Checksummed Pixel OTA Manifest (Fail-Closed 503 if Unsynced; No Device Serials per E9)
     if (url.pathname === "/api/v1/ota/pixel_manifest") {
       const auth = await verifyZeroTrustAndOperatorHeaders(request, env);
       if (!auth.authorized) {
         return Response.json(
-          { error: "OPERATOR_AUTH_REQUIRED", status: 403 },
+          { error: auth.error || "OPERATOR_AUTH_REQUIRED", status: 403 },
           { status: 403, headers: { "Cache-Control": "no-store" } }
         );
       }
@@ -1476,10 +1596,8 @@ export default {
         apk_bytes: Number(apkRec.byte_length),
         tool_id: 284,
         cloudflare_ota_url: "https://api.act-omega-net.dev/api/v1/ota/pixel_apk",
-        lan_ota_url: "http://192.168.137.1:8097/api/v1/ota/pixel_apk",
+        supported_abis: ["arm64-v8a"],
         dual_slot_ab_supported: true,
-        p8_target: "3A121FDJH00BW5",
-        p10_target: "58170DLCR0004V",
         timestamp_ms: Date.now()
       }, {
         headers: {
@@ -1887,6 +2005,14 @@ export default {
       url.pathname === "/api/v1/cloudflare/d1_all8tables" ||
       url.pathname === "/api/v1/cloudflare/d1_all10tables"
     ) {
+      const auth = await verifyZeroTrustAndOperatorHeaders(request, env);
+      if (!auth.authorized) {
+        return Response.json(
+          { error: auth.error || "OPERATOR_AUTH_REQUIRED", status: 403 },
+          { status: 403, headers: { "Cache-Control": "no-store" } }
+        );
+      }
+
       const now = Date.now();
       const liveAtp = parseOptionalNumber(url.searchParams.get("atp"));
       const liveRtxTemp = parseOptionalNumber(url.searchParams.get("rtx_temp"));
@@ -1912,35 +2038,47 @@ export default {
       }
       if (env && env.ACT_OMEGA_D1) {
         try {
-          // Single-round-trip batched D1 read across all 4 summary views
+          // Single-round-trip batched D1 read returning trimmed operational counts & latest snapshot metadata (S3)
           const [auditRes, rosterRes, snapRes, visitRes] = await env.ACT_OMEGA_D1.batch([
             env.ACT_OMEGA_D1.prepare(
-              "SELECT artifact_name, byte_length, sha256_digest, measured_shards, measured_neurons FROM v41_measured_sha256_audit ORDER BY artifact_name ASC;"
+              "SELECT COUNT(*) AS cnt, COALESCE(SUM(byte_length), 0) AS total_bytes FROM v41_measured_sha256_audit;"
             ),
             env.ACT_OMEGA_D1.prepare(
-              "SELECT agent_id, agent_name, model_tier, bound_npage_neurons, status FROM v43_antigravity_agent_roster ORDER BY agent_id ASC;"
+              "SELECT COUNT(*) AS cnt FROM v43_antigravity_agent_roster;"
             ),
             env.ACT_OMEGA_D1.prepare(
-              "SELECT snapshot_id, schema_version, total_neurons, total_bytes, active_synapses, metabolic_atp_score, rtx3050_temp_c, recorded_at_ms FROM npage_tier_snapshots ORDER BY snapshot_id DESC LIMIT 2;"
+              "SELECT snapshot_id, schema_version, total_neurons, total_bytes, active_synapses, metabolic_atp_score, rtx3050_temp_c, recorded_at_ms FROM npage_tier_snapshots ORDER BY snapshot_id DESC LIMIT 1;"
             ),
             env.ACT_OMEGA_D1.prepare(
-              "SELECT visit_id, agent_id, protocol, dominant_domain, crystallized_neuron_id, crystallized_shard_id FROM v44_visiting_llm_agent_ledger ORDER BY visit_id DESC LIMIT 3;"
+              "SELECT COUNT(*) AS cnt FROM v44_visiting_llm_agent_ledger;"
             )
           ]);
+          const auditAgg = auditRes && auditRes.results && auditRes.results[0] ? auditRes.results[0] : { cnt: 0, total_bytes: 0 };
+          const rosterAgg = rosterRes && rosterRes.results && rosterRes.results[0] ? rosterRes.results[0] : { cnt: 0 };
+          const visitAgg = visitRes && visitRes.results && visitRes.results[0] ? visitRes.results[0] : { cnt: 0 };
           d1Summary = {
             tables_queried: 10,
             live_d1_connected: true,
             query_latency_ms: Date.now() - t0,
-            sha256_audit: auditRes.results || [],
-            antigravity_roster: rosterRes.results || [],
+            sha256_audit_count: Number(auditAgg.cnt || 0),
+            sha256_audit_total_bytes: Number(auditAgg.total_bytes || 0),
+            antigravity_roster_count: Number(rosterAgg.cnt || 0),
             latest_npage_snapshots: snapRes.results || [],
-            latest_visiting_agents: visitRes.results || []
+            visiting_agents_count: Number(visitAgg.cnt || 0)
           };
         } catch (err) {
           gWorkerSqliteErrCount++;
           d1Summary = { tables_queried: 10, live_d1_connected: false, error: String(err), sqlite_err_count: gWorkerSqliteErrCount };
         }
       }
+
+      emitEdgeTelemetry(env, ctx, {
+        event_type: "D1_SHADOW_OPERATOR_READ",
+        tier: "d1",
+        status: `AUTHORIZED:${auth.role || "OPERATOR"}`,
+        duration_us: (Date.now() - t0) * 1000,
+        units: 1
+      });
 
       const payloadSig = await sha256HexWebCrypto(JSON.stringify({ d1Summary, doSummary, now }));
       return Response.json({
@@ -1965,14 +2103,21 @@ export default {
         durable_object_shadow: doSummary,
         d1_live: d1Summary
       }, {
-        headers: { "Cache-Control": "public, max-age=30" }
+        headers: { "Cache-Control": "no-store" }
       });
     }
 
     // ==============================================================================
-    // ROUTE: /api/v1/cloudflare/free_tier_governor (Feature F07 & Tool 317)
+    // ROUTE: /api/v1/cloudflare/free_tier_governor (Feature F07 & Tool 317 — Gated per E1)
     // ==============================================================================
     if (url.pathname === "/api/v1/cloudflare/free_tier_governor") {
+      const auth = await verifyZeroTrustAndOperatorHeaders(request, env);
+      if (!auth.authorized) {
+        return Response.json(
+          { error: auth.error || "OPERATOR_AUTH_REQUIRED", status: 403 },
+          { status: 403, headers: { "Cache-Control": "no-store" } }
+        );
+      }
       const now = Date.now();
       const utcDate = new Date(now).toISOString().split("T")[0];
       const synced = await getSyncedEdgeMetadata(env);
@@ -2217,9 +2362,24 @@ export default {
     }
 
     // ==============================================================================
-    // ROUTE: /api/v1/vectorize/query (Tier 1 Vectorize)
+    // ROUTE: /api/v1/vectorize/query (Tier 1 Vectorize — Operator Auth & Rate-Limited per S4)
     // ==============================================================================
     if (url.pathname === "/api/v1/vectorize/query") {
+      const auth = await verifyZeroTrustAndOperatorHeaders(request, env);
+      if (!auth.authorized) {
+        return Response.json(
+          { error: auth.error || "OPERATOR_AUTH_REQUIRED", status: 403 },
+          { status: 403, headers: { "Cache-Control": "no-store" } }
+        );
+      }
+      const rl = checkCallerRateLimit(request, "vectorize_query", 30);
+      if (!rl.allowed) {
+        return Response.json(
+          { error: "CALLER_RATE_LIMIT_EXCEEDED", status: "RATE_LIMITED", retry_after_ms: rl.retry_after_ms },
+          { status: 429, headers: { "Cache-Control": "no-store" } }
+        );
+      }
+
       let body = {};
       try {
         body = await request.json();
@@ -2246,7 +2406,7 @@ export default {
           status: "NOMINAL",
           fallback: false,
           latency_ms: Date.now() - t0
-        });
+        }, { headers: { "Cache-Control": "no-store" } });
       }
 
       let quotaAllowed = true;
@@ -2264,8 +2424,18 @@ export default {
         }
       }
 
-      // !env.ACT_OMEGA_VECTORIZE fallback Vectorize try ACT_OMEGA_VECTORIZE catch fallbackToD1
-      if (quotaAllowed && env && env.ACT_OMEGA_VECTORIZE) {
+      if (!quotaAllowed) {
+        return Response.json({
+          error: "VECTORIZE_QUOTA_DENIED",
+          status: "QUOTA_EXHAUSTED",
+          matches: [],
+          fallback: false,
+          latency_ms: Date.now() - t0
+        }, { status: 429, headers: { "Cache-Control": "no-store" } });
+      }
+
+      let vectorizeErrored = false;
+      if (env && env.ACT_OMEGA_VECTORIZE) {
         try {
           const vecResult = await env.ACT_OMEGA_VECTORIZE.query(vector, { topK, returnValues: true });
           if (vecResult && Array.isArray(vecResult.matches)) {
@@ -2285,25 +2455,25 @@ export default {
               status: "NOMINAL",
               fallback: false,
               latency_ms: Date.now() - t0
-            });
+            }, { headers: { "Cache-Control": "no-store" } });
           }
-        } catch (vecErr) {
-          // fallbackToD1 on error
+        } catch (_vecErr) {
+          vectorizeErrored = true;
         }
       }
 
-      // Zero-Downtime Fallback to D1 mit_hot_e8q_mirror + cosineSimilarity
-      const fallbackMatches = await computeD1CosineSimilarityFallback(vector, topK, env);
-      if (env && env.ACT_OMEGA_KV) {
-        ctx.waitUntil((async () => {
-          try {
-            await env.ACT_OMEGA_KV.put("vec_fallback:" + queryHash, JSON.stringify(fallbackMatches), { expirationTtl: 300 }); // ACT_OMEGA_KV.put mit_hot_e8q_mirror kvPut fallback
-          } catch (kvError) {
-            return; // catch kvError return try KV.put
-          }
-        })());
+      if (!env || !env.ACT_OMEGA_D1) {
+        return Response.json({
+          error: vectorizeErrored ? "VECTORIZE_UPSTREAM_ERROR_AND_D1_UNBOUND" : "VECTORIZE_AND_D1_UNBOUND",
+          status: "UNMEASURED/OFFLINE",
+          matches: [],
+          fallback: false,
+          latency_ms: Date.now() - t0
+        }, { status: 503, headers: { "Cache-Control": "no-store" } });
       }
 
+      // Deterministic D1 mit_hot_e8q_mirror cosine similarity fallback (zero synthetic vectors)
+      const fallbackMatches = await computeD1CosineSimilarityFallback(vector, topK, env);
       const isHonestFallback = fallbackMatches.length > 0;
       const fallbackStatus = isHonestFallback ? "EDGE_FALLBACK_QUOTA_SHIELDED" : "NO_MATCHING_VECTORS_IN_D1";
 
@@ -2323,7 +2493,7 @@ export default {
         status: fallbackStatus,
         fallback: isHonestFallback,
         latency_ms: Date.now() - t0
-      });
+      }, { headers: { "Cache-Control": "no-store" } });
     }
 
     // ==============================================================================
@@ -2458,9 +2628,24 @@ export default {
     }
 
     // ==============================================================================
-    // ROUTE: /api/v1/ai/embed (Tier 3 Workers AI)
+    // ROUTE: /api/v1/ai/embed (Tier 3 Workers AI — Operator Auth & Rate-Limited per S4)
     // ==============================================================================
     if (url.pathname === "/api/v1/ai/embed") {
+      const auth = await verifyZeroTrustAndOperatorHeaders(request, env);
+      if (!auth.authorized) {
+        return Response.json(
+          { error: auth.error || "OPERATOR_AUTH_REQUIRED", status: 403 },
+          { status: 403, headers: { "Cache-Control": "no-store" } }
+        );
+      }
+      const rl = checkCallerRateLimit(request, "ai_embed", 30);
+      if (!rl.allowed) {
+        return Response.json(
+          { error: "CALLER_RATE_LIMIT_EXCEEDED", status: "RATE_LIMITED", retry_after_ms: rl.retry_after_ms },
+          { status: 429, headers: { "Cache-Control": "no-store" } }
+        );
+      }
+
       let body = {};
       try {
         body = await request.json();
@@ -2694,9 +2879,16 @@ export default {
     }
 
     // ==============================================================================
-    // ROUTE: /api/v1/cloudflare/paid_tier_governor (Workers Paid $5/mo Governance)
+    // ROUTE: /api/v1/cloudflare/paid_tier_governor (Workers Paid $5/mo Governance — Gated per E1)
     // ==============================================================================
     if (url.pathname === "/api/v1/cloudflare/paid_tier_governor") {
+      const auth = await verifyZeroTrustAndOperatorHeaders(request, env);
+      if (!auth.authorized) {
+        return Response.json(
+          { error: auth.error || "OPERATOR_AUTH_REQUIRED", status: 403 },
+          { status: 403, headers: { "Cache-Control": "no-store" } }
+        );
+      }
       let quotaData = null;
       let wsStatus = { status: "DO_UNBOUND", active_websockets: null };
       if (env && env.SOVEREIGN_EDGE_SHADOW_DO) {
@@ -2938,9 +3130,16 @@ export default {
     }
 
     // ==============================================================================
-    // ROUTE: /api/v1/cloudflare/vpc_mesh_status (Mesh Registry & VPC Bindings)
+    // ROUTE: /api/v1/cloudflare/vpc_mesh_status (Mesh Registry & VPC Bindings — Gated per E1)
     // ==============================================================================
     if (url.pathname === "/api/v1/cloudflare/vpc_mesh_status") {
+      const auth = await verifyZeroTrustAndOperatorHeaders(request, env);
+      if (!auth.authorized) {
+        return Response.json(
+          { error: auth.error || "OPERATOR_AUTH_REQUIRED", status: 403 },
+          { status: 403, headers: { "Cache-Control": "no-store" } }
+        );
+      }
       let meshData = { ok: false, status: "UNMEASURED/DO_UNBOUND", device_count: 0, devices: [] };
       if (env && env.SOVEREIGN_EDGE_SHADOW_DO) {
         try {
@@ -3016,9 +3215,16 @@ export default {
     }
 
     // ==============================================================================
-    // ROUTE: /api/v1/cloudflare/vpc_probe (Direct Cloudflare Workers VPC Service Probes)
+    // ROUTE: /api/v1/cloudflare/vpc_probe (Direct Cloudflare Workers VPC Service Probes — Gated per E1)
     // ==============================================================================
     if (url.pathname === "/api/v1/cloudflare/vpc_probe") {
+      const auth = await verifyZeroTrustAndOperatorHeaders(request, env);
+      if (!auth.authorized) {
+        return Response.json(
+          { error: auth.error || "OPERATOR_AUTH_REQUIRED", status: 403 },
+          { status: 403, headers: { "Cache-Control": "no-store" } }
+        );
+      }
       if (env && env.SOVEREIGN_EDGE_SHADOW_DO) {
         try {
           const doId = env.SOVEREIGN_EDGE_SHADOW_DO.idFromName("GLOBAL_SOVEREIGN_SHADOW_V4400");
@@ -3083,14 +3289,14 @@ export default {
     }
 
     // ==============================================================================
-    // ROUTE: /api/v1/cloudflare/hyperdrive_query (Authenticated Hyperdrive -> PGWire DuckDB)
+    // ROUTE: /api/v1/cloudflare/hyperdrive_query (Authenticated Allowlist Hyperdrive -> PGWire DuckDB per S2)
     // ==============================================================================
     if (url.pathname === "/api/v1/cloudflare/hyperdrive_query") {
       const hasQueryKey = url.searchParams.has("key");
       const auth = await verifyZeroTrustAndOperatorHeaders(request, env);
       if (hasQueryKey || !auth.authorized) {
         return Response.json(
-          { error: "OPERATOR_AUTH_REQUIRED", status: 403 },
+          { error: auth.error || "OPERATOR_AUTH_REQUIRED", status: 403 },
           { status: 403, headers: { "Cache-Control": "no-store" } }
         );
       }
@@ -3104,11 +3310,18 @@ export default {
       } catch {
         return Response.json({ error: "INVALID_JSON_BODY" }, { status: 400 });
       }
-      const sql = String(body.sql || "SELECT count(*) AS docs_count FROM corpus_docs;").trim();
-      const trimmed = sql.replace(/;+\s*$/, "");
-      if (!trimmed || trimmed.includes(";") || !/^(SELECT|WITH|EXPLAIN|SHOW)\b/i.test(trimmed) || /\b(INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|TRUNCATE|ATTACH|DETACH|COPY|EXPORT|IMPORT|CALL|MERGE|REPLACE)\b/i.test(trimmed)) {
+      if (Object.prototype.hasOwnProperty.call(body, "sql") || url.searchParams.has("sql")) {
         return Response.json(
-          { ok: false, error: "READ_ONLY_SQL_REQUIRED", status: "REJECTED_NON_READONLY_SQL" },
+          { ok: false, error: "ARBITRARY_SQL_FORBIDDEN", status: "REJECTED_ARBITRARY_SQL_FORBIDDEN" },
+          { status: 400, headers: { "Cache-Control": "no-store" } }
+        );
+      }
+      const queryId = body.query_id !== undefined && body.query_id !== null && String(body.query_id).trim() !== ""
+        ? String(body.query_id).trim()
+        : "corpus_doc_count";
+      if (!ALLOWED_HYPERDRIVE_QUERY_IDS.has(queryId)) {
+        return Response.json(
+          { ok: false, error: "UNKNOWN_QUERY_ID", status: "REJECTED_UNKNOWN_QUERY_ID" },
           { status: 400, headers: { "Cache-Control": "no-store" } }
         );
       }
@@ -3125,10 +3338,19 @@ export default {
           { status: 503, headers: { "Cache-Control": "no-store" } }
         );
       }
+      const svcHeaders = { "Content-Type": "application/json" };
+      const opKeyHdr = request.headers.get("X-Sovereign-Operator-Key");
+      if (opKeyHdr) {
+        svcHeaders["X-Sovereign-Operator-Key"] = opKeyHdr;
+      }
       const svcRes = await env.ACT_OMEGA_WORKFLOW_SVC.fetch("https://workflow.internal/hyperdrive/query", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sql })
+        headers: svcHeaders,
+        body: JSON.stringify({
+          query_id: queryId,
+          track_id: body.track_id,
+          limit: body.limit
+        })
       });
       const svcJson = await svcRes.json();
       return Response.json(svcJson, {
@@ -3162,7 +3384,7 @@ export default {
       const colsDisp = syncedTail.chair44_columns !== null ? syncedTail.chair44_columns.toLocaleString("en-US") : "UNMEASURED/UNSYNCED";
       const synDisp = syncedTail.active_synapses !== null ? syncedTail.active_synapses.toLocaleString("en-US") : "UNMEASURED/UNSYNCED";
       const toolsDisp = syncedTail.tools_total !== null ? `${syncedTail.tools_total}` : "UNMEASURED/UNSYNCED";
-      const ssrVerAttr = verStr !== "UNMEASURED/UNSYNCED" ? verStr : "v73.2.0";
+      const ssrVerAttr = verStr;
       const htmlBody = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -3196,11 +3418,11 @@ export default {
         </li>
         <li style="background:#0D1117;border-left:3px solid #56D364;padding:10px 14px;border-radius:0 4px 4px 0;">
           <strong style="color:#56D364;">Edge-1 (Sensor &amp; NPU Node)</strong><br />
-          Google Pixel 10 (Tensor G5 NPU, ADB Serial 58170DLCR0004V). Sectors S48..S63 (416 Cachelines). Live 15.965 Hz 24D Magnetometer / Barometer / Kinematics stream.
+          Google Pixel 10 (Tensor G5 NPU). Sectors S48..S63 (416 Cachelines). Live 15.965 Hz 24D Magnetometer / Barometer / Kinematics stream.
         </li>
         <li style="background:#0D1117;border-left:3px solid #B388FF;padding:10px 14px;border-radius:0 4px 4px 0;">
           <strong style="color:#B388FF;">Edge-2 (Speculative Drafter &amp; Verifier)</strong><br />
-          Google Pixel 8 (Tensor G3 P8-APEX, ADB Serial 3A121FDJH00BW5). Sectors S64..S79 (416 Cachelines). 4.00 MB Mali-G715 L2 Cache Pinning, k=4 speculative drafter.
+          Google Pixel 8 (Tensor G3 P8-APEX). Sectors S64..S79 (416 Cachelines). 4.00 MB Mali-G715 L2 Cache Pinning, k=4 speculative drafter.
         </li>
         <li style="background:#0D1117;border-left:3px solid #79C0FF;padding:10px 14px;border-radius:0 4px 4px 0;">
           <strong style="color:#79C0FF;">Layer 1.5 &amp; Multi-Tier Vault</strong><br />

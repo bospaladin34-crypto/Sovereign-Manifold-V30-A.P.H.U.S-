@@ -2,7 +2,7 @@
 
 > [!IMPORTANT]
 > **Verdict: 100% ZERO-GAP INGESTION & CRYPTOGRAPHIC PARITY VERIFIED (`CHAIN_72_PARALLEL_DAG`)**
-> All 6 domain-specialized subagents (`@l0-rust-lean4-architect`, `@5w1h-connectome-router`, `@hud-cockpit-guardian`, `@dual-pixel-edge-ndk`, `@cloudflare-d1-tunnel-ops`, and `@muse-zero-mock-auditor`) plus the External Portal & Repository Researcher have completed a full-depth audit across `C:\sovereign_manifold_v31`, the tethered Google Pixel 10 & Pixel 8 edge nodes, the live `v31_swarm.exe` daemon (`:8097` & `:5173`), Cloudflare Edge (`act-omega-net.dev` & D1 Vault `9f46d56a-ef3e-4232-a9ac-c4bd12e20a87`), and the External Tier-2 Vaults (`E:\` & `G:\`).
+> All 6 domain-specialized subagents (`@l0-rust-lean4-architect`, `@5w1h-connectome-router`, `@hud-cockpit-guardian`, `@dual-pixel-edge-ndk`, `@cloudflare-d1-tunnel-ops`, and `@muse-zero-mock-auditor`) plus the External Portal & Repository Researcher have completed a full-depth audit across `C:\sovereign_manifold_v31`, the tethered Google Pixel 10 & Pixel 8 edge nodes, the live `v31_swarm.exe` daemon (`:8097` & `:5173`), Cloudflare Edge (`act-omega-net.dev` & D1 Vault `<EXTERNAL_D1_DATABASE_ID>`), and the External Tier-2 Vaults (`E:\` & `G:\`).
 
 ---
 
@@ -34,7 +34,7 @@ flowchart TD
 
     subgraph CLOUD["Cloudflare Edge & External Tier-2 Vaults"]
         CF["Cloudflare Named Tunnel (9cdea4c4...)\nact-omega-net.dev (:5173) | api/mcp (:8097)"]
-        D1["Cloudflare D1 SQLite (act_omega_d1_vault)\nUUID 9f46d56a-ef3e-4232-a9ac-c4bd12e20a87 (8 Tables)"]
+        D1["Cloudflare D1 SQLite (act_omega_d1_vault)\nUUID <EXTERNAL_D1_DATABASE_ID> (8 Tables)"]
         VAULTS["Tier-2 SSD (E:\\Sovereign_Manifold_SSD_Vault)\nDrive Bridge (G:\\My Drive\\ACT_OMEGA_GEMINI_BRIDGE)"]
     end
 
@@ -85,7 +85,7 @@ flowchart TD
 
 ### 2.5 `@cloudflare-d1-tunnel-ops` — Cloudflare Named Tunnel, D1 Vault, MCP & Tier-2 Storage
 - **Cloudflare Named Tunnel**: `00_control/cloudflare_named_config.yml` (Tunnel UUID `9cdea4c4-831d-4ccc-983d-5f7587a98206`) maps `act-omega-net.dev`, `hud.act-omega-net.dev`, and `wiki.act-omega-net.dev` $\rightarrow$ `:5173` and `api.act-omega-net.dev` / `agent.act-omega-net.dev` $\rightarrow$ `:8097`.
-- **Remote 5 GB Cloudflare D1 Vault (`act_omega_d1_vault`)**: Bound in `wrangler.toml` (`UUID 9f46d56a-ef3e-4232-a9ac-c4bd12e20a87`) and `00_control/cloudflare_edge/sync_d1_v4300_all8tables.sql` across all **8 tables**:
+- **Remote 5 GB Cloudflare D1 Vault (`act_omega_d1_vault`)**: Bound in `wrangler.toml` (`UUID <EXTERNAL_D1_DATABASE_ID>`) and `00_control/cloudflare_edge/sync_d1_v4300_all8tables.sql` across all **8 tables**:
   1. `harness_5w1h_audit_log`
   2. `npage_tier_snapshots`
   3. `wal_merkle_checkpoints`

@@ -2068,7 +2068,7 @@ pub fn v71_2_dispatch_tool_338_cosine_stiefel_trainer(payload: &str) -> String {
 // =============================================================================
 pub fn v71_2_dispatch_tool_339_week2_7test_torture_gauntlet(payload: &str) -> String {
     let t0 = Instant::now();
-    let _ = payload;
+    let d64_seed_override = v71_extract_json_usize(payload, "d64_seed_samples_override", 64).clamp(8, 1024);
 
     let vocab_v71 = v71_load_or_build_bpe_vocabulary(false);
     let (_ptx_src, e8z_bytes, npage_bytes, spage_bytes) = v69_5_load_connectome_and_ptx();
@@ -2127,33 +2127,71 @@ pub fn v71_2_dispatch_tool_339_week2_7test_torture_gauntlet(payload: &str) -> St
     // TEST W2-2: Tied 56D E8^4 (32D) x Leech Lambda_24 (24D) Lattice Parity & SQNR Torture
     // -------------------------------------------------------------------------
     let r336 = v71_2_dispatch_tool_336_bpe_16384_leech_codebook("{}");
-    let w2_2_pass = r336.contains("\"status\":\"MEASURED\"") && cb_16k.mean_sqnr_db >= 30.8;
+    let v336 = serde_json::from_str::<serde_json::Value>(&r336).unwrap_or(serde_json::Value::Null);
+    let w2_2_pass = v336.get("status").and_then(|x| x.as_str()) == Some("MEASURED")
+        && cb_16k.mean_sqnr_db >= 30.8;
 
     // -------------------------------------------------------------------------
     // TEST W2-3: DuckDB v1.5.6 Streaming Harvester & Hard Gate 0 Firewall Torture
     // -------------------------------------------------------------------------
     let r335 = v71_2_dispatch_tool_335_duckdb_vault_harvester("{}");
+    let v335 = serde_json::from_str::<serde_json::Value>(&r335).unwrap_or(serde_json::Value::Null);
     let r322 = v71_0_dispatch_tool_322_unseen_holdout_evaluator("{}");
+    let v322 = serde_json::from_str::<serde_json::Value>(&r322).unwrap_or(serde_json::Value::Null);
     let r322_canary =
         v71_0_dispatch_tool_322_unseen_holdout_evaluator("{\"simulate_gate0_tamper\":true}");
-    let w2_3_pass = r335.contains("\"status\":\"MEASURED\"")
-        && r335.contains("\"sh_eval_256_overlap\":0")
-        && r322.contains("\"gate_0_passed\":true")
-        && r322_canary.contains("INVALID_RUN_HARD_GATE_0_FAILED");
+    let v322_canary = serde_json::from_str::<serde_json::Value>(&r322_canary).unwrap_or(serde_json::Value::Null);
+    let v322_hg0 = v322.get("hard_gate_0_frozen_holdout_v2");
+    let w2_3_gate0_bool = v322_hg0
+        .and_then(|o| o.get("gate_0_passed"))
+        .and_then(|x| x.as_bool())
+        .unwrap_or(false);
+    let w2_3_canary_bool = v322_canary.get("status").and_then(|x| x.as_str()) == Some("INVALID_RUN_HARD_GATE_0_FAILED")
+        || v322_canary
+            .get("hard_gate_0_frozen_holdout_v2")
+            .and_then(|o| o.get("gate_0_passed"))
+            .and_then(|x| x.as_bool())
+            == Some(false);
+    let w2_3_eval_ov = v335
+        .get("decontamination_firewall")
+        .and_then(|o| o.get("sh_eval_256_overlap"))
+        .and_then(|x| x.as_u64())
+        .or_else(|| v335.get("sh_eval_256_overlap").and_then(|x| x.as_u64()))
+        .unwrap_or(999);
+    let w2_3_pass = v335.get("status").and_then(|x| x.as_str()) == Some("MEASURED")
+        && w2_3_eval_ov == 0
+        && w2_3_gate0_bool
+        && w2_3_canary_bool;
 
     // -------------------------------------------------------------------------
     // TEST W2-4: Hoffmann-Chinchilla 4-Rung (64 -> 256 -> 512 -> 1024) Scaling Law Fit
     // -------------------------------------------------------------------------
     let r337 = v71_2_dispatch_tool_337_curriculum_difficulty_pacer("{}");
-    let w2_4_pass = r337.contains("\"strictly_monotonic_decay\":true")
-        && r337.contains("\"pacing_strictly_beneficial\":true");
+    let v337 = serde_json::from_str::<serde_json::Value>(&r337).unwrap_or(serde_json::Value::Null);
+    let w2_4_mono_bool = v337
+        .get("chinchilla_4rung_scaling")
+        .and_then(|o| o.get("strictly_monotonic_decay"))
+        .and_then(|x| x.as_bool())
+        .unwrap_or(false);
+    let w2_4_pace_bool = v337
+        .get("three_stage_curriculum")
+        .and_then(|o| o.get("pacing_strictly_beneficial"))
+        .and_then(|x| x.as_bool())
+        .unwrap_or(false);
+    let w2_4_pass = w2_4_mono_bool && w2_4_pace_bool;
 
     // -------------------------------------------------------------------------
     // TEST W2-5: 3-Stage Cosine-Annealed Stiefel Cayley Orthogonality & Convergence Torture
     // -------------------------------------------------------------------------
     let r338 = v71_2_dispatch_tool_338_cosine_stiefel_trainer("{\"stages\":3}");
-    let w2_5_pass = r338.contains("\"status\":\"MEASURED\"")
-        && r338.contains("\"strictly_monotonic_stage_reduction\":true");
+    let v338 = serde_json::from_str::<serde_json::Value>(&r338).unwrap_or(serde_json::Value::Null);
+    let w2_5_pass = v338.get("status").and_then(|x| x.as_str()) == Some("MEASURED")
+        && v338
+            .get("convergence_trajectory")
+            .and_then(|o| o.get("strictly_monotonic_stage_reduction"))
+            .and_then(|x| x.as_bool())
+            .or_else(|| v338.get("strictly_monotonic_stage_reduction").and_then(|x| x.as_bool()))
+            .unwrap_or(false);
 
     // -------------------------------------------------------------------------
     // TEST W2-6: Full 256-Prompt SH-Eval-256 Week 2 vs. Week 1 Progression Torture
@@ -2239,21 +2277,233 @@ pub fn v71_2_dispatch_tool_339_week2_7test_torture_gauntlet(payload: &str) -> St
     // TEST W2-7: Tri-Silicon Hardware Co-Execution & Wireless Pixel 8 (:8098) Burst
     // -------------------------------------------------------------------------
     let (p8_ok, p8_bearer, p8_rtt) = v71_2_probe_wireless_p8_8098();
-    let w2_7_pass = r338.contains("\"rtx3050_cuda_ptx_active\":true")
-        && (p8_ok || Path::new(C_SH_WEEK2_CODEBOOK_PATH).exists());
+    let rtx_ptx_active = v338
+        .get("tri_silicon_coexecution")
+        .and_then(|o| o.get("rtx3050_cuda_ptx_active"))
+        .and_then(|x| x.as_bool())
+        .or_else(|| v338.get("rtx3050_cuda_ptx_active").and_then(|x| x.as_bool()))
+        .unwrap_or(false);
+    let w2_7_pass = rtx_ptx_active && (p8_ok || Path::new(C_SH_WEEK2_CODEBOOK_PATH).exists());
 
     // -------------------------------------------------------------------------
-    // TEST W2-8: 6-Way Week 2 Component Ablation Matrix across SH-Eval-256
-    //   Compares Full Week 2 against 5 single-component knockouts:
-    //   (A) No Leech 24D (E8 32D only), (B) No AST/Concept Tiers (4K Subword only),
-    //   (C) Reverse Curriculum Anti-Paced (Stage 3 -> 2 -> 1),
-    //   (D) Unpaced Random Order, (E) D=64 Seed Only (No DuckDB 1,024 Vault Corpus)
+    // TEST W2-8 (D3): Genuine 6-Way Week 2 Component Ablation Matrix across SH-Eval-256
+    //   Trains a real bilinear lattice transition matrix W_abl via online log-softmax SGD
+    //   under each cell's distinct (use_leech_24d, use_ast_tiers, pacing_mode, active_d)
+    //   configuration over the Week 2 curriculum corpus, then measures held-out categorical
+    //   log-softmax cross-entropy NLL and perplexity on SH-Eval-256.
     // -------------------------------------------------------------------------
+    let (w2_curriculum_samples, _, _) = v71_2_build_curated_1024_curriculum();
+
+    // Build deterministic 192-token active evaluation support set from eval256 so all 6 cells
+    // normalize exact categorical log-softmax over the identical discrete outcome space.
+    let mut eval_vocab_support: Vec<usize> = Vec::with_capacity(192);
+    {
+        let mut seen_tok = std::collections::HashSet::new();
+        let mut e_i: usize = 0;
+        while e_i < eval256.len() && eval_vocab_support.len() < 192 {
+            if let Some(item) = eval256.get(e_i) {
+                let tks = v71_2_encode_16384_ast_bpe(&cb_16k.vocab_strings, &item.full_text);
+                for &tk in tks.iter() {
+                    let tid = (tk as usize) % V71_2_BPE_16K_VOCAB;
+                    if seen_tok.insert(tid) {
+                        eval_vocab_support.push(tid);
+                        if eval_vocab_support.len() >= 192 {
+                            break;
+                        }
+                    }
+                    let sub_tid = tid % 4352;
+                    if seen_tok.insert(sub_tid) && eval_vocab_support.len() < 192 {
+                        eval_vocab_support.push(sub_tid);
+                    }
+                }
+            }
+            e_i += 4;
+        }
+    }
+
+    let extract_tok_feat = |tok_id: usize, use_leech_24d: bool| -> Vec<f64> {
+        let feat_dim = if use_leech_24d { 56usize } else { 32usize };
+        let mut fv = v71_2_alloc_f64(feat_dim, 0.0);
+        let mut sq: f64 = 0.0;
+        let mut d: usize = 0;
+        while d < 32 {
+            let v = (*cb_16k.e8_32d_coords.get(tok_id * V71_2_E8_DIM_32D + d).unwrap_or(&0)) as f64;
+            sq += v * v;
+            if let Some(slot) = fv.get_mut(d) {
+                *slot = v;
+            }
+            d += 1;
+        }
+        if use_leech_24d {
+            let mut dl: usize = 0;
+            while dl < 24 {
+                let vl = (*cb_16k.leech_24d_coords.get(tok_id * 24 + dl).unwrap_or(&0)) as f64;
+                sq += vl * vl;
+                if let Some(slot) = fv.get_mut(32 + dl) {
+                    *slot = vl;
+                }
+                dl += 1;
+            }
+        }
+        let inv_n = 1.0 / sq.sqrt().max(1e-9);
+        for slot in fv.iter_mut() {
+            *slot *= inv_n;
+        }
+        fv
+    };
+
     let eval_ablation = |use_leech_24d: bool,
                          use_ast_tiers: bool,
-                         _pacing_mode: usize,
-                         _active_d: usize|
-     -> f64 {
+                         pacing_mode: usize,
+                         active_d: usize|
+     -> (f64, f64, usize) {
+        let feat_dim = if use_leech_24d { 56usize } else { 32usize };
+        let sup_len = eval_vocab_support.len().max(1);
+        let mut sup_feats: Vec<Vec<f64>> = Vec::with_capacity(sup_len);
+        let mut tok_to_sup: std::collections::HashMap<usize, usize> = std::collections::HashMap::with_capacity(sup_len);
+        for (si, &tid) in eval_vocab_support.iter().enumerate() {
+            let eff_tid = if !use_ast_tiers && *cb_16k.token_tiers.get(tid).unwrap_or(&0) >= 2 {
+                tid % 4352
+            } else {
+                tid
+            };
+            tok_to_sup.entry(eff_tid).or_insert(si);
+            sup_feats.push(extract_tok_feat(eff_tid, use_leech_24d));
+        }
+
+        // Select `active_d` stratified samples from `w2_curriculum_samples`
+        let total_avail = w2_curriculum_samples.len().max(1);
+        let d_cap = active_d.clamp(1, total_avail);
+        let mut selected_indices: Vec<usize> = Vec::with_capacity(d_cap);
+        let stride_num = total_avail;
+        let mut k_sel: usize = 0;
+        while k_sel < d_cap {
+            let src_idx = (k_sel * stride_num / d_cap) % total_avail;
+            selected_indices.push(src_idx);
+            k_sel += 1;
+        }
+
+        // Order training sequence strictly according to `pacing_mode`:
+        //   1 = forward easy->hard curriculum; 2 = reverse hard->easy anti-paced; 0 = SplitMix64 random shuffle
+        if pacing_mode == 1 {
+            selected_indices.sort_by_key(|&i| {
+                w2_curriculum_samples.get(i).map(|s| s.difficulty_milli).unwrap_or(0)
+            });
+        } else if pacing_mode == 2 {
+            selected_indices.sort_by_key(|&i| {
+                std::cmp::Reverse(
+                    w2_curriculum_samples.get(i).map(|s| s.difficulty_milli).unwrap_or(0),
+                )
+            });
+        } else {
+            let mut rng: u64 = 0x7120_AB10_9E37_79B9u64 ^ (d_cap as u64);
+            let mut sh_i = selected_indices.len();
+            while sh_i > 1 {
+                sh_i -= 1;
+                rng = rng.wrapping_add(0x9E37_79B9_7F4A_7C15);
+                let mut z = rng;
+                z = (z ^ (z >> 30)).wrapping_mul(0xBF58_476D_1CE4_E5B9);
+                z = (z ^ (z >> 27)).wrapping_mul(0x94D0_49BB_1331_11EB);
+                z = z ^ (z >> 31);
+                let swap_j = (z as usize) % (sh_i + 1);
+                selected_indices.swap(sh_i, swap_j);
+            }
+        }
+
+        // Train bilinear projection matrix W_abl (feat_dim x feat_dim) via online SGD with decaying step size
+        let mut w_abl = v71_2_alloc_f64(feat_dim * feat_dim, 0.0);
+        let mut step_updates: usize = 0;
+        for (doc_step, &doc_idx) in selected_indices.iter().enumerate() {
+            let lr = 0.22 / (1.0 + 0.012 * (doc_step as f64));
+            if let Some(doc) = w2_curriculum_samples.get(doc_idx) {
+                let tks = v71_2_encode_16384_ast_bpe(&cb_16k.vocab_strings, &doc.full_text);
+                let mut ti: usize = 1;
+                while ti < tks.len() && ti < 20 {
+                    let raw_prev = (*tks.get(ti - 1).unwrap_or(&0) as usize) % V71_2_BPE_16K_VOCAB;
+                    let raw_cur = (*tks.get(ti).unwrap_or(&0) as usize) % V71_2_BPE_16K_VOCAB;
+                    let prev_t = if !use_ast_tiers && *cb_16k.token_tiers.get(raw_prev).unwrap_or(&0) >= 2 {
+                        raw_prev % 4352
+                    } else {
+                        raw_prev
+                    };
+                    let cur_t = if !use_ast_tiers && *cb_16k.token_tiers.get(raw_cur).unwrap_or(&0) >= 2 {
+                        raw_cur % 4352
+                    } else {
+                        raw_cur
+                    };
+                    if let Some(&target_si) = tok_to_sup.get(&cur_t) {
+                        let u_feat = extract_tok_feat(prev_t, use_leech_24d);
+                        // Compute w_proj = u_feat^T * W_abl (1 x feat_dim)
+                        let mut u_w = v71_2_alloc_f64(feat_dim, 0.0);
+                        let mut c: usize = 0;
+                        while c < feat_dim {
+                            let mut acc = 0.0;
+                            let mut r: usize = 0;
+                            while r < feat_dim {
+                                acc += *u_feat.get(r).unwrap_or(&0.0)
+                                    * *w_abl.get(r * feat_dim + c).unwrap_or(&0.0);
+                                r += 1;
+                            }
+                            if let Some(uw_s) = u_w.get_mut(c) {
+                                *uw_s = acc;
+                            }
+                            c += 1;
+                        }
+                        let mut logits = v71_2_alloc_f64(sup_len, 0.0);
+                        let mut max_l = -1.0e9_f64;
+                        for (si, vf) in sup_feats.iter().enumerate() {
+                            let mut dot = 0.0;
+                            let mut d: usize = 0;
+                            while d < feat_dim {
+                                dot += *u_w.get(d).unwrap_or(&0.0) * *vf.get(d).unwrap_or(&0.0);
+                                d += 1;
+                            }
+                            let scaled = dot * 3.0;
+                            if scaled > max_l {
+                                max_l = scaled;
+                            }
+                            if let Some(ls) = logits.get_mut(si) {
+                                *ls = scaled;
+                            }
+                        }
+                        let mut z_sum = 0.0;
+                        for ls in logits.iter_mut() {
+                            *ls = (*ls - max_l).exp();
+                            z_sum += *ls;
+                        }
+                        let inv_z = 1.0 / z_sum.max(1e-12);
+                        let mut err_feat = v71_2_alloc_f64(feat_dim, 0.0);
+                        for (si, vf) in sup_feats.iter().enumerate() {
+                            let prob = *logits.get(si).unwrap_or(&0.0) * inv_z;
+                            let coeff = if si == target_si { 1.0 - prob } else { -prob };
+                            let mut d: usize = 0;
+                            while d < feat_dim {
+                                if let Some(ef) = err_feat.get_mut(d) {
+                                    *ef += coeff * *vf.get(d).unwrap_or(&0.0);
+                                }
+                                d += 1;
+                            }
+                        }
+                        let mut r: usize = 0;
+                        while r < feat_dim {
+                            let ur = *u_feat.get(r).unwrap_or(&0.0) * lr * 3.0;
+                            let mut col: usize = 0;
+                            while col < feat_dim {
+                                if let Some(ws) = w_abl.get_mut(r * feat_dim + col) {
+                                    *ws += ur * *err_feat.get(col).unwrap_or(&0.0);
+                                }
+                                col += 1;
+                            }
+                            r += 1;
+                        }
+                        step_updates += 1;
+                    }
+                    ti += 1;
+                }
+            }
+        }
+
+        // Evaluate held-out true categorical log-softmax cross-entropy NLL across eval256
         let mut nll_sum: f64 = 0.0;
         let mut tok_cnt: usize = 0;
         let mut idx: usize = 0;
@@ -2262,54 +2512,93 @@ pub fn v71_2_dispatch_tool_339_week2_7test_torture_gauntlet(payload: &str) -> St
                 let toks_16k = v71_2_encode_16384_ast_bpe(&cb_16k.vocab_strings, &item.full_text);
                 let mut k: usize = 1;
                 while k < toks_16k.len() {
-                    let prev_t = (*toks_16k.get(k - 1).unwrap_or(&0) as usize) % V71_2_BPE_16K_VOCAB;
-                    let cur_t = (*toks_16k.get(k).unwrap_or(&0) as usize) % V71_2_BPE_16K_VOCAB;
-
-                    // If ast tiers knocked out, mask candidate tokens >= 4352 to subword fallback
-                    let cur_tier = *cb_16k.token_tiers.get(cur_t).unwrap_or(&0);
-                    let effective_cur = if !use_ast_tiers && cur_tier >= 2 {
-                        cur_t % 4352
+                    let raw_prev = (*toks_16k.get(k - 1).unwrap_or(&0) as usize) % V71_2_BPE_16K_VOCAB;
+                    let raw_cur = (*toks_16k.get(k).unwrap_or(&0) as usize) % V71_2_BPE_16K_VOCAB;
+                    let prev_t = if !use_ast_tiers && *cb_16k.token_tiers.get(raw_prev).unwrap_or(&0) >= 2 {
+                        raw_prev % 4352
                     } else {
-                        cur_t
+                        raw_prev
                     };
-
-                    let dot = if use_leech_24d {
-                        v71_2_joint_56d_codebook_dot(&cb_16k, prev_t, effective_cur)
+                    let effective_cur = if !use_ast_tiers && *cb_16k.token_tiers.get(raw_cur).unwrap_or(&0) >= 2 {
+                        raw_cur % 4352
                     } else {
-                        // E8^4 32D dot product only (Leech 24D knocked out)
-                        let mut dot32: f64 = 0.0;
-                        let mut n32_a: f64 = 0.0;
-                        let mut n32_b: f64 = 0.0;
-                        let mut d: usize = 0;
-                        while d < V71_2_E8_DIM_32D {
-                            let va = (*cb_16k.e8_32d_coords.get(prev_t * V71_2_E8_DIM_32D + d).unwrap_or(&0)) as f64;
-                            let vb = (*cb_16k.e8_32d_coords.get(effective_cur * V71_2_E8_DIM_32D + d).unwrap_or(&0)) as f64;
-                            dot32 += va * vb;
-                            n32_a += va * va;
-                            n32_b += vb * vb;
-                            d += 1;
+                        raw_cur
+                    };
+                    if let Some(&target_si) = tok_to_sup.get(&effective_cur) {
+                        let u_feat = extract_tok_feat(prev_t, use_leech_24d);
+                        let mut u_w = v71_2_alloc_f64(feat_dim, 0.0);
+                        let mut c: usize = 0;
+                        while c < feat_dim {
+                            let mut acc = 0.0;
+                            let mut r: usize = 0;
+                            while r < feat_dim {
+                                acc += *u_feat.get(r).unwrap_or(&0.0)
+                                    * *w_abl.get(r * feat_dim + c).unwrap_or(&0.0);
+                                r += 1;
+                            }
+                            if let Some(uw_s) = u_w.get_mut(c) {
+                                *uw_s = acc;
+                            }
+                            c += 1;
                         }
-                        let denom = (n32_a.sqrt() * n32_b.sqrt()).max(1e-9);
-                        dot32 / denom
-                    };
-
-                    let step_loss = (1.0 - dot.clamp(-1.0, 1.0)).max(0.01) * 2.0;
-                    nll_sum += step_loss;
-                    tok_cnt += 1;
+                        let mut max_l = -1.0e9_f64;
+                        let mut target_l = 0.0_f64;
+                        let mut logits = v71_2_alloc_f64(sup_len, 0.0);
+                        for (si, vf) in sup_feats.iter().enumerate() {
+                            let mut dot = 0.0;
+                            let mut d: usize = 0;
+                            while d < feat_dim {
+                                dot += *u_w.get(d).unwrap_or(&0.0) * *vf.get(d).unwrap_or(&0.0);
+                                d += 1;
+                            }
+                            let scaled = dot * 3.0;
+                            if si == target_si {
+                                target_l = scaled;
+                            }
+                            if scaled > max_l {
+                                max_l = scaled;
+                            }
+                            if let Some(ls) = logits.get_mut(si) {
+                                *ls = scaled;
+                            }
+                        }
+                        let mut sum_exp = 0.0_f64;
+                        for &lv in logits.iter() {
+                            sum_exp += (lv - max_l).exp();
+                        }
+                        let step_nll = (max_l + sum_exp.max(1e-12).ln()) - target_l;
+                        nll_sum += step_nll.max(0.0);
+                        tok_cnt += 1;
+                    }
                     k += 1;
                 }
             }
             idx += 4;
         }
-        (nll_sum / (tok_cnt.max(1) as f64)).exp()
+        let mean_nll = nll_sum / (tok_cnt.max(1) as f64);
+        (mean_nll, mean_nll.exp(), step_updates)
     };
 
-    let abl_full_w2_ppl = eval_ablation(true, true, 1, 1024);
-    let abl_no_leech_24d_ppl = eval_ablation(false, true, 1, 1024);
-    let abl_no_ast_tiers_ppl = eval_ablation(true, false, 1, 1024);
-    let abl_unpaced_random_ppl = eval_ablation(true, true, 0, 1024);
-    let abl_reverse_antipaced_ppl = eval_ablation(true, true, 2, 1024);
-    let abl_d64_seed_only_ppl = eval_ablation(true, true, 1, 64);
+    let (abl_full_nll, abl_full_w2_ppl, abl_full_steps) = eval_ablation(true, true, 1, 1024);
+    let (abl_noleech_nll, abl_no_leech_24d_ppl, abl_noleech_steps) = eval_ablation(false, true, 1, 1024);
+    let (abl_noast_nll, abl_no_ast_tiers_ppl, abl_noast_steps) = eval_ablation(true, false, 1, 1024);
+    let (abl_unpaced_nll, abl_unpaced_random_ppl, abl_unpaced_steps) = eval_ablation(true, true, 0, 1024);
+    let (abl_rev_nll, abl_reverse_antipaced_ppl, abl_rev_steps) = eval_ablation(true, true, 2, 1024);
+    let (abl_d64_nll, abl_d64_seed_only_ppl, abl_d64_steps) = eval_ablation(true, true, 1, d64_seed_override);
+
+    let _ = fs::create_dir_all("03_vault/connectome");
+    let d3_ablation_receipt = format!(
+        "{{\"tool_id\":339,\"status\":\"MEASURED\",\"evaluation_support_vocab\":{},\"d64_seed_samples_override\":{},\"cells\":{{\"cell1_full_week2\":{{\"use_leech_24d\":true,\"use_ast_tiers\":true,\"pacing_mode\":\"forward_easy_to_hard\",\"active_d\":1024,\"feature_dim\":56,\"sgd_updates\":{},\"mean_nll\":{:.6},\"perplexity\":{:.6}}},\"cell2_no_leech_24d\":{{\"use_leech_24d\":false,\"use_ast_tiers\":true,\"pacing_mode\":\"forward_easy_to_hard\",\"active_d\":1024,\"feature_dim\":32,\"sgd_updates\":{},\"mean_nll\":{:.6},\"perplexity\":{:.6}}},\"cell3_no_ast_tiers\":{{\"use_leech_24d\":true,\"use_ast_tiers\":false,\"pacing_mode\":\"forward_easy_to_hard\",\"active_d\":1024,\"feature_dim\":56,\"sgd_updates\":{},\"mean_nll\":{:.6},\"perplexity\":{:.6}}},\"cell4_unpaced_random\":{{\"use_leech_24d\":true,\"use_ast_tiers\":true,\"pacing_mode\":\"splitmix64_random_shuffle\",\"active_d\":1024,\"feature_dim\":56,\"sgd_updates\":{},\"mean_nll\":{:.6},\"perplexity\":{:.6}}},\"cell5_reverse_antipaced\":{{\"use_leech_24d\":true,\"use_ast_tiers\":true,\"pacing_mode\":\"reverse_hard_to_easy\",\"active_d\":1024,\"feature_dim\":56,\"sgd_updates\":{},\"mean_nll\":{:.6},\"perplexity\":{:.6}}},\"cell6_d64_seed_only\":{{\"use_leech_24d\":true,\"use_ast_tiers\":true,\"pacing_mode\":\"forward_easy_to_hard\",\"active_d\":{},\"feature_dim\":56,\"sgd_updates\":{},\"mean_nll\":{:.6},\"perplexity\":{:.6}}}}}}}",
+        eval_vocab_support.len(),
+        d64_seed_override,
+        abl_full_steps, abl_full_nll, abl_full_w2_ppl,
+        abl_noleech_steps, abl_noleech_nll, abl_no_leech_24d_ppl,
+        abl_noast_steps, abl_noast_nll, abl_no_ast_tiers_ppl,
+        abl_unpaced_steps, abl_unpaced_nll, abl_unpaced_random_ppl,
+        abl_rev_steps, abl_rev_nll, abl_reverse_antipaced_ppl,
+        d64_seed_override, abl_d64_steps, abl_d64_nll, abl_d64_seed_only_ppl
+    );
+    let _ = fs::write("03_vault/connectome/sh_week2_6way_ablation_receipt.json", d3_ablation_receipt.as_bytes());
 
     let w2_8_pass = abl_full_w2_ppl.is_finite()
         && abl_full_w2_ppl > 1.0
@@ -2489,9 +2778,16 @@ pub fn v71_2_dispatch_tool_339_week2_7test_torture_gauntlet(payload: &str) -> St
     // TEST W2-13: Frozen Holdout v2 (32 Prompts on F:\) Human-16 vs External-16
     //             Sub-Set Generalization Verification (via Tool 322 Read-Only)
     // -------------------------------------------------------------------------
-    let w2_13_pass = r322.contains("\"gate_0_passed\":true")
-        && r322.contains("\"week2_corpus_checked_samples\":1024")
-        && r322.contains("\"trainer_overlap_count\":0");
+    let w2_13_pass = serde_json::from_str::<serde_json::Value>(&r322)
+        .ok()
+        .and_then(|v| {
+            let hg = v.get("hard_gate_0_frozen_holdout_v2")?;
+            let g0 = hg.get("gate_0_passed")?.as_bool()?;
+            let w2_cnt = hg.get("week2_corpus_checked_samples")?.as_u64()?;
+            let ov = hg.get("trainer_overlap_count")?.as_u64()?;
+            Some(g0 && w2_cnt == 1024 && ov == 0)
+        })
+        .unwrap_or(false);
 
     let all_7_passed =
         w2_1_pass && w2_2_pass && w2_3_pass && w2_4_pass && w2_5_pass && w2_6_pass && w2_7_pass;
@@ -2550,17 +2846,21 @@ pub fn v71_2_dispatch_tool_339_week2_7test_torture_gauntlet(payload: &str) -> St
         v71_extract_json_usize(&r335, "surviving_curated_samples", 1024);
     let w2_3_eval256_overlap =
         v71_extract_json_usize(&r335, "sh_eval_256_overlap", 0);
-    let w2_3_gate0_passed = r322.contains("\"gate_0_passed\":true");
-    let w2_3_canary_caught = r322_canary.contains("INVALID_RUN_HARD_GATE_0_FAILED");
+    let w2_3_gate0_passed = w2_3_gate0_bool;
+    let w2_3_canary_caught = w2_3_canary_bool;
 
-    let w2_4_monotonic = r337.contains("\"strictly_monotonic_decay\":true");
+    let w2_4_monotonic = w2_4_mono_bool;
     let w2_9_unk_count = 0usize;
     let w2_10_recovery_rate = if w2_10_trials > 0 {
         (w2_10_recovered as f64) / (w2_10_trials as f64)
     } else {
         0.0
     };
-    let w2_13_zero_overlap = r322.contains("\"trainer_overlap_count\":0");
+    let w2_13_zero_overlap = v322_hg0
+        .and_then(|o| o.get("zero_overlap_verified"))
+        .and_then(|x| x.as_bool())
+        .or_else(|| v322.get("trainer_overlap_count").and_then(|x| x.as_u64()).map(|n| n == 0))
+        .unwrap_or(false);
     let p8_rtt_str = if let Some(r) = p8_rtt {
         format!("{:.3}", r)
     } else {
@@ -2669,17 +2969,53 @@ pub fn v71_2_dispatch_tool_340_week2_master_certification(payload: &str) -> Stri
     let r339 = v71_2_dispatch_tool_339_week2_7test_torture_gauntlet("{}");
     let r322 = v71_0_dispatch_tool_322_unseen_holdout_evaluator("{}");
 
-    let g1_duckdb_harvester_ok = r335.contains("\"status\":\"MEASURED\"")
-        && r335.contains("\"surviving_curated_samples\":1024");
-    let g2_bpe16k_leech_ok = r336.contains("\"status\":\"MEASURED\"")
-        && r336.contains("\"utf8_roundtrip_exact\":true");
-    let g3_chinchilla_pacer_ok = r337.contains("\"status\":\"MEASURED\"")
-        && r337.contains("\"strictly_monotonic_decay\":true");
-    let g4_cosine_stiefel_ok = r338.contains("\"status\":\"MEASURED\"")
-        && r338.contains("\"strictly_monotonic_stage_reduction\":true");
-    let g5_torture_7test_ok = r339.contains("\"all_7_tests_passed\":true");
-    let g6_hard_gate_0_ok = r322.contains("\"gate_0_passed\":true")
-        && !r322.contains("INVALID_RUN_HARD_GATE_0_FAILED");
+    let v335 = serde_json::from_str::<serde_json::Value>(&r335).unwrap_or(serde_json::Value::Null);
+    let v336 = serde_json::from_str::<serde_json::Value>(&r336).unwrap_or(serde_json::Value::Null);
+    let v337 = serde_json::from_str::<serde_json::Value>(&r337).unwrap_or(serde_json::Value::Null);
+    let v338 = serde_json::from_str::<serde_json::Value>(&r338).unwrap_or(serde_json::Value::Null);
+    let v339 = serde_json::from_str::<serde_json::Value>(&r339).unwrap_or(serde_json::Value::Null);
+    let v322 = serde_json::from_str::<serde_json::Value>(&r322).unwrap_or(serde_json::Value::Null);
+
+    let g1_duckdb_harvester_ok = v335.get("status").and_then(|x| x.as_str()) == Some("MEASURED")
+        && v335
+            .get("surviving_curated_samples")
+            .and_then(|x| x.as_u64())
+            .or_else(|| {
+                v335.get("harvest_summary")
+                    .and_then(|o| o.get("surviving_curated_samples"))
+                    .and_then(|x| x.as_u64())
+            })
+            == Some(1024);
+    let g2_bpe16k_leech_ok = v336.get("status").and_then(|x| x.as_str()) == Some("MEASURED")
+        && v336
+            .get("utf8_roundtrip_exact")
+            .and_then(|x| x.as_bool())
+            .or_else(|| {
+                v336.get("bpe_16384_codebook")
+                    .and_then(|o| o.get("utf8_roundtrip_exact"))
+                    .and_then(|x| x.as_bool())
+            })
+            == Some(true);
+    let g3_chinchilla_pacer_ok = v337.get("status").and_then(|x| x.as_str()) == Some("MEASURED")
+        && v337
+            .get("chinchilla_4rung_scaling")
+            .and_then(|o| o.get("strictly_monotonic_decay"))
+            .and_then(|x| x.as_bool())
+            == Some(true);
+    let g4_cosine_stiefel_ok = v338.get("status").and_then(|x| x.as_str()) == Some("MEASURED")
+        && v338
+            .get("convergence_trajectory")
+            .and_then(|o| o.get("strictly_monotonic_stage_reduction"))
+            .and_then(|x| x.as_bool())
+            .or_else(|| v338.get("strictly_monotonic_stage_reduction").and_then(|x| x.as_bool()))
+            == Some(true);
+    let g5_torture_7test_ok = v339.get("all_7_tests_passed").and_then(|x| x.as_bool()) == Some(true);
+    let g6_hard_gate_0_ok = v322.get("status").and_then(|x| x.as_str()) != Some("INVALID_RUN_HARD_GATE_0_FAILED")
+        && v322
+            .get("hard_gate_0_frozen_holdout_v2")
+            .and_then(|o| o.get("gate_0_passed"))
+            .and_then(|x| x.as_bool())
+            == Some(true);
 
     let lean_theorems = v71_2_live_lean4_theorem_count();
     let g7_lean4_920_ok = lean_theorems >= 920;
@@ -2701,8 +3037,13 @@ pub fn v71_2_dispatch_tool_340_week2_master_certification(payload: &str) -> Stri
     };
     let elapsed_ms = t0.elapsed().as_millis().max(1) as u64;
 
+    let proof_tag = if all_passed {
+        "WEEK2_CHINCHILLA_16K_BPE_LEECH_CHAIN340_920QED_CERTIFIED"
+    } else {
+        "UNMEASURED_WEEK2_CHAIN340_GATES_INCOMPLETE"
+    };
     let out_json = format!(
-        "{{\"status\":\"{}\",\"tool_id\":340,\"chain\":\"CHAIN_340\",\"version\":\"v71.2.0\",\"engine\":\"SOVEREIGN_HARMONIC_WEEK2_MASTER_CERTIFICATION\",\"elapsed_ms\":{},\"gates\":{{\"g1_duckdb_1024_vault_harvester_verified\":{},\"g2_bpe_16384_e8_leech_codebook_verified\":{},\"g3_chinchilla_3stage_curriculum_pacer_verified\":{},\"g4_cosine_stiefel_12l_trainer_verified\":{},\"g5_week2_7test_torture_gauntlet_verified\":{},\"g6_hard_gate_0_frozen_v2_32_verified\":{},\"g7_lean4_920_theorems_verified\":{},\"all_week2_gates_passed\":{}}},\"lean4_theorems_qed\":{},\"total_tools\":340,\"active_ast_bpe_vocab\":16384,\"curated_curriculum_samples\":1024,\"receipt_path\":\"{}\",\"lean4_theorems_verified\":\"thm_v71_2_906..920\",\"proof\":\"WEEK2_CHINCHILLA_16K_BPE_LEECH_CHAIN340_920QED_CERTIFIED | AllGates={} | Gate0={} | Lean4={}\"}}",
+        "{{\"status\":\"{}\",\"tool_id\":340,\"chain\":\"CHAIN_340\",\"version\":\"v71.2.0\",\"engine\":\"SOVEREIGN_HARMONIC_WEEK2_MASTER_CERTIFICATION\",\"elapsed_ms\":{},\"gates\":{{\"g1_duckdb_1024_vault_harvester_verified\":{},\"g2_bpe_16384_e8_leech_codebook_verified\":{},\"g3_chinchilla_3stage_curriculum_pacer_verified\":{},\"g4_cosine_stiefel_12l_trainer_verified\":{},\"g5_week2_7test_torture_gauntlet_verified\":{},\"g6_hard_gate_0_frozen_v2_32_verified\":{},\"g7_lean4_920_theorems_verified\":{},\"all_week2_gates_passed\":{}}},\"lean4_theorems_qed\":{},\"total_tools\":340,\"active_ast_bpe_vocab\":16384,\"curated_curriculum_samples\":1024,\"receipt_path\":\"{}\",\"lean4_theorems_verified\":\"thm_v71_2_906..920\",\"proof\":\"{} | AllGates={} | Gate0={} | Lean4={}\"}}",
         status,
         elapsed_ms,
         g1_duckdb_harvester_ok,
@@ -2715,6 +3056,7 @@ pub fn v71_2_dispatch_tool_340_week2_master_certification(payload: &str) -> Stri
         all_passed,
         lean_theorems,
         C_SH_WEEK2_RECEIPT_PATH,
+        proof_tag,
         all_passed,
         g6_hard_gate_0_ok,
         lean_theorems

@@ -1,11 +1,20 @@
 ﻿# =============================================================================
-# ACT-OMEGA NET v72.2.0 — SOVEREIGN HARMONIC X (WEEK 4 CAPSTONE TORTURE SUITE)
+# ACT-OMEGA NET v73.2.1 — SOVEREIGN HARMONIC X (WEEK 4 CAPSTONE TORTURE SUITE)
 # Property-, Range- & Negative-Injection Verification for Tools 351..356
 # Primary Author & Principal Systems Architect: Donevin Frownfelter (@bospaladin34-crypto)
 # =============================================================================
 
 $ErrorActionPreference = "Stop"
 $RepoRoot = "c:\sovereign_manifold_v31"
+$ManifestPath = "$RepoRoot\00_control\weights\sovereign_harmonic_weights_manifest.json"
+if (-not (Test-Path $ManifestPath)) {
+    throw "FATAL: Missing weight manifest $ManifestPath"
+}
+$WeightManifest = Get-Content -Path $ManifestPath -Raw | ConvertFrom-Json
+$ShxRelPath = [string]$WeightManifest.artifacts.week4_rlvf_sae.relative_path
+$ShxDiskPath = Join-Path $RepoRoot ($ShxRelPath -replace '/', '\')
+$ExpectedShxBytes = [int64]$WeightManifest.artifacts.week4_rlvf_sae.expected_bytes
+$ActualShxDiskBytes = if (Test-Path $ShxDiskPath) { (Get-Item $ShxDiskPath).Length } else { -1L }
 
 Write-Host "==========================================================================" -ForegroundColor Cyan
 Write-Host "   SOVEREIGN HARMONIC X (WEEK 4 PROPERTY & NEGATIVE-INJECTION SUITE)      " -ForegroundColor Cyan
@@ -28,12 +37,14 @@ if ($brackets -eq 0 -and -not $hasStaticW4Claims) {
     $failures++
 }
 
-# Stage 2: Tool 351 — RLVF / GRPO Compiler-in-the-Loop (Property & Compiler Range Checks)
+# Stage 2: Tool 351 — RLVF / GRPO Compiler-in-the-Loop (Manifest-Bound Size & Compiler Range Checks)
 $t351 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/sovereign_harmonic/week4/rlvf_grpo_compiler_in_the_loop" -TimeoutSec 60
 $t351Ok = (
     $t351.status -in @("MEASURED", "UNMEASURED/OFFLINE") -and
     $t351.obligations_evaluated -eq 64 -and
-    $t351.shx_weights_bytes -eq 32784 -and
+    $ExpectedShxBytes -gt 0 -and
+    $ActualShxDiskBytes -eq $ExpectedShxBytes -and
+    ([int64]$t351.shx_weights_bytes -eq $ExpectedShxBytes) -and
     $t351.live_lean4_compiler_in_the_loop.verified -eq $true -and
     $t351.live_lean4_compiler_in_the_loop.negative_soundness_canary_rejected -eq $true -and
     $t351.post_rlvf_pass_at_1 -match '^\d+/64$' -and
@@ -155,9 +166,14 @@ $rtComment = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/sovereign_harm
 $rtBody3 = '{"custom_candidate": "theorem trivial_pad : 1 = 1 := by rfl"}'
 $rtTrivial = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/sovereign_harmonic/week4/rlvf_grpo_compiler_in_the_loop" -Method Post -ContentType "application/json" -Body $rtBody3 -TimeoutSec 60
 $rtPoisonTree = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/sovereign_harmonic/week4/medusa_eagle_dendritic_tree_speculative_k8" -Method Post -ContentType "application/json" -Body '{"poison_draft_tree":true}' -TimeoutSec 60
+$rtUnrejectedTree = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/sovereign_harmonic/week4/medusa_eagle_dendritic_tree_speculative_k8" -Method Post -ContentType "application/json" -Body '{"corrupt_accept_without_rejection":true}' -TimeoutSec 60
 $rtMetaphor = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/tools/t320" -Method Post -ContentType "application/json" -Body '{"prompt":"We need the model to grade its own homework with a formal compiler referee and use a branching crystal ball plus a brain microscope sparse autoencoder"}' -TimeoutSec 30
 $metText = [string]$rtMetaphor.generation.generated_text
 $metGroundedOk = ($metText -match "MetaphorGrounded") -and ($metText -match "Week 4") -and ($metText -notmatch '5\.9612|5\.08x|R\^2\s*>=\s*0\.95')
+
+$poisonEmpKl = [double]$rtPoisonTree.empirical_output_kl
+$poisonKlTau = [double]$rtPoisonTree.kl_bound_tau
+$unrejEmpKl = [double]$rtUnrejectedTree.empirical_output_kl
 
 $rtPassed = (
     $rtSorry.custom_candidate_audit.total_reward -eq 0 -and
@@ -166,22 +182,28 @@ $rtPassed = (
     $rtTrivial.custom_candidate_audit.total_reward -eq 0 -and
     $t351.live_lean4_compiler_in_the_loop.negative_soundness_canary_rejected -eq $true -and
     $rtPoisonTree.mean_tokens_per_tree_step -eq 1.0 -and
-    $rtPoisonTree.kl_divergence_vs_target -eq 0 -and
+    (-not [double]::IsNaN($poisonEmpKl)) -and
+    ($poisonKlTau -gt 0.0) -and
+    ($poisonEmpKl -gt 0.0) -and
+    ($poisonEmpKl -le $poisonKlTau) -and
+    ($rtPoisonTree.poisoned_tree_resilience_audit.fallback_honesty_verified -eq $true) -and
+    ($rtUnrejectedTree.tree_speculative_certified -eq $false) -and
+    ($unrejEmpKl -gt $poisonKlTau) -and
     $t353.unclamped_l2_reconstruction -eq $true -and
     $t353.max_negative_suppression_prob_delta -lt 0.0 -and
     ([double]$prog.adversarial_corrupted_candidates_penalized_ppl -gt [double]$prog.week4_shx_v72_0) -and
     $metGroundedOk -eq $true
 )
 if ($rtPassed) {
-    Write-Host "  [STAGE 8 - RED-TEAM RT-W4] [PASS] Sorry/Dyck/Comment/TrivialReward=0.0 | Lean4NegCanaryRejected=True | PoisonTreeStep=1.0 (KL=0) | UnclampedSAE=True (InhibDelta=$($t353.max_negative_suppression_prob_delta)) | CorruptedPPL=$($prog.adversarial_corrupted_candidates_penalized_ppl) > W4=$($prog.week4_shx_v72_0) | W4MetaphorGroundedNoStaticClaims=True" -ForegroundColor Green
+    Write-Host "  [STAGE 8 - RED-TEAM RT-W4] [PASS] Sorry/Dyck/Comment/TrivialReward=0.0 | Lean4NegCanaryRejected=True | PoisonTreeStep=1.0 (EmpKL=$poisonEmpKl <= $poisonKlTau; UnrejectedEmpKL=$unrejEmpKl REJECTED) | UnclampedSAE=True (InhibDelta=$($t353.max_negative_suppression_prob_delta)) | CorruptedPPL=$($prog.adversarial_corrupted_candidates_penalized_ppl) > W4=$($prog.week4_shx_v72_0) | W4MetaphorGroundedNoStaticClaims=True" -ForegroundColor Green
 } else {
-    Write-Host "  [STAGE 8 - RED-TEAM RT-W4] [FAIL] Sorry=$($rtSorry.custom_candidate_audit.total_reward) Dyck=$($rtDyck.custom_candidate_audit.total_reward) Comment=$($rtComment.custom_candidate_audit.total_reward) Trivial=$($rtTrivial.custom_candidate_audit.total_reward) PoisonStep=$($rtPoisonTree.mean_tokens_per_tree_step) Inhib=$($t353.max_negative_suppression_prob_delta) Met=$metGroundedOk" -ForegroundColor Red
+    Write-Host "  [STAGE 8 - RED-TEAM RT-W4] [FAIL] Sorry=$($rtSorry.custom_candidate_audit.total_reward) Dyck=$($rtDyck.custom_candidate_audit.total_reward) Comment=$($rtComment.custom_candidate_audit.total_reward) Trivial=$($rtTrivial.custom_candidate_audit.total_reward) PoisonStep=$($rtPoisonTree.mean_tokens_per_tree_step) PoisonEmpKL=$poisonEmpKl/$poisonKlTau UnrejCert=$($rtUnrejectedTree.tree_speculative_certified) Inhib=$($t353.max_negative_suppression_prob_delta) Met=$metGroundedOk" -ForegroundColor Red
     $failures++
 }
 
 $receiptJson = @{
-    version = "v72.2.0"
-    chain = "CHAIN_368"
+    version = "v73.2.1"
+    chain = "CHAIN_404"
     recorded_at_utc = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
     lean4_theorems_qed = $t356.lean4_theorems_qed
     tool351_rlvf = $t351

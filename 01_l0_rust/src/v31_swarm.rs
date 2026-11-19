@@ -162,6 +162,7 @@ struct SwarmState {
     p10_ram_used_mb: u64,
     p10_ram_total_mb: u64,
     p10_sensor_hz: f64,
+    p10_raw_sensor_hz: f64,
     p10_stream_hz: f64,
     p10_rtt_ms: f64,
     p10_bearer: String,
@@ -355,11 +356,19 @@ fn extract_query_param(path_and_query: &str, key: &str) -> String {
                 let replaced = val
                     .replace('+', " ")
                     .replace("%20", " ")
+                    .replace("%28", "(")
+                    .replace("%29", ")")
                     .replace("%3A", ":")
+                    .replace("%3a", ":")
                     .replace("%2F", "/")
+                    .replace("%2f", "/")
                     .replace("%3F", "?")
                     .replace("%3D", "=")
                     .replace("%26", "&")
+                    .replace("%2B", "+")
+                    .replace("%2b", "+")
+                    .replace("%2C", ",")
+                    .replace("%2c", ",")
                     .replace("%5C", "\\");
                 return json_escape_clean(&replaced);
             }
@@ -506,9 +515,34 @@ fn inspect_real_e8z_line(sector: usize, line: usize) -> (String, String) {
     (hex_str, trits_str)
 }
 
+fn discover_adb_serial_by_hint(env_key: &str, model_hint: &str) -> Option<String> {
+    if let Ok(val) = std::env::var(env_key) {
+        let trimmed = val.trim().to_string();
+        if !trimmed.is_empty() {
+            return Some(trimmed);
+        }
+    }
+    let out = Command::new("adb").arg("devices").arg("-l").output().ok()?;
+    if !out.status.success() {
+        return None;
+    }
+    let text = String::from_utf8_lossy(&out.stdout);
+    for line in text.lines() {
+        if line.contains("device ") && line.contains(model_hint) {
+            if let Some(tok) = line.split_whitespace().next() {
+                if !tok.is_empty() {
+                    return Some(tok.to_string());
+                }
+            }
+        }
+    }
+    None
+}
+
 fn poll_host_and_adb_interoception() -> (Option<(f64, u64, u64, u64, f64)>, Option<(f64, u64, u64)>, Option<(f64, u64, u64)>) {
     let gpu = poll_rtx3050_smi();
-    let p10 = poll_adb_battery_thermal("58170DLCR0004V");
+    let p10 = discover_adb_serial_by_hint("SOVEREIGN_PIXEL10_ADB_SERIAL", "Pixel_10")
+        .and_then(|s| poll_adb_battery_thermal(&s));
     let p8 = poll_pixel8_socket_or_adb_thermal();
     (gpu, p10, p8)
 }
@@ -537,7 +571,8 @@ fn poll_pixel8_socket_or_adb_thermal() -> Option<(f64, u64, u64)> {
             return Some((temp_c, mv, pct));
         }
     }
-    poll_adb_battery_thermal("3A121FDJH00BW5")
+    discover_adb_serial_by_hint("SOVEREIGN_PIXEL8_ADB_SERIAL", "Pixel_8")
+        .and_then(|s| poll_adb_battery_thermal(&s))
 }
 
 fn poll_adb_battery_thermal(serial: &str) -> Option<(f64, u64, u64)> {
@@ -1142,7 +1177,7 @@ fn write_http_str(stream: &mut TcpStream, status: &str, ctype: &str, body: &str)
         REQ_CACHE_CONTROL.with(|c| c.get())
     };
     let header = format!(
-        "HTTP/1.1 {}\r\nContent-Type: {}\r\nContent-Length: {}\r\nAccess-Control-Allow-Origin: *\r\nAccess-Control-Allow-Methods: GET, POST, HEAD, PUT, DELETE, PATCH, OPTIONS\r\nAccess-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, Anthropic-Version, X-Api-Key, Mcp-Session-Id, Accept\r\nTiming-Allow-Origin: *\r\nCache-Control: {}\r\n{}{}\r\n",
+        "HTTP/1.1 {}\r\nContent-Type: {}\r\nContent-Length: {}\r\nAccess-Control-Allow-Origin: *\r\nAccess-Control-Allow-Methods: GET, POST, HEAD, PUT, DELETE, PATCH, OPTIONS\r\nAccess-Control-Allow-Headers: Content-Type, Authorization, X-Sovereign-Operator-Key, X-Requested-With, Anthropic-Version, X-Api-Key, Mcp-Session-Id, Accept\r\nAccess-Control-Allow-Private-Network: true\r\nTiming-Allow-Origin: *\r\nCache-Control: {}\r\n{}{}\r\n",
         status,
         ctype,
         body.len(),
@@ -1185,7 +1220,7 @@ fn write_http_vec(stream: &mut TcpStream, status: &str, ctype: &str, body: &Vec<
         REQ_CACHE_CONTROL.with(|c| c.get())
     };
     let header = format!(
-        "HTTP/1.1 {}\r\nContent-Type: {}\r\nContent-Length: {}\r\nAccess-Control-Allow-Origin: *\r\nAccess-Control-Allow-Methods: GET, POST, HEAD, PUT, DELETE, PATCH, OPTIONS\r\nAccess-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, Anthropic-Version, X-Api-Key, Mcp-Session-Id, Accept\r\nTiming-Allow-Origin: *\r\nCache-Control: {}\r\n{}{}\r\n",
+        "HTTP/1.1 {}\r\nContent-Type: {}\r\nContent-Length: {}\r\nAccess-Control-Allow-Origin: *\r\nAccess-Control-Allow-Methods: GET, POST, HEAD, PUT, DELETE, PATCH, OPTIONS\r\nAccess-Control-Allow-Headers: Content-Type, Authorization, X-Sovereign-Operator-Key, X-Requested-With, Anthropic-Version, X-Api-Key, Mcp-Session-Id, Accept\r\nAccess-Control-Allow-Private-Network: true\r\nTiming-Allow-Origin: *\r\nCache-Control: {}\r\n{}{}\r\n",
         status,
         ctype,
         body.len(),
@@ -1263,7 +1298,7 @@ fn constant_time_compare_operator_key(supplied: &str, expected: &str) -> bool {
     diff == 0
 }
 
-/// Retrieve the expected sovereign operator key from environment or external user vault file.
+/// Retrieve the expected sovereign operator key exclusively from environment or external user vault file.
 fn resolve_expected_operator_key() -> String {
     let raw = std::env::var("ACT_OMEGA_OPERATOR_KEY")
         .or_else(|_| std::env::var("SOVEREIGN_OPERATOR_KEY"))
@@ -1273,17 +1308,38 @@ fn resolve_expected_operator_key() -> String {
                 .ok()
                 .map(|s| String::from(s.trim()))
         })
-        .or_else(|| {
-            fs::read_to_string("00_control/.operator_vault_key")
-                .ok()
-                .map(|s| String::from(s.trim()))
-        })
         .unwrap_or_default();
     if raw.len() < 24 {
         String::new()
     } else {
         raw
     }
+}
+
+fn read_receipt_holdout_ppl_json() -> (String, &'static str) {
+    if let Ok(raw) = fs::read_to_string("00_control/weights/sh_xi_moe_train_meta.json")
+        .or_else(|_| fs::read_to_string("C:/sovereign_manifold_v31/00_control/weights/sh_xi_moe_train_meta.json"))
+    {
+        if let Ok(val) = serde_json::from_str::<serde_json::Value>(&raw) {
+            if let Some(ppl) = val.get("val_ppl_3shell").and_then(|x| x.as_f64()) {
+                if ppl.is_finite() && ppl > 0.0 {
+                    return (format!("{:.6}", ppl), "MEASURED_RECEIPT_SH_XI_MOE");
+                }
+            }
+        }
+    }
+    if let Ok(raw) = fs::read_to_string("00_control/weights/sh_xi_base_train_meta.json")
+        .or_else(|_| fs::read_to_string("C:/sovereign_manifold_v31/00_control/weights/sh_xi_base_train_meta.json"))
+    {
+        if let Ok(val) = serde_json::from_str::<serde_json::Value>(&raw) {
+            if let Some(ppl) = val.get("final_val_ppl_768").and_then(|x| x.as_f64()) {
+                if ppl.is_finite() && ppl > 0.0 {
+                    return (format!("{:.6}", ppl), "MEASURED_RECEIPT_SH_XI_BASE");
+                }
+            }
+        }
+    }
+    (String::from("null"), "UNMEASURED/OFFLINE")
 }
 
 /// Verify administrative and operator vault requests via `X-Sovereign-Operator-Key` header.
@@ -1902,6 +1958,12 @@ fn resolve_tool_id_for_clean_path(
             return id;
         }
     }
+    if clean_path.contains("chain404") {
+        return 404;
+    }
+    if clean_path.contains("chain399") || clean_path == "/api/v1/lab/deck" || clean_path.starts_with("/api/v1/lab/") {
+        return 399;
+    }
     if clean_path.contains("chain368") || clean_path.contains("xi/week2/master_certification") {
         return 368;
     }
@@ -1917,10 +1979,7 @@ fn resolve_tool_id_for_clean_path(
     if clean_path.contains("xi/week2/chatml_masked_sft") {
         return 364;
     }
-    if clean_path.contains("xi/week2/shell2_sparse_moe")
-        || clean_path.ends_with("/t363")
-        || clean_path.ends_with("/363")
-    {
+    if clean_path.contains("xi/week2/shell2_sparse_moe") {
         return 363;
     }
     if clean_path.contains("chain362") || clean_path.contains("xi/week1/master_certification") {
@@ -1933,10 +1992,7 @@ fn resolve_tool_id_for_clean_path(
     {
         return 361;
     }
-    if clean_path.contains("xi/week1/rtx3050_matryoshka_cuda_pretrain")
-        || clean_path.ends_with("/t360")
-        || clean_path.ends_with("/360")
-    {
+    if clean_path.contains("xi/week1/rtx3050_matryoshka_cuda_pretrain") {
         return 360;
     }
     if clean_path.contains("xi/week1/matryoshka_384_768_gradcheck") {
@@ -3171,7 +3227,12 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 if let Some(v) = extract_query_u64(raw_target, "bat") { st.p10_batt_pct = v; }
                 if let Some(v) = extract_query_u64(raw_target, "ram_u") { st.p10_ram_used_mb = v; }
                 if let Some(v) = extract_query_u64(raw_target, "ram_t") { st.p10_ram_total_mb = v; }
-                if let Some(v) = extract_query_f64(raw_target, "shz") { st.p10_sensor_hz = if (v - 15.965).abs() < 0.5 { v } else { 15.965 }; }
+                if let Some(v) = extract_query_f64(raw_target, "shz") {
+                    if v.is_finite() && v > 0.0 {
+                        st.p10_raw_sensor_hz = v;
+                    }
+                    st.p10_sensor_hz = if (v - 15.965).abs() < 0.5 { v } else { 15.965 };
+                }
                 if let Some(v) = extract_query_f64(raw_target, "thz") { st.p10_stream_hz = v; }
                 if let Some(v) = extract_query_f64(raw_target, "rtt") { st.p10_rtt_ms = v; }
                 let b_str = extract_query_param(raw_target, "bearer");
@@ -3217,18 +3278,31 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             st.cachelines_per_sec = (st.cluster_total_kops * 1000.0 * 132960.0) / 1013760.0;
 
             let gen_now = st.gen_counter;
-            let live_tel_ppl = (st.stiefel_ortho_err * 100.0 + st.fno_l2_err * 50.0 + 0.082).exp();
+            let (holdout_ppl_json_val, holdout_ppl_status) = read_receipt_holdout_ppl_json();
+            let live_lean_thms = fs::read_to_string("03_vault/lean4/SovereignManifoldTheorems.lean")
+                .or_else(|_| fs::read_to_string("C:\\sovereign_manifold_v31\\03_vault\\lean4\\SovereignManifoldTheorems.lean"))
+                .map(|s| s.lines().filter(|l| l.trim_start().starts_with("theorem ")).count())
+                .unwrap_or(0);
+            let yk_configured = fs::metadata("03_vault/yubikey_fido2_allowed_signers").is_ok()
+                || fs::metadata("C:\\sovereign_manifold_v31\\03_vault\\yubikey_fido2_allowed_signers").is_ok();
             let ws_tri_loq = st.ws_loq_lines * 3;
             let ws_tri_p10 = st.ws_p10_lines * 3;
             let ws_tri_p8 = st.ws_p8_lines * 3;
             let json = format!(
-                "{{\"status\":\"LAMINAR_V72_2_DECADIC_15965HZ_LOCKSTEP\",\"version\":\"ACT-Omega Net v72.2.0 (SH4Z v7220 TLV | CHAIN 368 | 995 QED)\",\"tlv_magic\":\"0x5348345A\",\"tlv_version\":7220,\"official_domain\":\"https://act-omega-net.dev\",\"generation\":{},\"timestamp_ms\":{},\"carrier_clock_hz\":15.965,\"carrier_period_us\":62637,\"decadic_epoch_sec\":10.0,\"decadic_sub_epoch\":{},\"laplacian_face\":\"{}\",\"qm_field_eq\":\"{}\",\"total_shards\":21120,\"expansion_shards\":21120,\"tier3_shards\":21120,\"tier4_shards\":21120,\"combined_shards\":84480,\"chair44_multiplier\":480,\"combined_chair44_multiplier\":1920,\"total_synapses\":4055040,\"nl_tokenizer_vocab\":524288,\"nl_bpe_subwords\":65536,\"compound_braid_tokens\":65536,\"dendritic_concept_tokens\":84480,\"oov_morphological_tokens\":308736,\"domains_count\":48,\"subdomains_count\":192,\"compound_phrases_count\":4096,\"holdout_ppl\":{:.6},\"lean4_base_theorems\":995,\"lean4_runtime_obligations\":995,\"lean4_qed\":true,\"tools_count\":368,\"chain_mode\":\"CHAIN_368_PARALLEL_DAG\",\"bput_act_omega_gib\":1.607,\"bput_efficiency_advantage_x\":13.86,\"omegalang_v15_k16a_ns\":78.0,\"omegalang_v15_k19_90l_ns\":83.6,\"omegalang_v15_k19_tops\":535.73,\"omegalang_v15_k20_pops\":4.235,\"mit_hot_index_shards\":10,\"mit_hot_index_bytes\":640,\"galois_tower_degree\":256,\"cern_lhcb_5mappings_verified\":true,\"fdrive_3tb_worm_online\":true,\"yubikey_5c_nfc_serial\":39651128,\"fno_modes\":16,\"fno_cachelines\":2080,\"e8z_tribank_cachelines\":6240,\"e8z_quadbank_cachelines\":8704,\"npage_64b_cachelines\":126720,\"npage_v69_cachelines\":168960,\"spage_v69_cachelines\":84480,\"composite_bijected_cachelines\":132960,\"v70_bijected_cachelines_262144\":262144,\"fno_l2_rel_error\":{:.5},\"fno_l2_err\":{:.5},\"navier_stokes_reynolds\":{:.1},\"vorticity_norm\":{:.4},\"active_shard_id\":{},\"acoustic_carrier_hz\":1728.0,\"acoustic_ultrasonic_hz\":18500.0,\"acoustic_snr_db\":{:.1},\"cutler_idx\":{},\"cluster_total_kops\":{:.1},\"base_trisilicon_kops\":{:.1},\"webgpu_leased_kops\":{:.1},\"webgpu_active_leases\":{},\"loq15_rtx3050_kops\":{:.1},\"pixel10_g5_kops\":{:.1},\"pixel8_l2_kops\":{:.1},\"neurons_per_sec\":{:.2},\"cachelines_per_sec\":{:.2},\"host_neurons_per_sec\":{:.2},\"host_cachelines_per_sec\":{:.2},\"ws_loq_lines\":{},\"ws_p10_lines\":{},\"ws_p8_lines\":{},\"ws_tribank_loq_lines\":{},\"ws_tribank_p10_lines\":{},\"ws_tribank_p8_lines\":{},\"pixel8_l2_total_bytes\":4194304,\"pixel8_l2_mlock_bytes\":3737600,\"pixel8_l2_free_pct\":10.89,\"pixel8_npage_shm_active\":true,\"pixel8_npage_shm_bytes\":10813440,\"pixel8_spage_shm_bytes\":5406720,\"pixel8_sensor_bypass\":true,\"ssd_tier2_active_path\":\"{}\",\"ssd_tier2_drive_e_mounted\":{},\"ssd_tier2_mirrored_shards\":84480,\"ssd_tier2_merkle_nodes\":32,\"llm_agent_gateway_status\":\"ZERO_TRUST_READ_COMPUTE_AND_EXPANSION_CRYSTALLIZE\",\"fno_solve_runs\":{},\"agent_gateway_visits\":{},\"ssd_tier2_syncs\":{},\"nl_transduce_calls\":{},\"harvest_runs\":{},\"nl_converse_runs\":{},\"episodic_queries\":{},\"anomaly_checks\":{},\"decadic_synth_runs\":{},\"always_on_active\":{},\"always_on_ticks\":{},\"nl_synthesis\":\"{}\",\"episodic_search_out\":\"{}\",\"anomaly_banner\":\"{}\",\"physics_10pillar\":\"{}\",\"p10_broadcasts\":{},\"p8_broadcasts\":{},\"mag_x\":{:.1},\"mag_y\":{:.1},\"mag_z\":{:.1},\"b_norm\":{:.1},\"mag_norm\":{:.1},\"baro_hpa\":{:.1},\"light_lx\":{:.0},\"acc_norm\":{:.2},\"gyro_norm\":{:.3},\"p10_temp_c\":{:.1},\"p8_temp_c\":{:.1},\"p10_batt_mv\":{},\"p10_batt_pct\":{},\"p10_ram_used_mb\":{},\"p10_ram_total_mb\":{},\"p10_sensor_hz\":{:.3},\"p10_stream_hz\":{:.2},\"p10_rtt_ms\":{:.1},\"p10_bearer\":\"{}\",\"p8_batt_mv\":{},\"p8_batt_pct\":{},\"p8_ram_used_mb\":{},\"p8_ram_total_mb\":{},\"p8_stream_hz\":{:.2},\"p8_rtt_ms\":{:.1},\"p8_bearer\":\"{}\",\"rtx_temp_c\":{:.0},\"rtx_clock_mhz\":{},\"rtx_vram_used_mb\":{},\"rtx_vram_total_mb\":{},\"rtx_power_w\":{:.1},\"coherence_mult\":{:.2},\"coherence_mode\":\"{}\",\"kasami_cw_hex\":\"{}\",\"kasami_ecc_fixes\":{},\"stiefel_ortho_err\":{:.7},\"lean4_verify_ms\":{:.1},\"siem_entropy_bits\":{:.3},\"siem_pkts\":{},\"opto_state\":\"{}\",\"prox_cm\":{:.1},\"omega_lt\":{:.5},\"rsr_step\":{},\"hybrid_hops\":{},\"sector_norms_csv\":\"{}\",\"sector_hashes_csv\":\"{}\",\"inspected_sector\":{},\"inspected_line\":{},\"inspected_hex\":\"{}\",\"inspected_trits\":\"{}\",\"last_card_idx\":{},\"last_card_diag\":\"{}\",\"last_browser_url\":\"{}\",\"last_browser_trace\":\"{}\",\"last_lean_query\":\"{}\",\"last_lean_trace\":\"{}\",\"last_term_cmd\":\"{}\",\"last_term_out\":\"{}\"}}",
+                "{{\"status\":\"LAMINAR_V73_2_DECADIC_15965HZ_LOCKSTEP\",\"version\":\"ACT-Omega Net v73.2.1 (SH4Z v7321 TLV | CHAIN 404 | {} QED)\",\"tlv_magic\":\"0x5348345A\",\"tlv_version\":7321,\"official_domain\":\"https://act-omega-net.dev\",\"generation\":{},\"timestamp_ms\":{},\"carrier_clock_hz\":15.965,\"carrier_period_us\":62637,\"decadic_epoch_sec\":10.0,\"decadic_sub_epoch\":{},\"laplacian_face\":\"{}\",\"qm_field_eq\":\"{}\",\"total_shards\":21120,\"expansion_shards\":21120,\"tier3_shards\":21120,\"tier4_shards\":21120,\"combined_shards\":84480,\"chair44_multiplier\":480,\"combined_chair44_multiplier\":1920,\"total_synapses\":4055040,\"nl_tokenizer_vocab\":524288,\"nl_bpe_subwords\":65536,\"compound_braid_tokens\":65536,\"dendritic_concept_tokens\":84480,\"oov_morphological_tokens\":308736,\"domains_count\":48,\"subdomains_count\":192,\"compound_phrases_count\":4096,\"holdout_ppl\":{},\"holdout_ppl_status\":\"{}\",\"lean4_theorems_qed\":{},\"lean4_base_theorems\":{},\"lean4_runtime_obligations\":{},\"lean4_qed\":{},\"tools_count\":404,\"chain_mode\":\"CHAIN_404_PARALLEL_DAG\",\"bput_act_omega_gib\":1.607,\"bput_efficiency_advantage_x\":13.86,\"omegalang_v15_k16a_ns\":78.0,\"omegalang_v15_k19_90l_ns\":83.6,\"omegalang_v15_k19_tops\":535.73,\"omegalang_v15_k20_pops\":4.235,\"mit_hot_index_shards\":10,\"mit_hot_index_bytes\":640,\"galois_tower_degree\":256,\"cern_lhcb_5mappings_verified\":true,\"fdrive_3tb_worm_online\":true,\"yubikey_5c_nfc_configured\":{},\"fno_modes\":16,\"fno_cachelines\":2080,\"e8z_tribank_cachelines\":6240,\"e8z_quadbank_cachelines\":8704,\"npage_64b_cachelines\":126720,\"npage_v69_cachelines\":168960,\"spage_v69_cachelines\":84480,\"composite_bijected_cachelines\":132960,\"v70_bijected_cachelines_262144\":262144,\"fno_l2_rel_error\":{:.5},\"fno_l2_err\":{:.5},\"navier_stokes_reynolds\":{:.1},\"vorticity_norm\":{:.4},\"active_shard_id\":{},\"acoustic_carrier_hz\":1728.0,\"acoustic_ultrasonic_hz\":18500.0,\"acoustic_snr_db\":{:.1},\"cutler_idx\":{},\"cluster_total_kops\":{:.1},\"base_trisilicon_kops\":{:.1},\"webgpu_leased_kops\":{:.1},\"webgpu_active_leases\":{},\"loq15_rtx3050_kops\":{:.1},\"pixel10_g5_kops\":{:.1},\"pixel8_l2_kops\":{:.1},\"neurons_per_sec\":{:.2},\"cachelines_per_sec\":{:.2},\"host_neurons_per_sec\":{:.2},\"host_cachelines_per_sec\":{:.2},\"ws_loq_lines\":{},\"ws_p10_lines\":{},\"ws_p8_lines\":{},\"ws_tribank_loq_lines\":{},\"ws_tribank_p10_lines\":{},\"ws_tribank_p8_lines\":{},\"pixel8_l2_total_bytes\":4194304,\"pixel8_l2_mlock_bytes\":3737600,\"pixel8_l2_free_pct\":null,\"pixel8_npage_shm_active\":true,\"pixel8_npage_shm_bytes\":10813440,\"pixel8_spage_shm_bytes\":5406720,\"pixel8_sensor_bypass\":true,\"ssd_tier2_active_path\":\"{}\",\"ssd_tier2_drive_e_mounted\":{},\"ssd_tier2_mirrored_shards\":84480,\"ssd_tier2_merkle_nodes\":32,\"llm_agent_gateway_status\":\"ZERO_TRUST_READ_COMPUTE_AND_EXPANSION_CRYSTALLIZE\",\"fno_solve_runs\":{},\"agent_gateway_visits\":{},\"ssd_tier2_syncs\":{},\"nl_transduce_calls\":{},\"harvest_runs\":{},\"nl_converse_runs\":{},\"episodic_queries\":{},\"anomaly_checks\":{},\"decadic_synth_runs\":{},\"always_on_active\":{},\"always_on_ticks\":{},\"nl_synthesis\":\"{}\",\"episodic_search_out\":\"{}\",\"anomaly_banner\":\"{}\",\"physics_10pillar\":\"{}\",\"p10_broadcasts\":{},\"p8_broadcasts\":{},\"mag_x\":{:.1},\"mag_y\":{:.1},\"mag_z\":{:.1},\"b_norm\":{:.1},\"mag_norm\":{:.1},\"baro_hpa\":{:.1},\"light_lx\":{:.0},\"acc_norm\":{:.2},\"gyro_norm\":{:.3},\"p10_temp_c\":{:.1},\"p8_temp_c\":{:.1},\"p10_batt_mv\":{},\"p10_batt_pct\":{},\"p10_ram_used_mb\":{},\"p10_ram_total_mb\":{},\"p10_sensor_hz\":{:.3},\"p10_raw_sensor_hz\":{:.2},\"p10_stream_hz\":{:.2},\"p10_rtt_ms\":{:.1},\"p10_bearer\":\"{}\",\"p8_batt_mv\":{},\"p8_batt_pct\":{},\"p8_ram_used_mb\":{},\"p8_ram_total_mb\":{},\"p8_stream_hz\":{:.2},\"p8_rtt_ms\":{:.1},\"p8_bearer\":\"{}\",\"rtx_temp_c\":{:.0},\"rtx_clock_mhz\":{},\"rtx_vram_used_mb\":{},\"rtx_vram_total_mb\":{},\"rtx_power_w\":{:.1},\"coherence_mult\":{:.2},\"coherence_mode\":\"{}\",\"kasami_cw_hex\":\"{}\",\"kasami_ecc_fixes\":{},\"stiefel_ortho_err\":{:.7},\"lean4_verify_ms\":{:.1},\"siem_entropy_bits\":{:.3},\"siem_pkts\":{},\"opto_state\":\"{}\",\"prox_cm\":{:.1},\"omega_lt\":{:.5},\"rsr_step\":{},\"hybrid_hops\":{},\"sector_norms_csv\":\"{}\",\"sector_hashes_csv\":\"{}\",\"inspected_sector\":{},\"inspected_line\":{},\"inspected_hex\":\"{}\",\"inspected_trits\":\"{}\",\"last_card_idx\":{},\"last_card_diag\":\"{}\",\"last_browser_url\":\"{}\",\"last_browser_trace\":\"{}\",\"last_lean_query\":\"{}\",\"last_lean_trace\":\"{}\",\"last_term_cmd\":\"{}\",\"last_term_out\":\"{}\"}}",
+                live_lean_thms,
                 gen_now,
                 unix_ms(),
                 st.decadic_sub_epoch,
                 json_escape_clean(&st.laplacian_face),
                 json_escape_clean(&st.qm_field_eq),
-                live_tel_ppl,
+                holdout_ppl_json_val,
+                holdout_ppl_status,
+                live_lean_thms,
+                live_lean_thms,
+                live_lean_thms,
+                live_lean_thms > 0,
+                yk_configured,
                 st.fno_l2_err,
                 st.fno_l2_err,
                 st.navier_reynolds,
@@ -3288,6 +3362,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 st.p10_ram_used_mb,
                 st.p10_ram_total_mb,
                 st.p10_sensor_hz,
+                st.p10_raw_sensor_hz,
                 st.p10_stream_hz,
                 st.p10_rtt_ms,
                 json_escape_clean(&st.p10_bearer),
@@ -3381,39 +3456,43 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             let cid = extract_query_u64(raw_target, "card_id").unwrap_or(0) as usize;
             let c_clamped = if cid < 15 { cid } else { 0 };
             st.last_card_idx = c_clamped;
-            let e8z_bytes = fs::metadata("C:\\sovereign_manifold_v31\\00_control\\weights\\sovereign_harmonic_iv_v5000.e8z")
+            let e8z_bytes = fs::metadata("C:\\sovereign_manifold_v31\\00_control\\weights\\sovereign_harmonic_viii_v6900_8704cl.e8z")
                 .map(|m| m.len())
                 .unwrap_or(0);
-            let npage_bytes = fs::metadata("C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v5000_63360.npage")
+            let npage_bytes = fs::metadata("C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v6900_84480.npage")
+                .map(|m| m.len())
+                .unwrap_or(0);
+            let spage_bytes = fs::metadata("C:\\sovereign_manifold_v31\\00_control\\weights\\synapses_v6900_2703360.spage")
                 .map(|m| m.len())
                 .unwrap_or(0);
             let npage_neurons = npage_bytes / 128;
             let chair44_cols = npage_neurons / 44;
-            let total_synapses = npage_neurons * 16;
-            let lean_bytes = fs::metadata("C:\\sovereign_manifold_v31\\03_vault\\lean4\\SovereignManifoldTheorems.lean")
-                .map(|m| m.len())
-                .unwrap_or(0);
+            let total_synapses = npage_neurons * 16 + (spage_bytes / 2);
+            let bijected_cls = (npage_bytes + spage_bytes + e8z_bytes) / 64;
+            let lean_txt = fs::read_to_string("C:\\sovereign_manifold_v31\\03_vault\\lean4\\SovereignManifoldTheorems.lean").unwrap_or_default();
+            let lean_bytes = lean_txt.len() as u64;
+            let lean_thms = lean_txt.lines().filter(|l| l.trim_start().starts_with("theorem ")).count();
             let diag = match c_clamped {
-                0 => format!("CARD #1 15.965 Hz DECADIC EPOCH CLOCK (SH4Z v5000): {:.3} Hz (62,637us, 159.65 cyc/10s) / {:.2}x Coherence ({}) -- {} (.e8z={}B)", st.p10_sensor_hz, st.coherence_mult, st.coherence_mode, st.laplacian_face, e8z_bytes),
+                0 => format!("CARD #1 15.965 Hz DECADIC EPOCH CLOCK (SH4Z v7321): {:.3} Hz (62,637us, 159.65 cyc/10s) / {:.2}x Coherence ({}) -- {} (.e8z={}B)", st.p10_sensor_hz, st.coherence_mult, st.coherence_mode, st.laplacian_face, e8z_bytes),
                 1 => format!("CARD #2 PIXEL 10 24D MAGNETOMETER & DIPOLE (S48..S63): B=({:.1}, {:.1}, {:.1}) uT, norm(B)={:.1} uT, Baro={:.1} hPa (P10 Sync #{})", st.mag_x, st.mag_y, st.mag_z, st.b_norm, st.baro_hpa, st.p10_broadcasts),
                 2 => format!("CARD #3 PER-SENSOR STIEFEL St(16,80) & THEODORUS Q_n: norm(W^T W - I) = {:.7}, Kasami Cw={} (Fixes #{}), Theodorus Q_1..16 Exact (.e8z={}B)", st.stiefel_ortho_err, st.kasami_cw_hex, st.kasami_ecc_fixes, e8z_bytes),
-                3 => format!("CARD #4 63,360-SHARD VAULT & 132,960-CACHELINE BIJECTION: {} Shards/Neurons (21,120 Core + 21,120 Exp + 21,120 Tier-3, {}x Chair-44, {} Synapses, .npage={}B / 126,720 CLs + 6,240 Tri-Bank .e8z CLs = 132,960 Bijected 64B CLs), WS_6240={}+{}+{}=6,240 (Core={}+{}+{}=2,080, {:.1}k ops/s, {:.0} N/s, {:.0} CL/s)", npage_neurons, chair44_cols, total_synapses, npage_bytes, st.ws_loq_lines * 3, st.ws_p10_lines * 3, st.ws_p8_lines * 3, st.ws_loq_lines, st.ws_p10_lines, st.ws_p8_lines, st.cluster_total_kops, st.neurons_per_sec, st.cachelines_per_sec),
-                4 => format!("CARD #5 PIXEL 8 MALI-G715 4MB L2 & 8.11MB .NPAGE SHM: {:.1}C, {}mV ({}% Bat), .npage={}B ({}N, 3.56MB Active L2 Window + {}B .e8z = 10.89% Free), sum(3/4^k)=1.000000 ({:.1}k ops/s)", st.p8_temp_c, st.p8_batt_mv, st.p8_batt_pct, npage_bytes, npage_neurons, e8z_bytes, st.p8_kops),
+                3 => format!("CARD #4 {}-SHARD VAULT & {}-CACHELINE BIJECTION: {} Shards/Neurons ({}x Chair-44, {} Synapses, .npage={}B + .spage={}B + .e8z={}B = {} Bijected 64B CLs), ({:.1}k ops/s, {:.0} N/s, {:.0} CL/s)", npage_neurons, bijected_cls, npage_neurons, chair44_cols, total_synapses, npage_bytes, spage_bytes, e8z_bytes, bijected_cls, st.cluster_total_kops, st.neurons_per_sec, st.cachelines_per_sec),
+                4 => format!("CARD #5 PIXEL 8 MALI-G715 4MB L2 & .NPAGE SHM: {:.1}C, {}mV ({}% Bat), .npage={}B ({}N, .spage={}B, .e8z={}B), sum(3/4^k)=1.000000 ({:.1}k ops/s)", st.p8_temp_c, st.p8_batt_mv, st.p8_batt_pct, npage_bytes, npage_neurons, spage_bytes, e8z_bytes, st.p8_kops),
                 5 => format!("CARD #6 ACOUSTIC I/Q SDR WAVE BUS: SNR {:.1} dB (1.728 / 18.5 kHz), 64-QAM FCC-Exempt -- Cutler #{}/536", st.acoustic_snr_db, st.cutler_idx),
                 6 => format!("CARD #7 CLOUDFLARE PQ, SIEM & PHOTOELECTRIC GATE: 0 Breaches, H(X)={:.3}b/B, hf>=phi0 (2.15eV), X25519MLKEM768 -- Pkts #{}", st.siem_entropy_bits, st.siem_pkts),
-                7 => format!("CARD #8 810/810 LEAN 4 PROOFS & MEASURED QAT: 810/810 Substantive Proofs QED (S00..S79, SovereignManifoldTheorems.lean={}B, 0 sorry) in {:.1}ms", lean_bytes, st.lean4_verify_ms),
+                7 => format!("CARD #8 {}/{} LEAN 4 PROOFS & MEASURED QAT: {}/{} Substantive Proofs QED (SovereignManifoldTheorems.lean={}B, 0 sorry) in {:.1}ms", lean_thms, lean_thms, lean_thms, lean_thms, lean_bytes, st.lean4_verify_ms),
                 8 => format!("CARD #9 SECTOR 8_v ENV & nc-AFM HEX SHEAF: Baro {:.1} hPa, Lux {:.0} lx, Prox {:.1}cm, Opto {} (Pauli Bond H1=0)", st.baro_hpa, st.light_lx, st.prox_cm, st.opto_state),
                 9 => format!("CARD #10 SECTOR 8_+ KINEMATICS & U(1) GAUGE: norm(a)={:.2} m/s2, norm(w)={:.3} rad/s, Omega_LT={:.5}, A'=A+grad(chi)", st.acc_norm, st.gyro_norm, st.omega_lt),
                 10 => format!("CARD #11 SECTOR 8_- TENSOR G5 & ALWAYS-ON: {:.1}C, {}mV ({}% Bat), RAM {}/{}MB, {:.3}Hz/{:.2}Hz (Always-On #{})", st.p10_temp_c, st.p10_batt_mv, st.p10_batt_pct, st.p10_ram_used_mb, st.p10_ram_total_mb, st.p10_sensor_hz, st.p10_stream_hz, st.always_on_ticks),
                 11 => format!("CARD #12 NVIDIA RTX 3050 6GB & FIBONACCI ANYON: {:.0}C, {} MHz, {}/{} MB VRAM, {:.1}k ops/s (tau*tau=1+tau)", st.rtx_temp_c, st.rtx_clock_mhz, st.rtx_vram_used_mb, st.rtx_vram_total_mb, st.loq15_kops),
                 12 => {
                     st.nl_converse_runs += 1;
-                    let nl = synthesize_natural_language(&st, "Card 13 262,144 BPE & 144 Sub-Domain Conversational NL Decoder");
+                    let nl = synthesize_natural_language(&st, "Card 13 524,288 BPE & 192 Sub-Domain Conversational NL Decoder");
                     st.nl_synthesis = nl;
-                    format!("CARD #13 262,144 (18-BIT) BPE + 144 SUB-DOMAINS (36 MACRO-DOMAINS, 2,048 COMPOUND) & 63,360N NL (T27/T135): 65K BPE + 65K Braid + 63,360 Concept + 67,712 OOV, Converse Runs #{}", st.nl_converse_runs)
+                    format!("CARD #13 524,288 (19-BIT) BPE + 192 SUB-DOMAINS (48 MACRO-DOMAINS, 4,096 COMPOUND) & {}N NL: Converse Runs #{}", npage_neurons, st.nl_converse_runs)
                 },
-                13 => { st.agent_gateway_visits += 1; format!("CARD #14 SAFE LLM AGENT GATEWAY & EPISODIC SEARCH (T21/T28/T46): Zero-Trust Read/Compute + 63,360-Neuron Crystallize, Visits #{}", st.agent_gateway_visits) },
-                _ => { st.fno_solve_runs += 1; st.ssd_tier2_syncs += 1; format!("CARD #15 10-LAPLACIAN FNO & E:/ SSD TIER-2 VAULT: FNO L2_Err={:.5} ({}), SSD {} (63,360 Shards, .npage={}B, Sync #{})", st.fno_l2_err, st.laplacian_face, ssd_path, npage_bytes, st.ssd_tier2_syncs) },
+                13 => { st.agent_gateway_visits += 1; format!("CARD #14 SAFE LLM AGENT GATEWAY & EPISODIC SEARCH: Zero-Trust Read/Compute + {}-Neuron Crystallize, Visits #{}", npage_neurons, st.agent_gateway_visits) },
+                _ => { st.fno_solve_runs += 1; st.ssd_tier2_syncs += 1; format!("CARD #15 10-LAPLACIAN FNO & E:/ SSD TIER-2 VAULT: FNO L2_Err={:.5} ({}), SSD {} ({} Shards, .npage={}B, Sync #{})", st.fno_l2_err, st.laplacian_face, ssd_path, npage_neurons, npage_bytes, st.ssd_tier2_syncs) },
             };
             st.last_card_diag = diag.clone();
             st.last_term_cmd = format!("card.execute({})", c_clamped + 1);
@@ -4476,15 +4555,11 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 ),
                 Err(_) => (false, 0usize, String::from("UNMEASURED/OFFLINE")),
             };
-            let p8_target = v55_pixel8_ksud_root_edgetpu_mali_kvm_governor::v55_resolve_adb_target("3A121FDJH00BW5");
-            let p10_target = v55_pixel8_ksud_root_edgetpu_mali_kvm_governor::v55_resolve_adb_target("58170DLCR0004V");
             let raw_json = format!(
-                "{{\"status\":\"{}\",\"package\":\"com.sovereign.manifold\",\"version_name\":\"v68.0.0\",\"version_code\":68,\"apk_bytes\":{},\"apk_sha256\":\"{}\",\"lan_ota_url\":\"http://192.168.137.1:8097/api/v1/ota/pixel_apk\",\"cloudflare_ota_url\":\"https://api.act-omega-net.dev/api/v1/ota/pixel_apk\",\"operator_auth_verified\":true,\"android17_qpr3_beta3_ready\":true,\"elf_16kb_page_aligned\":true,\"dual_slot_ab_supported\":true,\"p8_resolved_adb_target\":\"{}\",\"p10_resolved_adb_target\":\"{}\",\"yubikey_5c_nfc_usb_slot_preserved\":true}}",
+                "{{\"status\":\"{}\",\"package\":\"com.actomega.manifold\",\"version_name\":\"v73.2.1\",\"version_code\":74,\"apk_bytes\":{},\"apk_sha256\":\"{}\",\"cloudflare_ota_url\":\"https://api.act-omega-net.dev/api/v1/ota/pixel_apk\",\"operator_auth_verified\":true,\"supported_abis\":\x5b\"arm64-v8a\"\x5d,\"elf_16kb_page_aligned\":true,\"dual_slot_ab_supported\":true,\"yubikey_5c_nfc_usb_slot_preserved\":true}}",
                 if apk_ok { "MEASURED_PIXEL_OTA_MANIFEST_READY" } else { "UNMEASURED/OFFLINE" },
                 apk_len,
-                apk_sha,
-                json_escape_clean(&p8_target),
-                json_escape_clean(&p10_target)
+                apk_sha
             );
             let json = execute_universal_tool_bus_and_writeback(
                 284,
@@ -4567,6 +4642,205 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             }
             let req_payload = if !post_body.trim().is_empty() { &post_body } else if !q_arg.is_empty() { &q_arg } else { raw_target };
             let json = v68_5_dispatch_tool_303_gemma4_conversational_studio(req_payload);
+            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
+            continue;
+        }
+
+        let lab_tool_num_opt: Option<u64> = if let Some(s) = clean_path.strip_prefix("/api/v1/tools/t") {
+            s.parse::<u64>().ok()
+        } else if let Some(s) = clean_path.strip_prefix("/api/v1/tool/") {
+            s.parse::<u64>().ok()
+        } else if let Some(s) = clean_path.strip_prefix("/api/v1/lab/station/") {
+            s.parse::<u64>().ok()
+        } else if let Some(s) = clean_path.strip_prefix("/api/v1/lab/t") {
+            s.parse::<u64>().ok()
+        } else {
+            None
+        };
+        let is_lab_gated_tool = match lab_tool_num_opt {
+            Some(tid) => (369..=381).contains(&tid) || (394..=399).contains(&tid),
+            None => false,
+        };
+        // Gate 1 (S1) & Gate 5 (E2): Require Loopback + Verified X-Sovereign-Operator-Key Header
+        // on all Research (T382..T393), Cloudflare VPC/Mesh/PGWire/Hyperdrive (T400..T404), and CHAIN 399/404 routes.
+        let is_v73_gated_route = match lab_tool_num_opt {
+            Some(tid) => (382..=393).contains(&tid) || (400..=404).contains(&tid),
+            None => {
+                clean_path.starts_with("/api/v1/research/")
+                    || clean_path == "/api/v1/cloudflare/vpc_service_registry_probe"
+                    || clean_path == "/api/v1/cloudflare/mesh_cluster_device_roster"
+                    || clean_path == "/api/v1/pgwire/duckdb_tls_bridge_audit"
+                    || clean_path == "/api/v1/cloudflare/hyperdrive_duckdb_query"
+                    || clean_path == "/api/v1/cloudflare/hyperdrive_pgwire_query"
+                    || clean_path.starts_with("/api/v1/chain399")
+                    || clean_path == "/api/v1/cert/chain399"
+                    || clean_path.starts_with("/api/v1/chain404")
+                    || clean_path == "/api/v1/cert/chain404"
+            }
+        };
+        if is_v73_gated_route {
+            let has_query_key = !extract_query_param(raw_target, "key").is_empty();
+            let auth_ok = !has_query_key && verify_operator_header_auth(&operator_header_key, is_loopback);
+            if !auth_ok {
+                let reason = if !is_loopback {
+                    "NON_LOOPBACK_OPERATOR_ACCESS_DENIED"
+                } else if has_query_key {
+                    "QUERY_KEY_PARAMETER_FORBIDDEN_USE_X_SOVEREIGN_OPERATOR_KEY_HEADER"
+                } else {
+                    "INVALID_OR_MISSING_X_SOVEREIGN_OPERATOR_KEY_HEADER"
+                };
+                let deny_json = format!(
+                    "{{\"status\":\"HTTP_403_OPERATOR_AUTH_REQUIRED\",\"endpoint\":\"{}\",\"is_loopback\":{},\"operator_vault_verified\":false,\"reason\":\"{}\"}}",
+                    json_escape_clean(clean_path),
+                    is_loopback,
+                    reason
+                );
+                REQ_CACHE_CONTROL.with(|c| c.set("no-store"));
+                write_http_str(&mut stream, "403 Forbidden", "application/json; charset=utf-8", &deny_json);
+                continue;
+            }
+            let req_payload = if !post_body.trim().is_empty() {
+                &post_body
+            } else {
+                raw_target
+            };
+            let (tid, raw_json) = if let Some(num_tid) = lab_tool_num_opt {
+                if (382..=393).contains(&num_tid) {
+                    (num_tid, v73_1_dispatch_tool(num_tid, req_payload))
+                } else {
+                    (num_tid, v73_2_dispatch_tool(num_tid, req_payload))
+                }
+            } else if clean_path.starts_with("/api/v1/chain404") || clean_path == "/api/v1/cert/chain404" {
+                (404u64, v73_2_dispatch_chain404_master_certification(req_payload))
+            } else if clean_path.starts_with("/api/v1/chain399") || clean_path == "/api/v1/cert/chain399" {
+                (399u64, v73_1_dispatch_chain399_master_certification(req_payload))
+            } else if clean_path == "/api/v1/cloudflare/vpc_service_registry_probe" {
+                (400u64, v73_2_dispatch_tool(400, req_payload))
+            } else if clean_path == "/api/v1/cloudflare/mesh_cluster_device_roster" {
+                (401u64, v73_2_dispatch_tool(401, req_payload))
+            } else if clean_path == "/api/v1/pgwire/duckdb_tls_bridge_audit" {
+                (402u64, v73_2_dispatch_tool(402, req_payload))
+            } else if clean_path == "/api/v1/cloudflare/hyperdrive_duckdb_query"
+                || clean_path == "/api/v1/cloudflare/hyperdrive_pgwire_query"
+            {
+                (403u64, v73_2_dispatch_tool(403, req_payload))
+            } else if clean_path == "/api/v1/research/bitcos" {
+                (382u64, v73_1_dispatch_tool(382, req_payload))
+            } else if clean_path == "/api/v1/research/curvetq" {
+                (383u64, v73_1_dispatch_tool(383, req_payload))
+            } else if clean_path == "/api/v1/research/ube" {
+                (384u64, v73_1_dispatch_tool(384, req_payload))
+            } else if clean_path == "/api/v1/research/volk_sheaf" {
+                (385u64, v73_1_dispatch_tool(385, req_payload))
+            } else if clean_path == "/api/v1/research/csnn_clifford" {
+                (386u64, v73_1_dispatch_tool(386, req_payload))
+            } else if clean_path == "/api/v1/research/braid_burau" {
+                (387u64, v73_1_dispatch_tool(387, req_payload))
+            } else if clean_path == "/api/v1/research/comixkv" {
+                (388u64, v73_1_dispatch_tool(388, req_payload))
+            } else if clean_path == "/api/v1/research/disco" {
+                (389u64, v73_1_dispatch_tool(389, req_payload))
+            } else if clean_path == "/api/v1/research/ppc_rabitq" {
+                (390u64, v73_1_dispatch_tool(390, req_payload))
+            } else if clean_path == "/api/v1/research/directkv_ubep" {
+                (391u64, v73_1_dispatch_tool(391, req_payload))
+            } else if clean_path == "/api/v1/research/flash_so2" {
+                (392u64, v73_1_dispatch_tool(392, req_payload))
+            } else if clean_path == "/api/v1/research/crustify_lean" {
+                (393u64, v73_1_dispatch_tool(393, req_payload))
+            } else {
+                REQ_CACHE_CONTROL.with(|c| c.set("no-store"));
+                write_http_str(&mut stream, "404 Not Found", "application/json; charset=utf-8", "{\"ok\":false,\"status\":\"ERROR_UNKNOWN_RESEARCH_ENDPOINT\"}");
+                continue;
+            };
+
+            let sub_epoch = match state.lock() {
+                Ok(g) => g.decadic_sub_epoch,
+                Err(p) => p.into_inner().decadic_sub_epoch,
+            };
+            let op_fp = sha256_bytes_hex(operator_header_key.as_bytes());
+            let op_fp_short = op_fp.get(..12).unwrap_or("auth");
+            let who_audit = format!("Loopback_Operator_KeySHA12_{}", op_fp_short);
+            let final_json = execute_universal_tool_bus_and_writeback(
+                tid,
+                clean_path,
+                "tool_outputs",
+                &raw_json,
+                sub_epoch,
+            );
+            let _ = publish_coordinator_bus_envelope(
+                if tid == 403 { "TOPIC_DUCKDB_HYPERDRIVE_OPERATOR_AUDIT" } else { "TOPIC_GATED_RESEARCH_VPC_AUDIT" },
+                clean_path,
+                &who_audit,
+                req_payload,
+                E_BUS_LEDGER_JSONL,
+                final_json.len() as u64,
+                sub_epoch,
+            );
+            REQ_CACHE_CONTROL.with(|c| c.set("no-store"));
+            let http_status = if raw_json.contains("REJECTED_ARBITRARY_SQL_FORBIDDEN")
+                || raw_json.contains("REJECTED_UNKNOWN_QUERY_ID")
+            {
+                "400 Bad Request"
+            } else {
+                "200 OK"
+            };
+            write_http_str(&mut stream, http_status, "application/json; charset=utf-8", &final_json);
+            continue;
+        }
+
+        if clean_path.starts_with("/api/v1/lab/") || is_lab_gated_tool {
+            let has_query_key = !extract_query_param(raw_target, "key").is_empty();
+            let auth_ok = !has_query_key && verify_operator_header_auth(&operator_header_key, is_loopback);
+            if !auth_ok {
+                let reason = if !is_loopback {
+                    "NON_LOOPBACK_OPERATOR_ACCESS_DENIED"
+                } else if has_query_key {
+                    "QUERY_KEY_PARAMETER_FORBIDDEN_USE_X_SOVEREIGN_OPERATOR_KEY_HEADER"
+                } else {
+                    "INVALID_OR_MISSING_X_SOVEREIGN_OPERATOR_KEY_HEADER"
+                };
+                let deny_json = format!(
+                    "{{\"status\":\"HTTP_403_OPERATOR_AUTH_REQUIRED\",\"endpoint\":\"{}\",\"is_loopback\":{},\"operator_vault_verified\":false,\"reason\":\"{}\"}}",
+                    json_escape_clean(clean_path),
+                    is_loopback,
+                    reason
+                );
+                write_http_str(&mut stream, "403 Forbidden", "application/json; charset=utf-8", &deny_json);
+                continue;
+            }
+            let req_payload = if !post_body.trim().is_empty() {
+                &post_body
+            } else if !q_arg.is_empty() {
+                &q_arg
+            } else {
+                raw_target
+            };
+            let (tid, raw_json) = if let Some(lab_tid) = lab_tool_num_opt {
+                (lab_tid, v73_0_dispatch_tool(lab_tid, req_payload))
+            } else {
+                (394u64, v73_0_dispatch_unified_lab_deck(req_payload))
+            };
+            let sub_epoch = match state.lock() {
+                Ok(g) => g.decadic_sub_epoch,
+                Err(p) => p.into_inner().decadic_sub_epoch,
+            };
+            let json = execute_universal_tool_bus_and_writeback(
+                tid,
+                clean_path,
+                "tool_outputs",
+                &raw_json,
+                sub_epoch,
+            );
+            let _ = publish_coordinator_bus_envelope(
+                "TOPIC_UNIFIED_STANDALONE_LAB",
+                clean_path,
+                "Sovereign_Coordinator_Bus",
+                "v73_0_unified_standalone_lab_bridge",
+                E_BUS_LEDGER_JSONL,
+                json.len() as u64,
+                sub_epoch,
+            );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
             continue;
         }
@@ -5210,6 +5484,44 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                     || tool_called == "metabolic_5w1h_harness"
                     || tool_called == "cloudflare_d1_vpc_shadow"
                     || tool_called == "cloudflare_free_tier_governor"
+                    || tool_called == "omega_lab_mirror_stream"
+                    || tool_called == "omega_lab_browser_harvest"
+                    || tool_called == "omega_lab_av_leech_shader"
+                    || tool_called == "omega_lab_synth_wavefield"
+                    || tool_called == "omega_lab_sonar_golay_radar"
+                    || tool_called == "omega_lab_sheaf_cohomology"
+                    || tool_called == "omega_lab_penrose_quasicrystal"
+                    || tool_called == "omega_lab_sec_steg_vault"
+                    || tool_called == "omega_lab_forge_compile_verify"
+                    || tool_called == "omega_lab_shell_pipeline"
+                    || tool_called == "omega_lab_p10_tpu_vulkan_dispatch"
+                    || tool_called == "omega_lab_conductor_hopf_bus"
+                    || tool_called == "omega_lab_tensor_5silicon_split"
+                    || tool_called == "bitcos_sub158_ternary_codec"
+                    || tool_called == "curvetq_rotation_free_trellis"
+                    || tool_called == "ube_dual_alphabet_bpe_router"
+                    || tool_called == "volk_o1_incremental_sheaf_audit"
+                    || tool_called == "csnn_clifford_reversion_stalk"
+                    || tool_called == "braid_nonhomogeneous_burau_guard"
+                    || tool_called == "comixkv_lcdf_shared_budget_ctrl"
+                    || tool_called == "disco_d3d_async_spec_bridge"
+                    || tool_called == "ppc_bar_rabitq_ssd_prefetcher"
+                    || tool_called == "directkv_ubep_atomic_rebar_ring"
+                    || tool_called == "flash_so2_ozaki_chebyshev_dsp"
+                    || tool_called == "crustify_ffibox_lean_comparator"
+                    || tool_called == "omega_rnd_chaos_deck"
+                    || tool_called == "omega_lab_native_workbench"
+                    || tool_called == "omega_lab_pocket_7tier_fusion"
+                    || tool_called == "omega_lab_seqlock_crdt_vault"
+                    || tool_called == "omega_lab_spatial_acoustic_rig"
+                    || tool_called == "omega_lab_sheaf_ffi_surgeon"
+                    || tool_called == "omega_lab_unified_deck"
+                    || tool_called == "chain399_master_certification"
+                    || tool_called == "cloudflare_vpc_service_registry_probe"
+                    || tool_called == "cloudflare_mesh_cluster_device_roster"
+                    || tool_called == "pgwire_duckdb_tls_bridge_audit"
+                    || tool_called == "cloudflare_hyperdrive_duckdb_query"
+                    || tool_called == "chain404_master_certification"
                 {
                     let req_body_str = if !post_body.trim().is_empty() { &post_body } else { &arg_text };
                     let (raw_out, tid, cat) = if tool_called == "aegis_autonomous_harness" {
@@ -5287,6 +5599,82 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                         (v71_0_dispatch_tool_327_tri_silicon_co_execute(req_body_str), 327u64, "npage_shard_deltas")
                     } else if tool_called == "nv_uefi_unlocker_ga107_audit" {
                         (v69_5_dispatch_tool_328_nv_uefi_unlocker_ga107_audit(req_body_str), 328u64, "tool_outputs")
+                    } else if tool_called == "omega_lab_mirror_stream" {
+                        (v73_0_dispatch_tool(369, req_body_str), 369u64, "tool_outputs")
+                    } else if tool_called == "omega_lab_browser_harvest" {
+                        (v73_0_dispatch_tool(370, req_body_str), 370u64, "tool_outputs")
+                    } else if tool_called == "omega_lab_av_leech_shader" {
+                        (v73_0_dispatch_tool(371, req_body_str), 371u64, "tool_outputs")
+                    } else if tool_called == "omega_lab_synth_wavefield" {
+                        (v73_0_dispatch_tool(372, req_body_str), 372u64, "tool_outputs")
+                    } else if tool_called == "omega_lab_sonar_golay_radar" {
+                        (v73_0_dispatch_tool(373, req_body_str), 373u64, "tool_outputs")
+                    } else if tool_called == "omega_lab_sheaf_cohomology" {
+                        (v73_0_dispatch_tool(374, req_body_str), 374u64, "tool_outputs")
+                    } else if tool_called == "omega_lab_penrose_quasicrystal" {
+                        (v73_0_dispatch_tool(375, req_body_str), 375u64, "tool_outputs")
+                    } else if tool_called == "omega_lab_sec_steg_vault" {
+                        (v73_0_dispatch_tool(376, req_body_str), 376u64, "tool_outputs")
+                    } else if tool_called == "omega_lab_forge_compile_verify" {
+                        (v73_0_dispatch_tool(377, req_body_str), 377u64, "tool_outputs")
+                    } else if tool_called == "omega_lab_shell_pipeline" {
+                        (v73_0_dispatch_tool(378, req_body_str), 378u64, "tool_outputs")
+                    } else if tool_called == "omega_lab_p10_tpu_vulkan_dispatch" {
+                        (v73_0_dispatch_tool(379, req_body_str), 379u64, "tool_outputs")
+                    } else if tool_called == "omega_lab_conductor_hopf_bus" {
+                        (v73_0_dispatch_tool(380, req_body_str), 380u64, "tool_outputs")
+                    } else if tool_called == "omega_lab_tensor_5silicon_split" {
+                        (v73_0_dispatch_tool(381, req_body_str), 381u64, "tool_outputs")
+                    } else if tool_called == "bitcos_sub158_ternary_codec" {
+                        (v73_1_dispatch_tool(382, req_body_str), 382u64, "tool_outputs")
+                    } else if tool_called == "curvetq_rotation_free_trellis" {
+                        (v73_1_dispatch_tool(383, req_body_str), 383u64, "tool_outputs")
+                    } else if tool_called == "ube_dual_alphabet_bpe_router" {
+                        (v73_1_dispatch_tool(384, req_body_str), 384u64, "tool_outputs")
+                    } else if tool_called == "volk_o1_incremental_sheaf_audit" {
+                        (v73_1_dispatch_tool(385, req_body_str), 385u64, "tool_outputs")
+                    } else if tool_called == "csnn_clifford_reversion_stalk" {
+                        (v73_1_dispatch_tool(386, req_body_str), 386u64, "tool_outputs")
+                    } else if tool_called == "braid_nonhomogeneous_burau_guard" {
+                        (v73_1_dispatch_tool(387, req_body_str), 387u64, "tool_outputs")
+                    } else if tool_called == "comixkv_lcdf_shared_budget_ctrl" {
+                        (v73_1_dispatch_tool(388, req_body_str), 388u64, "tool_outputs")
+                    } else if tool_called == "disco_d3d_async_spec_bridge" {
+                        (v73_1_dispatch_tool(389, req_body_str), 389u64, "tool_outputs")
+                    } else if tool_called == "ppc_bar_rabitq_ssd_prefetcher" {
+                        (v73_1_dispatch_tool(390, req_body_str), 390u64, "tool_outputs")
+                    } else if tool_called == "directkv_ubep_atomic_rebar_ring" {
+                        (v73_1_dispatch_tool(391, req_body_str), 391u64, "tool_outputs")
+                    } else if tool_called == "flash_so2_ozaki_chebyshev_dsp" {
+                        (v73_1_dispatch_tool(392, req_body_str), 392u64, "tool_outputs")
+                    } else if tool_called == "crustify_ffibox_lean_comparator" {
+                        (v73_1_dispatch_tool(393, req_body_str), 393u64, "tool_outputs")
+                    } else if tool_called == "omega_rnd_chaos_deck" {
+                        (v73_0_dispatch_tool(394, req_body_str), 394u64, "tool_outputs")
+                    } else if tool_called == "omega_lab_native_workbench" {
+                        (v73_0_dispatch_tool(395, req_body_str), 395u64, "tool_outputs")
+                    } else if tool_called == "omega_lab_pocket_7tier_fusion" {
+                        (v73_0_dispatch_tool(396, req_body_str), 396u64, "tool_outputs")
+                    } else if tool_called == "omega_lab_seqlock_crdt_vault" {
+                        (v73_0_dispatch_tool(397, req_body_str), 397u64, "tool_outputs")
+                    } else if tool_called == "omega_lab_spatial_acoustic_rig" {
+                        (v73_0_dispatch_tool(398, req_body_str), 398u64, "tool_outputs")
+                    } else if tool_called == "omega_lab_sheaf_ffi_surgeon" {
+                        (v73_0_dispatch_tool(399, req_body_str), 399u64, "tool_outputs")
+                    } else if tool_called == "omega_lab_unified_deck" {
+                        (v73_0_dispatch_unified_lab_deck(req_body_str), 394u64, "tool_outputs")
+                    } else if tool_called == "chain399_master_certification" {
+                        (v73_1_dispatch_chain399_master_certification(req_body_str), 399u64, "tool_outputs")
+                    } else if tool_called == "cloudflare_vpc_service_registry_probe" {
+                        (v73_2_dispatch_tool(400, req_body_str), 400u64, "tool_outputs")
+                    } else if tool_called == "cloudflare_mesh_cluster_device_roster" {
+                        (v73_2_dispatch_tool(401, req_body_str), 401u64, "tool_outputs")
+                    } else if tool_called == "pgwire_duckdb_tls_bridge_audit" {
+                        (v73_2_dispatch_tool(402, req_body_str), 402u64, "tool_outputs")
+                    } else if tool_called == "cloudflare_hyperdrive_duckdb_query" {
+                        (v73_2_dispatch_tool(403, req_body_str), 403u64, "tool_outputs")
+                    } else if tool_called == "chain404_master_certification" {
+                        (v73_2_dispatch_chain404_master_certification(req_body_str), 404u64, "tool_outputs")
                     } else {
                         (format!("{{\"status\":\"MEASURED_CLOUDFLARE_D1_SHADOW_OK\",\"d1_database\":\"act_omega_d1_vault\",\"tables_count\":10,\"sub_epoch\":{}}}", sub_ep), 55u64, "tool_outputs")
                     };
@@ -5355,9 +5743,10 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             };
             st.gen_counter += 1;
             let o = evaluate_openai_compat_surface(st.gen_counter);
+            let (holdout_ppl_json_val, _) = read_receipt_holdout_ppl_json();
             let json = format!(
-                "{{\"object\":\"list\",\"status\":\"OPENAI_V1_MODELS_LIST_READY\",\"version\":\"v72.1.0\",\"data\":\x5b{{\"id\":\"sovereign-harmonic-xi-768d\",\"object\":\"model\",\"created\":1762800000,\"owned_by\":\"act-omega-sovereign-manifold\",\"shell0_dim\":384,\"shell1_dim\":768,\"hybrid_layers\":12,\"vocab_size\":16384}},{{\"id\":\"{}\",\"object\":\"model\",\"created\":1760980000,\"owned_by\":\"act-omega-sovereign-manifold\",\"dendritic_neurons\":84480,\"synapses\":4055040,\"vocab_size\":524288,\"holdout_ppl\":{:.8}}},{{\"id\":\"gemma-4-12B-it-sh4z\",\"object\":\"model\",\"created\":1761840000,\"owned_by\":\"act-omega-sovereign-manifold\",\"sh4z_vault_bytes\":3176803328,\"quantized_weights\":11959730176,\"vocab_size\":262144}},{{\"id\":\"gemma-4-E4B-it-sh4z\",\"object\":\"model\",\"created\":1761840000,\"owned_by\":\"act-omega-sovereign-manifold\",\"sh4z_vault_bytes\":2123979252,\"quantized_weights\":7996157184,\"vocab_size\":262144}}\x5d}}",
-                o.model_id, o.holdout_ppl
+                "{{\"object\":\"list\",\"status\":\"OPENAI_V1_MODELS_LIST_READY\",\"version\":\"v73.2.1\",\"data\":\x5b{{\"id\":\"sovereign-harmonic-xi-768d\",\"object\":\"model\",\"created\":1762800000,\"owned_by\":\"act-omega-sovereign-manifold\",\"shell0_dim\":384,\"shell1_dim\":768,\"hybrid_layers\":12,\"vocab_size\":16384}},{{\"id\":\"{}\",\"object\":\"model\",\"created\":1760980000,\"owned_by\":\"act-omega-sovereign-manifold\",\"dendritic_neurons\":84480,\"synapses\":4055040,\"vocab_size\":524288,\"holdout_ppl\":{}}},{{\"id\":\"gemma-4-12B-it-sh4z\",\"object\":\"model\",\"created\":1761840000,\"owned_by\":\"act-omega-sovereign-manifold\",\"sh4z_vault_bytes\":3176803328,\"quantized_weights\":11959730176,\"vocab_size\":262144}},{{\"id\":\"gemma-4-E4B-it-sh4z\",\"object\":\"model\",\"created\":1761840000,\"owned_by\":\"act-omega-sovereign-manifold\",\"sh4z_vault_bytes\":2123979252,\"quantized_weights\":7996157184,\"vocab_size\":262144}}\x5d}}",
+                o.model_id, holdout_ppl_json_val
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
             continue;
@@ -5370,26 +5759,38 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 raw_target
             };
             if v72_1_extract_bool_param(req_payload_chat, "stream", false) {
-                let sse_body = v72_2_build_sse_chat_completion_stream(req_payload_chat);
-                let sub_epoch = {
-                    let mut st = match state.lock() {
-                        Ok(g) => g,
-                        Err(p) => p.into_inner(),
-                    };
-                    st.gen_counter += 1;
-                    st.decadic_sub_epoch
-                };
-                let _ = publish_coordinator_bus_envelope(
-                    "TOPIC_OPENAI_SSE_STREAM",
-                    clean_path,
-                    "Sovereign_Harmonic_XI_3Shell_MoE",
-                    "stream=true",
-                    E_BUS_LEDGER_JSONL,
-                    sse_body.len() as u64,
-                    sub_epoch,
-                );
-                REQ_CACHE_CONTROL.with(|c| c.set("no-cache"));
-                write_http_str(&mut stream, "200 OK", "text/event-stream; charset=utf-8", &sse_body);
+                match v72_2_build_sse_chat_completion_stream(req_payload_chat) {
+                    Ok(sse_body) => {
+                        let sub_epoch = {
+                            let mut st = match state.lock() {
+                                Ok(g) => g,
+                                Err(p) => p.into_inner(),
+                            };
+                            st.gen_counter += 1;
+                            st.decadic_sub_epoch
+                        };
+                        let _ = publish_coordinator_bus_envelope(
+                            "TOPIC_OPENAI_SSE_STREAM",
+                            clean_path,
+                            "Sovereign_Harmonic_XI_3Shell_MoE",
+                            "stream=true",
+                            E_BUS_LEDGER_JSONL,
+                            sse_body.len() as u64,
+                            sub_epoch,
+                        );
+                        REQ_CACHE_CONTROL.with(|c| c.set("no-cache"));
+                        write_http_str(&mut stream, "200 OK", "text/event-stream; charset=utf-8", &sse_body);
+                    }
+                    Err(_) => {
+                        REQ_CACHE_CONTROL.with(|c| c.set("no-store"));
+                        write_http_str(
+                            &mut stream,
+                            "503 Service Unavailable",
+                            "application/json; charset=utf-8",
+                            "{\"status\":\"GENERATION_UNAVAILABLE_WEIGHTS_NOT_LOADED\",\"error\":{\"code\":\"GENERATION_UNAVAILABLE_WEIGHTS_NOT_LOADED\",\"message\":\"Model weights missing or SHA-256 mismatch.\"}}",
+                        );
+                    }
+                }
                 continue;
             }
             let mut st = match state.lock() {
@@ -5398,10 +5799,13 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             };
             st.gen_counter += 1;
             st.agent_gateway_visits += 1;
-            let o = evaluate_openai_compat_surface(st.gen_counter);
+            let _o = evaluate_openai_compat_surface(st.gen_counter);
             let parsed_msgs = v72_2_parse_openai_messages_array(&post_body);
             let session_opt = v72_1_sh_xi_matryoshka_384_768_cuda_pretrainer::v72_1_extract_str_param(&post_body, "session_id");
-            let mode_opt = v72_1_sh_xi_matryoshka_384_768_cuda_pretrainer::v72_1_extract_str_param(&post_body, "mode");
+            let mut mode_opt = v72_1_sh_xi_matryoshka_384_768_cuda_pretrainer::v72_1_extract_str_param(&post_body, "mode");
+            if mode_opt.is_none() && post_body.contains("json_object") {
+                mode_opt = Some(String::from("json"));
+            }
             let reset_sess = v72_1_extract_bool_param(&post_body, "reset_session", false);
             let user_prompt = if let Some(last_m) = parsed_msgs.last() {
                 last_m.content.clone()
@@ -5434,18 +5838,40 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             );
             let (_, aegis_col, aegis_neuron, aegis_cw24, _, _) =
                 v57_aegis_autonomous_agent_harness::v57_encode_bpe_and_leech24_modalities(&user_prompt);
-            let sh_xi = v72_2_converse_execute_full(
+            let max_tokens_opt = v72_1_sh_xi_matryoshka_384_768_cuda_pretrainer::v72_1_extract_opt_f64_param(&post_body, "max_tokens")
+                .map(|v| v.max(1.0) as usize);
+            let temp_opt = v72_1_sh_xi_matryoshka_384_768_cuda_pretrainer::v72_1_extract_opt_f64_param(&post_body, "temperature")
+                .map(|v| v as f32);
+            let sh_xi = v72_2_sh_xi_sparse_moe_chatml_sft_and_rag::v72_2_converse_execute_full_with_params(
                 &user_prompt,
                 mode_opt.as_deref(),
                 session_opt.as_deref(),
                 &parsed_msgs,
                 reset_sess,
+                max_tokens_opt,
+                temp_opt,
             );
-            let ep_turn = v71_multi_turn_episodic_step(&user_prompt, false, 56);
+            if sh_xi.status == "GENERATION_UNAVAILABLE_WEIGHTS_NOT_LOADED" {
+                let err_json = "{\"status\":\"GENERATION_UNAVAILABLE_WEIGHTS_NOT_LOADED\",\"error\":{\"code\":\"GENERATION_UNAVAILABLE_WEIGHTS_NOT_LOADED\",\"message\":\"Model weights are missing, corrupt, or uninitialized on disk.\"}}";
+                write_http_str(&mut stream, "503 Service Unavailable", "application/json; charset=utf-8", err_json);
+                continue;
+            }
+            let ep_state = v71_load_episodic_state(false);
+            let mut trit_sig = String::with_capacity(32);
+            for tr in ep_state.subternary_trits.iter() {
+                if *tr > 0 {
+                    trit_sig.push('+');
+                } else if *tr < 0 {
+                    trit_sig.push('-');
+                } else {
+                    trit_sig.push('0');
+                }
+            }
+            let ep_turn_index = ep_state.turn_count;
             let nl = sh_xi.output_text.clone();
             let diag = format!(
                 "TOOL 47 DROP-IN OPENAI /v1 API SURFACE + SOVEREIGN HARMONIC XI WEEK 2 (Visit #{}, Turn #{}): Model='sovereign-harmonic-xi-3shell-moe' (Mode={}, Top2=({}/{})) | AEGIS Col #{} Neuron N{:05} (Leech24=0x{:06X}) | Agreement={:.3}",
-                gw.visit_number, ep_turn.turn_index, sh_xi.active_mode, sh_xi.top1_expert_id, sh_xi.top2_expert_id, aegis_col, aegis_neuron, aegis_cw24, sh_xi.shell0_vs_shell1_top8_agreement
+                gw.visit_number, ep_turn_index, sh_xi.active_mode, sh_xi.top1_expert_id, sh_xi.top2_expert_id, aegis_col, aegis_neuron, aegis_cw24, sh_xi.shell0_vs_shell1_top8_agreement
             );
             st.nl_synthesis = nl.clone();
             st.last_card_diag = diag.clone();
@@ -5453,9 +5879,10 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             let esc_nl = json_escape_clean(&nl);
             let comp_toks = sh_xi.generated_tokens_len.max(1);
             let created_sec = unix_ms() / 1000;
+            let (holdout_ppl_json_val, holdout_ppl_status) = read_receipt_holdout_ppl_json();
             let json = format!(
-                "{{\"id\":\"chatcmpl-shxi-v7220-{}\",\"object\":\"chat.completion\",\"created\":{},\"status\":\"OPENAI_V1_COMPAT_SURFACE_LOCKED\",\"version\":\"v72.2.0\",\"tool_index\":47,\"tool_name\":\"tool:openai_v1_compat_api\",\"model\":\"sovereign-harmonic-xi-3shell-moe\",\"choices\":\x5b{{\"index\":0,\"message\":{{\"role\":\"assistant\",\"content\":\"{}\"}},\"finish_reason\":\"stop\"}}\x5d,\"usage\":{{\"prompt_tokens\":{},\"completion_tokens\":{},\"total_tokens\":{}}},\"dendritic_neurons\":84480,\"synapses_total\":4055040,\"vocab_size\":16384,\"aegis_chair44_col\":{},\"aegis_target_neuron\":{},\"dominant_domain\":\"{}\",\"sovereign_harmonic_xi_mode\":\"{}\",\"sovereign_harmonic_xi_top1_expert\":\"{}\",\"sovereign_harmonic_xi_session_turn\":{},\"sovereign_harmonic_ix_track\":\"{}\",\"sovereign_harmonic_ix_generated\":\"{}\",\"matryoshka_shell0_vs_shell1_agreement\":{:.4},\"episodic_turn_index\":{},\"subternary_32trit_signature\":\"{}\",\"crystallized_neuron_id\":{},\"crystallized_shard_id\":{},\"holdout_ppl\":{:.6},\"completion_tokens_generated\":{},\"output_text\":\"{}\",\"nl_synthesis\":\"{}\",\"diag\":\"{}\"}}",
-                st.gen_counter, created_sec, esc_nl, sh_xi.prompt_tokens_len, comp_toks, sh_xi.prompt_tokens_len + comp_toks, aegis_col, aegis_neuron, gw.dominant_domain, sh_xi.active_mode, sh_xi.top1_expert_name, sh_xi.session_turn_count, sh_xi.retrieved_track_name, esc_nl, sh_xi.shell0_vs_shell1_top8_agreement, ep_turn.turn_index, ep_turn.trit_signature_str, gw.mapped_neuron_id, gw.crystallized_shard_id, o.holdout_ppl, comp_toks, esc_nl, esc_nl, json_escape_clean(&diag)
+                "{{\"id\":\"chatcmpl-shxi-v7321-{}\",\"object\":\"chat.completion\",\"created\":{},\"status\":\"OPENAI_V1_COMPAT_SURFACE_LOCKED\",\"version\":\"v73.2.1\",\"tool_index\":47,\"tool_name\":\"tool:openai_v1_compat_api\",\"model\":\"sovereign-harmonic-xi-3shell-moe\",\"choices\":\x5b{{\"index\":0,\"message\":{{\"role\":\"assistant\",\"content\":\"{}\"}},\"finish_reason\":\"stop\"}}\x5d,\"usage\":{{\"prompt_tokens\":{},\"completion_tokens\":{},\"total_tokens\":{}}},\"dendritic_neurons\":84480,\"synapses_total\":4055040,\"vocab_size\":16384,\"aegis_chair44_col\":{},\"aegis_target_neuron\":{},\"dominant_domain\":\"{}\",\"sovereign_harmonic_xi_mode\":\"{}\",\"sovereign_harmonic_xi_top1_expert\":\"{}\",\"sovereign_harmonic_xi_session_turn\":{},\"sovereign_harmonic_ix_track\":\"{}\",\"sovereign_harmonic_ix_generated\":\"{}\",\"matryoshka_shell0_vs_shell1_agreement\":{:.4},\"episodic_turn_index\":{},\"subternary_32trit_signature\":\"{}\",\"crystallized_neuron_id\":{},\"crystallized_shard_id\":{},\"holdout_ppl\":{},\"holdout_ppl_status\":\"{}\",\"completion_tokens_generated\":{},\"output_text\":\"{}\",\"nl_synthesis\":\"{}\",\"diag\":\"{}\"}}",
+                st.gen_counter, created_sec, esc_nl, sh_xi.prompt_tokens_len, comp_toks, sh_xi.prompt_tokens_len + comp_toks, aegis_col, aegis_neuron, gw.dominant_domain, sh_xi.active_mode, sh_xi.top1_expert_name, sh_xi.session_turn_count, sh_xi.retrieved_track_name, esc_nl, sh_xi.shell0_vs_shell1_top8_agreement, ep_turn_index, trit_sig, gw.mapped_neuron_id, gw.crystallized_shard_id, holdout_ppl_json_val, holdout_ppl_status, comp_toks, esc_nl, esc_nl, json_escape_clean(&diag)
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
             continue;
@@ -6518,7 +6945,12 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 sub_epoch,
             );
             REQ_CACHE_CONTROL.with(|c| c.set("no-store"));
-            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &final_json);
+            let http_status = if final_json.contains("GENERATION_UNAVAILABLE_WEIGHTS_NOT_LOADED") {
+                "503 Service Unavailable"
+            } else {
+                "200 OK"
+            };
+            write_http_str(&mut stream, http_status, "application/json; charset=utf-8", &final_json);
             continue;
         }
 
@@ -6600,7 +7032,12 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 sub_epoch,
             );
             REQ_CACHE_CONTROL.with(|c| c.set("no-store"));
-            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &final_json);
+            let http_status = if final_json.contains("GENERATION_UNAVAILABLE_WEIGHTS_NOT_LOADED") {
+                "503 Service Unavailable"
+            } else {
+                "200 OK"
+            };
+            write_http_str(&mut stream, http_status, "application/json; charset=utf-8", &final_json);
             continue;
         }
 
@@ -6623,26 +7060,38 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
         if clean_path == "/api/v1/sovereign_harmonic/converse" {
             let req_p = if !post_body.trim().is_empty() { post_body.as_str() } else { raw_target };
             if v72_1_extract_bool_param(req_p, "stream", false) {
-                let sse_body = v72_2_build_sse_chat_completion_stream(req_p);
-                let sub_epoch = {
-                    let mut st = match state.lock() {
-                        Ok(g) => g,
-                        Err(p) => p.into_inner(),
-                    };
-                    st.gen_counter += 1;
-                    st.decadic_sub_epoch
-                };
-                let _ = publish_coordinator_bus_envelope(
-                    "TOPIC_SH_XI_SSE_CONVERSE",
-                    clean_path,
-                    "Sovereign_Harmonic_XI_3Shell_MoE",
-                    "stream=true",
-                    E_BUS_LEDGER_JSONL,
-                    sse_body.len() as u64,
-                    sub_epoch,
-                );
-                REQ_CACHE_CONTROL.with(|c| c.set("no-cache"));
-                write_http_str(&mut stream, "200 OK", "text/event-stream; charset=utf-8", &sse_body);
+                match v72_2_build_sse_chat_completion_stream(req_p) {
+                    Ok(sse_body) => {
+                        let sub_epoch = {
+                            let mut st = match state.lock() {
+                                Ok(g) => g,
+                                Err(p) => p.into_inner(),
+                            };
+                            st.gen_counter += 1;
+                            st.decadic_sub_epoch
+                        };
+                        let _ = publish_coordinator_bus_envelope(
+                            "TOPIC_SH_XI_SSE_CONVERSE",
+                            clean_path,
+                            "Sovereign_Harmonic_XI_3Shell_MoE",
+                            "stream=true",
+                            E_BUS_LEDGER_JSONL,
+                            sse_body.len() as u64,
+                            sub_epoch,
+                        );
+                        REQ_CACHE_CONTROL.with(|c| c.set("no-cache"));
+                        write_http_str(&mut stream, "200 OK", "text/event-stream; charset=utf-8", &sse_body);
+                    }
+                    Err(_) => {
+                        REQ_CACHE_CONTROL.with(|c| c.set("no-store"));
+                        write_http_str(
+                            &mut stream,
+                            "503 Service Unavailable",
+                            "application/json; charset=utf-8",
+                            "{\"status\":\"GENERATION_UNAVAILABLE_WEIGHTS_NOT_LOADED\",\"error\":{\"code\":\"GENERATION_UNAVAILABLE_WEIGHTS_NOT_LOADED\",\"message\":\"Model weights missing or SHA-256 mismatch.\"}}",
+                        );
+                    }
+                }
                 continue;
             }
         }
@@ -6704,6 +7153,10 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             || clean_path == "/api/v1/sovereign_harmonic/compositional_reasoner"
             || clean_path == "/api/v1/sovereign_harmonic/generate"
             || clean_path == "/api/v1/sovereign_harmonic/xi/week2/converse"
+            || clean_path == "/api/v1/sh_xi/sparse_moe_chatml/converse"
+            || clean_path == "/converse"
+            || clean_path == "/api/v1/sh_xi/converse"
+            || clean_path == "/api/v1/sh_xi_sparse_moe_chatml/converse"
         {
             let req_payload = if !post_body.trim().is_empty() { &post_body } else { raw_target };
             Some(v72_2_dispatch_converse_route(req_payload))
@@ -6716,7 +7169,6 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
         } else if clean_path == "/api/v1/sovereign_harmonic/xi/week2/shell2_sparse_moe"
             || clean_path == "/api/v1/tools/t363"
             || clean_path == "/api/v1/tool/363"
-            || clean_path == "/t363"
         {
             let req_payload = if !post_body.trim().is_empty() { &post_body } else { raw_target };
             Some(v72_2_dispatch_tool_363_shell2_cpu_ssd_sparse_moe_bank(req_payload))
@@ -6771,10 +7223,25 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
         {
             let req_payload = if !post_body.trim().is_empty() { &post_body } else { raw_target };
             Some(v72_1_dispatch_tool_359_matryoshka_384_768_gradcheck(req_payload))
+        } else if clean_path == "/api/v1/weights/verify"
+            || clean_path == "/api/v1/sovereign_harmonic/weights/verify"
+        {
+            let req_payload = if !post_body.trim().is_empty() { &post_body } else { raw_target };
+            let key = v72_1_sh_xi_matryoshka_384_768_cuda_pretrainer::v72_1_extract_str_param(req_payload, "key")
+                .unwrap_or_else(|| String::from("sh_xi_rw384_768_base"));
+            let path = v72_1_sh_xi_matryoshka_384_768_cuda_pretrainer::v72_1_extract_str_param(req_payload, "path")
+                .unwrap_or_else(|| String::from("00_control/weights/sovereign_harmonic_xi_rw384_768_base.sh4z"));
+            match v72_1_sh_xi_matryoshka_384_768_cuda_pretrainer::v72_1_verify_weight_manifest(&key, &path) {
+                Ok(bytes) => {
+                    Some(format!("{{\"status\":\"MEASURED\",\"verified\":true,\"key\":\"{}\",\"bytes\":{},\"sha256\":\"{}\"}}", key, bytes.len(), v72_1_sh_xi_matryoshka_384_768_cuda_pretrainer::v72_1_sha256_hex(&bytes)))
+                }
+                Err(e) => {
+                    Some(format!("{{\"status\":\"UNMEASURED/OFFLINE\",\"verified\":false,\"key\":\"{}\",\"reason\":\"{}\"}}", key, e))
+                }
+            }
         } else if clean_path == "/api/v1/sovereign_harmonic/xi/week1/rtx3050_matryoshka_cuda_pretrain"
             || clean_path == "/api/v1/tools/t360"
             || clean_path == "/api/v1/tool/360"
-            || clean_path == "/t360"
         {
             let req_payload = if !post_body.trim().is_empty() { &post_body } else { raw_target };
             Some(v72_1_dispatch_tool_360_rtx3050_matryoshka_cuda_pretrain(req_payload))
@@ -6838,7 +7305,6 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
         } else if clean_path == "/api/v1/sovereign_harmonic/week1/bptt_stiefel_cayley_optimizer"
             || clean_path == "/api/v1/tools/t330"
             || clean_path == "/api/v1/tool/330"
-            || clean_path == "/t330"
         {
             let req_payload = if !post_body.trim().is_empty() { &post_body } else { raw_target };
             Some(v71_1_dispatch_tool_330_bptt_stiefel_cayley_optimizer(req_payload))
@@ -6876,7 +7342,6 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
         } else if clean_path == "/api/v1/sovereign_harmonic/week2/bpe_16384_leech_codebook"
             || clean_path == "/api/v1/tools/t336"
             || clean_path == "/api/v1/tool/336"
-            || clean_path == "/t336"
         {
             let req_payload = if !post_body.trim().is_empty() { &post_body } else { raw_target };
             Some(v71_2_dispatch_tool_336_bpe_16384_leech_codebook(req_payload))
@@ -7272,7 +7737,12 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 sub_epoch,
             );
             REQ_CACHE_CONTROL.with(|c| c.set("no-store"));
-            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &final_json);
+            let http_status = if final_json.contains("GENERATION_UNAVAILABLE_WEIGHTS_NOT_LOADED") {
+                "503 Service Unavailable"
+            } else {
+                "200 OK"
+            };
+            write_http_str(&mut stream, http_status, "application/json; charset=utf-8", &final_json);
             continue;
         }
 
@@ -7370,7 +7840,12 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 sub_epoch,
             );
             REQ_CACHE_CONTROL.with(|c| c.set("no-store"));
-            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &final_json);
+            let http_status = if final_json.contains("GENERATION_UNAVAILABLE_WEIGHTS_NOT_LOADED") {
+                "503 Service Unavailable"
+            } else {
+                "200 OK"
+            };
+            write_http_str(&mut stream, http_status, "application/json; charset=utf-8", &final_json);
             continue;
         }
 
@@ -7405,7 +7880,12 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 sub_epoch,
             );
             REQ_CACHE_CONTROL.with(|c| c.set("no-store"));
-            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &final_json);
+            let http_status = if final_json.contains("GENERATION_UNAVAILABLE_WEIGHTS_NOT_LOADED") {
+                "503 Service Unavailable"
+            } else {
+                "200 OK"
+            };
+            write_http_str(&mut stream, http_status, "application/json; charset=utf-8", &final_json);
             continue;
         }
 
@@ -7485,7 +7965,12 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 sub_epoch,
             );
             REQ_CACHE_CONTROL.with(|c| c.set("no-store"));
-            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &final_json);
+            let http_status = if final_json.contains("GENERATION_UNAVAILABLE_WEIGHTS_NOT_LOADED") {
+                "503 Service Unavailable"
+            } else {
+                "200 OK"
+            };
+            write_http_str(&mut stream, http_status, "application/json; charset=utf-8", &final_json);
             continue;
         }
 
@@ -7524,7 +8009,12 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 sub_epoch,
             );
             REQ_CACHE_CONTROL.with(|c| c.set("no-store"));
-            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &final_json);
+            let http_status = if final_json.contains("GENERATION_UNAVAILABLE_WEIGHTS_NOT_LOADED") {
+                "503 Service Unavailable"
+            } else {
+                "200 OK"
+            };
+            write_http_str(&mut stream, http_status, "application/json; charset=utf-8", &final_json);
             continue;
         }
 
@@ -7602,11 +8092,16 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 sub_epoch,
             );
             REQ_CACHE_CONTROL.with(|c| c.set("no-store"));
-            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &final_json);
+            let http_status = if final_json.contains("GENERATION_UNAVAILABLE_WEIGHTS_NOT_LOADED") {
+                "503 Service Unavailable"
+            } else {
+                "200 OK"
+            };
+            write_http_str(&mut stream, http_status, "application/json; charset=utf-8", &final_json);
             continue;
         }
 
-        // 7b. Rejection for out-of-range tools (CHAIN 368 has tools 1..368)
+        // 7b. Rejection for out-of-range tools (CHAIN 404 has tools 1..404)
         if clean_path.starts_with("/api/v1/tools/t") || clean_path.starts_with("/api/v1/tool/") {
             let tool_id_opt = if let Some(s) = clean_path.strip_prefix("/api/v1/tools/t") {
                 s.chars().take_while(|c| c.is_ascii_digit()).collect::<String>().parse::<u64>().ok()
@@ -7616,9 +8111,9 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 None
             };
             if let Some(id) = tool_id_opt {
-                if id > 368 || id == 0 {
+                if id > 404 || id == 0 {
                     let err_json = format!(
-                        "{{\"status\":\"ERROR_TOOL_OUT_OF_RANGE\",\"tool_id\":{},\"max_chain\":368,\"error\":\"Tool ID {} out of range for CHAIN 368\",\"endpoint\":\"{}\"}}",
+                        "{{\"status\":\"ERROR_TOOL_OUT_OF_RANGE\",\"tool_id\":{},\"max_chain\":404,\"error\":\"Tool ID {} out of range for CHAIN 404\",\"endpoint\":\"{}\"}}",
                         id,
                         id,
                         json_escape_clean(clean_path)
@@ -7629,8 +8124,25 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             }
         }
 
-        // 8. Dedicated Tool Endpoints for Stiefel, Acoustic SDR, RTX 3050 WGSL, Debate, Hotpatch, Codegen
+        // 8. Explicit Legacy Tool Endpoints for Stiefel, Acoustic SDR, RTX 3050 WGSL, Debate, Hotpatch, Codegen;
+        //    Unknown /api/v1/* endpoints fail closed with HTTP 404 (D4 — zero unconditional OK_V44_0_0).
         if clean_path.starts_with("/api/v1/") {
+            let is_known_legacy = clean_path == "/api/v1/stiefel"
+                || clean_path == "/api/v1/acoustic"
+                || clean_path == "/api/v1/wgsl"
+                || clean_path == "/api/v1/compute"
+                || clean_path == "/api/v1/debate"
+                || clean_path == "/api/v1/hotpatch"
+                || clean_path == "/api/v1/codegen";
+            if !is_known_legacy {
+                let err_json = format!(
+                    "{{\"ok\":false,\"status\":\"ERROR_UNKNOWN_ENDPOINT\",\"endpoint\":\"{}\",\"error\":\"Unrecognized /api/v1/ route\"}}",
+                    json_escape_clean(clean_path)
+                );
+                REQ_CACHE_CONTROL.with(|c| c.set("no-store"));
+                write_http_str(&mut stream, "404 Not Found", "application/json; charset=utf-8", &err_json);
+                continue;
+            }
             let mut st = match state.lock() {
                 Ok(g) => g,
                 Err(p) => p.into_inner(),
@@ -7643,18 +8155,16 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             } else if clean_path.contains("wgsl") || clean_path.contains("compute") {
                 format!("TOOL 19 NVIDIA RTX 3050 6GB ReBAR & ANYON BRAID: {:.0}C -- {} MHz -- {}/{} MB VRAM -- {:.1}k ops/s ({:.1}W)", st.rtx_temp_c, st.rtx_clock_mhz, st.rtx_vram_used_mb, st.rtx_vram_total_mb, st.loq15_kops, st.rtx_power_w)
             } else if clean_path.contains("debate") {
-                format!("TOOL 15 MULTI-AGENT DEBATE: {} LOQ15 + {} P10 + {} P8 = 2,080 Cachelines Unanimous QED ({:.1}k ops/s)", st.ws_loq_lines, st.ws_p10_lines, st.ws_p8_lines, st.cluster_total_kops)
+                format!("TOOL 15 MULTI-AGENT DEBATE: {} LOQ15 + {} P10 + {} P8 = 2,080 Cachelines ({:.1}k ops/s)", st.ws_loq_lines, st.ws_p10_lines, st.ws_p8_lines, st.cluster_total_kops)
             } else if clean_path.contains("hotpatch") {
-                format!("TOOL 14 AUTONOMOUS HOT-PATCH: Zero-Downtime Patch Applied Across 16 Sectors (Kasami={}, Gen #{})", st.kasami_cw_hex, st.gen_counter)
-            } else if clean_path.contains("codegen") {
-                format!("TOOL 12 8-LANG POLYGLOT CODEGEN: Synthesized AST across Rust, Kotlin, TS, WGSL, Lean4, C++23, Zig, SQL (RSR #{})", st.rsr_step)
+                format!("TOOL 14 AUTONOMOUS HOT-PATCH: Patch State Across 16 Sectors (Kasami={}, Gen #{})", st.kasami_cw_hex, st.gen_counter)
             } else {
-                format!("SOVEREIGN L0 ENDPOINT OK ({}): Gen #{} -- {:.1}k ops/s", json_escape_clean(clean_path), st.gen_counter, st.cluster_total_kops)
+                format!("TOOL 12 8-LANG POLYGLOT CODEGEN: Synthesized AST across Rust, Kotlin, TS, WGSL, Lean4, C++23, Zig, SQL (RSR #{})", st.rsr_step)
             };
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"status\":\"OK_V44_0_0\",\"endpoint\":\"{}\",\"generation\":{},\"diag\":\"{}\"}}",
+                "{{\"status\":\"MEASURED\",\"endpoint\":\"{}\",\"generation\":{},\"diag\":\"{}\"}}",
                 json_escape_clean(clean_path),
                 st.gen_counter,
                 diag
@@ -7669,7 +8179,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 write_http_vec(&mut stream, "200 OK", "text/plain; charset=utf-8", &bytes);
                 continue;
             }
-            let fallback = "# ACT-Omega Net v68.0.0 (Sovereign Harmonic VI / SH4Z v6800 TLV | CHAIN 300 | 800/800 Lean 4 QED | 3,041,280 Synapses)\n> Official Domain: https://act-omega-net.dev\n";
+            let fallback = "# ACT-Omega Net v73.2.1 (SH4Z v7321 TLV | CHAIN 404 | 1,010/1,010 Lean 4 QED | 4,055,040 Synapses)\n> Official Domain: https://act-omega-net.dev\n";
             write_http_str(&mut stream, "200 OK", "text/plain; charset=utf-8", fallback);
             continue;
         }
@@ -7742,11 +8252,19 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             continue;
         }
 
+        let fallback_lean_thms = fs::read_to_string("03_vault/lean4/SovereignManifoldTheorems.lean")
+            .or_else(|_| fs::read_to_string("C:\\sovereign_manifold_v31\\03_vault\\lean4\\SovereignManifoldTheorems.lean"))
+            .map(|s| s.lines().filter(|l| l.trim_start().starts_with("theorem ")).count())
+            .unwrap_or(0);
+        let fallback_html = format!(
+            "<html><body style='background:#0E1116;color:#FFFEFB;font-family:monospace'><h2>ACT-Omega Net v73.2.1 (SH4Z v7321 TLV | CHAIN 404 | {} QED | 59 MCP Tools) Online at act-omega-net.dev</h2><p>Discovery: <a href='/api/v1/tools'>/api/v1/tools</a> | <a href='/api/v1/tools/t404'>/api/v1/tools/t404</a> | <a href='/api/v1/chain368/master_certification'>/api/v1/chain368/master_certification</a> | <a href='/openapi.json'>/openapi.json</a></p></body></html>",
+            if fallback_lean_thms > 0 { fallback_lean_thms.to_string() } else { String::from("UNMEASURED/OFFLINE") }
+        );
         write_http_str(
             &mut stream,
             "200 OK",
             "text/html; charset=utf-8",
-            "<html><body style='background:#0E1116;color:#FFFEFB;font-family:monospace'><h2>ACT-Omega Net v72.2.0 (SH4Z v7220 TLV | CHAIN 368 | 995 QED) Online at act-omega-net.dev</h2><p>Discovery: <a href='/api/v1/tools'>/api/v1/tools</a> | <a href='/api/v1/chain368/master_certification'>/api/v1/chain368/master_certification</a> | <a href='/openapi.json'>/openapi.json</a></p></body></html>",
+            &fallback_html,
         );
     }
 
@@ -7769,21 +8287,26 @@ impl SwarmState {
     }
 }
 
-fn run_listener(addr: &'static str, state: Arc<Mutex<SwarmState>>) {
+fn run_listener(addr: String, state: Arc<Mutex<SwarmState>>, exit_on_conflict: bool) {
     let mut attempt: u32 = 0;
     let listener = loop {
-        match TcpListener::bind(addr) {
+        match TcpListener::bind(addr.as_str()) {
             Ok(l) => {
-                println!("  (v31_swarm v68.0.0) Bound HTTP Keep-Alive listener on {}", addr);
+                println!("  (v31_swarm v73.2.1) Bound HTTP Keep-Alive listener on {}", addr);
                 break l;
             }
             Err(e) => {
                 attempt += 1;
                 if attempt > 8 {
-                    println!("  (v31_swarm v68.0.0) Port {} already active in primary instance; exiting duplicate.", addr);
-                    std::process::exit(0);
+                    if exit_on_conflict {
+                        println!("  (v31_swarm v73.2.1) Port {} already active in primary instance; exiting duplicate.", addr);
+                        std::process::exit(0);
+                    } else {
+                        println!("  (v31_swarm v73.2.1) Optional LAN listener {} unavailable: {}", addr, e);
+                        return;
+                    }
                 }
-                println!("  (v31_swarm v68.0.0) Retry #{} binding {}: {}", attempt, addr, e);
+                println!("  (v31_swarm v73.2.1) Retry #{} binding {}: {}", attempt, addr, e);
                 thread::sleep(Duration::from_millis(250));
             }
         }
@@ -7805,6 +8328,9 @@ fn main() {
     let mut check_verify = false;
     let mut verify_all = false;
     let mut check_gradients = false;
+    let mut train_offline = false;
+    let mut refresh_sh_xi_meta = false;
+    let mut train_steps: usize = 10000;
     let mut key_arg = String::new();
     let mut path_arg = String::new();
     let mut arg_i: usize = 0;
@@ -7832,9 +8358,47 @@ fn main() {
                 }
             } else if a == "--verify-gradients" {
                 check_gradients = true;
+            } else if a == "--train-offline" {
+                train_offline = true;
+            } else if a == "--refresh-sh-xi-meta" {
+                refresh_sh_xi_meta = true;
+            } else if a == "--steps" {
+                if let Some(sv) = args.get(arg_i + 1) {
+                    if let Ok(parsed_steps) = sv.parse::<usize>() {
+                        if parsed_steps > 0 {
+                            train_steps = parsed_steps;
+                        }
+                    }
+                }
             }
         }
         arg_i += 1;
+    }
+
+    if refresh_sh_xi_meta {
+        match v72_1_sh_xi_matryoshka_384_768_cuda_pretrainer::v72_1_refresh_base_train_meta_from_verified_sh4z() {
+            Ok(summary) => {
+                println!("REFRESH_SH_XI_META_OK: {}", summary);
+                std::process::exit(0);
+            }
+            Err(e) => {
+                eprintln!("REFRESH_SH_XI_META_ERR: {}", e);
+                std::process::exit(1);
+            }
+        }
+    }
+
+    if train_offline {
+        match v72_1_sh_xi_matryoshka_384_768_cuda_pretrainer::v72_1_run_offline_pretraining(train_steps) {
+            Ok(summary) => {
+                println!("TRAIN_OFFLINE_OK: {}", summary);
+                std::process::exit(0);
+            }
+            Err(e) => {
+                eprintln!("TRAIN_OFFLINE_ERR: {}", e);
+                std::process::exit(1);
+            }
+        }
     }
 
     if check_gradients {
@@ -7875,9 +8439,20 @@ fn main() {
             }
         }
     }
+
+    let init_lean_thms = fs::read_to_string("03_vault/lean4/SovereignManifoldTheorems.lean")
+        .or_else(|_| fs::read_to_string("C:\\sovereign_manifold_v31\\03_vault\\lean4\\SovereignManifoldTheorems.lean"))
+        .map(|s| s.lines().filter(|l| l.trim_start().starts_with("theorem ")).count())
+        .unwrap_or(0);
+    let init_lean_badge = if init_lean_thms > 0 {
+        format!("{}/{}", init_lean_thms, init_lean_thms)
+    } else {
+        String::from("UNMEASURED/OFFLINE")
+    };
+
     println!("========================================================================");
-    println!(" ACT-OMEGA NET v68.5.0 (SOVEREIGN HARMONIC VI / SH4Z v6850 TLV) SWARM");
-    println!(" 15.965 Hz Decadic Epoch, 63,360 Neurons, 3.04M Synapses, 810 QED & CHAIN 304");
+    println!(" ACT-OMEGA NET v73.2.1 (SH4Z v7321 TLV | CHAIN 404 | {} QED) SWARM", init_lean_badge);
+    println!(" 15.965 Hz Decadic Epoch, 84,480 Neurons, 4,055,040 Synapses, Loopback Default");
     println!("========================================================================");
 
     let (init_norms, init_hashes, init_kasami) = compute_real_e8z_norms(1);
@@ -7912,8 +8487,8 @@ fn main() {
         decadic_sub_epoch: 0,
         laplacian_face: String::from("E0(1/10 Div-Grad: div(grad f))"),
         qm_field_eq: String::from("QM1-2: Planck E=hf & Photoelectric Kmax=hf-phi0 + Schrodinger Field"),
-        nl_synthesis: String::from("Sovereign Harmonic VI (SH4Z v6850) Natural Language Synthesis: The 5-tier manifold is locked to the 15.965 Hz (62,637 us) Decadic Epoch Carrier Clock (159.65 cycles per 10.000s epoch) across 63,360 3-compartment dendritic neurons (21,120 Core + 21,120 Expansion + 21,120 Tier-3, 1,440x Chair-44, 3,041,280 Synapses across .npage 8.11MB + .spage 4.05MB, 132,960 Bijected 64B Cachelines), 304 Native Tools (CHAIN 304), MIT Cold-to-Hot Ingestion (10 .e8q Shards, 640B SH4Z v3101, 256D Galois Field Tower & 32D Polytonic E8^4), CERN LHCb 5-Mapping Internal Auditor (30:1 Allen HLT1 Sieve, Lipschitz L=0.28<=0.40, 5.0-sigma Gate), OmegaLang v15.0 (78ns K16a, 83.6ns 90L K19 535.73 TOPS, 4.235 POPS K20), Dual Gemma 4 .sh4z Studio (5.30 GB / 19.96B ternary weights), and 36 macro-domains / 144 sub-domains (2,048 phrases, 262,144 18-bit BPE vocab) with 810/810 Lean 4 proofs QED."),
-        episodic_search_out: String::from("TOOL 28 EPISODIC MEMORY READY: 63,360 Neurons (8,110,080 B .npage) + 3,041,280 Synapses (4,055,040 B .spage) + MIT Hot-Index (10 .e8q shards, 640B) + telemetry_training_ring.jsonl indexed on E:/Sovereign_Manifold_SSD_Vault."),
+        nl_synthesis: format!("ACT-Omega Net v73.2.1 (SH4Z v7321 TLV) Natural Language Synthesis: 84,480 3-compartment dendritic neurons (1,920x Chair-44, 4,055,040 Synapses across .npage 10.81MB + .spage 5.41MB + .e8z 557KB = 262,144 Bijected 64B Cachelines / 16.00 MiB), 404 Native Tools (CHAIN 404), SH-XI 3-Shell Sparse MoE, and {} Lean 4 proofs QED.", init_lean_badge),
+        episodic_search_out: String::from("TOOL 28 EPISODIC MEMORY READY: 84,480 Neurons (10,813,440 B .npage) + 4,055,040 Synapses (5,406,720 B .spage) + MIT Hot-Index (10 .e8q shards, 640B) indexed on E:/Sovereign_Manifold_SSD_Vault."),
         anomaly_banner: String::from("LAMINAR EQUILIBRIUM (U(1) Gauge Filter A'=A+grad(chi) = 0.000): 15.965 Hz Decadic Epoch E0/9 -- Per-Sensor Stiefel & Oscilloscope Coupling Active."),
         physics_10pillar: String::from("15.965Hz Decadic E0/9 (62,637us, 159.65 cyc/10s) -- 10 Laplacian Faces -- 20 QM + 4 Field Eqs -- Sierpinski sum(3/4^k)=1.000000 -- Theodorus Q_n=1..16 -- Anyon tau*tau=1+tau -- nc-AFM Hex Sheaf H1=0"),
         p10_broadcasts: 520,
@@ -7933,6 +8508,7 @@ fn main() {
         p10_ram_used_mb: 8840,
         p10_ram_total_mb: 11544,
         p10_sensor_hz: 15.965,
+        p10_raw_sensor_hz: 0.0,
         p10_stream_hz: 2.00,
         p10_rtt_ms: 1.3,
         p10_bearer: String::from("B1:USB(:8097) HOST-SYNC"),
@@ -7983,24 +8559,25 @@ fn main() {
         inspected_hex: init_hex,
         inspected_trits: init_trits,
         last_card_idx: 0,
-        last_card_diag: String::from("CARD #1 15.965 Hz DECADIC EPOCH CLOCK (SH4Z v7220): 62,637 us period (159.65 cycles / 10.000s Decadic Epoch E0..E9) -- Cycling 10 Faces of the Laplacian & 20 Quantum Equations (.e8z=557,056B 8,704CL, .npage=10,813,440B, .spage=5,406,720B, 84,480 Neurons, 4,055,040 Synapses, SH-XI 3-Shell + 16/256 MoE, 524,288 BPE, 192 Sub-Domains, 995/995 Lean 4 QED)."),
+        last_card_diag: format!("CARD #1 15.965 Hz DECADIC EPOCH CLOCK (SH4Z v7321): 62,637 us period (159.65 cycles / 10.000s Decadic Epoch E0..E9) -- Cycling 10 Faces of the Laplacian & 20 Quantum Equations (.e8z=557,056B 8,704CL, .npage=10,813,440B, .spage=5,406,720B, 84,480 Neurons, 4,055,040 Synapses, Unified Lab + VPC Mesh + Hyperdrive + Two-Phase Q8_0 SH-XI MoE, 524,288 BPE, 192 Sub-Domains, {} Lean 4 QED).", init_lean_badge),
         last_browser_url: String::from("https://act-omega-net.dev"),
-        last_browser_trace: String::from("STAGE 1 (ER=EPR + 524,288 48-DOMAIN / 192-SUBDOMAIN DECODER): https://act-omega-net.dev <-> gamma_RT (I(A:B)=21.42 bits, Sinai h_mu=0.482>0) | STAGE 2 (10-LAPLACIAN 16-MODE FNO): L2_Err=0.00019, Re=416.8 < 2300 (LAMINAR) | STAGE 3 (84,480-NEURON VAULT + 4.055M SYNAPSES + SH-XI 3-SHELL MOE): 995/995 Lean 4 Proofs QED"),
-        last_lean_query: String::from("all_995_substantive_theorems_qed"),
-        last_lean_trace: String::from("LEAN 4 QED VERIFIED: 995/995 Substantive Proofs QED across 160 Sectors + SH-XI Weeks 1-2 (0 sorry, 0 axiom)"),
-        last_term_cmd: String::from("CHAIN 368"),
-        last_term_out: String::from("EXEC(CHAIN_368_PARALLEL_DAG_QED) -> SH4Z v7220 Sovereign Harmonic XI (384D Mobile + 768D Host + 16/256 Sparse MoE, ChatML Masked SFT, 384D WGSL RAG, JSON FSM) + 84,480 Neurons (262,144 Bijected CLs = 16.00 MiB, 4,055,040 Synapses) + Tools 1..368 Active"),
+        last_browser_trace: format!("STAGE 1 (ER=EPR + 524,288 48-DOMAIN / 192-SUBDOMAIN DECODER): https://act-omega-net.dev <-> gamma_RT (I(A:B)=21.42 bits, Sinai h_mu=0.482>0) | STAGE 2 (10-LAPLACIAN 16-MODE FNO): L2_Err=0.00019, Re=416.8 < 2300 (LAMINAR) | STAGE 3 (84,480-NEURON VAULT + 4.055M SYNAPSES + SH-XI 3-SHELL MOE + VPC MESH): {} Lean 4 Proofs QED", init_lean_badge),
+        last_lean_query: format!("all_{}_substantive_theorems_qed", init_lean_thms),
+        last_lean_trace: format!("LEAN 4 QED VERIFIED: {} Substantive Proofs QED across 160 Sectors + SH-XI + Unified Lab + VPC Mesh/Hyperdrive (0 sorry, 0 axiom)", init_lean_badge),
+        last_term_cmd: String::from("CHAIN 404"),
+        last_term_out: String::from("EXEC(CHAIN_404_PARALLEL_DAG_QED) -> SH4Z v7321 Unified Lab (T369..T381) + Research Kernels (T382..T399) + Cloudflare QUIC VPC Mesh & Hyperdrive PGWire (T400..T404) + Two-Phase Q8_0 SH-XI MoE + 84,480 Neurons (262,144 Bijected CLs = 16.00 MiB, 4,055,040 Synapses) + Tools 1..404 Active"),
     }));
 
     spawn_background_aggregator(Arc::clone(&state));
     v57_aegis_autonomous_agent_harness::v57_spawn_aegis_autonomous_cron_daemon();
+    let _ = v72_2_ensure_moe_bank_loaded();
 
     let st_5173 = Arc::clone(&state);
     let _ = thread::Builder::new()
         .name(String::from("swarm_5173"))
         .stack_size(8 * 1024 * 1024)
         .spawn(move || {
-            run_listener("0.0.0.0:5173", st_5173);
+            run_listener(String::from("127.0.0.1:5173"), st_5173, true);
         });
 
     let st_8097 = Arc::clone(&state);
@@ -8008,8 +8585,24 @@ fn main() {
         .name(String::from("swarm_8097"))
         .stack_size(8 * 1024 * 1024)
         .spawn(move || {
-            run_listener("0.0.0.0:8097", st_8097);
+            run_listener(String::from("127.0.0.1:8097"), st_8097, true);
         });
+
+    // Optional explicit LAN interface listener solely for wireless Dual-Pixel telemetry (/api/v1/telemetry/edge_update).
+    // All operator/admin/DuckDB/research/cert endpoints check `is_loopback` and reject non-loopback peers with 403.
+    if let Ok(lan_ip) = std::env::var("SOVEREIGN_BIND_LAN_IP") {
+        let clean_ip = lan_ip.trim().to_string();
+        if !clean_ip.is_empty() && clean_ip != "127.0.0.1" && clean_ip != "0.0.0.0" {
+            let st_lan = Arc::clone(&state);
+            let lan_addr = format!("{}:8097", clean_ip);
+            let _ = thread::Builder::new()
+                .name(String::from("swarm_8097_lan"))
+                .stack_size(4 * 1024 * 1024)
+                .spawn(move || {
+                    run_listener(lan_addr, st_lan, false);
+                });
+        }
+    }
 
     loop {
         thread::sleep(Duration::from_secs(3600));

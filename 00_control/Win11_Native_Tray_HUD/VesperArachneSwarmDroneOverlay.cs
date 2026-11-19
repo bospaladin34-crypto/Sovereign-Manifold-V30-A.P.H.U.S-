@@ -77,7 +77,7 @@ public class VesperArachneSwarmDroneOverlay : Form
     private int idleTicks = 0;
     private int idleLimitTicks = 900;
     private POINT lastCursor;
-    private string speechText = "ACT-OMEGA v72.2.0 | VESPER-ARACHNE E8 IK SHIMEJI | SH-XI MoE | CHAIN 368 | 995/995 QED | Ready!";
+    private string speechText = "ACT-OMEGA v73.2.1 | VESPER-ARACHNE E8 IK SHIMEJI | SH-XI MoE | CHAIN 404 | 1,010/1,010 QED | Ready!";
     private int speechTimer = 340;
 
     // Superpowers State
@@ -140,7 +140,7 @@ public class VesperArachneSwarmDroneOverlay : Form
     public VesperArachneSwarmDroneOverlay()
     {
         Rectangle bounds = Screen.PrimaryScreen.Bounds;
-        this.Text = "ACT-OMEGA v72.2.0 | VESPER-ARACHNE E8 IK SHIMEJI | SH-XI MoE | CHAIN 368 | 995/995 QED";
+        this.Text = "ACT-OMEGA v73.2.1 | VESPER-ARACHNE E8 IK SHIMEJI | SH-XI MoE | CHAIN 404 | 1,010/1,010 QED";
         this.FormBorderStyle = FormBorderStyle.None;
         this.StartPosition = FormStartPosition.Manual;
         this.Bounds = bounds;
@@ -174,7 +174,7 @@ public class VesperArachneSwarmDroneOverlay : Form
 
         trayIcon = new NotifyIcon();
         trayIcon.Icon = SystemIcons.Shield;
-        string tipText = "VESPER-ARACHNE v72.2 E8 IK SHIMEJI (CHAIN 368 | 995 QED)";
+        string tipText = "VESPER-ARACHNE v72.2 E8 IK SHIMEJI (CHAIN 404 | 1,010 QED)";
         if (tipText.Length > 63) tipText = tipText.Substring(0, 63);
         trayIcon.Text = tipText;
         trayIcon.ContextMenuStrip = droneMenu;
@@ -596,7 +596,7 @@ public class VesperArachneSwarmDroneOverlay : Form
         corePulse = 1.2f;
         speechText = isDocked
             ? "Docked into Upper-Right Win11 Screen Corner. Click portal to summon!"
-            : "ACT-OMEGA v72.2.0 | VESPER-ARACHNE E8 IK SHIMEJI (CHAIN 368 | 995 QED) Unfurled onto Desktop!";
+            : "ACT-OMEGA v73.2.1 | VESPER-ARACHNE E8 IK SHIMEJI (CHAIN 404 | 1,010 QED) Unfurled onto Desktop!";
         speechTimer = 260;
     }
 

@@ -511,8 +511,13 @@ pub fn v70_0_dispatch_tool_315_hsiang_isoparametric_symplectic_leapfrog(payload:
     };
 
     let elapsed_us = t0.elapsed().as_micros() as u64;
+    let t315_proof = if status == "MEASURED" {
+        "HSIANG_G4_CHEBYSHEV_AND_SYMPLECTIC_LEAPFROG_CERTIFIED_QED"
+    } else {
+        "UNMEASURED_HSIANG_SYMPLECTIC_INCOMPLETE"
+    };
     format!(
-        "{{\"status\":\"{}\",\"tool_id\":315,\"chain\":\"CHAIN_316\",\"version\":\"v70.0.0\",\"engine\":\"HSIANG_ISOPARAMETRIC_CHEBYSHEV_G4_AND_SYMPLECTIC_LEAPFROG\",\"measurement_latency_us\":{},\"hsiang_isoparametric_focal\":{{\"degree_g\":{},\"multiplicity_m1\":{},\"multiplicity_m2\":{},\"target_sphere_dim\":{},\"focal_m_plus_samples\":{},\"focal_m_minus_samples\":{},\"chebyshev_p4_mean_abs\":{:.6}}},\"symplectic_stormer_verlet_leapfrog\":{{\"forward_steps\":{},\"backward_adjoint_steps\":{},\"initial_q0\":{},\"initial_p0\":{},\"reversed_q0\":{},\"reversed_p0\":{},\"phase_space_q_drift\":{},\"phase_space_p_drift\":{},\"shadow_hamiltonian_drift\":{},\"symplectic_reversible_qed\":{}}},\"lean4_theorems_verified\":\"thm_v70_837, thm_v70_838, thm_v70_839\",\"proof\":\"HSIANG_G4_CHEBYSHEV_AND_SYMPLECTIC_LEAPFROG_CERTIFIED_QED | dim(S^31)={} | Drift_q={} | Drift_p={} | Drift_H={}\"}}",
+        "{{\"status\":\"{}\",\"tool_id\":315,\"chain\":\"CHAIN_316\",\"version\":\"v70.0.0\",\"engine\":\"HSIANG_ISOPARAMETRIC_CHEBYSHEV_G4_AND_SYMPLECTIC_LEAPFROG\",\"measurement_latency_us\":{},\"hsiang_isoparametric_focal\":{{\"degree_g\":{},\"multiplicity_m1\":{},\"multiplicity_m2\":{},\"target_sphere_dim\":{},\"focal_m_plus_samples\":{},\"focal_m_minus_samples\":{},\"chebyshev_p4_mean_abs\":{:.6}}},\"symplectic_stormer_verlet_leapfrog\":{{\"forward_steps\":{},\"backward_adjoint_steps\":{},\"initial_q0\":{},\"initial_p0\":{},\"reversed_q0\":{},\"reversed_p0\":{},\"phase_space_q_drift\":{},\"phase_space_p_drift\":{},\"shadow_hamiltonian_drift\":{},\"symplectic_reversible_qed\":{}}},\"lean4_theorems_verified\":\"thm_v70_837, thm_v70_838, thm_v70_839\",\"proof\":\"{} | dim(S^31)={} | Drift_q={} | Drift_p={} | Drift_H={}\"}}",
         status,
         elapsed_us,
         rep.hsiang_degree_g,
@@ -532,6 +537,7 @@ pub fn v70_0_dispatch_tool_315_hsiang_isoparametric_symplectic_leapfrog(payload:
         rep.phase_space_p_drift,
         rep.shadow_hamiltonian_drift,
         rep.symplectic_reversible_qed,
+        t315_proof,
         rep.sphere_dim_s31,
         rep.phase_space_q_drift,
         rep.phase_space_p_drift,
@@ -549,9 +555,12 @@ pub fn v70_0_dispatch_tool_316_chain316_master_certification(payload: &str) -> S
     if fs::metadata(C_RECEIPT_V70_0_PATH).is_err() {
         let _ = v70_0_dispatch_tool_314_tri_silicon_5pool_worksteal("");
     }
-    let receipt_bytes = fs::metadata(C_RECEIPT_V70_0_PATH)
-        .map(|m| m.len())
-        .unwrap_or(0);
+    let receipt_raw = fs::read_to_string(C_RECEIPT_V70_0_PATH).unwrap_or_default();
+    let receipt_bytes = receipt_raw.len() as u64;
+    let receipt_measured = serde_json::from_str::<serde_json::Value>(&receipt_raw)
+        .ok()
+        .and_then(|v| Some(v.get("status")?.as_str()? == "MEASURED"))
+        .unwrap_or(false);
 
     let np_bytes = fs::metadata(C_NEURONS_V6900_84480).map(|m| m.len()).unwrap_or(0) as usize;
     let sp_bytes = fs::metadata(C_SYNAPSES_V6900_2703360).map(|m| m.len()).unwrap_or(0) as usize;
@@ -571,7 +580,8 @@ pub fn v70_0_dispatch_tool_316_chain316_master_certification(payload: &str) -> S
         .filter(|l| l.trim_start().starts_with("theorem "))
         .count();
 
-    let status = if receipt_bytes > 200
+    let status = if receipt_measured
+        && receipt_bytes > 200
         && total_cl == V70_BIJECTED_CACHELINES_262K
         && theorem_count >= 840
     {
@@ -579,10 +589,15 @@ pub fn v70_0_dispatch_tool_316_chain316_master_certification(payload: &str) -> S
     } else {
         "UNMEASURED/OFFLINE"
     };
+    let t316_proof = if status == "MEASURED" {
+        "CHAIN_316_TRACK4_V70_0_MASTER_CERTIFIED_QED"
+    } else {
+        "UNMEASURED_CHAIN_316_GATES_INCOMPLETE"
+    };
 
     let elapsed_us = t0.elapsed().as_micros() as u64;
     format!(
-        "{{\"status\":\"{}\",\"tool_id\":316,\"chain\":\"CHAIN_316\",\"version\":\"v70.0.0\",\"engine\":\"TRACK4_V70_0_CHAIN316_MASTER_CERTIFICATION\",\"measurement_latency_us\":{},\"total_tools\":316,\"lean4_theorems_qed\":{},\"connectome_neurons\":{},\"connectome_synapses\":{},\"chair44_columns\":{},\"macro_domains\":{},\"sub_domains\":{},\"bpe_vocab_size\":{},\"bijected_cachelines_262144\":{},\"npage_cachelines\":{},\"spage_cachelines\":{},\"e8z_cachelines\":{},\"manifold_total_bytes\":{},\"worksteal_receipt_path\":\"{}\",\"worksteal_receipt_bytes\":{},\"author\":\"Donevin Frownfelter (@bospaladin34-crypto)\",\"proof\":\"CHAIN_316_TRACK4_V70_0_MASTER_CERTIFIED_QED | Tools=316 | CLs=262144 (2^18) | Neurons=84480 | Synapses=4055040 | Vocab=524288 | Theorems={}\"}}",
+        "{{\"status\":\"{}\",\"tool_id\":316,\"chain\":\"CHAIN_316\",\"version\":\"v70.0.0\",\"engine\":\"TRACK4_V70_0_CHAIN316_MASTER_CERTIFICATION\",\"measurement_latency_us\":{},\"total_tools\":316,\"lean4_theorems_qed\":{},\"connectome_neurons\":{},\"connectome_synapses\":{},\"chair44_columns\":{},\"macro_domains\":{},\"sub_domains\":{},\"bpe_vocab_size\":{},\"bijected_cachelines_262144\":{},\"npage_cachelines\":{},\"spage_cachelines\":{},\"e8z_cachelines\":{},\"manifold_total_bytes\":{},\"worksteal_receipt_path\":\"{}\",\"worksteal_receipt_bytes\":{},\"author\":\"Donevin Frownfelter (@bospaladin34-crypto)\",\"proof\":\"{} | Tools=316 | CLs={} | Neurons={} | Synapses={} | Vocab=524288 | Theorems={}\"}}",
         status,
         elapsed_us,
         theorem_count,
@@ -599,6 +614,10 @@ pub fn v70_0_dispatch_tool_316_chain316_master_certification(payload: &str) -> S
         V70_BIJECTED_MANIFOLD_BYTES,
         v61_escape_clean(C_RECEIPT_V70_0_PATH),
         receipt_bytes,
+        t316_proof,
+        total_cl,
+        np_bytes / 128,
+        (np_bytes / 128) * 16 + (sp_bytes / 2),
         theorem_count
     )
 }
@@ -669,8 +688,11 @@ pub fn v70_0_dispatch_tool_317_cloudflare_free_tier_governor(payload: &str) -> S
         .lines()
         .filter(|l| l.trim_start().starts_with("theorem "))
         .count();
-    let theorem_count = if raw_theorems > 0 { raw_theorems } else { 840 };
-    let lean_qed_str = format!("{}/{}", theorem_count, theorem_count);
+    let lean_qed_str = if raw_theorems > 0 {
+        format!("{}/{}", raw_theorems, raw_theorems)
+    } else {
+        String::from("UNMEASURED/OFFLINE")
+    };
 
     // Live measurement of Edge configuration and operator key
     let wrangler_path = "00_control/cloudflare_edge/wrangler.toml";
@@ -690,10 +712,17 @@ pub fn v70_0_dispatch_tool_317_cloudflare_free_tier_governor(payload: &str) -> S
         .unwrap_or(0);
 
     let op_key_path = "C:/Users/Nbell/.act_omega_operator_vault_key";
-    let op_key_present = fs::metadata(op_key_path).is_ok()
-        || std::env::var("ACT_OMEGA_OPERATOR_KEY")
-            .map(|k| k.len() >= 24)
-            .unwrap_or(false);
+    let op_key_val = fs::read_to_string(op_key_path)
+        .ok()
+        .map(|s| s.trim().to_string())
+        .filter(|s| s.len() >= 24)
+        .or_else(|| {
+            std::env::var("ACT_OMEGA_OPERATOR_KEY")
+                .ok()
+                .map(|s| s.trim().to_string())
+                .filter(|s| s.len() >= 24)
+        });
+    let op_key_present = op_key_val.is_some();
 
     let d1_receipt_path = "03_vault/receipts/v70_0_track4_262144cl_worksteal_receipt.json";
     let d1_receipt_bytes = fs::metadata(d1_receipt_path)
@@ -719,22 +748,22 @@ pub fn v70_0_dispatch_tool_317_cloudflare_free_tier_governor(payload: &str) -> S
         turnstile_site_configured = false;
     }
 
-    // Live Edge Query with Loop Guard & Payload Overrides
+    // Live Edge Query with Loop Guard & Authenticated Operator Header
     let edge_url = std::env::var("CF_EDGE_GOVERNOR_URL")
         .unwrap_or_else(|_| {
-            "https://sovereign-loq15-vpc-shadow.bospaladin34.workers.dev/api/v1/cloudflare/free_tier_governor".to_string()
+            "https://act-omega-net.dev/api/v1/cloudflare/free_tier_governor".to_string()
         });
 
     let mut live_body = String::new();
     let mut query_ok = false;
 
     if !payload.contains("is_edge_probe") && !payload.contains("no_recurse") {
-        let curl_res = std::process::Command::new("curl.exe")
-            .arg("-sS")
-            .arg("--max-time")
-            .arg("4")
-            .arg(&edge_url)
-            .output();
+        let mut cmd = std::process::Command::new("curl.exe");
+        cmd.arg("-sS").arg("--max-time").arg("4");
+        if let Some(ref kv) = op_key_val {
+            cmd.arg("-H").arg(format!("X-Sovereign-Operator-Key: {}", kv));
+        }
+        let curl_res = cmd.arg(&edge_url).output();
 
         if let Ok(out) = curl_res {
             if out.status.success() {
@@ -827,8 +856,14 @@ pub fn v70_0_dispatch_tool_317_cloudflare_free_tier_governor(payload: &str) -> S
             "UNMEASURED/OFFLINE"
         };
 
+        let t317_proof = if overall_status == "ONLINE" && raw_theorems > 0 {
+            "TOOL_317_CLOUDFLARE_FREE_TIER_GOVERNOR_CERTIFIED"
+        } else {
+            "TOOL_317_CLOUDFLARE_FREE_TIER_GOVERNOR_UNMEASURED"
+        };
+
         format!(
-            "{{\"service\":\"ACT-Omega Net v70.0.0 Free-Tier Quota Governor\",\"version\":\"v70.0.0\",\"tlv_version\":7000,\"lean4_theorems_qed\":\"{}\",\"tools_total\":317,\"tool_id\":317,\"status\":\"{}\",\"global_status\":\"{}\",\"accounting_basis\":\"DO_METERED_REQUEST_UNITS_UNRECONCILED_WITH_CF_BILLING\",\"measurement_latency_us\":{},\"timestamp_ms\":{},\"tiers\":{{\"vectorize\":{{\"binding\":\"ACT_OMEGA_VECTORIZE\",\"index_name\":\"act-omega-mit-e8q-index\",\"queried_dims_month\":{},\"monthly_soft_cap\":24000000,\"monthly_hard_cap\":30000000,\"warning_threshold\":19200000,\"usage_pct\":{:.2},\"status\":\"{}\",\"lru_cache_ttl_ms\":300000,\"fallback_target\":\"D1_mit_hot_e8q_mirror\",\"fallback_active\":{}}},\"r2\":{{\"binding\":\"ACT_OMEGA_R2_VAULT\",\"bucket_name\":\"act-omega-r2-vault\",\"class_a_ops_month\":{},\"class_a_soft_cap\":800000,\"class_b_ops_month\":{},\"class_b_soft_cap\":8000000,\"class_b_hard_cap\":10000000,\"usage_pct\":{:.2},\"edge_cache_ttl_s\":300,\"status\":\"{}\",\"fallback_active\":{},\"fallback_chain\":\x5b\"D1_BLOB_CHUNKS\",\"DO_SQLITE\",\"ORIGIN_TUNNEL\"\x5d}},\"workers_ai\":{{\"binding\":\"AI\",\"model\":\"@cf/baai/bge-small-en-v1.5\",\"daily_neurons_used\":{},\"daily_soft_cap\":8500,\"daily_hard_cap\":10000,\"usage_pct\":{:.2},\"status\":\"{}\",\"fallback_active\":{},\"fallback_target\":\"32D_POLYTONIC_E8_D1\",\"fallback_badge\":\"EDGE_FALLBACK_QUOTA_SHIELDED\"}},\"zero_trust_turnstile\":{{\"turnstile_site_key_configured\":{},\"turnstile_secret_configured\":{},\"operator_key_enforced\":{},\"status\":\"{}\"}},\"workers_kv\":{{\"binding\":\"ACT_OMEGA_KV\",\"namespace_id\":\"act_omega_kv_vault\",\"daily_writes\":{},\"daily_soft_cap\":720,\"daily_hard_cap\":1000,\"min_write_interval_ms\":120000,\"isolate_cache_ttl_ms\":60000,\"status\":\"{}\"}},\"analytics_engine\":{{\"binding\":\"ACT_OMEGA_ANALYTICS\",\"dataset\":\"act_omega_edge_telemetry\",\"data_points_emitted\":{},\"status\":\"NOMINAL\"}}}},\"durable_object_shadow\":\"SovereignEdgeShadowDO_SQLite\",\"d1_database\":\"act_omega_d1_vault\",\"measured_wrangler_bytes\":{},\"measured_worker_bytes\":{},\"d1_receipt_bytes\":{},\"proof\":\"TOOL_317_CLOUDFLARE_FREE_TIER_GOVERNOR_CERTIFIED | Status={} | 6 Tiers Online | {} Lean 4 QED\"}}",
+            "{{\"service\":\"ACT-Omega Net v70.0.0 Free-Tier Quota Governor\",\"version\":\"v70.0.0\",\"tlv_version\":7000,\"lean4_theorems_qed\":\"{}\",\"tools_total\":317,\"tool_id\":317,\"status\":\"{}\",\"global_status\":\"{}\",\"accounting_basis\":\"DO_METERED_REQUEST_UNITS_UNRECONCILED_WITH_CF_BILLING\",\"measurement_latency_us\":{},\"timestamp_ms\":{},\"tiers\":{{\"vectorize\":{{\"binding\":\"ACT_OMEGA_VECTORIZE\",\"index_name\":\"act-omega-mit-e8q-index\",\"queried_dims_month\":{},\"monthly_soft_cap\":24000000,\"monthly_hard_cap\":30000000,\"warning_threshold\":19200000,\"usage_pct\":{:.2},\"status\":\"{}\",\"lru_cache_ttl_ms\":300000,\"fallback_target\":\"D1_mit_hot_e8q_mirror\",\"fallback_active\":{}}},\"r2\":{{\"binding\":\"ACT_OMEGA_R2_VAULT\",\"bucket_name\":\"act-omega-r2-vault\",\"class_a_ops_month\":{},\"class_a_soft_cap\":800000,\"class_b_ops_month\":{},\"class_b_soft_cap\":8000000,\"class_b_hard_cap\":10000000,\"usage_pct\":{:.2},\"edge_cache_ttl_s\":300,\"status\":\"{}\",\"fallback_active\":{},\"fallback_chain\":\x5b\"D1_BLOB_CHUNKS\",\"DO_SQLITE\",\"ORIGIN_TUNNEL\"\x5d}},\"workers_ai\":{{\"binding\":\"AI\",\"model\":\"@cf/baai/bge-small-en-v1.5\",\"daily_neurons_used\":{},\"daily_soft_cap\":8500,\"daily_hard_cap\":10000,\"usage_pct\":{:.2},\"status\":\"{}\",\"fallback_active\":{},\"fallback_target\":\"32D_POLYTONIC_E8_D1\",\"fallback_badge\":\"EDGE_FALLBACK_QUOTA_SHIELDED\"}},\"zero_trust_turnstile\":{{\"turnstile_site_key_configured\":{},\"turnstile_secret_configured\":{},\"operator_key_enforced\":{},\"status\":\"{}\"}},\"workers_kv\":{{\"binding\":\"ACT_OMEGA_KV\",\"namespace_id\":\"act_omega_kv_vault\",\"daily_writes\":{},\"daily_soft_cap\":720,\"daily_hard_cap\":1000,\"min_write_interval_ms\":120000,\"isolate_cache_ttl_ms\":60000,\"status\":\"{}\"}},\"analytics_engine\":{{\"binding\":\"ACT_OMEGA_ANALYTICS\",\"dataset\":\"act_omega_edge_telemetry\",\"data_points_emitted\":{},\"status\":\"NOMINAL\"}}}},\"durable_object_shadow\":\"SovereignEdgeShadowDO_SQLite\",\"d1_database\":\"act_omega_d1_vault\",\"measured_wrangler_bytes\":{},\"measured_worker_bytes\":{},\"d1_receipt_bytes\":{},\"proof\":\"{} | Status={} | 6 Tiers Online | {} Lean 4 QED\"}}",
             lean_qed_str,
             overall_status,
             global_status,
@@ -857,6 +892,7 @@ pub fn v70_0_dispatch_tool_317_cloudflare_free_tier_governor(payload: &str) -> S
             wrangler_bytes,
             worker_bytes,
             d1_receipt_bytes,
+            t317_proof,
             overall_status,
             lean_qed_str
         )

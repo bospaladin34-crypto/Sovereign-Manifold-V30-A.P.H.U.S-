@@ -4,12 +4,69 @@
 $ErrorActionPreference = "Stop"
 
 Write-Host "=================================================================" -ForegroundColor Cyan
-Write-Host "  ACT-Omega Net v70.0.0 -- Milestone M2 Full Verification Gauntlet" -ForegroundColor Cyan
+Write-Host "  ACT-Omega Net v73.2.1 -- Milestone M2 Full Verification Gauntlet" -ForegroundColor Cyan
 Write-Host "=================================================================" -ForegroundColor Cyan
 
 $baseDir = "c:\sovereign_manifold_v31"
 $manifestPath = "$baseDir\00_control\weights\sovereign_harmonic_weights_manifest.json"
 $eManifestPath = "E:\Sovereign_Manifold_SSD_Vault\weights\sovereign_harmonic_weights_manifest.json"
+
+$opKey = ""
+$keyFile = "C:\Users\Nbell\.act_omega_operator_vault_key"
+if (Test-Path $keyFile) {
+    $opKey = (Get-Content -Path $keyFile -Raw).Trim()
+} elseif ($env:ACT_OMEGA_OPERATOR_KEY) {
+    $opKey = $env:ACT_OMEGA_OPERATOR_KEY.Trim()
+}
+$authHeaders = @{}
+if ($opKey.Length -ge 24) {
+    $authHeaders["X-Sovereign-Operator-Key"] = $opKey
+}
+
+function Test-LiveServerControlProbe {
+    try {
+        $hc = Invoke-WebRequest -Uri "http://127.0.0.1:8097/api/v1/health" -Method Get -Headers $authHeaders -UseBasicParsing -TimeoutSec 5
+        return ($null -ne $hc -and $hc.StatusCode -eq 200)
+    } catch {
+        return $false
+    }
+}
+
+function Invoke-FailClosedWeightCheck($url, $method) {
+    # E13: Must FIRST prove the live :8097 server is reachable via control probe.
+    # Dead/unreachable server MUST NEVER score as fail-closed!
+    $controlUp = Test-LiveServerControlProbe
+    if (-not $controlUp) {
+        return @{ ControlUp = $false; HttpFailedClosed = $false; HasWeightErr = $false; Detail = "SERVER_UNREACHABLE_CONTROL_PROBE_FAILED" }
+    }
+    try {
+        $resp = if ($method -eq "Post") {
+            Invoke-RestMethod -Uri $url -Method Post -Headers $authHeaders -TimeoutSec 15 -Body "{}" -ContentType "application/json"
+        } else {
+            Invoke-RestMethod -Uri $url -Method Get -Headers $authHeaders -TimeoutSec 15
+        }
+        $isOfflineStatus = ($resp.status -eq "UNMEASURED/OFFLINE" -or $resp.status -match "WEIGHT_")
+        $errStr = "$($resp.status) $($resp.error) $($resp.reason) $($resp.sh4z_v7210_checkpoint.sha256)"
+        $hasWeight = ($errStr -match "WEIGHT_")
+        return @{ ControlUp = $true; HttpFailedClosed = $isOfflineStatus; HasWeightErr = $hasWeight; Detail = "HTTP_200_JSON" }
+    } catch {
+        # Distinguish genuine HTTP 4xx/5xx JSON error response from dead/refused TCP socket
+        $httpResp = $_.Exception.Response
+        if ($null -eq $httpResp) {
+            return @{ ControlUp = $controlUp; HttpFailedClosed = $false; HasWeightErr = $false; Detail = "SOCKET_ERROR_NOT_FAIL_CLOSED: $($_.Exception.Message)" }
+        }
+        $statusCode = [int]$httpResp.StatusCode
+        $bodyText = ""
+        try {
+            $sr = New-Object System.IO.StreamReader($httpResp.GetResponseStream())
+            $bodyText = $sr.ReadToEnd()
+            $sr.Close()
+        } catch {}
+        $isStructuredRefusal = ($statusCode -ge 400) -and ($bodyText -match "UNMEASURED/OFFLINE|WEIGHT_")
+        $hasWeight = ($bodyText -match "WEIGHT_")
+        return @{ ControlUp = $true; HttpFailedClosed = $isStructuredRefusal; HasWeightErr = $hasWeight; Detail = "HTTP_${statusCode}" }
+    }
+}
 
 $binPath = if (Test-Path "$baseDir\01_l0_rust\target_stage\release\v31_swarm.exe") {
     "$baseDir\01_l0_rust\target_stage\release\v31_swarm.exe"
@@ -39,10 +96,12 @@ $results = [ordered]@{}
 # Test 1: Full-Manifest CLI Verification
 # -------------------------------------------------------------
 Write-Host "`n--- Test 1: Full-Manifest CLI Verification (v31_swarm.exe --verify-weights) ---" -ForegroundColor Yellow
+$mJsonPre = Get-Content -Path $manifestPath -Raw | ConvertFrom-Json
+$manifestArtifactCount = ($mJsonPre.artifacts.PSObject.Properties | Measure-Object).Count
 $p1 = Start-Process -FilePath $binPath -ArgumentList "--verify-weights" -NoNewWindow -Wait -PassThru
-if ($p1.ExitCode -eq 0) {
-    Write-Host ">>> Test 1 PASS: Full manifest verified on disk with 0 exit code." -ForegroundColor Green
-    $results["Test1_FullManifestCLI"] = "PASS (0 exit code, 15/15 artifacts valid)"
+if ($p1.ExitCode -eq 0 -and $manifestArtifactCount -gt 0) {
+    Write-Host ">>> Test 1 PASS: Full manifest verified on disk with 0 exit code ($manifestArtifactCount/$manifestArtifactCount artifacts valid)." -ForegroundColor Green
+    $results["Test1_FullManifestCLI"] = "PASS (0 exit code, $manifestArtifactCount/$manifestArtifactCount artifacts valid)"
 } else {
     Write-Host ">>> Test 1 FAIL: Full manifest check returned exit code $($p1.ExitCode)" -ForegroundColor Red
     $results["Test1_FullManifestCLI"] = "FAIL (Exit code $($p1.ExitCode))"
@@ -153,25 +212,12 @@ foreach ($art in $artifactsToTest) {
 
         $cliFailedClosed1 = ($pFail1.ExitCode -ne 0) -and ($cliOut1 -match "WEIGHT_")
 
-        # Check 2: Live HTTP probe must return UNMEASURED/OFFLINE and explicit WEIGHT_ error
-        $httpFailedClosed1 = $false
-        $hasWeightErr1 = $false
-        try {
-            $resp1 = if ($art.Method -eq "Post") {
-                Invoke-RestMethod -Uri $art.Url -Method Post -TimeoutSec 15 -Body "{}" -ContentType "application/json"
-            } else {
-                Invoke-RestMethod -Uri $art.Url -Method Get -TimeoutSec 15
-            }
-            if ($resp1.status -eq "UNMEASURED/OFFLINE") {
-                $httpFailedClosed1 = $true
-            }
-            $errStr1 = "$($resp1.error) $($resp1.reason) $($resp1.sh4z_v7210_checkpoint.sha256)"
-            if ($errStr1 -match "WEIGHT_") {
-                $hasWeightErr1 = $true
-            }
-        } catch {
-            $httpFailedClosed1 = $true
-            $hasWeightErr1 = $true
+        # Check 2 (E13): Live HTTP probe MUST first verify server is up via control probe, then verify structured fail-closed response (dead server -> FAIL)
+        $chk1 = Invoke-FailClosedWeightCheck -url $art.Url -method $art.Method
+        $httpFailedClosed1 = ($chk1.ControlUp -and $chk1.HttpFailedClosed)
+        $hasWeightErr1 = $chk1.HasWeightErr
+        if (-not $chk1.ControlUp) {
+            Write-Host "      [E13 FAIL] Live server :8097 control probe FAILED ($($chk1.Detail)) -- dead server cannot score as fail-closed!" -ForegroundColor Red
         }
 
         # Check 3: Zero new weight files synthesized on disk
@@ -188,9 +234,9 @@ foreach ($art in $artifactsToTest) {
         $httpRestoredPass1 = $false
         try {
             $respOk1 = if ($art.Method -eq "Post") {
-                Invoke-RestMethod -Uri $art.Url -Method Post -TimeoutSec 15 -Body "{}" -ContentType "application/json"
+                Invoke-RestMethod -Uri $art.Url -Method Post -Headers $authHeaders -TimeoutSec 15 -Body "{}" -ContentType "application/json"
             } else {
-                Invoke-RestMethod -Uri $art.Url -Method Get -TimeoutSec 15
+                Invoke-RestMethod -Uri $art.Url -Method Get -Headers $authHeaders -TimeoutSec 15
             }
             if ($respOk1.status -eq "MEASURED") {
                 $httpRestoredPass1 = $true
@@ -236,25 +282,12 @@ foreach ($art in $artifactsToTest) {
 
         $cliFailedClosed2 = ($pFail2.ExitCode -ne 0) -and ($cliOut2 -match "WEIGHT_")
 
-        # Check 2: Live HTTP probe must return UNMEASURED/OFFLINE and explicit WEIGHT_ error
-        $httpFailedClosed2 = $false
-        $hasWeightErr2 = $false
-        try {
-            $resp2 = if ($art.Method -eq "Post") {
-                Invoke-RestMethod -Uri $art.Url -Method Post -TimeoutSec 15 -Body "{}" -ContentType "application/json"
-            } else {
-                Invoke-RestMethod -Uri $art.Url -Method Get -TimeoutSec 15
-            }
-            if ($resp2.status -eq "UNMEASURED/OFFLINE") {
-                $httpFailedClosed2 = $true
-            }
-            $errStr2 = "$($resp2.error) $($resp2.reason) $($resp2.sh4z_v7210_checkpoint.sha256)"
-            if ($errStr2 -match "WEIGHT_") {
-                $hasWeightErr2 = $true
-            }
-        } catch {
-            $httpFailedClosed2 = $true
-            $hasWeightErr2 = $true
+        # Check 2 (E13): Live HTTP probe MUST first verify server is up via control probe, then verify structured fail-closed response (dead server -> FAIL)
+        $chk2 = Invoke-FailClosedWeightCheck -url $art.Url -method $art.Method
+        $httpFailedClosed2 = ($chk2.ControlUp -and $chk2.HttpFailedClosed)
+        $hasWeightErr2 = $chk2.HasWeightErr
+        if (-not $chk2.ControlUp) {
+            Write-Host "      [E13 FAIL] Live server :8097 control probe FAILED ($($chk2.Detail)) -- dead server cannot score as fail-closed!" -ForegroundColor Red
         }
 
         # Check 3: Verify NO file was re-synthesized (bytes still corrupted)
@@ -273,9 +306,9 @@ foreach ($art in $artifactsToTest) {
         $httpRestoredPass2 = $false
         try {
             $respOk2 = if ($art.Method -eq "Post") {
-                Invoke-RestMethod -Uri $art.Url -Method Post -TimeoutSec 15 -Body "{}" -ContentType "application/json"
+                Invoke-RestMethod -Uri $art.Url -Method Post -Headers $authHeaders -TimeoutSec 15 -Body "{}" -ContentType "application/json"
             } else {
-                Invoke-RestMethod -Uri $art.Url -Method Get -TimeoutSec 15
+                Invoke-RestMethod -Uri $art.Url -Method Get -Headers $authHeaders -TimeoutSec 15
             }
             if ($respOk2.status -eq "MEASURED") {
                 $httpRestoredPass2 = $true
@@ -321,14 +354,14 @@ if ($pGrad.ExitCode -eq 0) {
 }
 
 # -------------------------------------------------------------
-# Test 5: Zero Square Brackets Check in v33*.rs .. v72*.rs
+# Test 5: Zero Square Brackets Check in v33*.rs .. v99*.rs
 # -------------------------------------------------------------
-Write-Host "`n--- Test 5: Zero Square Brackets Check (01_l0_rust\src\v33*.rs .. v72*.rs) ---" -ForegroundColor Yellow
+Write-Host "`n--- Test 5: Zero Square Brackets Check (01_l0_rust\src\v33*.rs .. v99*.rs) ---" -ForegroundColor Yellow
 $vFiles = Get-ChildItem -Path "$baseDir\01_l0_rust\src\" -Filter "*.rs" | Where-Object {
     $n = $_.Name
     if ($n -match "^v(\d+)") {
         $num = [int]$matches[1]
-        $num -ge 33 -and $num -le 72
+        $num -ge 33 -and $num -le 99
     } else {
         $false
     }

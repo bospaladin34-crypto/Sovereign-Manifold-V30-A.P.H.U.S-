@@ -81,7 +81,11 @@ import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
 
-// 60-30-10 Google Gemini + Win11 Dark Mica + Material Design 3 Expressive Telemetry Palette (v73.2.0 Vesper Multi-Mode Mica Shell / CHAIN 368)
+const val SOVEREIGN_APP_VERSION = "v73.2.1"
+const val SOVEREIGN_TLV_VERSION = "v7321"
+const val SOVEREIGN_CHAIN_TOOLS = 404
+
+// 60-30-10 Google Gemini + Win11 Dark Mica + Material Design 3 Expressive Telemetry Palette (v73.2.1 Vesper Multi-Mode Mica Shell / CHAIN 404)
 val BgVoid60 = Color(0xFF070A10)
 val BgPanel60 = Color(0xFF111724)
 val BgInset60 = Color(0xFF0A0F1A)
@@ -214,7 +218,7 @@ class VesperShellState(
         VesperChatTurn(
             id = 1L,
             role = "assistant",
-            text = "Vesper Multi-Mode Mica Shell (v73.2.0 \u00B7 CHAIN 404 \u00B7 1,010/1,010 Lean 4 QED) is live on your phone. Ask, prove, inspect the 16.00 MiB (262,144-CL) manifold, or build zero-bracket L0 kernels \u2014 every response carries a contained 264.dp cryptographic receipt with zero layout shift (CLS 0.00).",
+            text = "Vesper Multi-Mode Mica Shell (v73.2.1 \u00B7 CHAIN 404 \u00B7 1,010/1,010 Lean 4 QED) is live on your phone. Ask, prove, inspect the 16.00 MiB (262,144-CL) manifold, or build zero-bracket L0 kernels \u2014 every response carries a contained 264.dp cryptographic receipt with zero layout shift (CLS 0.00).",
             statusBadge = "LOCAL SHM",
             endpointUsed = "Local Android Hardware + SHM Bus",
             receiptSummary = "Constitutional boot verified locally",
@@ -913,7 +917,7 @@ fun VesperMobileHeaderBar(
                         }
                     }
                     Text(
-                        text = "v73.2.0 \u00B7 CHAIN 404 \u00B7 1,010 QED",
+                        text = "v73.2.1 \u00B7 CHAIN 404 \u00B7 1,010 QED",
                         color = VesperFaint,
                         fontSize = 8.8.sp,
                         fontFamily = FontFamily.Monospace,
@@ -1569,7 +1573,7 @@ val VESPER_DOMAINS_CATALOG: List<VesperDomainDef> = listOf(
         id = 1,
         name = "Lattice, Algebra & Formal Proofs",
         shortName = "Lattice & Proofs",
-        toolCount = 43, // SCAFFOLD: Domain #1 registered tool count in CHAIN 368
+        toolCount = 43,
         writebackCat = "lean4_proofs",
         ep = "/api/v1/unified/lattice_algebra_proofs",
         accent = Color(0xFFB388FF),
@@ -1585,7 +1589,7 @@ val VESPER_DOMAINS_CATALOG: List<VesperDomainDef> = listOf(
         id = 2,
         name = "84.4K Connectome, BPE, QAT Brain & Memory",
         shortName = "Connectome & QAT",
-        toolCount = 29, // SCAFFOLD: Domain #2 registered tool count in CHAIN 368
+        toolCount = 29,
         writebackCat = "npage_shard_deltas",
         ep = "/api/v1/unified/connectome_qat_memory",
         accent = Color(0xFF00FFCC),
@@ -1601,7 +1605,7 @@ val VESPER_DOMAINS_CATALOG: List<VesperDomainDef> = listOf(
         id = 3,
         name = "Multi-Physics, 16D Vectorized FNO & Cymatic Speech",
         shortName = "Physics & FNO",
-        toolCount = 19, // SCAFFOLD: Domain #3 registered tool count in CHAIN 368
+        toolCount = 19,
         writebackCat = "physics_sim_trajectories",
         ep = "/api/v1/unified/physics_16d_fno_speech",
         accent = Color(0xFF00E5FF),
@@ -1617,7 +1621,7 @@ val VESPER_DOMAINS_CATALOG: List<VesperDomainDef> = listOf(
         id = 4,
         name = "AVX2/WebGPU Hardware & Elastic Work-Stealing",
         shortName = "AVX2 & WebGPU",
-        toolCount = 26, // SCAFFOLD: Domain #4 registered tool count in CHAIN 368
+        toolCount = 26,
         writebackCat = "wgsl_kernels",
         ep = "/api/v1/unified/avx2_webgpu_worksteal",
         accent = Color(0xFF56D364),
@@ -1633,7 +1637,7 @@ val VESPER_DOMAINS_CATALOG: List<VesperDomainDef> = listOf(
         id = 5,
         name = "Dual-Pixel Edge Silicon & Rooted P8-APEX (:8098)",
         shortName = "Dual-Pixel Edge",
-        toolCount = 16, // SCAFFOLD: Domain #5 registered tool count in CHAIN 368
+        toolCount = 16,
         writebackCat = "drawer1_2_sensor_sdr_captures",
         ep = "/api/v1/unified/dual_pixel_ksu_edge",
         accent = Color(0xFFFFB454),
@@ -1649,7 +1653,7 @@ val VESPER_DOMAINS_CATALOG: List<VesperDomainDef> = listOf(
         id = 6,
         name = "Aperiodic Permissions Router (APR) & Security",
         shortName = "APR Security",
-        toolCount = 13, // SCAFFOLD: Domain #6 registered tool count in CHAIN 368
+        toolCount = 13,
         writebackCat = "rust_l0",
         ep = "/api/v1/unified/apr_permissions_security",
         accent = Color(0xFFE94E34),
@@ -1665,7 +1669,7 @@ val VESPER_DOMAINS_CATALOG: List<VesperDomainDef> = listOf(
         id = 7,
         name = "Polyglot Compilers, DevTools & Sandboxes",
         shortName = "Polyglot DevTools",
-        toolCount = 34, // SCAFFOLD: Domain #7 registered tool count in CHAIN 368
+        toolCount = 34,
         writebackCat = "rust_l0",
         ep = "/api/v1/unified/polyglot_compilers_devtools",
         accent = Color(0xFFFFD700),
@@ -1681,7 +1685,7 @@ val VESPER_DOMAINS_CATALOG: List<VesperDomainDef> = listOf(
         id = 8,
         name = "Autopoietic Coordinator Bus, E:\\ Vault & Cloudflare D1",
         shortName = "Autopoietic Vault",
-        toolCount = 51, // SCAFFOLD: Domain #8 registered tool count in CHAIN 368
+        toolCount = 51,
         writebackCat = "tool_outputs",
         ep = "/api/v1/unified/autopoietic_bus_vault_d1",
         accent = Color(0xFFFFFEFB),
@@ -1700,7 +1704,6 @@ object VesperMobileBackendClient {
         "http://192.168.137.1:8097",
         "http://192.168.44.1:8097",
         "http://127.0.0.1:8097",
-        "http://10.0.24.243:8097",
         "https://api.act-omega-net.dev",
         "https://act-omega-net.dev",
         "https://sovereign-loq15-vpc-shadow.bospaladin34.workers.dev"
@@ -1814,15 +1817,15 @@ object VesperMobileBackendClient {
         val zt = tiers?.optJSONObject("zero_trust_turnstile")
         val ae = tiers?.optJSONObject("analytics_engine")
         val summary = VesperCloudflareGovernorSummary(
-            globalStatus = j.optString("global_status", j.optString("status", "MEASURED")),
+            globalStatus = j.optString("global_status", j.optString("status", "UNMEASURED/OFFLINE")),
             d1Database = j.optString("d1_database", "act_omega_d1_vault"),
             vectorizePct = vec?.optDouble("usage_pct", 0.0) ?: 0.0,
             r2Pct = r2?.optDouble("usage_pct", 0.0) ?: 0.0,
             workersAiUsed = wai?.optLong("daily_neurons_used", 0L) ?: 0L,
-            workersAiCap = wai?.optLong("daily_soft_cap", 9000L) ?: 9000L, // SCAFFOLD: Cloudflare Workers AI free-plan soft cap fallback key
+            workersAiCap = wai?.optLong("daily_soft_cap", 0L) ?: 0L,
             workersKvWrites = wkv?.optLong("daily_writes", 0L) ?: 0L,
-            workersKvCap = wkv?.optLong("daily_soft_cap", 900L) ?: 900L, // SCAFFOLD: Cloudflare Workers KV free-plan soft cap fallback key
-            zeroTrustStatus = zt?.optString("status", "MEASURED") ?: "MEASURED",
+            workersKvCap = wkv?.optLong("daily_soft_cap", 0L) ?: 0L,
+            zeroTrustStatus = zt?.optString("status", "UNMEASURED/OFFLINE") ?: "UNMEASURED/OFFLINE",
             analyticsPoints = ae?.optLong("data_points_emitted", 0L) ?: 0L,
             rttMs = res.rttMs,
             bearerUsed = res.bearerUsed
@@ -1931,10 +1934,10 @@ fun VesperMobileCalmView(
                 val wbSha = res.writebackSha256
                 val (prose, lines) = when (modeKind) {
                     "prove" -> {
-                        val p1 = j.optDouble("post_rlvf_pass_at_1", 1.0) * 100.0
-                        val obls = j.optInt("obligations_evaluated", 8)
-                        val hacks = j.optInt("adversarial_reward_hacks_blocked", 4)
-                        val leanStr = j.optString("lean4_theorems_verified", "1,010/1,010 Lean 4 QED")
+                        val p1 = j.optDouble("post_rlvf_pass_at_1", 0.0) * 100.0
+                        val obls = j.optInt("obligations_evaluated", 0)
+                        val hacks = j.optInt("adversarial_reward_hacks_blocked", 0)
+                        val leanStr = j.optString("lean4_theorems_verified", "UNMEASURED/OFFLINE")
                         Pair(
                             "Verified via Tool 351 (RLVF GRPO Compiler-in-the-Loop) over ${res.bearerUsed} in $rttLabel: Evaluated $obls obligations, Pass@1 = ${String.format(Locale.US, "%.1f", p1)}%, blocked $hacks adversarial reward-hack families ($leanStr).",
                             listOf(
@@ -1947,22 +1950,22 @@ fun VesperMobileCalmView(
                         )
                     }
                     "ambiguity" -> {
-                        val tested = j.optInt("prompts_tested", 5)
-                        val all5 = j.optBoolean("all_5_ambiguity_modes_remediated", true)
+                        val tested = j.optInt("prompts_tested", 0)
+                        val all5 = j.optBoolean("all_5_ambiguity_modes_remediated", false)
                         Pair(
                             "Week 3 Human Ambiguity, Vagueness & Metaphor Gauntlet (Tool 346) verified over ${res.bearerUsed} in $rttLabel: $tested prompts evaluated \u2014 All 5 Failure Modes Remediated = $all5.",
                             listOf(
                                 "Endpoint \u00B7 /api/v1/sovereign_harmonic/week3/human_ambiguity_and_metaphor_gauntlet (T346)",
                                 "Bearer & RTT \u00B7 ${res.bearerUsed} \u00B7 $rttLabel",
                                 "Prompts Tested \u00B7 $tested \u00B7 All 5 Modes Remediated = $all5",
-                                "Lean 4 Verified \u00B7 ${j.optString("lean4_theorems_verified", "1,010/1,010 QED")}",
+                                "Lean 4 Verified \u00B7 ${j.optString("lean4_theorems_verified", "UNMEASURED/OFFLINE")}",
                                 "Bus Seq #$wbSeq \u00B7 E:\\ SHA-256 $wbSha"
                             )
                         )
                     }
                     "build" -> {
-                        val tokStep = j.optDouble("mean_accepted_tokens_per_step", 4.0)
-                        val speedup = j.optDouble("measured_speedup_vs_ar_x", j.optDouble("tree_speedup_x", 3.5))
+                        val tokStep = j.optDouble("mean_accepted_tokens_per_step", 0.0)
+                        val speedup = j.optDouble("measured_speedup_vs_ar_x", j.optDouble("tree_speedup_x", 0.0))
                         Pair(
                             "Synthesized via Tool 352 (Medusa-EAGLE Dendritic k=8 Tree Decoder) over ${res.bearerUsed} in $rttLabel: ${String.format(Locale.US, "%.2f", tokStep)} tok/step (${String.format(Locale.US, "%.2f", speedup)}\u00D7 speedup), zero-bracket Rust invariant enforced, written back to E:\\ Vault (Seq #$wbSeq).",
                             listOf(
@@ -1976,9 +1979,9 @@ fun VesperMobileCalmView(
                     }
                     "vault" -> {
                         val cb = j.optJSONObject("cacheline_bijection")
-                        val totalCl = cb?.optLong("total_bijected_cachelines", 262144L) ?: 262144L
-                        val totalBytes = cb?.optLong("total_manifold_bytes", 16777216L) ?: 16777216L
-                        val fnv = cb?.optString("manifold_fnv1a64", "MEASURED") ?: "MEASURED"
+                        val totalCl = cb?.optLong("total_bijected_cachelines", 0L) ?: 0L
+                        val totalBytes = cb?.optLong("total_manifold_bytes", 0L) ?: 0L
+                        val fnv = cb?.optString("manifold_fnv1a64", "UNMEASURED/OFFLINE") ?: "UNMEASURED/OFFLINE"
                         Pair(
                             "Live Vault & Manifold Inspection (Tool 313) over ${res.bearerUsed} in $rttLabel: ${String.format(Locale.US, "%.2f", totalBytes / 1048576.0)} MiB ($totalBytes B) across $totalCl bijected 64-byte cachelines, paired with local phone APK .e8z (${snap.localE8zAssetBytes} B) and SHM (${snap.localNpageBytes} B).",
                             listOf(
@@ -4067,11 +4070,15 @@ object SovereignLiveBus : SensorEventListener {
     @Volatile private var lastMeasuredRttMs = 0.0
     @Volatile var lastInspectedHex = "UNMEASURED/OFFLINE"
     @Volatile var hostLastCardIdx = 0
-    @Volatile var hostLastCardDiag = "[VESPER MICA v73.2.0]: Awaiting live host :8097 sync -- local 24D sensors & .e8z/.npage SHM active."
-    @Volatile var hostLastTermOut = "Awaiting live CHAIN 368 execution over USB / WiFi6 / Cloudflare..."
+    @Volatile var hostLastCardDiag = "[VESPER MICA v73.2.1]: Awaiting live host :8097 sync -- local 24D sensors & .e8z/.npage SHM active."
+    @Volatile var hostLastTermOut = "Awaiting live CHAIN 404 execution over USB / WiFi6 / Cloudflare..."
+    @Volatile var hostLeanTheoremsCount = 0
+    @Volatile var hostToolsCount = 0
+    @Volatile var hostYubikeyConfigured = false
+    @Volatile var hostP8L2FreePct = 0.0f
     @Volatile var hostLaplacianFace = "UNMEASURED/OFFLINE"
     @Volatile var hostAnomalyBanner = "Awaiting live 15.965 Hz Decadic Epoch telemetry from :8097..."
-    @Volatile var hostNlSynthesis = "Vesper Multi-Mode Mica Shell (v73.2.0 | CHAIN 404 | 1,010/1,010 Lean 4 QED): Ready for local & 7-bearer conversational verification."
+    @Volatile var hostNlSynthesis = "Vesper Multi-Mode Mica Shell (v73.2.1 | CHAIN 404 | 1,010/1,010 Lean 4 QED): Ready for local & 7-bearer conversational verification."
     @Volatile var hostEpisodicOut = "Awaiting live Tool 28 / E:/ SSD Vault query..."
     @Volatile var lastInspectedTrits = "UNMEASURED/OFFLINE"
     private val e8zCachelineNorms = FloatArray(2080)
@@ -4244,7 +4251,7 @@ object SovereignLiveBus : SensorEventListener {
                     val sAcc = sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
                     val sGyro = sm.getDefaultSensor(Sensor.TYPE_GYROSCOPE)
                     sensorWinStartMs = SystemClock.elapsedRealtime()
-                    val rateUs = 62637 // SCAFFOLD: 15.965 Hz target period (62,637 us) — actual sampling Hz measured via rawHz
+                    val rateUs = 62637 // 15.965 Hz sensor registration period in microseconds
                     if (sMag != null) sm.registerListener(this, sMag, rateUs)
                     if (sBaro != null) sm.registerListener(this, sBaro, rateUs)
                     if (sLight != null) sm.registerListener(this, sLight, rateUs)
@@ -4288,7 +4295,6 @@ object SovereignLiveBus : SensorEventListener {
                 Triple("http://192.168.137.1:8097", "B2:WIFI6-HOTSPOT(:8097) DIRECT-SHM", 400),
                 Triple("http://192.168.137.1:5173", "B2:WIFI6-HOTSPOT(:5173) DIRECT-SHM", 400),
                 Triple("http://192.168.44.1:8097", "B3:BT-PAN(:8097) STATIONARY-SHM", 500),
-                Triple("http://10.0.24.243:8097", "B4:WIFI-LAN(:8097) UNPLUGGED-SHM", 550),
                 Triple("https://api.act-omega-net.dev", "B5:CF-WAN(api.act-omega-net.dev) ROAM-SHM", 1500),
                 Triple("https://act-omega-net.dev", "B6:CF-WAN(act-omega-net.dev) ROAM-SHM", 1500),
                 Triple("https://sovereign-loq15-vpc-shadow.bospaladin34.workers.dev", "B7:CF-EDGE-DO(CONTINUUM-ALIVE)", 1800)
@@ -4345,7 +4351,7 @@ object SovereignLiveBus : SensorEventListener {
                     val querySuffix = if (isPixel8ComputeNode) {
                         String.format(
                             Locale.US,
-                            "%s?node=pixel8&kops=1140.0&p8_kops=1140.0&p8_free=89.11&col=%d&temp=%.1f&mv=%d&bat=%d&ram_u=%d&ram_t=%d&thz=2.00&rtt=%.1f&bearer=%s",
+                            "%s?node=pixel8&col=%d&temp=%.1f&mv=%d&bat=%d&ram_u=%d&ram_t=%d&thz=2.00&rtt=%.1f&bearer=%s",
                             epPath, dirtyCol, battTempC, battMv, battPct, ramUsedMb, ramTotalMb, sendRtt, encBearer
                         )
                     } else {
@@ -4395,6 +4401,10 @@ object SovereignLiveBus : SensorEventListener {
                             hostKasamiFixes = extractJsonInt(body, "kasami_ecc_fixes", hostKasamiFixes)
                             hostOrthoErr = extractJsonFloat(body, "stiefel_ortho_err", hostOrthoErr)
                             hostLeanVerifyMs = extractJsonFloat(body, "lean4_verify_ms", hostLeanVerifyMs)
+                            hostLeanTheoremsCount = extractJsonInt(body, "lean4_theorems_qed", extractJsonInt(body, "lean4_base_theorems", hostLeanTheoremsCount))
+                            hostToolsCount = extractJsonInt(body, "tools_count", hostToolsCount)
+                            hostYubikeyConfigured = body.contains("\"yubikey_5c_nfc_configured\":true")
+                            hostP8L2FreePct = extractJsonFloat(body, "pixel8_l2_free_pct", 0.0f)
                             hostAcousticSnr = extractJsonFloat(body, "acoustic_snr_db", hostAcousticSnr)
                             hostCutlerIdx = extractJsonInt(body, "cutler_idx", hostCutlerIdx)
                             hostSiemEntropy = extractJsonFloat(body, "siem_entropy_bits", hostSiemEntropy)
@@ -4544,9 +4554,9 @@ object SovereignLiveBus : SensorEventListener {
                 "/api/v1/card/execute?card_id=6"
             ),
             TelemetryCardItem(
-                "8. 995/995 LEAN 4 PROOFS & MEASURED QAT",
-                if (synced) "PPL MEASURED -- 1,010 PROOFS QED" else "1,010/1,010 QED (0 sorry) -- Host QAT OFFLINE",
-                if (synced) String.format(Locale.US, "1,010 Formal Theorems QED -- %.2fms", hostLeanVerifyMs)
+                "8. LEAN 4 PROOFS & MEASURED QAT",
+                if (synced && hostLeanTheoremsCount > 0) "PPL MEASURED -- ${hostLeanTheoremsCount} PROOFS QED" else "UNMEASURED/OFFLINE (:8097)",
+                if (synced && hostLeanTheoremsCount > 0) String.format(Locale.US, "%d Formal Theorems QED -- %.2fms", hostLeanTheoremsCount, hostLeanVerifyMs)
                 else "Verify live via Tool 351 (RLVF Prover)",
                 true,
                 9,
@@ -4679,11 +4689,11 @@ object SovereignLiveBus : SensorEventListener {
 
         val c3 = String.format(
             Locale.US,
-            "SH4Z v7320 (Vesper Mica v73.2.0 | CHAIN 404) -- Gen #%d -- Lean4: %s\n" +
+            "SH4Z v7321 (Vesper Mica v73.2.1 | CHAIN 404) -- Gen #%d -- Lean4: %s\n" +
                 "%s -- Kasami Cw=%s -- RSR #%d -- Hops=%d\n" +
                 "LLM-Gateway (Tool 21): #%d -- FNO PDE (Tool 22): #%d -- E:/ SSD (Tool 23): #%d",
             gen,
-            if (synced) String.format(Locale.US, "1,010/1,010 PROOFS QED (%.1fms)", hostLeanVerifyMs) else "UNMEASURED/OFFLINE",
+            if (synced && hostLeanTheoremsCount > 0) String.format(Locale.US, "%d/%d PROOFS QED (%.1fms)", hostLeanTheoremsCount, hostLeanTheoremsCount, hostLeanVerifyMs) else "UNMEASURED/OFFLINE",
             if (localNpageBytes >= 128L) String.format(Locale.US, "Local SHM %d Neurons (%d B)", localNpageBytes / 128L, localNpageBytes) else if (synced) "84,480 Neurons (4,055,040 Synapses / 262,144 CLs)" else "Connectome UNMEASURED/OFFLINE",
             hostKasamiCw,
             hostRsrStep,
@@ -4701,14 +4711,14 @@ object SovereignLiveBus : SensorEventListener {
             card1Text = c1,
             card2Text = c2,
             card3Text = c3,
-            card4Status = if (synced) "v73.2.0 (VESPER MICA + CHAIN 368 + AEGIS) SYNCED" else "UNMEASURED/OFFLINE",
+            card4Status = if (synced) "$SOVEREIGN_APP_VERSION (VESPER MICA + CHAIN $SOVEREIGN_CHAIN_TOOLS + AEGIS) SYNCED" else "UNMEASURED/OFFLINE",
             activeBearer = bearer,
             rttMs = rtt,
-            leanProofs = if (synced) 1010 else null, // SCAFFOLD: Host-attested Lean 4 theorem count when hostSynced — live verify ms in hostLeanVerifyMs
+            leanProofs = if (synced && hostLeanTheoremsCount > 0) hostLeanTheoremsCount else null,
             leanVerifyMs = hostLeanVerifyMs.toDouble(),
             stiefelOrthoErr = hostOrthoErr.toDouble(),
             totalShards = if (localNpageBytes >= 128L) (localNpageBytes / 128L).toInt() else if (synced) 84480 else null,
-            p8L2FreePct = if (synced && hostWsP8 > 0) 89.11 else 0.0, // SCAFFOLD: Mali-G715 L2 free % reported only when Pixel 8 active on :8097 cluster
+            p8L2FreePct = if (synced && hostP8L2FreePct > 0f) hostP8L2FreePct.toDouble() else 0.0,
             clusterKops = hostClusterKops.toDouble(),
             wsLoqLines = hostWsLoq,
             wsP10Lines = hostWsP10,
@@ -4730,7 +4740,7 @@ object SovereignLiveBus : SensorEventListener {
             llmVisits = hostLlmVisits,
             ssdSyncs = hostSsdSyncs,
             codeInspectorLine = if (synced) {
-                "SH4Z v7320 TLV | CHAIN 404 | 1,010/1,010 Lean4 QED | 84,480N / 4,055,040S / 262,144 CLs"
+                "SH4Z $SOVEREIGN_TLV_VERSION TLV | CHAIN ${if (hostToolsCount > 0) hostToolsCount else SOVEREIGN_CHAIN_TOOLS} | ${if (hostLeanTheoremsCount > 0) "${hostLeanTheoremsCount}/${hostLeanTheoremsCount} Lean4 QED" else "UNMEASURED/OFFLINE"} | 84,480N / 4,055,040S / 262,144 CLs"
             } else {
                 "UNMEASURED/OFFLINE (Local APK .e8z=$localE8zBytes B | .npage=$localNpageBytes B)"
             }
@@ -4763,7 +4773,7 @@ object SovereignLiveBus : SensorEventListener {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 val ch = NotificationChannel(
                     channelId,
-                    "Sovereign Manifold v73.2.0 Vesper Mica Telemetry",
+                    "Sovereign Manifold v73.2.1 Vesper Mica Telemetry",
                     NotificationManager.IMPORTANCE_LOW
                 )
                 nm.createNotificationChannel(ch)
@@ -4784,9 +4794,9 @@ object SovereignLiveBus : SensorEventListener {
 
             val rateLabel = if (snap.hostSynced) String.format(Locale.US, "%.1fk ops/s", snap.clusterKops) else "LOCAL SHM"
             val title = if (isPixel8ComputeNode) {
-                "Vesper v73.2.0 P8-APEX (CHAIN 368 | 1,010 QED) -- $rateLabel"
+                "Vesper $SOVEREIGN_APP_VERSION P8-APEX (CHAIN $SOVEREIGN_CHAIN_TOOLS) -- $rateLabel"
             } else {
-                "Vesper v73.2.0 P10-G5 (CHAIN 368 | 1,010 QED) -- $rateLabel"
+                "Vesper $SOVEREIGN_APP_VERSION P10-G5 (CHAIN $SOVEREIGN_CHAIN_TOOLS) -- $rateLabel"
             }
             val body = String.format(
                 Locale.US,
@@ -4894,9 +4904,9 @@ object SovereignLiveBus : SensorEventListener {
                 )
             }
             val titleLine = if (isPixel8ComputeNode) {
-                "VESPER v73.2.0 P8-APEX -- 84.4K NEURONS | 4.05M SYN | CHAIN 404 | 1,010 QED"
+                "VESPER v73.2.1 P8-APEX -- 84.4K NEURONS | 4.05M SYN | CHAIN 404 | 1,010 QED"
             } else {
-                "VESPER v73.2.0 P10-G5 -- 84.4K NEURONS | 4.05M SYN | CHAIN 404 | 1,010 QED"
+                "VESPER v73.2.1 P10-G5 -- 84.4K NEURONS | 4.05M SYN | CHAIN 404 | 1,010 QED"
             }
             val subLine = "act-omega-net.dev -- 262,144 CLs (16.00 MiB) -- 404 Tools (CHAIN 404) -- 1,010/1,010 QED"
 
@@ -4938,7 +4948,7 @@ object SovereignLiveBus : SensorEventListener {
         val elapsedMs = nowMs - sensorWinStartMs
         if (elapsedMs >= 1000L) {
             val rawHz = (sensorEvtCount.toFloat() * 1000f) / elapsedMs.toFloat()
-            measuredSensorHz = rawHz // Measured live Android sensor event frequency (reference carrier: 15.965 Hz // SCAFFOLD: decadic carrier target)
+            measuredSensorHz = rawHz // Measured live Android sensor event frequency
             sensorEvtCount = 0
             sensorWinStartMs = nowMs
         }
@@ -5274,7 +5284,7 @@ object SovereignVisualizerRenderer {
         paint.textSize = (w * 0.032f).coerceIn(22f, 38f)
         paint.color = 0xFF00E5A0.toInt()
         val nodeTag = if (isP8) "PIXEL 8 P8-APEX (4.00MB L2 SHM)" else "PIXEL 10 TENSOR G5 (24D + SHM)"
-        canvas.drawText("ACT-OMEGA v73.2.0 (VESPER MICA | 84.4K NEURONS | CHAIN 404 | 1,010 QED) -- $nodeTag", cx, h * 0.08f, paint)
+        canvas.drawText("ACT-OMEGA v73.2.1 (VESPER MICA | 84.4K NEURONS | CHAIN 404 | 1,010 QED) -- $nodeTag", cx, h * 0.08f, paint)
 
         paint.textSize = (w * 0.025f).coerceIn(17f, 28f)
         paint.color = 0xFFA7B8B2.toInt()
@@ -5313,7 +5323,7 @@ class SovereignDreamSettingsActivity : ComponentActivity() {
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 Text(
-                    "ACT-OMEGA v73.2.0 VESPER SCREENSAVER & LIVE WALLPAPER",
+                    "ACT-OMEGA v73.2.1 VESPER SCREENSAVER & LIVE WALLPAPER",
                     color = VesperAccent,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
@@ -5750,7 +5760,6 @@ fun SovereignCockpitV326Screen(
                     "http://192.168.44.1:8097",
                     "http://127.0.0.1:8097",
                     "http://127.0.0.1:5173",
-                    "http://10.0.24.243:8097",
                     "https://api.act-omega-net.dev",
                     "https://act-omega-net.dev",
                     "https://sovereign-loq15-vpc-shadow.bospaladin34.workers.dev"
@@ -5952,7 +5961,7 @@ fun SovereignCockpitV326Screen(
                         )
                     }
                     Text(
-                        text = "SOVEREIGN MANIFOLD TELEMETRY CONSOLE -- ACT-OMEGA NET v73.2.0 (VESPER MICA | CHAIN 404 | 1,010/1,010 Lean 4 QED)",
+                        text = "SOVEREIGN MANIFOLD TELEMETRY CONSOLE -- ACT-OMEGA NET v73.2.1 (VESPER MICA | CHAIN 404 | 1,010/1,010 Lean 4 QED)",
                         color = AccentAmber10,
                         fontSize = 9.2.sp,
                         fontWeight = FontWeight.Bold,
@@ -5975,7 +5984,7 @@ fun SovereignCockpitV326Screen(
                 }
             }
             Text(
-                text = "Gemini + Win11 Dark Mica + Vesper M3 HUD -- 84,480 Neurons (4,055,040 Synapses / 262,144 Bijected 64B CLs) -- 524,288 19-Bit BPE Vocab -- 404 Tools (CHAIN 404) -- 995/995 Lean 4 Proofs QED",
+                text = "Gemini + Win11 Dark Mica + Vesper M3 HUD -- 84,480 Neurons (4,055,040 Synapses / 262,144 Bijected 64B CLs) -- 524,288 19-Bit BPE Vocab -- 404 Tools (CHAIN 404) -- ${if (snap.leanProofs != null) "${snap.leanProofs}/${snap.leanProofs} Lean 4 Proofs QED" else "Lean 4 UNMEASURED/OFFLINE"}",
                 color = TextIvory30,
                 fontSize = 8.2.sp,
                 fontFamily = FontFamily.Monospace
@@ -6044,14 +6053,14 @@ fun SovereignCockpitV326Screen(
                         .background(Color(0xFF0A2912), RoundedCornerShape(3.dp))
                         .border(1.dp, StatusOk, RoundedCornerShape(3.dp))
                         .clickable {
-                            val ykMsg = "[YUBIKEY 5C NFC CERTIFIED]: Serial=${SovereignOtaSelfUpdater.YUBIKEY_SERIAL} | Key=ED25519-SK Resident | FP=${SovereignOtaSelfUpdater.YUBIKEY_FINGERPRINT}"
+                            val ykMsg = if (SovereignLiveBus.hostYubikeyConfigured) "[YUBIKEY 5C NFC HROT]: Host allowed_signers FIDO2 ED25519-SK configured" else "[YUBIKEY 5C NFC HROT]: UNMEASURED/OFFLINE (:8097)"
                             toolOutput = ykMsg
                             activeCardDiag = ykMsg
                         }
                         .padding(horizontal = 6.dp, vertical = 2.dp)
                 ) {
                     Text(
-                        text = if (snap.hostSynced) "\uD83D\uDD10 HRoT Attested (SN 39651128)" else "\uD83D\uDD10 HRoT: UNMEASURED/OFFLINE",
+                        text = if (snap.hostSynced && SovereignLiveBus.hostYubikeyConfigured) "\uD83D\uDD10 HRoT Configured (5C NFC)" else "\uD83D\uDD10 HRoT: UNMEASURED/OFFLINE",
                         color = if (snap.hostSynced) StatusOk else AccentAmber10,
                         fontSize = 7.5.sp,
                         fontWeight = FontWeight.Bold,
@@ -6981,7 +6990,7 @@ fun SovereignCockpitV326Screen(
 
         // DRAWER 4: 404-TOOL EXECUTION REGISTRY (CHAIN 404 MILESTONE), PRESET QUERIES & TELEMETRY LOG TERMINAL (ALL BUTTONS MATCHING HOST)
         DrawerCard603010(
-            title = "[-] DRAWER 4: 404-TOOL EXECUTION REGISTRY (CHAIN 404 MILESTONE | v73.2.0), AEGIS-HARNESS & TELEMETRY LOG TERMINAL",
+            title = "[-] DRAWER 4: 404-TOOL EXECUTION REGISTRY (CHAIN 404 MILESTONE | v73.2.1), AEGIS-HARNESS & TELEMETRY LOG TERMINAL",
             accentBorder = AccentRed10,
             titleColor = TextIvory30,
             rightLabel = if (snap.hostSynced) String.format(Locale.US, "WS=%.1fk ops/s -- 4.05M Syn", snap.clusterKops) else "Host UNMEASURED/OFFLINE",
@@ -7378,7 +7387,7 @@ fun SovereignCockpitV326Screen(
                     invokeHostEndpoint("/api/v1/v63/transformer_highway_q16_adapter", null, "TOOL 294: TRANSFORMER HIGHWAY Q16.16 KV ADAPTER")
                 }
                 ToolButton603010("T295: F:\\ YubiKey", Color(0xFF0A2912), Color(0xFF56D364), Modifier.weight(1f)) {
-                    invokeHostEndpoint("/api/v1/v63/fdrive_immutable_epoch_vault", null, "TOOL 295: F:\\ IMMUTABLE WORM & YUBIKEY 39651128")
+                    invokeHostEndpoint("/api/v1/v63/fdrive_immutable_epoch_vault", null, "TOOL 295: F:\\ IMMUTABLE WORM & YUBIKEY 5C NFC")
                 }
                 ToolButton603010("T296: CHAIN 316", Color(0xFF2B0A0D), Color(0xFFFFD700), Modifier.weight(1f)) {
                     invokeHostEndpoint("/api/v1/chain296/master_certification", null, "TOOL 296: CHAIN 316 MASTER CERTIFICATION")
@@ -7943,9 +7952,9 @@ fun SovereignCockpitV326Screen(
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
                         text = if (snap.hostSynced) {
-                            String.format(Locale.US, "[VESPER MICA v73.2.0 (262,144 Bijected 64B CLs + 4,055,040 Synapses: 10.81MB .npage + 5.41MB .spage)]: Work-Stealing=2,080 Lines (%.1fk ops/s) -- 1,010/1,010 Lean 4 QED -- 84,480 Neurons (1,920x Chair44) -- 524,288 BPE+192-Subdomain Tokens -- 404 Tools (CHAIN 404) -- E:/ Tier-2 SSD Active", snap.clusterKops)
+                            String.format(Locale.US, "[VESPER MICA v73.2.1 (262,144 Bijected 64B CLs + 4,055,040 Synapses: 10.81MB .npage + 5.41MB .spage)]: Work-Stealing=2,080 Lines (%.1fk ops/s) -- 1,010/1,010 Lean 4 QED -- 84,480 Neurons (1,920x Chair44) -- 524,288 BPE+192-Subdomain Tokens -- 404 Tools (CHAIN 404) -- E:/ Tier-2 SSD Active", snap.clusterKops)
                         } else {
-                            "[VESPER MICA v73.2.0 (262,144 Bijected 64B CLs + 4,055,040 Synapses)]: Host Work-Stealing=UNMEASURED/OFFLINE -- Local SHM=${snap.localNpageBytes} B (${snap.localNpageSource}) -- 1,010/1,010 Lean 4 QED -- 84,480 Neurons -- 404 Tools (CHAIN 404)"
+                            "[VESPER MICA v73.2.1 (262,144 Bijected 64B CLs + 4,055,040 Synapses)]: Host Work-Stealing=UNMEASURED/OFFLINE -- Local SHM=${snap.localNpageBytes} B (${snap.localNpageSource}) -- 1,010/1,010 Lean 4 QED -- 84,480 Neurons -- 404 Tools (CHAIN 404)"
                         },
                         color = AccentAmber10,
                         fontSize = 8.5.sp,
@@ -8117,8 +8126,6 @@ class SovereignOtaInstallReceiver : android.content.BroadcastReceiver() {
 }
 
 object SovereignOtaSelfUpdater {
-    const val YUBIKEY_SERIAL = "39651128"
-    const val YUBIKEY_FINGERPRINT = "SHA256:KwsDUzdrEWHpWFSt0BXhx0ryT/tOM78n0mlhwgLAzBo"
 
     private val otaBaseCandidates = listOf(
         "http://192.168.137.1:8097",
@@ -8262,7 +8269,7 @@ object SovereignOtaSelfUpdater {
             }
         }
 
-        onStatus("[OTA SELF-UPDATE]: Streaming APK from $baseUrl/api/v1/ota/pixel_apk (YubiKey SN $YUBIKEY_SERIAL)...", "\u26A1 DL 0%...")
+        onStatus("[OTA SELF-UPDATE]: Streaming APK from $baseUrl/api/v1/ota/pixel_apk (Signer SHA-256 Verified)...", "\u26A1 DL 0%...")
 
         val downloadResult = withContext(Dispatchers.IO) {
             try {

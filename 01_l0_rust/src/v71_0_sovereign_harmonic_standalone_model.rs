@@ -6902,29 +6902,52 @@ pub fn v71_execute_tri_silicon_co_training_and_edge_bridge(
     }
 
     // --- 2. POOL 3: Edge-1 Google Pixel 10 (Tensor G5, S48..S63, 49,152 CLs) Physical Annealing ---
-    //     Sectors S48..S63 correspond to cachelines 180,224..229,375 (49,152 CLs) + Live ADB probe (58170DLCR0004V)
-    let p10_live_adb: Option<(f64, u64)> = std::process::Command::new("adb")
-        .arg("-s")
-        .arg("58170DLCR0004V")
-        .arg("shell")
-        .arg("cat /proc/uptime /sys/class/power_supply/battery/voltage_now")
-        .output()
+    //     Sectors S48..S63 correspond to cachelines 180,224..229,375 (49,152 CLs) + Live ADB probe
+    let p10_serial_opt: Option<String> = std::env::var("SOVEREIGN_PIXEL10_ADB_SERIAL")
         .ok()
-        .and_then(|o| {
-            if !o.status.success() {
+        .map(|s| s.trim().to_string())
+        .filter(|s| !s.is_empty())
+        .or_else(|| {
+            let out = std::process::Command::new("adb").arg("devices").arg("-l").output().ok()?;
+            if !out.status.success() {
                 return None;
             }
-            let s = String::from_utf8_lossy(&o.stdout);
-            let mut lines = s.lines();
-            let up_line = lines.next().unwrap_or("");
-            let up_s = up_line.split_whitespace().next().unwrap_or("0").parse::<f64>().unwrap_or(0.0);
-            let batt_uv = lines.next().unwrap_or("0").trim().parse::<u64>().unwrap_or(0);
-            if up_s > 0.0 {
-                Some((up_s, batt_uv))
-            } else {
-                None
+            let text = String::from_utf8_lossy(&out.stdout);
+            for line in text.lines() {
+                if line.contains("device ") && line.contains("Pixel_10") {
+                    if let Some(tok) = line.split_whitespace().next() {
+                        if !tok.is_empty() {
+                            return Some(tok.to_string());
+                        }
+                    }
+                }
             }
+            None
         });
+    let p10_live_adb: Option<(f64, u64)> = p10_serial_opt.as_ref().and_then(|serial| {
+        std::process::Command::new("adb")
+            .arg("-s")
+            .arg(serial)
+            .arg("shell")
+            .arg("cat /proc/uptime /sys/class/power_supply/battery/voltage_now")
+            .output()
+            .ok()
+            .and_then(|o| {
+                if !o.status.success() {
+                    return None;
+                }
+                let s = String::from_utf8_lossy(&o.stdout);
+                let mut lines = s.lines();
+                let up_line = lines.next().unwrap_or("");
+                let up_s = up_line.split_whitespace().next().unwrap_or("0").parse::<f64>().unwrap_or(0.0);
+                let batt_uv = lines.next().unwrap_or("0").trim().parse::<u64>().unwrap_or(0);
+                if up_s > 0.0 {
+                    Some((up_s, batt_uv))
+                } else {
+                    None
+                }
+            })
+    });
     let p10_start_byte: usize = (6488064usize).min(npage_bytes.len().saturating_sub(4096));
     let mut p10_hist: Vec<u32> = v71_alloc_filled_vec(16, 0u32);
     let mut k_p10: usize = 0;
@@ -6949,7 +6972,7 @@ pub fn v71_execute_tri_silicon_co_training_and_edge_bridge(
     // Thermodynamic annealing temperature T_anneal in (0.65, 1.15) driven by measured S48..S63 + ADB sensor entropy
     let p10_temp = (0.55 + (p10_entropy / 4.0) * 0.45).clamp(0.65, 1.15);
     let p10_status = if p10_live_adb.is_some() && npage_bytes.len() >= 10813440 {
-        "PIXEL10_58170DLCR0004V_LIVE_ADB_AND_S48_S63_ENTROPY"
+        "PIXEL10_LIVE_ADB_AND_S48_S63_ENTROPY"
     } else if npage_bytes.len() >= 10813440 {
         "PIXEL10_S48_S63_MEASURED_ENTROPY"
     } else {

@@ -760,7 +760,7 @@ pub fn v63_2_dispatch_tool_296_chain296_cert(input: &str) -> String {
     let status = if certified {
         "CHAIN_296_MASTER_CERTIFIED_OK"
     } else {
-        "CHAIN_296_CERTIFICATION_EVALUATING"
+        "CHAIN_296_NOT_CERTIFIED"
     };
 
     let elapsed_us = t0.elapsed().as_secs_f64() * 1_000_000.0;

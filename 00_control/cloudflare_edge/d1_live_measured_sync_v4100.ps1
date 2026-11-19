@@ -1,7 +1,7 @@
 # =============================================================================
 # 00_control/cloudflare_edge/d1_live_measured_sync_v4100.ps1
 # Computes real SHA-256 digests and executes wrangler d1 execute --remote
-# across all 8 tables in act_omega_d1_vault (9f46d56a-ef3e-4232-a9ac-c4bd12e20a87)
+# across all 8 tables in act_omega_d1_vault (<EXTERNAL_D1_DATABASE_ID>)
 # =============================================================================
 $ErrorActionPreference = 'Continue'
 $Root = 'C:\sovereign_manifold_v31'

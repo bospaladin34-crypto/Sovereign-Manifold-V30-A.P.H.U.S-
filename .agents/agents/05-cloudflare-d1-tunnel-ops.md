@@ -19,7 +19,7 @@ You are the **Cloudflare Edge, Durable Object, D1 Database, 18-Tool Gemini MCP &
 2. **Cloudflare Named Tunnel (`act-omega-net.dev`) & Local Stdio MCP Wrapper**:
    - Tunnel Config: `C:\sovereign_manifold_v31\00_control\cloudflare_named_config.yml` (`protocol: http2`, `act-omega-net.dev` -> `127.0.0.1:5173`, `api.act-omega-net.dev` / `mcp.act-omega-net.dev` -> `127.0.0.1:8097`).
    - Local Stdio MCP Wrapper: `C:\sovereign_manifold_v31\00_control\mcp_stdio_wrapper.ps1` (forwards JSON-RPC 2.0 stdio to `http://127.0.0.1:8097/mcp`).
-3. **Remote 5 GB Cloudflare D1 SQLite (`act_omega_d1_vault`, UUID `9f46d56a-ef3e-4232-a9ac-c4bd12e20a87`, 10 Tables)**:
+3. **Remote 5 GB Cloudflare D1 SQLite (`act_omega_d1_vault`, UUID `<EXTERNAL_D1_DATABASE_ID>`, 10 Tables)**:
    - SQL Scripts: `00_control\cloudflare_edge\sync_d1_v4900_chain100.sql`, `sync_d1_v4400_all10tables.sql`.
    - 10 Tables: `harness_5w1h_audit_log`, `npage_tier_snapshots`, `wal_merkle_checkpoints`, `v40_qat_training_sessions`, `v40_shard_registry`, `v41_measured_sha256_audit`, `v42_5w1h_distributed_routes`, `v43_antigravity_agent_roster`, `v44_worksteal_webgpu_leases`, `v44_expansion_shard_audit`.
 

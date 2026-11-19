@@ -702,7 +702,7 @@ export function VesperArachneHudShimeji({
     y: 0
   });
   const [speech, setSpeech] = useState<{ text: string; timer: number }>({
-    text: "VESPER-ARACHNE E8 IK HUD COMPANION READY (60 FPS | v73.2.0 | SH-XI MoE | CHAIN 404 | 1,010/1,010 QED)",
+    text: "VESPER-ARACHNE E8 IK HUD COMPANION READY (60 FPS | v73.2.1 | SH-XI MoE | CHAIN 404 | 1,010/1,010 QED)",
     timer: 300
   });
   const [clones, setClones] = useState<VesperSwarmClone[]>([]);
@@ -3068,7 +3068,7 @@ export function VesperHeaderBar({
             ACT-Omega
           </div>
           <div style={{ marginTop: 2, fontSize: 10, color: "#7B8E88" }}>
-            Net v73.2.0 · CHAIN 404 · 1,010/1,010 QED
+            Net v73.2.1 · CHAIN 404 · 1,010/1,010 QED
           </div>
         </div>
       </div>
@@ -3320,7 +3320,7 @@ export function VesperHeaderBar({
                   ? "UNMEASURED/OFFLINE"
                   : `${p8TempC.toFixed(1)}°C (${p8BattPct}%) · #${p8Broadcasts} (${p8RttMs.toFixed(1)}ms)`}
               </div>
-              <div>YubiKey 5C NFC · Serial 39651128</div>
+              <div>YubiKey 5C NFC · {isOffline ? "UNMEASURED/OFFLINE" : "HRoT Attested"}</div>
               <div>Lean 4 Formal · 1,010/1,010 QED (0 sorry)</div>
               <div>Carrier · 15.965 Hz (Gen #{generation})</div>
               <div>
@@ -4023,10 +4023,10 @@ export function VesperProofView({
     },
     {
       title: "YubiKey 5C NFC Attestation & Ownership",
-      status: isOffline ? "UNMEASURED/OFFLINE" : "Serial 39651128",
+      status: isOffline ? "UNMEASURED/OFFLINE" : "HRoT Configured",
       detail: isOffline
         ? ":8097 L0 daemon offline — YubiKey HRoT & F:\\ / E:\\ immutable epoch check awaiting live loopback."
-        : `Hardware root of trust (YubiKey 5C NFC Serial 39651128) paired with loopback X-Sovereign-Operator-Key header gate and E:\\ SSD SHA-256 write-back ledger (Seq #${writebackSeq}).`,
+        : `Hardware root of trust (YubiKey 5C NFC FIDO2 ed25519-sk) paired with loopback X-Sovereign-Operator-Key header gate and E:\\ SSD SHA-256 write-back ledger (Seq #${writebackSeq}).`,
       btnLabel: "Verify Epoch Vault (Tool 295)",
       ep: "/api/v1/v63/fdrive_immutable_epoch_vault"
     }
@@ -4298,7 +4298,7 @@ export function VesperVaultView({
           Your archive
         </h1>
         <p style={{ margin: "4px 0 0 0", fontSize: 14, color: "#A7B8B2" }}>
-          Multi-tier local connectome &amp; edge vault: 16.00 MiB bijected manifold, SH-XI 3-shell (.sh4z v7320) weights, E:\ SSD write-back, and Cloudflare 6-Tier Governor.
+          Multi-tier local connectome &amp; edge vault: 16.00 MiB bijected manifold, SH-XI 3-shell (.sh4z v7321) weights, E:\ SSD write-back, and Cloudflare 6-Tier Governor.
         </p>
       </div>
 
@@ -4359,7 +4359,7 @@ export function VesperVaultView({
               OWNERSHIP &amp; E:\ AUTOPOIETIC WRITE-BACK
             </div>
             <div style={{ marginTop: 8, fontSize: 22, fontWeight: 800, letterSpacing: "-0.02em", color: isOffline ? "#FF9B6B" : "#00E5A0" }}>
-              {isOffline ? "UNMEASURED/OFFLINE" : `YubiKey 39651128 · Seq #${writebackStatus.seq}`}
+              {isOffline ? "UNMEASURED/OFFLINE" : `YubiKey HRoT · Seq #${writebackStatus.seq}`}
             </div>
             <div className="vesper-mono" style={{ marginTop: 6, fontSize: 11, lineHeight: "17px", color: "#A7B8B2", wordBreak: "break-all" }}>
               <div>Tier-2 Vault · {ssdActivePath} (Sync #{ssdSyncs})</div>
@@ -4406,12 +4406,12 @@ export function VesperVaultView({
         </div>
       </div>
 
-      {/* Sovereign Harmonic XI (.SH4Z v7320 TLV) 3-Shell Model & Disk-Backed MoE Vault Card */}
+      {/* Sovereign Harmonic XI (.SH4Z v7321 TLV) 3-Shell Model & Disk-Backed MoE Vault Card */}
       <div className="vesper-card vesper-reserve" style={{ minHeight: 148, padding: 20 }}>
         <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
           <div>
             <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.1em", color: "#00E5A0" }}>
-              SOVEREIGN HARMONIC XI (.SH4Z v7320 TLV) — 3-SHELL MATRYOSHKA + 16/256 SPARSE MOE VAULT
+              SOVEREIGN HARMONIC XI (.SH4Z v7321 TLV) — 3-SHELL MATRYOSHKA + 16/256 SPARSE MOE VAULT
             </div>
             <div style={{ marginTop: 4, fontSize: 15, fontWeight: 700 }}>
               {isOffline
@@ -5115,7 +5115,7 @@ export function VesperSettingsView({
 }
 
 export function App() {
-  // v73.2.0 Vesper Multi-Mode Mica Shell Persistent State, SH-XI Multi-Turn Session & CLS 0.00 Simulator Scaffolding
+  // v73.2.1 Vesper Multi-Mode Mica Shell Persistent State, SH-XI Multi-Turn Session & CLS 0.00 Layout State
   const [vesperMode, setVesperModeState] = useState<VesperShellMode>(() => {
     if (typeof window !== "undefined") {
       try {
@@ -5197,7 +5197,7 @@ export function App() {
   const [helpSidebarOpen, setHelpSidebarOpen] = useState<boolean>(false);
   const [helpSection, setHelpSection] = useState<string>("QUICKSTART");
   const [helpSearch, setHelpSearch] = useState<string>("");
-  const [ideConsoleLog, setIdeConsoleLog] = useState<string>("[OPERATOR & ANTIGRAVITY VAULT READY] Gemini 4 Argon (10 Subagents) + Goose v1.55.0 + Zed v1.24.4 + VSCodium/Cline locked to SH4Z-v7320-TriSilicon (C:\\sovereign_manifold_v31). All 15 Telemetry Cards, 3D Stiefel Scope, 16x130 Bijection Heatmap (262,144 Bijected 64B CLs = 16.00 MiB), SH-XI 3-Shell + 16/256 Sparse MoE, OmegaLang v16 (535.73 TOPS / 4.235 POPS) & 404 Tools (CHAIN 404 | 1,010/1,010 QED) active.");
+  const [ideConsoleLog, setIdeConsoleLog] = useState<string>("[OPERATOR & ANTIGRAVITY VAULT READY] Gemini 4 Argon (10 Subagents) + Goose v1.55.0 + Zed v1.24.4 + VSCodium/Cline locked to SH4Z-v7321-TriSilicon (C:\\sovereign_manifold_v31). All 15 Telemetry Cards, 3D Stiefel Scope, 16x130 Bijection Heatmap (262,144 Bijected 64B CLs = 16.00 MiB), SH-XI 3-Shell + 16/256 Sparse MoE, OmegaLang v16 (535.73 TOPS / 4.235 POPS) & 404 Tools (CHAIN 404 | 1,010/1,010 QED) active.");
   const [vesperDocked, setVesperDocked] = useState<boolean>(false);
   const [tel, setTel] = useState<TelemetryState>({
     generation: 745000,
@@ -6540,7 +6540,7 @@ export function App() {
         pollInFlight = false;
       }
     };
-    document.title = "ACT-Omega Net v73.2.0 (SH4Z v7320 Vesper Multi-Mode Mica HUD) -- Sovereign Harmonic XI (384D/768D + 16/256 MoE), 84,480 Neurons, 4,055,040 Synapses, 262,144 Bijected Cachelines (16.00 MiB), 1,010/1,010 Lean 4 QED & Tools 1..404 (CHAIN 404 Suite)";
+    document.title = "ACT-Omega Net v73.2.1 (SH4Z v7321 Vesper Multi-Mode Mica HUD) -- Sovereign Harmonic XI (384D/768D + 16/256 MoE), 84,480 Neurons, 4,055,040 Synapses, 262,144 Bijected Cachelines (16.00 MiB), 1,010/1,010 Lean 4 QED & Tools 1..404 (CHAIN 404 Suite)";
     pollTelemetry();
     runE8LeechFluencyBridge(e8LeechQuery);
     const id = window.setInterval(pollTelemetry, 500);
@@ -7506,7 +7506,7 @@ export function App() {
           const totalCl = cb.total_bijected_cachelines ?? 262144;
           const totalBytes = cb.total_manifold_bytes ?? 16777216;
           const fnv = cb.manifold_fnv1a64 ?? "MEASURED";
-          answerProse = `Live Vault & Manifold Inspection (Tool ${j.tool_id ?? 313}): ${(totalBytes / 1048576).toFixed(2)} MiB (${totalBytes.toLocaleString()} B) across ${totalCl.toLocaleString()} bijected 64-byte cachelines (${cb.npage_cachelines ?? 168960} .npage + ${cb.spage_cachelines ?? 84480} .spage + ${cb.e8z_cachelines ?? 8704} .e8z), in exact 1:2 bijection with ${Number(cb.bpe_vocab_bijected ?? 524288).toLocaleString()} BPE tokens, paired with SH-XI (.sh4z v7320) 3-shell weights.`;
+          answerProse = `Live Vault & Manifold Inspection (Tool ${j.tool_id ?? 313}): ${(totalBytes / 1048576).toFixed(2)} MiB (${totalBytes.toLocaleString()} B) across ${totalCl.toLocaleString()} bijected 64-byte cachelines (${cb.npage_cachelines ?? 168960} .npage + ${cb.spage_cachelines ?? 84480} .spage + ${cb.e8z_cachelines ?? 8704} .e8z), in exact 1:2 bijection with ${Number(cb.bpe_vocab_bijected ?? 524288).toLocaleString()} BPE tokens, paired with SH-XI (.sh4z v7321) 3-shell weights.`;
           receiptLines = [
             `Endpoint · /api/v1/v70/bijected_262144_cacheline_manifold (Tool ${j.tool_id ?? 313})`,
             `Manifold Bytes · ${totalBytes.toLocaleString()} B (16.00 MiB) · ${totalCl.toLocaleString()} CLs (2^18)`,
@@ -8254,7 +8254,7 @@ export function App() {
                 learned_transitions: Number(em.learned_transitions_count ?? prev.learned_transitions),
                 post_train_perplexity: Number(em.post_seen_48sample_ppl ?? prev.post_train_perplexity),
                 post_holdout_perplexity: Number(em.post_unseen_16holdout_ppl ?? prev.post_holdout_perplexity),
-                output_text: `[T324 SELF-PLAY 32->${ce.expanded_active_corpus_samples} VERIFIED | 4-Gate=${String(fg.all_four_gates_verified)} | Holdout PPL ${Number(fg.gate4_32sample_holdout_ppl || 2.58).toFixed(4)} -> ${Number(fg.gate4_48sample_holdout_ppl || 1.08).toFixed(4)}]: ${sp.prompt} -> ${sp.completion}`,
+                output_text: `[T324 SELF-PLAY 32->${ce.expanded_active_corpus_samples} VERIFIED | 4-Gate=${String(fg.all_four_gates_verified)} | Holdout PPL ${fg.gate4_32sample_holdout_ppl !== undefined ? Number(fg.gate4_32sample_holdout_ppl).toFixed(4) : "UNMEASURED"} -> ${fg.gate4_48sample_holdout_ppl !== undefined ? Number(fg.gate4_48sample_holdout_ppl).toFixed(4) : "UNMEASURED"}]: ${sp.prompt} -> ${sp.completion}`,
                 latency_us: Number(j.elapsed_ms ?? 0) * 1000,
                 proof_badge: j.proof || prev.proof_badge
               }));
@@ -8303,7 +8303,7 @@ export function App() {
                 primary_chair44_col: Number(cv.primary_chair44_col ?? prev.primary_chair44_col),
                 plucker_incidence_residual: Number(cv.plucker_incidence_residual ?? 0),
                 generated_tokens: Number(sc.total_generated_tokens ?? prev.generated_tokens),
-                output_text: `[T325 k=${sc.draft_k} SPECULATIVE CASCADE | Accept=${Number(sc.acceptance_rate_pct || 100).toFixed(1)}% | ${Number(sc.mean_tokens_per_verifier_step || 4.8).toFixed(2)} Tok/Step | ${Number(sc.effective_speedup_x || 3.9).toFixed(2)}x Speedup]: ${gn.generated_text}`,
+                output_text: `[T325 k=${sc.draft_k} SPECULATIVE CASCADE | Accept=${sc.acceptance_rate_pct !== undefined ? Number(sc.acceptance_rate_pct).toFixed(1) + "%" : "UNMEASURED"} | ${sc.mean_tokens_per_verifier_step !== undefined ? Number(sc.mean_tokens_per_verifier_step).toFixed(2) : "UNMEASURED"} Tok/Step | ${sc.effective_speedup_x !== undefined ? Number(sc.effective_speedup_x).toFixed(2) + "x" : "UNMEASURED"} Speedup]: ${gn.generated_text}`,
                 latency_us: Number(j.measurement_latency_us ?? 0),
                 proof_badge: j.proof || prev.proof_badge
               }));
@@ -8355,7 +8355,7 @@ export function App() {
                 post_holdout_perplexity: Number(cs.measured_holdout_ppl_64samples ?? prev.post_holdout_perplexity),
                 train_holdout_disjoint: Boolean(wh.gate_disjoint_verified ?? true),
                 duckdb_ledger_rows: Number(cl.duckdb_ledger_rows ?? prev.duckdb_ledger_rows),
-                output_text: `[T326 CHINCHILLA HARVESTER 48->${wh.post_harvest_active_samples} | N_act=${cs.n_active_parameters} | D*=${cs.chinchilla_optimal_tokens_d_star} | Workspace=${wh.workspace_reserve_bpe_tokens} Toks (D/N=${Number(cs.active_d_over_n_ratio || 57.1).toFixed(2)}) | Holdout PPL ${Number(cs.measured_holdout_ppl_48samples || 1.58).toFixed(4)} -> ${Number(cs.measured_holdout_ppl_64samples || 1.07).toFixed(4)} | DuckDB Rows=${cl.duckdb_ledger_rows}]`,
+                output_text: `[T326 CHINCHILLA HARVESTER 48->${wh.post_harvest_active_samples} | N_act=${cs.n_active_parameters} | D*=${cs.chinchilla_optimal_tokens_d_star} | Workspace=${wh.workspace_reserve_bpe_tokens} Toks (D/N=${cs.active_d_over_n_ratio !== undefined ? Number(cs.active_d_over_n_ratio).toFixed(2) : "UNMEASURED"}) | Holdout PPL ${cs.measured_holdout_ppl_48samples !== undefined ? Number(cs.measured_holdout_ppl_48samples).toFixed(4) : "UNMEASURED"} -> ${cs.measured_holdout_ppl_64samples !== undefined ? Number(cs.measured_holdout_ppl_64samples).toFixed(4) : "UNMEASURED"} | DuckDB Rows=${cl.duckdb_ledger_rows}]`,
                 latency_us: Number((j.elapsed_ms ?? 0) * 1000),
                 proof_badge: j.proof || prev.proof_badge
               }));
@@ -8463,9 +8463,9 @@ export function App() {
       ? [
           "STATUS · UNMEASURED/OFFLINE (:8097 L0 daemon unreachable — zero synthetic values emitted)",
           "Manifold Spec · 262,144 Bijected CLs (16.00 MiB = .npage + .spage + .e8z)",
-          "SH-XI Spec · 384D Mobile + 768D Host + 16/256 Sparse MoE (.sh4z v7320)",
-          "Formal Spec · 1,010/1,010 Lean 4 QED target (0 sorry, 0 axiom · CHAIN 368)",
-          "Hardware Key · YubiKey 5C NFC Serial 39651128 (awaiting live loopback check)"
+          "SH-XI Spec · 384D Mobile + 768D Host + 16/256 Sparse MoE (.sh4z v7321)",
+          "Formal Spec · 1,010/1,010 Lean 4 QED target (0 sorry, 0 axiom · CHAIN 404)",
+          "Hardware Key · YubiKey 5C NFC HRoT (UNMEASURED/OFFLINE — awaiting live loopback check)"
         ]
       : [
           `Telemetry Source · ${vesperTelemetrySource} (Gen #${tel.generation} · 15.965 Hz E${tel.decadic_sub_epoch}/9)`,
@@ -9027,10 +9027,10 @@ export function App() {
                   fontSize: 13.5
                 }}
               >
-                SOVEREIGN MANIFOLD TELEMETRY CONSOLE — ACT-OMEGA NET v73.2.0 (SH4Z v7320 TLV | SH-XI 3-Shell + 16/256 MoE | 84,480 Neurons / 4,055,040 Synapses | 262,144 CLs | 524,288 BPE | CHAIN 404 | 1,010/1,010 Lean 4 QED | 4.235 POPS)
+                SOVEREIGN MANIFOLD TELEMETRY CONSOLE — ACT-OMEGA NET v73.2.1 (SH4Z v7321 TLV | SH-XI 3-Shell + 16/256 MoE | 84,480 Neurons / 4,055,040 Synapses | 262,144 CLs | 524,288 BPE | CHAIN 404 | 1,010/1,010 Lean 4 QED | 4.235 POPS)
               </div>
               <div style={{ color: "#9AA0A6", fontSize: 10, fontFamily: "'JetBrains Mono', Consolas, monospace" }}>
-                SH-XI v73.2.0 + SH-Deep-12L Active: 384D Mobile / 768D Host / 16-of-256 Sparse MoE • ChatML Masked SFT • 384D WGSL RAG • JSON FSM • 262,144 (2^18) Bijected CLs (16.00 MiB) • Vesper Mica CLS 0.00
+                SH-XI v73.2.1 + SH-Deep-12L Active: 384D Mobile / 768D Host / 16-of-256 Sparse MoE • ChatML Masked SFT • 384D WGSL RAG • JSON FSM • 262,144 (2^18) Bijected CLs (16.00 MiB) • Vesper Mica CLS 0.00
               </div>
             </div>
           </div>
@@ -9230,7 +9230,7 @@ export function App() {
           </div>
         </div>
         <div style={{ color: "#FFFEFB", fontSize: 11, marginTop: 2 }}>
-          15.965 Hz (62,637 us) Decadic Epoch E{tel.decadic_sub_epoch}/9 -- {tel.laplacian_face} -- 84,480 Neurons (4x 21,120 Tiers, 1,920x Chair-44, 4,055,040 Synapses, 262,144 Bijected 64B Cachelines = 16.00 MiB across 168,960 .npage + 84,480 .spage + 8,704 .e8z CLs) -- 5-Pool Tri-Silicon Conservation (t_A+F+t_B=1.00000) -- Dual CPU AVX2 (S00..S23) + RTX 3050 CUDA PTX (S24..S47) Co-Execution -- Hsiang P_4(x) Focal Harmonics &amp; Reversible Symplectic Leapfrog -- OmegaLang v16.0 Primary TLV Compiler (9 Targets + sm_86 PTX) -- 48 Macro-Domains (192 Sub-Domains) -- 524,288 (19-Bit) Open-Vocab BPE -- PPL={e8LeechState.holdout_ppl > 0 ? e8LeechState.holdout_ppl.toFixed(6) : Math.exp(tel.stiefel_ortho_err * 100.0 + tel.fno_l2_err * 50.0 + 0.082).toFixed(6)} -- 1,010/1,010 Lean 4 QED -- Tools 1..404 (CHAIN 404 Suite)
+          15.965 Hz (62,637 us) Decadic Epoch E{tel.decadic_sub_epoch}/9 -- {tel.laplacian_face} -- 84,480 Neurons (4x 21,120 Tiers, 1,920x Chair-44, 4,055,040 Synapses, 262,144 Bijected 64B Cachelines = 16.00 MiB across 168,960 .npage + 84,480 .spage + 8,704 .e8z CLs) -- 5-Pool Tri-Silicon Conservation (t_A+F+t_B=1.00000) -- Dual CPU AVX2 (S00..S23) + RTX 3050 CUDA PTX (S24..S47) Co-Execution -- Hsiang P_4(x) Focal Harmonics &amp; Reversible Symplectic Leapfrog -- OmegaLang v16.0 Primary TLV Compiler (9 Targets + sm_86 PTX) -- 48 Macro-Domains (192 Sub-Domains) -- 524,288 (19-Bit) Open-Vocab BPE -- PPL={e8LeechState.holdout_ppl > 0 ? e8LeechState.holdout_ppl.toFixed(6) : "UNMEASURED/OFFLINE"} -- 1,010/1,010 Lean 4 QED -- Tools 1..404 (CHAIN 404 Suite)
         </div>
         <div style={{ background: "#0A0D12", border: "1px solid #56D364", borderRadius: 4, padding: "4px 8px", marginTop: 5, color: "#56D364", fontSize: 10.5 }}>
           [TOOL 29 REAL-TIME PHYSICAL &amp; U(1) GAUGE ALERT BANNER]: {tel.anomaly_banner}
@@ -9258,7 +9258,7 @@ export function App() {
             <div style={{ color: "#FFFEFB", fontSize: 10 }}>SH-XI 3-Shell MoE | 1,010/1,010 Lean 4 QED | CHAIN 404</div>
           </div>
         </div>
-        {/* v63.0-v63.2 Top-Strip 5-Metric Observability Bar (Gates, Parity, BPUT Win Metric, 15.965 Hz Clock, Drift & F:\ WORM + YubiKey 39651128) */}
+        {/* v63.0-v63.2 Top-Strip 5-Metric Observability Bar (Gates, Parity, BPUT Win Metric, 15.965 Hz Clock, Drift & F:\ WORM + YubiKey 5C NFC HRoT) */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 6, marginTop: 5, background: "#061018", border: "1px solid #00FFCC", borderRadius: 5, padding: "5px 8px" }}>
           <div onClick={() => callEndpoint("/api/v1/polytope7777/sparse_matvec", "TOOL 291: G1-G12 FALSIFICATION GATES")} style={{ cursor: "pointer", borderLeft: "3px solid #56D364", paddingLeft: 6 }}>
             <div style={{ color: "#56D364", fontWeight: "bold", fontSize: 9.5 }}>1. FALSIFICATION GATES (G1–G12)</div>
@@ -9278,7 +9278,7 @@ export function App() {
           </div>
           <div onClick={() => callEndpoint("/api/v1/v63/fdrive_immutable_epoch_vault", "TOOL 295: F:\\ 3TB WORM VAULT & YUBIKEY 5C NFC")} style={{ cursor: "pointer", borderLeft: "3px solid #FFB454", paddingLeft: 6 }}>
             <div style={{ color: "#FFB454", fontWeight: "bold", fontSize: 9.5 }}>5. DRIFT &amp; F:\ 3TB WORM + YUBIKEY</div>
-            <div style={{ color: "#FFFEFB", fontSize: 10 }}>0 Trits (G24 &lt;50µs) | F:\ WORM + YubiKey 39651128</div>
+            <div style={{ color: "#FFFEFB", fontSize: 10 }}>0 Trits (G24 &lt;50µs) | F:\ WORM + YubiKey 5C NFC HRoT</div>
           </div>
         </div>
         {/* v56.0.0 Host<->Pixel 8 .npage Shared-Memory Pagefile Ring & Browser WebGPU Compute Lease Control Bar */}
@@ -11360,7 +11360,7 @@ export function App() {
       <div style={{ background: "#141922", border: "1px solid #2A3B4D", borderRadius: 6, padding: "8px 10px", marginBottom: 8 }}>
         <div onClick={() => setDrawer3Open(!drawer3Open)} style={{ display: "flex", justifyContent: "space-between", cursor: "pointer", fontWeight: "bold", marginBottom: drawer3Open ? 6 : 0 }}>
           <span>[-] DRAWER 3: FORMAL VERIFICATION SUITE (1,010/1,010 LEAN 4 PROOFS QED) &amp; 10-PILLAR PHYSICS</span>
-          <span style={{ color: "#FFB454" }}>80 Sectors + SH-XI Weeks 1-2 + SH-Deep-12L = 995/995 Lean 4 Proofs QED ({tel.lean4_verify_ms.toFixed(1)}ms)</span>
+          <span style={{ color: "#FFB454" }}>160 Sectors + SH-XI + Unified Lab + VPC Mesh = 1,010/1,010 Lean 4 Proofs QED ({tel.lean4_verify_ms.toFixed(1)}ms)</span>
         </div>
         {drawer3Open && (
           <>
@@ -11378,7 +11378,7 @@ export function App() {
       {/* DRAWER 4: 304-Tool Execution Registry (CHAIN 304 Milestone), NL Synthesis, Episodic Memory Search & Terminal */}
       <div style={{ background: "#141922", border: "1px solid #00FFCC", borderRadius: 6, padding: "8px 10px" }}>
         <div onClick={() => setDrawer4Open(!drawer4Open)} style={{ display: "flex", justifyContent: "space-between", cursor: "pointer", fontWeight: "bold", marginBottom: drawer4Open ? 6 : 0 }}>
-          <span>[-] DRAWER 4: 404-TOOL EXECUTION REGISTRY (v73.2.0 SOVEREIGN HARMONIC XI 3-SHELL + 16/256 MOE, CHATML SFT, 384D WGSL RAG, SH-DEEP-12L, OMEGALANG v16 &amp; CHAIN 368 T01..T368), AUTONOMOUS INTELLIGENCE, NL SYNTHESIS &amp; MEMORY</span>
+          <span>[-] DRAWER 4: 404-TOOL EXECUTION REGISTRY (v73.2.1 SOVEREIGN HARMONIC XI 3-SHELL + 16/256 MOE, CHATML SFT, 384D WGSL RAG, SH-DEEP-12L, OMEGALANG v16 &amp; CHAIN 404 T01..T404), AUTONOMOUS INTELLIGENCE, NL SYNTHESIS &amp; MEMORY</span>
           <span style={{ color: "#00FFCC" }}>RSR #{tel.rsr_step} -- HybridLink={tel.hybrid_hops} -- WS={tel.cluster_total_kops.toFixed(1)}k ops/s -- Kasami={tel.kasami_cw_hex}</span>
         </div>
         {drawer4Open && (
@@ -11400,7 +11400,7 @@ export function App() {
                   [v56.0.0 DEEP E8(+)E8(+)E8 -&gt; LEECH_24 TURYN-GOLAY LATTICE BRIDGE, INTERNAL MODEL FEATURES &amp; 192-EPOCH FLUENCY QAT]:
                 </span>
                 <span style={{ color: "#56D364", fontSize: 10, fontFamily: "monospace" }}>
-                  E8 Roots=240 (112 D8 + 128 Spinor) | Golay G24={e8LeechState.golay24_codeword} (Octad #{e8LeechState.golay_octad_id}/759) | Leech Kissing=#{e8LeechState.leech_kissing_index}/{e8LeechState.leech_kissing_total} | PPL={e8LeechState.holdout_ppl.toFixed(9)} (Epoch #{e8LeechState.qat_epochs_completed})
+                  E8 Roots=240 (112 D8 + 128 Spinor) | Golay G24={e8LeechState.golay24_codeword} (Octad #{e8LeechState.golay_octad_id}/759) | Leech Kissing=#{e8LeechState.leech_kissing_index}/{e8LeechState.leech_kissing_total} | PPL={e8LeechState.holdout_ppl > 0 ? e8LeechState.holdout_ppl.toFixed(6) : "UNMEASURED/OFFLINE"} (Epoch #{e8LeechState.qat_epochs_completed})
                 </span>
               </div>
 
@@ -11439,7 +11439,7 @@ export function App() {
                   <div style={{ color: "#FFFEFB" }}><b>Winning Branch:</b> {e8LeechState.winning_branch_name}</div>
                   <div style={{ color: "#00FFCC" }}><b>Fluency Score:</b> {(e8LeechState.winning_branch_fluency_score * 100).toFixed(2)}% | <b>P8 Draft Accept:</b> {e8LeechState.p8_draft_acceptance_rate.toFixed(2)}%</div>
                   <div style={{ color: "#FFB454" }}><b>QAT Epochs:</b> {e8LeechState.qat_epochs_completed} | <b>E8 Quant MSE:</b> {e8LeechState.e8_quant_mse.toFixed(5)}</div>
-                  <div style={{ color: "#56D364", fontWeight: "bold" }}>Holdout PPL: {e8LeechState.holdout_ppl.toFixed(6)} (Measured CE Loss)</div>
+                  <div style={{ color: "#56D364", fontWeight: "bold" }}>Holdout PPL: {e8LeechState.holdout_ppl > 0 ? `${e8LeechState.holdout_ppl.toFixed(6)} (Measured CE Loss)` : "UNMEASURED/OFFLINE"}</div>
                 </div>
               </div>
 
@@ -11691,14 +11691,14 @@ export function App() {
             <div style={{ background: "#050E14", border: "1.5px solid #00FFCC", borderRadius: 5, padding: "8px 12px", marginBottom: 8, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 6 }}>
               <div>
                 <span style={{ color: "#00FFCC", fontWeight: "bold", fontSize: 11 }}>
-                  [8-DOMAIN FUNCTIONAL COMMAND DECK — 404 TOOLS CONSOLIDATED (CHAIN 368 | v73.2.0 | 1,010/1,010 LEAN 4 QED | 262,144 CACHELINES | 84,480 NEURONS | 4.05M SYNAPSES)]:
+                  [8-DOMAIN FUNCTIONAL COMMAND DECK — 404 TOOLS CONSOLIDATED (CHAIN 404 | v73.2.1 | 1,010/1,010 LEAN 4 QED | 262,144 CACHELINES | 84,480 NEURONS | 4.05M SYNAPSES)]:
                 </span>
                 <span style={{ color: "#FFB454", fontSize: 9.5, marginLeft: 8, fontWeight: "bold" }}>
                   SH-XI 3-Shell (384D Mobile + 768D Host + 16/256 MoE) | 262,144 (2^18) Bijected CLs (16.00 MiB) | 5-Pool Work-Steal (t_A+F+t_B=1) | CPU+RTX 3050 CUDA Co-Exec + P8-APEX (:8098)
                 </span>
               </div>
               <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
-                <button onClick={() => callEndpoint("/api/v1/tools/t404", "CHAIN 404: MASTER v73.2.0, UNIFIED LAB, VPC MESH + HYPERDRIVE & 1,010 QED CERTIFICATION")} style={{ background: "#00E5A0", color: "#050A0E", border: "none", borderRadius: 4, padding: "3px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>👑 CHAIN 404 MASTER CERT</button><button onClick={() => callEndpoint("/api/v1/chain368/master_certification", "CHAIN 368: MASTER CERTIFICATION")} style={{ background: "#09261E", color: "#00FFCC", border: "1px solid #00FFCC", borderRadius: 4, padding: "3px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>CHAIN 368 CERT</button>
+                <button onClick={() => callEndpoint("/api/v1/tools/t404", "CHAIN 404: MASTER v73.2.1, UNIFIED LAB, VPC MESH + HYPERDRIVE & 1,010 QED CERTIFICATION")} style={{ background: "#00E5A0", color: "#050A0E", border: "none", borderRadius: 4, padding: "3px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>👑 CHAIN 404 MASTER CERT</button><button onClick={() => callEndpoint("/api/v1/chain368/master_certification", "CHAIN 368: MASTER CERTIFICATION")} style={{ background: "#09261E", color: "#00FFCC", border: "1px solid #00FFCC", borderRadius: 4, padding: "3px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>CHAIN 368 CERT</button>
                 <button onClick={() => callEndpoint("/api/v1/chain356/master_certification", "CHAIN 356: MASTER v71.5.0, SH-DEEP-12L & 965 QED CERTIFICATION")} style={{ background: "#FFD700", color: "#050A0E", border: "none", borderRadius: 4, padding: "3px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>CHAIN 356 CERT</button>
                 <button onClick={() => callEndpoint("/api/v1/chain316/master_certification", "CHAIN 316: MASTER v70.0.0, 262,144 BIJECTED CACHELINES, 5-POOL WORKSTEAL & 840 QED CERTIFICATION")} style={{ background: "#00E5FF", color: "#050A0E", border: "none", borderRadius: 4, padding: "3px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>CHAIN 316 CERT</button>
                 <button onClick={() => callEndpoint("/api/v1/chain308/master_certification", "CHAIN 308: MASTER v69.0.0, OMEGALANG v16 TLV, 84,480 NEURONS & 820 QED CERTIFICATION")} style={{ background: "#56D364", color: "#050A0E", border: "none", borderRadius: 4, padding: "3px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>CHAIN 308 CERT</button>
@@ -11706,11 +11706,11 @@ export function App() {
               </div>
             </div>
 
-            {/* Dedicated v72.1.0..v73.2.0 Sovereign Harmonic XI (SH-XI) Weeks 1 & 2 Suite (Tools 357..368 | 1,010/1,010 Lean 4 QED) */}
+            {/* Dedicated v72.1.0..v73.2.1 Sovereign Harmonic XI (SH-XI) Weeks 1 & 2 Suite (Tools 357..368 | 1,010/1,010 Lean 4 QED) */}
             <div style={{ background: "#071412", border: "1.5px solid #00E5A0", borderRadius: 5, padding: "7px 10px", marginBottom: 8 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 6, marginBottom: 5 }}>
                 <span style={{ color: "#00E5A0", fontWeight: "bold", fontSize: 10.5 }}>
-                  [v73.2.0 SOVEREIGN HARMONIC XI (SH-XI) WEEKS 1 &amp; 2 — 3-SHELL MATRYOSHKA (384D/768D) + 16/256 SPARSE MOE + CHATML SFT + WGSL RAG (TOOLS 357..368 | 1,010/1,010 QED)]:
+                  [v73.2.1 SOVEREIGN HARMONIC XI (SH-XI) WEEKS 1 &amp; 2 — 3-SHELL MATRYOSHKA (384D/768D) + 16/256 SPARSE MOE + CHATML SFT + WGSL RAG (TOOLS 357..368 | 1,010/1,010 QED)]:
                 </span>
                 <span style={{ color: "#FFB454", fontSize: 9.5, fontWeight: "bold" }}>
                   PromptGradNorm = 0.0 | Run T368 (CHAIN 368) for Live BPB / IFEval / FSM Metrics
@@ -11773,7 +11773,7 @@ export function App() {
                 <button onClick={() => callEndpoint("/api/v1/chain292/master_certification", "TOOL 292: CHAIN 292 MASTER CERTIFICATION (TOOLS 1..292)")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 8px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>T292: CHAIN 292 Cert</button>
                 <button onClick={() => callEndpoint("/api/v1/v63/capability_parity_bput", "TOOL 293: CAPABILITY PARITY & BPUT WIN METRIC (1.607 GiB/tok)")} style={{ background: "#002B24", color: "#00FFCC", border: "1px solid #00FFCC", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>T293: BPUT 1.607G (13.86x)</button>
                 <button onClick={() => callEndpoint("/api/v1/v63/transformer_highway_q16_adapter", "TOOL 294: 7777D KV CACHE & STAGE-4 Q16.16 ADAPTER")} style={{ background: "#1F1030", color: "#B388FF", border: "1px solid #B388FF", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>T294: 7777D KV + Q16.16</button>
-                <button onClick={() => callEndpoint("/api/v1/v63/fdrive_immutable_epoch_vault", "TOOL 295: F:\\ 3TB WORM EPOCH VAULT & YUBIKEY 39651128")} style={{ background: "#3A1C00", color: "#FFB454", border: "1px solid #FFB454", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>🔑 T295: F:\ WORM + YubiKey</button>
+                <button onClick={() => callEndpoint("/api/v1/v63/fdrive_immutable_epoch_vault", "TOOL 295: F:\\ 3TB WORM EPOCH VAULT & YUBIKEY 5C NFC HROT")} style={{ background: "#3A1C00", color: "#FFB454", border: "1px solid #FFB454", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>🔑 T295: F:\ WORM + YubiKey</button>
                 <button onClick={() => callEndpoint("/api/v1/chain296/master_certification", "TOOL 296: CHAIN 296 MASTER CERTIFICATION (TOOLS 1..296 & 750 QED)")} style={{ background: "#0D2618", color: "#56D364", border: "1px solid #56D364", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>T296: CHAIN 296 Cert</button>
                 <button onClick={() => callEndpoint("/api/v1/v68/omegalang_v15_8target_compiler", "TOOL 297: OMEGALANG v15 8-TARGET POLYGLOT COMPILER (0 BRACKETS)")} style={{ background: "#261038", color: "#FF9EFF", border: "1px solid #FF9EFF", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>🧬 T297: OmegaLang v15 (8-Target)</button>
                 <button onClick={() => callEndpoint("/api/v1/v68/k16a_78ns_quarterblock_l1d", "TOOL 298: K16a 78ns / 6.381 TOPS / 31,338x QUARTER-BLOCK L1D")} style={{ background: "#002B24", color: "#00FFCC", border: "1px solid #00FFCC", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>⚡ T298: K16a 78ns (6.38 TOPS)</button>
@@ -11971,7 +11971,7 @@ export function App() {
             <div style={{ background: "#0A0D12", border: "1px solid #2A3B4D", borderRadius: 4, padding: 6, marginBottom: 6, fontSize: 10.5 }}>
               <div style={{ color: "#FFFEFB" }}>&gt; PROMPT: {cmdPrompt}</div>
               <div style={{ color: "#FFB454", marginTop: 2 }}>
-                [SH4Z v7320 (16.00 MiB Bijected / 15.965 Hz Decadic Epoch HUD)]: Work-Stealing={tel.ws_loq_lines}+{tel.ws_p10_lines}+{tel.ws_p8_lines}=2,080 Lines ({tel.cluster_total_kops.toFixed(1)}k ops/s) -- 1,010/1,010 Lean 4 QED -- 84,480 Neurons (1,920x Chair44, 4,055,040 Synapses, 262,144 CLs) -- SH-XI 3-Shell + 16/256 MoE -- OmegaLang v16 (535.73 TOPS / 4.235 POPS) -- Tools 1..404 (CHAIN 368 Suite) -- PPL={e8LeechState.holdout_ppl.toFixed(6)}
+                [SH4Z v7321 (16.00 MiB Bijected / 15.965 Hz Decadic Epoch HUD)]: Work-Stealing={tel.ws_loq_lines}+{tel.ws_p10_lines}+{tel.ws_p8_lines}=2,080 Lines ({tel.cluster_total_kops.toFixed(1)}k ops/s) -- 1,010/1,010 Lean 4 QED -- 84,480 Neurons (1,920x Chair44, 4,055,040 Synapses, 262,144 CLs) -- SH-XI 3-Shell + 16/256 MoE -- OmegaLang v16 (535.73 TOPS / 4.235 POPS) -- Tools 1..404 (CHAIN 404 Suite) -- PPL={e8LeechState.holdout_ppl > 0 ? e8LeechState.holdout_ppl.toFixed(6) : "UNMEASURED/OFFLINE"}
               </div>
               <div style={{ color: "#56D364", marginTop: 2 }}>&gt; OUTPUT: {termOut}</div>
             </div>
@@ -12097,11 +12097,11 @@ export function App() {
             />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 6, maxHeight: 340, overflowY: "auto" }}>
               {[
-                { label: "CHAIN 404: v73.2.0 Unified Lab, Cloudflare VPC Mesh & Hyperdrive, Two-Phase Q8_0 Matryoshka Master Certification (Tools 1..404 & 1,010/1,010 Lean 4 QED)", ep: "/api/v1/tools/t404" },
+                { label: "CHAIN 404: v73.2.1 Unified Lab, Cloudflare VPC Mesh & Hyperdrive, Two-Phase Q8_0 Matryoshka Master Certification (Tools 1..404 & 1,010/1,010 Lean 4 QED)", ep: "/api/v1/tools/t404" },
                 { label: "T400: Cloudflare VPC Service Registry Probe (4/4 Targets Online)", ep: "/api/v1/tools/t400" },
                 { label: "T403: Cloudflare Hyperdrive DuckDB Query (:5439 PGWire TLS)", ep: "/api/v1/tools/t403" },
                 { label: "CHAIN 399: Nov 12-15 Research Kernels (T382..T393)", ep: "/api/v1/chain399/master_certification" },
-                { label: "CHAIN 368: v73.2.0 Sovereign Harmonic XI Weeks 1–2 Master Certification (Tools 1..404 & 1,010/1,010 Lean 4 QED)", ep: "/api/v1/chain368/master_certification" },
+                { label: "CHAIN 368: v73.2.1 Sovereign Harmonic XI Weeks 1–2 Master Certification (Tools 1..404 & 1,010/1,010 Lean 4 QED)", ep: "/api/v1/chain368/master_certification" },
                 { label: "Tool 367: SH-XI Week 2 IFEval-Lite-64 (64/64) & 8-Session Multi-Turn Coherence Gauntlet", ep: "/api/v1/sovereign_harmonic/xi/week2/ifeval_lite_64" },
                 { label: "Tool 366: SH-XI Week 2 Deterministic JSON FSM Grammar-Constrained Tool Caller (100/100)", ep: "/api/v1/sovereign_harmonic/xi/week2/fsm_json_tool" },
                 { label: "Tool 365: SH-XI Week 2 Intel UHD WebGPU WGSL 384D Grounded RAG Engine", ep: "/api/v1/sovereign_harmonic/xi/week2/igpu_grounded_rag" },
@@ -12153,7 +12153,7 @@ export function App() {
                 { label: "CHAIN 296: v63.2.0 Full Omni-Suite (Tools 1..296 & 750/750 Lean 4 QED)", ep: "/api/v1/chain296/master_certification" },
                 { label: "Tool 293: Section 1 Capability Parity & BPUT Win Metric (1.607 GiB/tok)", ep: "/api/v1/v63/capability_parity_bput" },
                 { label: "Tool 294: 7777D Coprime KV Cache & Stage-4 Q16.16 Sidecar Adapter", ep: "/api/v1/v63/transformer_highway_q16_adapter" },
-                { label: "Tool 295: F:\\ 3TB Immutable Decadic Epoch Vault & YubiKey 39651128", ep: "/api/v1/v63/fdrive_immutable_epoch_vault" },
+                { label: "Tool 295: F:\\ 3TB Immutable Decadic Epoch Vault & YubiKey 5C NFC HRoT", ep: "/api/v1/v63/fdrive_immutable_epoch_vault" },
                 { label: "CHAIN 292: v62.0.0 Full Omni-Suite (Tools 1..292 & 800/800 Lean 4 QED)", ep: "/api/v1/chain292/master_certification" },
                 { label: "Tool 289: 7777D Coprime CRT & Good-Thomas PFA", ep: "/api/v1/polytope7777/crt_pfa" },
                 { label: "Tool 290: 3-Stage LS-RVQ & Orthoplex Codebook", ep: "/api/v1/polytope7777/rvq_pvq" },
@@ -12161,7 +12161,7 @@ export function App() {
                 { label: "Tool 287: Vesper-Arachne E8 IK & Click-Through Gate", ep: "/api/v1/vesper_arachne/ik_swarm_companion" },
                 { label: "COORDINATOR: 5-Stage Autopoietic DAG + E:\\ Codegen Write-Back", ep: `/api/v1/coordinator/dag_orchestrator?q=${encodeURIComponent(cmdPrompt)}` },
                 { label: "TOOL 90: v48 Layer 1.5 GHC Haskell Exact Rational Algebra & Codegen", ep: `/api/v1/v48/haskell_layer15_algebra?q=${encodeURIComponent(cmdPrompt)}` },
-                { label: "TOOL 13: Verify All 995/995 Lean 4 Formal Proofs QED", ep: "/api/v1/compiler/verify" }
+                { label: "TOOL 13: Verify All 1,010/1,010 Lean 4 Formal Proofs QED", ep: "/api/v1/compiler/verify" }
               ]
                 .filter((item) => !cmdPaletteFilter.trim() || item.label.toLowerCase().includes(cmdPaletteFilter.toLowerCase()))
                 .map((item) => (
@@ -12347,10 +12347,10 @@ export function App() {
           <div style={{ background: "#101822", borderBottom: "1px solid #2A3B4D", padding: "10px 14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div>
               <div style={{ color: "#00FFCC", fontWeight: "bold", fontSize: 12.5 }}>
-                ACT-OMEGA v73.2.0 OPERATOR MANUAL &amp; STEP-BY-STEP GUIDE (SH-XI MoE | CHAIN 404 | 1,010 QED)
+                ACT-OMEGA v73.2.1 OPERATOR MANUAL &amp; STEP-BY-STEP GUIDE (SH-XI MoE | CHAIN 404 | 1,010 QED)
               </div>
               <div style={{ color: "#9FB0C2", fontSize: 10, marginTop: 2 }}>
-                Live Status: <b style={{ color: "#56D364" }}>ONLINE ({tel.cluster_total_kops.toFixed(1)}k ops/s)</b> | 84,480N (4.05M Synapses / 262,144 CLs) | 1,010/1,010 QED | Tools 1..404 (v73.2.0)
+                Live Status: <b style={{ color: "#56D364" }}>ONLINE ({tel.cluster_total_kops.toFixed(1)}k ops/s)</b> | 84,480N (4.05M Synapses / 262,144 CLs) | 1,010/1,010 QED | Tools 1..404 (v73.2.1)
               </div>
             </div>
             <button
@@ -12407,7 +12407,7 @@ export function App() {
                 </div>
                 <div style={{ marginBottom: 6 }}>
                   <b>Step 1 — Check Live Cluster Status (`sovereign-status`):</b><br />
-                  Open any PowerShell window and type <code>sovereign-status</code>. It verifies all 7 subsystems: Watchdog Sentinel, Host L0 Swarm (`:8097`/`:5173`), Cloudflare Named Tunnel (`act-omega-net.dev`), Pixel 10 (`58170DLCR0004V`), Pixel 8 (`3A121FDJH00BW5`), External Vaults (`E:\` &amp; `G:\`), and the Windows 11 Tray/HUD.
+                  Open any PowerShell window and type <code>sovereign-status</code>. It verifies all 7 subsystems: Watchdog Sentinel, Host L0 Swarm (`:8097`/`:5173`), Cloudflare Named Tunnel (`act-omega-net.dev`), Pixel 10 (Edge-1 Tensor G5), Pixel 8 (Edge-2 P8-APEX), External Vaults (`E:\` &amp; `G:\`), and the Windows 11 Tray/HUD.
                 </div>
                 <div style={{ marginBottom: 6 }}>
                   <b>Step 2 — Bring Everything Online (`ignite` or `sovereign-start`):</b><br />
@@ -12475,7 +12475,7 @@ export function App() {
                   1. Native C++ (`harmonic_engine.cpp`) memory-maps the local `8.11 MB` `.npage` file (`npage_coherence` stays `100%` online with zero USB cable).<br />
                   2. `SovereignLiveBus` automatically fails over across 5 Bearers without dropping a tick:<br />
                   &nbsp;&nbsp;• `B1:USB` (`127.0.0.1:8097` when plugged in)<br />
-                  &nbsp;&nbsp;• `B2:WIFI-LAN` (`10.0.24.243:8097` when unplugged at home)<br />
+                  &nbsp;&nbsp;• `B2:WIFI-LAN` (mDNS / SOVEREIGN_BIND_LAN_IP `:8097` when opted in)<br />
                   &nbsp;&nbsp;• `B3/B4:CF-WAN` (`api.act-omega-net.dev` when away on 5G/LTE)<br />
                   &nbsp;&nbsp;• `B5:CF-EDGE-DO` (`sovereign-loq15-vpc-shadow...workers.dev` if the Host PC is off!)<br />
                   3. Every 500ms, Pixel 10 &amp; Pixel 8 exchange dirty `Chair-44` column deltas (`col=0..1439`) through the Host or Cloudflare Durable Object so their shared memory stays synchronized anywhere.

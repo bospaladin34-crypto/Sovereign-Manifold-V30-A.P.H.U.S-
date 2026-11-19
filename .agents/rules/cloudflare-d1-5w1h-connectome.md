@@ -17,4 +17,4 @@ description: "Apply whenever working with the 5W1H Metabolic Harness, 84,480-Neu
    - `00_control/cloudflare_named_config.yml` enforces `protocol: http2` and tunnel UUID `9cdea4c4-831d-4ccc-983d-5f7587a98206` routing `act-omega-net.dev` -> `127.0.0.1:5173` and `api.act-omega-net.dev` / `mcp.act-omega-net.dev` -> `127.0.0.1:8097`.
 
 4. **Remote Cloudflare D1 (`act_omega_d1_vault`, 10 Tables)**:
-   - Synchronize all 10 tables in `act_omega_d1_vault` (`9f46d56a-ef3e-4232-a9ac-c4bd12e20a87`) with real measured SHA-256 digests, real byte counts, and real hardware timestamps.
+   - Synchronize all 10 tables in `act_omega_d1_vault` (`<EXTERNAL_D1_DATABASE_ID>`) with real measured SHA-256 digests, real byte counts, and real hardware timestamps.

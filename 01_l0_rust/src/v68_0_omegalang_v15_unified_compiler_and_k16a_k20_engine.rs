@@ -760,11 +760,15 @@ pub fn v68_0_dispatch_tool_300_k19_k20_superposition_and_chain300_cert(payload: 
         .count();
 
     let elapsed_us = t0.elapsed().as_secs_f64() * 1_000_000.0;
-    let exact_match = k19_cs == 1406172 && k18b_cs == 13585768992 && k20_cs == -170119;
+    let exact_match = k19_cs == 1406172
+        && k18b_cs == 13585768992
+        && k20_cs == -170119
+        && lean_bytes > 0
+        && lean_theorems >= 800;
     let status_str = if exact_match {
         "CHAIN_300_OMEGALANG_V15_SUPERPOSITION_CERTIFIED_QED"
     } else {
-        "CHAIN_300_LIVE_SUPERPOSITION_MEASURED"
+        "CHAIN_300_NOT_CERTIFIED"
     };
 
     format!(

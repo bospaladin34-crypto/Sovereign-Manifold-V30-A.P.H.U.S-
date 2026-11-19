@@ -1991,8 +1991,18 @@ pub fn v71_1_dispatch_tool_332_sh_eval_256_gauntlet(payload: &str) -> String {
 
     // 3. Invoke Tool 322 (Hard Gate 0 Read-Only Scoring over 32 Frozen Holdout v2 Prompts on F:\)
     let gate0_json = v71_0_dispatch_tool_322_unseen_holdout_evaluator("{}");
-    let gate0_passed = gate0_json.contains("\"gate_0_passed\":true")
-        && !gate0_json.contains("INVALID_RUN_HARD_GATE_0_FAILED");
+    let gate0_passed = serde_json::from_str::<serde_json::Value>(&gate0_json)
+        .ok()
+        .map(|v| {
+            let g0 = v
+                .get("hard_gate_0_frozen_holdout_v2")
+                .and_then(|o| o.get("gate_0_passed"))
+                .and_then(|b| b.as_bool())
+                .unwrap_or(false);
+            let st = v.get("status").and_then(|s| s.as_str()).unwrap_or("");
+            g0 && st != "INVALID_RUN_HARD_GATE_0_FAILED"
+        })
+        .unwrap_or(false);
 
     let elapsed_us = t0.elapsed().as_micros() as u64;
     let status = if gate0_passed
@@ -2318,9 +2328,16 @@ pub fn v71_1_execute_week1_7test_torture_suite(payload: &str) -> String {
     // TEST W1-3: CPU (i5-12450HX AVX2) vs. GPU (RTX 3050 CUDA PTX) Parity
     // -------------------------------------------------------------------------
     let r331 = v71_1_dispatch_tool_331_rtx3050_ptx_gemm_softmax_ce("{}");
-    let w1_3_pass = r331.contains("\"status\":\"MEASURED\"")
-        && r331.contains("\"lark_k1_bit_drift\":0")
-        && r331.contains("\"lark_k2_bit_drift\":0");
+    let w1_3_pass = serde_json::from_str::<serde_json::Value>(&r331)
+        .ok()
+        .and_then(|v| {
+            let st = v.get("status")?.as_str()?;
+            let ex = v.get("rtx3050_ptx_execution")?;
+            let k1 = ex.get("lark_k1_bit_drift")?.as_u64()?;
+            let k2 = ex.get("lark_k2_bit_drift")?.as_u64()?;
+            Some(st == "MEASURED" && k1 == 0 && k2 == 0)
+        })
+        .unwrap_or(false);
 
     // -------------------------------------------------------------------------
     // TEST W1-4: Wireless Rooted Pixel 8 (:8098) Speculative Draft Burst
@@ -2425,9 +2442,11 @@ pub fn v71_1_execute_week1_7test_torture_suite(payload: &str) -> String {
     let canary_prompt = "FROZEN_CANARY_LEAK_TEST_PROMPT_V2";
     let canary_hash = v71_fnv1a_64_str(canary_prompt);
     let redteam_caught_leak = canary_hash == v71_fnv1a_64_str(canary_prompt);
-    let w1_5_pass = r322.contains("\"gate_0_passed\":true")
-        && weights_unmutated_by_t322
-        && redteam_caught_leak;
+    let r322_gate0_ok = serde_json::from_str::<serde_json::Value>(&r322)
+        .ok()
+        .and_then(|v| v.get("hard_gate_0_frozen_holdout_v2")?.get("gate_0_passed")?.as_bool())
+        .unwrap_or(false);
+    let w1_5_pass = r322_gate0_ok && weights_unmutated_by_t322 && redteam_caught_leak;
 
     // -------------------------------------------------------------------------
     // TEST W1-6: 15.965 Hz Decadic RoPE Sequence-Length Extrapolation (16..512)
@@ -2515,9 +2534,19 @@ pub fn v71_1_execute_week1_7test_torture_suite(payload: &str) -> String {
     let r330 = v71_1_dispatch_tool_330_bptt_stiefel_cayley_optimizer("{\"epochs\":6}");
     let r332 = v71_1_dispatch_tool_332_sh_eval_256_gauntlet("{}");
     let r333 = v71_1_dispatch_tool_333_ablation_and_stress_matrix("{}");
-    let w1_7_pass = r330.contains("\"loss_strictly_reduced\":true")
-        && r332.contains("\"status\":\"MEASURED\"")
-        && r333.contains("\"all_components_strictly_beneficial\":true");
+    let r330_reduced = serde_json::from_str::<serde_json::Value>(&r330)
+        .ok()
+        .and_then(|v| v.get("holdout_convergence")?.get("loss_strictly_reduced")?.as_bool())
+        .unwrap_or(false);
+    let r332_meas = serde_json::from_str::<serde_json::Value>(&r332)
+        .ok()
+        .and_then(|v| Some(v.get("status")?.as_str()? == "MEASURED"))
+        .unwrap_or(false);
+    let r333_ben = serde_json::from_str::<serde_json::Value>(&r333)
+        .ok()
+        .and_then(|v| v.get("all_components_strictly_beneficial")?.as_bool())
+        .unwrap_or(false);
+    let w1_7_pass = r330_reduced && r332_meas && r333_ben;
 
     let all_7_passed =
         w1_1_pass && w1_2_pass && w1_3_pass && w1_4_pass && w1_5_pass && w1_6_pass && w1_7_pass;
@@ -2594,17 +2623,50 @@ pub fn v71_1_dispatch_tool_334_week1_master_certification(payload: &str) -> Stri
     let r333 = v71_1_dispatch_tool_333_ablation_and_stress_matrix("{}");
     let r322 = v71_0_dispatch_tool_322_unseen_holdout_evaluator("{}");
 
-    let g1_deep12l_ok = r329.contains("\"status\":\"MEASURED\"");
-    let g2_bptt_cayley_ok =
-        r330.contains("\"status\":\"MEASURED\"") && r330.contains("\"loss_strictly_reduced\":true");
-    let g3_rtx3050_gemm_ok =
-        r331.contains("\"status\":\"MEASURED\"") && r331.contains("\"lark_k1_bit_drift\":0");
-    let g4_eval256_ok = r332.contains("\"status\":\"MEASURED\"")
-        && r332.contains("\"sh_eval_256_trainer_overlap\":0");
-    let g5_ablation_ok = r333.contains("\"status\":\"MEASURED\"")
-        && r333.contains("\"all_components_strictly_beneficial\":true");
-    let g6_hard_gate_0_ok = r322.contains("\"gate_0_passed\":true")
-        && !r322.contains("INVALID_RUN_HARD_GATE_0_FAILED");
+    let g1_deep12l_ok = serde_json::from_str::<serde_json::Value>(&r329)
+        .ok()
+        .and_then(|v| Some(v.get("status")?.as_str()? == "MEASURED"))
+        .unwrap_or(false);
+    let g2_bptt_cayley_ok = serde_json::from_str::<serde_json::Value>(&r330)
+        .ok()
+        .and_then(|v| {
+            let st = v.get("status")?.as_str()? == "MEASURED";
+            let red = v.get("holdout_convergence")?.get("loss_strictly_reduced")?.as_bool()?;
+            Some(st && red)
+        })
+        .unwrap_or(false);
+    let g3_rtx3050_gemm_ok = serde_json::from_str::<serde_json::Value>(&r331)
+        .ok()
+        .and_then(|v| {
+            let st = v.get("status")?.as_str()? == "MEASURED";
+            let k1 = v.get("rtx3050_ptx_execution")?.get("lark_k1_bit_drift")?.as_u64()? == 0;
+            Some(st && k1)
+        })
+        .unwrap_or(false);
+    let g4_eval256_ok = serde_json::from_str::<serde_json::Value>(&r332)
+        .ok()
+        .and_then(|v| {
+            let st = v.get("status")?.as_str()? == "MEASURED";
+            let ov = v.get("hard_gate_0_lockstep")?.get("sh_eval_256_trainer_overlap")?.as_u64()? == 0;
+            Some(st && ov)
+        })
+        .unwrap_or(false);
+    let g5_ablation_ok = serde_json::from_str::<serde_json::Value>(&r333)
+        .ok()
+        .and_then(|v| {
+            let st = v.get("status")?.as_str()? == "MEASURED";
+            let ben = v.get("all_components_strictly_beneficial")?.as_bool()?;
+            Some(st && ben)
+        })
+        .unwrap_or(false);
+    let g6_hard_gate_0_ok = serde_json::from_str::<serde_json::Value>(&r322)
+        .ok()
+        .and_then(|v| {
+            let g0 = v.get("hard_gate_0_frozen_holdout_v2")?.get("gate_0_passed")?.as_bool()?;
+            let st = v.get("status")?.as_str()?;
+            Some(g0 && st != "INVALID_RUN_HARD_GATE_0_FAILED")
+        })
+        .unwrap_or(false);
 
     let lean_theorems = v71_1_live_lean4_theorem_count();
     let g7_lean4_ok = lean_theorems >= 905;
@@ -2626,8 +2688,13 @@ pub fn v71_1_dispatch_tool_334_week1_master_certification(payload: &str) -> Stri
     };
 
     let elapsed_ms = t0.elapsed().as_millis().max(1) as u64;
+    let proof_tag = if all_passed {
+        "WEEK1_SH_DEEP_12L_BPTT_EVAL256_CHAIN334_905QED_CERTIFIED"
+    } else {
+        "UNMEASURED_WEEK1_CHAIN334_GATES_INCOMPLETE"
+    };
     let out_json = format!(
-        "{{\"status\":\"{}\",\"tool_id\":334,\"chain\":\"CHAIN_334\",\"version\":\"v71.1.0\",\"engine\":\"SOVEREIGN_HARMONIC_WEEK1_MASTER_CERTIFICATION\",\"elapsed_ms\":{},\"gates\":{{\"g1_sh_deep_12l_stack_verified\":{},\"g2_bptt_stiefel_cayley_verified\":{},\"g3_rtx3050_ptx_gemm_softmax_verified\":{},\"g4_sh_eval_256_gauntlet_verified\":{},\"g5_6way_ablation_monotonic_verified\":{},\"g6_hard_gate_0_frozen_v2_32_verified\":{},\"g7_lean4_905_theorems_verified\":{},\"all_week1_gates_passed\":{}}},\"lean4_theorems_qed\":{},\"total_tools\":334,\"receipt_path\":\"{}\",\"lean4_theorems_verified\":\"thm_v71_1_891..905\",\"proof\":\"WEEK1_SH_DEEP_12L_BPTT_EVAL256_CHAIN334_905QED_CERTIFIED | AllGates={} | Gate0={} | Lean4={}\"}}",
+        "{{\"status\":\"{}\",\"tool_id\":334,\"chain\":\"CHAIN_334\",\"version\":\"v71.1.0\",\"engine\":\"SOVEREIGN_HARMONIC_WEEK1_MASTER_CERTIFICATION\",\"elapsed_ms\":{},\"gates\":{{\"g1_sh_deep_12l_stack_verified\":{},\"g2_bptt_stiefel_cayley_verified\":{},\"g3_rtx3050_ptx_gemm_softmax_verified\":{},\"g4_sh_eval_256_gauntlet_verified\":{},\"g5_6way_ablation_monotonic_verified\":{},\"g6_hard_gate_0_frozen_v2_32_verified\":{},\"g7_lean4_905_theorems_verified\":{},\"all_week1_gates_passed\":{}}},\"lean4_theorems_qed\":{},\"total_tools\":334,\"receipt_path\":\"{}\",\"lean4_theorems_verified\":\"thm_v71_1_891..905\",\"proof\":\"{} | AllGates={} | Gate0={} | Lean4={}\"}}",
         status,
         elapsed_ms,
         g1_deep12l_ok,
@@ -2640,6 +2707,7 @@ pub fn v71_1_dispatch_tool_334_week1_master_certification(payload: &str) -> Stri
         all_passed,
         lean_theorems,
         C_SH_WEEK1_RECEIPT_PATH,
+        proof_tag,
         all_passed,
         g6_hard_gate_0_ok,
         lean_theorems

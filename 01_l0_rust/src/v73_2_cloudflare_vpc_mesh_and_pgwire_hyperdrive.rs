@@ -15,9 +15,7 @@ use crate::v61_gemma4_multimodal_ple_speculative_cascade_and_mcp_suite::v61_esca
 use crate::v73_0_unified_standalone_lab_bridge::{
     v73_0_probe_station_live_json, V73_0_UNIFIED_MANIFEST_PATH,
 };
-use crate::v73_1_nov12_15_research_kernels::{
-    v73_1_dispatch_chain399_master_certification, V73_1_LEAN_VAULT_PATH,
-};
+use crate::v73_1_nov12_15_research_kernels::v73_1_dispatch_chain399_master_certification;
 
 pub const V73_2_VPC_MESH_YML_PATH: &str = "C:\\sovereign_manifold_v31\\00_control\\cloudflare_vpc_mesh_quic.yml";
 pub const V73_2_VPC_MESH_LOG_PATH: &str = "C:\\sovereign_manifold_v31\\00_control\\cloudflared_vpc_mesh.log";
@@ -27,28 +25,6 @@ pub const V73_2_DUCKDB_EXE_PATH: &str = "C:\\sovereign_manifold_v31\\00_control\
 pub const V73_2_DUCKDB_CORPUS_PATH: &str = "E:\\Sovereign_Manifold_SSD_Vault\\training_corpus\\sh_rw_corpus_v7210.duckdb";
 pub const V73_2_PGWIRE_CERT_PATH: &str = "C:\\Users\\Nbell\\.act_omega_pgwire_tls\\server.pem";
 pub const V73_2_PGWIRE_CA_PATH: &str = "C:\\Users\\Nbell\\.act_omega_pgwire_tls\\ca.pem";
-
-fn v73_2_count_lean_theorems_and_sorries() -> (usize, usize) {
-    let Ok(txt) = fs::read_to_string(V73_1_LEAN_VAULT_PATH) else {
-        return (0, 1);
-    };
-    let mut theorems = 0usize;
-    let mut sorries = 0usize;
-    for line in txt.lines() {
-        let trimmed = line.trim_start();
-        if trimmed.starts_with("theorem ") {
-            theorems += 1;
-        }
-        if !trimmed.starts_with("--")
-            && trimmed
-                .split(|c: char| !c.is_ascii_alphanumeric() && c != '_')
-                .any(|tok| tok == "sorry")
-        {
-            sorries += 1;
-        }
-    }
-    (theorems, sorries)
-}
 
 fn v73_2_tcp_connect_ms(port: u16, timeout_ms: u64, send_pg_cancel: bool) -> Result<f64, &'static str> {
     let addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::LOCALHOST), port);
@@ -88,29 +64,95 @@ fn v73_2_extract_json_string_field(payload: &str, key: &str) -> Option<String> {
     None
 }
 
-fn v73_2_is_readonly_sql(sql: &str) -> bool {
-    let trimmed = sql.trim().trim_end_matches(';').trim();
-    if trimmed.is_empty() || trimmed.contains(';') {
-        return false;
-    }
-    let upper = trimmed.to_ascii_uppercase();
-    let valid_start = upper.starts_with("SELECT")
-        || upper.starts_with("WITH")
-        || upper.starts_with("EXPLAIN")
-        || upper.starts_with("SHOW");
-    if !valid_start {
-        return false;
-    }
-    let forbidden = vec!(
-        "INSERT", "UPDATE", "DELETE", "DROP", "CREATE", "ALTER", "TRUNCATE",
-        "ATTACH", "DETACH", "COPY", "EXPORT", "IMPORT", "CALL", "MERGE", "REPLACE",
-    );
-    for kw in forbidden.iter() {
-        if upper.contains(kw) {
-            return false;
+fn v73_2_has_raw_sql_param(payload: &str) -> bool {
+    if let Ok(val) = serde_json::from_str::<serde_json::Value>(payload) {
+        if let Some(obj) = val.as_object() {
+            if obj.contains_key("sql") {
+                return true;
+            }
         }
     }
-    true
+    let trimmed = payload.trim();
+    if trimmed.contains("\"sql\"") || trimmed.contains("?sql=") || trimmed.contains("&sql=") || trimmed.starts_with("sql=") {
+        return true;
+    }
+    false
+}
+
+fn v73_2_extract_query_param_str(raw: &str, key: &str) -> Option<String> {
+    let q_start = raw.find('?')?;
+    let qs = raw.get((q_start + 1)..)?;
+    let prefix = format!("{}=", key);
+    for pair in qs.split('&') {
+        if let Some(val) = pair.strip_prefix(&prefix) {
+            let clean = val.trim();
+            if !clean.is_empty() {
+                return Some(String::from(clean));
+            }
+        }
+    }
+    None
+}
+
+fn v73_2_resolve_allowlisted_duckdb_query(payload: &str) -> Result<(String, String), (&'static str, &'static str)> {
+    if v73_2_has_raw_sql_param(payload) {
+        return Err((
+            "REJECTED_ARBITRARY_SQL_FORBIDDEN",
+            "Free-form SQL is prohibited; specify allowlisted query_id",
+        ));
+    }
+    let parsed_json = serde_json::from_str::<serde_json::Value>(payload).ok();
+    let query_id = parsed_json
+        .as_ref()
+        .and_then(|v| v.get("query_id"))
+        .and_then(|x| x.as_str())
+        .map(|s| String::from(s.trim()))
+        .or_else(|| v73_2_extract_json_string_field(payload, "query_id"))
+        .or_else(|| v73_2_extract_query_param_str(payload, "query_id"))
+        .filter(|s| !s.is_empty())
+        .unwrap_or_else(|| String::from("corpus_doc_count"));
+
+    if query_id == "corpus_doc_count" {
+        Ok((
+            query_id,
+            String::from("SELECT count(*) AS docs_count, COALESCE(sum(char_bytes), 0) AS total_char_bytes FROM corpus_docs"),
+        ))
+    } else if query_id == "corpus_track_summary" {
+        Ok((
+            query_id,
+            String::from("SELECT track_id, track_name, count(*) AS docs_count, COALESCE(sum(char_bytes), 0) AS track_char_bytes FROM corpus_docs GROUP BY track_id, track_name ORDER BY track_id ASC"),
+        ))
+    } else if query_id == "corpus_docs_by_track" {
+        let track_id = parsed_json
+            .as_ref()
+            .and_then(|v| v.get("track_id"))
+            .and_then(|x| x.as_u64())
+            .or_else(|| v73_2_extract_query_param_str(payload, "track_id").and_then(|s| s.parse::<u64>().ok()))
+            .unwrap_or(0)
+            .min(15);
+        let limit = parsed_json
+            .as_ref()
+            .and_then(|v| v.get("limit"))
+            .and_then(|x| x.as_u64())
+            .or_else(|| v73_2_extract_query_param_str(payload, "limit").and_then(|s| s.parse::<u64>().ok()))
+            .unwrap_or(10)
+            .clamp(1, 50);
+        let sql = format!(
+            "SELECT doc_id, track_id, track_name, char_bytes, is_zero_bracket, minhash64 FROM corpus_docs WHERE track_id = {} ORDER BY doc_id ASC LIMIT {}",
+            track_id, limit
+        );
+        Ok((query_id, sql))
+    } else if query_id == "corpus_zero_bracket_stats" {
+        Ok((
+            query_id,
+            String::from("SELECT is_zero_bracket, count(*) AS docs_count FROM corpus_docs GROUP BY is_zero_bracket ORDER BY is_zero_bracket DESC"),
+        ))
+    } else {
+        Err((
+            "REJECTED_UNKNOWN_QUERY_ID",
+            "Unknown query_id; allowed: corpus_doc_count, corpus_track_summary, corpus_docs_by_track, corpus_zero_bracket_stats",
+        ))
+    }
 }
 
 /// T400: Cloudflare Workers VPC Service Registry & Endpoint Health Probe
@@ -221,12 +263,12 @@ pub fn v73_2_dispatch_tool_401_mesh_device_roster(_payload: &str) -> String {
 
     let nodes_json = format!(
         "\x5b{},{},{},{},{},{}\x5d",
-        fmt_sock("anchor-1-lenovo-loq15-wifi", "10.0.24.243/32", 8097, &rtt_anchor),
-        fmt_sock("anchor-1-host-hotspot", "192.168.137.1/32", 8099, &rtt_deno),
+        fmt_sock("anchor-1-lenovo-loq15-wifi", "lan-wifi/32", 8097, &rtt_anchor),
+        fmt_sock("anchor-1-host-hotspot", "lan-hotspot/32", 8099, &rtt_deno),
         fmt_sock("anchor-1-duckdb-pgwire-tls", "127.0.0.1/32", 5439, &rtt_pgwire),
-        fmt_sock("edge-1-pixel10-58170DLCR0004V", "10.0.24.255/32", 19788, &rtt_p10),
-        fmt_sock("edge-2-pixel8-pocket-http", "192.168.137.8/32", 19792, &rtt_p8_http),
-        fmt_sock("edge-2-pixel8-ksu-apex", "192.168.137.8/32", 8098, &rtt_p8_ksu),
+        fmt_sock("edge-1-pixel10-npu", "edge-1-lan/32", 19788, &rtt_p10),
+        fmt_sock("edge-2-pixel8-pocket-http", "edge-2-lan/32", 19792, &rtt_p8_http),
+        fmt_sock("edge-2-pixel8-ksu-apex", "edge-2-lan/32", 8098, &rtt_p8_ksu),
     );
 
     let elapsed_ms = t0.elapsed().as_secs_f64() * 1000.0;
@@ -276,39 +318,39 @@ pub fn v73_2_dispatch_tool_402_pgwire_duckdb_audit(_payload: &str) -> String {
     )
 }
 
-/// T403: Read-Only Analytical DuckDB Query & Hyperdrive/PGWire Digest
+/// T403: Allowlisted Parameterized Read-Only Analytical DuckDB Query (External Access Disabled per S1)
 pub fn v73_2_dispatch_tool_403_hyperdrive_duckdb_query(payload: &str) -> String {
     let t0 = Instant::now();
-    let default_sql = "SELECT count(*) AS docs_count FROM corpus_docs;";
-    let sql = v73_2_extract_json_string_field(payload, "sql")
-        .filter(|s| !s.trim().is_empty())
-        .unwrap_or_else(|| String::from(default_sql));
-
-    if !v73_2_is_readonly_sql(&sql) {
-        return format!(
-            "{{\"ok\":false,\"status\":\"REJECTED_NON_READONLY_SQL\",\"tool_id\":403,\"tool_name\":\"cloudflare_hyperdrive_duckdb_query\",\"sql\":\"{}\"}}",
-            v61_escape_clean(&sql)
-        );
-    }
+    let (query_id, canned_sql) = match v73_2_resolve_allowlisted_duckdb_query(payload) {
+        Ok(pair) => pair,
+        Err((code, msg)) => {
+            return format!(
+                "{{\"ok\":false,\"status\":\"{}\",\"tool_id\":403,\"tool_name\":\"cloudflare_hyperdrive_duckdb_query\",\"error\":\"{}\"}}",
+                code,
+                v61_escape_clean(msg)
+            );
+        }
+    };
 
     if fs::metadata(V73_2_DUCKDB_EXE_PATH).is_err() || fs::metadata(V73_2_DUCKDB_CORPUS_PATH).is_err() {
-        return format!(
-            "{{\"ok\":false,\"status\":\"UNMEASURED/OFFLINE\",\"tool_id\":403,\"tool_name\":\"cloudflare_hyperdrive_duckdb_query\",\"reason\":\"duckdb_exe_or_corpus_missing\"}}"
+        return String::from(
+            "{\"ok\":false,\"status\":\"UNMEASURED/OFFLINE\",\"tool_id\":403,\"tool_name\":\"cloudflare_hyperdrive_duckdb_query\",\"reason\":\"duckdb_exe_or_corpus_missing\"}",
         );
     }
 
-    let cleaned_sql = sql.trim().trim_end_matches(';');
     let out_res = Command::new(V73_2_DUCKDB_EXE_PATH)
         .arg("-readonly")
         .arg("-json")
         .arg(V73_2_DUCKDB_CORPUS_PATH)
+        .arg("-cmd")
+        .arg("SET enable_external_access=false; SET lock_configuration=true;")
         .arg("-c")
-        .arg(cleaned_sql)
+        .arg(&canned_sql)
         .output();
 
     let elapsed_ms = t0.elapsed().as_secs_f64() * 1000.0;
     let wf_toml = fs::read_to_string(V73_2_WRANGLER_WORKFLOW_TOML_PATH).unwrap_or_default();
-    let hyperdrive_configured = wf_toml.contains("934af8d9f02d471cb383cb8c90ddfe51");
+    let hyperdrive_configured = wf_toml.contains("ACT_OMEGA_HYPERDRIVE");
 
     match out_res {
         Ok(out) if out.status.success() => {
@@ -319,17 +361,18 @@ pub fn v73_2_dispatch_tool_403_hyperdrive_duckdb_query(payload: &str) -> String 
                 stdout_str
             };
             format!(
-                "{{\"ok\":true,\"status\":\"MEASURED_DUCKDB_HYPERDRIVE_READY\",\"tool_id\":403,\"tool_name\":\"cloudflare_hyperdrive_duckdb_query\",\"hyperdrive_config_present\":{},\"elapsed_ms\":{:.3},\"sql\":\"{}\",\"rows\":{}}}",
+                "{{\"ok\":true,\"status\":\"MEASURED_DUCKDB_HYPERDRIVE_READY\",\"tool_id\":403,\"tool_name\":\"cloudflare_hyperdrive_duckdb_query\",\"query_id\":\"{}\",\"external_access_disabled\":true,\"hyperdrive_config_present\":{},\"elapsed_ms\":{:.3},\"rows\":{}}}",
+                v61_escape_clean(&query_id),
                 hyperdrive_configured,
                 elapsed_ms,
-                v61_escape_clean(cleaned_sql),
                 safe_json
             )
         }
         Ok(out) => {
             let err_str = String::from_utf8_lossy(&out.stderr).trim().to_string();
             format!(
-                "{{\"ok\":false,\"status\":\"DUCKDB_SQL_ERROR\",\"tool_id\":403,\"tool_name\":\"cloudflare_hyperdrive_duckdb_query\",\"elapsed_ms\":{:.3},\"error\":\"{}\"}}",
+                "{{\"ok\":false,\"status\":\"DUCKDB_SQL_ERROR\",\"tool_id\":403,\"tool_name\":\"cloudflare_hyperdrive_duckdb_query\",\"query_id\":\"{}\",\"elapsed_ms\":{:.3},\"error\":\"{}\"}}",
+                v61_escape_clean(&query_id),
                 elapsed_ms,
                 v61_escape_clean(&err_str)
             )
@@ -341,26 +384,44 @@ pub fn v73_2_dispatch_tool_403_hyperdrive_duckdb_query(payload: &str) -> String 
     }
 }
 
-/// T404: CHAIN 404 Master Certification (VPC Services + Mesh + TLS PGWire + Hyperdrive + CHAIN 399)
+fn v73_2_json_ok_flag(raw_json: &str) -> bool {
+    serde_json::from_str::<serde_json::Value>(raw_json)
+        .ok()
+        .and_then(|v| v.get("ok").and_then(|b| b.as_bool()))
+        .unwrap_or(false)
+}
+
+/// T404: CHAIN 404 Master Certification (Strict serde_json + Manifest Weight SHA-256 + Lean 4 Compiler Proof per C1/E5)
 pub fn v73_2_dispatch_chain404_master_certification(payload: &str) -> String {
     let t0 = Instant::now();
     let t400 = v73_2_dispatch_tool_400_vpc_registry_probe(payload);
     let t401 = v73_2_dispatch_tool_401_mesh_device_roster(payload);
     let t402 = v73_2_dispatch_tool_402_pgwire_duckdb_audit(payload);
-    let t403 = v73_2_dispatch_tool_403_hyperdrive_duckdb_query(payload);
+    let t403 = v73_2_dispatch_tool_403_hyperdrive_duckdb_query("{}");
     let c399 = v73_1_dispatch_chain399_master_certification(payload);
-    let (lean_theorems, lean_sorries) = v73_2_count_lean_theorems_and_sorries();
+
+    let (lean_verified, lean_theorems, lean_sorries, lean_sha256) =
+        crate::v73_1_nov12_15_research_kernels::v73_1_verify_lean4_compiler_and_mirror();
+    let weights_res = crate::v72_1_sh_xi_matryoshka_384_768_cuda_pretrainer::v72_1_verify_entire_weight_manifest();
+    let weights_manifest_ok = weights_res.is_ok();
+    let weights_verified_count = weights_res.unwrap_or(0);
     let lab_manifest_ok = fs::metadata(V73_0_UNIFIED_MANIFEST_PATH).is_ok();
 
-    let p35_ok = t400.contains("\"ok\":true")
-        && t401.contains("\"ok\":true")
-        && t402.contains("\"ok\":true")
-        && t403.contains("\"ok\":true");
-    let c399_ok = c399.contains("\"ok\":true");
-    let all_ok = p35_ok && c399_ok && lean_sorries == 0 && lean_theorems >= 1010;
+    let p35_ok = v73_2_json_ok_flag(&t400)
+        && v73_2_json_ok_flag(&t401)
+        && v73_2_json_ok_flag(&t402)
+        && v73_2_json_ok_flag(&t403);
+    let c399_ok = v73_2_json_ok_flag(&c399);
+    let all_ok = p35_ok
+        && c399_ok
+        && weights_manifest_ok
+        && lab_manifest_ok
+        && lean_verified
+        && lean_sorries == 0
+        && lean_theorems > 0;
     let status = if all_ok {
         "MEASURED_CHAIN404_CERTIFIED"
-    } else if p35_ok {
+    } else if p35_ok && weights_manifest_ok && lean_verified {
         "MEASURED_CHAIN404_PARTIAL"
     } else {
         "UNMEASURED/OFFLINE"
@@ -368,9 +429,14 @@ pub fn v73_2_dispatch_chain404_master_certification(payload: &str) -> String {
     let elapsed_ms = t0.elapsed().as_secs_f64() * 1000.0;
 
     format!(
-        "{{\"ok\":{},\"status\":\"{}\",\"version\":\"v73.2.0\",\"chain_milestone\":\"CHAIN 404\",\"tools_total\":404,\"lean4_theorems_qed\":{},\"lean_sorry_count\":{},\"unified_lab_manifest_present\":{},\"p35_cloudflare_vpc_hyperdrive_ok\":{},\"chain399_ok\":{},\"elapsed_ms\":{:.3},\"t400\":{},\"t401\":{},\"t402\":{},\"t403\":{},\"chain399\":{}}}",
+        "{{\"ok\":{},\"certified\":{},\"status\":\"{}\",\"version\":\"v73.2.1\",\"chain_milestone\":\"CHAIN 404\",\"tools_total\":404,\"weights_manifest_ok\":{},\"weights_verified_count\":{},\"lean4_compiler_verified\":{},\"lean4_sha256\":\"{}\",\"lean4_theorems_qed\":{},\"lean_sorry_count\":{},\"unified_lab_manifest_present\":{},\"p35_cloudflare_vpc_hyperdrive_ok\":{},\"chain399_ok\":{},\"elapsed_ms\":{:.3},\"t400\":{},\"t401\":{},\"t402\":{},\"t403\":{},\"chain399\":{}}}",
+        all_ok,
         all_ok,
         status,
+        weights_manifest_ok,
+        weights_verified_count,
+        lean_verified,
+        lean_sha256,
         lean_theorems,
         lean_sorries,
         lab_manifest_ok,

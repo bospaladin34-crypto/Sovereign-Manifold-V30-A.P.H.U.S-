@@ -15,7 +15,7 @@
 [![Lean 4 Proofs](https://img.shields.io/badge/Lean_4_Proofs-384_Base_/_400_Runtime_QED_(0_Sorry_%7C_0_True_:_Prop)-00BFFF?style=for-the-badge)](https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-/tree/vesper_production/01_l0_rust/lean4)
 [![Tool Lattice](https://img.shields.io/badge/Tools-80_/_80_(CHAIN_80_Dynamic_Hardware_Probes)-FFD700?style=for-the-badge)](https://mcp.act-omega-net.dev/mcp)
 [![Tri-Silicon Cluster](https://img.shields.io/badge/Tri--Silicon_Cluster-LOQ15_%2B_Pixel10_%2B_Pixel8_(~4,512.5k_ops/s)-00FF66?style=for-the-badge)](https://act-omega-net.dev)
-[![Cloudflare D1 Vault](https://img.shields.io/badge/Cloudflare_D1_Vault-9f46d56a_(10_Tables_Live_SQL)-F38020?style=for-the-badge)](https://mcp.act-omega-net.dev/v1/d1/status)
+[![Cloudflare D1 Vault](https://img.shields.io/badge/Cloudflare_D1_Vault-act__omega__d1__vault_(10_Tables_Live_SQL)-F38020?style=for-the-badge)](https://mcp.act-omega-net.dev/v1/d1/status)
 [![Operator Manual](https://img.shields.io/badge/Operator_Manual-USER__MANUAL__AND__FAQ.md_%2B_HUD_Sidebar-34A853?style=for-the-badge)](./USER_MANUAL_AND_FAQ.md)
 
 ## 📖 Step-by-Step Operator User Manual & Interactive HUD Sidebar (`v44.4.0`)
@@ -50,7 +50,7 @@
   * **Interactive Architecture Wiki:** [`https://act-omega-net.dev/wiki.html`](https://act-omega-net.dev/wiki.html)
   * **A2A v1.0 Agent Discovery Card:** [`https://act-omega-net.dev/.well-known/agent.json`](https://act-omega-net.dev/.well-known/agent.json) (Local: `http://127.0.0.1:8080/.well-known/agent.json`)
   * **Streamable HTTP MCP & OpenAI `/v1` Gateway:** [`https://mcp.act-omega-net.dev/mcp`](https://mcp.act-omega-net.dev/mcp) | [`https://mcp.act-omega-net.dev/v1/models`](https://mcp.act-omega-net.dev/v1/models) | [`https://mcp.act-omega-net.dev/v1/d1/status`](https://mcp.act-omega-net.dev/v1/d1/status)
-  * **Cloudflare D1 Edge Vault (`act_omega_d1_vault`):** Account `a37cf8ab07e7c5f886c302be3f098744` | Database UUID `9f46d56a-ef3e-4232-a9ac-c4bd12e20a87`
+  * **Cloudflare D1 Edge Vault (`act_omega_d1_vault`):** Account `<EXTERNAL_CF_ACCOUNT_ID>` | Database UUID `<EXTERNAL_D1_DATABASE_ID>`
 
 ---
 
@@ -127,5 +127,5 @@ ACT-Omega Net v43.0.0 locks the physical-to-topological transducer to **`15.965 
 - **Tool 51 (`/api/v1/mcp/code_mode_roots` & `/code_mode` / `/roots`):** **Cloudflare Code-Mode MCP (`< 1,000` Tokens, `-94.38%` context reduction)** & **MCP `roots/list` Canonical Path-Locking Guard** across all 8 sovereign workspace roots.
 - **Tool 52 (`/api/v1/memory/longterm_autolearn` & `/longterm` / `/autolearn`):** **Permanent Auto-Learning Long-Term Memory Bank (`03_vault\connectome\episodic_longterm_memory_v4300.jsonl`)** that automatically saves, indexes, and recalls from every prompt and response across `/converse`, `/v1/chat/completions`, `/speech`, and `/mcp`.
 - **Tool 53 (`/.well-known/agent.json` & `/api/v1/a2a/tasks`):** **Native Google Agent2Agent (`A2A`) Tri-Silicon & FOSS IDE Mesh** coordinating LOQ 15 Host, Pixel 10 G5, Pixel 8 `P8-APEX`, and **Zed + Goose + Cline** (`AGENTS.md` + `00_control\ide_configs\`).
-- **Tool 54 (`/api/v1/devops/atomic_delta_engine`):** **GZip-Base64 Zero-Backtick Atomic Delta Engine (`-87.4%` script compression, `0` backticks, `0` pipes)** synced to remote 5 GB Cloudflare D1 (`9f46d56a-ef3e-4232-a9ac-c4bd12e20a87`).
+- **Tool 54 (`/api/v1/devops/atomic_delta_engine`):** **GZip-Base64 Zero-Backtick Atomic Delta Engine (`-87.4%` script compression, `0` backticks, `0` pipes)** synced to remote 5 GB Cloudflare D1 (`<EXTERNAL_D1_DATABASE_ID>`).
 - **Historic Milestone — `354 Base + 10 Runtime = 300 Lean 4 CIC Proofs QED` (`0 sorry`):** Theorems `001..294` + Runtime Checks `295..300`.

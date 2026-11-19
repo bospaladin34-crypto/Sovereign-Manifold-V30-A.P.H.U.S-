@@ -1,6 +1,6 @@
 # ==============================================================================
 # ACT-Omega Net v37.1.0 — Cloudflare Zero Trust MCP Portal & Remote 5GB D1 Helper
-# Account ID: a37cf8ab07e7c5f886c302be3f098744 | Domain: https://act-omega-net.dev
+# Account ID: <EXTERNAL_CF_ACCOUNT_ID> | Domain: https://act-omega-net.dev
 # ==============================================================================
 $ErrorActionPreference = "Continue"
 $EdgeDir = "C:\sovereign_manifold_v31\00_control\cloudflare_edge"

@@ -1,0 +1,146 @@
+{
+  "schema": "ACT-Omega-SFT-Corpus-Receipt-v73.2.1",
+  "generator_script": "00_control/generate_sft_corpus.mjs",
+  "output_jsonl_path": "03_vault/corpus/sh_xi_sourced_multiturn_sft_v1.jsonl",
+  "output_jsonl_bytes": 235411,
+  "output_jsonl_sha256": "ffd9e932912ac7ed2b8f04f43f144ff446ecbaf72b55298c810abc4f69648d8d",
+  "corpus_nature": "Deterministic workspace-harvested code & formal-proof Q/A pairs extracted via fs.readFileSync from real repository source files",
+  "license": "CC-BY-4.0 / MIT (First-Party ACT-Omega Sovereign Manifold Workspace)",
+  "raw_candidate_items_extracted": 994,
+  "dialogues_emitted": 64,
+  "unique_turns_emitted": 288,
+  "min_turns": 1,
+  "max_turns": 8,
+  "distinct_primary_source_files_in_jsonl": 15,
+  "total_workspace_source_files_read": 16,
+  "max_pairwise_5gram_jaccard": 0.248139,
+  "rweval500_13gram_overlap_count": 0,
+  "zero_sorry_verified": true,
+  "domain_distribution": {
+    "coordinator_bus_l0": 2,
+    "aegis_l0": 4,
+    "zero_bracket_l0": 7,
+    "lab_bridge_l0": 2,
+    "research_l0": 4,
+    "edge_mesh_l0": 3,
+    "lean4_proof": 23,
+    "algebraic_haskell": 3,
+    "lattice_stem": 3,
+    "std_rust": 8,
+    "edge_worker_rust": 5
+  },
+  "sources": [
+    {
+      "source_path": "03_vault/lean4/SovereignManifoldTheorems.lean",
+      "bytes": 585189,
+      "sha256": "07f281865f2405216b79c5bc0218ea7a2ff4f6719c6a649494d56745fb51f445",
+      "license": "CC-BY-4.0 / MIT (ACT-Omega First-Party Workspace)",
+      "extracted_items": 825
+    },
+    {
+      "source_path": "06_algebraic_haskell/src/Sovereign/Codegen/ZeroBracketRustAndLean4.hs",
+      "bytes": 22802,
+      "sha256": "d62f571f90b0dc1c749dc12c6692da830156f5e752daae4432ae83c475599134",
+      "license": "CC-BY-4.0 / MIT (ACT-Omega First-Party Workspace)",
+      "extracted_items": 2
+    },
+    {
+      "source_path": "06_algebraic_haskell/src/Sovereign/Lattice/ExactE8Leech24.hs",
+      "bytes": 4749,
+      "sha256": "a32f72fc1fe0344b6371b40eb587f40f3aab4778d68f5016aa4c56f869f266ac",
+      "license": "CC-BY-4.0 / MIT (ACT-Omega First-Party Workspace)",
+      "extracted_items": 10
+    },
+    {
+      "source_path": "06_algebraic_haskell/src/Sovereign/Harness/Free5W1H.hs",
+      "bytes": 3437,
+      "sha256": "311fe1c571296d42060950ae2b871a8193cb684c4af0f47bd8fb95831853b067",
+      "license": "CC-BY-4.0 / MIT (ACT-Omega First-Party Workspace)",
+      "extracted_items": 3
+    },
+    {
+      "source_path": "06_algebraic_haskell/src/Main.hs",
+      "bytes": 5984,
+      "sha256": "26d20148e8a311fa050db75d64b931ab4c83cc2b5925e1218d96dff966ec8a54",
+      "license": "CC-BY-4.0 / MIT (ACT-Omega First-Party Workspace)",
+      "extracted_items": 5
+    },
+    {
+      "source_path": "crates/omega_sec_manifold/src/lib.rs",
+      "bytes": 6671,
+      "sha256": "15cd6a31d5d8940ffd433173ab1e5db44e9d194175931f6d74f2126a42f9e807",
+      "license": "CC-BY-4.0 / MIT (ACT-Omega First-Party Workspace)",
+      "extracted_items": 10
+    },
+    {
+      "source_path": "crates/omega_rnd_core_audit/src/lib.rs",
+      "bytes": 14658,
+      "sha256": "e1f1716548c5ce3495b883d720f2acfde88740ae5eb3fb7523674cd85c542630",
+      "license": "CC-BY-4.0 / MIT (ACT-Omega First-Party Workspace)",
+      "extracted_items": 23
+    },
+    {
+      "source_path": "crates/omega_p10_worker/src/main.rs",
+      "bytes": 449626,
+      "sha256": "2278d96ba550cc8990e17588675bf853ab501a2c8ea4c37670df92ed2d0974e6",
+      "license": "CC-BY-4.0 / MIT (ACT-Omega First-Party Workspace)",
+      "extracted_items": 59
+    },
+    {
+      "source_path": "01_l0_rust/src/v69_0_omegalang_v16_primary_tlv_compiler_and_84480_connectome.rs",
+      "bytes": 42914,
+      "sha256": "1c57e33d36e0fc5183d9e7fe90324c5082f9e30ab4a8930a5f9af0ffefa1acba",
+      "license": "CC-BY-4.0 / MIT (ACT-Omega First-Party Workspace)",
+      "extracted_items": 7
+    },
+    {
+      "source_path": "01_l0_rust/src/v69_5_heterogeneous_cpu_rtx3050_cuda_coexec.rs",
+      "bytes": 41350,
+      "sha256": "db7360a8e25b9ac25e25c7939fd317c3af3c1247c8f7d316b0f3ab050eb69155",
+      "license": "CC-BY-4.0 / MIT (ACT-Omega First-Party Workspace)",
+      "extracted_items": 3
+    },
+    {
+      "source_path": "01_l0_rust/src/v70_0_exponential_worksteal_262144cl_bijection.rs",
+      "bytes": 42571,
+      "sha256": "7a920ab5f840c3bac6867bb37225daae527de6bad15dc522cf3db94186c29c6e",
+      "license": "CC-BY-4.0 / MIT (ACT-Omega First-Party Workspace)",
+      "extracted_items": 4
+    },
+    {
+      "source_path": "01_l0_rust/src/v73_0_unified_standalone_lab_bridge.rs",
+      "bytes": 25268,
+      "sha256": "351862ef121f18fa57aeb0dc00b299932b7818e03e8e5cce57d661e80eb00794",
+      "license": "CC-BY-4.0 / MIT (ACT-Omega First-Party Workspace)",
+      "extracted_items": 14
+    },
+    {
+      "source_path": "01_l0_rust/src/v73_1_nov12_15_research_kernels.rs",
+      "bytes": 53426,
+      "sha256": "8ce7306420ae30d8088ea0f71bf200df46b98e9d9d49b749faaf832e2bd2b64d",
+      "license": "CC-BY-4.0 / MIT (ACT-Omega First-Party Workspace)",
+      "extracted_items": 12
+    },
+    {
+      "source_path": "01_l0_rust/src/v73_2_cloudflare_vpc_mesh_and_pgwire_hyperdrive.rs",
+      "bytes": 20949,
+      "sha256": "52bb884f034d6a4ffff4df419f9d47084cad41aa78f231abc406f01d7e614504",
+      "license": "CC-BY-4.0 / MIT (ACT-Omega First-Party Workspace)",
+      "extracted_items": 6
+    },
+    {
+      "source_path": "01_l0_rust/src/v57_aegis_autonomous_agent_harness.rs",
+      "bytes": 55245,
+      "sha256": "0c1823214908e67cce2dd47a09482f06fc6eb4ce9479efb4d7d6b3c5b9f3fcec",
+      "license": "CC-BY-4.0 / MIT (ACT-Omega First-Party Workspace)",
+      "extracted_items": 7
+    },
+    {
+      "source_path": "01_l0_rust/src/v48_autopoietic_coordinator_bus.rs",
+      "bytes": 38282,
+      "sha256": "456228a60f5002cd98b2ebc5422ae25c61b5822c340f6b4fb7b1f519a1b9dd81",
+      "license": "CC-BY-4.0 / MIT (ACT-Omega First-Party Workspace)",
+      "extracted_items": 4
+    }
+  ]
+}

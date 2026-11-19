@@ -781,9 +781,22 @@ pub fn v69_0_dispatch_tool_307_open_vocab_524k_192subdomains_fluency(payload: &s
         forney_coding_gain_db
     );
 
+    let t307_ok = rec.weights_verified
+        && candidate_count > 0
+        && distilled_ppl.is_finite()
+        && distilled_ppl > 0.0
+        && forney_coding_gain_db.is_finite();
+    let t307_status = if t307_ok { "MEASURED" } else { "UNMEASURED/OFFLINE" };
+    let t307_proof = if t307_ok {
+        "OPEN_VOCAB_524K_192SUBDOMAINS_FLUENCY_CERTIFIED_QED"
+    } else {
+        "UNMEASURED_FLUENCY_OR_WEIGHTS_INCOMPLETE"
+    };
     let elapsed_us = t0.elapsed().as_micros() as u64;
     format!(
-        "{{\"status\":\"MEASURED\",\"tool_id\":307,\"chain\":\"CHAIN_308\",\"version\":\"v69.0.0\",\"engine\":\"OPEN_VOCAB_524K_192SUBDOMAINS_MIT_RAG_FLUENCY\",\"weights_verified\":true,\"measurement_latency_us\":{},\"bpe_19bit\":{{\"vocab_size\":{},\"bit_width\":19,\"compound_concepts\":{},\"routed_bpe_token_19bit\":{},\"routed_compound_id\":{},\"gemma4_subword_count\":{},\"accepted_tokens\":{},\"candidate_tokens\":{},\"speculative_acceptance_pct\":{:.2}}},\"connectome_routing_84480\":{{\"macro_domains_total\":{},\"sub_domains_total\":{},\"macro_domain_id\":{},\"macro_domain_name\":\"{}\",\"sub_domain_id\":{},\"chair44_column_id\":{},\"primary_neuron_id\":{},\"binary_shard\":\"shard_{:05}.binshard\"}},\"mit_hot_index_rag\":{{\"course_id\":\"{}\",\"course_title\":\"{}\",\"polytonic_32d_similarity\":{:.4},\"distilled_perplexity\":{:.4},\"forney_coding_gain_db\":{:.2},\"mse_uncoded_scalar\":{:.6},\"mse_e8_lattice\":{:.6}}},\"unmeasured\":{},\"measured_tier3_63360_baseline\":{{\"tier3_weights_present\":{},\"tier3_63360_measured_ppl\":{:.4}}},\"subternary_kv_arena\":{{\"threads\":16,\"bytes_per_thread\":65536,\"total_arena_bytes\":1048576,\"heap_allocs_per_token\":0}},\"synthesized_discourse\":\"{}\",\"lean4_theorems_verified\":\"thm_v69_0_815..819\",\"proof\":\"OPEN_VOCAB_524K_192SUBDOMAINS_FLUENCY_CERTIFIED_QED | Vocab=524288 | SubDomains=192 | PPL={:.4} | Tier3_PPL={:.4} | Gain={:.2}dB\"}}",
+        "{{\"status\":\"{}\",\"tool_id\":307,\"chain\":\"CHAIN_308\",\"version\":\"v69.0.0\",\"engine\":\"OPEN_VOCAB_524K_192SUBDOMAINS_MIT_RAG_FLUENCY\",\"weights_verified\":{},\"measurement_latency_us\":{},\"bpe_19bit\":{{\"vocab_size\":{},\"bit_width\":19,\"compound_concepts\":{},\"routed_bpe_token_19bit\":{},\"routed_compound_id\":{},\"gemma4_subword_count\":{},\"accepted_tokens\":{},\"candidate_tokens\":{},\"speculative_acceptance_pct\":{:.2}}},\"connectome_routing_84480\":{{\"macro_domains_total\":{},\"sub_domains_total\":{},\"macro_domain_id\":{},\"macro_domain_name\":\"{}\",\"sub_domain_id\":{},\"chair44_column_id\":{},\"primary_neuron_id\":{},\"binary_shard\":\"shard_{:05}.binshard\"}},\"mit_hot_index_rag\":{{\"course_id\":\"{}\",\"course_title\":\"{}\",\"polytonic_32d_similarity\":{:.4},\"distilled_perplexity\":{:.4},\"forney_coding_gain_db\":{:.2},\"mse_uncoded_scalar\":{:.6},\"mse_e8_lattice\":{:.6}}},\"unmeasured\":{},\"measured_tier3_63360_baseline\":{{\"tier3_weights_present\":{},\"tier3_63360_measured_ppl\":{:.4}}},\"subternary_kv_arena\":{{\"threads\":16,\"bytes_per_thread\":65536,\"total_arena_bytes\":1048576,\"heap_allocs_per_token\":0}},\"synthesized_discourse\":\"{}\",\"lean4_theorems_verified\":\"thm_v69_0_815..819\",\"proof\":\"{} | Vocab=524288 | SubDomains=192 | PPL={:.4} | Tier3_PPL={:.4} | Gain={:.2}dB\"}}",
+        t307_status,
+        rec.weights_verified,
         elapsed_us,
         V69_BPE_VOCAB_19BIT,
         V69_COMPOUND_CONCEPTS,
@@ -812,6 +825,7 @@ pub fn v69_0_dispatch_tool_307_open_vocab_524k_192subdomains_fluency(payload: &s
         tier3_measured_ok,
         measured_tier3_baseline_ppl,
         v61_escape_clean(&discourse_synthesis),
+        t307_proof,
         distilled_ppl,
         measured_tier3_baseline_ppl,
         forney_coding_gain_db

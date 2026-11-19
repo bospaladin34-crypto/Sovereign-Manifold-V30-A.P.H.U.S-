@@ -429,8 +429,13 @@ pub fn v69_5_dispatch_tool_310_proteus_gksm_vmm_and_lark_equiv(payload: &str) ->
     };
 
     let elapsed_us = t0.elapsed().as_micros() as u64;
+    let t310_proof = if status == "MEASURED" {
+        "PROTEUS_GKSM_AND_LARK_EQUIV_CERTIFIED_QED"
+    } else {
+        "UNMEASURED_PROTEUS_LARK_EQUIV_FAILED"
+    };
     format!(
-        "{{\"status\":\"{}\",\"tool_id\":310,\"chain\":\"CHAIN_312\",\"version\":\"v69.5.0\",\"engine\":\"PROTEUS_GKSM_VMM_AND_LARK_CPU_GPU_EQUIVALENCE\",\"measurement_latency_us\":{},\"proteus_gksm_vmm\":{{\"total_vault_bytes\":{},\"total_4kb_pages\":{},\"unique_4kb_pages\":{},\"deduplicated_4kb_pages\":{},\"vmm_dedup_saved_bytes\":{},\"total_64b_cacheline_tiles\":{},\"fp32_equivalent_synapse_bytes\":{},\"packed_ternary_synapse_bytes\":{},\"tile_compression_ratio\":{:.2}}},\"lark_gpu_kernel_equiv\":{{\"paper_ref\":\"arXiv:2603.16869\",\"kernel1_elements_tested\":{},\"kernel1_exact_matches\":{},\"kernel1_bit_drift\":{},\"kernel1_cpu_fnv1a64\":\"0x{:016X}\",\"kernel1_gpu_fnv1a64\":\"0x{:016X}\",\"kernel2_elements_tested\":{},\"kernel2_exact_matches\":{},\"kernel2_bit_drift\":{},\"kernel2_cpu_fnv1a64\":\"0x{:016X}\",\"kernel2_gpu_fnv1a64\":\"0x{:016X}\",\"zero_drift_certified\":{}}},\"lean4_theorems_verified\":\"thm_v69_5_822, thm_v69_5_823, thm_v69_5_825\",\"proof\":\"PROTEUS_GKSM_AND_LARK_EQUIV_CERTIFIED_QED | K1_Match={}/{} | K2_Match={}/{} | Drift=0\"}}",
+        "{{\"status\":\"{}\",\"tool_id\":310,\"chain\":\"CHAIN_312\",\"version\":\"v69.5.0\",\"engine\":\"PROTEUS_GKSM_VMM_AND_LARK_CPU_GPU_EQUIVALENCE\",\"measurement_latency_us\":{},\"proteus_gksm_vmm\":{{\"total_vault_bytes\":{},\"total_4kb_pages\":{},\"unique_4kb_pages\":{},\"deduplicated_4kb_pages\":{},\"vmm_dedup_saved_bytes\":{},\"total_64b_cacheline_tiles\":{},\"fp32_equivalent_synapse_bytes\":{},\"packed_ternary_synapse_bytes\":{},\"tile_compression_ratio\":{:.2}}},\"lark_gpu_kernel_equiv\":{{\"paper_ref\":\"arXiv:2603.16869\",\"kernel1_elements_tested\":{},\"kernel1_exact_matches\":{},\"kernel1_bit_drift\":{},\"kernel1_cpu_fnv1a64\":\"0x{:016X}\",\"kernel1_gpu_fnv1a64\":\"0x{:016X}\",\"kernel2_elements_tested\":{},\"kernel2_exact_matches\":{},\"kernel2_bit_drift\":{},\"kernel2_cpu_fnv1a64\":\"0x{:016X}\",\"kernel2_gpu_fnv1a64\":\"0x{:016X}\",\"zero_drift_certified\":{}}},\"lean4_theorems_verified\":\"thm_v69_5_822, thm_v69_5_823, thm_v69_5_825\",\"proof\":\"{} | K1_Match={}/{} | K2_Match={}/{} | Drift={}\"}}",
         status,
         elapsed_us,
         rep.total_vault_bytes,
@@ -453,10 +458,12 @@ pub fn v69_5_dispatch_tool_310_proteus_gksm_vmm_and_lark_equiv(payload: &str) ->
         rep.lark_cpu_k2_fnv1a64,
         rep.lark_gpu_k2_fnv1a64,
         rep.lark_k1_bit_drift == 0 && rep.lark_k2_bit_drift == 0,
+        t310_proof,
         rep.lark_k1_exact_matches,
         rep.lark_k1_elements_tested,
         rep.lark_k2_exact_matches,
-        rep.lark_k2_elements_tested
+        rep.lark_k2_elements_tested,
+        rep.lark_k1_bit_drift.saturating_add(rep.lark_k2_bit_drift)
     )
 }
 
@@ -603,8 +610,13 @@ pub fn v69_5_dispatch_tool_311_simultaneous_cpu_gpu_split_batch_coscheduler(
     };
 
     let elapsed_us = t_total.elapsed().as_micros() as u64;
+    let t311_proof = if status == "MEASURED" {
+        "SIMULTANEOUS_CPU_GPU_SPLIT_BATCH_COEXEC_CERTIFIED_QED"
+    } else {
+        "UNMEASURED_SPLIT_BATCH_COEXEC_INCOMPLETE"
+    };
     let receipt_json = format!(
-        "{{\"status\":\"{}\",\"tool_id\":311,\"chain\":\"CHAIN_312\",\"version\":\"v69.5.0\",\"engine\":\"SIMULTANEOUS_CPU_AVX2_AND_RTX3050_CUDA_PTX_SPLIT_BATCH_COSCHEDULER\",\"measurement_latency_us\":{},\"partition_conservation\":{{\"total_sectors\":48,\"cpu_sectors\":\"S00..S23 (24)\",\"gpu_sectors\":\"S24..S47 (24)\",\"total_chair44_columns\":{},\"cpu_chair44_columns\":{},\"gpu_chair44_columns\":{},\"total_neurons\":{},\"cpu_neurons\":{},\"gpu_neurons\":{},\"total_synapses\":{},\"cpu_synapses\":{},\"gpu_synapses\":{}}},\"thread_group_a_host_cpu\":{{\"processor\":\"Intel Core i5-12450HX (12 Threads AVX2)\",\"rayon_threads\":12,\"assigned_neurons\":{},\"viviani_verified\":{},\"subternary_kv_arena_bytes\":1048576,\"cpu_accumulator_checksum\":{},\"cpu_wall_us\":{}}},\"thread_group_b_host_gpu\":{{\"device_name\":\"{}\",\"cuda_cores\":{},\"assigned_neurons\":{},\"allen_hlt1_sieve_ratio\":30,\"allen_raw_candidates\":{},\"allen_surviving_tracks\":{},\"kernel1_cuda_ms\":{:.5},\"kernel2_cuda_ms\":{:.5},\"gpu_temp_c\":{},\"gpu_power_w\":{:.2},\"used_vram_mib\":{},\"gpu_wall_us\":{}}},\"coexecution_timing\":{{\"cpu_wall_us\":{},\"gpu_wall_us\":{},\"sequential_sum_us\":{},\"simultaneous_makespan_us\":{},\"parallel_overlap_speedup\":{:.4},\"lark_k1_bit_drift\":{},\"lark_k2_bit_drift\":{},\"proteus_tile_compression_ratio\":{:.2}}},\"lean4_theorems_verified\":\"thm_v69_5_821..829\",\"proof\":\"SIMULTANEOUS_CPU_GPU_SPLIT_BATCH_COEXEC_CERTIFIED_QED | CPU_Neurons={} | GPU_Neurons={} | Drift=0 | Makespan_us={}\"}}",
+        "{{\"status\":\"{}\",\"tool_id\":311,\"chain\":\"CHAIN_312\",\"version\":\"v69.5.0\",\"engine\":\"SIMULTANEOUS_CPU_AVX2_AND_RTX3050_CUDA_PTX_SPLIT_BATCH_COSCHEDULER\",\"measurement_latency_us\":{},\"partition_conservation\":{{\"total_sectors\":48,\"cpu_sectors\":\"S00..S23 (24)\",\"gpu_sectors\":\"S24..S47 (24)\",\"total_chair44_columns\":{},\"cpu_chair44_columns\":{},\"gpu_chair44_columns\":{},\"total_neurons\":{},\"cpu_neurons\":{},\"gpu_neurons\":{},\"total_synapses\":{},\"cpu_synapses\":{},\"gpu_synapses\":{}}},\"thread_group_a_host_cpu\":{{\"processor\":\"Intel Core i5-12450HX (12 Threads AVX2)\",\"rayon_threads\":12,\"assigned_neurons\":{},\"viviani_verified\":{},\"subternary_kv_arena_bytes\":1048576,\"cpu_accumulator_checksum\":{},\"cpu_wall_us\":{}}},\"thread_group_b_host_gpu\":{{\"device_name\":\"{}\",\"cuda_cores\":{},\"assigned_neurons\":{},\"allen_hlt1_sieve_ratio\":30,\"allen_raw_candidates\":{},\"allen_surviving_tracks\":{},\"kernel1_cuda_ms\":{:.5},\"kernel2_cuda_ms\":{:.5},\"gpu_temp_c\":{},\"gpu_power_w\":{:.2},\"used_vram_mib\":{},\"gpu_wall_us\":{}}},\"coexecution_timing\":{{\"cpu_wall_us\":{},\"gpu_wall_us\":{},\"sequential_sum_us\":{},\"simultaneous_makespan_us\":{},\"parallel_overlap_speedup\":{:.4},\"lark_k1_bit_drift\":{},\"lark_k2_bit_drift\":{},\"proteus_tile_compression_ratio\":{:.2}}},\"lean4_theorems_verified\":\"thm_v69_5_821..829\",\"proof\":\"{} | CPU_Neurons={} | GPU_Neurons={} | Drift={} | Makespan_us={}\"}}",
         status,
         elapsed_us,
         V69_CHAIR44_COLUMNS,
@@ -639,8 +651,10 @@ pub fn v69_5_dispatch_tool_311_simultaneous_cpu_gpu_split_batch_coscheduler(
         lark_rep.lark_k1_bit_drift,
         lark_rep.lark_k2_bit_drift,
         lark_rep.proteus_tile_compression_ratio,
+        t311_proof,
         V69_5_CPU_NEURONS,
         V69_5_GPU_NEURONS,
+        lark_rep.lark_k1_bit_drift.saturating_add(lark_rep.lark_k2_bit_drift),
         simultaneous_makespan_us
     );
 
@@ -663,9 +677,12 @@ pub fn v69_5_dispatch_tool_312_chain312_master_certification(payload: &str) -> S
     if fs::metadata(C_RECEIPT_V69_5_PATH).is_err() {
         let _ = v69_5_dispatch_tool_311_simultaneous_cpu_gpu_split_batch_coscheduler("");
     }
-    let receipt_bytes = fs::metadata(C_RECEIPT_V69_5_PATH)
-        .map(|m| m.len())
-        .unwrap_or(0);
+    let receipt_raw = fs::read_to_string(C_RECEIPT_V69_5_PATH).unwrap_or_default();
+    let receipt_bytes = receipt_raw.len() as u64;
+    let receipt_measured = serde_json::from_str::<serde_json::Value>(&receipt_raw)
+        .ok()
+        .and_then(|v| Some(v.get("status")?.as_str()? == "MEASURED"))
+        .unwrap_or(false);
 
     let lean_path = "03_vault/lean4/SovereignManifoldTheorems.lean";
     let lean_content = fs::read_to_string(lean_path)
@@ -680,15 +697,20 @@ pub fn v69_5_dispatch_tool_312_chain312_master_certification(payload: &str) -> S
         .filter(|l| l.trim_start().starts_with("theorem "))
         .count();
 
-    let status = if receipt_bytes > 200 && theorem_count >= 830 {
+    let status = if receipt_measured && receipt_bytes > 200 && theorem_count >= 830 {
         "MEASURED"
     } else {
         "UNMEASURED/OFFLINE"
     };
+    let t312_proof = if status == "MEASURED" {
+        "CHAIN_312_TRACK3_V69_5_MASTER_CERTIFIED_QED"
+    } else {
+        "UNMEASURED_CHAIN_312_GATES_INCOMPLETE"
+    };
 
     let elapsed_us = t0.elapsed().as_micros() as u64;
     format!(
-        "{{\"status\":\"{}\",\"tool_id\":312,\"chain\":\"CHAIN_312\",\"version\":\"v69.5.0\",\"engine\":\"TRACK3_V69_5_CHAIN312_MASTER_CERTIFICATION\",\"measurement_latency_us\":{},\"total_tools\":312,\"lean4_theorems_qed\":{},\"connectome_neurons\":{},\"cpu_assigned_neurons\":{},\"gpu_assigned_neurons\":{},\"connectome_synapses\":{},\"cpu_assigned_synapses\":{},\"gpu_assigned_synapses\":{},\"e8z_cachelines\":{},\"rtx3050_cuda_cores\":{},\"coexec_receipt_path\":\"{}\",\"coexec_receipt_bytes\":{},\"proof\":\"CHAIN_312_TRACK3_V69_5_MASTER_CERTIFIED_QED | Tools=312 | Neurons=84480 (42240_CPU+42240_GPU) | Synapses=4055040 | Theorems={}\"}}",
+        "{{\"status\":\"{}\",\"tool_id\":312,\"chain\":\"CHAIN_312\",\"version\":\"v69.5.0\",\"engine\":\"TRACK3_V69_5_CHAIN312_MASTER_CERTIFICATION\",\"measurement_latency_us\":{},\"total_tools\":312,\"lean4_theorems_qed\":{},\"connectome_neurons\":{},\"cpu_assigned_neurons\":{},\"gpu_assigned_neurons\":{},\"connectome_synapses\":{},\"cpu_assigned_synapses\":{},\"gpu_assigned_synapses\":{},\"e8z_cachelines\":{},\"rtx3050_cuda_cores\":{},\"coexec_receipt_path\":\"{}\",\"coexec_receipt_bytes\":{},\"proof\":\"{} | Tools=312 | Neurons=84480 (42240_CPU+42240_GPU) | Synapses=4055040 | Theorems={}\"}}",
         status,
         elapsed_us,
         theorem_count,
@@ -702,6 +724,7 @@ pub fn v69_5_dispatch_tool_312_chain312_master_certification(payload: &str) -> S
         V69_5_RTX3050_CUDA_CORES,
         C_RECEIPT_V69_5_PATH,
         receipt_bytes,
+        t312_proof,
         theorem_count
     )
 }

@@ -37,10 +37,21 @@ $proc = Get-Process -Name "v31_swarm" -ErrorAction SilentlyContinue
 $portConn = Get-NetTCPConnection -LocalPort 8097 -State Listen -ErrorAction SilentlyContinue
 Write-Host "v31_swarm running: $($null -ne $proc) (PID: $($proc.Id)) | Port :8097 Listening: $($null -ne $portConn)"
 
-# Verify CHAIN 368 Master Certification
+# Verify CHAIN 404 Master Certification via authenticated loopback header
 try {
-    $c368 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/chain368/master_certification" -TimeoutSec 5
-    Write-Host "Hot-Swap Verification: Status=$($c368.status) | Tools=$($c368.tools_verified) | Theorems=$($c368.lean4_theorems_qed)"
+    $opKey = ""
+    $keyPath = "C:\Users\Nbell\.act_omega_operator_vault_key"
+    if (Test-Path $keyPath) {
+        $opKey = (Get-Content -Path $keyPath -Raw).Trim()
+    } elseif ($env:ACT_OMEGA_OPERATOR_KEY) {
+        $opKey = $env:ACT_OMEGA_OPERATOR_KEY.Trim()
+    }
+    $headers = @{}
+    if ($opKey.Length -ge 24) {
+        $headers["X-Sovereign-Operator-Key"] = $opKey
+    }
+    $c404 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/tools/t404" -Headers $headers -TimeoutSec 45
+    Write-Host "Hot-Swap Verification: Status=$($c404.status) | Tools=$($c404.tools_total) | Theorems=$($c404.lean4_theorems_qed)"
 } catch {
     Write-Host "Hot-Swap Warning: :8097 responded with error: $($_.Exception.Message)"
 }

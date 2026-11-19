@@ -119,14 +119,100 @@ function pgI32(n) {
   return b;
 }
 
-function isReadOnlySql(sql) {
-  const trimmed = String(sql || "").trim().replace(/;+\s*$/, "");
-  if (!trimmed || trimmed.includes(";")) return false;
-  if (!/^(SELECT|WITH|EXPLAIN|SHOW)\b/i.test(trimmed)) return false;
-  if (/\b(INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|TRUNCATE|ATTACH|DETACH|COPY|EXPORT|IMPORT|CALL|MERGE|REPLACE)\b/i.test(trimmed)) {
-    return false;
+function resolveAllowedHyperdriveQuery(body) {
+  if (body && Object.prototype.hasOwnProperty.call(body, "sql")) {
+    return {
+      ok: false,
+      status: "REJECTED_ARBITRARY_SQL_FORBIDDEN",
+      error: "Free-form SQL is prohibited; specify allowlisted query_id"
+    };
   }
-  return true;
+  const queryId = body && body.query_id !== undefined && body.query_id !== null && String(body.query_id).trim() !== ""
+    ? String(body.query_id).trim()
+    : "corpus_doc_count";
+
+  if (queryId === "corpus_doc_count") {
+    return {
+      ok: true,
+      query_id: queryId,
+      sql: "SELECT count(*) AS docs_count, COALESCE(sum(char_bytes), 0) AS total_char_bytes FROM corpus_docs"
+    };
+  }
+  if (queryId === "corpus_track_summary") {
+    return {
+      ok: true,
+      query_id: queryId,
+      sql: "SELECT track_id, track_name, count(*) AS docs_count, COALESCE(sum(char_bytes), 0) AS track_char_bytes FROM corpus_docs GROUP BY track_id, track_name ORDER BY track_id ASC"
+    };
+  }
+  if (queryId === "corpus_docs_by_track") {
+    const rawTrack = Number(body && body.track_id !== undefined ? body.track_id : 0);
+    const rawLimit = Number(body && body.limit !== undefined ? body.limit : 10);
+    if (!Number.isFinite(rawTrack) || !Number.isFinite(rawLimit)) {
+      return {
+        ok: false,
+        status: "REJECTED_INVALID_QUERY_PARAMS",
+        error: "track_id and limit must be finite integers"
+      };
+    }
+    const trackId = Math.max(0, Math.min(15, Math.trunc(rawTrack)));
+    const limitVal = Math.max(1, Math.min(50, Math.trunc(rawLimit)));
+    return {
+      ok: true,
+      query_id: queryId,
+      sql: `SELECT doc_id, track_id, track_name, char_bytes, is_zero_bracket, minhash64 FROM corpus_docs WHERE track_id = ${trackId} ORDER BY doc_id ASC LIMIT ${limitVal}`
+    };
+  }
+  if (queryId === "corpus_zero_bracket_stats") {
+    return {
+      ok: true,
+      query_id: queryId,
+      sql: "SELECT is_zero_bracket, count(*) AS docs_count FROM corpus_docs GROUP BY is_zero_bracket ORDER BY is_zero_bracket DESC"
+    };
+  }
+  return {
+    ok: false,
+    status: "REJECTED_UNKNOWN_QUERY_ID",
+    error: "Unknown query_id; allowed: corpus_doc_count, corpus_track_summary, corpus_docs_by_track, corpus_zero_bracket_stats"
+  };
+}
+
+async function timingSafeEqualOperatorKey(a, b) {
+  if (typeof a !== "string" || typeof b !== "string") return false;
+  const aBytes = pgEncoder.encode(a);
+  const bBytes = pgEncoder.encode(b);
+  const [dA, dB] = await Promise.all([
+    crypto.subtle.digest("SHA-256", aBytes),
+    crypto.subtle.digest("SHA-256", bBytes)
+  ]);
+  const vA = new Uint8Array(dA);
+  const vB = new Uint8Array(dB);
+  let diff = 0;
+  for (let i = 0; i < 32; i++) {
+    diff |= (vA[i] ^ vB[i]);
+  }
+  diff |= (aBytes.length ^ bBytes.length);
+  return diff === 0;
+}
+
+async function verifyWorkflowOperatorAuth(request, env) {
+  const url = new URL(request.url);
+  if (url.searchParams.has("key")) {
+    return { authorized: false, error: "QUERY_PARAM_KEY_FORBIDDEN", status: 403 };
+  }
+  const supplied = request.headers.get("X-Sovereign-Operator-Key");
+  const expected = env && typeof env.SOVEREIGN_OPERATOR_KEY === "string" ? env.SOVEREIGN_OPERATOR_KEY.trim() : "";
+  if (!supplied || supplied.trim().length < 24 || expected.length < 24) {
+    if (supplied) {
+      await timingSafeEqualOperatorKey(supplied, "DUMMY_SECRET_FOR_TIMING_BLINDING_24_CHARS");
+    }
+    return { authorized: false, error: "OPERATOR_AUTH_REQUIRED", status: 403 };
+  }
+  const ok = await timingSafeEqualOperatorKey(supplied.trim(), expected);
+  if (!ok) {
+    return { authorized: false, error: "INVALID_OPERATOR_KEY", status: 403 };
+  }
+  return { authorized: true, role: "SOVEREIGN_OPERATOR" };
 }
 
 async function md5Hex(bytes) {
@@ -172,13 +258,14 @@ class SocketReader {
   }
 }
 
-async function executeHyperdrivePgWireQuery(hdBinding, sql) {
+async function executeHyperdrivePgWireQuery(hdBinding, querySpec) {
+  if (!querySpec || !querySpec.ok) {
+    return querySpec || { ok: false, status: "REJECTED_UNKNOWN_QUERY_ID", error: "Invalid query specification" };
+  }
   if (!hdBinding) {
-    return { ok: false, status: "UNMEASURED/OFFLINE", error: "ACT_OMEGA_HYPERDRIVE_UNBOUND" };
+    return { ok: false, status: "UNMEASURED/OFFLINE", error: "ACT_OMEGA_HYPERDRIVE_UNBOUND", query_id: querySpec.query_id };
   }
-  if (!isReadOnlySql(sql)) {
-    return { ok: false, status: "REJECTED_NON_READONLY_SQL", error: "Only single read-only SELECT/WITH/EXPLAIN/SHOW queries allowed" };
-  }
+  const sql = querySpec.sql;
   const t0 = Date.now();
   const sock =
     typeof hdBinding.connect === "function"
@@ -356,6 +443,13 @@ async function probeVpcTargets(env) {
 
 export default {
   async fetch(request, env) {
+    const auth = await verifyWorkflowOperatorAuth(request, env);
+    if (!auth.authorized) {
+      return Response.json(
+        { ok: false, error: auth.error || "OPERATOR_AUTH_REQUIRED", status: 403 },
+        { status: 403, headers: { "Cache-Control": "no-store" } }
+      );
+    }
     const url = new URL(request.url);
     if (request.method === "POST" && url.pathname === "/hyperdrive/query") {
       let body = {};
@@ -365,13 +459,20 @@ export default {
       } catch {
         return Response.json({ ok: false, error: "INVALID_JSON_BODY" }, { status: 400 });
       }
-      const sql = String(body.sql || "SELECT count(*) AS docs_count FROM corpus_docs;");
-      const res = await executeHyperdrivePgWireQuery(env ? env.ACT_OMEGA_HYPERDRIVE : null, sql);
-      return Response.json(res, { status: res.ok ? 200 : (res.status === "REJECTED_NON_READONLY_SQL" ? 400 : 502) });
+      const querySpec = resolveAllowedHyperdriveQuery(body);
+      if (!querySpec.ok) {
+        return Response.json(querySpec, { status: 400, headers: { "Cache-Control": "no-store" } });
+      }
+      const res = await executeHyperdrivePgWireQuery(env ? env.ACT_OMEGA_HYPERDRIVE : null, querySpec);
+      res.query_id = querySpec.query_id;
+      return Response.json(res, {
+        status: res.ok ? 200 : 502,
+        headers: { "Cache-Control": "no-store" }
+      });
     }
     if (url.pathname === "/vpc/probe") {
       const probeRes = await probeVpcTargets(env);
-      return Response.json(probeRes, { status: 200 });
+      return Response.json(probeRes, { status: 200, headers: { "Cache-Control": "no-store" } });
     }
     return Response.json({
       ok: true,
@@ -379,6 +480,6 @@ export default {
       workflow: "act-omega-audit-sync-workflow",
       hyperdrive_bound: Boolean(env && env.ACT_OMEGA_HYPERDRIVE),
       vpc_tunnel: (env && env.VPC_TUNNEL_NAME) || "sovereign-vpc-mesh"
-    });
+    }, { headers: { "Cache-Control": "no-store" } });
   }
 };

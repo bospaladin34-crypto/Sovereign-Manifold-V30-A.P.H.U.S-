@@ -1536,11 +1536,142 @@ pub fn v72_1_get_cached_clean_corpus() -> &'static Vec<V72_1CorpusDoc> {
     })
 }
 
+pub fn v72_1_try_load_verified_disk_corpus(
+    blacklist: &HashSet<u64>,
+    eval_sha: &str,
+    canary_fixture: &V72_1CanaryFixtureResult,
+    t0: Instant,
+) -> Option<(Vec<V72_1CorpusDoc>, V72_1CorpusBuildSummary)> {
+    let jsonl_bytes = fs::read(C_SH_RW_CORPUS_JSONL_PATH).ok()?;
+    let disk_sha = v72_1_sha256_hex(&jsonl_bytes);
+    let manifest_str = fs::read_to_string(C_SH_XI_CORPUS_MANIFEST_PATH)
+        .or_else(|_| fs::read_to_string(C_SH_XI_CANONICAL_CORPUS_MANIFEST_PATH))
+        .ok()?;
+    let m_val: serde_json::Value = serde_json::from_str(&manifest_str).ok()?;
+    let rec_sha = m_val.get("corpus_sha256").and_then(|v| v.as_str())?;
+    if !rec_sha.eq_ignore_ascii_case(&disk_sha) {
+        return None;
+    }
+    let rec_eval_sha = m_val.get("eval500_sha256").and_then(|v| v.as_str())?;
+    if !rec_eval_sha.eq_ignore_ascii_case(eval_sha) {
+        return None;
+    }
+    let exp_docs = m_val.get("total_clean_docs").and_then(|v| v.as_u64())? as usize;
+    if exp_docs == 0 {
+        return None;
+    }
+    let jsonl_str = String::from_utf8(jsonl_bytes).ok()?;
+    let mut clean_docs: Vec<V72_1CorpusDoc> = Vec::with_capacity(exp_docs);
+    let mut total_bytes: u64 = 0;
+    let mut t0_cnt: usize = 0;
+    let mut t1_cnt: usize = 0;
+    let mut t2_cnt: usize = 0;
+    let mut t3_cnt: usize = 0;
+    let mut t4_cnt: usize = 0;
+    for line in jsonl_str.lines() {
+        let trimmed = line.trim();
+        if trimmed.is_empty() {
+            continue;
+        }
+        let obj: serde_json::Value = serde_json::from_str(trimmed).ok()?;
+        let doc_id = obj.get("doc_id").and_then(|v| v.as_u64())? as usize;
+        let track_id = obj.get("track_id").and_then(|v| v.as_u64())? as usize;
+        let track_name = String::from(obj.get("track_name").and_then(|v| v.as_str())?);
+        let source_path = String::from(obj.get("source_path").and_then(|v| v.as_str())?);
+        let is_zero_bracket = obj.get("is_zero_bracket").and_then(|v| v.as_bool())?;
+        let mh_str = obj.get("minhash64").and_then(|v| v.as_str())?;
+        let minhash64 = u64::from_str_radix(mh_str.trim_start_matches("0x"), 16).ok()?;
+        let text_body = String::from(obj.get("text_body").and_then(|v| v.as_str())?);
+        total_bytes += text_body.len() as u64;
+        match track_id {
+            0 => t0_cnt += 1,
+            1 => t1_cnt += 1,
+            2 => t2_cnt += 1,
+            3 => t3_cnt += 1,
+            _ => t4_cnt += 1,
+        }
+        clean_docs.push(V72_1CorpusDoc {
+            doc_id,
+            track_id,
+            track_name,
+            is_zero_bracket,
+            minhash64,
+            source_path,
+            text_body,
+        });
+    }
+    if clean_docs.len() != exp_docs {
+        return None;
+    }
+    let surviving_overlaps: usize = clean_docs
+        .par_iter()
+        .map(|d| {
+            v72_1_extract_13gram_shingles(&d.text_body)
+                .iter()
+                .filter(|sh| blacklist.contains(sh))
+                .count()
+        })
+        .sum();
+    if surviving_overlaps != 0 {
+        return None;
+    }
+    let duckdb_bytes = fs::metadata(E_SH_XI_CORPUS_DUCKDB_PATH)
+        .map(|m| m.len())
+        .unwrap_or_else(|_| m_val.get("duckdb_file_bytes").and_then(|v| v.as_u64()).unwrap_or(0));
+    let duckdb_ok = m_val.get("duckdb_materialized").and_then(|v| v.as_bool()).unwrap_or(false)
+        && duckdb_bytes > 0;
+    let duckdb_rows = m_val.get("duckdb_verified_rows").and_then(|v| v.as_u64()).unwrap_or(clean_docs.len() as u64) as usize;
+    let rejected_13gram = m_val.get("rejected_contaminated_docs").and_then(|v| v.as_u64()).unwrap_or(0) as usize;
+    let rejected_exact = m_val.get("rejected_exact_duplicates").and_then(|v| v.as_u64()).unwrap_or(0) as usize;
+    let rejected_jaccard = m_val.get("rejected_jaccard_over_50").and_then(|v| v.as_u64()).unwrap_or(0) as usize;
+    let source_files_count = m_val.get("source_files_read").and_then(|v| v.as_u64()).unwrap_or(0) as usize;
+    let raw_candidates_count = m_val.get("raw_doc_count").and_then(|v| v.as_u64()).unwrap_or(clean_docs.len() as u64) as usize;
+    let max_pairwise_jaccard = m_val.get("max_pairwise_5gram_jaccard").and_then(|v| v.as_f64()).unwrap_or(0.0);
+
+    let summary = V72_1CorpusBuildSummary {
+        total_clean_docs: clean_docs.len(),
+        rejected_contaminated_docs: rejected_13gram,
+        surviving_overlap_shingles: surviving_overlaps,
+        eval500_blacklisted_shingles: blacklist.len(),
+        total_corpus_bytes: total_bytes,
+        track0_docs: t0_cnt,
+        track1_docs: t1_cnt,
+        track2_docs: t2_cnt,
+        track3_docs: t3_cnt,
+        track4_docs: t4_cnt,
+        duckdb_materialized: duckdb_ok,
+        duckdb_file_bytes: duckdb_bytes,
+        duckdb_verified_rows: duckdb_rows,
+        corpus_sha256: disk_sha,
+        eval500_sha256: String::from(eval_sha),
+        source_files_read: source_files_count,
+        raw_doc_count: raw_candidates_count,
+        rejected_exact_duplicates: rejected_exact,
+        rejected_jaccard_over_50: rejected_jaccard,
+        max_pairwise_5gram_jaccard: max_pairwise_jaccard,
+        canaries_tested: canary_fixture.canaries_tested,
+        canaries_caught: canary_fixture.canaries_caught,
+        elapsed_us: t0.elapsed().as_micros() as u64,
+    };
+    Some((clean_docs, summary))
+}
+
 pub fn v72_1_load_or_build_decontaminated_corpus() -> (Vec<V72_1CorpusDoc>, V72_1CorpusBuildSummary) {
+    v72_1_load_or_build_decontaminated_corpus_with_force(false)
+}
+
+pub fn v72_1_load_or_build_decontaminated_corpus_with_force(
+    force_rebuild: bool,
+) -> (Vec<V72_1CorpusDoc>, V72_1CorpusBuildSummary) {
     let t0 = Instant::now();
     let (eval_items, eval_sha, _) = v72_1_ensure_sealed_rw_eval_500();
     let blacklist = v72_1_build_holdout_shingle_blacklist(&eval_items);
     let canary_fixture = v72_1_run_canary_contamination_fixture(&blacklist, &eval_items);
+    if !force_rebuild {
+        if let Some(verified) = v72_1_try_load_verified_disk_corpus(&blacklist, &eval_sha, &canary_fixture, t0) {
+            return verified;
+        }
+    }
     let (candidates, source_files_count) = v72_1_harvest_foundational_corpus_candidates();
     let raw_candidates_count = candidates.len();
 
@@ -1778,8 +1909,10 @@ pub fn v72_1_load_or_build_decontaminated_corpus() -> (Vec<V72_1CorpusDoc>, V72_
     (clean_docs, summary)
 }
 
-pub fn v72_1_dispatch_tool_357_corpus_builder_minhash(_payload: &str) -> String {
-    let (_, s) = v72_1_load_or_build_decontaminated_corpus();
+pub fn v72_1_dispatch_tool_357_corpus_builder_minhash(payload: &str) -> String {
+    let force_rebuild = v72_1_extract_bool_param(payload, "force_rebuild", false)
+        || v72_1_extract_bool_param(payload, "force_retrain", false);
+    let (_, s) = v72_1_load_or_build_decontaminated_corpus_with_force(force_rebuild);
     let status = if s.total_clean_docs >= 512
         && s.surviving_overlap_shingles == 0
         && s.canaries_caught == 5
@@ -5915,6 +6048,20 @@ pub fn v72_1_train_with_steps(force_retrain: bool, steps_override: Option<usize>
         "0,0.003000,0.000000,{:.6},{:.6},{:.6},{:.6}\n",
         init_n384, init_n768, init_bpb384, init_bpb768
     ));
+    let (init_n384_ug, init_n768_ungated, init_bpb384_ug, init_bpb768_ungated, _, _) = {
+        let mut m_ungated = V72_1MatryoshkaModel::new_initialized(1.0);
+        m_ungated.gamma_net2wider = 1.0_f32;
+        let mut rng_ug = 0x7210_2000_CAFE_0002u64;
+        let kaiming_ug = (2.0 / (V72_1_LATENT_RANK_R1 as f64)).sqrt() as f32;
+        for slot in m_ungated.u_delta1_table.iter_mut() {
+            *slot = (v72_1_box_muller(&mut rng_ug) as f32) * kaiming_ug * 0.05_f32;
+        }
+        v72_1_eval_validation_metrics(&m_ungated, &val_seqs)
+    };
+    csv_curve.push_str(&format!(
+        "0,0.003000,1.000000,{:.6},{:.6},{:.6},{:.6}\n",
+        init_n384_ug, init_n768_ungated, init_bpb384_ug, init_bpb768_ungated
+    ));
 
     let total_steps: usize = steps_override.unwrap_or(64).max(1);
     let is_two_phase = total_steps > 128;
@@ -5927,6 +6074,7 @@ pub fn v72_1_train_with_steps(force_retrain: bool, steps_override: Option<usize>
     let phase_b_eval_stride: usize = ((total_steps.saturating_sub(phase_a_steps)) / 16).max(1);
 
     let mut step: usize = 1;
+    let mut last_lr: f32 = 0.003_f32;
     let mut last_layer_norms = v72_1_vec_f64(V72_1_HYBRID_LAYERS, 0.01);
     let checkpoint_stride: usize = (total_steps / 4).max(1);
 
@@ -5959,6 +6107,7 @@ pub fn v72_1_train_with_steps(force_retrain: bool, steps_override: Option<usize>
                     * (0.00015_f32 - 0.00003_f32)
                     * (1.0_f32 + (std::f32::consts::PI * progress).cos())
         };
+        last_lr = cosine_lr;
 
         let eff_step = if in_phase_b { step - phase_a_steps } else { step };
         let bc1 = 1.0_f32 - beta1.powi(eff_step as i32);
@@ -6177,7 +6326,7 @@ pub fn v72_1_train_with_steps(force_retrain: bool, steps_override: Option<usize>
                     best_vn768 = vn768;
                     best_s1_model = cand_model;
                 }
-                if step == total_steps || step % checkpoint_stride == 0 {
+                if step % checkpoint_stride == 0 && step < total_steps {
                     let (b_n384, b_n768, b_bpb384, b_bpb768, _, _) =
                         v72_1_eval_validation_metrics(&best_s1_model, &val_seqs);
                     csv_curve.push_str(&format!(
@@ -6186,7 +6335,7 @@ pub fn v72_1_train_with_steps(force_retrain: bool, steps_override: Option<usize>
                     ));
                 }
             }
-        } else if step == total_steps || step % checkpoint_stride == 0 {
+        } else if step % checkpoint_stride == 0 && step < total_steps {
             let (vn384, vn768, vb384, vb768, _, _) = v72_1_eval_validation_metrics(&model, &val_seqs);
             csv_curve.push_str(&format!(
                 "{},{:.6},{:.6},{:.6},{:.6},{:.6},{:.6}\n",
@@ -6214,8 +6363,33 @@ pub fn v72_1_train_with_steps(force_retrain: bool, steps_override: Option<usize>
     model.u0_table = u0_recon;
     model.u_delta1_table = u1_recon;
 
-    let (fin_n384, fin_n768, fin_bpb384, fin_bpb768, fin_pdev, _) =
+    let (fin_n384, fin_n768, fin_bpb384, fin_bpb768, fin_pdev, fin_eval_toks) =
         v72_1_eval_validation_metrics(&model, &val_seqs);
+    csv_curve.push_str(&format!(
+        "{},{:.6},{:.6},{:.6},{:.6},{:.6},{:.6}\n",
+        total_steps, last_lr, model.gamma_net2wider, fin_n384, fin_n768, fin_bpb384, fin_bpb768
+    ));
+    let mut max_pdev_f32: f64 = 0.0;
+    if let Some((sq0, _)) = val_seqs.first() {
+        if sq0.len() >= 3 {
+            let pref: Vec<u16> = sq0.iter().take(2).copied().collect();
+            let h1 = model.forward_sequence_shell1_768(&pref);
+            let lg1 = model.compute_logits_shell1_16k(&h1, sq0.first().copied(), sq0.get(1).copied());
+            let mut mx: f32 = f32::NEG_INFINITY;
+            for &lv in lg1.iter() {
+                if lv > mx { mx = lv; }
+            }
+            let mut z32: f32 = 0.0;
+            for &lv in lg1.iter() {
+                z32 += (lv - mx).exp();
+            }
+            let mut psum32: f32 = 0.0;
+            for &lv in lg1.iter() {
+                psum32 += (lv - mx).exp() / z32;
+            }
+            max_pdev_f32 = ((psum32 as f64) - 1.0).abs();
+        }
+    }
     let max_pdev = init_pdev.max(fin_pdev);
     let fin_ppl384 = fin_n384.exp();
     let fin_ppl768 = fin_n768.exp();
@@ -6285,16 +6459,6 @@ pub fn v72_1_train_with_steps(force_retrain: bool, steps_override: Option<usize>
     // Update weight manifest directly
     let _ = v72_1_update_weight_manifest("sh_xi_rw384_768_base", sh4z_buf.len(), &sh4z_sha);
 
-    let (_, init_n768_ungated, _, init_bpb768_ungated, _, _) = {
-        let mut m_ungated = V72_1MatryoshkaModel::new_initialized(1.0);
-        m_ungated.gamma_net2wider = 1.0_f32;
-        let mut rng_ug = 0x7210_2000_CAFE_0002u64;
-        let kaiming_ug = (2.0 / (V72_1_LATENT_RANK_R1 as f64)).sqrt() as f32;
-        for slot in m_ungated.u_delta1_table.iter_mut() {
-            *slot = (v72_1_box_muller(&mut rng_ug) as f32) * kaiming_ug * 0.05_f32;
-        }
-        v72_1_eval_validation_metrics(&m_ungated, &val_seqs)
-    };
     let corpus_sha = fs::read(C_SH_RW_CORPUS_JSONL_PATH)
         .or_else(|_| fs::read(E_SH_XI_CORPUS_JSONL_PATH))
         .map(|b| v72_1_sha256_hex(&b))
@@ -6308,6 +6472,7 @@ pub fn v72_1_train_with_steps(force_retrain: bool, steps_override: Option<usize>
     meta_str.push_str("  \"seed_init\": \"0x7210_0001_5EED_CAFE\",\n");
     meta_str.push_str("  \"corpus_path\": \"03_vault/corpus/sh_rw_corpus_v7210.jsonl\",\n");
     meta_str.push_str(&format!("  \"corpus_sha256\": \"{}\",\n", corpus_sha));
+    meta_str.push_str(&format!("  \"val_eval_tokens\": {},\n", fin_eval_toks));
     meta_str.push_str("  \"loss_curve_csv\": \"03_vault/connectome/sh_xi_week1_training_curve.csv\",\n");
     meta_str.push_str("  \"step0_net2wider_note\": \"At step 0 gamma_net2wider=0.0 so Shell-1 768D preserves Shell-0 384D bit-identically; init_val_nats_768_ungated_gamma1 records distinct random Shell-1 loss when gamma=1.0\",\n");
     meta_str.push_str(&format!("  \"init_val_nats_384\": {:.6},\n", init_n384));
@@ -6325,6 +6490,7 @@ pub fn v72_1_train_with_steps(force_retrain: bool, steps_override: Option<usize>
     meta_str.push_str(&format!("  \"final_val_ppl_768\": {:.6},\n", fin_ppl768));
     meta_str.push_str(&format!("  \"prob_sum_max_dev\": {:.9},\n", max_pdev));
     meta_str.push_str(&format!("  \"prob_sum_max_dev_f64_sci\": \"{:.3e}\",\n", max_pdev));
+    meta_str.push_str(&format!("  \"prob_sum_max_dev_f32_sci\": \"{:.3e}\",\n", max_pdev_f32));
     meta_str.push_str("  \"layer_grad_l2_norms\": \x5b\n");
     for (idx, norm) in last_layer_norms.iter().enumerate() {
         if idx + 1 == last_layer_norms.len() {
@@ -7796,7 +7962,7 @@ pub fn v72_1_dispatch_tool_362_week1_master_certification(payload: &str) -> Stri
         && diag_abstain.abstained_unmeasured
         && !diag_mutex.output_text.contains("Laminar Layer")
         && !diag_battery.output_text.contains("Laminar Layer")
-        && lean_count >= 980
+        && crate::v73_2_cloudflare_vpc_mesh_and_pgwire_hyperdrive::validate_live_lean_theorems_with_floor(lean_count)
         && lean_mirror_synced;
 
     let status = if all_gates_passed {

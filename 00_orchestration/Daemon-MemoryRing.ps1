@@ -3,7 +3,22 @@
 $ErrorActionPreference = "SilentlyContinue"
 $root = "C:\sovereign_manifold_v31"
 while ($true) {
-    foreach ($ser in @("3A121FDJH00BW5", "58170DLCR0004V")) {
+    $adbTargets = @()
+    $adbLines = adb.exe devices -l 2>$null
+    foreach ($l in $adbLines) {
+        if ($l -match "^(\S+)\s+device\b" -and ($l -match "model:Pixel_8|product:shiba|model:Pixel_10|product:frankel|192\.168\.137\.")) {
+            $adbTargets += $Matches[1]
+        }
+    }
+    $cfgFile = "C:\Users\Nbell\.act_omega_adb_devices.json"
+    if ($adbTargets.Count -eq 0 -and (Test-Path $cfgFile)) {
+        try {
+            $cfg = Get-Content -Raw $cfgFile | ConvertFrom-Json
+            if ($cfg.pixel8.serial) { $adbTargets += [string]$cfg.pixel8.serial }
+            if ($cfg.pixel10.serial) { $adbTargets += [string]$cfg.pixel10.serial }
+        } catch {}
+    }
+    foreach ($ser in $adbTargets) {
         cmd.exe /c "adb.exe -s $ser reverse tcp:8097 tcp:8097 >nul 2>&1"
         cmd.exe /c "adb.exe -s $ser reverse tcp:5173 tcp:5173 >nul 2>&1"
     }

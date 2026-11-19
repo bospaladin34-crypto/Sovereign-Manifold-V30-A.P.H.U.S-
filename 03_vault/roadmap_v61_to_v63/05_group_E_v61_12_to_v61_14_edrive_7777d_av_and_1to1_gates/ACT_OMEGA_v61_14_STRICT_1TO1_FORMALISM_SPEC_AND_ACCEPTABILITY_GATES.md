@@ -44,7 +44,7 @@ Per our Round-2 formalization protocol, all exploratory codenames used during Ro
 
 ## 2. Tightened Round-2 Production Acceptability Thresholds (`12 Hard Gates`)
 
-Based on yesterday's Round-1 empirical baselines across your `LENOVO LOQ 15` and rooted `Google Pixel 8 (3A121FDJH00BW5)`, Round-2 tightens every threshold from an exploratory check into a **non-negotiable production hard gate**. Any shard or kernel invocation that violates any of Gates `G1`–`G12` is rejected prior to memory commit and triggers a UARM Phase-4 WAL rollback:
+Based on yesterday's Round-1 empirical baselines across your `LENOVO LOQ 15` and rooted `Google Pixel 8 (<DYNAMIC_ADB_SERIAL>)`, Round-2 tightens every threshold from an exploratory check into a **non-negotiable production hard gate**. Any shard or kernel invocation that violates any of Gates `G1`–`G12` is rejected prior to memory commit and triggers a UARM Phase-4 WAL rollback:
 
 | Gate ID | Formal Metric & Invariant | Round-1 Exploratory Baseline | **Round-2 Tightened Production Gate (Hard Requirement)** | Failure Action (UARM Control Loop) |
 | :--- | :--- | :--- | :--- | :--- |

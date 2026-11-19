@@ -1,8 +1,8 @@
-# ACT-Omega v61.11: Deep `7777D` Orthoplex ($\beta_{7777}$) Geometric Research Suite, 3-Shell Residual Cascade, & Rooted Pixel 8 (`3A121FDJH00BW5`) Vault Sync
+# ACT-Omega v61.11: Deep `7777D` Orthoplex ($\beta_{7777}$) Geometric Research Suite, 3-Shell Residual Cascade, & Rooted Pixel 8 (`<DYNAMIC_ADB_SERIAL>`) Vault Sync
 
 * **One-Command PowerShell 5.1 Runner:** `Sync_And_Test_v61_11_Pixel8_7777D_Orthoplex_And_Deep_Geometric_Battery.ps1` (`0` backticks, `-IgnoreWarnings` enabled)
 * **Host Model Vault Integration:** Automatically copies `.o7777`, Hybrid `.o7777 + .sh4z`, and 3-Shell Cascade binaries into `C:\ACT_OMEGA_MODELS\gemma-4-E4B-it\` and `C:\ACT_OMEGA_MODELS\gemma-4-12B-it\`
-* **Rooted Pixel 8 (`3A121FDJH00BW5`) Target:** `/data/adb/act_omega_shiba/gemma4_edge/gemma-4-E4B-it/orthoplex_7777d/`
+* **Rooted Pixel 8 (`<DYNAMIC_ADB_SERIAL>`) Target:** `/data/adb/act_omega_shiba/gemma4_edge/gemma-4-E4B-it/orthoplex_7777d/`
 * **Cold Vault Receipt Path:** `E:\ACT_OMEGA_COLD_VAULT\7777d_orthoplex_receipts\v61_11_deep_7777d_orthoplex_geometry_receipt.json`
 
 ## 1. Five Deep Geometric & Algebraic Properties of the `7777D` Orthoplex ($\beta_{7777}$) Tested in `v61.11`
@@ -35,8 +35,8 @@ While the `15,554` vertices ($\pm \mathbf{e}_d$) are the **0-faces** of the `777
 ### Deep Battery 4: CRT Fiber Marginal Shannon Entropy ($H(\mathbb{Z}_7) + H(\mathbb{Z}_{11}) + H(\mathbb{Z}_{101})$ vs. $\log_2 7777 = 12.9250\text{ bits}$)
 - Measures the empirical Shannon entropy of active Gemma 4 trits across the three coprime CRT coordinates $(r_1, r_2, r_3)$ to verify whether real transformer weights distribute uniformly across the $\mathbb{Z}_7$, $\mathbb{Z}_{11}$, and $\mathbb{Z}_{101}$ fibers without prime-stride clustering.
 
-### Deep Battery 5: Complete Antigravity Vault Sync (`C:\ACT_OMEGA_MODELS`, `E:\ACT_OMEGA_COLD_VAULT`, & Rooted Pixel 8 `3A121FDJH00BW5`)
-- Automatically copies all `.o7777`, Hybrid `.o7777 + .sh4z`, and 3-Shell Cascade files into `C:\ACT_OMEGA_MODELS\gemma-4-E4B-it\` and `C:\ACT_OMEGA_MODELS\gemma-4-12B-it\`, mirrors all JSON receipts to `E:\ACT_OMEGA_COLD_VAULT\7777d_orthoplex_receipts\`, and (whenever your rooted Pixel 8 `3A121FDJH00BW5` is plugged into USB) pushes the entire `orthoplex_7777d` bundle into `/data/adb/act_omega_shiba/gemma4_edge/gemma-4-E4B-it/orthoplex_7777d/`.
+### Deep Battery 5: Complete Antigravity Vault Sync (`C:\ACT_OMEGA_MODELS`, `E:\ACT_OMEGA_COLD_VAULT`, & Rooted Pixel 8 `<DYNAMIC_ADB_SERIAL>`)
+- Automatically copies all `.o7777`, Hybrid `.o7777 + .sh4z`, and 3-Shell Cascade files into `C:\ACT_OMEGA_MODELS\gemma-4-E4B-it\` and `C:\ACT_OMEGA_MODELS\gemma-4-12B-it\`, mirrors all JSON receipts to `E:\ACT_OMEGA_COLD_VAULT\7777d_orthoplex_receipts\`, and (whenever your rooted Pixel 8 `<DYNAMIC_ADB_SERIAL>` is plugged into USB) pushes the entire `orthoplex_7777d` bundle into `/data/adb/act_omega_shiba/gemma4_edge/gemma-4-E4B-it/orthoplex_7777d/`.
 
 ## 2. One-Line Command to Run in PowerShell
 

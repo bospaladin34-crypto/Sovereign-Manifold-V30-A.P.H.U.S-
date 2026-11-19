@@ -1,10 +1,10 @@
-# ACT-Omega v61.11: Master Hardware Certification of the Deep `7777D` Orthoplex ($\beta_{7777}$) Geometry, `17.95 dB` 3-Shell Residual Cascade, `99.989%` CRT Entropy Uniformity, & Rooted Pixel 8 (`3A121FDJH00BW5`) Vault Sync
+# ACT-Omega v61.11: Master Hardware Certification of the Deep `7777D` Orthoplex ($\beta_{7777}$) Geometry, `17.95 dB` 3-Shell Residual Cascade, `99.989%` CRT Entropy Uniformity, & Rooted Pixel 8 (`<DYNAMIC_ADB_SERIAL>`) Vault Sync
 
 * **Hardware Certification Evidence:** `PXL_20261102_191813873.jpg`, `PXL_20261102_191818606.jpg`, `PXL_20261102_191821109.jpg` (`2026-11-02 12:14 Local / 19:14 UTC`)
 * **Tri-Vault Sync Verified:**
   1. **Host PC Model Vaults (`C:\ACT_OMEGA_MODELS\gemma-4-E4B-it\` & `gemma-4-12B-it\`):** Updated with `*_layer0_7777d.o7777` (`31,140 B`), `*_layer0_hybrid_o7777_sh4z.bin` (`8,768 B`), and `*_3shell_7777d_cascade.o7777` (`93,372 B`).
   2. **Cold Vault (`E:\ACT_OMEGA_COLD_VAULT\7777d_orthoplex_receipts\`):** Mirrored all three JSON certification receipts (`v61_9`, `v61_10`, and `v61_11`).
-  3. **Rooted Google Pixel 8 (`3A121FDJH00BW5` via `/data/local/tmp/ksud debug su`):** Verified live in `/data/adb/act_omega_shiba/gemma4_edge/gemma-4-E4B-it/orthoplex_7777d/` (`total 154 KB`, pushed at up to **`65.7 MB/s` in `0.001s`**).
+  3. **Rooted Google Pixel 8 (`<DYNAMIC_ADB_SERIAL>` via `/data/local/tmp/ksud debug su`):** Verified live in `/data/adb/act_omega_shiba/gemma4_edge/gemma-4-E4B-it/orthoplex_7777d/` (`total 154 KB`, pushed at up to **`65.7 MB/s` in `0.001s`**).
 
 ## 1. Hardware-Certified 5-Battery Deep `7777D` Orthoplex Scorecard (`LENOVO LOQ 15` + `Pixel 8 shiba`)
 
@@ -15,7 +15,7 @@
 | **Deep Battery 3A** | **Real `gemma-4-E4B-it` 3-Shell Nested `7777D` Orthoplex Residual Cascade** | **`Shell 1 = 9.87 dB` $\to$ `Shell 2 = 14.25 dB` $\to$ `Shell 3 = 17.95 dB` (`+8.08 dB` Cascade Gain / `+11.55 dB` over baseline!)** \| Saved `93,372 B` (`gemma-4-E4B-it_3shell_7777d_cascade.o7777`) | **PASS (`17.95 dB` SNR!)** |
 | **Deep Battery 3B** | **Real `gemma-4-12B-it` 3-Shell Nested `7777D` Orthoplex Residual Cascade** | **`Shell 1 = 4.48 dB` $\to$ `Shell 2 = 8.05 dB` $\to$ `Shell 3 = 10.21 dB` (`+5.74 dB` Cascade Gain / `+6.75 dB` over baseline!)** \| Saved `93,372 B` (`gemma-4-12B-it_3shell_7777d_cascade.o7777`) | **PASS (`10.21 dB` SNR!)** |
 | **Deep Battery 4** | **CRT Marginal Shannon Entropy on Real `gemma-4-12B-it` (`surgical_layer0_bf16_slice_64kb.bin`)** | $H(\mathbb{Z}_7) = \mathbf{2.8073\text{ b}}$ + $H(\mathbb{Z}_{11}) = \mathbf{3.4593\text{ b}}$ + $H(\mathbb{Z}_{101}) = \mathbf{6.6569\text{ b}}$ = **`12.9236 / 12.9250 bits` (`99.989%` Uniformity!)** | **PASS (`99.989%` Ideal!)** |
-| **Deep Battery 5** | **Host `C:\ACT_OMEGA_MODELS` + `E:\` Cold Vault + Rooted Pixel 8 (`3A121FDJH00BW5`) Sync** | All 6 files (`93,372 B`, `31,140 B`, `8,768 B`, `877 B`, `746 B`, `524 B`) verified in `/data/adb/act_omega_shiba/gemma4_edge/gemma-4-E4B-it/orthoplex_7777d/` (`65.7 MB/s` USB push) | **PASS (Tri-Vault Locked)** |
+| **Deep Battery 5** | **Host `C:\ACT_OMEGA_MODELS` + `E:\` Cold Vault + Rooted Pixel 8 (`<DYNAMIC_ADB_SERIAL>`) Sync** | All 6 files (`93,372 B`, `31,140 B`, `8,768 B`, `877 B`, `746 B`, `524 B`) verified in `/data/adb/act_omega_shiba/gemma4_edge/gemma-4-E4B-it/orthoplex_7777d/` (`65.7 MB/s` USB push) | **PASS (Tri-Vault Locked)** |
 
 ## 2. Four Major Scientific & Systems Breakthroughs Certified in `v61.11`
 
@@ -31,7 +31,7 @@
    - Adding Shell 2 (`14.25 dB` / `8.05 dB`) and Shell 3 (**`17.95 dB` / `10.21 dB`**) via nested Orthoplex residual peeling ($\mathbf{w} \approx \gamma_1 \mathbf{q}^{(1)} + \gamma_2 \mathbf{q}^{(2)} + \gamma_3 \mathbf{q}^{(3)}$) delivers near-`FP16` fidelity using strictly multiplier-free ternary additions/subtractions!
 3. **`15,554 / 15,554` (`100%`) Sharp Transitivity & Exact $L_1$ Isometry of the Abelian Cayley-CRT Group $G_{15554}$ in `1.21 ms`:**
    - Every vertex of the `7777D` Orthoplex ($\beta_{7777}$) is uniquely addressed by a single group element $g \in \mathbb{Z}_2 \times \mathbb{Z}_7 \times \mathbb{Z}_{11} \times \mathbb{Z}_{101}$ in **`77.8 nanoseconds`** with zero lookup tables and zero $L_1$ metric distortion.
-4. **Complete Tri-Vault Lock on Rooted Google Pixel 8 (`3A121FDJH00BW5`):**
+4. **Complete Tri-Vault Lock on Rooted Google Pixel 8 (`<DYNAMIC_ADB_SERIAL>`):**
    - Verified verbatim in `PXL_20261102_191821109.jpg`:
      ```text
      === [PIXEL 8 SHIBA 7777D ORTHOPLEX VAULT SYNCED] ===

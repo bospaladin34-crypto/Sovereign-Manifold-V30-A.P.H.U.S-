@@ -68,7 +68,7 @@ ACT-Omega Net v56.0.0 operates as an autopoietic, zero-fragmentation tri-silicon
 - Tools 177..184 dispatch entrypoint: `pub fn dispatch_tools_177_to_184(tool_id: usize, input: &str) -> String`.
 - Security: APR 4-Ring Stratifier (Rings A0..A3, `OWNED_SILICON_ONLY`), Kasami Golay syndrome routing, 3-Party Bell witness.
 
-### `v55_pixel8_ksud_root_edgetpu_mali_kvm_governor.rs` ↔ Pixel 8 `3A121FDJH00BW5`
+### `v55_pixel8_ksud_root_edgetpu_mali_kvm_governor.rs` ↔ Pixel 8 `<DYNAMIC_ADB_SERIAL>`
 - Tools 185..204 dispatch entrypoint: `pub fn dispatch_tools_185_to_204(tool_id: usize, input: &str) -> String`.
 - Endpoints: `GET /api/v1/p8_root/hardware_audit` and `POST /api/v1/p8_root/governor`.
 - Hardware nodes: `/dev/edgetpu-soc` (487,1), `/dev/mali0` (10,86), `/dev/kvm` (10,232), `policy0/4/8`.

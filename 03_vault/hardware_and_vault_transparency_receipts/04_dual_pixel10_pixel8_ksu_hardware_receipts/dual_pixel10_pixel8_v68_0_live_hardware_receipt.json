@@ -2,14 +2,14 @@
     "status":  "DUAL_PIXEL_LIVE_HARDWARE_LOCKSTEP_RECEIPT_V68_0",
     "version":  "v68.0.0",
     "version_code":  68,
-    "adb_devices_list":  "List of devices attached\r\n58170DLCR0004V         device product:frankel_beta model:Pixel_10 device:frankel transport_id:13\r\n192.168.137.8:5555     device product:shiba_beta model:Pixel_8 device:shiba transport_id:10",
+    "adb_devices_list":  "List of devices attached\r\nEDGE-1-PIXEL10-G5         device product:frankel_beta model:Pixel_10 device:frankel transport_id:13\r\n192.168.137.8:5555     device product:shiba_beta model:Pixel_8 device:shiba transport_id:10",
     "edge1_pixel10_tensor_g5":  {
-                                    "serial":  "58170DLCR0004V",
+                                    "serial":  "EDGE-1-PIXEL10-G5",
                                     "sectors":  "S48..S63",
                                     "package_dumpsys":  ""
                                 },
     "edge2_pixel8_tensor_g3_p8_apex":  {
-                                           "serial":  "3A121FDJH00BW5",
+                                           "serial":  "EDGE-2-PIXEL8-SHIBA",
                                            "wireless_adb":  "192.168.137.8:5555",
                                            "sectors":  "S64..S79",
                                            "kernelsu_slot":  "Slot A (u:r:ksu:s0)",

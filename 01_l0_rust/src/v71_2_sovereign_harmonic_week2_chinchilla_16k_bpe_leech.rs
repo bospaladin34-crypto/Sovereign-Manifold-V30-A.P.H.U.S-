@@ -2294,8 +2294,8 @@ pub fn v71_2_dispatch_tool_339_week2_7test_torture_gauntlet(payload: &str) -> St
     // -------------------------------------------------------------------------
     let (w2_curriculum_samples, _, _) = v71_2_build_curated_1024_curriculum();
 
-    // Build deterministic 192-token active evaluation support set from eval256 so all 6 cells
-    // normalize exact categorical log-softmax over the identical discrete outcome space.
+    // Build deterministic active evaluation support set from eval256 (192 cap; actual unique support = 172 tokens -> NARROW_172_TOKEN_EVAL_SUPPORT)
+    // so all 6 cells normalize exact categorical log-softmax over the identical discrete outcome space.
     let mut eval_vocab_support: Vec<usize> = Vec::with_capacity(192);
     {
         let mut seen_tok = std::collections::HashSet::new();
@@ -2586,10 +2586,13 @@ pub fn v71_2_dispatch_tool_339_week2_7test_torture_gauntlet(payload: &str) -> St
     let (abl_rev_nll, abl_reverse_antipaced_ppl, abl_rev_steps) = eval_ablation(true, true, 2, 1024);
     let (abl_d64_nll, abl_d64_seed_only_ppl, abl_d64_steps) = eval_ablation(true, true, 1, d64_seed_override);
 
+    let eval_support_label = format!("NARROW_{}_TOKEN_EVAL_SUPPORT", eval_vocab_support.len());
     let _ = fs::create_dir_all("03_vault/connectome");
     let d3_ablation_receipt = format!(
-        "{{\"tool_id\":339,\"status\":\"MEASURED\",\"evaluation_support_vocab\":{},\"d64_seed_samples_override\":{},\"cells\":{{\"cell1_full_week2\":{{\"use_leech_24d\":true,\"use_ast_tiers\":true,\"pacing_mode\":\"forward_easy_to_hard\",\"active_d\":1024,\"feature_dim\":56,\"sgd_updates\":{},\"mean_nll\":{:.6},\"perplexity\":{:.6}}},\"cell2_no_leech_24d\":{{\"use_leech_24d\":false,\"use_ast_tiers\":true,\"pacing_mode\":\"forward_easy_to_hard\",\"active_d\":1024,\"feature_dim\":32,\"sgd_updates\":{},\"mean_nll\":{:.6},\"perplexity\":{:.6}}},\"cell3_no_ast_tiers\":{{\"use_leech_24d\":true,\"use_ast_tiers\":false,\"pacing_mode\":\"forward_easy_to_hard\",\"active_d\":1024,\"feature_dim\":56,\"sgd_updates\":{},\"mean_nll\":{:.6},\"perplexity\":{:.6}}},\"cell4_unpaced_random\":{{\"use_leech_24d\":true,\"use_ast_tiers\":true,\"pacing_mode\":\"splitmix64_random_shuffle\",\"active_d\":1024,\"feature_dim\":56,\"sgd_updates\":{},\"mean_nll\":{:.6},\"perplexity\":{:.6}}},\"cell5_reverse_antipaced\":{{\"use_leech_24d\":true,\"use_ast_tiers\":true,\"pacing_mode\":\"reverse_hard_to_easy\",\"active_d\":1024,\"feature_dim\":56,\"sgd_updates\":{},\"mean_nll\":{:.6},\"perplexity\":{:.6}}},\"cell6_d64_seed_only\":{{\"use_leech_24d\":true,\"use_ast_tiers\":true,\"pacing_mode\":\"forward_easy_to_hard\",\"active_d\":{},\"feature_dim\":56,\"sgd_updates\":{},\"mean_nll\":{:.6},\"perplexity\":{:.6}}}}}}}",
+        "{{\"tool_id\":339,\"status\":\"MEASURED\",\"evaluation_support_vocab\":{},\"eval_vocab_support_size\":{},\"eval_vocab_support_label\":\"{}\",\"d64_seed_samples_override\":{},\"cells\":{{\"cell1_full_week2\":{{\"use_leech_24d\":true,\"use_ast_tiers\":true,\"pacing_mode\":\"forward_easy_to_hard\",\"active_d\":1024,\"feature_dim\":56,\"sgd_updates\":{},\"mean_nll\":{:.6},\"perplexity\":{:.6}}},\"cell2_no_leech_24d\":{{\"use_leech_24d\":false,\"use_ast_tiers\":true,\"pacing_mode\":\"forward_easy_to_hard\",\"active_d\":1024,\"feature_dim\":32,\"sgd_updates\":{},\"mean_nll\":{:.6},\"perplexity\":{:.6}}},\"cell3_no_ast_tiers\":{{\"use_leech_24d\":true,\"use_ast_tiers\":false,\"pacing_mode\":\"forward_easy_to_hard\",\"active_d\":1024,\"feature_dim\":56,\"sgd_updates\":{},\"mean_nll\":{:.6},\"perplexity\":{:.6}}},\"cell4_unpaced_random\":{{\"use_leech_24d\":true,\"use_ast_tiers\":true,\"pacing_mode\":\"splitmix64_random_shuffle\",\"active_d\":1024,\"feature_dim\":56,\"sgd_updates\":{},\"mean_nll\":{:.6},\"perplexity\":{:.6}}},\"cell5_reverse_antipaced\":{{\"use_leech_24d\":true,\"use_ast_tiers\":true,\"pacing_mode\":\"reverse_hard_to_easy\",\"active_d\":1024,\"feature_dim\":56,\"sgd_updates\":{},\"mean_nll\":{:.6},\"perplexity\":{:.6}}},\"cell6_d64_seed_only\":{{\"use_leech_24d\":true,\"use_ast_tiers\":true,\"pacing_mode\":\"forward_easy_to_hard\",\"active_d\":{},\"feature_dim\":56,\"sgd_updates\":{},\"mean_nll\":{:.6},\"perplexity\":{:.6}}}}}}}",
         eval_vocab_support.len(),
+        eval_vocab_support.len(),
+        eval_support_label,
         d64_seed_override,
         abl_full_steps, abl_full_nll, abl_full_w2_ppl,
         abl_noleech_steps, abl_noleech_nll, abl_no_leech_24d_ppl,
@@ -2619,7 +2622,7 @@ pub fn v71_2_dispatch_tool_339_week2_7test_torture_gauntlet(payload: &str) -> St
         "Unicode Math Torture: ∀ψ ∈ ℋ, ∮_∂Ω (∇ × B) · dA = μ_0 I_enc + ε_0 ∂Φ_E/∂t ⇒ ΔS_Bekenstein ≥ 0",
         "Plucker Grassmannian G(2,4): p_01*p_23 - p_02*p_13 + p_03*p_12 == 0 // Viviani d1+d2+d3=1000mV",
         "SELECT COUNT(DISTINCT fnv1a_hash) FROM read_json_auto('03_vault/connectome/sh_week2_curated_corpus.jsonl');",
-        "Edge-2 Rooted Pixel 8 (3A121FDJH00BW5) u:r:ksu:s0 -> 192.168.137.8:8098 -> 192.168.44.8:8098",
+        "Edge-2 Rooted Pixel 8 (EDGE-2-PIXEL8-SHIBA) u:r:ksu:s0 -> 192.168.137.8:8098 -> 192.168.44.8:8098",
         "Control & Escape Torture: \t\r\n !@#$%^&*()_+-={}||;':\",./<>?`~0123456789ABCDEF",
     );
     let mut w2_9_exact_matches: usize = 0;
@@ -2868,7 +2871,7 @@ pub fn v71_2_dispatch_tool_339_week2_7test_torture_gauntlet(payload: &str) -> St
     };
 
     let out_json = format!(
-        "{{\"status\":\"{}\",\"tool_id\":339,\"chain\":\"CHAIN_340\",\"version\":\"v71.2.0\",\"suite\":\"WEEK2_13TEST_TORTURE_STRESS_AND_ABLATION_GAUNTLET\",\"elapsed_ms\":{},\"all_7_tests_passed\":{},\"all_13_stress_and_ablation_passed\":{},\"w2_1_bpe_16384_roundtrip\":{{\"passed\":{},\"eval256_exact_roundtrips\":\"{}/256\",\"chars_per_token\":{:.4},\"unk_count\":{}}},\"w2_2_tied_e8_leech_56d_codebook\":{{\"passed\":{},\"measured_sqnr_db\":{:.4},\"e8_even_parity\":\"{}/{}\",\"leech_mod4_parity\":\"{}/{}\"}},\"w2_3_duckdb_harvester_and_gate0\":{{\"passed\":{},\"curated_samples\":{},\"eval256_overlap\":{},\"hard_gate_0_passed\":{},\"redteam_canary_caught\":{}}},\"w2_4_chinchilla_4rung_scaling\":{{\"passed\":{},\"strictly_monotonic_64_256_512_1024\":{}}},\"w2_5_cosine_stiefel_3stage_trainer\":{{\"passed\":{}}},\"w2_6_sh_eval_256_progression\":{{\"passed\":{},\"week1_eval256_ppl\":{:.4},\"week2_eval256_ppl\":{:.4},\"ppl_improvement_delta\":{:.4},\"track_a_ppl\":{:.4},\"track_b_ppl\":{:.4},\"track_c_ppl\":{:.4},\"track_d_ppl\":{:.4},\"top1_token_accuracy\":{:.4},\"top5_token_accuracy\":{:.4}}},\"w2_7_tri_silicon_coexec\":{{\"passed\":{},\"wireless_p8_online\":{},\"wireless_p8_bearer\":\"{}\",\"wireless_p8_rtt_ms\":{}}},\"w2_8_six_way_ablation_matrix\":{{\"passed\":{},\"full_week2_ppl\":{:.4},\"no_leech_24d_e8_only_ppl\":{:.4},\"no_ast_concept_tiers_ppl\":{:.4},\"unpaced_random_order_ppl\":{:.4},\"reverse_curriculum_antipaced_ppl\":{:.4},\"d64_seed_only_ppl\":{:.4},\"leech_24d_ppl_gain\":{:.4},\"ast_tiers_ppl_gain\":{:.4},\"forward_vs_reverse_curriculum_gain\":{:.4}}},\"w2_9_adversarial_unicode_ast_bpe_torture\":{{\"passed\":{},\"exact_roundtrips\":\"{}/8\",\"compression_chars_per_token\":{:.4},\"unk_count\":{}}},\"w2_10_golay_leech_3error_syndrome_and_noise_sweep\":{{\"passed\":{},\"bounded_distance_trials\":{},\"bounded_distance_recovered\":{},\"recovery_rate\":{:.4},\"sqnr_0pct_db\":{:.2},\"sqnr_1pct_db\":{:.2},\"sqnr_5pct_db\":{:.2},\"sqnr_10pct_db\":{:.2}}},\"w2_11_duckdb_canary_and_mutation_firewall\":{{\"passed\":{},\"disguised_holdout_canaries_blocked\":\"{}/{}\",\"mutated_near_duplicates_blocked\":\"{}/{}\"}},\"w2_12_stiefel_50step_600retraction_drift_torture\":{{\"passed\":{},\"total_cayley_retractions\":600,\"max_50step_ortho_frobenius_residual\":{:.14},\"max_50step_skew_residual\":{:.14}}},\"w2_13_frozen_holdout_v2_subset_verification\":{{\"passed\":{},\"week2_1024_corpus_zero_overlap\":{}}},\"lean4_theorems_verified\":\"thm_v71_2_906..920\",\"proof\":\"WEEK2_13TEST_TORTURE_STRESS_AND_ABLATION_GAUNTLET_QED | All13Passed={} | Eval256_PPL={:.4}->{:.4} | FullAbl={:.4}<NoLeech={:.4}<Reverse={:.4} | 600RetractionsOrtho={:.2e}\"}}",
+        "{{\"status\":\"{}\",\"tool_id\":339,\"chain\":\"CHAIN_340\",\"version\":\"v71.2.0\",\"suite\":\"WEEK2_13TEST_TORTURE_STRESS_AND_ABLATION_GAUNTLET\",\"elapsed_ms\":{},\"all_7_tests_passed\":{},\"all_13_stress_and_ablation_passed\":{},\"w2_1_bpe_16384_roundtrip\":{{\"passed\":{},\"eval256_exact_roundtrips\":\"{}/256\",\"chars_per_token\":{:.4},\"unk_count\":{}}},\"w2_2_tied_e8_leech_56d_codebook\":{{\"passed\":{},\"measured_sqnr_db\":{:.4},\"e8_even_parity\":\"{}/{}\",\"leech_mod4_parity\":\"{}/{}\"}},\"w2_3_duckdb_harvester_and_gate0\":{{\"passed\":{},\"curated_samples\":{},\"eval256_overlap\":{},\"hard_gate_0_passed\":{},\"redteam_canary_caught\":{}}},\"w2_4_chinchilla_4rung_scaling\":{{\"passed\":{},\"strictly_monotonic_64_256_512_1024\":{}}},\"w2_5_cosine_stiefel_3stage_trainer\":{{\"passed\":{}}},\"w2_6_sh_eval_256_progression\":{{\"passed\":{},\"week1_eval256_ppl\":{:.4},\"week2_eval256_ppl\":{:.4},\"ppl_improvement_delta\":{:.4},\"track_a_ppl\":{:.4},\"track_b_ppl\":{:.4},\"track_c_ppl\":{:.4},\"track_d_ppl\":{:.4},\"top1_token_accuracy\":{:.4},\"top5_token_accuracy\":{:.4}}},\"w2_7_tri_silicon_coexec\":{{\"passed\":{},\"wireless_p8_online\":{},\"wireless_p8_bearer\":\"{}\",\"wireless_p8_rtt_ms\":{}}},\"w2_8_six_way_ablation_matrix\":{{\"passed\":{},\"eval_vocab_support_size\":{},\"eval_vocab_support_label\":\"{}\",\"full_week2_ppl\":{:.4},\"no_leech_24d_e8_only_ppl\":{:.4},\"no_ast_concept_tiers_ppl\":{:.4},\"unpaced_random_order_ppl\":{:.4},\"reverse_curriculum_antipaced_ppl\":{:.4},\"d64_seed_only_ppl\":{:.4},\"leech_24d_ppl_gain\":{:.4},\"ast_tiers_ppl_gain\":{:.4},\"forward_vs_reverse_curriculum_gain\":{:.4}}},\"w2_9_adversarial_unicode_ast_bpe_torture\":{{\"passed\":{},\"exact_roundtrips\":\"{}/8\",\"compression_chars_per_token\":{:.4},\"unk_count\":{}}},\"w2_10_golay_leech_3error_syndrome_and_noise_sweep\":{{\"passed\":{},\"bounded_distance_trials\":{},\"bounded_distance_recovered\":{},\"recovery_rate\":{:.4},\"sqnr_0pct_db\":{:.2},\"sqnr_1pct_db\":{:.2},\"sqnr_5pct_db\":{:.2},\"sqnr_10pct_db\":{:.2}}},\"w2_11_duckdb_canary_and_mutation_firewall\":{{\"passed\":{},\"disguised_holdout_canaries_blocked\":\"{}/{}\",\"mutated_near_duplicates_blocked\":\"{}/{}\"}},\"w2_12_stiefel_50step_600retraction_drift_torture\":{{\"passed\":{},\"total_cayley_retractions\":600,\"max_50step_ortho_frobenius_residual\":{:.14},\"max_50step_skew_residual\":{:.14}}},\"w2_13_frozen_holdout_v2_subset_verification\":{{\"passed\":{},\"week2_1024_corpus_zero_overlap\":{}}},\"lean4_theorems_verified\":\"thm_v71_2_906..920\",\"proof\":\"WEEK2_13TEST_TORTURE_STRESS_AND_ABLATION_GAUNTLET_QED | All13Passed={} | Eval256_PPL={:.4}->{:.4} | FullAbl={:.4}<NoLeech={:.4}<Reverse={:.4} | 600RetractionsOrtho={:.2e}\"}}",
         status,
         elapsed_ms,
         all_7_passed,
@@ -2906,6 +2909,8 @@ pub fn v71_2_dispatch_tool_339_week2_7test_torture_gauntlet(payload: &str) -> St
         v61_escape_clean(&p8_bearer),
         p8_rtt_str,
         w2_8_pass,
+        eval_vocab_support.len(),
+        eval_support_label,
         abl_full_w2_ppl,
         abl_no_leech_24d_ppl,
         abl_no_ast_tiers_ppl,
@@ -3018,7 +3023,7 @@ pub fn v71_2_dispatch_tool_340_week2_master_certification(payload: &str) -> Stri
             == Some(true);
 
     let lean_theorems = v71_2_live_lean4_theorem_count();
-    let g7_lean4_920_ok = lean_theorems >= 920;
+    let g7_lean4_920_ok = crate::v73_2_cloudflare_vpc_mesh_and_pgwire_hyperdrive::validate_live_lean_theorems_with_floor(lean_theorems);
 
     let all_passed = g1_duckdb_harvester_ok
         && g2_bpe16k_leech_ok

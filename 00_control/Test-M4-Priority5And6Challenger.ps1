@@ -10,12 +10,21 @@
 
 $ErrorActionPreference = "Stop"
 
-Write-Host "=================================================================" -ForegroundColor Cyan
-Write-Host "  ACT-Omega Net v72.2.0 -- Milestone M4 Priority 5 & 6 Challenger" -ForegroundColor Cyan
-Write-Host "=================================================================" -ForegroundColor Cyan
-
 $baseUrl = "http://127.0.0.1:8097"
 $baseDir = "c:\sovereign_manifold_v31"
+$cffVer = "UNMEASURED"
+$cffPath = Join-Path $baseDir "CITATION.cff"
+if (Test-Path $cffPath) {
+    $cffRaw = [System.IO.File]::ReadAllText($cffPath)
+    if ($cffRaw -match '(?m)^version:\s*"?([^"\r\n]+)"?\s*$') {
+        $vTok = $Matches[1].Trim()
+        $cffVer = if ($vTok.StartsWith("v")) { $vTok } else { "v$vTok" }
+    }
+}
+
+Write-Host "=================================================================" -ForegroundColor Cyan
+Write-Host "  ACT-Omega Net $cffVer -- Milestone M4 Priority 5 & 6 Challenger" -ForegroundColor Cyan
+Write-Host "=================================================================" -ForegroundColor Cyan
 
 # Load external operator key
 $headers = @{}

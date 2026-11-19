@@ -5,4 +5,4 @@
   * `sovereign_harmonic_iv_v4000.e8z` (`133,120 B`): `c383b1b7d00e6ce8cef22593536aea2d66523d53360c3552a64970a61e394b23`
   * `neurons_v4000.npage` (`2,703,360 B`): `aee7711086a07bb6ddebc9e347ed4d68d3a38b57d57b08f9089d22345fa07d6d`
   * `SovereignManifoldTheorems.lean` (`50,903 B`): `d7955e7e987c897c574add613bf72d79969f23a626d178c865d3d853e02788da`
-* **Exact `21,120 == 21,120` Neuron-to-Shard Bijection & 6-Stage Rollout Pipeline (`Tracks 41.6–41.8`)**: Backfills all `21,120` `.binshard` files (`shard_00001..shard_21120`), synchronizes Host HUD + Pixel 8 (`3A121FDJH00BW5`) + Pixel 10 (`58170DLCR0004V`) + Cloudflare D1 + GitHub (`vesper_production`, `main`, `gh-pages`), and certifies `244 / 244` Cumulative Google Tasks.
+* **Exact `21,120 == 21,120` Neuron-to-Shard Bijection & 6-Stage Rollout Pipeline (`Tracks 41.6–41.8`)**: Backfills all `21,120` `.binshard` files (`shard_00001..shard_21120`), synchronizes Host HUD + Pixel 8 (`<DYNAMIC_ADB_SERIAL>`) + Pixel 10 (`<DYNAMIC_ADB_SERIAL>`) + Cloudflare D1 + GitHub (`vesper_production`, `main`, `gh-pages`), and certifies `244 / 244` Cumulative Google Tasks.

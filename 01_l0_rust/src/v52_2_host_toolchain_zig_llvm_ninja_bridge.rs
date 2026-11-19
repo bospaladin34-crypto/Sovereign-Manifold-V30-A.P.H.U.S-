@@ -470,7 +470,7 @@ pub fn v52_2_tool142_bonjour_mdns_mesh_beacon(action: &str, p10_online: bool, p8
     };
 
     format!(
-        "{{\"status\":\"{}\",\"tool_id\":142,\"tool\":\"bonjour_mdns_mesh_beacon\",\"action\":\"{}\",\"mdns_responder_bytes\":{},\"service_fqdn\":\"_act-omega._tcp.local.\",\"pixel10_58170DLCR0004V_online\":{},\"pixel8_3A121FDJH00BW5_online\":{},\"synced_tribank_e8z_bytes\":{},\"elapsed_us\":{:.2}}}",
+        "{{\"status\":\"{}\",\"tool_id\":142,\"tool\":\"bonjour_mdns_mesh_beacon\",\"action\":\"{}\",\"mdns_responder_bytes\":{},\"service_fqdn\":\"_act-omega._tcp.local.\",\"pixel10_online\":{},\"pixel8_online\":{},\"synced_tribank_e8z_bytes\":{},\"elapsed_us\":{:.2}}}",
         status,
         action,
         mdns_bytes,

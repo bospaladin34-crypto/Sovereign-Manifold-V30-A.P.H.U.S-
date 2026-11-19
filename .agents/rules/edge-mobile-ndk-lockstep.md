@@ -1,7 +1,7 @@
 ---
 trigger: glob
 globs: "04_edge_silicon/**/*"
-description: "Dual-Phone Android NDK/Compose APK (MainActivity.kt, v70.0.0 versionCode=70) rules for Pixel 10 (58170DLCR0004V) and Pixel 8 (3A121FDJH00BW5 / Wi-Fi Direct ADB)."
+description: "Dual-Phone Android NDK/Compose APK (MainActivity.kt, v70.0.0 versionCode=70) rules for Pixel 10 (<DYNAMIC_ADB_SERIAL>) and Pixel 8 (<DYNAMIC_ADB_SERIAL> / Wi-Fi Direct ADB)."
 ---
 # Dual-Pixel Edge Silicon & NDK APK Rules (ACT-Omega v70.0.0 | CHAIN 316 | 840/840 QED)
 
@@ -22,7 +22,7 @@ description: "Dual-Phone Android NDK/Compose APK (MainActivity.kt, v70.0.0 versi
 
 3. **Dual-Pixel Build, USB + Wi-Fi Direct ADB Discovery & Install Recipe**:
    - Build in `04_edge_silicon/pixel10_ndk_app` via `.\gradlew.bat assembleDebug --console=plain`.
-   - Discover **Pixel 10** via USB serial `58170DLCR0004V` (`S48..S63`, `49,152` CLs) and **Pixel 8** via either USB serial `3A121FDJH00BW5` or Wi-Fi Direct ADB (`192.168.*` / `adb-3A121FDJH00BW5*`, `S64..S79`, `32,768` CLs, `4.00 MB` L2 SHM).
+   - Discover **Pixel 10** via USB serial `<DYNAMIC_ADB_SERIAL>` (`S48..S63`, `49,152` CLs) and **Pixel 8** via either USB serial `<DYNAMIC_ADB_SERIAL>` or Wi-Fi Direct ADB (`192.168.*` / `adb-<DYNAMIC_ADB_SERIAL>*`, `S64..S79`, `32,768` CLs, `4.00 MB` L2 SHM).
    - Install via `adb -s <dev> install -r -d app\build\outputs\apk\debug\app-debug.apk` and broadcast widget refresh: `adb -s <dev> shell am broadcast -a com.actomega.manifold.ACTION_REFRESH_HEATMAP -n com.actomega.manifold/.SovereignHeatmapWidgetProvider`.
 
 4. **HARD CONSTRAINT (MUSE MANDATE)**:

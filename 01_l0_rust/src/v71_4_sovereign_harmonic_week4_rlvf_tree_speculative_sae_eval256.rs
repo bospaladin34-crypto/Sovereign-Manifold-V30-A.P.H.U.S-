@@ -34,6 +34,7 @@ use std::sync::RwLock;
 use std::time::{Duration, Instant};
 
 use crate::ffi::execute_rtx3050_nvcuda_dual_ptx_kernels;
+use crate::v61_gemma4_multimodal_ple_speculative_cascade_and_mcp_suite::v61_escape_clean;
 use crate::v69_0_omegalang_v16_primary_tlv_compiler_and_84480_connectome::{
     C_E8Z_V6900_8704CL, C_NEURONS_V6900_84480, C_SYNAPSES_V6900_2703360, V69_CHAIR44_COLUMNS,
     V69_NEURONS_PER_COLUMN, V69_TOTAL_NEURONS,
@@ -43,9 +44,11 @@ use crate::v69_5_heterogeneous_cpu_rtx3050_cuda_coexec::{
 };
 use crate::v71_0_sovereign_harmonic_standalone_model::{
     v71_0_dispatch_tool_322_unseen_holdout_evaluator, v71_bpe_encode,
-    v71_extract_json_str, v71_extract_json_usize, v71_fnv1a_64_str,
-    v71_load_or_build_bpe_vocabulary, v71_load_sh4z_weights, v71_precompute_embedding_inv_norms_32d,
-    v71_standalone_generate, v71_transduce_human_metaphors_and_ambiguity, V71_EMBED_DIM_32D,
+    v71_build_active_training_corpus, v71_extract_json_str, v71_extract_json_usize,
+    v71_fnv1a_64_str, v71_load_or_build_bpe_vocabulary, v71_load_sh4z_weights,
+    v71_precompute_embedding_inv_norms_32d, v71_standalone_generate,
+    v71_standalone_generate_with_context, v71_transduce_human_metaphors_and_ambiguity,
+    V71_EMBED_DIM_32D,
 };
 use crate::v71_1_sovereign_harmonic_week1_deep12l_bptt_eval256::{
     v71_1_apply_15965hz_decadic_rope_32d, v71_1_build_sh_eval_256_suite,
@@ -1044,7 +1047,7 @@ pub fn v71_4_run_tool_351_core(payload: &str) -> V71_4Tool351Receipt {
                 lean_live_ok: false,
                 lean_neg_soundness_ok: false,
                 max_ortho_err: 1.0,
-                json: format!("{{\"status\":\"UNMEASURED/OFFLINE\",\"tool_id\":351,\"error\":\"{}\"}}", e),
+                json: format!("{{\"status\":\"UNMEASURED/OFFLINE\",\"tool_id\":351,\"error\":\"{}\"}}", v61_escape_clean(&e)),
             };
         }
     }
@@ -1064,13 +1067,33 @@ pub fn v71_4_run_tool_351_core(payload: &str) -> V71_4Tool351Receipt {
         idx += 4;
     }
 
+    // Preload standalone context once outside par_iter (eliminates 64x redundant 16.5 MB disk reads + SHA-256)
+    let vocab_v71 = v71_load_or_build_bpe_vocabulary(false);
+    let weights_v71_opt = v71_load_sh4z_weights(&vocab_v71);
+    let npage_v71 = fs::read(C_NEURONS_V6900_84480).unwrap_or_else(|_| Vec::new());
+    let spage_v71 = fs::read(C_SYNAPSES_V6900_2703360).unwrap_or_else(|_| Vec::new());
+    let corpus_v71 = v71_build_active_training_corpus();
+
     // Evaluate Group Rollouts (G=4) in parallel across 12 AVX2 threads
     let group_results: Vec<(usize, f64, f64, f64, bool, bool, bool, bool)> = obligations
         .par_iter()
         .enumerate()
         .map(|(ob_idx, (track_id, prompt, ref_target))| {
             let stk_ref = Some(&stack);
-            let gen0 = v71_standalone_generate(prompt, 48);
+            let gen0 = match weights_v71_opt.as_ref() {
+                Some(w_ref) if npage_v71.len() == 10_813_440 && spage_v71.len() == 5_406_720 => {
+                    v71_standalone_generate_with_context(
+                        prompt,
+                        48,
+                        &vocab_v71,
+                        w_ref,
+                        &npage_v71,
+                        &spage_v71,
+                        &corpus_v71,
+                    )
+                }
+                _ => v71_standalone_generate(prompt, 48),
+            };
             let cand0_text = ref_target.clone();
             let s0 = v71_4_verify_candidate_formal_reward(*track_id, prompt, &cand0_text, false, stk_ref);
 
@@ -1222,7 +1245,7 @@ pub fn v71_4_run_tool_351_core(payload: &str) -> V71_4Tool351Receipt {
                     lean_live_ok,
                     lean_neg_soundness_ok,
                     max_ortho_err,
-                    json: format!("{{\"status\":\"UNMEASURED/OFFLINE\",\"tool_id\":351,\"error\":\"{}\"}}", e),
+                    json: format!("{{\"status\":\"UNMEASURED/OFFLINE\",\"tool_id\":351,\"error\":\"{}\"}}", v61_escape_clean(&e)),
                 };
             }
         };
@@ -1262,7 +1285,7 @@ pub fn v71_4_run_tool_351_core(payload: &str) -> V71_4Tool351Receipt {
         lean_live_ok,
         lean_neg_soundness_ok,
         lean_live_ms,
-        lean_live_msg,
+        v61_escape_clean(&lean_live_msg),
         max_ortho_err,
         shx_buf.len(),
         shx_fnv,
@@ -1762,6 +1785,141 @@ fn v71_4_drafter_step_probs(
         }
     }
     v71_3_compute_step_token_probs(stack, trained_weights, cb_16k, prev_tok, step_pos, 2)
+}
+
+fn v71_4_run_linear_speculative_cascade_with_trained_2l_drafter(
+    stack: &V71_1Deep12LStack,
+    trained_weights: &crate::v71_0_sovereign_harmonic_standalone_model::V71SovereignHarmonicWeights,
+    cb_16k: &V71_2AstBpeCodebook16K,
+    bridge_slots_opt: Option<&Vec<Vec<f32>>>,
+    prompt: &str,
+    lookahead_k: usize,
+    target_tokens: usize,
+) -> (f64, f64, usize, usize) {
+    let k_active = lookahead_k.clamp(1, 8);
+    let gen_budget = target_tokens.clamp(16, 256);
+    let toks_16k = v71_2_encode_16384_ast_bpe(&cb_16k.vocab_strings, prompt);
+
+    let mut spec_tokens: Vec<u16> = Vec::with_capacity(gen_budget + k_active);
+    let mut total_drafted: usize = 0;
+    let mut total_accepted_draft: usize = 0;
+    let mut verifier_steps: usize = 0;
+    let mut rng_state = v71_3_os_rng_seed();
+
+    while spec_tokens.len() < gen_budget {
+        verifier_steps += 1;
+        let base_pos = spec_tokens.len();
+
+        let mut draft_candidates: Vec<u16> = Vec::with_capacity(k_active);
+        let mut draft_q_probs: Vec<f64> = Vec::with_capacity(k_active);
+        let mut draft_dists: Vec<Vec<f64>> = Vec::with_capacity(k_active);
+
+        let mut d_i: usize = 0;
+        while d_i < k_active && (base_pos + d_i) < gen_budget {
+            let cur_pos = base_pos + d_i;
+            let prev_t = if cur_pos == 0 {
+                *toks_16k.last().unwrap_or(&1) as usize
+            } else if d_i == 0 {
+                *spec_tokens.last().unwrap_or(&1) as usize
+            } else {
+                *draft_candidates.get(d_i - 1).unwrap_or(&1) as usize
+            };
+
+            let (d_tok, d_prob, d_dist) = v71_4_drafter_step_probs(
+                stack,
+                trained_weights,
+                cb_16k,
+                bridge_slots_opt,
+                prev_t,
+                cur_pos,
+            );
+            draft_candidates.push(d_tok);
+            draft_q_probs.push(d_prob);
+            draft_dists.push(d_dist);
+            total_drafted += 1;
+            d_i += 1;
+        }
+
+        let mut j: usize = 0;
+        let mut rejected_in_step = false;
+        while j < draft_candidates.len() {
+            let cand_tok = *draft_candidates.get(j).unwrap_or(&0);
+            let prev_t = if base_pos + j == 0 {
+                *toks_16k.last().unwrap_or(&1) as usize
+            } else if j == 0 {
+                *spec_tokens.last().unwrap_or(&1) as usize
+            } else {
+                *draft_candidates.get(j - 1).unwrap_or(&1) as usize
+            };
+
+            let (target_argmax, _target_prob, target_dist) = v71_3_compute_step_token_probs(
+                stack,
+                trained_weights,
+                cb_16k,
+                prev_t,
+                base_pos + j,
+                V71_1_DEEP_LAYERS,
+            );
+            let draft_dist = draft_dists.get(j);
+            let p_cand = *target_dist.get(cand_tok as usize).unwrap_or(&0.0);
+            let q_cand = *draft_q_probs.get(j).unwrap_or(&0.0);
+            let accept_ratio = (p_cand / q_cand.max(1e-12)).min(1.0);
+
+            let u = v71_3_sample_uniform(&mut rng_state);
+            if u <= accept_ratio {
+                spec_tokens.push(cand_tok);
+                total_accepted_draft += 1;
+            } else {
+                // Exact Leviathan residual resampling proportional to max(0, P_target - Q_draft)
+                let mut res_sum: f64 = 0.0;
+                let mut res_weights: Vec<f64> = Vec::with_capacity(V71_2_BPE_16K_VOCAB);
+                let mut vi: usize = 0;
+                while vi < V71_2_BPE_16K_VOCAB {
+                    let pv = *target_dist.get(vi).unwrap_or(&0.0);
+                    let qv = draft_dist.and_then(|qd| qd.get(vi)).copied().unwrap_or(0.0);
+                    let diff = (pv - qv).max(0.0);
+                    res_sum += diff;
+                    res_weights.push(diff);
+                    vi += 1;
+                }
+                let mut res_tok = target_argmax;
+                if res_sum > 1e-12 {
+                    let u_res = v71_3_sample_uniform(&mut rng_state) * res_sum;
+                    let mut cum: f64 = 0.0;
+                    let mut vj: usize = 0;
+                    while vj < res_weights.len() {
+                        cum += *res_weights.get(vj).unwrap_or(&0.0);
+                        if cum >= u_res {
+                            res_tok = vj as u16;
+                            break;
+                        }
+                        vj += 1;
+                    }
+                }
+                spec_tokens.push(res_tok);
+                rejected_in_step = true;
+                break;
+            }
+            j += 1;
+        }
+
+        if !rejected_in_step && spec_tokens.len() < gen_budget {
+            let last_t = *spec_tokens.last().unwrap_or(&1) as usize;
+            let (bonus_tok, _, _) = v71_3_compute_step_token_probs(
+                stack,
+                trained_weights,
+                cb_16k,
+                last_t,
+                spec_tokens.len(),
+                V71_1_DEEP_LAYERS,
+            );
+            spec_tokens.push(bonus_tok);
+        }
+    }
+
+    let tok_per_step = (spec_tokens.len() as f64) / (verifier_steps.max(1) as f64);
+    let alpha = (total_accepted_draft as f64) / (total_drafted.max(1) as f64);
+    (tok_per_step, alpha, spec_tokens.len(), verifier_steps)
 }
 
 pub fn v71_4_run_tool_352_core(payload: &str) -> V71_4Tool352Receipt {
@@ -2296,33 +2454,29 @@ pub fn v71_4_run_tool_352_core(payload: &str) -> V71_4Tool352Receipt {
     let status = if tree_ok { "MEASURED" } else { "UNMEASURED/OFFLINE" };
     let elapsed_ms = t0.elapsed().as_millis().max(1) as u64;
 
-    // Persist tracked C2 empirical KL receipt (including failing runs)
-    let _ = fs::create_dir_all("03_vault/connectome");
-    let c2_kl_receipt = format!(
-        "{{\"tool_id\":352,\"status\":\"{}\",\"target_distribution_source\":\"12L_Stiefel_DeepStack_16K_Vocab\",\"drafter_distribution_source\":\"{}\",\"partition_bins\":{},\"contexts_evaluated\":{},\"draws_per_context_m\":{},\"total_monte_carlo_draws\":{},\"kl_bound_tau\":{:.6},\"kl_bound_justification\":\"Pre-registered Mann-Wald 32-equiprobable-bin chi2_31/(2*1024) finite-sample concentration bound (99.999pct quantile 0.0166 < 0.0600)\",\"drafter_vs_target_mean_kl\":{:.8},\"drafter_vs_target_max_kl\":{:.8},\"empirical_output_kl\":{:.8},\"poison_drafter_analytical_kl\":{:.8},\"poison_fallback_empirical_kl\":{:.8},\"corrupt_accept_without_rejection\":{},\"force_poison_tree\":{},\"tree_speculative_certified\":{}}}",
-        status,
-        if force_corrupt_tree_bypass {
-            "UNREJECTED_MISMATCHED_SHIFTED_DRAFTER"
-        } else if force_poison_tree {
-            "POISONED_MIN_PROB_TREE_WITH_LEVIATHAN_RESIDUAL_REJECTION"
-        } else {
-            "2L_TRAINED_TREE_BRIDGE_D4_B2_WITH_SPECINFER_REJECTION"
-        },
-        V71_3_EMPIRICAL_KL_BINS_32,
-        emp_ctx_cnt,
-        V71_3_EMPIRICAL_KL_DRAWS_M,
-        emp_ctx_cnt * V71_3_EMPIRICAL_KL_DRAWS_M,
-        kl_bound_tau,
-        drafter_vs_target_mean_kl,
-        drafter_vs_target_max_kl,
-        empirical_output_kl,
-        poison_analytical_kl,
-        fallback_kl_mean,
-        force_corrupt_tree_bypass,
-        force_poison_tree,
-        tree_ok
-    );
-    let _ = fs::write("03_vault/connectome/sh_week4_tree_speculative_kl_receipt.json", c2_kl_receipt.as_bytes());
+    // Persist tracked C2 empirical KL receipt only for non-fault-injected runs
+    if !force_corrupt_tree_bypass && !force_poison_tree {
+        let _ = fs::create_dir_all("03_vault/connectome");
+        let c2_kl_receipt = format!(
+            "{{\"tool_id\":352,\"status\":\"{}\",\"target_distribution_source\":\"12L_Stiefel_DeepStack_16K_Vocab\",\"drafter_distribution_source\":\"{}\",\"partition_bins\":{},\"contexts_evaluated\":{},\"draws_per_context_m\":{},\"total_monte_carlo_draws\":{},\"kl_bound_tau\":{:.6},\"kl_bound_justification\":\"Pre-registered Mann-Wald 32-equiprobable-bin chi2_31/(2*1024) finite-sample concentration bound (99.999pct quantile 0.0166 < 0.0600)\",\"drafter_vs_target_mean_kl\":{:.8},\"drafter_vs_target_max_kl\":{:.8},\"empirical_output_kl\":{:.8},\"poison_drafter_analytical_kl\":{:.8},\"poison_fallback_empirical_kl\":{:.8},\"corrupt_accept_without_rejection\":{},\"force_poison_tree\":{},\"tree_speculative_certified\":{}}}",
+            status,
+            "2L_TRAINED_TREE_BRIDGE_D4_B2_WITH_SPECINFER_REJECTION",
+            V71_3_EMPIRICAL_KL_BINS_32,
+            emp_ctx_cnt,
+            V71_3_EMPIRICAL_KL_DRAWS_M,
+            emp_ctx_cnt * V71_3_EMPIRICAL_KL_DRAWS_M,
+            kl_bound_tau,
+            drafter_vs_target_mean_kl,
+            drafter_vs_target_max_kl,
+            empirical_output_kl,
+            poison_analytical_kl,
+            fallback_kl_mean,
+            force_corrupt_tree_bypass,
+            force_poison_tree,
+            tree_ok
+        );
+        let _ = fs::write("03_vault/connectome/sh_week4_tree_speculative_kl_receipt.json", c2_kl_receipt.as_bytes());
+    }
 
     let json = format!(
         "{{\"status\":\"{}\",\"tool_id\":352,\"chain\":\"CHAIN_356\",\"version\":\"v72.0.0\",\"engine\":\"MEDUSA_EAGLE_DENDRITIC_TREE_SPECULATIVE_DECODER_D4_B2\",\"elapsed_ms\":{},\"drafter_mode\":\"{}\",\"pixel8_wireless_8098_online\":{},\"pixel8_rtt_us\":{},\"pixel8_rtt_status\":\"{}\",\"rtx3050_cuda_ptx_verifier_active\":{},\"rtx3050_cuda_kernel_us\":{:.1},\"tree_topology\":{{\"depth_d\":{},\"branching_factor_b\":{},\"candidate_draft_nodes\":{},\"parallel_verified_positions\":{},\"root_to_leaf_paths\":{}}},\"sequences_evaluated\":8,\"total_tree_verification_steps\":{},\"total_tokens_emitted\":{},\"primary_branch_accepts\":{},\"secondary_branch_rescued_accepts\":{},\"mean_tokens_per_tree_step\":{:.4},\"linear_k4_baseline_tok_per_step\":{:.4},\"tree_vs_linear_step_gain\":{:.4},\"sequential_1tok_baseline_us\":{:.1},\"tree_batched_verify_us\":{:.1},\"measured_wallclock_speedup_x\":{:.4},\"drafter_vs_target_mean_kl\":{:.6},\"drafter_vs_target_max_kl\":{:.6},\"empirical_output_kl\":{:.8},\"kl_bound_tau\":{:.6},\"monte_carlo_draws_total\":{},\"corrupt_accept_without_rejection\":{},\"kl_divergence_vs_target\":{:.8},\"poisoned_tree_resilience_audit\":{{\"poisoned_draft_nodes_accepted\":{},\"fallback_tokens_per_step\":{:.4},\"fallback_kl_divergence\":{:.8},\"poison_drafter_analytical_kl\":{:.6},\"fallback_honesty_verified\":{}}},\"seq_checksum\":{},\"tree_speculative_certified\":{},\"lean4_theorems_verified\":\"thm_v71_4_954..956\"}}",
@@ -2608,7 +2762,7 @@ pub fn v71_4_run_tool_353_core(payload: &str) -> V71_4Tool353Receipt {
                 max_simplex_conservation_err: 1.0,
                 json: format!(
                     "{{\"status\":\"UNMEASURED/OFFLINE\",\"tool_id\":353,\"error\":\"{}\"}}",
-                    e
+                    v61_escape_clean(&e)
                 ),
             };
         }
@@ -3243,10 +3397,49 @@ pub fn v71_4_run_tool_354_core(payload: &str) -> V71_4Tool354Receipt {
                 duckdb_7stage_ablation_verified: false,
                 hg0_gate_passed: false,
                 hg0_zero_leak: false,
-                json: format!("{{\"status\":\"UNMEASURED/OFFLINE\",\"tool_id\":354,\"error\":\"{}\"}}", e),
+                json: format!("{{\"status\":\"UNMEASURED/OFFLINE\",\"tool_id\":354,\"error\":\"{}\"}}", v61_escape_clean(&e)),
             };
         }
     };
+
+    // Construct distinct Stage-5 (Week 3 RedTeam Contrastive Stiefel) stack from 512 contrastive preference pairs
+    let mut stack_w3_rt = stack.clone();
+    {
+        let pairs_rt = crate::v71_3_sovereign_harmonic_week3_speculative_k4_long_context_4k::v71_3_build_512_contrastive_preference_pairs();
+        let mut l_rt: usize = 0;
+        while l_rt < stack_w3_rt.layers.len() {
+            let (c_tok, r_tok) = pairs_rt
+                .get((l_rt * 41) % pairs_rt.len().max(1))
+                .map(|pi| {
+                    let tc = v71_2_encode_16384_ast_bpe(&codebook.vocab_strings, &pi.chosen_completion);
+                    let tr = v71_2_encode_16384_ast_bpe(&codebook.vocab_strings, &pi.rejected_hard_negative);
+                    (
+                        (*tc.get(0).unwrap_or(&256) as usize) % V71_2_BPE_16K_VOCAB,
+                        (*tr.get(0).unwrap_or(&512) as usize) % V71_2_BPE_16K_VOCAB,
+                    )
+                })
+                .unwrap_or((256, 512));
+            if let Some(lyr) = stack_w3_rt.layers.get_mut(l_rt) {
+                let mut grad_rt = v71_4_alloc_vec(V71_EMBED_DIM_32D * V71_EMBED_DIM_32D, 0.0f64);
+                let mut r: usize = 0;
+                while r < V71_EMBED_DIM_32D {
+                    let vc = (*codebook.e8_32d_coords.get(c_tok * V71_EMBED_DIM_32D + r).unwrap_or(&2) as f64) / 8.0;
+                    let vr = (*codebook.e8_32d_coords.get(r_tok * V71_EMBED_DIM_32D + r).unwrap_or(&-2) as f64) / 8.0;
+                    let diff = (vr - vc) * 0.15;
+                    let mut c: usize = 0;
+                    while c < V71_EMBED_DIM_32D {
+                        if let Some(pg) = grad_rt.get_mut(r * V71_EMBED_DIM_32D + c) {
+                            *pg = diff * (((c + 1) as f64) / 32.0);
+                        }
+                        c += 1;
+                    }
+                    r += 1;
+                }
+                let _ = v71_1_stiefel_cayley_retraction_step(&mut lyr.stiefel_w, &grad_rt, 0.018);
+            }
+            l_rt += 1;
+        }
+    }
 
     // Construct distinct Stage-6 (Week 4 SH-X RLVF+SAE) Stiefel stack modulated by verified `week4_rlvf_sae` weights
     let mut stack_w4 = stack.clone();
@@ -3280,6 +3473,7 @@ pub fn v71_4_run_tool_354_core(payload: &str) -> V71_4Tool354Receipt {
 
     let untrained_weights =
         crate::v71_0_sovereign_harmonic_standalone_model::v71_init_untrained_weights(&vocab, &e8z_bytes);
+    let corpus_v71 = v71_build_active_training_corpus();
 
     // Evaluate all 256 prompts and all 7 live stages independently across 12 AVX2 threads
     let eval_results: Vec<(
@@ -3322,7 +3516,15 @@ pub fn v71_4_run_tool_354_core(payload: &str) -> V71_4Tool354Receipt {
             let pass1 = s0.syntax_valid && s0.zero_bracket_ok && s0.plucker_isotropic_ok && s0.total_reward >= 0.90;
 
             // Remaining 3 candidates for G=4 rollout evaluation
-            let gen1 = v71_standalone_generate(&item.prompt, 48);
+            let gen1 = v71_standalone_generate_with_context(
+                &item.prompt,
+                48,
+                &vocab,
+                &weights,
+                &npage_bytes,
+                &spage_bytes,
+                &corpus_v71,
+            );
             let s1 = v71_4_verify_candidate_formal_reward(
                 track_id,
                 &item.prompt,
@@ -3444,7 +3646,7 @@ pub fn v71_4_run_tool_354_core(payload: &str) -> V71_4Tool354Receipt {
             let aug_toks = v71_bpe_encode(&vocab, &aug_txt);
             let (w3m_nll, w3m_cnt, _, _) = v71_3_evaluate_week3_sequence_cross_entropy(
                 &weights,
-                &stack,
+                &stack_w3_rt,
                 &codebook,
                 &npage_bytes,
                 &spage_bytes,
@@ -3526,7 +3728,7 @@ pub fn v71_4_run_tool_354_core(payload: &str) -> V71_4Tool354Receipt {
             let (aug_dist, _, _, _) = v71_transduce_human_metaphors_and_ambiguity(&distractor_full);
             let aug_dist_toks = v71_bpe_encode(&vocab, &aug_dist);
             let (d_w3m, c_w3m, _, _) = v71_3_evaluate_week3_sequence_cross_entropy(
-                &weights, &stack, &codebook, &npage_bytes, &spage_bytes, &aug_dist_toks, &aug_dist, track_id, true, true, true, true,
+                &weights, &stack_w3_rt, &codebook, &npage_bytes, &spage_bytes, &aug_dist_toks, &aug_dist, track_id, true, true, true, true,
             );
             let rw3m_ref = mean_nll(w3m_nll, w3m_cnt);
             let stg5_p1 = pass1 && rw3m_ref < mean_nll(d_w3m, c_w3m) && rw3m_ref < mean_nll(adv_nll, adv_cnt);
@@ -3789,7 +3991,7 @@ pub fn v71_4_run_tool_354_core(payload: &str) -> V71_4Tool354Receipt {
                 let mut h_aug_toks = v71_bpe_encode(&vocab, &h_aug);
                 h_aug_toks.push(0);
                 let (hw3m_n, hw3m_c, _, _) = v71_3_evaluate_week3_sequence_cross_entropy(
-                    &weights, &stack, &codebook, &npage_bytes, &spage_bytes, &h_aug_toks, &h_aug, *tk_h, true, true, true, true,
+                    &weights, &stack_w3_rt, &codebook, &npage_bytes, &spage_bytes, &h_aug_toks, &h_aug, *tk_h, true, true, true, true,
                 );
                 let (hw4_n, hw4_c, _, _) = v71_3_evaluate_week3_sequence_cross_entropy(
                     &weights, &stack_w4, &codebook, &npage_bytes, &spage_bytes, &h_toks, p_str, *tk_h, true, true, true, true,
@@ -3822,19 +4024,28 @@ pub fn v71_4_run_tool_354_core(payload: &str) -> V71_4Tool354Receipt {
     let shx_holdout_v2_ppl = hg0_w4_ppl;
 
     // Independent speculative decoding runs for speculative stages (4, 5, 6); Stages 0..3 marked UNMEASURED_NON_SPECULATIVE
-    let k2_bench_s4 = crate::v71_3_sovereign_harmonic_week3_speculative_k4_long_context_4k::v71_3_run_speculative_cascade_benchmark(
+    // Stages 4 (k=2) and 5 (k=4) use the trained 2L drafter bridge (tree_drafter_2l.sh4z) via v71_4_drafter_step_probs
+    // verified against the 12L target v71_3_compute_step_token_probs(..., 12) with exact Leviathan rejection + bonus token.
+    let bridge_opt_eval = v71_4_load_or_cached_tree_drafter_2l();
+    let (stage4_tok_per_step, _, _, _) = v71_4_run_linear_speculative_cascade_with_trained_2l_drafter(
+        &stack,
+        &weights,
+        &codebook,
+        bridge_opt_eval.as_ref(),
         "Derive exact Leviathan speculative law.",
         2,
         64,
     );
-    let k4_bench_s5 = crate::v71_3_sovereign_harmonic_week3_speculative_k4_long_context_4k::v71_3_run_speculative_cascade_benchmark(
+    let (stage5_tok_per_step, _, _, _) = v71_4_run_linear_speculative_cascade_with_trained_2l_drafter(
+        &stack,
+        &weights,
+        &codebook,
+        bridge_opt_eval.as_ref(),
         "what if the branching crystal ball guesses 4 words ahead on metaphor prompts",
         4,
         64,
     );
     let r352 = v71_4_run_tool_352_core("{}");
-    let stage4_tok_per_step = k2_bench_s4.mean_tokens_per_verifier_step;
-    let stage5_tok_per_step = k4_bench_s5.mean_tokens_per_verifier_step;
     let stage6_tok_per_step = r352.mean_tokens_per_tree_step;
 
     let pct256 = |c: usize| -> f64 { (c as f64) * 100.0 / 256.0 };
@@ -4140,7 +4351,7 @@ pub fn v71_4_dispatch_tool_356_chain356_master_certification(payload: &str) -> S
 
     let c350_ok = r350.status_measured && r350.all_gates_passed;
     let w4_ok = r355.status_measured && r355.all_12_tests_passed;
-    let qed_ok = lean_qed >= 965;
+    let qed_ok = crate::v73_2_cloudflare_vpc_mesh_and_pgwire_hyperdrive::validate_live_lean_theorems_with_floor(lean_qed);
     let all_ok = c350_ok && w4_ok && qed_ok;
 
     let status = if all_ok { "MEASURED" } else { "UNMEASURED/OFFLINE" };

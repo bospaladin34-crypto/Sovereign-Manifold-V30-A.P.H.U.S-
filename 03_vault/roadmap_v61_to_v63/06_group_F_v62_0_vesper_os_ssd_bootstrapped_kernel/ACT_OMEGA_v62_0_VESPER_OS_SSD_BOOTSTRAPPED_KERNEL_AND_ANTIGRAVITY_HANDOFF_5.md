@@ -39,7 +39,7 @@ Without changing a single piece of physical hardware, booting into `VESPER-OS` r
 3. **Virtual Memory & `.sh4z` Vault Access (`Win32 File Mapping` $\to$ `2 MB HugePages MAP_POPULATE | MAP_LOCKED`):**
    * Because `VESPER-OS` uses only `84.2 MB` of RAM at idle, `/sbin/init` (`v31_swarm`) maps `/mnt/bridge/gemma-4-12B-it-full.sh4z` (`3.17 GB`) and `gemma-4-E4B-it-full.sh4z` (`2.12 GB`) plus `.npage` (`8.11 MB`) and `.spage` (`4.05 MB`) directly into **`2 MB` Transparent HugePages (`mlockall(MCL_CURRENT | MCL_FUTURE)`)**, eliminating page-fault latency and TLB misses during $k=4$ speculative cascades and $7777\text{D}$ De Bruijn projections.
 4. **Tri-Silicon USB Bus (`Windows WinUSB` $\to$ `Linux usbdevfs` Zero-Copy Bulk Transfers):**
-   * Direct kernel USB bulk endpoints (`libusb` / `usbdevfs` in `/sbin/init`) talk to your **Google Pixel 10 (`58170DLCR0004V`)** and rooted **Google Pixel 8 (`3A121FDJH00BW5`)** with `< 0.18 ms` round-trip latency.
+   * Direct kernel USB bulk endpoints (`libusb` / `usbdevfs` in `/sbin/init`) talk to your **Google Pixel 10 (`<DYNAMIC_ADB_SERIAL>`)** and rooted **Google Pixel 8 (`<DYNAMIC_ADB_SERIAL>`)** with `< 0.18 ms` round-trip latency.
 
 ## 4. Stage-by-Stage Antigravity Implementation Plan (`Stages 1–5`)
 

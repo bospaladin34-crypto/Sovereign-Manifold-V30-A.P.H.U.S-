@@ -58,29 +58,32 @@ pub fn v54_5_probe_live_pixel10_edge1() -> (bool, f64, u64) {
     let mut online = false;
     let mut uptime_s = 0.0f64;
     let mut voltage_uv = 0u64;
-    if let Ok(out) = Command::new(adb_bin)
-        .arg("-s")
-        .arg("58170DLCR0004V")
-        .arg("shell")
-        .arg("cat /proc/uptime /sys/class/power_supply/battery/voltage_now")
-        .output()
-    {
-        if out.status.success() {
-            let txt = String::from_utf8_lossy(&out.stdout);
-            let mut lines = txt.lines();
-            if let Some(l0) = lines.next() {
-                if let Some(first_tok) = l0.split_whitespace().next() {
-                    if let Ok(u) = first_tok.parse::<f64>() {
-                        if u > 0.0 {
-                            online = true;
-                            uptime_s = u;
+    let p10_target = crate::v55_pixel8_ksud_root_edgetpu_mali_kvm_governor::v55_resolve_adb_target_by_role("pixel10");
+    if !p10_target.is_empty() {
+        if let Ok(out) = Command::new(adb_bin)
+            .arg("-s")
+            .arg(&p10_target)
+            .arg("shell")
+            .arg("cat /proc/uptime /sys/class/power_supply/battery/voltage_now")
+            .output()
+        {
+            if out.status.success() {
+                let txt = String::from_utf8_lossy(&out.stdout);
+                let mut lines = txt.lines();
+                if let Some(l0) = lines.next() {
+                    if let Some(first_tok) = l0.split_whitespace().next() {
+                        if let Ok(u) = first_tok.parse::<f64>() {
+                            if u > 0.0 {
+                                online = true;
+                                uptime_s = u;
+                            }
                         }
                     }
                 }
-            }
-            if let Some(l1) = lines.next() {
-                if let Ok(v) = l1.trim().parse::<u64>() {
-                    voltage_uv = v;
+                if let Some(l1) = lines.next() {
+                    if let Ok(v) = l1.trim().parse::<u64>() {
+                        voltage_uv = v;
+                    }
                 }
             }
         }
@@ -453,9 +456,13 @@ pub fn v54_5_tool177_apr_ring_stratifier_gate(input: &str) -> String {
     let (yk_present, yk_serial, yk_fw, yk_hmac, yk_fido2_fp) =
         v54_5_probe_yubikey_5c_nfc_hrot("3333282816177777", false);
 
+    let ext_p10 = crate::v55_pixel8_ksud_root_edgetpu_mali_kvm_governor::v55_read_external_adb_serial("pixel10");
+    let ext_p8 = crate::v55_pixel8_ksud_root_edgetpu_mali_kvm_governor::v55_read_external_adb_serial("pixel8");
     let is_owned_silicon = device_serial.is_empty()
-        || device_serial == "58170DLCR0004V" // Pixel 10 Edge-1
-        || device_serial == "3A121FDJH00BW5" // Pixel 8 Edge-2
+        || device_serial == "EDGE-1-PIXEL10-G5"
+        || device_serial == "EDGE-2-PIXEL8-SHIBA"
+        || ext_p10.as_deref() == Some(device_serial.as_str())
+        || ext_p8.as_deref() == Some(device_serial.as_str())
         || device_serial == "LOQ15_HOST_RTX3050"
         || device_serial == "GARLOCK00"
         || device_serial == "39651128"; // YubiKey 5C NFC Point of Origin

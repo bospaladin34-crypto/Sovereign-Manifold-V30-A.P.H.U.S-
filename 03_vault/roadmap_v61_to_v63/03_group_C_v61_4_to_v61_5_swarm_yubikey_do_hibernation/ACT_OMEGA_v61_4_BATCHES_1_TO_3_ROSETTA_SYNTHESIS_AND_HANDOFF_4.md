@@ -382,7 +382,7 @@ Copy and paste the block below directly into **Google Antigravity IDE**:/teamwor
 
 \- Update \`VesperArachneSwarmDroneOverlay.exe\` and \`05\_hud\_cockpit/src/App.tsx\` to display \`CHERN C=0 (FHS LOCKED)\`, \`MAXRL 95/5 REPLAY\`, and \`BETA\_EFF HOMEOSTATIC\` in the top telemetry banner alongside \`H1=0\` and \`ATP=1000.0\`.
 
-\- Add the 8D \`E\_8\` hyperplane intersection scanner (\`E\_8 cap H(n, d)\`) and \`O(1)\` logarithmic dipole stream shader \`L(x,y) \= ln(r^3 / (X^2 \+ 1e-5))\` to the visualizer and expose Tool buttons \`T285..T292\` (\`CHAIN 292\`) on both \`:5173\` and the Dual-Pixel Android APK (\`MainActivity.kt\` on Pixel 10 \`58170DLCR0004V\` & Pixel 8 \`3A121FDJH00BW5\`).
+\- Add the 8D \`E\_8\` hyperplane intersection scanner (\`E\_8 cap H(n, d)\`) and \`O(1)\` logarithmic dipole stream shader \`L(x,y) \= ln(r^3 / (X^2 \+ 1e-5))\` to the visualizer and expose Tool buttons \`T285..T292\` (\`CHAIN 292\`) on both \`:5173\` and the Dual-Pixel Android APK (\`MainActivity.kt\` on Pixel 10 \`<DYNAMIC_ADB_SERIAL>\` & Pixel 8 \`<DYNAMIC_ADB_SERIAL>\`).
 
 3\. @cloudflare-d1-tunnel-ops & @muse-zero-mock-auditor:
 

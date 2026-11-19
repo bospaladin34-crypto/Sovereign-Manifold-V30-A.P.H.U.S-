@@ -1,6 +1,6 @@
 ﻿ACT-Omega v67.0 Hardware Certification (535.73 TOPS / 191.35M tok/s / 2.52Mx Speedup) & v68.0 (OmegaLang v15.0) 8-Stage Harmonic RVQ + 12-Benchmark Frontier Gauntlet Specification
 1. Executive Hardware Certification of v67.0 (OmegaLang v14.0 10-Benchmark Heavy Gauntlet)
-On 2026-11-06T04:09:11.0730471Z, the Lenovo LOQ 15 (C:\sovereign_manifold_v31) and Rooted Google Pixel 8 (3A121FDJH00BW5) completed the full v67.0 (OmegaLang v14.0) 10-Benchmark Heavy Gauntlet in 7,213.49 ms (7.21 seconds total wall-clock execution across all 10 benchmarks and 5 runtimes), establishing a new hardware record of 535.73 Effective TOPS (0.536 PetaOPS | 191.35 Million tokens/sec | 0.0836 us/pass = 83.6 nanoseconds across all 90 layers = 0.9289 ns/layer | 2,520,290.78x speedup over 90-layer scalar K7) with 0 Cross-Compiler Bit Drift across all 12 checksums.
+On 2026-11-06T04:09:11.0730471Z, the Lenovo LOQ 15 (C:\sovereign_manifold_v31) and Rooted Google Pixel 8 (<DYNAMIC_ADB_SERIAL>) completed the full v67.0 (OmegaLang v14.0) 10-Benchmark Heavy Gauntlet in 7,213.49 ms (7.21 seconds total wall-clock execution across all 10 benchmarks and 5 runtimes), establishing a new hardware record of 535.73 Effective TOPS (0.536 PetaOPS | 191.35 Million tokens/sec | 0.0836 us/pass = 83.6 nanoseconds across all 90 layers = 0.9289 ns/layer | 2,520,290.78x speedup over 90-layer scalar K7) with 0 Cross-Compiler Bit Drift across all 12 checksums.
 
 
 Benchmark ID
@@ -52,7 +52,7 @@ Benchmark ID
 	multi_compiler_bit_drift = 0 across all 12 exact 64-bit checksums
 	ZERO BIT DRIFT
 	B10 (Edge & Vault)
-	Rooted Google Pixel 8 (3A121FDJH00BW5) .o7777s Sync & F:\ Decadic Epoch Archive
+	Rooted Google Pixel 8 (<DYNAMIC_ADB_SERIAL>) .o7777s Sync & F:\ Decadic Epoch Archive
 	SHA-256 = 65f9188b31e613259e6b2d30c9d07067036f0f5fe68ae7da943276316881ae13
 	VERIFIED
 	2. Diagnostic Analysis & Mathematical Upgrade in v68.0 (OmegaLang v15.0): 8-Stage Sub-Block Harmonic RVQ (.o7777x)
@@ -102,5 +102,5 @@ Frontier ID
 	5-Runtime 13-Checksum Cross-Compiler Lockstep (C#, Julia 1.10.8, Rust -O3, Python, Pixel 8)
 	Verifies multi_compiler_bit_drift = 0 across all 12 prior checksums PLUS Checksum[12] = 104309561592 (90-Layer $\times$ 8-Stage Harmonic Superposition Checksum).
 	FB12
-	Rooted Google Pixel 8 (3A121FDJH00BW5) Live On-Device ARM64 Audit & F:\ Epoch Archive
+	Rooted Google Pixel 8 (<DYNAMIC_ADB_SERIAL>) Live On-Device ARM64 Audit & F:\ Epoch Archive
 	Executes a live on-device verification check on the Pixel 8 via adb shell and archives the full receipt to F:\ACT_OMEGA_DECADIC_EPOCHS\EPOCH_v68_0_OMEGALANG_V15_FRONTIER_GAUNTLET.

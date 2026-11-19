@@ -172,8 +172,8 @@ INSERT OR REPLACE INTO v41_measured_sha256_audit (artifact_name, byte_length, sh
 
 INSERT OR REPLACE INTO v42_5w1h_distributed_routes (route_id, who_caller, what_workload, when_clock_hz, where_silicon_node, where_sector_span, why_metabolic_atp, how_transport, operator_vault_gated) VALUES
 (1, 'Host_LOQ15_Operator', 'L0_Tensor_FNO_And_16Domain_QAT', 15.965, 'Anchor1_Lenovo_LOQ15_RTX3050', 'S00..S47', 0.9548, 'ZeroCopy_Mmap_Ring', 0),
-(2, 'Edge1_Pixel10_58170DLCR0004V', 'Edge_24D_Sensor_Stiefel_And_SH4Z_v4400', 15.965, 'Edge1_Google_Pixel10_TensorG5', 'S48..S63', 0.9532, 'ADB_Reverse_TCP_8097', 0),
-(3, 'Edge2_Pixel8_3A121FDJH00BW5', 'Speculative_Drafter_And_L2_Verify', 15.965, 'Edge2_Google_Pixel8_P8APEX', 'S64..S79', 0.9540, 'ADB_Reverse_TCP_8097', 0),
+(2, 'Edge1_Pixel10_EDGE-1-PIXEL10-G5', 'Edge_24D_Sensor_Stiefel_And_SH4Z_v4400', 15.965, 'Edge1_Google_Pixel10_TensorG5', 'S48..S63', 0.9532, 'ADB_Reverse_TCP_8097', 0),
+(3, 'Edge2_Pixel8_EDGE-2-PIXEL8-SHIBA', 'Speculative_Drafter_And_L2_Verify', 15.965, 'Edge2_Google_Pixel8_P8APEX', 'S64..S79', 0.9540, 'ADB_Reverse_TCP_8097', 0),
 (4, 'Symbiotic_IDE_Goose_Zed_Cline', 'Embedded_Operator_Vault_CodeMode_AST', 15.965, 'Operator_Vault_Localhost_8097', 'S50..S63', 0.9520, 'Auth_Gated_Operator_Passkey', 1),
 (5, 'Visiting_LLM_Agent_Gateway', 'Safe_LLM_Gateway_Converse_And_Crystallize', 15.965, 'ZeroTrust_Sandbox_And_Expansion_Vault', 'S00..S79', 0.9545, 'MCP_OpenAI_v1_A2A_OpenAPI31', 0),
 (6, 'Google_Antigravity_Gemini4_Argon', 'Multi_Agent_Teamwork_And_5W1H_Connectome_28160', 15.965, 'TriSilicon_And_Cloudflare_10Tables', 'S00..S79', 0.9548, 'Antigravity_ServerUrl_MCP_8097', 1);
@@ -182,7 +182,7 @@ INSERT OR REPLACE INTO v43_antigravity_agent_roster (agent_id, agent_name, agent
 (1, 'l0-rust-lean4-architect', '.agents/agents/01-l0-rust-lean4-architect.md', 'Gemini-4-Argon (pro)', '01_l0_rust + v31_swarm.exe + 432/432 Lean 4 QED', 42240, 'S00..S47', 'http://127.0.0.1:8097/api/v1/mcp/rpc', 'ACTIVE_READY'),
 (2, '5w1h-connectome-router', '.agents/agents/02-5w1h-connectome-router.md', 'Gemini-4-Argon (pro)', 'Tool 45/65/70 5W1H Harness + 21,120 Core + 21,120 Expansion Neurons', 42240, 'S00..S79', 'http://127.0.0.1:8097/api/v1/mcp/rpc', 'ACTIVE_READY'),
 (3, 'hud-cockpit-guardian', '.agents/agents/03-hud-cockpit-guardian.md', 'Gemini-4-Argon (pro)', '05_hud_cockpit (15 Cards + 5-Node Ribbon + 16x130 Heatmap + 24D BPE + T73..T89)', 42240, 'S00..S79', 'http://127.0.0.1:8097/api/v1/mcp/rpc', 'ACTIVE_READY'),
-(4, 'dual-pixel-edge-ndk', '.agents/agents/04-dual-pixel-edge-ndk.md', 'Gemini-4-Argon (pro)', '04_edge_silicon Pixel 10 (58170DLCR0004V) & Pixel 8 (3A121FDJH00BW5) SH4Z v4700', 42240, 'S48..S79', 'http://127.0.0.1:8097/api/v1/mcp/rpc', 'ACTIVE_READY'),
+(4, 'dual-pixel-edge-ndk', '.agents/agents/04-dual-pixel-edge-ndk.md', 'Gemini-4-Argon (pro)', '04_edge_silicon Pixel 10 (EDGE-1-PIXEL10-G5) & Pixel 8 (EDGE-2-PIXEL8-SHIBA) SH4Z v4700', 42240, 'S48..S79', 'http://127.0.0.1:8097/api/v1/mcp/rpc', 'ACTIVE_READY'),
 (5, 'cloudflare-d1-tunnel-ops', '.agents/agents/05-cloudflare-d1-tunnel-ops.md', 'Gemini-4-Argon (pro)', 'act-omega-net.dev Tunnel + Remote 5GB D1 (10 Tables) + E:/G: Vaults', 42240, 'S00..S79', 'https://mcp.act-omega-net.dev/mcp', 'ACTIVE_READY'),
 (6, 'muse-zero-mock-auditor', '.agents/agents/06-muse-zero-mock-auditor.md', 'Gemini-4-Argon (pro)', 'Pre-Commit Zero-Mock Gate + SHA-256 Audit + GitHub 3-Branch Release', 42240, 'S00..S79', 'http://127.0.0.1:8097/api/v1/mcp/rpc', 'ACTIVE_READY'),
 (7, 'periphery-widgets-mini-hud-sync', '.agents/agents/07-periphery-widgets-mini-hud-sync.md', 'Gemini-4-Argon (pro)', 'Win11 Native Tray HUD + Android Widget/Wallpaper + PWA sw.js + Cloudflare Edge + First-Pass Periphery Sync', 42240, 'S00..S79', 'http://127.0.0.1:8097/api/v1/mcp/rpc', 'ACTIVE_READY');

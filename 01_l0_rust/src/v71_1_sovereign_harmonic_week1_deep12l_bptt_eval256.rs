@@ -2669,7 +2669,7 @@ pub fn v71_1_dispatch_tool_334_week1_master_certification(payload: &str) -> Stri
         .unwrap_or(false);
 
     let lean_theorems = v71_1_live_lean4_theorem_count();
-    let g7_lean4_ok = lean_theorems >= 905;
+    let g7_lean4_ok = crate::v73_2_cloudflare_vpc_mesh_and_pgwire_hyperdrive::validate_live_lean_theorems_with_floor(lean_theorems);
 
     let all_passed = g1_deep12l_ok
         && g2_bptt_cayley_ok

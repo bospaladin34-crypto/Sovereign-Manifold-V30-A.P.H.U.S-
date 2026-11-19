@@ -1,7 +1,7 @@
 // =============================================================================
 // ACT-OMEGA NET v56.0.0 (SH4Z v5600 TLV / CHAIN 210)
 // FILE: 04_edge_silicon/pixel8_headless/p8_ksu_apex_daemon.c
-// TARGET: Google Pixel 8 (3A121FDJH00BW5, Tensor G3 Zuma 4nm, Mali-G715 4MB L2)
+// TARGET: Google Pixel 8 (Edge-2 Pixel 8, Tensor G3 Zuma 4nm, Mali-G715 4MB L2)
 // RUNTIME: KernelSU-Next ksud 3.4.2 (uid=0 root, context=u:r:ksu:s0)
 // PURPOSE: Milestone 4 Feature 16 (Cycle 5) Unthrottled Apex Daemon
 //          Zero-overhead mlock() memory pinning, hardware governor, and

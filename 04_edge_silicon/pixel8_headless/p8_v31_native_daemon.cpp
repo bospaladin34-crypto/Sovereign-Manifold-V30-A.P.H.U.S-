@@ -1,5 +1,5 @@
 // C:\sovereign_manifold_v31\04_edge_silicon\pixel8_headless\p8_v31_native_daemon.cpp
-// Track 31.13: Pixel 8 (3A121FDJH00BW5, shiba_beta, Tensor G3 Zuma 4nm)
+// Track 31.13: Pixel 8 (Edge-2 Pixel 8, shiba_beta, Tensor G3 Zuma 4nm)
 // Strictly Headless Sensor-Free ARM64 C++23 L2-Resident Compute Daemon
 // Pins 48,768 B (SH4Z v3103 35,712B + .e8t 13,056B) in 4.00 MB L2 Cache via mlock()
 
@@ -104,7 +104,7 @@ void write_status_json(
         char line[768];
         std::snprintf(
             line, sizeof(line),
-            "{\"node\":\"Pixel8_3A121FDJH00BW5_Headless_C++23\",\"pid\":%d,\"step\":%llu,\"mlock_pinned_bytes\":%zu,\"mali_g715_l2_total_bytes\":%u,\"l2_free_pct\":%.2f,\"temp_c\":%.1f,\"affinity_mask\":\"0x%02X\",\"carrier_phase_rad\":0.15000,\"zero_mul_energy\":%.4f,\"sensors\":\"DISABLED_HEADLESS_ONLY\"}\n",
+            "{\"node\":\"Pixel8_Edge2_Headless_C++23\",\"pid\":%d,\"step\":%llu,\"mlock_pinned_bytes\":%zu,\"mali_g715_l2_total_bytes\":%u,\"l2_free_pct\":%.2f,\"temp_c\":%.1f,\"affinity_mask\":\"0x%02X\",\"carrier_phase_rad\":0.15000,\"zero_mul_energy\":%.4f,\"sensors\":\"DISABLED_HEADLESS_ONLY\"}\n",
             static_cast<int>(pid),
             static_cast<unsigned long long>(step),
             pinned_bytes,

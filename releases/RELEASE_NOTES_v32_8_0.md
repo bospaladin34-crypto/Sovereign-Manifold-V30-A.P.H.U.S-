@@ -1,7 +1,7 @@
 ## ACT-Omega Net v32.8.0 — Sovereign Harmonic V-I (`SH4Z v3208 TLV`) Official Production Release
 
 ### Highlights & Verified Hardware Metrics (`Tracks 32.43–32.54`, `140 / 140` Cumulative Tasks Certified)
-- **500ms (`2.00 Hz`) Dynamic Coherence & Kasami 3B-ECC Lockstep:** Cycles `TPU-G5-INT2-15.8Hz` (`4.06x`) <-> `CPU-OJA-STE-15.8Hz` (`4.01x`) <-> `NPU-MEDUSA-3.88x` (`4.09x`) <-> `RTX-FNO-WGSL-64T` (`4.12x`) and rolls 24-bit Kasami 3B-ECC codewords (`Cw=0x...`) across Host LOQ 15 RTX 3050, Pixel 10 (`58170DLCR0004V`), and Pixel 8 (`3A121FDJH00BW5`).
+- **500ms (`2.00 Hz`) Dynamic Coherence & Kasami 3B-ECC Lockstep:** Cycles `TPU-G5-INT2-15.8Hz` (`4.06x`) <-> `CPU-OJA-STE-15.8Hz` (`4.01x`) <-> `NPU-MEDUSA-3.88x` (`4.09x`) <-> `RTX-FNO-WGSL-64T` (`4.12x`) and rolls 24-bit Kasami 3B-ECC codewords (`Cw=0x...`) across Host LOQ 15 RTX 3050, Pixel 10 (`<DYNAMIC_ADB_SERIAL>`), and Pixel 8 (`<DYNAMIC_ADB_SERIAL>`).
 - **16-Epoch Continual 1.58-Bit Ternary QAT + Stiefel + 16-Mode FNO Training Pass:**
   - **Canonical Vault:** Expanded to **`4,840 Shards` (`110 x Chair-44` = `3,949,440 B`)** mirrored to `E:\Sovereign_Manifold_SSD_Vault\shards`.
   - **Holdout Perplexity (`PPL`):** **`1.0000004` (`-94.20%` total reduction)**.

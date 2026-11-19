@@ -1,5 +1,5 @@
 // ACT-Omega Net Sovereign Manifold Cloudflare Workers VPC + 10-Table D1 + SQLite Durable Object Continuum
-// D1 Vault: act_omega_d1_vault | Dynamic Metadata Synced via /api/v1/cloudflare/cron_sync (Zero Hardcoded Counts)
+// D1 Vault: act_omega_d1_vault_v7322 | Dynamic Metadata Synced via /api/v1/cloudflare/cron_sync (Zero Hardcoded Counts)
 // Zero-Unmeasured Mandate: No hardcoded telemetry, version, chain, or SHA-256 digests. All values read from D1 / DO SQLite or computed via WebCrypto SHA-256.
 
 async function sha256HexWebCrypto(text) {
@@ -1076,7 +1076,7 @@ export default {
                 { uri: "manifold://connectome/synapses_v6900_2703360.spage", name: "synapses_v6900_2703360.spage", description: "Auxiliary Plastic Synapses Connectome Pagefile", mimeType: "application/octet-stream" },
                 { uri: "manifold://models/gemma-4-E4B-it-full.sh4z", name: "gemma-4-E4B-it-full.sh4z", description: "Gemma 4 E4B-it 256D E8 Ternary Vault", mimeType: "application/octet-stream" },
                 { uri: "manifold://models/gemma-4-12B-it-full.sh4z", name: "gemma-4-12B-it-full.sh4z", description: "Gemma 4 12B-it 256D E8 Ternary Vault", mimeType: "application/octet-stream" },
-                { uri: "manifold://d1/act_omega_d1_vault", name: "act_omega_d1_vault", description: "Cloudflare D1 10-Table Remote SQLite Vault", mimeType: "application/json" }
+                { uri: "manifold://d1/act_omega_d1_vault_v7322", name: "act_omega_d1_vault_v7322", description: "Cloudflare D1 10-Table Remote SQLite Vault", mimeType: "application/json" }
               ]
             }
           }, { headers: corsHeaders });
@@ -1085,7 +1085,7 @@ export default {
         if (rpcMethod === "resources/read") {
           const uri = reqBody.params?.uri || "";
           const synced = await getSyncedEdgeMetadata(env);
-          let payloadObj = { uri, status: synced.synced ? "LIVE_D1_SYNCED" : "UNMEASURED/UNSYNCED", database: "act_omega_d1_vault" };
+          let payloadObj = { uri, status: synced.synced ? "LIVE_D1_SYNCED" : "UNMEASURED/UNSYNCED", database: "act_omega_d1_vault_v7322" };
           if (env && env.ACT_OMEGA_D1) {
             try {
               const targetName = uri.split("/").pop() || uri;
@@ -1115,7 +1115,7 @@ export default {
                 payloadObj = {
                   uri,
                   status: synced.synced ? "LIVE_D1_SNAPSHOT" : "UNMEASURED/UNSYNCED",
-                  database: "act_omega_d1_vault",
+                  database: "act_omega_d1_vault_v7322",
                   version: synced.version,
                   chain_milestone: synced.chain_milestone,
                   lean4_theorems_qed: synced.lean4_qed_label,
@@ -1202,7 +1202,7 @@ export default {
                 { name: "safe_llm_gateway_interact", description: "Converse across sub-domains and crystallize a dendritic neuron (/api/v1/agent_gateway/interact).", inputSchema: { type: "object", properties: { query: { type: "string", description: "Prompt or mathematical/physical hypothesis to transduce and crystallize" } } } },
                 { name: "browser_article_operationalizer", description: "4-stage research article to L0 Rust + Lean 4 QED + shard/neuron transducer (/api/v1/browser/fetch).", inputSchema: { type: "object", properties: { query: { type: "string", description: "URL or scientific topic to operationalize into Rust and Lean 4 QED" } } } },
                 { name: "metabolic_5w1h_harness", description: "5W1H Metabolic Autopoietic Harness across 4 ATP bands (/api/v1/harness/metabolic_5w1h).", inputSchema: { type: "object", properties: { query: { type: "string", description: "Optional thermal or metabolic query for the 5W1H harness" } } } },
-                { name: "cloudflare_d1_vpc_shadow", description: "Cloudflare D1 10-table + Durable Object shadow status (/api/v1/cloudflare/d1_vpc_shadow).", inputSchema: { type: "object", properties: { query: { type: "string", description: "Optional SQL or table synchronization query for act_omega_d1_vault" } } } },
+                { name: "cloudflare_d1_vpc_shadow", description: "Cloudflare D1 10-table + Durable Object shadow status (/api/v1/cloudflare/d1_vpc_shadow).", inputSchema: { type: "object", properties: { query: { type: "string", description: "Optional SQL or table synchronization query for act_omega_d1_vault_v7322" } } } },
                 { name: "gemma4_speculative_cascade", description: "Execute k=4 Gemma 4 E4B draft to 12B K=V verifier speculative cascade with in-place Hebbian distillation into .spage synapses (/api/v1/gemma4/speculative_cascade).", inputSchema: { type: "object", properties: { prompt: { type: "string", description: "Input prompt or seed text for speculative cascade drafting" }, k: { type: "integer", description: "Number of speculative draft tokens (default: 4, range: 1..16)" } } } },
                 { name: "gemma4_multimodal_tower_probe", description: "Evaluate live wave packets across Gemma 4 E4B audio/vision towers and 12B unified embedding projectors (/api/v1/gemma4/multimodal_tower_probe).", inputSchema: { type: "object", properties: { query: { type: "string", description: "Optional multimodal probe modality filter or sensor wave packet query" } } } },
                 { name: "gemma4_ple_256d_surgical_router", description: "Query and route 256D Per-Layer Embeddings (PLE) across layers from Gemma 4 E4B-it .sh4z vault (/api/v1/gemma4/ple_256d_surgical_router).", inputSchema: { type: "object", properties: { layer: { type: "integer", description: "Target layer index to inspect (0..41)" }, token: { type: "string", description: "Optional token or vocabulary string to project into 256D PLE" } } } },
@@ -1980,7 +1980,7 @@ export default {
         chain_milestone: liveChainMilestone || syncedAfter.chain_milestone,
         lean4_theorems_qed: liveLeanQed !== null ? `${liveLeanQed}/${liveLeanQed}` : syncedAfter.lean4_qed_label,
         tools_total: liveToolsTotal ?? syncedAfter.tools_total,
-        d1_database: "act_omega_d1_vault",
+        d1_database: "act_omega_d1_vault_v7322",
         d1_tables_count: 10,
         sqlite_err_count: gWorkerSqliteErrCount,
         workers_vpc_tunnel: "sovereign-loq15-vpc-binding",
@@ -2088,7 +2088,7 @@ export default {
         chain_milestone: synced.chain_milestone,
         lean4_theorems_qed: synced.lean4_qed_label,
         tools_total: synced.tools_total,
-        d1_database: "act_omega_d1_vault",
+        d1_database: "act_omega_d1_vault_v7322",
         d1_tables_count: 10,
         sqlite_err_count: gWorkerSqliteErrCount,
         workers_vpc_tunnel: "sovereign-loq15-vpc-binding",
@@ -2213,7 +2213,7 @@ export default {
             dedup_cache_size: gWorkersAiDedupCache.size(),
             status: aiStatus,
             fallback_active: aiStatus === "DAILY_BUDGET_EXHAUSTED" || aiStatus === "HARD_CAP_DENIED" || !env.AI,
-            fallback_target: "32D_POLYTONIC_E8_D1",
+            fallback_target: "FAIL_CLOSED_503_UNAVAILABLE",
             fallback_badge: "EDGE_FALLBACK_QUOTA_SHIELDED"
           },
           zero_trust_turnstile: {
@@ -2246,7 +2246,7 @@ export default {
           }
         },
         durable_object_shadow: "SovereignEdgeShadowDO_SQLite",
-        d1_database: "act_omega_d1_vault"
+        d1_database: "act_omega_d1_vault_v7322"
       };
 
       const payloadSha256 = await sha256HexWebCrypto(JSON.stringify(governorPayload));
@@ -2727,10 +2727,6 @@ export default {
         units: 0,
         neurons_used: 0
       });
-
-      // DEPRECATED (Finding 5 / Item 5): Superseded synthetic fallback:
-      // emitEdgeTelemetry(env, ctx, { event_type: "WORKERS_AI_FALLBACK_EMBEDDING", status: "EDGE_FALLBACK_QUOTA_SHIELDED" });
-      // { source: "32D_POLYTONIC_E8_D1", telemetry_badge: "EDGE_FALLBACK_QUOTA_SHIELDED" }
 
       return Response.json({
         error: "WORKERS_AI_EMBEDDING_UNAVAILABLE",
@@ -3426,7 +3422,7 @@ export default {
         </li>
         <li style="background:#0D1117;border-left:3px solid #79C0FF;padding:10px 14px;border-radius:0 4px 4px 0;">
           <strong style="color:#79C0FF;">Layer 1.5 &amp; Multi-Tier Vault</strong><br />
-          GHC 9.8.2 Pure Algebraic Haskell (sovereign_algebra_hs.exe) + Native DuckDB. Tier-2 SSD Vault (E:\\Sovereign_Manifold_SSD_Vault) + Cloudflare D1 (act_omega_d1_vault, 10 Tables) + Durable Object.
+          GHC 9.8.2 Pure Algebraic Haskell (sovereign_algebra_hs.exe) + Native DuckDB. Tier-2 SSD Vault (E:\\Sovereign_Manifold_SSD_Vault) + Cloudflare D1 (act_omega_d1_vault_v7322, 10 Tables) + Durable Object.
         </li>
       </ul>
     </section>

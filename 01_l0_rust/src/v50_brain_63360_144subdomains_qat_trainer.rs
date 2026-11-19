@@ -1251,18 +1251,7 @@ pub fn run_sovereign_63360_full_3pass_trainer() -> SovereignFull3PassExecutionRe
 // -----------------------------------------------------------------------------
 
 fn json_escape(s: &str) -> String {
-    let mut out = String::with_capacity(s.len().wrapping_add(16));
-    for c in s.chars() {
-        match c {
-            '"' => out.push_str("\\\""),
-            '\\' => out.push_str("\\\\"),
-            '\n' => out.push_str("\\n"),
-            '\r' => out.push_str("\\r"),
-            '\t' => out.push_str("\\t"),
-            _ => out.push(c),
-        }
-    }
-    out
+    crate::v61_gemma4_multimodal_ple_speculative_cascade_and_mcp_suite::v61_escape_clean(s)
 }
 
 // -----------------------------------------------------------------------------

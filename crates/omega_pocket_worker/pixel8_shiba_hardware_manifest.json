@@ -1,7 +1,7 @@
 {
   "device_name": "Google Pixel 8 (Rooted Pure Compute Node)",
   "codename": "shiba / shiba_beta",
-  "adb_serial": "3A121FDJH00BW5",
+  "adb_serial": "EDGE-2-PIXEL8-SHIBA",
   "root_provider": "KernelSU (ksud uid=0)",
   "soc": {
     "model": "Google Tensor G3",

@@ -644,7 +644,7 @@ pub fn v68_5_dispatch_tool_302_cern_lhcb_5mapping_auditor(payload: &str) -> Stri
         && lipschitz_ok
         && decorrelated_flat
         && r_tail_in_band
-        && lean_theorems >= 810;
+        && crate::v73_2_cloudflare_vpc_mesh_and_pgwire_hyperdrive::validate_live_lean_theorems_with_floor(lean_theorems);
     let status_str = if promotion_5_0_pass {
         "CERN_LHCB_5MAPPING_AUDITOR_CERTIFIED_QED"
     } else {
@@ -1024,7 +1024,7 @@ pub fn v68_5_dispatch_tool_304_frontier_fb12_and_chain304_cert(payload: &str) ->
         && checksums_matched
         && artworks_verified == 5
         && mit_shards == 10
-        && lean_theorems >= 810;
+        && crate::v73_2_cloudflare_vpc_mesh_and_pgwire_hyperdrive::validate_live_lean_theorems_with_floor(lean_theorems);
 
     let status_str = if certified {
         "CHAIN_304_TRACK1_V68_5_MASTER_CERTIFIED_QED"

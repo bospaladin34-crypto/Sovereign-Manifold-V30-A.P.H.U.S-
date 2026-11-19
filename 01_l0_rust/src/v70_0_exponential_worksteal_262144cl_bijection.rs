@@ -583,7 +583,7 @@ pub fn v70_0_dispatch_tool_316_chain316_master_certification(payload: &str) -> S
     let status = if receipt_measured
         && receipt_bytes > 200
         && total_cl == V70_BIJECTED_CACHELINES_262K
-        && theorem_count >= 840
+        && crate::v73_2_cloudflare_vpc_mesh_and_pgwire_hyperdrive::validate_live_lean_theorems_with_floor(theorem_count)
     {
         "MEASURED"
     } else {
@@ -688,7 +688,7 @@ pub fn v70_0_dispatch_tool_317_cloudflare_free_tier_governor(payload: &str) -> S
         .lines()
         .filter(|l| l.trim_start().starts_with("theorem "))
         .count();
-    let lean_qed_str = if raw_theorems > 0 {
+    let lean_qed_str = if crate::v73_2_cloudflare_vpc_mesh_and_pgwire_hyperdrive::validate_live_lean_theorems_with_floor(raw_theorems) {
         format!("{}/{}", raw_theorems, raw_theorems)
     } else {
         String::from("UNMEASURED/OFFLINE")
@@ -856,7 +856,9 @@ pub fn v70_0_dispatch_tool_317_cloudflare_free_tier_governor(payload: &str) -> S
             "UNMEASURED/OFFLINE"
         };
 
-        let t317_proof = if overall_status == "ONLINE" && raw_theorems > 0 {
+        let t317_proof = if overall_status == "ONLINE"
+            && crate::v73_2_cloudflare_vpc_mesh_and_pgwire_hyperdrive::validate_live_lean_theorems_with_floor(raw_theorems)
+        {
             "TOOL_317_CLOUDFLARE_FREE_TIER_GOVERNOR_CERTIFIED"
         } else {
             "TOOL_317_CLOUDFLARE_FREE_TIER_GOVERNOR_UNMEASURED"

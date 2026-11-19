@@ -920,7 +920,10 @@ pub fn v57_execute_aegis_7stage_harness(input: &str, sub_epoch: u64) -> String {
         .lines()
         .filter(|l| l.trim().starts_with("theorem "))
         .count();
-    let triple_oracle_passed = bracket_violations == 0 && lean_theorems >= 624 && sh4z_active && apr_authorized;
+    let triple_oracle_passed = bracket_violations == 0
+        && crate::v73_2_cloudflare_vpc_mesh_and_pgwire_hyperdrive::validate_live_lean_theorems_with_floor(lean_theorems)
+        && sh4z_active
+        && apr_authorized;
     let s5_us = t_s5.elapsed().as_secs_f64() * 1_000_000.0;
 
     // Stage 6: Vesper 4-Phase Self-Heal + Kasami-Golay G24 Syndrome Verifier

@@ -1,4 +1,4 @@
-# ACT-Omega Net `v72.2.0` (`SH4Z v7220 TLV` | `CHAIN 368` | `995/995 Lean 4 QED` | `Sovereign Harmonic XI` | `21 Gemini MCP Tools`) — Complete Operator User Manual, Step-by-Step Guide & FAQ
+# ACT-Omega Net `v73.2.2` (`SH4Z v7321 TLV` | `CHAIN 404` | `1,010/1,010 Lean 4 QED` | `Sovereign Harmonic XI` | `59 Gemini MCP Tools`) — Complete Operator User Manual, Step-by-Step Guide & FAQ
 
 > **Continuously Updated Master Manual** (`C:\sovereign_manifold_v31\USER_MANUAL_AND_FAQ.md`)
 > Mirrored automatically to:
@@ -15,7 +15,7 @@ All lifecycle operations are unified in **`C:\sovereign_manifold_v31\00_control\
 
 | PowerShell Command | Action & What It Does |
 | :--- | :--- |
-| **`sovereign-status`** | Prints the live 7-tier cluster health dashboard (Watchdog Sentinel, Host L0 Swarm `:8097`/`:5173`, Cloudflare Named Tunnel `act-omega-net.dev`, Pixel 10 `58170DLCR0004V`, Pixel 8 `3A121FDJH00BW5`, External Vaults `E:\` & `G:\`, and Windows 11 Native Tray/HUD `SovereignCockpitHUD.exe`). |
+| **`sovereign-status`** | Prints the live 7-tier cluster health dashboard (Watchdog Sentinel, Host L0 Swarm `:8097`/`:5173`, Cloudflare Named Tunnel `act-omega-net.dev`, Pixel 10 `<DYNAMIC_ADB_SERIAL>`, Pixel 8 `<DYNAMIC_ADB_SERIAL>`, External Vaults `E:\` & `G:\`, and Windows 11 Native Tray/HUD `SovereignCockpitHUD.exe`). |
 | **`ignite`** *(or `sovereign-start`)* | Safely boots all 6 layers: clears `00_control\daemon.paused`, launches `v31_swarm.exe` and `cloudflared.exe` detached under WMI Service Host (`WmiPrvSE.exe`), arms `8.11 MB` `.npage` Shared Memory + ADB port-reversing on Pixel 10 & Pixel 8, and starts `SovereignCockpitHUD.exe`. |
 | **`halt`** *(or `sovereign-stop`)* | **Safe Host Stop with Phone Continuum Handover**: snapshots the `8,110,080 B` (`63,360`-neuron) `.npage` shared memory and 5W1H ATP state to Pixel 8, Pixel 10, and Cloudflare Edge Durable Object (`B5:CF-EDGE-DO`), sets `daemon.paused`, and stops Host processes while keeping the phones alive. |
 | **`sovereign-stop-all`** | Performs the full Continuum Handover and also stops the mobile APKs on Pixel 10 & Pixel 8 and resets thermal locks. |
@@ -66,9 +66,9 @@ The Host HUD (`http://127.0.0.1:5173`, `https://act-omega-net.dev`, and `Soverei
 
 ## 3. Dual-Pixel Phones (`Pixel 10` + `Pixel 8`) & Unplugged `.npage` Shared-Memory Persistence
 
-- **Permanent Plugged-In Co-Processor (`Pixel 8` — `3A121FDJH00BW5`)**:
+- **Permanent Plugged-In Co-Processor (`Pixel 8` — `<DYNAMIC_ADB_SERIAL>`)**:
   - Runs `P8-APEX` (`Tensor G3` + `Mali-G715 4.00 MB L2`), caching `neurons_v5000_63360.npage` (`8,110,080 B` = `63,360 × 128 B` neurons) + `sovereign_harmonic_iv_v5000.e8z` (`133,120 B`) at `1,140.0k ops/s`.
-- **Roam-Ready Sensor & NPU Node (`Pixel 10` — `58170DLCR0004V`)**:
+- **Roam-Ready Sensor & NPU Node (`Pixel 10` — `<DYNAMIC_ADB_SERIAL>`)**:
   - Streams `15.965 Hz` 24D physical sensors (`Magnetometer`, `Barometer`, `Photometer`, `Accelerometer`, `Gyroscope`).
   - **Unplugged Shared Memory**: Copies `neurons_v5000_63360.npage` (`8,110,080 B`) to internal app-private storage (`filesDir/neurons_v5000_63360.npage`) and `/sdcard/Android/data/com.actomega.manifold/files/neurons_v5000_63360.npage`.
   - When unplugged from USB, C++ JNI (`harmonic_engine.cpp`) memory-maps the internal `.npage` file and `SovereignLiveBus` seamlessly transitions across 5 bearers:

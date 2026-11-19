@@ -183,7 +183,7 @@ Antigravity should scaffold a unified multi-tab React + Tailwind + Canvas launch
    * Provides a side-by-side code sanitizer that scans Rust (`.rs`) for `0x5B`/`0x5D` square brackets and PowerShell (`.ps1`) for `0x60` backticks or non-ASCII characters before committing to GitHub.
 4. **`src/apps/TriSiliconGovernorApp.tsx` (Tri-Silicon Thermal & OPP Hardware Governor Cockpit):**
    * Calls `dual_pixel_edge_hardware_governor` (`Tool 279`) and `aegis_cron_status` (`Tool 045`).
-   * Displays live gauges for `LENOVO LOQ 15 RTX 3050` (`47 °C`), `Google Pixel 10 Tensor G5` (`58170DLCR0004V`, `27.6 °C`), and rooted `Google Pixel 8 Tensor G3` (`3A121FDJH00BW5`, `29.8 °C`–`41.0 °C`, `2.147 GHz` Cortex-X3 lock, `4.00 MB` Mali-G715 L2 pinned).
+   * Displays live gauges for `LENOVO LOQ 15 RTX 3050` (`47 °C`), `Google Pixel 10 Tensor G5` (`<DYNAMIC_ADB_SERIAL>`, `27.6 °C`), and rooted `Google Pixel 8 Tensor G3` (`<DYNAMIC_ADB_SERIAL>`, `29.8 °C`–`41.0 °C`, `2.147 GHz` Cortex-X3 lock, `4.00 MB` Mali-G715 L2 pinned).
 5. **`src/apps/SpeculativeCascadeLabApp.tsx` (Gemma 4 Speculative Cascade & DuckDB `.spage` Synapse Lab):**
    * Calls `gemma4_speculative_cascade` (`Tool 274`, $k = 1..16$ draft tokens) and `duckdb_analytical_sql_query` (`Tool 276`).
    * Visualizes drafted token IDs, verifier acceptance probabilities (`75.18%`), Hebbian $\|\Delta W\|_2$ norms, and live DuckDB v1.5.6 SQL query tables.

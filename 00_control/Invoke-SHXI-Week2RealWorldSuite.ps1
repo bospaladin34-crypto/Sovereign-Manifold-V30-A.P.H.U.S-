@@ -1,6 +1,6 @@
-# =============================================================================
+﻿# =============================================================================
 # ACT-Omega Sovereign Harmonic XI — Week 2 Real-World Verification Gauntlet
-# Version: v72.2.0 (SH-XI-SPARSE-MOE-SFT-RAG | Tools 363-368 | CHAIN 368 | 995 QED)
+# Version: v73.2.2 (SH-XI-SPARSE-MOE-SFT-RAG | Tools 363-368 | CHAIN 368 | Live >=1,010 QED)
 # Hardware: Lenovo LOQ 15 (12T AVX2 + RTX 3050 + UHD WGSL) + Pixel 10 (USB) + Rooted Pixel 8 (Wireless ADB)
 # Author: Donevin Frownfelter (@bospaladin34-crypto)
 # =============================================================================
@@ -20,7 +20,10 @@ function Assert-Gate {
     }
 }
 
-Write-Host "=== SOVEREIGN HARMONIC XI WEEK 2 (v72.2.0 | CHAIN 368 | 995 QED) REAL-WORLD SUITE ===" -ForegroundColor Cyan
+$LeanFile = 'C:\sovereign_manifold_v31\03_vault\lean4\SovereignManifoldTheorems.lean'
+$LiveLeanCount = if (Test-Path $LeanFile) { ([regex]::Matches([System.IO.File]::ReadAllText($LeanFile), '(?m)^\s*theorem\s+')).Count } else { 0 }
+
+Write-Host "=== SOVEREIGN HARMONIC XI WEEK 2 (v73.2.2 | CHAIN 368 | $LiveLeanCount QED) REAL-WORLD SUITE ===" -ForegroundColor Cyan
 
 # 1. Tool 363: Shell 2 CPU+SSD Growable Sparse MoE Bank (16 Active / 256 Slots)
 $t363 = Invoke-RestMethod -Uri "$BaseUrl/api/v1/sovereign_harmonic/xi/week2/shell2_sparse_moe" -Method Post -Body '{}' -ContentType 'application/json' -TimeoutSec 90
@@ -127,10 +130,10 @@ Assert-Gate "W2-G11 OpenAI 3-Shell MoE SSE Stream (stream: true)" `
     ($sseResp2.StatusCode -eq 200 -and $sseResp2.Content -match 'sovereign-harmonic-xi-3shell-moe' -and $sseResp2.Content -match '\[DONE\]') `
     "SSEBytes=$($sseResp2.Content.Length)"
 
-# 12. Tool 368: CHAIN 368 Master Certification & 995/995 Lean 4 QED
+# 12. Tool 368: CHAIN 368 Master Certification & Live >=1,010 Lean 4 QED
 $t368 = Invoke-RestMethod -Uri "$BaseUrl/api/v1/chain368/master_certification" -Method Post -Body '{}' -ContentType 'application/json' -TimeoutSec 90
-Assert-Gate "W2-G12 Tool 368 CHAIN 368 Master Certification (995/995 QED)" `
-    ($t368.status -eq 'MEASURED' -and $t368.all_week2_gates_passed -eq $true -and $t368.gate_6_lean4_formal_proofs.theorem_count -ge 995 -and $t368.gate_6_lean4_formal_proofs.vault_l0_sha256_synced -eq $true) `
+Assert-Gate "W2-G12 Tool 368 CHAIN 368 Master Certification ($LiveLeanCount/$LiveLeanCount QED)" `
+    ($t368.status -eq 'MEASURED' -and $t368.all_week2_gates_passed -eq $true -and $LiveLeanCount -ge 1010 -and $t368.gate_6_lean4_formal_proofs.theorem_count -ge 1010 -and $t368.gate_6_lean4_formal_proofs.theorem_count -eq $LiveLeanCount -and $t368.gate_6_lean4_formal_proofs.vault_l0_sha256_synced -eq $true) `
     "Proof=$($t368.proof)"
 
 Write-Host "`n=== WEEK 2 SUMMARY: $PassCount PASSED, $FailCount FAILED ===" -ForegroundColor $(if ($FailCount -eq 0) { 'Green' } else { 'Red' })

@@ -77,11 +77,7 @@ fn v56_parse_field(input: &str, field_key: &str) -> String {
 
 // Helper: Safely escape string for JSON serialization without square brackets
 fn v56_escape_clean(s: &str) -> String {
-    s.replace('\\', "\\\\")
-        .replace('"', "\\\"")
-        .replace('\n', "\\n")
-        .replace('\r', "\\r")
-        .replace('\t', "\\t")
+    crate::v61_gemma4_multimodal_ple_speculative_cascade_and_mcp_suite::v61_escape_clean(s)
 }
 
 // Helper: Send request over Tri-Bearer TCP socket to P8 Apex Daemon (:8098)
@@ -265,7 +261,7 @@ pub fn v56_tool206_p8_ksu_apex_daemon_governor(input: &str) -> String {
     let elapsed_us = t0.elapsed().as_secs_f64() * 1_000_000.0;
 
     format!(
-        "{{\"status\":\"{}\",\"tool_id\":206,\"tool\":\"p8_ksu_apex_daemon_governor\",\"action\":\"{}\",\"device_serial\":\"3A121FDJH00BW5\",\"pid\":{},\"uptime_s\":{},\"battery_temp_c\":{:.1},\"selinux_context\":\"{}\",\"is_ksu_root\":{},\"port\":8098,\"stock_slot_b_intact\":true,\"elapsed_us\":{:.2}}}",
+        "{{\"status\":\"{}\",\"tool_id\":206,\"tool\":\"p8_ksu_apex_daemon_governor\",\"action\":\"{}\",\"device_serial\":\"EDGE-2-PIXEL8-SHIBA\",\"pid\":{},\"uptime_s\":{},\"battery_temp_c\":{:.1},\"selinux_context\":\"{}\",\"is_ksu_root\":{},\"port\":8098,\"stock_slot_b_intact\":true,\"elapsed_us\":{:.2}}}",
         status, act, pid, uptime_s, temp_c, selinux_ctx, is_root, elapsed_us
     )
 }
@@ -421,7 +417,7 @@ pub fn v56_tool210_sovereign_unification_sentry(input: &str) -> String {
     let lean_thm_count = lean_text.lines().filter(|l| l.trim_start().starts_with("theorem ")).count();
     let lean_ok = (Path::new(lean_vault).exists() || Path::new("C:\\sovereign_manifold_v31\\03_vault\\lean4\\SovereignManifoldTheorems.lean").exists())
         && (Path::new(lean_l0).exists() || Path::new("C:\\sovereign_manifold_v31\\01_l0_rust\\lean4\\SovereignManifoldTheorems.lean").exists())
-        && lean_thm_count >= 624;
+        && crate::v73_2_cloudflare_vpc_mesh_and_pgwire_hyperdrive::validate_live_lean_theorems_with_floor(lean_thm_count);
 
     // 2. Audit Connectome and Cacheline dimensions from live files
     let (neurons, cols, synapses, cachelines, _npage_ok) = v56_measure_live_connectome_geometry();

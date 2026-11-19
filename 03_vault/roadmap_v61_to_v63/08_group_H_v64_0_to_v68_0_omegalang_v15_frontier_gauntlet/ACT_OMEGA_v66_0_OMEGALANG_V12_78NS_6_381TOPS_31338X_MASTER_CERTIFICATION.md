@@ -1,7 +1,7 @@
 # ACT-Omega v66.0 — OmegaLang v12.0 Gold Master Hardware Certification Report
 **Certified Hardware Milestone:** **`0.078 us` (`78 Nanoseconds` | `6.381 Effective TOPS` = `6,381.13 GOPS` | `31,338.46x` Speedup vs. Scalar Baseline | `0` Bit Drift Across 5 Runtimes)**
 **Timestamp (UTC):** `2026-11-06T03:17:04.3013236Z`
-**Host & Edge Silicon:** `LENOVO LOQ 15` (x86_64 AVX2 16-Thread SMT) + Rooted `Google Pixel 8` (`3A121FDJH00BW5` ARMv9) + `F:\ACT_OMEGA_DECADIC_EPOCHS\EPOCH_v66_0_OMEGALANG_V12_SUB100NS_GOLD_MASTER`
+**Host & Edge Silicon:** `LENOVO LOQ 15` (x86_64 AVX2 16-Thread SMT) + Rooted `Google Pixel 8` (`<DYNAMIC_ADB_SERIAL>` ARMv9) + `F:\ACT_OMEGA_DECADIC_EPOCHS\EPOCH_v66_0_OMEGALANG_V12_SUB100NS_GOLD_MASTER`
 
 ---
 
@@ -47,5 +47,5 @@ All five execution environments verified the exact same `.o7777` binary artifact
 | **11. `K16b` (`256`-Layer-Step Speculative Cascade)** | `-1,144,895,864` | `-1,144,895,864` | `-1,144,895,864` | `0` |
 
 - **Runtime 4/5 (Python 3 SDK Verifier)**: Verified `31,172` bytes and `SHA-256 = b6f33aa42b447b22a33e3e03b63f93e8555117824ba4e17b856248cbfd861d52` (`python_sdk_verified = true`).
-- **Runtime 5/5 (Rooted Google Pixel 8 `3A121FDJH00BW5` ARM64 Edge Audit)**: Synced `gemma4_layer0_v4.o7777` (`31,172 bytes` in `0.001s` at `32.7 MB/s`) and verified on-device `wc -c = 31172` and `sha256sum = b6f33aa42b447b22a33e3e03b63f93e8555117824ba4e17b856248cbfd861d52` (`pixel8_edge_vault_synced = true`).
+- **Runtime 5/5 (Rooted Google Pixel 8 `<DYNAMIC_ADB_SERIAL>` ARM64 Edge Audit)**: Synced `gemma4_layer0_v4.o7777` (`31,172 bytes` in `0.001s` at `32.7 MB/s`) and verified on-device `wc -c = 31172` and `sha256sum = b6f33aa42b447b22a33e3e03b63f93e8555117824ba4e17b856248cbfd861d52` (`pixel8_edge_vault_synced = true`).
 - **Immutable Decadic Epoch Cold-Storage Snapshot**: Archived all 8 zero-square-bracket targets (`emitted_square_brackets = 0`), `.oml` specification, `.o7777` binary vault, and JSON receipt into `F:\ACT_OMEGA_DECADIC_EPOCHS\EPOCH_v66_0_OMEGALANG_V12_SUB100NS_GOLD_MASTER`.

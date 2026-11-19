@@ -336,6 +336,14 @@ async function runReadOnlyDuckdbSql(rawSql: string, params: (string | null)[] = 
       rows: [["PostgreSQL 16.4 (ACT-Omega Sovereign Manifold DuckDB v1.5.6 Bridge)"]],
     };
   }
+  if (/^SELECT\s+pg_is_in_recovery\s*\(\s*\)$/i.test(trimmed)) {
+    return {
+      kind: "rows",
+      commandTag: "SELECT 1",
+      columns: [{ name: "pg_is_in_recovery", oid: 16 }],
+      rows: [["f"]],
+    };
+  }
 
   // Reject multi-statements and non-readonly mutating SQL keywords
   if (trimmed.includes(";")) {

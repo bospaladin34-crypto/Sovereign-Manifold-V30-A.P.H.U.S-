@@ -3901,16 +3901,37 @@ pub fn v71_standalone_generate(prompt: &str, max_new_tokens: usize) -> V71Genera
         }
     };
 
-    let prompt_tokens = v71_bpe_encode(&vocab, prompt);
-    let (augmented_prompt, resolved_metaphors, metaphor_targets, synth_clause) =
-        v71_transduce_human_metaphors_and_ambiguity(prompt);
-    let scored_prompt_tokens = v71_bpe_encode(&vocab, &augmented_prompt);
-    let scored_prompt_low = augmented_prompt.to_lowercase();
-
     let corpus = v71_build_active_training_corpus();
-    let branch_scores = v71_score_branches_from_weights(
+    v71_standalone_generate_with_context(
+        prompt,
+        max_new_tokens,
         &vocab,
         &weights,
+        &npage_bytes,
+        &spage_bytes,
+        &corpus,
+    )
+}
+
+pub fn v71_standalone_generate_with_context(
+    prompt: &str,
+    max_new_tokens: usize,
+    vocab: &V71BpeVocabulary,
+    weights: &V71SovereignHarmonicWeights,
+    npage_bytes: &Vec<u8>,
+    spage_bytes: &Vec<u8>,
+    corpus: &Vec<V71CurriculumSample>,
+) -> V71GenerationResult {
+    let t0 = Instant::now();
+    let prompt_tokens = v71_bpe_encode(vocab, prompt);
+    let (augmented_prompt, resolved_metaphors, metaphor_targets, synth_clause) =
+        v71_transduce_human_metaphors_and_ambiguity(prompt);
+    let scored_prompt_tokens = v71_bpe_encode(vocab, &augmented_prompt);
+    let scored_prompt_low = augmented_prompt.to_lowercase();
+
+    let branch_scores = v71_score_branches_from_weights(
+        vocab,
+        weights,
         &scored_prompt_tokens,
         &scored_prompt_low,
         corpus.len().max(64),

@@ -1,5 +1,5 @@
 #!/system/bin/sh
-# ACT-OMEGA v71.1.0 Persistent KernelSU Boot & Stationary Multi-Bearer Guard (Pixel 8 3A121FDJH00BW5)
+# ACT-OMEGA v71.1.0 Persistent KernelSU Boot & Stationary Multi-Bearer Guard (Pixel 8 EDGE-2-PIXEL8-SHIBA)
 # Supports Tri-Bearer Stationary Edge Compute (:8098) & Headless Telemetry Streaming (:8097):
 #   - Bearer 1: USB Loopback / ADB Forward-Reverse (127.0.0.1:8098 <-> 127.0.0.1:8097)
 #   - Bearer 2: Windows 11 Wi-Fi 6 Direct Hotspot "GARLOCK00 0975" (192.168.137.8 <-> 192.168.137.1)

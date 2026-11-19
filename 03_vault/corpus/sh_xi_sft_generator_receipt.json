@@ -2,18 +2,18 @@
   "schema": "ACT-Omega-SFT-Corpus-Receipt-v73.2.1",
   "generator_script": "00_control/generate_sft_corpus.mjs",
   "output_jsonl_path": "03_vault/corpus/sh_xi_sourced_multiturn_sft_v1.jsonl",
-  "output_jsonl_bytes": 235411,
-  "output_jsonl_sha256": "ffd9e932912ac7ed2b8f04f43f144ff446ecbaf72b55298c810abc4f69648d8d",
+  "output_jsonl_bytes": 238583,
+  "output_jsonl_sha256": "2e40d13fca6b9c055dbed46756c149d72b1487a6f82c9c6c80ba0bb5ae0e48fb",
   "corpus_nature": "Deterministic workspace-harvested code & formal-proof Q/A pairs extracted via fs.readFileSync from real repository source files",
   "license": "CC-BY-4.0 / MIT (First-Party ACT-Omega Sovereign Manifold Workspace)",
-  "raw_candidate_items_extracted": 994,
+  "raw_candidate_items_extracted": 1007,
   "dialogues_emitted": 64,
   "unique_turns_emitted": 288,
   "min_turns": 1,
   "max_turns": 8,
   "distinct_primary_source_files_in_jsonl": 15,
   "total_workspace_source_files_read": 16,
-  "max_pairwise_5gram_jaccard": 0.248139,
+  "max_pairwise_5gram_jaccard": 0.245033,
   "rweval500_13gram_overlap_count": 0,
   "zero_sorry_verified": true,
   "domain_distribution": {
@@ -21,13 +21,13 @@
     "aegis_l0": 4,
     "zero_bracket_l0": 7,
     "lab_bridge_l0": 2,
-    "research_l0": 4,
-    "edge_mesh_l0": 3,
-    "lean4_proof": 23,
+    "research_l0": 5,
+    "edge_mesh_l0": 4,
+    "lean4_proof": 13,
     "algebraic_haskell": 3,
     "lattice_stem": 3,
-    "std_rust": 8,
-    "edge_worker_rust": 5
+    "std_rust": 14,
+    "edge_worker_rust": 7
   },
   "sources": [
     {
@@ -88,22 +88,22 @@
     },
     {
       "source_path": "01_l0_rust/src/v69_0_omegalang_v16_primary_tlv_compiler_and_84480_connectome.rs",
-      "bytes": 42914,
-      "sha256": "1c57e33d36e0fc5183d9e7fe90324c5082f9e30ab4a8930a5f9af0ffefa1acba",
+      "bytes": 43003,
+      "sha256": "e31706c7c5ca12e1d77e83fbf16429e656538cdc162a4b235a9baeb5d146072d",
       "license": "CC-BY-4.0 / MIT (ACT-Omega First-Party Workspace)",
       "extracted_items": 7
     },
     {
       "source_path": "01_l0_rust/src/v69_5_heterogeneous_cpu_rtx3050_cuda_coexec.rs",
-      "bytes": 41350,
-      "sha256": "db7360a8e25b9ac25e25c7939fd317c3af3c1247c8f7d316b0f3ab050eb69155",
+      "bytes": 41459,
+      "sha256": "5f5fe09d8a03d1799af303f970be48b7ddcca0dcafb0f41ced4c4cce827f1c13",
       "license": "CC-BY-4.0 / MIT (ACT-Omega First-Party Workspace)",
       "extracted_items": 3
     },
     {
       "source_path": "01_l0_rust/src/v70_0_exponential_worksteal_262144cl_bijection.rs",
-      "bytes": 42571,
-      "sha256": "7a920ab5f840c3bac6867bb37225daae527de6bad15dc522cf3db94186c29c6e",
+      "bytes": 42864,
+      "sha256": "63a344d239631399d8d249ffe04afdae3d4e71e5a3747797c8acc83f51fc6f32",
       "license": "CC-BY-4.0 / MIT (ACT-Omega First-Party Workspace)",
       "extracted_items": 4
     },
@@ -116,22 +116,22 @@
     },
     {
       "source_path": "01_l0_rust/src/v73_1_nov12_15_research_kernels.rs",
-      "bytes": 53426,
-      "sha256": "8ce7306420ae30d8088ea0f71bf200df46b98e9d9d49b749faaf832e2bd2b64d",
+      "bytes": 59208,
+      "sha256": "60dcf66e4b473586a5e3d24b7a7893215f23b1d01b47593dc6f530cf14a99e34",
       "license": "CC-BY-4.0 / MIT (ACT-Omega First-Party Workspace)",
-      "extracted_items": 12
+      "extracted_items": 16
     },
     {
       "source_path": "01_l0_rust/src/v73_2_cloudflare_vpc_mesh_and_pgwire_hyperdrive.rs",
-      "bytes": 20949,
-      "sha256": "52bb884f034d6a4ffff4df419f9d47084cad41aa78f231abc406f01d7e614504",
+      "bytes": 30185,
+      "sha256": "88928e4dad7d8090c0ecafc25d2396f0ed5320d0409a938acfcc9becc3929ccb",
       "license": "CC-BY-4.0 / MIT (ACT-Omega First-Party Workspace)",
-      "extracted_items": 6
+      "extracted_items": 15
     },
     {
       "source_path": "01_l0_rust/src/v57_aegis_autonomous_agent_harness.rs",
-      "bytes": 55245,
-      "sha256": "0c1823214908e67cce2dd47a09482f06fc6eb4ce9479efb4d7d6b3c5b9f3fcec",
+      "bytes": 55358,
+      "sha256": "d21c68574a637255ebd0c65ef6980afe8d16733d7f8cec13111943e1290359e6",
       "license": "CC-BY-4.0 / MIT (ACT-Omega First-Party Workspace)",
       "extracted_items": 7
     },

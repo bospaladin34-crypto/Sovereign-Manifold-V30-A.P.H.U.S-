@@ -1,4 +1,4 @@
-# 00_control\Invoke-FreeTierGovernorE2ESuite.ps1
+﻿# 00_control\Invoke-FreeTierGovernorE2ESuite.ps1
 # ACT-Omega Net v70.0.0 Free Tier Governor & Data Agent Kit Comprehensive E2E Test Suite
 # Requirements Derivation: ORIGINAL_REQUEST.md, PROJECT.md
 # STRICT INVARIANTS: ZERO PYTHON | MUSE ZERO-UNMEASURED DATA MANDATE | ZERO BACKTICKS IN PS1
@@ -181,23 +181,6 @@ public static class FreeTierFormalGateVerifier
             for (int i = 0; i < bytes.Length; i++) sb.Append(bytes[i].ToString("x2"));
             return sb.ToString();
         }
-    }
-
-    public static float[] GenerateDeterministic32DPolytonicE8(string prompt)
-    {
-        string hash = ComputeSha256(prompt);
-        float[] vec = new float[32];
-        double sumSq = 0.0;
-        for (int i = 0; i < 32; i++)
-        {
-            int b1 = Convert.ToInt32(hash.Substring((i * 2) % 64, 2), 16);
-            float val = ((float)b1 - 128.0f) / 128.0f;
-            vec[i] = val;
-            sumSq += val * val;
-        }
-        float norm = (float)Math.Sqrt(Math.Max(1e-12, sumSq));
-        for (int i = 0; i < 32; i++) vec[i] /= norm;
-        return vec;
     }
 
     public static bool ValidateRangeHeader(string rangeHeader, long totalLength, out long start, out long end)
@@ -493,12 +476,12 @@ function Run-FreeTierTier1 {
 
         # T1.WAI.5
         $sw = [System.Diagnostics.Stopwatch]::StartNew()
-        $polyVec = [FreeTierFormalGateVerifier]::GenerateDeterministic32DPolytonicE8("Test Embedding")
+        $hasFailClosed503 = ($edgeContent -match "WORKERS_AI_EMBEDDING_UNAVAILABLE") -and ($edgeContent -notmatch "32D_POLYTONIC_E8_D1")
         $hasFallbackTag = ($edgeContent -match "EDGE_FALLBACK_QUOTA_SHIELDED")
-        $passed = ($polyVec.Length -eq 32) -and $hasFallbackTag
+        $passed = $hasFailClosed503 -and $hasFallbackTag
         $sw.Stop()
-        $msg = if ($passed) { "Deterministic 32D Polytonic E8 fallback vector generated with EDGE_FALLBACK_QUOTA_SHIELDED tag" } else { "32D Polytonic E8 fallback verification failed" }
-        Record-FreeTierTest 1 "T1.WAI.5_Deterministic32DPolytonicFallback" "[UNIT_TEST_MATH] Deterministic 32D Polytonic E8 Fallback Generation" "M2" "F04" "ORIGINAL_REQUEST §R2" $passed $false $msg $sw.Elapsed.TotalMilliseconds @{ VectorDim = $polyVec.Length; FallbackTagFound = $hasFallbackTag }
+        $msg = if ($passed) { "Workers AI fail-closed 503 unavailability + EDGE_FALLBACK_QUOTA_SHIELDED verified (zero synthetic 32D fallback)" } else { "Workers AI fail-closed 503 or synthetic 32D purge verification failed" }
+        Record-FreeTierTest 1 "T1.WAI.5_WorkersAiFailClosedShield" "[UNIT_TEST_MATH] Workers AI Fail-Closed 503 & Zero Synthetic 32D Fallback" "M2" "F04" "ORIGINAL_REQUEST §R2" $passed $false $msg $sw.Elapsed.TotalMilliseconds @{ FailClosed503 = $hasFailClosed503; FallbackTagFound = $hasFallbackTag }
     }
 
     # --------------------------------------------------------------------------
@@ -1152,9 +1135,24 @@ function Run-FreeTierTier3 {
 # ==============================================================================
 # TIER 4: REAL-WORLD SCENARIOS (25 TESTS: 5 SCENARIOS x 5 TESTS EACH)
 # ==============================================================================
+function Get-SovereignOperatorHeaders {
+    $opKey = ""
+    $keyFile = "C:\Users\Nbell\.act_omega_operator_vault_key"
+    if (Test-Path $keyFile) {
+        $opKey = (Get-Content -Path $keyFile -Raw).Trim()
+    } elseif ($env:ACT_OMEGA_OPERATOR_KEY) {
+        $opKey = $env:ACT_OMEGA_OPERATOR_KEY.Trim()
+    }
+    if ($opKey.Length -ge 24) {
+        return @{ "X-Sovereign-Operator-Key" = $opKey }
+    }
+    return @{}
+}
+
 function Run-FreeTierTier4 {
     Write-Host ""
     Write-Host "--- [TIER 4: REAL-WORLD SCENARIOS (S01..S05, 5 TESTS PER FEATURE)] ---" -ForegroundColor Cyan
+    $authHeaders = Get-SovereignOperatorHeaders
 
     # --------------------------------------------------------------------------
     # S01: End-to-End Edge Query Flow
@@ -1166,7 +1164,7 @@ function Run-FreeTierTier4 {
         $govJson = $null
         if (-not $SimulateEdgeOffline.IsPresent) {
             try {
-                $govRes = Invoke-WebRequest -Uri "$EdgeWorkerUri/api/v1/cloudflare/free_tier_governor" -TimeoutSec $TimeoutSec -UseBasicParsing -ErrorAction SilentlyContinue
+                $govRes = Invoke-WebRequest -Uri "$EdgeWorkerUri/api/v1/cloudflare/free_tier_governor" -Headers $authHeaders -TimeoutSec $TimeoutSec -UseBasicParsing -ErrorAction SilentlyContinue
                 if ($govRes.StatusCode -eq 200) {
                     $govJson = $govRes.Content | ConvertFrom-Json
                     $edgeOnline = ($govJson.status -eq "ONLINE")
@@ -1184,7 +1182,7 @@ function Run-FreeTierTier4 {
         if ($edgeOnline) {
             try {
                 $vecBody = @{ vector = @(0.1, 0.2, 0.3); topK = 3 } | ConvertTo-Json -Compress
-                $vecRes = Invoke-WebRequest -Uri "$EdgeWorkerUri/api/v1/vectorize/query" -Method Post -Body $vecBody -ContentType "application/json" -TimeoutSec $TimeoutSec -UseBasicParsing -ErrorAction SilentlyContinue
+                $vecRes = Invoke-WebRequest -Uri "$EdgeWorkerUri/api/v1/vectorize/query" -Method Post -Headers $authHeaders -Body $vecBody -ContentType "application/json" -TimeoutSec $TimeoutSec -UseBasicParsing -ErrorAction SilentlyContinue
                 if ($vecRes.StatusCode -eq 200) { $vecOk = $true }
             } catch {}
         }
@@ -1198,7 +1196,7 @@ function Run-FreeTierTier4 {
         $kvOk = $false
         if ($edgeOnline) {
             try {
-                $kvRes = Invoke-WebRequest -Uri "$EdgeWorkerUri/api/v1/kv/get?key=test_cache_miss_probe" -TimeoutSec $TimeoutSec -UseBasicParsing -ErrorAction SilentlyContinue
+                $kvRes = Invoke-WebRequest -Uri "$EdgeWorkerUri/api/v1/kv/get?key=test_cache_miss_probe" -Headers $authHeaders -TimeoutSec $TimeoutSec -UseBasicParsing -ErrorAction SilentlyContinue
                 if ($kvRes.StatusCode -eq 200 -or $kvRes.StatusCode -eq 404) { $kvOk = $true }
             } catch {}
         }
@@ -1227,7 +1225,7 @@ function Run-FreeTierTier4 {
         if ($edgeOnline) {
             try {
                 $aiBody = @{ prompt = "Live Edge AI probe" } | ConvertTo-Json -Compress
-                $aiRes = Invoke-WebRequest -Uri "$EdgeWorkerUri/api/v1/ai/embed" -Method Post -Body $aiBody -ContentType "application/json" -TimeoutSec $TimeoutSec -UseBasicParsing -ErrorAction SilentlyContinue
+                $aiRes = Invoke-WebRequest -Uri "$EdgeWorkerUri/api/v1/ai/embed" -Method Post -Headers $authHeaders -Body $aiBody -ContentType "application/json" -TimeoutSec $TimeoutSec -UseBasicParsing -ErrorAction SilentlyContinue
                 if ($aiRes.StatusCode -eq 200 -or $aiRes.StatusCode -eq 503) { $aiOk = $true }
             } catch {}
         }
@@ -1253,7 +1251,7 @@ function Run-FreeTierTier4 {
         $sw = [System.Diagnostics.Stopwatch]::StartNew()
         $govLiveCheck = $false
         try {
-            $govRes = Invoke-WebRequest -Uri "$EdgeWorkerUri/api/v1/cloudflare/free_tier_governor" -TimeoutSec $TimeoutSec -UseBasicParsing -ErrorAction SilentlyContinue
+            $govRes = Invoke-WebRequest -Uri "$EdgeWorkerUri/api/v1/cloudflare/free_tier_governor" -Headers $authHeaders -TimeoutSec $TimeoutSec -UseBasicParsing -ErrorAction SilentlyContinue
             $govLiveCheck = ($govRes.StatusCode -eq 200)
         } catch {}
         $passed = $govLiveCheck
@@ -1263,12 +1261,12 @@ function Run-FreeTierTier4 {
 
         # T4.S02.3
         $sw = [System.Diagnostics.Stopwatch]::StartNew()
-        $polyVec = [FreeTierFormalGateVerifier]::GenerateDeterministic32DPolytonicE8("Quota Shield Test")
-        $badgePresent = ($polyVec.Length -eq 32)
+        $edgeContentT4 = if (Test-Path "$RepoRoot\00_control\cloudflare_edge\worker_vpc_shadow_v3700.js") { Get-Content "$RepoRoot\00_control\cloudflare_edge\worker_vpc_shadow_v3700.js" -Raw } else { "" }
+        $badgePresent = ($edgeContentT4 -match "EDGE_FALLBACK_QUOTA_SHIELDED") -and ($edgeContentT4 -notmatch "32D_POLYTONIC_E8_D1")
         $passed = $badgePresent
         $sw.Stop()
-        $msg = if ($passed) { "32D Polytonic E8 vector generated with exact 32 dimensions" } else { "32D vector generation failed" }
-        Record-FreeTierTest 4 "T4.S02.3_TelemetryBadgeIntegrity" "[UNIT_TEST_MATH] 32D Polytonic E8 Deterministic Vector Computation" "M2" "S02" "ORIGINAL_REQUEST §R2" $passed $false $msg $sw.Elapsed.TotalMilliseconds @{ BadgeVerified = $badgePresent }
+        $msg = if ($passed) { "Honest EDGE_FALLBACK_QUOTA_SHIELDED badge verified with zero synthetic 32D fallback" } else { "Fallback badge or 32D purge verification failed" }
+        Record-FreeTierTest 4 "T4.S02.3_TelemetryBadgeIntegrity" "[UNIT_TEST_MATH] Honest Quota Shield Badge & Zero Synthetic 32D Check" "M2" "S02" "ORIGINAL_REQUEST §R2" $passed $false $msg $sw.Elapsed.TotalMilliseconds @{ BadgeVerified = $badgePresent }
 
         # T4.S02.4
         $sw = [System.Diagnostics.Stopwatch]::StartNew()
@@ -1486,7 +1484,7 @@ function Run-FreeTierTier4 {
         $sw = [System.Diagnostics.Stopwatch]::StartNew()
         $hardCapAndBasisOk = $false
         try {
-            $govRes = Invoke-WebRequest -Uri "$EdgeWorkerUri/api/v1/cloudflare/free_tier_governor" -TimeoutSec $TimeoutSec -UseBasicParsing -ErrorAction SilentlyContinue
+            $govRes = Invoke-WebRequest -Uri "$EdgeWorkerUri/api/v1/cloudflare/free_tier_governor" -Headers $authHeaders -TimeoutSec $TimeoutSec -UseBasicParsing -ErrorAction SilentlyContinue
             if ($govRes.StatusCode -eq 200) {
                 $govObj = $govRes.Content | ConvertFrom-Json
                 $basisOk = ($govObj.accounting_basis -eq "DO_METERED_REQUEST_UNITS_UNRECONCILED_WITH_CF_BILLING")

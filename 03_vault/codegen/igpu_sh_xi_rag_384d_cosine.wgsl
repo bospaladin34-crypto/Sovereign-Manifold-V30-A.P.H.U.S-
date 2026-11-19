@@ -1,5 +1,5 @@
 // =============================================================================
-// ACT-OMEGA NET v72.2.0 — INTEL UHD iGPU / WEBGPU WGSL 384D RAG CHUNK SCORER
+// ACT-OMEGA NET — INTEL UHD iGPU / WEBGPU WGSL 384D RAG CHUNK SCORER
 // Sovereign Harmonic XI Shell 0 (384D = 48 x E8 = 16 x Leech_24 = 96 x vec4<f32>)
 // Coalesced @workgroup_size(64) Parallel Cosine & L2-Norm Retrieval Kernel
 // Primary Author & Principal Systems Architect: Donevin Frownfelter (@bospaladin34-crypto)

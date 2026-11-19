@@ -86,7 +86,7 @@ function Test-Boundary-03 {
     $actualHash = $json.stock_init_boot_sha256
 
     $hashMatch = ($actualHash -eq $expectedHash)
-    $serialMatch = ($json.device_serial -eq "3A121FDJH00BW5")
+    $serialMatch = ($json.device_serial -eq "EDGE-2-PIXEL8-SHIBA")
 
     # Tamper sensitivity assertion
     $tamperedHash = $actualHash.Substring(0, 63) + "E"
@@ -96,7 +96,7 @@ function Test-Boundary-03 {
     $msg = if ($passed) {
         "Stock slot _b SHA-256 strictly invariant ($actualHash) for Pixel 8 ($($json.device_serial))"
     } else {
-        "Slot _b hash mismatch (Actual: $actualHash, Expected: $expectedHash)"
+        "Slot _b hash mismatch (Actual: $actualHash, Expected: $expectedHash, Serial: $($json.device_serial))"
     }
     $sw.Stop()
     return New-TestResult -Tier 2 -Id "B03" -Name "Pixel 8 Stock Slot _b Invariance Boundary" -Milestone "M4" `

@@ -945,9 +945,9 @@ fn step_dynamic_manifold(
         st.always_on_ticks += 1;
         let mono = synthesize_natural_language(st, "always-on autopoietic background stream");
         st.nl_synthesis = mono.clone();
-        let mono_ppl = (st.stiefel_ortho_err + st.fno_l2_err + 0.085).exp();
+        let (mono_ppl_json, mono_ppl_status) = read_receipt_holdout_ppl_json();
         let mono_line = format!(
-            "{{\"always_on_tick\":{},\"gen\":{},\"decadic_e\":{},\"b_norm\":{:.1},\"baro\":{:.1},\"ortho\":{:.7},\"fno_l2\":{:.5},\"ppl\":{:.6},\"nl\":\"{}\"}}\n",
+            "{{\"always_on_tick\":{},\"gen\":{},\"decadic_e\":{},\"b_norm\":{:.1},\"baro\":{:.1},\"ortho\":{:.7},\"fno_l2\":{:.5},\"ppl\":{},\"ppl_status\":\"{}\",\"nl\":\"{}\"}}\n",
             st.always_on_ticks,
             st.gen_counter,
             st.decadic_sub_epoch,
@@ -955,7 +955,8 @@ fn step_dynamic_manifold(
             st.baro_hpa,
             st.stiefel_ortho_err,
             st.fno_l2_err,
-            mono_ppl,
+            mono_ppl_json,
+            mono_ppl_status,
             json_escape_clean(&mono)
         );
         let mono_path = format!("{}\\autopoietic_monologue.jsonl", ssd_path.replace('/', "\\"));
@@ -1078,6 +1079,7 @@ thread_local! {
     static REQ_CONN_CLOSE: std::cell::Cell<bool> = std::cell::Cell::new(false);
     static STREAM_WRITE_ERR: std::cell::Cell<bool> = std::cell::Cell::new(false);
     static REQ_CACHE_CONTROL: std::cell::Cell<&'static str> = std::cell::Cell::new("no-store");
+    static REQ_ALLOWED_ORIGIN: std::cell::Cell<&'static str> = std::cell::Cell::new("");
 }
 
 pub const CACHE_CONTROL_STATIC_ASSET: &str = "Cache-Control: public, max-age=86400, immutable";
@@ -1176,11 +1178,18 @@ fn write_http_str(stream: &mut TcpStream, status: &str, ctype: &str, body: &str)
     } else {
         REQ_CACHE_CONTROL.with(|c| c.get())
     };
+    let allowed_origin = REQ_ALLOWED_ORIGIN.with(|c| c.get());
+    let cors_hdr = if allowed_origin.is_empty() {
+        String::from("Vary: Origin\r\n")
+    } else {
+        format!("Access-Control-Allow-Origin: {}\r\nVary: Origin\r\n", allowed_origin)
+    };
     let header = format!(
-        "HTTP/1.1 {}\r\nContent-Type: {}\r\nContent-Length: {}\r\nAccess-Control-Allow-Origin: *\r\nAccess-Control-Allow-Methods: GET, POST, HEAD, PUT, DELETE, PATCH, OPTIONS\r\nAccess-Control-Allow-Headers: Content-Type, Authorization, X-Sovereign-Operator-Key, X-Requested-With, Anthropic-Version, X-Api-Key, Mcp-Session-Id, Accept\r\nAccess-Control-Allow-Private-Network: true\r\nTiming-Allow-Origin: *\r\nCache-Control: {}\r\n{}{}\r\n",
+        "HTTP/1.1 {}\r\nContent-Type: {}\r\nContent-Length: {}\r\n{}Access-Control-Allow-Methods: GET, POST, HEAD, PUT, DELETE, PATCH, OPTIONS\r\nAccess-Control-Allow-Headers: Content-Type, Authorization, X-Sovereign-Operator-Key, X-Requested-With, Anthropic-Version, X-Api-Key, Mcp-Session-Id, Accept\r\nAccess-Control-Allow-Private-Network: true\r\nTiming-Allow-Origin: *\r\nCache-Control: {}\r\n{}{}\r\n",
         status,
         ctype,
         body.len(),
+        cors_hdr,
         cache_ctl,
         robots_hdr,
         conn_hdr
@@ -1219,11 +1228,18 @@ fn write_http_vec(stream: &mut TcpStream, status: &str, ctype: &str, body: &Vec<
     } else {
         REQ_CACHE_CONTROL.with(|c| c.get())
     };
+    let allowed_origin = REQ_ALLOWED_ORIGIN.with(|c| c.get());
+    let cors_hdr = if allowed_origin.is_empty() {
+        String::from("Vary: Origin\r\n")
+    } else {
+        format!("Access-Control-Allow-Origin: {}\r\nVary: Origin\r\n", allowed_origin)
+    };
     let header = format!(
-        "HTTP/1.1 {}\r\nContent-Type: {}\r\nContent-Length: {}\r\nAccess-Control-Allow-Origin: *\r\nAccess-Control-Allow-Methods: GET, POST, HEAD, PUT, DELETE, PATCH, OPTIONS\r\nAccess-Control-Allow-Headers: Content-Type, Authorization, X-Sovereign-Operator-Key, X-Requested-With, Anthropic-Version, X-Api-Key, Mcp-Session-Id, Accept\r\nAccess-Control-Allow-Private-Network: true\r\nTiming-Allow-Origin: *\r\nCache-Control: {}\r\n{}{}\r\n",
+        "HTTP/1.1 {}\r\nContent-Type: {}\r\nContent-Length: {}\r\n{}Access-Control-Allow-Methods: GET, POST, HEAD, PUT, DELETE, PATCH, OPTIONS\r\nAccess-Control-Allow-Headers: Content-Type, Authorization, X-Sovereign-Operator-Key, X-Requested-With, Anthropic-Version, X-Api-Key, Mcp-Session-Id, Accept\r\nAccess-Control-Allow-Private-Network: true\r\nTiming-Allow-Origin: *\r\nCache-Control: {}\r\n{}{}\r\n",
         status,
         ctype,
         body.len(),
+        cors_hdr,
         cache_ctl,
         robots_hdr,
         conn_hdr
@@ -1356,6 +1372,36 @@ fn verify_operator_header_auth(header_key: &str, is_loopback: bool) -> bool {
         return false;
     }
     constant_time_compare_operator_key(clean_supplied, &expected)
+}
+
+fn enforce_operator_gate_403(
+    stream: &mut TcpStream,
+    clean_path: &str,
+    raw_target: &str,
+    operator_header_key: &str,
+    is_loopback: bool,
+) -> bool {
+    let has_query_key = !extract_query_param(raw_target, "key").is_empty();
+    let auth_ok = !has_query_key && verify_operator_header_auth(operator_header_key, is_loopback);
+    if !auth_ok {
+        let reason = if !is_loopback {
+            "NON_LOOPBACK_OPERATOR_ACCESS_DENIED"
+        } else if has_query_key {
+            "QUERY_KEY_PARAMETER_FORBIDDEN_USE_X_SOVEREIGN_OPERATOR_KEY_HEADER"
+        } else {
+            "INVALID_OR_MISSING_X_SOVEREIGN_OPERATOR_KEY_HEADER"
+        };
+        let deny_json = format!(
+            "{{\"status\":\"HTTP_403_OPERATOR_AUTH_REQUIRED\",\"endpoint\":\"{}\",\"is_loopback\":{},\"operator_vault_verified\":false,\"reason\":\"{}\"}}",
+            json_escape_clean(clean_path),
+            is_loopback,
+            reason
+        );
+        REQ_CACHE_CONTROL.with(|c| c.set("no-store, private"));
+        write_http_str(stream, "403 Forbidden", "application/json; charset=utf-8", &deny_json);
+        return false;
+    }
+    true
 }
 
 // ----------------------------------------------------------------------------
@@ -3067,14 +3113,16 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
     REQ_CONN_CLOSE.with(|c| c.set(false));
     STREAM_WRITE_ERR.with(|c| c.set(false));
     REQ_CACHE_CONTROL.with(|c| c.set("no-store"));
+    REQ_ALLOWED_ORIGIN.with(|c| c.set(""));
 
     for _req_num in 0..1000usize {
         if REQ_CONN_CLOSE.with(|c| c.get()) || STREAM_WRITE_ERR.with(|c| c.get()) {
             break;
         }
-        // RESET REQ_CACHE_CONTROL AT THE START OF EVERY REQUEST LOOP ITERATION
-        // Enforces fresh cache-control state isolation across consecutive keep-alive transactions
+        // RESET REQ_CACHE_CONTROL AND REQ_ALLOWED_ORIGIN AT THE START OF EVERY REQUEST LOOP ITERATION
+        // Enforces fresh cache-control & CORS state isolation across consecutive keep-alive transactions
         REQ_CACHE_CONTROL.with(|c| c.set("no-store"));
+        REQ_ALLOWED_ORIGIN.with(|c| c.set(""));
 
         let mut first_line = String::new();
         match reader.read_line(&mut first_line) {
@@ -3090,6 +3138,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
         let mut hdr_ok = true;
         let mut conn_close = false;
         let mut operator_header_key = String::new();
+        let mut origin_seen = false;
         loop {
             let mut hdr_line = String::new();
             match reader.read_line(&mut hdr_line) {
@@ -3109,6 +3158,17 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                     } else if h_low.starts_with("x-sovereign-operator-key:") {
                         if let Some(val) = hdr_line.splitn(2, ':').nth(1) {
                             operator_header_key = val.trim().to_string();
+                        }
+                    } else if h_low.starts_with("origin:") {
+                        if !origin_seen {
+                            origin_seen = true;
+                            if let Some(val) = hdr_line.splitn(2, ':').nth(1) {
+                                let allowed = v73_2_resolve_allowed_l0_cors_origin(val.trim());
+                                REQ_ALLOWED_ORIGIN.with(|c| c.set(allowed));
+                            }
+                        } else {
+                            // Reject multi-Origin header smuggling by clearing allowed origin
+                            REQ_ALLOWED_ORIGIN.with(|c| c.set(""));
                         }
                     }
                     if hdr_line == "\r\n" || hdr_line == "\n" {
@@ -3150,6 +3210,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             Some(idx) => raw_target.get(..idx).unwrap_or("/"),
             None => raw_target,
         };
+        let is_loopback = stream.peer_addr().map(|a| a.ip().is_loopback()).unwrap_or(false);
 
         REQ_CACHE_CONTROL.with(|c| c.set(determine_cache_control(clean_path)));
 
@@ -3289,7 +3350,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             let ws_tri_p10 = st.ws_p10_lines * 3;
             let ws_tri_p8 = st.ws_p8_lines * 3;
             let json = format!(
-                "{{\"status\":\"LAMINAR_V73_2_DECADIC_15965HZ_LOCKSTEP\",\"version\":\"ACT-Omega Net v73.2.1 (SH4Z v7321 TLV | CHAIN 404 | {} QED)\",\"tlv_magic\":\"0x5348345A\",\"tlv_version\":7321,\"official_domain\":\"https://act-omega-net.dev\",\"generation\":{},\"timestamp_ms\":{},\"carrier_clock_hz\":15.965,\"carrier_period_us\":62637,\"decadic_epoch_sec\":10.0,\"decadic_sub_epoch\":{},\"laplacian_face\":\"{}\",\"qm_field_eq\":\"{}\",\"total_shards\":21120,\"expansion_shards\":21120,\"tier3_shards\":21120,\"tier4_shards\":21120,\"combined_shards\":84480,\"chair44_multiplier\":480,\"combined_chair44_multiplier\":1920,\"total_synapses\":4055040,\"nl_tokenizer_vocab\":524288,\"nl_bpe_subwords\":65536,\"compound_braid_tokens\":65536,\"dendritic_concept_tokens\":84480,\"oov_morphological_tokens\":308736,\"domains_count\":48,\"subdomains_count\":192,\"compound_phrases_count\":4096,\"holdout_ppl\":{},\"holdout_ppl_status\":\"{}\",\"lean4_theorems_qed\":{},\"lean4_base_theorems\":{},\"lean4_runtime_obligations\":{},\"lean4_qed\":{},\"tools_count\":404,\"chain_mode\":\"CHAIN_404_PARALLEL_DAG\",\"bput_act_omega_gib\":1.607,\"bput_efficiency_advantage_x\":13.86,\"omegalang_v15_k16a_ns\":78.0,\"omegalang_v15_k19_90l_ns\":83.6,\"omegalang_v15_k19_tops\":535.73,\"omegalang_v15_k20_pops\":4.235,\"mit_hot_index_shards\":10,\"mit_hot_index_bytes\":640,\"galois_tower_degree\":256,\"cern_lhcb_5mappings_verified\":true,\"fdrive_3tb_worm_online\":true,\"yubikey_5c_nfc_configured\":{},\"fno_modes\":16,\"fno_cachelines\":2080,\"e8z_tribank_cachelines\":6240,\"e8z_quadbank_cachelines\":8704,\"npage_64b_cachelines\":126720,\"npage_v69_cachelines\":168960,\"spage_v69_cachelines\":84480,\"composite_bijected_cachelines\":132960,\"v70_bijected_cachelines_262144\":262144,\"fno_l2_rel_error\":{:.5},\"fno_l2_err\":{:.5},\"navier_stokes_reynolds\":{:.1},\"vorticity_norm\":{:.4},\"active_shard_id\":{},\"acoustic_carrier_hz\":1728.0,\"acoustic_ultrasonic_hz\":18500.0,\"acoustic_snr_db\":{:.1},\"cutler_idx\":{},\"cluster_total_kops\":{:.1},\"base_trisilicon_kops\":{:.1},\"webgpu_leased_kops\":{:.1},\"webgpu_active_leases\":{},\"loq15_rtx3050_kops\":{:.1},\"pixel10_g5_kops\":{:.1},\"pixel8_l2_kops\":{:.1},\"neurons_per_sec\":{:.2},\"cachelines_per_sec\":{:.2},\"host_neurons_per_sec\":{:.2},\"host_cachelines_per_sec\":{:.2},\"ws_loq_lines\":{},\"ws_p10_lines\":{},\"ws_p8_lines\":{},\"ws_tribank_loq_lines\":{},\"ws_tribank_p10_lines\":{},\"ws_tribank_p8_lines\":{},\"pixel8_l2_total_bytes\":4194304,\"pixel8_l2_mlock_bytes\":3737600,\"pixel8_l2_free_pct\":null,\"pixel8_npage_shm_active\":true,\"pixel8_npage_shm_bytes\":10813440,\"pixel8_spage_shm_bytes\":5406720,\"pixel8_sensor_bypass\":true,\"ssd_tier2_active_path\":\"{}\",\"ssd_tier2_drive_e_mounted\":{},\"ssd_tier2_mirrored_shards\":84480,\"ssd_tier2_merkle_nodes\":32,\"llm_agent_gateway_status\":\"ZERO_TRUST_READ_COMPUTE_AND_EXPANSION_CRYSTALLIZE\",\"fno_solve_runs\":{},\"agent_gateway_visits\":{},\"ssd_tier2_syncs\":{},\"nl_transduce_calls\":{},\"harvest_runs\":{},\"nl_converse_runs\":{},\"episodic_queries\":{},\"anomaly_checks\":{},\"decadic_synth_runs\":{},\"always_on_active\":{},\"always_on_ticks\":{},\"nl_synthesis\":\"{}\",\"episodic_search_out\":\"{}\",\"anomaly_banner\":\"{}\",\"physics_10pillar\":\"{}\",\"p10_broadcasts\":{},\"p8_broadcasts\":{},\"mag_x\":{:.1},\"mag_y\":{:.1},\"mag_z\":{:.1},\"b_norm\":{:.1},\"mag_norm\":{:.1},\"baro_hpa\":{:.1},\"light_lx\":{:.0},\"acc_norm\":{:.2},\"gyro_norm\":{:.3},\"p10_temp_c\":{:.1},\"p8_temp_c\":{:.1},\"p10_batt_mv\":{},\"p10_batt_pct\":{},\"p10_ram_used_mb\":{},\"p10_ram_total_mb\":{},\"p10_sensor_hz\":{:.3},\"p10_raw_sensor_hz\":{:.2},\"p10_stream_hz\":{:.2},\"p10_rtt_ms\":{:.1},\"p10_bearer\":\"{}\",\"p8_batt_mv\":{},\"p8_batt_pct\":{},\"p8_ram_used_mb\":{},\"p8_ram_total_mb\":{},\"p8_stream_hz\":{:.2},\"p8_rtt_ms\":{:.1},\"p8_bearer\":\"{}\",\"rtx_temp_c\":{:.0},\"rtx_clock_mhz\":{},\"rtx_vram_used_mb\":{},\"rtx_vram_total_mb\":{},\"rtx_power_w\":{:.1},\"coherence_mult\":{:.2},\"coherence_mode\":\"{}\",\"kasami_cw_hex\":\"{}\",\"kasami_ecc_fixes\":{},\"stiefel_ortho_err\":{:.7},\"lean4_verify_ms\":{:.1},\"siem_entropy_bits\":{:.3},\"siem_pkts\":{},\"opto_state\":\"{}\",\"prox_cm\":{:.1},\"omega_lt\":{:.5},\"rsr_step\":{},\"hybrid_hops\":{},\"sector_norms_csv\":\"{}\",\"sector_hashes_csv\":\"{}\",\"inspected_sector\":{},\"inspected_line\":{},\"inspected_hex\":\"{}\",\"inspected_trits\":\"{}\",\"last_card_idx\":{},\"last_card_diag\":\"{}\",\"last_browser_url\":\"{}\",\"last_browser_trace\":\"{}\",\"last_lean_query\":\"{}\",\"last_lean_trace\":\"{}\",\"last_term_cmd\":\"{}\",\"last_term_out\":\"{}\"}}",
+                "{{\"status\":\"LAMINAR_V73_2_DECADIC_15965HZ_LOCKSTEP\",\"version\":\"ACT-Omega Net v73.2.2 (SH4Z v7321 TLV | CHAIN 404 | {} QED)\",\"tlv_magic\":\"0x5348345A\",\"tlv_version\":7321,\"official_domain\":\"https://act-omega-net.dev\",\"generation\":{},\"timestamp_ms\":{},\"carrier_clock_hz\":15.965,\"carrier_period_us\":62637,\"decadic_epoch_sec\":10.0,\"decadic_sub_epoch\":{},\"laplacian_face\":\"{}\",\"qm_field_eq\":\"{}\",\"total_shards\":21120,\"expansion_shards\":21120,\"tier3_shards\":21120,\"tier4_shards\":21120,\"combined_shards\":84480,\"chair44_multiplier\":480,\"combined_chair44_multiplier\":1920,\"total_synapses\":4055040,\"nl_tokenizer_vocab\":524288,\"nl_bpe_subwords\":65536,\"compound_braid_tokens\":65536,\"dendritic_concept_tokens\":84480,\"oov_morphological_tokens\":308736,\"domains_count\":48,\"subdomains_count\":192,\"compound_phrases_count\":4096,\"holdout_ppl\":{},\"holdout_ppl_status\":\"{}\",\"lean4_theorems_qed\":{},\"lean4_base_theorems\":{},\"lean4_runtime_obligations\":{},\"lean4_qed\":{},\"tools_count\":404,\"chain_mode\":\"CHAIN_404_PARALLEL_DAG\",\"bput_act_omega_gib\":1.607,\"bput_efficiency_advantage_x\":13.86,\"omegalang_v15_k16a_ns\":78.0,\"omegalang_v15_k19_90l_ns\":83.6,\"omegalang_v15_k19_tops\":535.73,\"omegalang_v15_k20_pops\":4.235,\"mit_hot_index_shards\":10,\"mit_hot_index_bytes\":640,\"galois_tower_degree\":256,\"cern_lhcb_5mappings_verified\":true,\"fdrive_3tb_worm_online\":true,\"yubikey_5c_nfc_configured\":{},\"fno_modes\":16,\"fno_cachelines\":2080,\"e8z_tribank_cachelines\":6240,\"e8z_quadbank_cachelines\":8704,\"npage_64b_cachelines\":126720,\"npage_v69_cachelines\":168960,\"spage_v69_cachelines\":84480,\"composite_bijected_cachelines\":132960,\"v70_bijected_cachelines_262144\":262144,\"fno_l2_rel_error\":{:.5},\"fno_l2_err\":{:.5},\"navier_stokes_reynolds\":{:.1},\"vorticity_norm\":{:.4},\"active_shard_id\":{},\"acoustic_carrier_hz\":1728.0,\"acoustic_ultrasonic_hz\":18500.0,\"acoustic_snr_db\":{:.1},\"cutler_idx\":{},\"cluster_total_kops\":{:.1},\"base_trisilicon_kops\":{:.1},\"webgpu_leased_kops\":{:.1},\"webgpu_active_leases\":{},\"loq15_rtx3050_kops\":{:.1},\"pixel10_g5_kops\":{:.1},\"pixel8_l2_kops\":{:.1},\"neurons_per_sec\":{:.2},\"cachelines_per_sec\":{:.2},\"host_neurons_per_sec\":{:.2},\"host_cachelines_per_sec\":{:.2},\"ws_loq_lines\":{},\"ws_p10_lines\":{},\"ws_p8_lines\":{},\"ws_tribank_loq_lines\":{},\"ws_tribank_p10_lines\":{},\"ws_tribank_p8_lines\":{},\"pixel8_l2_total_bytes\":4194304,\"pixel8_l2_mlock_bytes\":3737600,\"pixel8_l2_free_pct\":null,\"pixel8_npage_shm_active\":true,\"pixel8_npage_shm_bytes\":10813440,\"pixel8_spage_shm_bytes\":5406720,\"pixel8_sensor_bypass\":true,\"ssd_tier2_active_path\":\"{}\",\"ssd_tier2_drive_e_mounted\":{},\"ssd_tier2_mirrored_shards\":84480,\"ssd_tier2_merkle_nodes\":32,\"llm_agent_gateway_status\":\"ZERO_TRUST_READ_COMPUTE_AND_EXPANSION_CRYSTALLIZE\",\"fno_solve_runs\":{},\"agent_gateway_visits\":{},\"ssd_tier2_syncs\":{},\"nl_transduce_calls\":{},\"harvest_runs\":{},\"nl_converse_runs\":{},\"episodic_queries\":{},\"anomaly_checks\":{},\"decadic_synth_runs\":{},\"always_on_active\":{},\"always_on_ticks\":{},\"nl_synthesis\":\"{}\",\"episodic_search_out\":\"{}\",\"anomaly_banner\":\"{}\",\"physics_10pillar\":\"{}\",\"p10_broadcasts\":{},\"p8_broadcasts\":{},\"mag_x\":{:.1},\"mag_y\":{:.1},\"mag_z\":{:.1},\"b_norm\":{:.1},\"mag_norm\":{:.1},\"baro_hpa\":{:.1},\"light_lx\":{:.0},\"acc_norm\":{:.2},\"gyro_norm\":{:.3},\"p10_temp_c\":{:.1},\"p8_temp_c\":{:.1},\"p10_batt_mv\":{},\"p10_batt_pct\":{},\"p10_ram_used_mb\":{},\"p10_ram_total_mb\":{},\"p10_sensor_hz\":{:.3},\"p10_raw_sensor_hz\":{:.2},\"p10_stream_hz\":{:.2},\"p10_rtt_ms\":{:.1},\"p10_bearer\":\"{}\",\"p8_batt_mv\":{},\"p8_batt_pct\":{},\"p8_ram_used_mb\":{},\"p8_ram_total_mb\":{},\"p8_stream_hz\":{:.2},\"p8_rtt_ms\":{:.1},\"p8_bearer\":\"{}\",\"rtx_temp_c\":{:.0},\"rtx_clock_mhz\":{},\"rtx_vram_used_mb\":{},\"rtx_vram_total_mb\":{},\"rtx_power_w\":{:.1},\"coherence_mult\":{:.2},\"coherence_mode\":\"{}\",\"kasami_cw_hex\":\"{}\",\"kasami_ecc_fixes\":{},\"stiefel_ortho_err\":{:.7},\"lean4_verify_ms\":{:.1},\"siem_entropy_bits\":{:.3},\"siem_pkts\":{},\"opto_state\":\"{}\",\"prox_cm\":{:.1},\"omega_lt\":{:.5},\"rsr_step\":{},\"hybrid_hops\":{},\"sector_norms_csv\":\"{}\",\"sector_hashes_csv\":\"{}\",\"inspected_sector\":{},\"inspected_line\":{},\"inspected_hex\":\"{}\",\"inspected_trits\":\"{}\",\"last_card_idx\":{},\"last_card_diag\":\"{}\",\"last_browser_url\":\"{}\",\"last_browser_trace\":\"{}\",\"last_lean_query\":\"{}\",\"last_lean_trace\":\"{}\",\"last_term_cmd\":\"{}\",\"last_term_out\":\"{}\"}}",
                 live_lean_thms,
                 gen_now,
                 unix_ms(),
@@ -3301,7 +3362,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 live_lean_thms,
                 live_lean_thms,
                 live_lean_thms,
-                live_lean_thms > 0,
+                v73_2_cloudflare_vpc_mesh_and_pgwire_hyperdrive::validate_live_lean_theorems_with_floor(live_lean_thms),
                 yk_configured,
                 st.fno_l2_err,
                 st.fno_l2_err,
@@ -3921,39 +3982,100 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
 
         // 6B. Track 32.49: Zero-Rebuild Server-Driven OTA Manifest (/api/v1/ota/manifest)
         if clean_path == "/api/v1/ota/manifest" {
+            if !enforce_operator_gate_403(&mut stream, clean_path, raw_target, &operator_header_key, is_loopback) {
+                continue;
+            }
+            let meta = v73_2_read_live_ota_metadata();
+            let (holdout_ppl_json_val, holdout_ppl_status) = read_receipt_holdout_ppl_json();
+            let ppl_diag = if holdout_ppl_json_val == "null" {
+                "UNMEASURED"
+            } else {
+                holdout_ppl_json_val.as_str()
+            };
             let mut st = match state.lock() {
                 Ok(g) => g,
                 Err(p) => p.into_inner(),
             };
             st.sync_matrix_checks += 1;
-            let ota_ppl = (st.stiefel_ortho_err + st.fno_l2_err + 0.085).exp();
             let diag = format!(
-                "OTA MANIFEST v61.0.0 (SH4Z v6000): 15.965 Hz Decadic Epoch -- 15 Cards + 280 Tools (CHAIN 280) + 700/700 Lean4 + 63,360 Total Shards/Neurons (1,440x Chair-44, 3,041,280 Synapses, 132,960 Bijected CLs, PPL={:.6}, Epochs #{})",
-                ota_ppl, st.qat_epochs
+                "OTA MANIFEST {}: 15.965 Hz Decadic Epoch -- 15 Cards + {} Tools (CHAIN {}) + {}/{} Lean4 QED + {} Total Shards/Neurons ({}x Chair-44, {} Synapses, {} Bijected CLs, PPL={} [{}], Epochs #{})",
+                meta.ota_version,
+                meta.tools_count,
+                meta.tools_count,
+                meta.lean4_qed,
+                meta.lean4_qed,
+                meta.combined_shards,
+                meta.chair44_cols,
+                meta.total_synapses,
+                meta.bijected_cachelines,
+                ppl_diag,
+                holdout_ppl_status,
+                st.qat_epochs
             );
             st.last_card_diag = diag.clone();
             st.last_term_out = diag.clone();
             let json = format!(
-                "{{\"status\":\"OTA_MANIFEST_SYNCED\",\"ota_version\":\"v61.0.0-sh4z-v6000\",\"tlv_schema\":6000,\"carrier_hz\":15.965,\"cards_count\":15,\"tools_count\":280,\"shards\":21120,\"expansion_shards\":21120,\"tier3_shards\":21120,\"combined_shards\":63360,\"total_synapses\":3041280,\"lean4_qed\":700,\"holdout_ppl\":{:.6},\"qat_epochs\":{},\"coherence_mode\":\"{}\",\"kasami_cw\":\"{}\",\"diag\":\"{}\"}}",
-                ota_ppl, st.qat_epochs, st.coherence_mode, st.kasami_cw_hex, diag
+                "{{\"status\":\"OTA_MANIFEST_SYNCED\",\"ota_version\":\"{}\",\"tlv_schema\":{},\"carrier_hz\":15.965,\"cards_count\":15,\"tools_count\":{},\"shards\":{},\"expansion_shards\":{},\"tier3_shards\":{},\"tier4_shards\":{},\"combined_shards\":{},\"total_synapses\":{},\"bijected_cachelines\":{},\"lean4_qed\":{},\"holdout_ppl\":{},\"holdout_ppl_status\":\"{}\",\"qat_epochs\":{},\"coherence_mode\":\"{}\",\"kasami_cw\":\"{}\",\"diag\":\"{}\"}}",
+                json_escape_clean(&meta.ota_version),
+                meta.tlv_schema,
+                meta.tools_count,
+                meta.shards,
+                meta.expansion_shards,
+                meta.tier3_shards,
+                meta.tier4_shards,
+                meta.combined_shards,
+                meta.total_synapses,
+                meta.bijected_cachelines,
+                meta.lean4_qed,
+                holdout_ppl_json_val,
+                holdout_ppl_status,
+                st.qat_epochs,
+                st.coherence_mode,
+                st.kasami_cw_hex,
+                json_escape_clean(&diag)
             );
+            REQ_CACHE_CONTROL.with(|c| c.set("no-store, private"));
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
             continue;
         }
 
         // 6C. Track 32.50: Tool 24 -- 4-Tier Cluster Drift & Cross-Node Sync Matrix (/api/v1/cluster/sync_matrix)
         if clean_path == "/api/v1/cluster/sync_matrix" {
+            if !enforce_operator_gate_403(&mut stream, clean_path, raw_target, &operator_header_key, is_loopback) {
+                continue;
+            }
+            if !method.eq_ignore_ascii_case("POST") {
+                REQ_CACHE_CONTROL.with(|c| c.set("no-store, private"));
+                let deny_method = format!(
+                    "{{\"status\":\"HTTP_405_METHOD_NOT_ALLOWED\",\"endpoint\":\"/api/v1/cluster/sync_matrix\",\"method\":\"{}\",\"allowed_method\":\"POST\",\"reason\":\"Shared cluster state update requires POST with validated JSON body.\"}}",
+                    json_escape_clean(method)
+                );
+                write_http_str(&mut stream, "405 Method Not Allowed", "application/json; charset=utf-8", &deny_method);
+                continue;
+            }
+            let (p10_opt, p8_opt) = match v73_2_parse_sync_matrix_json(&post_body) {
+                Ok(parsed) => parsed,
+                Err(err_code) => {
+                    REQ_CACHE_CONTROL.with(|c| c.set("no-store, private"));
+                    let bad_json = format!(
+                        "{{\"status\":\"HTTP_400_INVALID_SYNC_MATRIX_PAYLOAD\",\"endpoint\":\"/api/v1/cluster/sync_matrix\",\"error\":\"{}\",\"reason\":\"Expected JSON object with pixel10_kops/pixel8_kops finite numbers in 0.0..=100000.0.\"}}",
+                        err_code
+                    );
+                    write_http_str(&mut stream, "400 Bad Request", "application/json; charset=utf-8", &bad_json);
+                    continue;
+                }
+            };
             let mut st = match state.lock() {
                 Ok(g) => g,
                 Err(p) => p.into_inner(),
             };
             st.sync_matrix_checks += 1;
-            if let Some(v) = extract_query_f64(raw_target, "pixel10_kops").or_else(|| extract_query_f64(raw_target, "pixel10")).filter(|v| v.is_finite()) {
-                st.p10_kops = v.max(0.0);
+            if let Some(v) = p10_opt {
+                st.p10_kops = v;
                 st.p10_broadcasts += 1;
             }
-            if let Some(v) = extract_query_f64(raw_target, "pixel8_kops").or_else(|| extract_query_f64(raw_target, "pixel8")).filter(|v| v.is_finite()) {
-                st.p8_kops = v.max(0.0);
+            if let Some(v) = p8_opt {
+                st.p8_kops = v;
                 st.p8_broadcasts += 1;
             }
             st.cluster_total_kops = st.loq15_kops + st.p10_kops + st.p8_kops + st.webgpu_leased_kops;
@@ -3982,6 +4104,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 st.cachelines_per_sec,
                 diag
             );
+            REQ_CACHE_CONTROL.with(|c| c.set("no-store, private"));
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
             continue;
         }
@@ -4316,7 +4439,6 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
             continue;
         }
-        let is_loopback = stream.peer_addr().map(|a| a.ip().is_loopback()).unwrap_or(false);
         if clean_path == "/api/v1/router/distributed_5w1h_dispatch" || clean_path == "/api/v1/tools/t65" {
             let who_q = extract_query_param(raw_target, "who");
             let what_q = extract_query_param(raw_target, "what");
@@ -4370,6 +4492,9 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             continue;
         }
         if clean_path == "/api/v1/synthesis/bleeding_edge_1" || clean_path == "/api/v1/bleeding_edge/synthesis_1" || clean_path == "/api/v1/tools/t281" {
+            if !enforce_operator_gate_403(&mut stream, clean_path, raw_target, &operator_header_key, is_loopback) {
+                continue;
+            }
             let sub_epoch = state.lock().map(|g| g.decadic_sub_epoch).unwrap_or(1);
             let col_q = extract_query_param(raw_target, "column_id");
             let sec_q = extract_query_param(raw_target, "sector_id");
@@ -4390,10 +4515,14 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 &raw_json,
                 sub_epoch,
             );
+            REQ_CACHE_CONTROL.with(|c| c.set("no-store, private"));
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
             continue;
         }
         if clean_path == "/api/v1/synthesis/bleeding_edge_2" || clean_path == "/api/v1/bleeding_edge/synthesis_2" || clean_path == "/api/v1/tools/t282" {
+            if !enforce_operator_gate_403(&mut stream, clean_path, raw_target, &operator_header_key, is_loopback) {
+                continue;
+            }
             let sub_epoch = state.lock().map(|g| g.decadic_sub_epoch).unwrap_or(1);
             let col_q = extract_query_param(raw_target, "column_id");
             let sec_q = extract_query_param(raw_target, "sector_id");
@@ -4414,10 +4543,14 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 &raw_json,
                 sub_epoch,
             );
+            REQ_CACHE_CONTROL.with(|c| c.set("no-store, private"));
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
             continue;
         }
         if clean_path == "/api/v1/synthesis/bleeding_edge_3" || clean_path == "/api/v1/bleeding_edge/synthesis_3" || clean_path == "/api/v1/tools/t283" {
+            if !enforce_operator_gate_403(&mut stream, clean_path, raw_target, &operator_header_key, is_loopback) {
+                continue;
+            }
             let sub_epoch = state.lock().map(|g| g.decadic_sub_epoch).unwrap_or(1);
             let col_q = extract_query_param(raw_target, "column_id");
             let sec_q = extract_query_param(raw_target, "sector_id");
@@ -4438,10 +4571,14 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 &raw_json,
                 sub_epoch,
             );
+            REQ_CACHE_CONTROL.with(|c| c.set("no-store, private"));
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
             continue;
         }
         if clean_path == "/api/v1/synthesis/bleeding_edge_4" || clean_path == "/api/v1/bleeding_edge/synthesis_4" || clean_path == "/api/v1/tools/t285" {
+            if !enforce_operator_gate_403(&mut stream, clean_path, raw_target, &operator_header_key, is_loopback) {
+                continue;
+            }
             let sub_epoch = state.lock().map(|g| g.decadic_sub_epoch).unwrap_or(1);
             let col_q = extract_query_param(raw_target, "column_id");
             let sec_q = extract_query_param(raw_target, "sector_id");
@@ -4462,10 +4599,14 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 &raw_json,
                 sub_epoch,
             );
+            REQ_CACHE_CONTROL.with(|c| c.set("no-store, private"));
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
             continue;
         }
         if clean_path == "/api/v1/synthesis/bleeding_edge_5" || clean_path == "/api/v1/bleeding_edge/synthesis_5" || clean_path == "/api/v1/tools/t286" {
+            if !enforce_operator_gate_403(&mut stream, clean_path, raw_target, &operator_header_key, is_loopback) {
+                continue;
+            }
             let sub_epoch = state.lock().map(|g| g.decadic_sub_epoch).unwrap_or(1);
             let col_q = extract_query_param(raw_target, "column_id");
             let sec_q = extract_query_param(raw_target, "sector_id");
@@ -4486,6 +4627,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 &raw_json,
                 sub_epoch,
             );
+            REQ_CACHE_CONTROL.with(|c| c.set("no-store, private"));
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
             continue;
         }
@@ -4556,7 +4698,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 Err(_) => (false, 0usize, String::from("UNMEASURED/OFFLINE")),
             };
             let raw_json = format!(
-                "{{\"status\":\"{}\",\"package\":\"com.actomega.manifold\",\"version_name\":\"v73.2.1\",\"version_code\":74,\"apk_bytes\":{},\"apk_sha256\":\"{}\",\"cloudflare_ota_url\":\"https://api.act-omega-net.dev/api/v1/ota/pixel_apk\",\"operator_auth_verified\":true,\"supported_abis\":\x5b\"arm64-v8a\"\x5d,\"elf_16kb_page_aligned\":true,\"dual_slot_ab_supported\":true,\"yubikey_5c_nfc_usb_slot_preserved\":true}}",
+                "{{\"status\":\"{}\",\"package\":\"com.actomega.manifold\",\"version_name\":\"v73.2.2\",\"version_code\":75,\"apk_bytes\":{},\"apk_sha256\":\"{}\",\"cloudflare_ota_url\":\"https://api.act-omega-net.dev/api/v1/ota/pixel_apk\",\"operator_auth_verified\":true,\"supported_abis\":\x5b\"arm64-v8a\"\x5d,\"elf_16kb_page_aligned\":true,\"dual_slot_ab_supported\":true,\"yubikey_5c_nfc_usb_slot_preserved\":true}}",
                 if apk_ok { "MEASURED_PIXEL_OTA_MANIFEST_READY" } else { "UNMEASURED/OFFLINE" },
                 apk_len,
                 apk_sha
@@ -5745,7 +5887,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             let o = evaluate_openai_compat_surface(st.gen_counter);
             let (holdout_ppl_json_val, _) = read_receipt_holdout_ppl_json();
             let json = format!(
-                "{{\"object\":\"list\",\"status\":\"OPENAI_V1_MODELS_LIST_READY\",\"version\":\"v73.2.1\",\"data\":\x5b{{\"id\":\"sovereign-harmonic-xi-768d\",\"object\":\"model\",\"created\":1762800000,\"owned_by\":\"act-omega-sovereign-manifold\",\"shell0_dim\":384,\"shell1_dim\":768,\"hybrid_layers\":12,\"vocab_size\":16384}},{{\"id\":\"{}\",\"object\":\"model\",\"created\":1760980000,\"owned_by\":\"act-omega-sovereign-manifold\",\"dendritic_neurons\":84480,\"synapses\":4055040,\"vocab_size\":524288,\"holdout_ppl\":{}}},{{\"id\":\"gemma-4-12B-it-sh4z\",\"object\":\"model\",\"created\":1761840000,\"owned_by\":\"act-omega-sovereign-manifold\",\"sh4z_vault_bytes\":3176803328,\"quantized_weights\":11959730176,\"vocab_size\":262144}},{{\"id\":\"gemma-4-E4B-it-sh4z\",\"object\":\"model\",\"created\":1761840000,\"owned_by\":\"act-omega-sovereign-manifold\",\"sh4z_vault_bytes\":2123979252,\"quantized_weights\":7996157184,\"vocab_size\":262144}}\x5d}}",
+                "{{\"object\":\"list\",\"status\":\"OPENAI_V1_MODELS_LIST_READY\",\"version\":\"v73.2.2\",\"data\":\x5b{{\"id\":\"sovereign-harmonic-xi-768d\",\"object\":\"model\",\"created\":1762800000,\"owned_by\":\"act-omega-sovereign-manifold\",\"shell0_dim\":384,\"shell1_dim\":768,\"hybrid_layers\":12,\"vocab_size\":16384}},{{\"id\":\"{}\",\"object\":\"model\",\"created\":1760980000,\"owned_by\":\"act-omega-sovereign-manifold\",\"dendritic_neurons\":84480,\"synapses\":4055040,\"vocab_size\":524288,\"holdout_ppl\":{}}},{{\"id\":\"gemma-4-12B-it-sh4z\",\"object\":\"model\",\"created\":1761840000,\"owned_by\":\"act-omega-sovereign-manifold\",\"sh4z_vault_bytes\":3176803328,\"quantized_weights\":11959730176,\"vocab_size\":262144}},{{\"id\":\"gemma-4-E4B-it-sh4z\",\"object\":\"model\",\"created\":1761840000,\"owned_by\":\"act-omega-sovereign-manifold\",\"sh4z_vault_bytes\":2123979252,\"quantized_weights\":7996157184,\"vocab_size\":262144}}\x5d}}",
                 o.model_id, holdout_ppl_json_val
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
@@ -5881,7 +6023,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             let created_sec = unix_ms() / 1000;
             let (holdout_ppl_json_val, holdout_ppl_status) = read_receipt_holdout_ppl_json();
             let json = format!(
-                "{{\"id\":\"chatcmpl-shxi-v7321-{}\",\"object\":\"chat.completion\",\"created\":{},\"status\":\"OPENAI_V1_COMPAT_SURFACE_LOCKED\",\"version\":\"v73.2.1\",\"tool_index\":47,\"tool_name\":\"tool:openai_v1_compat_api\",\"model\":\"sovereign-harmonic-xi-3shell-moe\",\"choices\":\x5b{{\"index\":0,\"message\":{{\"role\":\"assistant\",\"content\":\"{}\"}},\"finish_reason\":\"stop\"}}\x5d,\"usage\":{{\"prompt_tokens\":{},\"completion_tokens\":{},\"total_tokens\":{}}},\"dendritic_neurons\":84480,\"synapses_total\":4055040,\"vocab_size\":16384,\"aegis_chair44_col\":{},\"aegis_target_neuron\":{},\"dominant_domain\":\"{}\",\"sovereign_harmonic_xi_mode\":\"{}\",\"sovereign_harmonic_xi_top1_expert\":\"{}\",\"sovereign_harmonic_xi_session_turn\":{},\"sovereign_harmonic_ix_track\":\"{}\",\"sovereign_harmonic_ix_generated\":\"{}\",\"matryoshka_shell0_vs_shell1_agreement\":{:.4},\"episodic_turn_index\":{},\"subternary_32trit_signature\":\"{}\",\"crystallized_neuron_id\":{},\"crystallized_shard_id\":{},\"holdout_ppl\":{},\"holdout_ppl_status\":\"{}\",\"completion_tokens_generated\":{},\"output_text\":\"{}\",\"nl_synthesis\":\"{}\",\"diag\":\"{}\"}}",
+                "{{\"id\":\"chatcmpl-shxi-v7321-{}\",\"object\":\"chat.completion\",\"created\":{},\"status\":\"OPENAI_V1_COMPAT_SURFACE_LOCKED\",\"version\":\"v73.2.2\",\"tool_index\":47,\"tool_name\":\"tool:openai_v1_compat_api\",\"model\":\"sovereign-harmonic-xi-3shell-moe\",\"choices\":\x5b{{\"index\":0,\"message\":{{\"role\":\"assistant\",\"content\":\"{}\"}},\"finish_reason\":\"stop\"}}\x5d,\"usage\":{{\"prompt_tokens\":{},\"completion_tokens\":{},\"total_tokens\":{}}},\"dendritic_neurons\":84480,\"synapses_total\":4055040,\"vocab_size\":16384,\"aegis_chair44_col\":{},\"aegis_target_neuron\":{},\"dominant_domain\":\"{}\",\"sovereign_harmonic_xi_mode\":\"{}\",\"sovereign_harmonic_xi_top1_expert\":\"{}\",\"sovereign_harmonic_xi_session_turn\":{},\"sovereign_harmonic_ix_track\":\"{}\",\"sovereign_harmonic_ix_generated\":\"{}\",\"matryoshka_shell0_vs_shell1_agreement\":{:.4},\"episodic_turn_index\":{},\"subternary_32trit_signature\":\"{}\",\"crystallized_neuron_id\":{},\"crystallized_shard_id\":{},\"holdout_ppl\":{},\"holdout_ppl_status\":\"{}\",\"completion_tokens_generated\":{},\"output_text\":\"{}\",\"nl_synthesis\":\"{}\",\"diag\":\"{}\"}}",
                 st.gen_counter, created_sec, esc_nl, sh_xi.prompt_tokens_len, comp_toks, sh_xi.prompt_tokens_len + comp_toks, aegis_col, aegis_neuron, gw.dominant_domain, sh_xi.active_mode, sh_xi.top1_expert_name, sh_xi.session_turn_count, sh_xi.retrieved_track_name, esc_nl, sh_xi.shell0_vs_shell1_top8_agreement, ep_turn_index, trit_sig, gw.mapped_neuron_id, gw.crystallized_shard_id, holdout_ppl_json_val, holdout_ppl_status, comp_toks, esc_nl, esc_nl, json_escape_clean(&diag)
             );
             write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &json);
@@ -8179,7 +8321,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 write_http_vec(&mut stream, "200 OK", "text/plain; charset=utf-8", &bytes);
                 continue;
             }
-            let fallback = "# ACT-Omega Net v73.2.1 (SH4Z v7321 TLV | CHAIN 404 | 1,010/1,010 Lean 4 QED | 4,055,040 Synapses)\n> Official Domain: https://act-omega-net.dev\n";
+            let fallback = "# ACT-Omega Net v73.2.2 (SH4Z v7321 TLV | CHAIN 404 | 1,010/1,010 Lean 4 QED | 4,055,040 Synapses)\n> Official Domain: https://act-omega-net.dev\n";
             write_http_str(&mut stream, "200 OK", "text/plain; charset=utf-8", fallback);
             continue;
         }
@@ -8257,8 +8399,8 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             .map(|s| s.lines().filter(|l| l.trim_start().starts_with("theorem ")).count())
             .unwrap_or(0);
         let fallback_html = format!(
-            "<html><body style='background:#0E1116;color:#FFFEFB;font-family:monospace'><h2>ACT-Omega Net v73.2.1 (SH4Z v7321 TLV | CHAIN 404 | {} QED | 59 MCP Tools) Online at act-omega-net.dev</h2><p>Discovery: <a href='/api/v1/tools'>/api/v1/tools</a> | <a href='/api/v1/tools/t404'>/api/v1/tools/t404</a> | <a href='/api/v1/chain368/master_certification'>/api/v1/chain368/master_certification</a> | <a href='/openapi.json'>/openapi.json</a></p></body></html>",
-            if fallback_lean_thms > 0 { fallback_lean_thms.to_string() } else { String::from("UNMEASURED/OFFLINE") }
+            "<html><body style='background:#0E1116;color:#FFFEFB;font-family:monospace'><h2>ACT-Omega Net v73.2.2 (SH4Z v7321 TLV | CHAIN 404 | {} QED | 59 MCP Tools) Online at act-omega-net.dev</h2><p>Discovery: <a href='/api/v1/tools'>/api/v1/tools</a> | <a href='/api/v1/tools/t404'>/api/v1/tools/t404</a> | <a href='/api/v1/chain368/master_certification'>/api/v1/chain368/master_certification</a> | <a href='/openapi.json'>/openapi.json</a></p></body></html>",
+            if v73_2_cloudflare_vpc_mesh_and_pgwire_hyperdrive::validate_live_lean_theorems_with_floor(fallback_lean_thms) { fallback_lean_thms.to_string() } else { String::from("UNMEASURED/OFFLINE") }
         );
         write_http_str(
             &mut stream,
@@ -8292,21 +8434,21 @@ fn run_listener(addr: String, state: Arc<Mutex<SwarmState>>, exit_on_conflict: b
     let listener = loop {
         match TcpListener::bind(addr.as_str()) {
             Ok(l) => {
-                println!("  (v31_swarm v73.2.1) Bound HTTP Keep-Alive listener on {}", addr);
+                println!("  (v31_swarm v73.2.2) Bound HTTP Keep-Alive listener on {}", addr);
                 break l;
             }
             Err(e) => {
                 attempt += 1;
                 if attempt > 8 {
                     if exit_on_conflict {
-                        println!("  (v31_swarm v73.2.1) Port {} already active in primary instance; exiting duplicate.", addr);
+                        println!("  (v31_swarm v73.2.2) Port {} already active in primary instance; exiting duplicate.", addr);
                         std::process::exit(0);
                     } else {
-                        println!("  (v31_swarm v73.2.1) Optional LAN listener {} unavailable: {}", addr, e);
+                        println!("  (v31_swarm v73.2.2) Optional LAN listener {} unavailable: {}", addr, e);
                         return;
                     }
                 }
-                println!("  (v31_swarm v73.2.1) Retry #{} binding {}: {}", attempt, addr, e);
+                println!("  (v31_swarm v73.2.2) Retry #{} binding {}: {}", attempt, addr, e);
                 thread::sleep(Duration::from_millis(250));
             }
         }
@@ -8444,14 +8586,14 @@ fn main() {
         .or_else(|_| fs::read_to_string("C:\\sovereign_manifold_v31\\03_vault\\lean4\\SovereignManifoldTheorems.lean"))
         .map(|s| s.lines().filter(|l| l.trim_start().starts_with("theorem ")).count())
         .unwrap_or(0);
-    let init_lean_badge = if init_lean_thms > 0 {
+    let init_lean_badge = if v73_2_cloudflare_vpc_mesh_and_pgwire_hyperdrive::validate_live_lean_theorems_with_floor(init_lean_thms) {
         format!("{}/{}", init_lean_thms, init_lean_thms)
     } else {
         String::from("UNMEASURED/OFFLINE")
     };
 
     println!("========================================================================");
-    println!(" ACT-OMEGA NET v73.2.1 (SH4Z v7321 TLV | CHAIN 404 | {} QED) SWARM", init_lean_badge);
+    println!(" ACT-OMEGA NET v73.2.2 (SH4Z v7321 TLV | CHAIN 404 | {} QED) SWARM", init_lean_badge);
     println!(" 15.965 Hz Decadic Epoch, 84,480 Neurons, 4,055,040 Synapses, Loopback Default");
     println!("========================================================================");
 
@@ -8487,7 +8629,7 @@ fn main() {
         decadic_sub_epoch: 0,
         laplacian_face: String::from("E0(1/10 Div-Grad: div(grad f))"),
         qm_field_eq: String::from("QM1-2: Planck E=hf & Photoelectric Kmax=hf-phi0 + Schrodinger Field"),
-        nl_synthesis: format!("ACT-Omega Net v73.2.1 (SH4Z v7321 TLV) Natural Language Synthesis: 84,480 3-compartment dendritic neurons (1,920x Chair-44, 4,055,040 Synapses across .npage 10.81MB + .spage 5.41MB + .e8z 557KB = 262,144 Bijected 64B Cachelines / 16.00 MiB), 404 Native Tools (CHAIN 404), SH-XI 3-Shell Sparse MoE, and {} Lean 4 proofs QED.", init_lean_badge),
+        nl_synthesis: format!("ACT-Omega Net v73.2.2 (SH4Z v7321 TLV) Natural Language Synthesis: 84,480 3-compartment dendritic neurons (1,920x Chair-44, 4,055,040 Synapses across .npage 10.81MB + .spage 5.41MB + .e8z 557KB = 262,144 Bijected 64B Cachelines / 16.00 MiB), 404 Native Tools (CHAIN 404), SH-XI 3-Shell Sparse MoE, and {} Lean 4 proofs QED.", init_lean_badge),
         episodic_search_out: String::from("TOOL 28 EPISODIC MEMORY READY: 84,480 Neurons (10,813,440 B .npage) + 4,055,040 Synapses (5,406,720 B .spage) + MIT Hot-Index (10 .e8q shards, 640B) indexed on E:/Sovereign_Manifold_SSD_Vault."),
         anomaly_banner: String::from("LAMINAR EQUILIBRIUM (U(1) Gauge Filter A'=A+grad(chi) = 0.000): 15.965 Hz Decadic Epoch E0/9 -- Per-Sensor Stiefel & Oscilloscope Coupling Active."),
         physics_10pillar: String::from("15.965Hz Decadic E0/9 (62,637us, 159.65 cyc/10s) -- 10 Laplacian Faces -- 20 QM + 4 Field Eqs -- Sierpinski sum(3/4^k)=1.000000 -- Theodorus Q_n=1..16 -- Anyon tau*tau=1+tau -- nc-AFM Hex Sheaf H1=0"),

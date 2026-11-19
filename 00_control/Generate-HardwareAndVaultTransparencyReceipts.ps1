@@ -124,21 +124,39 @@ foreach ($r in @("apr_test1_rdp_pre_state_receipt_v54_6.json", "apr_test2_pixel8
 }
 $adbExe = "C:\Users\Nbell\AppData\Local\Android\Sdk\platform-tools\adb.exe"
 if (-not (Test-Path $adbExe)) { $adbExe = "adb" }
-$adbDevices = (& $adbExe devices -l 2>&1 | Out-String).Trim()
-$p10Pkg = (& $adbExe -s 58170DLCR0004V shell dumpsys package com.sovereign.manifold 2>&1 | Select-String "versionCode|versionName" | Out-String).Trim()
-$p8Pkg  = (& $adbExe -s 192.168.137.8:5555 shell dumpsys package com.sovereign.manifold 2>&1 | Select-String "versionCode|versionName" | Out-String).Trim()
+function Resolve-ReceiptAdbTarget {
+    param([string]$Role, [string]$ModelHint)
+    $cfgSerial = ""
+    $cfgFile = "C:\Users\Nbell\.act_omega_adb_devices.json"
+    if (Test-Path $cfgFile) {
+        try {
+            $cfg = Get-Content -Raw $cfgFile | ConvertFrom-Json
+            if ($cfg.$Role -and $cfg.$Role.serial) { $cfgSerial = [string]$cfg.$Role.serial }
+        } catch {}
+    }
+    $lines = & $adbExe devices -l 2>$null
+    foreach ($l in $lines) {
+        if ($l -match "\s+device\b" -and ($l -match $ModelHint -or ($cfgSerial -and $l -match [regex]::Escape($cfgSerial)))) {
+            return ($l -split "\s+")[0]
+        }
+    }
+    return $cfgSerial
+}
+$p10Target = Resolve-ReceiptAdbTarget -Role "pixel10" -ModelHint "model:Pixel_10|product:frankel|192\.168\.137\.10:"
+$p8Target  = Resolve-ReceiptAdbTarget -Role "pixel8" -ModelHint "model:Pixel_8|product:shiba|192\.168\.137\.8:"
+$p10Pkg = if ($p10Target) { (& $adbExe -s $p10Target shell dumpsys package com.sovereign.manifold 2>&1 | Select-String "versionCode|versionName" | Out-String).Trim() } else { "OFFLINE" }
+$p8Pkg  = if ($p8Target) { (& $adbExe -s $p8Target shell dumpsys package com.sovereign.manifold 2>&1 | Select-String "versionCode|versionName" | Out-String).Trim() } else { "OFFLINE" }
 $dualPixelLive = [ordered]@{
     status = "DUAL_PIXEL_LIVE_HARDWARE_LOCKSTEP_RECEIPT_V68_0"
     version = "v68.0.0"
     version_code = 68
-    adb_devices_list = $adbDevices
     edge1_pixel10_tensor_g5 = [ordered]@{
-        serial = "58170DLCR0004V"
+        node_id = "EDGE-1-PIXEL10-G5"
         sectors = "S48..S63"
         package_dumpsys = $p10Pkg
     }
     edge2_pixel8_tensor_g3_p8_apex = [ordered]@{
-        serial = "3A121FDJH00BW5"
+        node_id = "EDGE-2-PIXEL8-SHIBA"
         wireless_adb = "192.168.137.8:5555"
         sectors = "S64..S79"
         kernelsu_slot = "Slot A (u:r:ksu:s0)"

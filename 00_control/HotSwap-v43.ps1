@@ -42,8 +42,23 @@ Start-Sleep -Milliseconds 300
 schtasks /Run /TN "SovereignManifold_AlwaysOn_v32_9" >$null 2>&1
 Start-Sleep -Seconds 3
 
-# 3. Re-bind ADB reverse tunnels on Pixel 10 & Pixel 8
-foreach ($ser in @("58170DLCR0004V", "3A121FDJH00BW5")) {
+# 3. Re-bind ADB reverse tunnels on Pixel 10 & Pixel 8 (dynamic discovery + external config)
+$adbTargets = @()
+$adbLines = adb.exe devices -l 2>$null
+foreach ($l in $adbLines) {
+    if ($l -match "^(\S+)\s+device\b" -and ($l -match "model:Pixel_8|product:shiba|model:Pixel_10|product:frankel|192\.168\.137\.")) {
+        $adbTargets += $Matches[1]
+    }
+}
+$cfgFile = "C:\Users\Nbell\.act_omega_adb_devices.json"
+if ($adbTargets.Count -eq 0 -and (Test-Path $cfgFile)) {
+    try {
+        $cfg = Get-Content -Raw $cfgFile | ConvertFrom-Json
+        if ($cfg.pixel10.serial) { $adbTargets += [string]$cfg.pixel10.serial }
+        if ($cfg.pixel8.serial) { $adbTargets += [string]$cfg.pixel8.serial }
+    } catch {}
+}
+foreach ($ser in $adbTargets) {
     cmd.exe /c "adb.exe -s $ser reverse tcp:8097 tcp:8097 >nul 2>&1"
     cmd.exe /c "adb.exe -s $ser reverse tcp:5173 tcp:5173 >nul 2>&1"
 }

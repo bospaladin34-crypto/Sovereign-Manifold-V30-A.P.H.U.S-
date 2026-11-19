@@ -764,7 +764,7 @@ pub fn v68_0_dispatch_tool_300_k19_k20_superposition_and_chain300_cert(payload: 
         && k18b_cs == 13585768992
         && k20_cs == -170119
         && lean_bytes > 0
-        && lean_theorems >= 800;
+        && crate::v73_2_cloudflare_vpc_mesh_and_pgwire_hyperdrive::validate_live_lean_theorems_with_floor(lean_theorems);
     let status_str = if exact_match {
         "CHAIN_300_OMEGALANG_V15_SUPERPOSITION_CERTIFIED_QED"
     } else {

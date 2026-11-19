@@ -410,7 +410,7 @@ pub use v72_1_sh_xi_matryoshka_384_768_cuda_pretrainer::{
     v72_1_verify_weight_manifest,
 };
 
-// Sovereign Harmonic XI Week 2 (v72.2.0 | SH-XI-SPARSE-MOE-SFT-RAG | Tools 363..368 | CHAIN 368 | 995/995 QED):
+// Sovereign Harmonic XI Week 2 (SH-XI-SPARSE-MOE-SFT-RAG | Tools 363..368 | CHAIN 368):
 // Shell 2 CPU+SSD Growable Sparse MoE Bank (16 Active / 256 Pre-Allocated 64B Cacheline Slots, Top-2 Lattice Router),
 // Masked-Prompt Multi-Turn (1..8 Turns) ChatML Instruction SFT Trainer (prompt_grad_norm == 0.0),
 // Intel iGPU WebGPU WGSL + 12T AVX2 384D Shell 0 Workspace RAG & Live Tri-Silicon Telemetry (RTX 3050 + Pixel 10 + Wireless Pixel 8),

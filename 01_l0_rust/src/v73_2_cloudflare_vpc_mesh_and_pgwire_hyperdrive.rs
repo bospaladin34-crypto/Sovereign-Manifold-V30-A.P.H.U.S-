@@ -1,5 +1,5 @@
 // =============================================================================
-// ACT-OMEGA NET v73.2.0 — CLOUDFLARE VPC SERVICES, MESH ROUTING, PGWIRE & HYPERDRIVE
+// ACT-OMEGA NET v73.2.2 — CLOUDFLARE VPC SERVICES, MESH ROUTING, PGWIRE & HYPERDRIVE
 // Tools T400..T404 + CHAIN 404 Master Certification
 // Muse-Compliant: Live Socket, Config, File Metadata & Native DuckDB Measurements Only
 // Constitutionally Strictly Zero Square Brackets (0x5B / 0x5D = 0)
@@ -418,7 +418,7 @@ pub fn v73_2_dispatch_chain404_master_certification(payload: &str) -> String {
         && lab_manifest_ok
         && lean_verified
         && lean_sorries == 0
-        && lean_theorems > 0;
+        && validate_live_lean_theorems_with_floor(lean_theorems);
     let status = if all_ok {
         "MEASURED_CHAIN404_CERTIFIED"
     } else if p35_ok && weights_manifest_ok && lean_verified {
@@ -426,13 +426,15 @@ pub fn v73_2_dispatch_chain404_master_certification(payload: &str) -> String {
     } else {
         "UNMEASURED/OFFLINE"
     };
+    let live_ver = v73_2_read_live_release_version();
     let elapsed_ms = t0.elapsed().as_secs_f64() * 1000.0;
 
     format!(
-        "{{\"ok\":{},\"certified\":{},\"status\":\"{}\",\"version\":\"v73.2.1\",\"chain_milestone\":\"CHAIN 404\",\"tools_total\":404,\"weights_manifest_ok\":{},\"weights_verified_count\":{},\"lean4_compiler_verified\":{},\"lean4_sha256\":\"{}\",\"lean4_theorems_qed\":{},\"lean_sorry_count\":{},\"unified_lab_manifest_present\":{},\"p35_cloudflare_vpc_hyperdrive_ok\":{},\"chain399_ok\":{},\"elapsed_ms\":{:.3},\"t400\":{},\"t401\":{},\"t402\":{},\"t403\":{},\"chain399\":{}}}",
+        "{{\"ok\":{},\"certified\":{},\"status\":\"{}\",\"version\":\"{}\",\"chain_milestone\":\"CHAIN 404\",\"tools_total\":404,\"weights_manifest_ok\":{},\"weights_verified_count\":{},\"lean4_compiler_verified\":{},\"lean4_sha256\":\"{}\",\"lean4_theorems_qed\":{},\"lean_sorry_count\":{},\"unified_lab_manifest_present\":{},\"p35_cloudflare_vpc_hyperdrive_ok\":{},\"chain399_ok\":{},\"elapsed_ms\":{:.3},\"t400\":{},\"t401\":{},\"t402\":{},\"t403\":{},\"chain399\":{}}}",
         all_ok,
         all_ok,
         status,
+        v61_escape_clean(&live_ver),
         weights_manifest_ok,
         weights_verified_count,
         lean_verified,
@@ -445,6 +447,242 @@ pub fn v73_2_dispatch_chain404_master_certification(payload: &str) -> String {
         elapsed_ms,
         t400, t401, t402, t403, c399
     )
+}
+
+pub fn v73_2_resolve_allowed_l0_cors_origin(origin: &str) -> &'static str {
+    match origin.trim() {
+        "https://act-omega-net.dev" => "https://act-omega-net.dev",
+        "https://api.act-omega-net.dev" => "https://api.act-omega-net.dev",
+        "https://mcp.act-omega-net.dev" => "https://mcp.act-omega-net.dev",
+        "http://127.0.0.1:5173" => "http://127.0.0.1:5173",
+        "http://localhost:5173" => "http://localhost:5173",
+        "http://127.0.0.1:8097" => "http://127.0.0.1:8097",
+        _ => "",
+    }
+}
+
+fn v73_2_parse_bounded_kops_field(
+    obj: &serde_json::Map<String, serde_json::Value>,
+    primary: &str,
+    alias: &str,
+    err_code: &'static str,
+) -> Result<Option<f64>, &'static str> {
+    let mut primary_val: Option<f64> = None;
+    if let Some(raw_v) = obj.get(primary) {
+        let num = raw_v.as_f64().ok_or(err_code)?;
+        if !num.is_finite() || !(0.0..=100_000.0).contains(&num) {
+            return Err(err_code);
+        }
+        primary_val = Some(num);
+    }
+    let mut alias_val: Option<f64> = None;
+    if let Some(raw_v) = obj.get(alias) {
+        let num = raw_v.as_f64().ok_or(err_code)?;
+        if !num.is_finite() || !(0.0..=100_000.0).contains(&num) {
+            return Err(err_code);
+        }
+        alias_val = Some(num);
+    }
+    Ok(primary_val.or(alias_val))
+}
+
+pub fn v73_2_parse_sync_matrix_json(body: &str) -> Result<(Option<f64>, Option<f64>), &'static str> {
+    let trimmed = body.trim();
+    if trimmed.is_empty() {
+        return Err("EMPTY_SYNC_MATRIX_BODY");
+    }
+    let parsed = serde_json::from_str::<serde_json::Value>(trimmed).map_err(|_| "INVALID_JSON_BODY")?;
+    let obj = parsed.as_object().ok_or("JSON_BODY_MUST_BE_OBJECT")?;
+    let p10 = v73_2_parse_bounded_kops_field(obj, "pixel10_kops", "pixel10", "INVALID_OR_OOB_PIXEL10_KOPS")?;
+    let p8 = v73_2_parse_bounded_kops_field(obj, "pixel8_kops", "pixel8", "INVALID_OR_OOB_PIXEL8_KOPS")?;
+    if p10.is_none() && p8.is_none() {
+        return Err("MISSING_PIXEL_KOPS_FIELDS");
+    }
+    Ok((p10, p8))
+}
+
+pub const SOVEREIGN_LEAN4_MIN_THEOREMS: usize = 1010;
+
+pub fn count_live_lean_theorems_at_path(path: &str) -> Option<usize> {
+    let txt = fs::read_to_string(path).ok()?;
+    let count = txt
+        .lines()
+        .filter(|l| {
+            let trimmed = l.trim_start();
+            !trimmed.starts_with("--") && trimmed.starts_with("theorem ")
+        })
+        .count();
+    Some(count)
+}
+
+pub fn count_live_lean_theorems_canonical() -> Option<usize> {
+    count_live_lean_theorems_at_path("03_vault/lean4/SovereignManifoldTheorems.lean")
+        .or_else(|| count_live_lean_theorems_at_path("C:\\sovereign_manifold_v31\\03_vault\\lean4\\SovereignManifoldTheorems.lean"))
+}
+
+pub fn validate_live_lean_threshold(measured_theorems: usize, live_lean_count: usize) -> bool {
+    measured_theorems >= SOVEREIGN_LEAN4_MIN_THEOREMS
+        && live_lean_count >= SOVEREIGN_LEAN4_MIN_THEOREMS
+        && measured_theorems == live_lean_count
+}
+
+pub fn validate_live_lean_theorems_with_floor(measured_theorems: usize) -> bool {
+    match count_live_lean_theorems_canonical() {
+        Some(live_count) => validate_live_lean_threshold(measured_theorems, live_count),
+        None => false,
+    }
+}
+
+pub fn v73_2_count_live_lean_theorems() -> usize {
+    count_live_lean_theorems_canonical().unwrap_or(0)
+}
+
+pub struct V732LiveOtaMetadata {
+    pub ota_version: String,
+    pub tlv_schema: u64,
+    pub tools_count: u64,
+    pub lean4_qed: usize,
+    pub shards: u64,
+    pub expansion_shards: u64,
+    pub tier3_shards: u64,
+    pub tier4_shards: u64,
+    pub combined_shards: u64,
+    pub total_synapses: u64,
+    pub bijected_cachelines: u64,
+    pub chair44_cols: u64,
+}
+
+fn v73_2_file_len_dual(rel: &str, abs: &str) -> u64 {
+    fs::metadata(rel)
+        .or_else(|_| fs::metadata(abs))
+        .map(|m| m.len())
+        .unwrap_or(0)
+}
+
+pub fn v73_2_read_live_release_version() -> String {
+    if let Ok(gemini) = fs::read_to_string("GEMINI.md")
+        .or_else(|_| fs::read_to_string("C:\\sovereign_manifold_v31\\GEMINI.md"))
+    {
+        if let Some(first_line) = gemini.lines().next() {
+            let ver_tok = first_line
+                .split("ACT-Omega Net ")
+                .nth(1)
+                .and_then(|s| s.split_whitespace().next())
+                .map(|s| s.trim_matches(|c: char| c == '(' || c == ')' || c == '|'))
+                .unwrap_or("");
+            if !ver_tok.is_empty() {
+                return String::from(ver_tok);
+            }
+        }
+    }
+    if let Ok(cit) = fs::read_to_string("CITATION.cff")
+        .or_else(|_| fs::read_to_string("C:\\sovereign_manifold_v31\\CITATION.cff"))
+    {
+        for line in cit.lines() {
+            if let Some(rest) = line.trim_start().strip_prefix("version:") {
+                let v = rest.trim().trim_matches('"').trim_matches('\'');
+                if !v.is_empty() {
+                    return format!("v{}", v);
+                }
+            }
+        }
+    }
+    String::from("UNMEASURED/OFFLINE")
+}
+
+pub fn v73_2_read_live_ota_metadata() -> V732LiveOtaMetadata {
+    let live_release_ver = v73_2_read_live_release_version();
+    let mut ota_version = live_release_ver.clone();
+    let mut tlv_schema: u64 = 0;
+    let mut tools_count: u64 = 0;
+
+    if let Ok(gemini) = fs::read_to_string("GEMINI.md")
+        .or_else(|_| fs::read_to_string("C:\\sovereign_manifold_v31\\GEMINI.md"))
+    {
+        if let Some(first_line) = gemini.lines().next() {
+            let sh4z_tok = first_line
+                .split("SH4Z ")
+                .nth(1)
+                .and_then(|s| s.split_whitespace().next())
+                .map(|s| s.trim_matches(|c: char| c == '(' || c == ')' || c == '|'))
+                .unwrap_or("");
+            if live_release_ver != "UNMEASURED/OFFLINE" && !sh4z_tok.is_empty() {
+                ota_version = format!("{}-sh4z-{}", live_release_ver, sh4z_tok);
+            }
+            let digits: String = sh4z_tok.chars().filter(|c| c.is_ascii_digit()).collect();
+            if let Ok(n) = digits.parse::<u64>() {
+                tlv_schema = n;
+            }
+            if let Some(chain_tok) = first_line
+                .split("CHAIN ")
+                .nth(1)
+                .and_then(|s| s.split_whitespace().next())
+            {
+                let c_digits: String = chain_tok.chars().filter(|c| c.is_ascii_digit()).collect();
+                if let Ok(n) = c_digits.parse::<u64>() {
+                    tools_count = n;
+                }
+            }
+        }
+    }
+
+    let lean4_qed = v73_2_count_live_lean_theorems();
+    let rec_bytes = crate::v69_0_omegalang_v16_primary_tlv_compiler_and_84480_connectome::V69_NPAGE_RECORD_BYTES as u64;
+    let prim_syn_per_neuron = crate::v69_0_omegalang_v16_primary_tlv_compiler_and_84480_connectome::V69_PRIMARY_SYNAPSES_PER_NEURON as u64;
+    let neurons_per_col = crate::v69_0_omegalang_v16_primary_tlv_compiler_and_84480_connectome::V69_NEURONS_PER_COLUMN as u64;
+
+    let core_b = v73_2_file_len_dual(
+        "00_control/weights/neurons_v4000.npage",
+        "C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v4000.npage",
+    );
+    let exp_b = v73_2_file_len_dual(
+        "00_control/weights/neurons_v4400_expansion.npage",
+        "C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v4400_expansion.npage",
+    );
+    let t3_b = v73_2_file_len_dual(
+        "00_control/weights/neurons_v5000_tier3_expansion.npage",
+        "C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v5000_tier3_expansion.npage",
+    );
+    let t4_b = v73_2_file_len_dual(
+        "00_control/weights/neurons_v6900_tier4_expansion.npage",
+        "C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v6900_tier4_expansion.npage",
+    );
+    let npage_b = v73_2_file_len_dual(
+        "00_control/weights/neurons_v6900_84480.npage",
+        "C:\\sovereign_manifold_v31\\00_control\\weights\\neurons_v6900_84480.npage",
+    );
+    let spage_b = v73_2_file_len_dual(
+        "00_control/weights/synapses_v6900_2703360.spage",
+        "C:\\sovereign_manifold_v31\\00_control\\weights\\synapses_v6900_2703360.spage",
+    );
+    let e8z_b = v73_2_file_len_dual(
+        "00_control/weights/sovereign_harmonic_viii_v6900_8704cl.e8z",
+        "C:\\sovereign_manifold_v31\\00_control\\weights\\sovereign_harmonic_viii_v6900_8704cl.e8z",
+    );
+
+    let shards = core_b / rec_bytes;
+    let expansion_shards = exp_b / rec_bytes;
+    let tier3_shards = t3_b / rec_bytes;
+    let tier4_shards = t4_b / rec_bytes;
+    let combined_shards = npage_b / rec_bytes;
+    let total_synapses = (combined_shards * prim_syn_per_neuron) + (spage_b / 2);
+    let bijected_cachelines = (npage_b + spage_b + e8z_b) / 64;
+    let chair44_cols = if neurons_per_col > 0 { combined_shards / neurons_per_col } else { 0 };
+
+    V732LiveOtaMetadata {
+        ota_version,
+        tlv_schema,
+        tools_count,
+        lean4_qed,
+        shards,
+        expansion_shards,
+        tier3_shards,
+        tier4_shards,
+        combined_shards,
+        total_synapses,
+        bijected_cachelines,
+        chair44_cols,
+    }
 }
 
 pub fn v73_2_dispatch_tool(tool_id: u64, payload: &str) -> String {

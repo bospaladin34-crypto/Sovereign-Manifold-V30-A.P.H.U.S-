@@ -42,6 +42,25 @@ const SOURCE_SPECS = [
   { rel: '01_l0_rust/src/v48_autopoietic_coordinator_bus.rs', kind: 'l0_rust', domain: 'coordinator_bus_l0' },
 ];
 
+function loadExternalPixelSerialPatterns() {
+  const out = [];
+  const cfgPath = 'C:\\Users\\Nbell\\.act_omega_adb_devices.json';
+  if (fs.existsSync(cfgPath)) {
+    try {
+      const cfg = JSON.parse(fs.readFileSync(cfgPath, 'utf8'));
+      for (const role of ['pixel10', 'pixel8']) {
+        const s = cfg && cfg[role] && typeof cfg[role].serial === 'string' ? cfg[role].serial.trim() : '';
+        if (s.length >= 8) {
+          out.push(s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+        }
+      }
+    } catch {
+      // Ignore malformed external ADB config during isolated temp tests
+    }
+  }
+  return out;
+}
+
 const FORBIDDEN_RE = new RegExp(
   [
     'sor' + 'ry',
@@ -51,8 +70,7 @@ const FORBIDDEN_RE = new RegExp(
     'a37c' + 'f8ab',
     '9f46' + 'd56a',
     '934a' + 'f8d9',
-    '5817' + '0DLCR0004V',
-    '3A12' + '1FDJH00BW5',
+    ...loadExternalPixelSerialPatterns(),
     '192\\.168\\.137',
     'SCAF' + 'FOLD',
     'TO' + 'DO',

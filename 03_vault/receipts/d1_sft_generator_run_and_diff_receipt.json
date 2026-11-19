@@ -1,0 +1,114 @@
+{
+    "schema":  "ACT-Omega-SFT-Determinism-Receipt-v73.2.2",
+    "generated_at_utc":  "2026-11-19T11:10:47Z",
+    "generator_script":  "00_control/generate_sft_corpus.mjs",
+    "committed_corpus_path":  "03_vault/corpus/sh_xi_sourced_multiturn_sft_v1.jsonl",
+    "committed_corpus_bytes":  238583,
+    "committed_corpus_sha256":  "2e40d13fca6b9c055dbed46756c149d72b1487a6f82c9c6c80ba0bb5ae0e48fb",
+    "fresh_run_bytes":  238583,
+    "fresh_run_sha256":  "2e40d13fca6b9c055dbed46756c149d72b1487a6f82c9c6c80ba0bb5ae0e48fb",
+    "fresh_run2_bytes":  238583,
+    "fresh_run2_sha256":  "2e40d13fca6b9c055dbed46756c149d72b1487a6f82c9c6c80ba0bb5ae0e48fb",
+    "committed_vs_fresh_diff_bytes":  0,
+    "committed_vs_fresh_exact_match":  true,
+    "repeat_run_diff_bytes":  0,
+    "repeat_run_exact_match":  true,
+    "dialogues_emitted":  64,
+    "unique_turns_emitted":  288,
+    "generator_max_pairwise_5gram_jaccard":  0.245033,
+    "loader_manifest_max_pairwise_5gram_jaccard":  0.245033,
+    "negative_perturbation_test":  {
+                                       "target_source":  "crates/omega_sec_manifold/src/lib.rs",
+                                       "perturbation_bytes":  1,
+                                       "perturbation_description":  "1-byte comment header flip (byte[2] ! -\u003e ?) in isolated temp workspace",
+                                       "perturbed_output_bytes":  238583,
+                                       "perturbed_output_sha256":  "05e211d6be1d693b46206b425244bf64559178c8a50a81dc6db3b42d66522ab4",
+                                       "sha256_changed_vs_fresh":  true,
+                                       "diff_bytes_vs_fresh":  228,
+                                       "passed":  true
+                                   },
+    "source_specs_checked":  [
+                                 {
+                                     "source_path":  "03_vault/lean4/SovereignManifoldTheorems.lean",
+                                     "bytes":  585189,
+                                     "sha256":  "07f281865f2405216b79c5bc0218ea7a2ff4f6719c6a649494d56745fb51f445"
+                                 },
+                                 {
+                                     "source_path":  "06_algebraic_haskell/src/Sovereign/Codegen/ZeroBracketRustAndLean4.hs",
+                                     "bytes":  22802,
+                                     "sha256":  "d62f571f90b0dc1c749dc12c6692da830156f5e752daae4432ae83c475599134"
+                                 },
+                                 {
+                                     "source_path":  "06_algebraic_haskell/src/Sovereign/Lattice/ExactE8Leech24.hs",
+                                     "bytes":  4749,
+                                     "sha256":  "a32f72fc1fe0344b6371b40eb587f40f3aab4778d68f5016aa4c56f869f266ac"
+                                 },
+                                 {
+                                     "source_path":  "06_algebraic_haskell/src/Sovereign/Harness/Free5W1H.hs",
+                                     "bytes":  3437,
+                                     "sha256":  "311fe1c571296d42060950ae2b871a8193cb684c4af0f47bd8fb95831853b067"
+                                 },
+                                 {
+                                     "source_path":  "06_algebraic_haskell/src/Main.hs",
+                                     "bytes":  5984,
+                                     "sha256":  "26d20148e8a311fa050db75d64b931ab4c83cc2b5925e1218d96dff966ec8a54"
+                                 },
+                                 {
+                                     "source_path":  "crates/omega_sec_manifold/src/lib.rs",
+                                     "bytes":  6671,
+                                     "sha256":  "15cd6a31d5d8940ffd433173ab1e5db44e9d194175931f6d74f2126a42f9e807"
+                                 },
+                                 {
+                                     "source_path":  "crates/omega_rnd_core_audit/src/lib.rs",
+                                     "bytes":  14658,
+                                     "sha256":  "e1f1716548c5ce3495b883d720f2acfde88740ae5eb3fb7523674cd85c542630"
+                                 },
+                                 {
+                                     "source_path":  "crates/omega_p10_worker/src/main.rs",
+                                     "bytes":  449626,
+                                     "sha256":  "2278d96ba550cc8990e17588675bf853ab501a2c8ea4c37670df92ed2d0974e6"
+                                 },
+                                 {
+                                     "source_path":  "01_l0_rust/src/v69_0_omegalang_v16_primary_tlv_compiler_and_84480_connectome.rs",
+                                     "bytes":  43003,
+                                     "sha256":  "e31706c7c5ca12e1d77e83fbf16429e656538cdc162a4b235a9baeb5d146072d"
+                                 },
+                                 {
+                                     "source_path":  "01_l0_rust/src/v69_5_heterogeneous_cpu_rtx3050_cuda_coexec.rs",
+                                     "bytes":  41459,
+                                     "sha256":  "5f5fe09d8a03d1799af303f970be48b7ddcca0dcafb0f41ced4c4cce827f1c13"
+                                 },
+                                 {
+                                     "source_path":  "01_l0_rust/src/v70_0_exponential_worksteal_262144cl_bijection.rs",
+                                     "bytes":  42864,
+                                     "sha256":  "63a344d239631399d8d249ffe04afdae3d4e71e5a3747797c8acc83f51fc6f32"
+                                 },
+                                 {
+                                     "source_path":  "01_l0_rust/src/v73_0_unified_standalone_lab_bridge.rs",
+                                     "bytes":  25268,
+                                     "sha256":  "351862ef121f18fa57aeb0dc00b299932b7818e03e8e5cce57d661e80eb00794"
+                                 },
+                                 {
+                                     "source_path":  "01_l0_rust/src/v73_1_nov12_15_research_kernels.rs",
+                                     "bytes":  59208,
+                                     "sha256":  "60dcf66e4b473586a5e3d24b7a7893215f23b1d01b47593dc6f530cf14a99e34"
+                                 },
+                                 {
+                                     "source_path":  "01_l0_rust/src/v73_2_cloudflare_vpc_mesh_and_pgwire_hyperdrive.rs",
+                                     "bytes":  30185,
+                                     "sha256":  "88928e4dad7d8090c0ecafc25d2396f0ed5320d0409a938acfcc9becc3929ccb"
+                                 },
+                                 {
+                                     "source_path":  "01_l0_rust/src/v57_aegis_autonomous_agent_harness.rs",
+                                     "bytes":  55358,
+                                     "sha256":  "d21c68574a637255ebd0c65ef6980afe8d16733d7f8cec13111943e1290359e6"
+                                 },
+                                 {
+                                     "source_path":  "01_l0_rust/src/v48_autopoietic_coordinator_bus.rs",
+                                     "bytes":  38282,
+                                     "sha256":  "456228a60f5002cd98b2ebc5422ae25c61b5822c340f6b4fb7b1f519a1b9dd81"
+                                 }
+                             ],
+    "status":  "MEASURED",
+    "overall_passed":  true
+}

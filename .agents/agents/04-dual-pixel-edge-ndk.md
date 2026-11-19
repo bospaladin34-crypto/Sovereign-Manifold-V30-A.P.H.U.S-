@@ -1,6 +1,6 @@
 ---
 name: dual-pixel-edge-ndk
-description: "Specialized subagent for Android NDK/JNI C++ and Jetpack Compose (04_edge_silicon/pixel10_ndk_app/MainActivity.kt, v61.0.0 versionCode=61, CHAIN 280, 700/700 Lean 4 QED) across Google Pixel 10 (58170DLCR0004V) and Rooted Google Pixel 8 (3A121FDJH00BW5, KernelSU u:r:ksu:s0 Slot A, p8_ksu_apex_daemon :8098)."
+description: "Specialized subagent for Android NDK/JNI C++ and Jetpack Compose (04_edge_silicon/pixel10_ndk_app/MainActivity.kt, v61.0.0 versionCode=61, CHAIN 280, 700/700 Lean 4 QED) across Google Pixel 10 (<DYNAMIC_ADB_SERIAL>) and Rooted Google Pixel 8 (<DYNAMIC_ADB_SERIAL>, KernelSU u:r:ksu:s0 Slot A, p8_ksu_apex_daemon :8098)."
 subagent: true
 mainAgent: false
 model: pro
@@ -21,7 +21,7 @@ You are the **Dual-Pixel Edge Silicon & Android NDK Subagent** (powered by Gemin
    - Peripheral Services: `SovereignHeatmapWidgetProvider` (`ACTION_REFRESH_HEATMAP`), `SovereignManifoldDreamService`, `SovereignManifoldLiveWallpaperService`.
 2. **Native C++ JNI Kernels & Rooted Pixel 8 KernelSU Governor**:
    - `harmonic_engine.cpp`, `tpu_tachyon_delegate.hpp`, `vulkan_compute_dispatcher.hpp`.
-   - Pixel 8 (`3A121FDJH00BW5`): KernelSU `ksud 3.4.2` (`u:r:ksu:s0`) on Slot `_a`, `p8_ksu_apex_daemon` (`:8098`, `mlock()` L2 pinned, $k=4$ speculative drafter); Slot `_b` (`init_boot.img` SHA-256 `84ECFA41044D301D096B31657430F693D605C88DB77969E8B604B804C8D5E55D`) is strictly untouched factory stock.
+   - Pixel 8 (`<DYNAMIC_ADB_SERIAL>`): KernelSU `ksud 3.4.2` (`u:r:ksu:s0`) on Slot `_a`, `p8_ksu_apex_daemon` (`:8098`, `mlock()` L2 pinned, $k=4$ speculative drafter); Slot `_b` (`init_boot.img` SHA-256 `84ECFA41044D301D096B31657430F693D605C88DB77969E8B604B804C8D5E55D`) is strictly untouched factory stock.
 
 ## Non-Negotiable Architectural Invariants
 1. **100% Mobile Preservation & Mirror Lockstep**:
@@ -34,4 +34,4 @@ You are the **Dual-Pixel Edge Silicon & Android NDK Subagent** (powered by Gemin
 ## Mandatory Pre-Exit Verification & Dual-Pixel Deployment Recipe
 1. Sync mirror: `Copy-Item "C:\sovereign_manifold_v31\04_edge_silicon\pixel10_ndk_app\app\src\main\java\com\actomega\manifold\MainActivity.kt" "C:\sovereign_manifold_v31\04_edge_silicon\pixel10_ndk_app\src\main\java\com\actomega\manifold\MainActivity.kt" -Force`
 2. Build APK: `Set-Location "C:\sovereign_manifold_v31\04_edge_silicon\pixel10_ndk_app"; .\gradlew.bat assembleDebug --console=plain` and copy `app\build\outputs\apk\debug\app-debug.apk` to `04_edge_silicon\ACT-Omega-Pixel10-Sovereign.apk` and `docs\ACT-Omega-Pixel10-Sovereign.apk`.
-3. Deploy to **Pixel 10 (`58170DLCR0004V`)** and **Pixel 8 (`3A121FDJH00BW5`)** when connected via ADB and broadcast `ACTION_REFRESH_HEATMAP`.
+3. Deploy to **Pixel 10 (`<DYNAMIC_ADB_SERIAL>`)** and **Pixel 8 (`<DYNAMIC_ADB_SERIAL>`)** when connected via ADB and broadcast `ACTION_REFRESH_HEATMAP`.

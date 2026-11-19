@@ -1,5 +1,5 @@
-# ACT-Omega Net v44.0.0 (SH4Z v4400 TLV) — Autonomous Host-Edge-Cloud Closed-Loop Orchestrator (`CYCLE3_AUTONOMOUS_CLOSED_LOOP_SYNC.ps1`)
-# Synchronizes Host (LOQ 15 :8097) <-> Mobile Edge (Pixel 10 58170DLCR0004V & Pixel 8 3A121FDJH00BW5) <-> Cloudflare Worker/10-Table D1/DO <-> E:\ SSD & G:\ Drive
+﻿# ACT-Omega Net v44.0.0 (SH4Z v4400 TLV) — Autonomous Host-Edge-Cloud Closed-Loop Orchestrator (`CYCLE3_AUTONOMOUS_CLOSED_LOOP_SYNC.ps1`)
+# Synchronizes Host (LOQ 15 :8097) <-> Mobile Edge (Pixel 10 EDGE-1-PIXEL10-G5 & Pixel 8 EDGE-2-PIXEL8-SHIBA) <-> Cloudflare Worker/10-Table D1/DO <-> E:\ SSD & G:\ Drive
 
 $ErrorActionPreference = "SilentlyContinue"
 Write-Host "========================================================================" -ForegroundColor Cyan

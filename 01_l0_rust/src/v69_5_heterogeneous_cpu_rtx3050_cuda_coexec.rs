@@ -697,7 +697,10 @@ pub fn v69_5_dispatch_tool_312_chain312_master_certification(payload: &str) -> S
         .filter(|l| l.trim_start().starts_with("theorem "))
         .count();
 
-    let status = if receipt_measured && receipt_bytes > 200 && theorem_count >= 830 {
+    let status = if receipt_measured
+        && receipt_bytes > 200
+        && crate::v73_2_cloudflare_vpc_mesh_and_pgwire_hyperdrive::validate_live_lean_theorems_with_floor(theorem_count)
+    {
         "MEASURED"
     } else {
         "UNMEASURED/OFFLINE"

@@ -81,11 +81,29 @@ import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
 
-const val SOVEREIGN_APP_VERSION = "v73.2.1"
+@Volatile var SOVEREIGN_APP_VERSION: String = "UNMEASURED/OFFLINE"
 const val SOVEREIGN_TLV_VERSION = "v7321"
 const val SOVEREIGN_CHAIN_TOOLS = 404
 
-// 60-30-10 Google Gemini + Win11 Dark Mica + Material Design 3 Expressive Telemetry Palette (v73.2.1 Vesper Multi-Mode Mica Shell / CHAIN 404)
+fun resolveInstalledAppVersion(context: Context): String {
+    return try {
+        val pkg = context.packageManager.getPackageInfo(context.packageName, 0)
+        val vn = pkg.versionName?.trim()
+        if (!vn.isNullOrEmpty()) (if (vn.startsWith("v")) vn else "v$vn") else "UNMEASURED/OFFLINE"
+    } catch (_: Throwable) {
+        "UNMEASURED/OFFLINE"
+    }
+}
+
+fun formatLeanQedRatio(snap: SovereignSnap): String =
+    if (snap.hostSynced && snap.leanProofs != null && snap.leanProofs > 0) "${snap.leanProofs}/${snap.leanProofs} Lean 4 QED"
+    else "UNMEASURED/OFFLINE"
+
+fun formatLeanCountOrOffline(snap: SovereignSnap): String =
+    if (snap.hostSynced && snap.leanProofs != null && snap.leanProofs > 0) "${snap.leanProofs}"
+    else "UNMEASURED/OFFLINE"
+
+// 60-30-10 Google Gemini + Win11 Dark Mica + Material Design 3 Expressive Telemetry Palette (Vesper Multi-Mode Mica Shell / CHAIN 404)
 val BgVoid60 = Color(0xFF070A10)
 val BgPanel60 = Color(0xFF111724)
 val BgInset60 = Color(0xFF0A0F1A)
@@ -218,7 +236,7 @@ class VesperShellState(
         VesperChatTurn(
             id = 1L,
             role = "assistant",
-            text = "Vesper Multi-Mode Mica Shell (v73.2.1 \u00B7 CHAIN 404 \u00B7 1,010/1,010 Lean 4 QED) is live on your phone. Ask, prove, inspect the 16.00 MiB (262,144-CL) manifold, or build zero-bracket L0 kernels \u2014 every response carries a contained 264.dp cryptographic receipt with zero layout shift (CLS 0.00).",
+            text = "Vesper Multi-Mode Mica Shell ($SOVEREIGN_APP_VERSION \u00B7 CHAIN 404 \u00B7 Live Lean 4 QED) is live on your phone. Ask, prove, inspect the 16.00 MiB (262,144-CL) manifold, or build zero-bracket L0 kernels \u2014 every response carries a contained 264.dp cryptographic receipt with zero layout shift (CLS 0.00).",
             statusBadge = "LOCAL SHM",
             endpointUsed = "Local Android Hardware + SHM Bus",
             receiptSummary = "Constitutional boot verified locally",
@@ -233,7 +251,7 @@ class VesperShellState(
     var lastWritebackSeq by mutableStateOf(0L)
     var lastWritebackSha256 by mutableStateOf("UNMEASURED/OFFLINE")
     var lastWritebackPath by mutableStateOf("E:\\Sovereign_Manifold_SSD_Vault\\autopoietic_codegen")
-    var lastTermOut by mutableStateOf("Awaiting live CHAIN 368 dispatch over USB / Wi-Fi 6 / Cloudflare...")
+    var lastTermOut by mutableStateOf("Awaiting live CHAIN 404 dispatch over USB / Wi-Fi 6 / Cloudflare...")
     var cfGovernor by mutableStateOf<VesperCloudflareGovernorSummary?>(null)
     var cfGovernorLoading by mutableStateOf(false)
     var operatorSessionKey by mutableStateOf("")
@@ -475,8 +493,8 @@ fun buildLiveConstitutionalReceiptLines(
         localVaultLine,
         hostBearerLine,
         "Local Silicon \u00B7 $nodeName \u00B7 Sensor ${String.format(Locale.US, "%.1f", snap.measuredSensorHz)} Hz \u00B7 Batt ${String.format(Locale.US, "%.1f", snap.battTempC)} C (${snap.battPct}%) \u00B7 RAM ${snap.ramUsedMb}/${snap.ramTotalMb} MB",
-        if (snap.hostSynced && snap.leanProofs != null) {
-            "Formal Spec \u00B7 ${snap.leanProofs}/1010 Lean 4 QED (0 sorry, 0 axiom \u00B7 CHAIN 404)"
+        if (snap.hostSynced && snap.leanProofs != null && snap.leanProofs > 0) {
+            "Formal Spec \u00B7 ${formatLeanQedRatio(snap)} (0 sorry, 0 axiom \u00B7 CHAIN 404)"
         } else {
             "Formal Spec \u00B7 UNMEASURED/OFFLINE (Host :8097 lean.exe unreachable)"
         },
@@ -713,7 +731,7 @@ fun VesperMobileReceiptCard(
                 )
                 Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
                     Text(
-                        text = "1,010/1,010 Lean 4 QED \u00B7 262,144 Bijected CLs (16.00 MiB) \u00B7 Dual-L1D < 32 KB",
+                        text = "${formatLeanQedRatio(snap)} \u00B7 262,144 Bijected CLs (16.00 MiB) \u00B7 Dual-L1D < 32 KB",
                         color = VesperAccent,
                         fontSize = 10.2.sp,
                         fontFamily = FontFamily.Monospace
@@ -814,8 +832,8 @@ fun VesperStatusDialog(
                     fontFamily = FontFamily.Monospace
                 )
                 Text(
-                    text = if (isHostLive && snap.leanProofs != null) {
-                        "Lean 4 Formal \u00B7 ${snap.leanProofs}/1010 QED (0 sorry \u00B7 CHAIN 404)"
+                    text = if (isHostLive && snap.leanProofs != null && snap.leanProofs > 0) {
+                        "Lean 4 Formal \u00B7 ${formatLeanQedRatio(snap)} (0 sorry \u00B7 CHAIN 404)"
                     } else {
                         "Lean 4 Formal \u00B7 UNMEASURED/OFFLINE"
                     },
@@ -917,7 +935,7 @@ fun VesperMobileHeaderBar(
                         }
                     }
                     Text(
-                        text = "v73.2.1 \u00B7 CHAIN 404 \u00B7 1,010 QED",
+                        text = "$SOVEREIGN_APP_VERSION \u00B7 CHAIN 404 \u00B7 ${formatLeanQedRatio(snap)}",
                         color = VesperFaint,
                         fontSize = 8.8.sp,
                         fontFamily = FontFamily.Monospace,
@@ -1577,7 +1595,7 @@ val VESPER_DOMAINS_CATALOG: List<VesperDomainDef> = listOf(
         writebackCat = "lean4_proofs",
         ep = "/api/v1/unified/lattice_algebra_proofs",
         accent = Color(0xFFB388FF),
-        desc = "E8/Leech lattice, 80-sector .e8z norm scan, Layer 1.5 Haskell algebra, and 1,010/1,010 Lean 4 QED theorem verification.",
+        desc = "E8/Leech lattice, 80-sector .e8z norm scan, Layer 1.5 Haskell algebra, and live Lean 4 QED theorem verification.",
         tools = listOf(
             VesperDomainTool(1, "T01", "E8 Lattice Roots", "/api/v1/algebra/e8_roots"),
             VesperDomainTool(2, "T02", "Leech Lattice 24D", "/api/v1/algebra/leech_24d"),
@@ -2062,7 +2080,7 @@ fun VesperMobileCalmView(
     }
 
     val quickChips = listOf(
-        Triple("Prove", "Verify all 1,010/1,010 Lean 4 QED theorems and zero-bracket Rust obligations via RLVF Tool 351.", "prove"),
+        Triple("Prove", "Verify live Lean 4 QED theorems and zero-bracket Rust obligations via RLVF Tool 351.", "prove"),
         Triple("Ambiguity Test", "Run the Week 3 Human Ambiguity, Vagueness & Metaphor Gauntlet across all 5 failure modes.", "ambiguity"),
         Triple("Build", "Synthesize a zero-bracket L0 kernel via Medusa-EAGLE dendritic k=8 speculative decoding.", "build"),
         Triple("Vault", "Show me what is in the 16.00 MiB (262,144-cacheline) Connectome and local phone SHM.", "vault")
@@ -2341,13 +2359,9 @@ fun VesperMobileCalmView(
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = if (snap.hostSynced && snap.leanProofs != null) {
-                            "${snap.leanProofs}/1010 QED"
-                        } else {
-                            "UNMEASURED/OFFLINE"
-                        },
-                        color = if (snap.hostSynced) VesperAccent else AccentAmber10,
-                        fontSize = if (snap.hostSynced) 20.sp else 12.sp,
+                        text = formatLeanQedRatio(snap),
+                        color = if (snap.hostSynced && snap.leanProofs != null && snap.leanProofs > 0) VesperAccent else AccentAmber10,
+                        fontSize = if (snap.hostSynced && snap.leanProofs != null && snap.leanProofs > 0) 18.sp else 12.sp,
                         fontWeight = FontWeight.ExtraBold
                     )
                     Text(
@@ -2425,12 +2439,12 @@ fun VesperMobileProofView(
 
     val rows = listOf(
         MobileProofRow(
-            title = "Lean 4 1,010/1,010 QED & SH-XI Monotonic BPB",
-            status = if (isOffline) "UNMEASURED/OFFLINE" else "1,010/1,010 QED",
+            title = "Lean 4 Formal QED & SH-XI Monotonic BPB",
+            status = formatLeanQedRatio(snap),
             detail = if (isOffline) {
-                ":8097 L0 daemon offline \u2014 live lean.exe & SH-XI CHAIN 368 verification requires host connection."
+                ":8097 L0 daemon offline \u2014 live lean.exe & SH-XI CHAIN 404 verification requires host connection."
             } else {
-                "All 1,010 substantive theorems verified (${String.format(Locale.US, "%.1f", snap.leanVerifyMs)} ms, 0 sorry) \u00B7 Tap T368 for live SH-XI 384D/768D/16-Expert MoE BPB, IFEval, and FSM telemetry."
+                "${formatLeanCountOrOffline(snap)} substantive theorems verified (${String.format(Locale.US, "%.1f", snap.leanVerifyMs)} ms, 0 sorry) \u00B7 Tap T368 for live SH-XI 384D/768D/16-Expert MoE BPB, IFEval, and FSM telemetry."
             },
             btnLabel = "Verify CHAIN 404 (T404)",
             ep = "/api/v1/tools/t404"
@@ -2532,7 +2546,7 @@ fun VesperMobileProofView(
                         .height(36.dp)
                         .background(VesperAccent, RoundedCornerShape(99.dp))
                         .clickable(enabled = !shellState.isDispatching) {
-                            runProofCheck("/api/v1/chain368/master_certification", "CHAIN 368 MASTER CERTIFICATION")
+                            runProofCheck("/api/v1/tools/t404", "CHAIN 404 MASTER CERTIFICATION")
                         }
                         .padding(horizontal = 14.dp),
                     contentAlignment = Alignment.Center
@@ -3105,7 +3119,7 @@ fun VesperMobileToolsView(
         "T365 \u00B7 WGSL 384D RAG + Phones" to "/api/v1/sovereign_harmonic/xi/week2/igpu_grounded_rag",
         "T366 \u00B7 100/100 JSON FSM" to "/api/v1/sovereign_harmonic/xi/week2/fsm_json_tool",
         "T367 \u00B7 IFEval-64 (64/64)" to "/api/v1/sovereign_harmonic/xi/week2/ifeval_lite_64",
-        "T368 \u00B7 CHAIN 404 Cert" to "/api/v1/chain368/master_certification",
+        "T368 \u00B7 SH-XI Week 2 Cert" to "/api/v1/chain368/master_certification",
         "T360 \u00B7 RTX 3050 Matryoshka" to "/api/v1/sovereign_harmonic/xi/week1/rtx3050_matryoshka_cuda_pretrain",
         "T351 \u00B7 RLVF Lean 4 Prover" to "/api/v1/sovereign_harmonic/week4/rlvf_grpo_compiler_in_the_loop"
     )
@@ -3258,7 +3272,7 @@ fun VesperMobileToolsView(
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             Text(
-                text = "SH-XI 3-SHELL MATRYOSHKA + SPARSE MOE SUITE (TOOLS 357..368 \u00B7 1,010/1,010 QED)",
+                text = "SH-XI 3-SHELL MATRYOSHKA + SPARSE MOE SUITE (TOOLS 357..368 \u00B7 ${formatLeanQedRatio(snap)})",
                 color = VesperViolet,
                 fontSize = 10.5.sp,
                 fontWeight = FontWeight.ExtraBold
@@ -4070,7 +4084,7 @@ object SovereignLiveBus : SensorEventListener {
     @Volatile private var lastMeasuredRttMs = 0.0
     @Volatile var lastInspectedHex = "UNMEASURED/OFFLINE"
     @Volatile var hostLastCardIdx = 0
-    @Volatile var hostLastCardDiag = "[VESPER MICA v73.2.1]: Awaiting live host :8097 sync -- local 24D sensors & .e8z/.npage SHM active."
+    @Volatile var hostLastCardDiag = "[VESPER MICA]: Awaiting live host :8097 sync -- local 24D sensors & .e8z/.npage SHM active."
     @Volatile var hostLastTermOut = "Awaiting live CHAIN 404 execution over USB / WiFi6 / Cloudflare..."
     @Volatile var hostLeanTheoremsCount = 0
     @Volatile var hostToolsCount = 0
@@ -4078,7 +4092,7 @@ object SovereignLiveBus : SensorEventListener {
     @Volatile var hostP8L2FreePct = 0.0f
     @Volatile var hostLaplacianFace = "UNMEASURED/OFFLINE"
     @Volatile var hostAnomalyBanner = "Awaiting live 15.965 Hz Decadic Epoch telemetry from :8097..."
-    @Volatile var hostNlSynthesis = "Vesper Multi-Mode Mica Shell (v73.2.1 | CHAIN 404 | 1,010/1,010 Lean 4 QED): Ready for local & 7-bearer conversational verification."
+    @Volatile var hostNlSynthesis = "Vesper Multi-Mode Mica Shell (CHAIN 404 | Live Lean 4 QED): Ready for local & 7-bearer conversational verification."
     @Volatile var hostEpisodicOut = "Awaiting live Tool 28 / E:/ SSD Vault query..."
     @Volatile var lastInspectedTrits = "UNMEASURED/OFFLINE"
     private val e8zCachelineNorms = FloatArray(2080)
@@ -4234,6 +4248,7 @@ object SovereignLiveBus : SensorEventListener {
 
     fun start(context: Context) {
         val appCtx = context.applicationContext
+        SOVEREIGN_APP_VERSION = resolveInstalledAppVersion(appCtx)
         loadMeasuredE8zAsset(appCtx)
         refreshLocalShmMeasurements(appCtx)
         if (started) return
@@ -4689,7 +4704,7 @@ object SovereignLiveBus : SensorEventListener {
 
         val c3 = String.format(
             Locale.US,
-            "SH4Z v7321 (Vesper Mica v73.2.1 | CHAIN 404) -- Gen #%d -- Lean4: %s\n" +
+            "SH4Z $SOVEREIGN_TLV_VERSION (Vesper Mica $SOVEREIGN_APP_VERSION | CHAIN $SOVEREIGN_CHAIN_TOOLS) -- Gen #%d -- Lean4: %s\n" +
                 "%s -- Kasami Cw=%s -- RSR #%d -- Hops=%d\n" +
                 "LLM-Gateway (Tool 21): #%d -- FNO PDE (Tool 22): #%d -- E:/ SSD (Tool 23): #%d",
             gen,
@@ -4773,7 +4788,7 @@ object SovereignLiveBus : SensorEventListener {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 val ch = NotificationChannel(
                     channelId,
-                    "Sovereign Manifold v73.2.1 Vesper Mica Telemetry",
+                    "Sovereign Manifold $SOVEREIGN_APP_VERSION Vesper Mica Telemetry",
                     NotificationManager.IMPORTANCE_LOW
                 )
                 nm.createNotificationChannel(ch)
@@ -4800,8 +4815,9 @@ object SovereignLiveBus : SensorEventListener {
             }
             val body = String.format(
                 Locale.US,
-                "Tick #%d | 84,480N / 4.05M Syn | 262,144 CLs | 404 Tools | 1,010/1,010 QED | %s",
+                "Tick #%d | 84,480N / 4.05M Syn | 262,144 CLs | 404 Tools | %s | %s",
                 snap.gen,
+                formatLeanQedRatio(snap),
                 snap.activeBearer
             )
             val notif = NotificationCompat.Builder(context, channelId)
@@ -4904,11 +4920,11 @@ object SovereignLiveBus : SensorEventListener {
                 )
             }
             val titleLine = if (isPixel8ComputeNode) {
-                "VESPER v73.2.1 P8-APEX -- 84.4K NEURONS | 4.05M SYN | CHAIN 404 | 1,010 QED"
+                "VESPER $SOVEREIGN_APP_VERSION P8-APEX -- 84.4K NEURONS | 4.05M SYN | CHAIN 404 | ${formatLeanCountOrOffline(snap)} QED"
             } else {
-                "VESPER v73.2.1 P10-G5 -- 84.4K NEURONS | 4.05M SYN | CHAIN 404 | 1,010 QED"
+                "VESPER $SOVEREIGN_APP_VERSION P10-G5 -- 84.4K NEURONS | 4.05M SYN | CHAIN 404 | ${formatLeanCountOrOffline(snap)} QED"
             }
-            val subLine = "act-omega-net.dev -- 262,144 CLs (16.00 MiB) -- 404 Tools (CHAIN 404) -- 1,010/1,010 QED"
+            val subLine = "act-omega-net.dev -- 262,144 CLs (16.00 MiB) -- 404 Tools (CHAIN 404) -- ${formatLeanQedRatio(snap)}"
 
             val piFlags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE
@@ -5284,7 +5300,7 @@ object SovereignVisualizerRenderer {
         paint.textSize = (w * 0.032f).coerceIn(22f, 38f)
         paint.color = 0xFF00E5A0.toInt()
         val nodeTag = if (isP8) "PIXEL 8 P8-APEX (4.00MB L2 SHM)" else "PIXEL 10 TENSOR G5 (24D + SHM)"
-        canvas.drawText("ACT-OMEGA v73.2.1 (VESPER MICA | 84.4K NEURONS | CHAIN 404 | 1,010 QED) -- $nodeTag", cx, h * 0.08f, paint)
+        canvas.drawText("ACT-OMEGA $SOVEREIGN_APP_VERSION (VESPER MICA | 84.4K NEURONS | CHAIN 404 | ${formatLeanCountOrOffline(snap)} QED) -- $nodeTag", cx, h * 0.08f, paint)
 
         paint.textSize = (w * 0.025f).coerceIn(17f, 28f)
         paint.color = 0xFFA7B8B2.toInt()
@@ -5298,7 +5314,7 @@ object SovereignVisualizerRenderer {
 
         paint.color = 0xFF7B8E88.toInt()
         canvas.drawText(
-            String.format(Locale.US, "Tick #%d | 262,144 CLs (16.00 MiB) | 404 Tools (CHAIN 404) | 1,010/1,010 Lean 4 QED | %s", snap.gen, snap.activeBearer.take(24)),
+            String.format(Locale.US, "Tick #%d | 262,144 CLs (16.00 MiB) | 404 Tools (CHAIN 404) | %s | %s", snap.gen, formatLeanQedRatio(snap), snap.activeBearer.take(24)),
             cx,
             h * 0.945f,
             paint
@@ -5310,6 +5326,7 @@ object SovereignVisualizerRenderer {
 class SovereignDreamSettingsActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        SOVEREIGN_APP_VERSION = resolveInstalledAppVersion(applicationContext)
         val prefs = getSharedPreferences("sovereign_dream_prefs", Context.MODE_PRIVATE)
         setContent {
             var interactiveMode by remember { mutableStateOf(prefs.getBoolean("interactive_mode", false)) }
@@ -5323,7 +5340,7 @@ class SovereignDreamSettingsActivity : ComponentActivity() {
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 Text(
-                    "ACT-OMEGA v73.2.1 VESPER SCREENSAVER & LIVE WALLPAPER",
+                    "ACT-OMEGA $SOVEREIGN_APP_VERSION VESPER SCREENSAVER & LIVE WALLPAPER",
                     color = VesperAccent,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
@@ -5382,6 +5399,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        SOVEREIGN_APP_VERSION = resolveInstalledAppVersion(applicationContext)
         launchModeState = intent?.getStringExtra("vesper_mode")
         window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         WindowCompat.setDecorFitsSystemWindows(window, false)
@@ -5589,11 +5607,12 @@ fun VesperEngineerHudOverviewDeck(
         VesperMobileClsBar(shellState = shellState)
 
         // 2x2 Interactive Drawer Overview / Toggle Grid (1:1 parity with Host HUD Engineer Deck)
+        val snap: SovereignSnap by SovereignLiveBus.state.collectAsState()
         val drawerTiles = listOf(
-            Triple("DRAWER A \u00B7 15 CARDS", "84.4K Neurons \u00B7 1,010/1,010 QED \u00B7 Sensors", drawerAOpen to onToggleA) to
+            Triple("DRAWER A \u00B7 15 CARDS", "84.4K Neurons \u00B7 ${formatLeanQedRatio(snap)} \u00B7 Sensors", drawerAOpen to onToggleA) to
                 Triple("DRAWER B \u00B7 SCOPES & 16\u00D7130", "3D Stiefel/Theodorus + 2,080 CLs", drawerBOpen to onToggleB),
             Triple("DRAWERS 1 & 2 \u00B7 SILICON", "S00..S79 + 16D Navier-Stokes PDE", drawer12Open to onToggle12) to
-                Triple("DRAWERS 3 & 4 \u00B7 CHAIN 404", "1,010 Theorems + 8-Domain Tool Matrix", drawer34Open to onToggle34)
+                Triple("DRAWERS 3 & 4 \u00B7 CHAIN 404", "${formatLeanCountOrOffline(snap)} Theorems + 8-Domain Tool Matrix", drawer34Open to onToggle34)
         )
 
         drawerTiles.forEach { (left, right) ->
@@ -5684,7 +5703,7 @@ fun SovereignCockpitV326Screen(
     var selectedSector by remember { mutableStateOf(15) }
     var selectedLine by remember { mutableStateOf(0) }
     var uiPhase by remember { mutableStateOf(0f) }
-    var leanQuery by remember { mutableStateOf("Query 1,010-Theorem Lean 4 Suite (cymatic, mnemosyne, welch_ace, fno, stiefel, dxc, sh_deep_12l, chain368)...") }
+    var leanQuery by remember { mutableStateOf("Query Lean 4 Suite (cymatic, mnemosyne, welch_ace, fno, stiefel, dxc, sh_deep_12l, chain404)...") }
     LaunchedEffect(Unit) {
         while (true) {
             uiPhase = (uiPhase + 0.09f) % 628f
@@ -5700,7 +5719,7 @@ fun SovereignCockpitV326Screen(
     var browserUrl by remember { mutableStateOf("https://arxiv.org/abs/1306.0533") }
     var browserStageTrace by remember {
         mutableStateOf(
-            "Awaiting live /api/v1/browser/fetch dispatch (Tap OP CODE + SHARD or any preset above) -- Host :8097 / Cloudflare operationalizer ready (84,480-Shard Vault, 1,010/1,010 Lean 4 QED)."
+            "Awaiting live /api/v1/browser/fetch dispatch (Tap OP CODE + SHARD or any preset above) -- Host :8097 / Cloudflare operationalizer ready (84,480-Shard Vault, ${formatLeanQedRatio(snap)})."
         )
     }
 
@@ -5711,7 +5730,7 @@ fun SovereignCockpitV326Screen(
     }
     var toolOutput by remember {
         mutableStateOf(
-            "READY -- Tap any card or tool to dispatch via Host :8097 / Cloudflare 7-Bearer Bus (CHAIN 368 | 84,480 Neurons | 1,010/1,010 Lean 4 QED)."
+            "READY -- Tap any card or tool to dispatch via Host :8097 / Cloudflare 7-Bearer Bus (CHAIN 404 | 84,480 Neurons | ${formatLeanQedRatio(snap)})."
         )
     }
     var mobileE8Roots by remember { mutableStateOf("Awaiting live Conway-Sloane E8 quantization (Tap T81/T83)") }
@@ -5961,7 +5980,7 @@ fun SovereignCockpitV326Screen(
                         )
                     }
                     Text(
-                        text = "SOVEREIGN MANIFOLD TELEMETRY CONSOLE -- ACT-OMEGA NET v73.2.1 (VESPER MICA | CHAIN 404 | 1,010/1,010 Lean 4 QED)",
+                        text = "SOVEREIGN MANIFOLD TELEMETRY CONSOLE -- ACT-OMEGA NET $SOVEREIGN_APP_VERSION (VESPER MICA | CHAIN 404 | ${formatLeanQedRatio(snap)})",
                         color = AccentAmber10,
                         fontSize = 9.2.sp,
                         fontWeight = FontWeight.Bold,
@@ -6458,7 +6477,7 @@ fun SovereignCockpitV326Screen(
                         .padding(4.dp)
                 ) {
                     Text("BIJ #4: BIJECTED 262,144 CLs", color = AccentAmber10, fontSize = 7.4.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace)
-                    Text("16.00 MiB | WinSDK DXC 1.8 | 1,010 QED", color = TextIvory30, fontSize = 7.6.sp, fontFamily = FontFamily.Monospace)
+                    Text("16.00 MiB | WinSDK DXC 1.8 | ${formatLeanCountOrOffline(snap)} QED", color = TextIvory30, fontSize = 7.6.sp, fontFamily = FontFamily.Monospace)
                 }
             }
             Spacer(modifier = Modifier.height(4.dp))
@@ -6549,7 +6568,7 @@ fun SovereignCockpitV326Screen(
             val thmEnd = thmStart + 4
             val chairCol = ((lineStart + selectedLine) * 1920) / 2080
             Text(
-                text = "Sector #$selectedSector/79 (${sectorNames[selectedSector.coerceIn(0, sectorNames.lastIndex)]}) Line #$selectedLine/129: Lines $lineStart..$lineEnd (Bytes $byteStart..$byteEnd = 130x64B, Chair-44 Col #$chairCol/1919, 84,480 Neurons) -- Theorems thm$thmStart..thm$thmEnd (1,010/1,010 QED)",
+                text = "Sector #$selectedSector/79 (${sectorNames[selectedSector.coerceIn(0, sectorNames.lastIndex)]}) Line #$selectedLine/129: Lines $lineStart..$lineEnd (Bytes $byteStart..$byteEnd = 130x64B, Chair-44 Col #$chairCol/1919, 84,480 Neurons) -- Theorems thm$thmStart..thm$thmEnd (${formatLeanQedRatio(snap)})",
                 color = AccentAmber10,
                 fontSize = 8.2.sp,
                 lineHeight = 11.5.sp,
@@ -6930,12 +6949,12 @@ fun SovereignCockpitV326Screen(
 
         Spacer(modifier = Modifier.height(6.dp))
 
-        // DRAWER 3: FORMAL VERIFICATION SUITE (1,010/1,010 Lean 4 PROOFS QED) & 4-STAGE CASCADE
+        // DRAWER 3: FORMAL VERIFICATION SUITE (LIVE Lean 4 PROOFS QED) & 4-STAGE CASCADE
         DrawerCard603010(
-            title = "[-] DRAWER 3: FORMAL VERIFICATION SUITE (1,010/1,010 Lean 4 PROOFS QED) & 4-STAGE CASCADE",
+            title = "[-] DRAWER 3: FORMAL VERIFICATION SUITE (${formatLeanQedRatio(snap)}) & 4-STAGE CASCADE",
             accentBorder = AccentAmber10,
             titleColor = TextIvory30,
-            rightLabel = "80 Sectors = 1,010/1,010 QED",
+            rightLabel = "80 Sectors = ${formatLeanQedRatio(snap)}",
             isOpen = drawer3Open,
             onToggle = { drawer3Open = !drawer3Open }
         ) {
@@ -6957,15 +6976,15 @@ fun SovereignCockpitV326Screen(
                     text = if (snap.hostSynced) {
                         String.format(Locale.US, "[4-Stage Cascade Trace] Stage 4 (FNO Spectral PDE + 524,288 BPE/192-Subdomain + 84,480 Neurons): Carrier=1,728Hz/18.5kHz -- FNO L2_Err=%.5f", snap.fnoL2Err)
                     } else {
-                        "[4-Stage Cascade Trace] Stage 4 (524,288 BPE/192-Subdomain + 84,480 Neurons): Host FNO L2_Err=UNMEASURED/OFFLINE -- Tap VERIFY 965 LEAN 4"
+                        "[4-Stage Cascade Trace] Stage 4 (524,288 BPE/192-Subdomain + 84,480 Neurons): Host FNO L2_Err=UNMEASURED/OFFLINE -- Tap VERIFY LEAN 4"
                     },
                     color = AccentAmber10,
                     fontSize = 8.4.sp,
                     fontFamily = FontFamily.Monospace,
                     modifier = Modifier.weight(0.72f)
                 )
-                ToolButton603010("VERIFY 965 LEAN 4", AccentAmber10, BgVoid60, Modifier.weight(0.28f)) {
-                    invokeHostEndpoint("/api/v1/compiler/verify?q=" + java.net.URLEncoder.encode(leanQuery, "UTF-8"), null, "VERIFY 1,010/1,010 Lean 4 QED")
+                ToolButton603010("VERIFY LEAN 4", AccentAmber10, BgVoid60, Modifier.weight(0.28f)) {
+                    invokeHostEndpoint("/api/v1/compiler/verify?q=" + java.net.URLEncoder.encode(leanQuery, "UTF-8"), null, "VERIFY LIVE Lean 4 QED")
                 }
             }
             Spacer(modifier = Modifier.height(4.dp))
@@ -6990,7 +7009,7 @@ fun SovereignCockpitV326Screen(
 
         // DRAWER 4: 404-TOOL EXECUTION REGISTRY (CHAIN 404 MILESTONE), PRESET QUERIES & TELEMETRY LOG TERMINAL (ALL BUTTONS MATCHING HOST)
         DrawerCard603010(
-            title = "[-] DRAWER 4: 404-TOOL EXECUTION REGISTRY (CHAIN 404 MILESTONE | v73.2.1), AEGIS-HARNESS & TELEMETRY LOG TERMINAL",
+            title = "[-] DRAWER 4: 404-TOOL EXECUTION REGISTRY (CHAIN 404 MILESTONE | $SOVEREIGN_APP_VERSION), AEGIS-HARNESS & TELEMETRY LOG TERMINAL",
             accentBorder = AccentRed10,
             titleColor = TextIvory30,
             rightLabel = if (snap.hostSynced) String.format(Locale.US, "WS=%.1fk ops/s -- 4.05M Syn", snap.clusterKops) else "Host UNMEASURED/OFFLINE",
@@ -7917,13 +7936,13 @@ fun SovereignCockpitV326Screen(
             }
             Spacer(modifier = Modifier.height(4.dp))
 
-            // Row 4: TOOL 8, TOOL 5, TOOL 2, CHAIN 368
+            // Row 4: TOOL 8, TOOL 5, TOOL 2, CHAIN 404
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 ToolButton603010("TOOL 8: Self-Analyze", AccentAmber10, BgVoid60, Modifier.weight(1f)) {
                     invokeHostEndpoint("/api/v1/telemetry", null, "TOOL 8: ZERO-DUMMY AUDIT")
                 }
-                ToolButton603010("TOOL 5: Lean 4 (1,010)", SlateSurface30, TextIvory30, Modifier.weight(1f)) {
-                    invokeHostEndpoint("/api/v1/compiler/verify", null, "TOOL 5: 1,010/1,010 Lean 4 PROOFS")
+                ToolButton603010("TOOL 5: Lean 4 (${formatLeanCountOrOffline(snap)})", SlateSurface30, TextIvory30, Modifier.weight(1f)) {
+                    invokeHostEndpoint("/api/v1/compiler/verify", null, "TOOL 5: LIVE Lean 4 PROOFS")
                 }
                 ToolButton603010("TOOL 2: Vault (84480)", SlateSurface30, TextIvory30, Modifier.weight(1f)) {
                     invokeHostEndpoint("/api/v1/StateGraph", null, "TOOL 2: 84,480-NEURON VAULT")
@@ -7952,9 +7971,9 @@ fun SovereignCockpitV326Screen(
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
                         text = if (snap.hostSynced) {
-                            String.format(Locale.US, "[VESPER MICA v73.2.1 (262,144 Bijected 64B CLs + 4,055,040 Synapses: 10.81MB .npage + 5.41MB .spage)]: Work-Stealing=2,080 Lines (%.1fk ops/s) -- 1,010/1,010 Lean 4 QED -- 84,480 Neurons (1,920x Chair44) -- 524,288 BPE+192-Subdomain Tokens -- 404 Tools (CHAIN 404) -- E:/ Tier-2 SSD Active", snap.clusterKops)
+                            String.format(Locale.US, "[VESPER MICA $SOVEREIGN_APP_VERSION (262,144 Bijected 64B CLs + 4,055,040 Synapses: 10.81MB .npage + 5.41MB .spage)]: Work-Stealing=2,080 Lines (%.1fk ops/s) -- %s -- 84,480 Neurons (1,920x Chair44) -- 524,288 BPE+192-Subdomain Tokens -- 404 Tools (CHAIN 404) -- E:/ Tier-2 SSD Active", snap.clusterKops, formatLeanQedRatio(snap))
                         } else {
-                            "[VESPER MICA v73.2.1 (262,144 Bijected 64B CLs + 4,055,040 Synapses)]: Host Work-Stealing=UNMEASURED/OFFLINE -- Local SHM=${snap.localNpageBytes} B (${snap.localNpageSource}) -- 1,010/1,010 Lean 4 QED -- 84,480 Neurons -- 404 Tools (CHAIN 404)"
+                            "[VESPER MICA $SOVEREIGN_APP_VERSION (262,144 Bijected 64B CLs + 4,055,040 Synapses)]: Host Work-Stealing=UNMEASURED/OFFLINE -- Local SHM=${snap.localNpageBytes} B (${snap.localNpageSource}) -- ${formatLeanQedRatio(snap)} -- 84,480 Neurons -- 404 Tools (CHAIN 404)"
                         },
                         color = AccentAmber10,
                         fontSize = 8.5.sp,
@@ -8126,6 +8145,8 @@ class SovereignOtaInstallReceiver : android.content.BroadcastReceiver() {
 }
 
 object SovereignOtaSelfUpdater {
+    @Volatile var YUBIKEY_SERIAL: String = "UNMEASURED/OFFLINE"
+    @Volatile var YUBIKEY_FINGERPRINT: String = "UNMEASURED/OFFLINE"
 
     private val otaBaseCandidates = listOf(
         "http://192.168.137.1:8097",

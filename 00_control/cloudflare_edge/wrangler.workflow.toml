@@ -16,7 +16,7 @@ CF_VNET_NAME = "default"
 
 [[d1_databases]]
 binding = "ACT_OMEGA_D1"
-database_name = "act_omega_d1_vault"
+database_name = "<EXTERNAL_D1_DATABASE_NAME>"
 database_id = "<EXTERNAL_D1_DATABASE_ID>"
 
 [[workflows]]

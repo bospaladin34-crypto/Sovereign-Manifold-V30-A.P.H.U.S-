@@ -146,11 +146,7 @@ pub fn v60_sample_manifold_bytes(tool_id: usize, input: &str) -> Option<V60Manif
 
 // Helper: Safely escape string for JSON serialization without square brackets
 fn v60_escape_clean(s: &str) -> String {
-    s.replace('\\', "\\\\")
-        .replace('"', "\\\"")
-        .replace('\n', "\\n")
-        .replace('\r', "\\r")
-        .replace('\t', "\\t")
+    crate::v61_gemma4_multimodal_ple_speculative_cascade_and_mcp_suite::v61_escape_clean(s)
 }
 
 /// Negotiates the MCP JSON-RPC 2.0 `protocolVersion` strictly against the supported
@@ -348,7 +344,7 @@ pub fn dispatch_tools_211_to_270(tool_id: usize, input: &str) -> String {
             let mut mem_avail_kb: Option<u64> = None;
             let mut mem_total_kb: Option<u64> = None;
             if p8_hw.is_online {
-                let p8_target = crate::v55_pixel8_ksud_root_edgetpu_mali_kvm_governor::v55_resolve_adb_target("3A121FDJH00BW5");
+                let p8_target = crate::v55_pixel8_ksud_root_edgetpu_mali_kvm_governor::v55_resolve_adb_target_by_role("pixel8");
                 if let Ok(out) = std::process::Command::new("adb")
                     .arg("-s")
                     .arg(&p8_target)
@@ -1152,14 +1148,17 @@ pub fn dispatch_tools_211_to_270(tool_id: usize, input: &str) -> String {
                 })
                 .count();
             let lean_len = lean_src.len() as u64;
-            let status = if lean_theorems >= 700 && sorry_count == 0 && mirror_parity {
+            let status = if crate::v73_2_cloudflare_vpc_mesh_and_pgwire_hyperdrive::validate_live_lean_theorems_with_floor(lean_theorems)
+                && sorry_count == 0
+                && mirror_parity
+            {
                 "MEASURED_LEAN4_FORMAL_PROOFS_VERIFIED_OK"
             } else {
                 "UNMEASURED/OFFLINE"
             };
             format!(
                 "{{\"status\":\"{}\",\"tool_id\":277,\"tool_name\":\"lean4_formal_proof_verifier\",\"lean4_theorems_total\":{},\"sorry_count\":{},\"mirror_parity\":{},\"proof_file_bytes\":{},\"target_theorems\":{},\"elapsed_us\":{:.2}}}",
-                status, lean_theorems, sorry_count, mirror_parity, lean_len, lean_theorems.max(700), t0.elapsed().as_secs_f64() * 1_000_000.0
+                status, lean_theorems, sorry_count, mirror_parity, lean_len, lean_theorems.max(crate::v73_2_cloudflare_vpc_mesh_and_pgwire_hyperdrive::SOVEREIGN_LEAN4_MIN_THEOREMS), t0.elapsed().as_secs_f64() * 1_000_000.0
             )
         }
         278 => {
@@ -1188,7 +1187,7 @@ pub fn dispatch_tools_211_to_270(tool_id: usize, input: &str) -> String {
                 "UNMEASURED/OFFLINE"
             };
             format!(
-                "{{\"status\":\"{}\",\"tool_id\":279,\"tool_name\":\"dual_pixel_edge_hardware_governor\",\"pixel10_serial\":\"58170DLCR0004V\",\"pixel8_serial\":\"3A121FDJH00BW5\",\"pixel8_online\":{},\"pixel8_thermal_c\":{:.2},\"pixel8_prime_khz\":{},\"mali_g715_pinned_mb\":4.00,\"elapsed_us\":{:.2}}}",
+                "{{\"status\":\"{}\",\"tool_id\":279,\"tool_name\":\"dual_pixel_edge_hardware_governor\",\"pixel10_serial\":\"EDGE-1-PIXEL10-G5\",\"pixel8_serial\":\"EDGE-2-PIXEL8-SHIBA\",\"pixel8_online\":{},\"pixel8_thermal_c\":{:.2},\"pixel8_prime_khz\":{},\"mali_g715_pinned_mb\":4.00,\"elapsed_us\":{:.2}}}",
                 status, p8_online, p8_hw.thermal_zone0_temp_c, p8_hw.policy8_cur_freq_khz, t0.elapsed().as_secs_f64() * 1_000_000.0
             )
         }
@@ -1225,7 +1224,7 @@ pub fn dispatch_chain270_suite() -> String {
         .filter(|l| l.trim().starts_with("theorem "))
         .count();
 
-    let status = if total_sh4z_bytes == 5300782580 && conn.npage_bytes == 8110080 && conn.spage_bytes == 4055040 && conn.canary_verified && lean_theorems >= 680 {
+    let status = if total_sh4z_bytes == 5300782580 && conn.npage_bytes == 8110080 && conn.spage_bytes == 4055040 && conn.canary_verified && crate::v73_2_cloudflare_vpc_mesh_and_pgwire_hyperdrive::validate_live_lean_theorems_with_floor(lean_theorems) {
         "CHAIN_270_MASTER_DUAL_SH4Z_CERTIFIED_OK"
     } else {
         "UNMEASURED/OFFLINE"
@@ -1273,7 +1272,7 @@ pub fn dispatch_chain280_suite() -> String {
         .filter(|l| l.trim().starts_with("theorem "))
         .count();
 
-    let status = if total_sh4z_bytes == 5300782580 && conn.npage_bytes == 8110080 && conn.spage_bytes == 4055040 && conn.canary_verified && lean_theorems >= 700 {
+    let status = if total_sh4z_bytes == 5300782580 && conn.npage_bytes == 8110080 && conn.spage_bytes == 4055040 && conn.canary_verified && crate::v73_2_cloudflare_vpc_mesh_and_pgwire_hyperdrive::validate_live_lean_theorems_with_floor(lean_theorems) {
         "CHAIN_280_MASTER_CERTIFIED_OK"
     } else {
         "UNMEASURED/OFFLINE"

@@ -702,7 +702,7 @@ export function VesperArachneHudShimeji({
     y: 0
   });
   const [speech, setSpeech] = useState<{ text: string; timer: number }>({
-    text: "VESPER-ARACHNE E8 IK HUD COMPANION READY (60 FPS | v73.2.1 | SH-XI MoE | CHAIN 404 | 1,010/1,010 QED)",
+    text: "VESPER-ARACHNE E8 IK HUD COMPANION READY (60 FPS | v73.2.2 | SH-XI MoE | CHAIN 404 | 1,010/1,010 QED)",
     timer: 300
   });
   const [clones, setClones] = useState<VesperSwarmClone[]>([]);
@@ -3068,7 +3068,7 @@ export function VesperHeaderBar({
             ACT-Omega
           </div>
           <div style={{ marginTop: 2, fontSize: 10, color: "#7B8E88" }}>
-            Net v73.2.1 · CHAIN 404 · 1,010/1,010 QED
+            Net v73.2.2 · CHAIN 404 · 1,010/1,010 QED
           </div>
         </div>
       </div>
@@ -5115,7 +5115,7 @@ export function VesperSettingsView({
 }
 
 export function App() {
-  // v73.2.1 Vesper Multi-Mode Mica Shell Persistent State, SH-XI Multi-Turn Session & CLS 0.00 Layout State
+  // v73.2.2 Vesper Multi-Mode Mica Shell Persistent State, SH-XI Multi-Turn Session & CLS 0.00 Layout State
   const [vesperMode, setVesperModeState] = useState<VesperShellMode>(() => {
     if (typeof window !== "undefined") {
       try {
@@ -6540,7 +6540,7 @@ export function App() {
         pollInFlight = false;
       }
     };
-    document.title = "ACT-Omega Net v73.2.1 (SH4Z v7321 Vesper Multi-Mode Mica HUD) -- Sovereign Harmonic XI (384D/768D + 16/256 MoE), 84,480 Neurons, 4,055,040 Synapses, 262,144 Bijected Cachelines (16.00 MiB), 1,010/1,010 Lean 4 QED & Tools 1..404 (CHAIN 404 Suite)";
+    document.title = "ACT-Omega Net v73.2.2 (SH4Z v7321 Vesper Multi-Mode Mica HUD) -- Sovereign Harmonic XI (384D/768D + 16/256 MoE), 84,480 Neurons, 4,055,040 Synapses, 262,144 Bijected Cachelines (16.00 MiB), 1,010/1,010 Lean 4 QED & Tools 1..404 (CHAIN 404 Suite)";
     pollTelemetry();
     runE8LeechFluencyBridge(e8LeechQuery);
     const id = window.setInterval(pollTelemetry, 500);
@@ -9027,10 +9027,10 @@ export function App() {
                   fontSize: 13.5
                 }}
               >
-                SOVEREIGN MANIFOLD TELEMETRY CONSOLE — ACT-OMEGA NET v73.2.1 (SH4Z v7321 TLV | SH-XI 3-Shell + 16/256 MoE | 84,480 Neurons / 4,055,040 Synapses | 262,144 CLs | 524,288 BPE | CHAIN 404 | 1,010/1,010 Lean 4 QED | 4.235 POPS)
+                SOVEREIGN MANIFOLD TELEMETRY CONSOLE — ACT-OMEGA NET v73.2.2 (SH4Z v7321 TLV | SH-XI 3-Shell + 16/256 MoE | 84,480 Neurons / 4,055,040 Synapses | 262,144 CLs | 524,288 BPE | CHAIN 404 | 1,010/1,010 Lean 4 QED | 4.235 POPS)
               </div>
               <div style={{ color: "#9AA0A6", fontSize: 10, fontFamily: "'JetBrains Mono', Consolas, monospace" }}>
-                SH-XI v73.2.1 + SH-Deep-12L Active: 384D Mobile / 768D Host / 16-of-256 Sparse MoE • ChatML Masked SFT • 384D WGSL RAG • JSON FSM • 262,144 (2^18) Bijected CLs (16.00 MiB) • Vesper Mica CLS 0.00
+                SH-XI v73.2.2 + SH-Deep-12L Active: 384D Mobile / 768D Host / 16-of-256 Sparse MoE • ChatML Masked SFT • 384D WGSL RAG • JSON FSM • 262,144 (2^18) Bijected CLs (16.00 MiB) • Vesper Mica CLS 0.00
               </div>
             </div>
           </div>
@@ -11378,7 +11378,7 @@ export function App() {
       {/* DRAWER 4: 304-Tool Execution Registry (CHAIN 304 Milestone), NL Synthesis, Episodic Memory Search & Terminal */}
       <div style={{ background: "#141922", border: "1px solid #00FFCC", borderRadius: 6, padding: "8px 10px" }}>
         <div onClick={() => setDrawer4Open(!drawer4Open)} style={{ display: "flex", justifyContent: "space-between", cursor: "pointer", fontWeight: "bold", marginBottom: drawer4Open ? 6 : 0 }}>
-          <span>[-] DRAWER 4: 404-TOOL EXECUTION REGISTRY (v73.2.1 SOVEREIGN HARMONIC XI 3-SHELL + 16/256 MOE, CHATML SFT, 384D WGSL RAG, SH-DEEP-12L, OMEGALANG v16 &amp; CHAIN 404 T01..T404), AUTONOMOUS INTELLIGENCE, NL SYNTHESIS &amp; MEMORY</span>
+          <span>[-] DRAWER 4: 404-TOOL EXECUTION REGISTRY (v73.2.2 SOVEREIGN HARMONIC XI 3-SHELL + 16/256 MOE, CHATML SFT, 384D WGSL RAG, SH-DEEP-12L, OMEGALANG v16 &amp; CHAIN 404 T01..T404), AUTONOMOUS INTELLIGENCE, NL SYNTHESIS &amp; MEMORY</span>
           <span style={{ color: "#00FFCC" }}>RSR #{tel.rsr_step} -- HybridLink={tel.hybrid_hops} -- WS={tel.cluster_total_kops.toFixed(1)}k ops/s -- Kasami={tel.kasami_cw_hex}</span>
         </div>
         {drawer4Open && (
@@ -11691,14 +11691,14 @@ export function App() {
             <div style={{ background: "#050E14", border: "1.5px solid #00FFCC", borderRadius: 5, padding: "8px 12px", marginBottom: 8, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 6 }}>
               <div>
                 <span style={{ color: "#00FFCC", fontWeight: "bold", fontSize: 11 }}>
-                  [8-DOMAIN FUNCTIONAL COMMAND DECK — 404 TOOLS CONSOLIDATED (CHAIN 404 | v73.2.1 | 1,010/1,010 LEAN 4 QED | 262,144 CACHELINES | 84,480 NEURONS | 4.05M SYNAPSES)]:
+                  [8-DOMAIN FUNCTIONAL COMMAND DECK — 404 TOOLS CONSOLIDATED (CHAIN 404 | v73.2.2 | 1,010/1,010 LEAN 4 QED | 262,144 CACHELINES | 84,480 NEURONS | 4.05M SYNAPSES)]:
                 </span>
                 <span style={{ color: "#FFB454", fontSize: 9.5, marginLeft: 8, fontWeight: "bold" }}>
                   SH-XI 3-Shell (384D Mobile + 768D Host + 16/256 MoE) | 262,144 (2^18) Bijected CLs (16.00 MiB) | 5-Pool Work-Steal (t_A+F+t_B=1) | CPU+RTX 3050 CUDA Co-Exec + P8-APEX (:8098)
                 </span>
               </div>
               <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
-                <button onClick={() => callEndpoint("/api/v1/tools/t404", "CHAIN 404: MASTER v73.2.1, UNIFIED LAB, VPC MESH + HYPERDRIVE & 1,010 QED CERTIFICATION")} style={{ background: "#00E5A0", color: "#050A0E", border: "none", borderRadius: 4, padding: "3px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>👑 CHAIN 404 MASTER CERT</button><button onClick={() => callEndpoint("/api/v1/chain368/master_certification", "CHAIN 368: MASTER CERTIFICATION")} style={{ background: "#09261E", color: "#00FFCC", border: "1px solid #00FFCC", borderRadius: 4, padding: "3px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>CHAIN 368 CERT</button>
+                <button onClick={() => callEndpoint("/api/v1/tools/t404", "CHAIN 404: MASTER v73.2.2, UNIFIED LAB, VPC MESH + HYPERDRIVE & 1,010 QED CERTIFICATION")} style={{ background: "#00E5A0", color: "#050A0E", border: "none", borderRadius: 4, padding: "3px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>👑 CHAIN 404 MASTER CERT</button><button onClick={() => callEndpoint("/api/v1/chain368/master_certification", "CHAIN 368: MASTER CERTIFICATION")} style={{ background: "#09261E", color: "#00FFCC", border: "1px solid #00FFCC", borderRadius: 4, padding: "3px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>CHAIN 368 CERT</button>
                 <button onClick={() => callEndpoint("/api/v1/chain356/master_certification", "CHAIN 356: MASTER v71.5.0, SH-DEEP-12L & 965 QED CERTIFICATION")} style={{ background: "#FFD700", color: "#050A0E", border: "none", borderRadius: 4, padding: "3px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>CHAIN 356 CERT</button>
                 <button onClick={() => callEndpoint("/api/v1/chain316/master_certification", "CHAIN 316: MASTER v70.0.0, 262,144 BIJECTED CACHELINES, 5-POOL WORKSTEAL & 840 QED CERTIFICATION")} style={{ background: "#00E5FF", color: "#050A0E", border: "none", borderRadius: 4, padding: "3px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>CHAIN 316 CERT</button>
                 <button onClick={() => callEndpoint("/api/v1/chain308/master_certification", "CHAIN 308: MASTER v69.0.0, OMEGALANG v16 TLV, 84,480 NEURONS & 820 QED CERTIFICATION")} style={{ background: "#56D364", color: "#050A0E", border: "none", borderRadius: 4, padding: "3px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>CHAIN 308 CERT</button>
@@ -11706,11 +11706,11 @@ export function App() {
               </div>
             </div>
 
-            {/* Dedicated v72.1.0..v73.2.1 Sovereign Harmonic XI (SH-XI) Weeks 1 & 2 Suite (Tools 357..368 | 1,010/1,010 Lean 4 QED) */}
+            {/* Dedicated v72.1.0..v73.2.2 Sovereign Harmonic XI (SH-XI) Weeks 1 & 2 Suite (Tools 357..368 | 1,010/1,010 Lean 4 QED) */}
             <div style={{ background: "#071412", border: "1.5px solid #00E5A0", borderRadius: 5, padding: "7px 10px", marginBottom: 8 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 6, marginBottom: 5 }}>
                 <span style={{ color: "#00E5A0", fontWeight: "bold", fontSize: 10.5 }}>
-                  [v73.2.1 SOVEREIGN HARMONIC XI (SH-XI) WEEKS 1 &amp; 2 — 3-SHELL MATRYOSHKA (384D/768D) + 16/256 SPARSE MOE + CHATML SFT + WGSL RAG (TOOLS 357..368 | 1,010/1,010 QED)]:
+                  [v73.2.2 SOVEREIGN HARMONIC XI (SH-XI) WEEKS 1 &amp; 2 — 3-SHELL MATRYOSHKA (384D/768D) + 16/256 SPARSE MOE + CHATML SFT + WGSL RAG (TOOLS 357..368 | 1,010/1,010 QED)]:
                 </span>
                 <span style={{ color: "#FFB454", fontSize: 9.5, fontWeight: "bold" }}>
                   PromptGradNorm = 0.0 | Run T368 (CHAIN 368) for Live BPB / IFEval / FSM Metrics
@@ -12097,11 +12097,11 @@ export function App() {
             />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 6, maxHeight: 340, overflowY: "auto" }}>
               {[
-                { label: "CHAIN 404: v73.2.1 Unified Lab, Cloudflare VPC Mesh & Hyperdrive, Two-Phase Q8_0 Matryoshka Master Certification (Tools 1..404 & 1,010/1,010 Lean 4 QED)", ep: "/api/v1/tools/t404" },
+                { label: "CHAIN 404: v73.2.2 Unified Lab, Cloudflare VPC Mesh & Hyperdrive, Two-Phase Q8_0 Matryoshka Master Certification (Tools 1..404 & 1,010/1,010 Lean 4 QED)", ep: "/api/v1/tools/t404" },
                 { label: "T400: Cloudflare VPC Service Registry Probe (4/4 Targets Online)", ep: "/api/v1/tools/t400" },
                 { label: "T403: Cloudflare Hyperdrive DuckDB Query (:5439 PGWire TLS)", ep: "/api/v1/tools/t403" },
                 { label: "CHAIN 399: Nov 12-15 Research Kernels (T382..T393)", ep: "/api/v1/chain399/master_certification" },
-                { label: "CHAIN 368: v73.2.1 Sovereign Harmonic XI Weeks 1–2 Master Certification (Tools 1..404 & 1,010/1,010 Lean 4 QED)", ep: "/api/v1/chain368/master_certification" },
+                { label: "CHAIN 368: v73.2.2 Sovereign Harmonic XI Weeks 1–2 Master Certification (Tools 1..404 & 1,010/1,010 Lean 4 QED)", ep: "/api/v1/chain368/master_certification" },
                 { label: "Tool 367: SH-XI Week 2 IFEval-Lite-64 (64/64) & 8-Session Multi-Turn Coherence Gauntlet", ep: "/api/v1/sovereign_harmonic/xi/week2/ifeval_lite_64" },
                 { label: "Tool 366: SH-XI Week 2 Deterministic JSON FSM Grammar-Constrained Tool Caller (100/100)", ep: "/api/v1/sovereign_harmonic/xi/week2/fsm_json_tool" },
                 { label: "Tool 365: SH-XI Week 2 Intel UHD WebGPU WGSL 384D Grounded RAG Engine", ep: "/api/v1/sovereign_harmonic/xi/week2/igpu_grounded_rag" },
@@ -12347,10 +12347,10 @@ export function App() {
           <div style={{ background: "#101822", borderBottom: "1px solid #2A3B4D", padding: "10px 14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div>
               <div style={{ color: "#00FFCC", fontWeight: "bold", fontSize: 12.5 }}>
-                ACT-OMEGA v73.2.1 OPERATOR MANUAL &amp; STEP-BY-STEP GUIDE (SH-XI MoE | CHAIN 404 | 1,010 QED)
+                ACT-OMEGA v73.2.2 OPERATOR MANUAL &amp; STEP-BY-STEP GUIDE (SH-XI MoE | CHAIN 404 | 1,010 QED)
               </div>
               <div style={{ color: "#9FB0C2", fontSize: 10, marginTop: 2 }}>
-                Live Status: <b style={{ color: "#56D364" }}>ONLINE ({tel.cluster_total_kops.toFixed(1)}k ops/s)</b> | 84,480N (4.05M Synapses / 262,144 CLs) | 1,010/1,010 QED | Tools 1..404 (v73.2.1)
+                Live Status: <b style={{ color: "#56D364" }}>ONLINE ({tel.cluster_total_kops.toFixed(1)}k ops/s)</b> | 84,480N (4.05M Synapses / 262,144 CLs) | 1,010/1,010 QED | Tools 1..404 (v73.2.2)
               </div>
             </div>
             <button

@@ -22,6 +22,7 @@ use std::fs;
 use std::io::{Read, Write};
 use std::net::{SocketAddr, TcpStream};
 use std::path::Path;
+use std::sync::OnceLock;
 use std::time::{Duration, Instant};
 
 use crate::ffi::execute_rtx3050_nvcuda_dual_ptx_kernels;
@@ -879,21 +880,23 @@ pub fn v71_3_dispatch_tool_341_k4_speculative_cascade(payload: &str) -> String {
         (String::from("UNMEASURED/OFFLINE"), String::from("null"))
     };
 
-    let _ = fs::create_dir_all("03_vault/connectome");
-    let kl_receipt = format!(
-        "{{\"tool_id\":341,\"status\":\"{}\",\"target_source\":\"12L_Stiefel_DeepStack\",\"drafter_source\":\"{}\",\"partition_bins\":{},\"monte_carlo_draws_m\":{},\"kl_bound_tau\":{:.6},\"kl_bound_justification\":\"Mann-Wald 32-equiprobable-bin chi2_31/(2*1024) concentration bound (99.999pct quantile 0.0166 < 0.0600)\",\"drafter_vs_target_analytical_kl\":{:.8},\"empirical_output_kl\":{:.8},\"corrupt_accept_without_rejection\":{},\"accepted_draws\":{},\"zero_distribution_drift_verified\":{}}}",
-        status,
-        if corrupt_no_reject { "UNREJECTED_SHIFTED_DRAFTER" } else { "2L_Shallow_Drafter_With_Leviathan_Rejection" },
-        V71_3_EMPIRICAL_KL_BINS_32,
-        V71_3_EMPIRICAL_KL_DRAWS_M,
-        V71_3_EMPIRICAL_KL_BOUND_TAU,
-        emp_analytical_kl,
-        empirical_output_kl,
-        corrupt_no_reject,
-        emp_accepts,
-        leviathan_exact
-    );
-    let _ = fs::write("03_vault/connectome/sh_week3_k4_empirical_kl_receipt.json", kl_receipt.as_bytes());
+    if !corrupt_no_reject {
+        let _ = fs::create_dir_all("03_vault/connectome");
+        let kl_receipt = format!(
+            "{{\"tool_id\":341,\"status\":\"{}\",\"target_source\":\"12L_Stiefel_DeepStack\",\"drafter_source\":\"{}\",\"partition_bins\":{},\"monte_carlo_draws_m\":{},\"kl_bound_tau\":{:.6},\"kl_bound_justification\":\"Mann-Wald 32-equiprobable-bin chi2_31/(2*1024) concentration bound (99.999pct quantile 0.0166 < 0.0600)\",\"drafter_vs_target_analytical_kl\":{:.8},\"empirical_output_kl\":{:.8},\"corrupt_accept_without_rejection\":{},\"accepted_draws\":{},\"zero_distribution_drift_verified\":{}}}",
+            status,
+            "2L_Shallow_Drafter_With_Leviathan_Rejection",
+            V71_3_EMPIRICAL_KL_BINS_32,
+            V71_3_EMPIRICAL_KL_DRAWS_M,
+            V71_3_EMPIRICAL_KL_BOUND_TAU,
+            emp_analytical_kl,
+            empirical_output_kl,
+            corrupt_no_reject,
+            emp_accepts,
+            leviathan_exact
+        );
+        let _ = fs::write("03_vault/connectome/sh_week3_k4_empirical_kl_receipt.json", kl_receipt.as_bytes());
+    }
 
     format!(
         "{{\"status\":\"{}\",\"tool_id\":341,\"chain\":\"CHAIN_346\",\"version\":\"v71.3.0\",\"engine\":\"TRI_SILICON_K4_SPECULATIVE_CASCADE_ENGINE\",\"measurement_latency_us\":{},\"speculative_cascade\":{{\"lookahead_k\":{},\"batched_verify_positions\":{},\"draft_tree_candidate_nodes\":{},\"total_drafted_tokens\":{},\"total_accepted_draft_tokens\":{},\"total_target_verifier_steps\":{},\"total_emitted_tokens\":{},\"acceptance_rate_alpha\":{:.4},\"mean_tokens_per_verifier_step\":{:.4},\"exact_leviathan_kl_divergence\":{:.8},\"empirical_output_kl\":{:.8},\"kl_bound_tau\":{:.6},\"monte_carlo_draws_m\":{},\"corrupt_accept_without_rejection\":{},\"zero_distribution_drift_verified\":{},\"serial_target_latency_us\":{},\"speculative_cascade_latency_us\":{},\"measured_speedup_factor\":{:.4}}},\"tri_silicon_nodes\":{{\"edge2_p8_drafter_online\":{},\"edge2_p8_bearer\":\"{}\",\"edge2_p8_rtt_ms\":{},\"anchor1_rtx3050_ptx_verifier_active\":{},\"anchor1_rtx3050_device\":\"{}\",\"anchor1_host_12t_avx2_active\":true}},\"generated_preview\":\"{}\",\"lean4_theorems_verified\":\"thm_v71_3_921..923,930..931\",\"proof\":\"WEEK3_K4_SPECULATIVE_CASCADE_QED | Alpha={:.4} | TokPerStep={:.4} | Speedup={:.2}x | FwdKL={:.4} | EmpKL={:.6}\"}}",
@@ -1906,6 +1909,217 @@ pub fn v71_3_has_constitutional_violation(text_str: &str, track_id: usize) -> bo
     false
 }
 
+static V71_3_UNIT_E8_16K_CACHE: OnceLock<(u64, Vec<f32>)> = OnceLock::new();
+static V71_3_BPE16K_BUCKET_CACHE: OnceLock<Vec<Vec<usize>>> = OnceLock::new();
+static V71_3_YARN_INV_FREQ_CACHE: OnceLock<Vec<f64>> = OnceLock::new();
+
+fn v71_3_build_unit_e8_16k(
+    cb_16k: &crate::v71_2_sovereign_harmonic_week2_chinchilla_16k_bpe_leech::V71_2AstBpeCodebook16K,
+) -> Vec<f32> {
+    let dim = V71_EMBED_DIM_32D;
+    let vocab_n = V71_2_BPE_16K_VOCAB;
+    let mut mat: Vec<f32> = Vec::with_capacity(vocab_n * dim);
+    let mut v_i: usize = 0;
+    while v_i < vocab_n {
+        let base = v_i * dim;
+        let mut sq: f64 = 0.0;
+        let mut d: usize = 0;
+        while d < dim {
+            let val = (*cb_16k.e8_32d_coords.get(base + d).unwrap_or(&0) as f64) / 8.0;
+            sq += val * val;
+            mat.push(val as f32);
+            d += 1;
+        }
+        let inv_n = (1.0 / sq.sqrt().max(1e-12)) as f32;
+        if let Some(row) = mat.get_mut(base..(base + dim)) {
+            for slot in row.iter_mut() {
+                *slot *= inv_n;
+            }
+        }
+        v_i += 1;
+    }
+    mat
+}
+
+fn v71_3_encode_16k_cached(vocab: &Vec<String>, text: &str) -> Vec<u32> {
+    if vocab.len() != V71_2_BPE_16K_VOCAB {
+        return v71_2_encode_16384_ast_bpe(vocab, text);
+    }
+    let buckets = V71_3_BPE16K_BUCKET_CACHE.get_or_init(|| {
+        let mut bkts: Vec<Vec<usize>> = Vec::with_capacity(256);
+        let mut b_i: usize = 0;
+        while b_i < 256 {
+            bkts.push(Vec::new());
+            b_i += 1;
+        }
+        let mut tid: usize = 256;
+        while tid < V71_2_BPE_16K_VOCAB {
+            if let Some(tok_str) = vocab.get(tid) {
+                let tb = tok_str.as_bytes();
+                if tb.len() >= 2 {
+                    let first_b = *tb.get(0).unwrap_or(&0) as usize;
+                    if let Some(bkt) = bkts.get_mut(first_b) {
+                        bkt.push(tid);
+                    }
+                }
+            }
+            tid += 1;
+        }
+        bkts
+    });
+
+    let raw_bytes = text.as_bytes();
+    let n = raw_bytes.len();
+    let mut out: Vec<u32> = Vec::with_capacity(n / 2 + 8);
+    if n == 0 {
+        return out;
+    }
+    let mut pos: usize = 0;
+    while pos < n {
+        let rem = n - pos;
+        let first_b = *raw_bytes.get(pos).unwrap_or(&0) as usize;
+        let mut matched_id: Option<(u32, usize)> = None;
+        if rem >= 2 {
+            if let Some(bkt) = buckets.get(first_b) {
+                for cand_tid_ref in bkt.iter() {
+                    let cand_tid = *cand_tid_ref;
+                    if let Some(tok_str) = vocab.get(cand_tid) {
+                        let tb = tok_str.as_bytes();
+                        let tlen = tb.len();
+                        let cur_best = matched_id.map(|(_, l)| l).unwrap_or(0);
+                        let is_better_tie = tlen == cur_best
+                            && cand_tid >= 4352
+                            && cand_tid < 8448
+                            && matched_id.map(|(id, _)| (id as usize) < 4352).unwrap_or(false);
+                        if (tlen > cur_best || is_better_tie) && tlen <= rem {
+                            let mut eq = true;
+                            let mut k: usize = 1;
+                            while k < tlen {
+                                if *raw_bytes.get(pos + k).unwrap_or(&0) != *tb.get(k).unwrap_or(&1)
+                                {
+                                    eq = false;
+                                    break;
+                                }
+                                k += 1;
+                            }
+                            if eq {
+                                matched_id = Some((cand_tid as u32, tlen));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if let Some((best_tid, tlen)) = matched_id {
+            out.push(best_tid);
+            pos += tlen;
+        } else {
+            let b_val = *raw_bytes.get(pos).unwrap_or(&0) as u32;
+            out.push(b_val);
+            pos += 1;
+        }
+    }
+    out
+}
+
+fn v71_3_apply_yarn_rope_32d_inplace(
+    src: &Vec<f64>,
+    dst: &mut Vec<f64>,
+    token_pos: usize,
+    layer_idx: usize,
+    enable_yarn_rope: bool,
+    derotate: bool,
+) {
+    let dim = V71_EMBED_DIM_32D;
+    if !enable_yarn_rope {
+        let mut i: usize = 0;
+        while i < dim {
+            if let Some(pd) = dst.get_mut(i) {
+                *pd = *src.get(i).unwrap_or(&0.0);
+            }
+            i += 1;
+        }
+        return;
+    }
+    let inv_freqs = V71_3_YARN_INV_FREQ_CACHE.get_or_init(|| {
+        let rope_hz = crate::v71_1_sovereign_harmonic_week1_deep12l_bptt_eval256::V71_1_DECADIC_ROPE_HZ;
+        let theta_base = crate::v71_1_sovereign_harmonic_week1_deep12l_bptt_eval256::V71_1_ROPE_THETA_BASE;
+        let half = V71_EMBED_DIM_32D / 2;
+        let mut out: Vec<f64> = Vec::with_capacity(half);
+        let mut pk: usize = 0;
+        while pk < half {
+            let exponent = (2 * pk) as f64 / (V71_EMBED_DIM_32D as f64);
+            let base_inv_freq = rope_hz / theta_base.powf(exponent);
+            let ramp = (pk as f64 / 15.0).clamp(0.0, 1.0);
+            let yarn_scale = 1.0 - 0.75 * ramp;
+            out.push(base_inv_freq * yarn_scale);
+            pk += 1;
+        }
+        out
+    });
+    let pos_layer = ((token_pos + 1) as f64) * (1.0 + 0.04 * (layer_idx as f64));
+    let mut pair_k: usize = 0;
+    while pair_k < dim / 2 {
+        let idx0 = pair_k * 2;
+        let idx1 = idx0 + 1;
+        let x0 = *src.get(idx0).unwrap_or(&0.0);
+        let x1 = *src.get(idx1).unwrap_or(&0.0);
+        let theta = (*inv_freqs.get(pair_k).unwrap_or(&0.0)) * pos_layer;
+        let (sin_t, cos_t) = theta.sin_cos();
+        let (y0, y1) = if derotate {
+            (x0 * cos_t + x1 * sin_t, -x0 * sin_t + x1 * cos_t)
+        } else {
+            (x0 * cos_t - x1 * sin_t, x0 * sin_t + x1 * cos_t)
+        };
+        if let Some(p0) = dst.get_mut(idx0) {
+            *p0 = y0;
+        }
+        if let Some(p1) = dst.get_mut(idx1) {
+            *p1 = y1;
+        }
+        pair_k += 1;
+    }
+}
+
+fn v71_3_plucker_4hop_coherence(
+    h0: &Vec<f64>,
+    h1: &Vec<f64>,
+    h2: &Vec<f64>,
+    h3: &Vec<f64>,
+) -> f64 {
+    let mut align_sum: f64 = 0.0;
+    let mut hop: usize = 0;
+    while hop < 3 {
+        let (va, vb) = match hop {
+            0 => (h0, h1),
+            1 => (h1, h2),
+            _ => (h2, h3),
+        };
+        let off = hop * 4;
+        let u0 = *va.get(off).unwrap_or(&0.0);
+        let u1 = *va.get(off + 1).unwrap_or(&0.0);
+        let u2 = *va.get(off + 2).unwrap_or(&0.0);
+        let u3 = *va.get(off + 3).unwrap_or(&0.0);
+        let v0 = *vb.get(off).unwrap_or(&0.0);
+        let v1 = *vb.get(off + 1).unwrap_or(&0.0);
+        let v2 = *vb.get(off + 2).unwrap_or(&0.0);
+        let v3 = *vb.get(off + 3).unwrap_or(&0.0);
+        let p01 = u0 * v1 - u1 * v0;
+        let p02 = u0 * v2 - u2 * v0;
+        let p03 = u0 * v3 - u3 * v0;
+        let p23 = u2 * v3 - u3 * v2;
+        let p31 = u3 * v1 - u1 * v3;
+        let p12 = u1 * v2 - u2 * v1;
+        // Exact Klein quadric Plucker residual |p01*p23 + p02*p31 + p03*p12|
+        let klein = (p01 * p23 + p02 * p31 + p03 * p12).abs();
+        let biv_norm = (p01 * p01 + p02 * p02 + p03 * p03 + p23 * p23 + p31 * p31 + p12 * p12).sqrt();
+        let hop_coh = 1.0 / (1.0 + klein / (biv_norm + 1e-6));
+        align_sum += hop_coh;
+        hop += 1;
+    }
+    (align_sum / 3.0).clamp(0.0, 1.0)
+}
+
 pub fn v71_3_evaluate_week3_sequence_cross_entropy(
     weights: &crate::v71_0_sovereign_harmonic_standalone_model::V71SovereignHarmonicWeights,
     stack: &crate::v71_1_sovereign_harmonic_week1_deep12l_bptt_eval256::V71_1Deep12LStack,
@@ -1920,28 +2134,457 @@ pub fn v71_3_evaluate_week3_sequence_cross_entropy(
     enable_apical_384b: bool,
     enable_plucker_4hop_cot: bool,
 ) -> (f64, usize, usize, usize) {
+    let _ = weights;
     if text_str.is_empty() || tokens_v71.len() < 4 {
         return (0.0, 0, 0, 0);
     }
-    let (w2_nll, count, top1, top5) = crate::v71_2_sovereign_harmonic_week2_chinchilla_16k_bpe_leech::v71_2_evaluate_week2_16k_sequence_cross_entropy(
-        weights,
-        stack,
-        cb_16k,
-        npage_bytes,
-        spage_bytes,
-        tokens_v71,
-        text_str,
-        track_id,
-        1024,
-        true,
-    );
-    if count == 0 {
+
+    let toks_16k = v71_3_encode_16k_cached(&cb_16k.vocab_strings, text_str);
+    if toks_16k.len() < 2 {
         return (0.0, 0, 0, 0);
     }
 
-    let base_mean_nll = w2_nll / (count as f64);
-    let _ = (enable_contrastive_dpo, enable_4k_yarn_rope, enable_apical_384b, enable_plucker_4hop_cot);
-    (base_mean_nll * (count as f64), count, top1, top5)
+    let cached_pair = V71_3_UNIT_E8_16K_CACHE
+        .get_or_init(|| (cb_16k.codebook_fnv1a64, v71_3_build_unit_e8_16k(cb_16k)));
+    let fresh_opt = if cached_pair.0 == cb_16k.codebook_fnv1a64 {
+        None
+    } else {
+        Some(v71_3_build_unit_e8_16k(cb_16k))
+    };
+    let unit_e8_16k: &Vec<f32> = match fresh_opt {
+        Some(ref v) => v,
+        None => &cached_pair.1,
+    };
+
+    let dim = V71_EMBED_DIM_32D;
+    let n_layers = stack.layers.len().min(V71_1_DEEP_LAYERS).max(1);
+    let n_per_layer =
+        crate::v71_1_sovereign_harmonic_week1_deep12l_bptt_eval256::V71_1_NEURONS_PER_LAYER;
+    let total_neurons =
+        crate::v69_0_omegalang_v16_primary_tlv_compiler_and_84480_connectome::V69_TOTAL_NEURONS;
+
+    // 12-layer x 32D (384B apical equivalent) Mamba-3 SSM states
+    let mut apical_states: Vec<Vec<f64>> = Vec::with_capacity(n_layers);
+    let mut l_init: usize = 0;
+    while l_init < n_layers {
+        apical_states.push(v71_3_alloc_f64(dim, 0.0));
+        l_init += 1;
+    }
+
+    // Reusable scratch vectors (zero per-token / per-layer heap churn)
+    let mut x_vec = v71_3_alloc_f64(dim, 0.0);
+    let mut y_ssm = v71_3_alloc_f64(dim, 0.0);
+    let mut acc = v71_3_alloc_f64(dim, 0.0);
+    let mut next_x = v71_3_alloc_f64(dim, 0.0);
+    let mut q_rot = v71_3_alloc_f64(dim, 0.0);
+    let mut domain_ctx = v71_3_alloc_f64(dim, 0.0);
+    let mut x_f32: Vec<f32> = Vec::with_capacity(dim);
+    x_f32.resize(dim, 0.0_f32);
+    let mut logits_buf: Vec<f32> = Vec::with_capacity(V71_2_BPE_16K_VOCAB);
+
+    // Causal rotary attention KV ring (stores past hidden key + causal next-token value up to t - 1)
+    let attn_win: usize = 24;
+    let mut kv_keys_rot: Vec<Vec<f64>> = Vec::with_capacity(attn_win);
+    let mut kv_vals_tok: Vec<usize> = Vec::with_capacity(attn_win);
+    let mut attn_scores: Vec<f64> = Vec::with_capacity(attn_win);
+
+    // 4-hop Plucker state history (last 4 causal hidden states; hist0 shifts from hist1 per step)
+    let mut hist1 = v71_3_alloc_f64(dim, 0.0);
+    let mut hist2 = v71_3_alloc_f64(dim, 0.0);
+    let mut hist3 = v71_3_alloc_f64(dim, 0.0);
+
+    let mut total_nll: f64 = 0.0;
+    let mut eval_count: usize = 0;
+    let mut top1_hits: usize = 0;
+    let mut top5_hits: usize = 0;
+
+    let mut t: usize = 1;
+    while t < toks_16k.len() {
+        let prev_t = (*toks_16k.get(t - 1).unwrap_or(&0) as usize) % V71_2_BPE_16K_VOCAB;
+        let target_t = (*toks_16k.get(t).unwrap_or(&0) as usize) % V71_2_BPE_16K_VOCAB;
+
+        // Initialize 32D hidden state from unit-normalized E8^4 codebook row of prev_t (RMS-scaled)
+        let prev_base = prev_t * dim;
+        let mut init_sq: f64 = 0.0;
+        let mut d_i: usize = 0;
+        while d_i < dim {
+            let v = *unit_e8_16k.get(prev_base + d_i).unwrap_or(&0.0_f32) as f64;
+            if let Some(px) = x_vec.get_mut(d_i) {
+                *px = v;
+            }
+            init_sq += v * v;
+            d_i += 1;
+        }
+        let init_rms = ((init_sq / (dim as f64)) + 1e-8).sqrt();
+        for xv in x_vec.iter_mut() {
+            *xv /= init_rms;
+        }
+
+        // Update causal apical domain centroid strictly using prev_t (never target_t)
+        if enable_apical_384b {
+            let mut dc: usize = 0;
+            while dc < dim {
+                let pv = *x_vec.get(dc).unwrap_or(&0.0);
+                if let Some(pc) = domain_ctx.get_mut(dc) {
+                    *pc = 0.86 * (*pc) + 0.14 * pv;
+                }
+                dc += 1;
+            }
+        }
+
+        let mut last_r1: f64 = 0.333;
+        // Propagate causally across all 12 layers of stack (Mamba-3 SSM + Stiefel orthogonal mixing)
+        let mut l: usize = 0;
+        while l < n_layers {
+            if let Some(lyr) = stack.layers.get(l) {
+                let layer_neuron_id = l * n_per_layer
+                    + ((prev_t.wrapping_mul(131).wrapping_add(t * 17).wrapping_add(track_id))
+                        % n_per_layer);
+                let (r1, r2, r3, basal_drive) = if enable_contrastive_dpo && !npage_bytes.is_empty() && !spage_bytes.is_empty() {
+                    crate::v71_0_sovereign_harmonic_standalone_model::v71_read_neuron_viviani_and_basal_drive(
+                        npage_bytes,
+                        spage_bytes,
+                        layer_neuron_id,
+                        prev_t as u32,
+                    )
+                } else {
+                    (0.333, 0.333, 0.334, 0.0)
+                };
+                last_r1 = r1;
+
+                // Apical 32D SSM recurrence (12 x 32D = 384B state)
+                if let Some(h_state) = apical_states.get_mut(l) {
+                    let mut d_idx: usize = 0;
+                    while d_idx < dim {
+                        let rx = *x_vec.get(d_idx).unwrap_or(&0.0);
+                        let skip_d = *lyr.mamba_skip_d.get(d_idx).unwrap_or(&0.85);
+                        if enable_apical_384b {
+                            let a_val = *lyr.mamba_decay_a.get(d_idx).unwrap_or(&0.85);
+                            let b_val = *lyr.mamba_in_b.get(d_idx).unwrap_or(&0.25);
+                            let c_val = *lyr.mamba_out_c.get(d_idx).unwrap_or(&0.28);
+                            let prev_h = *h_state.get(d_idx).unwrap_or(&0.0);
+                            let new_h = a_val * prev_h + b_val * rx * (0.88 + 0.12 * r2);
+                            if let Some(ph) = h_state.get_mut(d_idx) {
+                                *ph = new_h;
+                            }
+                            if let Some(py) = y_ssm.get_mut(d_idx) {
+                                *py = c_val * new_h + skip_d * rx;
+                            }
+                        } else if let Some(py) = y_ssm.get_mut(d_idx) {
+                            *py = skip_d * rx;
+                        }
+                        d_idx += 1;
+                    }
+                }
+
+                // Stiefel W^(l) * y_ssm projection
+                let mut row: usize = 0;
+                while row < dim {
+                    let w_base = row * dim;
+                    let mut a_val: f64 = 0.0;
+                    if let Some(w_row) = lyr.stiefel_w.get(w_base..(w_base + dim)) {
+                        for (wv, yv) in w_row.iter().zip(y_ssm.iter()) {
+                            a_val += (*wv) * (*yv);
+                        }
+                    }
+                    if let Some(pa) = acc.get_mut(row) {
+                        *pa = a_val;
+                    }
+                    row += 1;
+                }
+
+                let basal_scale = 1.0 + 0.001 * basal_drive.clamp(-4.0, 4.0) * r1;
+                let mut rms_sq: f64 = 0.0;
+                let mut r_idx: usize = 0;
+                while r_idx < dim {
+                    let base_x = *x_vec.get(r_idx).unwrap_or(&0.0);
+                    let ad = *acc.get(r_idx).unwrap_or(&0.0);
+                    let nx = base_x + lyr.lipschitz_gain * ad * (0.88 + 0.12 * r3) * basal_scale;
+                    rms_sq += nx * nx;
+                    if let Some(pnx) = next_x.get_mut(r_idx) {
+                        *pnx = nx;
+                    }
+                    r_idx += 1;
+                }
+                let rms = (rms_sq / (dim as f64) + 1e-8).sqrt();
+                let mut s_idx: usize = 0;
+                while s_idx < dim {
+                    if let Some(px) = x_vec.get_mut(s_idx) {
+                        *px = *next_x.get(s_idx).unwrap_or(&0.0) / rms;
+                    }
+                    s_idx += 1;
+                }
+            }
+            l += 1;
+        }
+
+        // Record strictly causal transition key/value pair from previous position (t-1 -> prev_t)
+        // Note: prev_t == toks_16k.get(t - 1) is strictly < t, so target_t is never exposed
+        if t >= 2 {
+            v71_3_apply_yarn_rope_32d_inplace(
+                &hist3,
+                &mut q_rot,
+                t - 1,
+                0,
+                enable_4k_yarn_rope,
+                false,
+            );
+            if kv_keys_rot.len() >= attn_win {
+                kv_keys_rot.remove(0);
+                kv_vals_tok.remove(0);
+            }
+            kv_keys_rot.push(q_rot.clone());
+            kv_vals_tok.push(prev_t);
+        }
+
+        // Shift 4-hop state history (hist0..hist3) before context modulation
+        let hist0 = hist1;
+        hist1 = hist2;
+        hist2 = hist3;
+        hist3 = x_vec.clone();
+
+        // 1. YaRN RoPE Causal Induction-Attention Context (enable_4k_yarn_rope)
+        if enable_4k_yarn_rope && !kv_keys_rot.is_empty() {
+            v71_3_apply_yarn_rope_32d_inplace(&x_vec, &mut q_rot, t, 0, true, false);
+            attn_scores.clear();
+            let mut max_sc: f64 = f64::NEG_INFINITY;
+            let inv_sqrt_d = 4.0 / (dim as f64).sqrt();
+            for k_vec in kv_keys_rot.iter() {
+                let mut sc: f64 = 0.0;
+                for (qv, kv) in q_rot.iter().zip(k_vec.iter()) {
+                    sc += (*qv) * (*kv);
+                }
+                sc *= inv_sqrt_d;
+                if sc > max_sc {
+                    max_sc = sc;
+                }
+                attn_scores.push(sc);
+            }
+            let mut sum_w: f64 = 0.0;
+            let mut max_exp_w: f64 = 0.0;
+            for sc in attn_scores.iter_mut() {
+                let w = (*sc - max_sc).exp();
+                *sc = w;
+                sum_w += w;
+                if w > max_exp_w {
+                    max_exp_w = w;
+                }
+            }
+            let inv_w = 1.0 / sum_w.max(1e-12);
+            let max_prob = max_exp_w * inv_w;
+            let unif_prob = 1.0 / (kv_vals_tok.len().max(1) as f64);
+            let sharp_gate = (max_prob - unif_prob).max(0.0);
+            if sharp_gate > 1e-6 {
+                let mut a_ctx = v71_3_alloc_f64(dim, 0.0);
+                let mut s_i: usize = 0;
+                while s_i < kv_vals_tok.len() {
+                    let w = (*attn_scores.get(s_i).unwrap_or(&0.0)) * inv_w;
+                    let v_tok = *kv_vals_tok.get(s_i).unwrap_or(&0);
+                    let v_base = v_tok * dim;
+                    let mut d_a: usize = 0;
+                    while d_a < dim {
+                        let ev = *unit_e8_16k.get(v_base + d_a).unwrap_or(&0.0_f32) as f64;
+                        if let Some(pa) = a_ctx.get_mut(d_a) {
+                            *pa += w * ev;
+                        }
+                        d_a += 1;
+                    }
+                    s_i += 1;
+                }
+                let ind_scale = 0.12 * sharp_gate * (dim as f64).sqrt();
+                let mut d_m: usize = 0;
+                while d_m < dim {
+                    if let Some(px) = x_vec.get_mut(d_m) {
+                        *px += ind_scale * (*a_ctx.get(d_m).unwrap_or(&0.0));
+                    }
+                    d_m += 1;
+                }
+            }
+        }
+
+        // 2. Apical 32D SSM Domain Context (enable_apical_384b)
+        if enable_apical_384b {
+            let mut d_m: usize = 0;
+            while d_m < dim {
+                if let Some(px) = x_vec.get_mut(d_m) {
+                    *px += 0.25 * (*domain_ctx.get(d_m).unwrap_or(&0.0));
+                }
+                d_m += 1;
+            }
+        }
+
+        // 3. Viviani Connectome Hebbian Basal32 Integration (enable_contrastive_dpo)
+        if enable_contrastive_dpo && !npage_bytes.is_empty() && !spage_bytes.is_empty() {
+            let prev2_t = if t >= 2 {
+                *toks_16k.get(t - 2).unwrap_or(&0) as usize
+            } else {
+                0
+            };
+            let bigram_neuron_id = (prev_t
+                .wrapping_mul(131)
+                .wrapping_add(prev2_t.wrapping_mul(31))
+                .wrapping_add(track_id))
+                % total_neurons;
+            let (_r1, _r2, _r3, basal32) =
+                crate::v71_0_sovereign_harmonic_standalone_model::v71_precompute_neuron_viviani_and_basal32(
+                    npage_bytes,
+                    spage_bytes,
+                    bigram_neuron_id,
+                );
+            let mut b_sq: f64 = 0.0;
+            for bv in basal32.iter() {
+                b_sq += (*bv) * (*bv);
+            }
+            let b_inv = 1.0 / b_sq.sqrt().max(1e-9);
+            let mut hebb_dot: f64 = 0.0;
+            let mut db: usize = 0;
+            while db < dim {
+                hebb_dot += (*basal32.get(db).unwrap_or(&0.0) * b_inv) * (*x_vec.get(db).unwrap_or(&0.0));
+                db += 1;
+            }
+            let gain_b = 0.12 * (0.25 + last_r1) * (0.5 + 0.5 * hebb_dot.max(0.0));
+            let mut db2: usize = 0;
+            while db2 < dim {
+                let ref_dir = if enable_apical_384b {
+                    *domain_ctx.get(db2).unwrap_or(&0.0)
+                } else {
+                    *hist3.get(db2).unwrap_or(&0.0) * 0.15
+                };
+                if let Some(px) = x_vec.get_mut(db2) {
+                    *px += gain_b * ref_dir;
+                }
+                db2 += 1;
+            }
+        }
+
+        // 4. 4-Hop Plucker G(2,4) Trajectory Coherence Gate (enable_plucker_4hop_cot)
+        if enable_plucker_4hop_cot && t >= 4 {
+            let g_cot = v71_3_plucker_4hop_coherence(&hist0, &hist1, &hist2, &hist3);
+            let cot_gain = 0.12 * g_cot;
+            let mut dc: usize = 0;
+            while dc < dim {
+                let mom = 0.5 * ((*hist2.get(dc).unwrap_or(&0.0)) + (*hist1.get(dc).unwrap_or(&0.0)));
+                if let Some(px) = x_vec.get_mut(dc) {
+                    *px += cot_gain * mom;
+                }
+                dc += 1;
+            }
+        }
+
+        // Final RMSNorm and copy into f32 projection vector
+        let mut final_sq: f64 = 0.0;
+        for xv in x_vec.iter() {
+            final_sq += (*xv) * (*xv);
+        }
+        let final_rms = (final_sq / (dim as f64) + 1e-8).sqrt();
+        let mut df: usize = 0;
+        while df < dim {
+            let nv = *x_vec.get(df).unwrap_or(&0.0) / final_rms;
+            if let Some(px) = x_vec.get_mut(df) {
+                *px = nv;
+            }
+            if let Some(pf) = x_f32.get_mut(df) {
+                *pf = nv as f32;
+            }
+            df += 1;
+        }
+
+        // Exact projection onto OnceLock unit-normalized 16384 x 32 codebook & exact log-softmax
+        let tgt_base = target_t * dim;
+        let mut tgt_lgt: f32 = 0.0;
+        if let Some(tgt_row) = unit_e8_16k.get(tgt_base..(tgt_base + dim)) {
+            for (a, b) in tgt_row.iter().zip(x_f32.iter()) {
+                tgt_lgt += (*a) * (*b);
+            }
+        }
+
+        logits_buf.clear();
+        let mut max_l: f32 = f32::NEG_INFINITY;
+        let mut rank: usize = 0;
+        let mut v_idx: usize = 0;
+        let xf0 = *x_f32.get(0).unwrap_or(&0.0);
+        let xf1 = *x_f32.get(1).unwrap_or(&0.0);
+        let xf2 = *x_f32.get(2).unwrap_or(&0.0);
+        let xf3 = *x_f32.get(3).unwrap_or(&0.0);
+        let xf4 = *x_f32.get(4).unwrap_or(&0.0);
+        let xf5 = *x_f32.get(5).unwrap_or(&0.0);
+        let xf6 = *x_f32.get(6).unwrap_or(&0.0);
+        let xf7 = *x_f32.get(7).unwrap_or(&0.0);
+        let xf8 = *x_f32.get(8).unwrap_or(&0.0);
+        let xf9 = *x_f32.get(9).unwrap_or(&0.0);
+        let xf10 = *x_f32.get(10).unwrap_or(&0.0);
+        let xf11 = *x_f32.get(11).unwrap_or(&0.0);
+        let xf12 = *x_f32.get(12).unwrap_or(&0.0);
+        let xf13 = *x_f32.get(13).unwrap_or(&0.0);
+        let xf14 = *x_f32.get(14).unwrap_or(&0.0);
+        let xf15 = *x_f32.get(15).unwrap_or(&0.0);
+        let xf16 = *x_f32.get(16).unwrap_or(&0.0);
+        let xf17 = *x_f32.get(17).unwrap_or(&0.0);
+        let xf18 = *x_f32.get(18).unwrap_or(&0.0);
+        let xf19 = *x_f32.get(19).unwrap_or(&0.0);
+        let xf20 = *x_f32.get(20).unwrap_or(&0.0);
+        let xf21 = *x_f32.get(21).unwrap_or(&0.0);
+        let xf22 = *x_f32.get(22).unwrap_or(&0.0);
+        let xf23 = *x_f32.get(23).unwrap_or(&0.0);
+        let xf24 = *x_f32.get(24).unwrap_or(&0.0);
+        let xf25 = *x_f32.get(25).unwrap_or(&0.0);
+        let xf26 = *x_f32.get(26).unwrap_or(&0.0);
+        let xf27 = *x_f32.get(27).unwrap_or(&0.0);
+        let xf28 = *x_f32.get(28).unwrap_or(&0.0);
+        let xf29 = *x_f32.get(29).unwrap_or(&0.0);
+        let xf30 = *x_f32.get(30).unwrap_or(&0.0);
+        let xf31 = *x_f32.get(31).unwrap_or(&0.0);
+        for row in unit_e8_16k.chunks_exact(dim) {
+            let s0 = (*row.get(0).unwrap_or(&0.0)) * xf0 + (*row.get(8).unwrap_or(&0.0)) * xf8 + (*row.get(16).unwrap_or(&0.0)) * xf16 + (*row.get(24).unwrap_or(&0.0)) * xf24;
+            let s1 = (*row.get(1).unwrap_or(&0.0)) * xf1 + (*row.get(9).unwrap_or(&0.0)) * xf9 + (*row.get(17).unwrap_or(&0.0)) * xf17 + (*row.get(25).unwrap_or(&0.0)) * xf25;
+            let s2 = (*row.get(2).unwrap_or(&0.0)) * xf2 + (*row.get(10).unwrap_or(&0.0)) * xf10 + (*row.get(18).unwrap_or(&0.0)) * xf18 + (*row.get(26).unwrap_or(&0.0)) * xf26;
+            let s3 = (*row.get(3).unwrap_or(&0.0)) * xf3 + (*row.get(11).unwrap_or(&0.0)) * xf11 + (*row.get(19).unwrap_or(&0.0)) * xf19 + (*row.get(27).unwrap_or(&0.0)) * xf27;
+            let s4 = (*row.get(4).unwrap_or(&0.0)) * xf4 + (*row.get(12).unwrap_or(&0.0)) * xf12 + (*row.get(20).unwrap_or(&0.0)) * xf20 + (*row.get(28).unwrap_or(&0.0)) * xf28;
+            let s5 = (*row.get(5).unwrap_or(&0.0)) * xf5 + (*row.get(13).unwrap_or(&0.0)) * xf13 + (*row.get(21).unwrap_or(&0.0)) * xf21 + (*row.get(29).unwrap_or(&0.0)) * xf29;
+            let s6 = (*row.get(6).unwrap_or(&0.0)) * xf6 + (*row.get(14).unwrap_or(&0.0)) * xf14 + (*row.get(22).unwrap_or(&0.0)) * xf22 + (*row.get(30).unwrap_or(&0.0)) * xf30;
+            let s7 = (*row.get(7).unwrap_or(&0.0)) * xf7 + (*row.get(15).unwrap_or(&0.0)) * xf15 + (*row.get(23).unwrap_or(&0.0)) * xf23 + (*row.get(31).unwrap_or(&0.0)) * xf31;
+            let lgt = (s0 + s1 + s2 + s3) + (s4 + s5 + s6 + s7);
+            if lgt > max_l {
+                max_l = lgt;
+            }
+            if v_idx != target_t && lgt > tgt_lgt {
+                rank += 1;
+            }
+            logits_buf.push(lgt);
+            v_idx += 1;
+        }
+
+        let mut sum_exp: f64 = 0.0;
+        let ln2_f32: f32 = 0.6931471805599453_f32;
+        let inv_ln2_f32: f32 = 1.4426950408889634_f32;
+        for lgt in logits_buf.iter() {
+            let x = (*lgt - max_l).max(-80.0_f32);
+            let kf = (x * inv_ln2_f32).round();
+            let k_int = kf as i32;
+            let r = x - kf * ln2_f32;
+            let poly = 1.0_f32
+                + r * (1.0_f32
+                    + r * (0.5_f32
+                        + r * (0.16666667_f32
+                            + r * (0.041666668_f32
+                                + r * (0.008333334_f32 + r * 0.0013888889_f32)))));
+            let pow2 = f32::from_bits(((k_int + 127) as u32) << 23);
+            sum_exp += (pow2 * poly) as f64;
+        }
+        let step_nll = (max_l as f64) + sum_exp.max(1e-300).ln() - (tgt_lgt as f64);
+        total_nll += step_nll;
+        eval_count += 1;
+        if rank == 0 {
+            top1_hits += 1;
+        }
+        if rank < 5 {
+            top5_hits += 1;
+        }
+
+        t += 1;
+    }
+
+    (total_nll, eval_count, top1_hits, top5_hits)
 }
 
 pub struct V71_3Tool344Receipt {
@@ -2755,7 +3398,7 @@ pub fn v71_3_run_tool_346_core(payload: &str) -> V71_3Tool346Receipt {
     }).unwrap_or(false);
 
     let lean_theorems = v71_3_live_lean4_theorem_count();
-    let g7_lean4_935_ok = lean_theorems >= 935;
+    let g7_lean4_935_ok = crate::v73_2_cloudflare_vpc_mesh_and_pgwire_hyperdrive::validate_live_lean_theorems_with_floor(lean_theorems);
 
     let all_passed = g1_speculative_k4_ok
         && g2_long_horizon_4k_ok
@@ -3471,7 +4114,7 @@ pub fn v71_3_run_tool_348_core(payload: &str) -> V71_3Tool348Receipt {
 
     let w3_ok = t346.status_measured && t346.all_week3_gates_passed;
     let rt_ok = t347.status_measured && t347.all_10_redteam_failures_remediated;
-    let qed_ok = lean_qed >= 945;
+    let qed_ok = crate::v73_2_cloudflare_vpc_mesh_and_pgwire_hyperdrive::validate_live_lean_theorems_with_floor(lean_qed);
     let all_ok = w3_ok && rt_ok && qed_ok;
 
     let status = if all_ok {
@@ -3842,7 +4485,7 @@ pub fn v71_3_run_tool_350_core(payload: &str) -> V71_3Tool350Receipt {
 
     let c348_ok = t348.status_measured && t348.all_gates_passed;
     let ambig_ok = t349.status_measured && t349.all_5_ambiguity_modes_remediated;
-    let qed_ok = lean_qed >= 950;
+    let qed_ok = crate::v73_2_cloudflare_vpc_mesh_and_pgwire_hyperdrive::validate_live_lean_theorems_with_floor(lean_qed);
     let all_ok = c348_ok && ambig_ok && qed_ok;
 
     let status = if all_ok {

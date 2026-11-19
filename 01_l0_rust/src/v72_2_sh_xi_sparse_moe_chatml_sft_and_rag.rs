@@ -1,5 +1,5 @@
 // =============================================================================
-// ACT-OMEGA NET v72.2.0 — SOVEREIGN HARMONIC XI WEEK 2 (SH-XI-SPARSE-MOE-SFT-RAG | CHAIN 368)
+// ACT-OMEGA NET — SOVEREIGN HARMONIC XI WEEK 2 (SH-XI-SPARSE-MOE-SFT-RAG | CHAIN 368)
 // BEFORE-THE-FACT GEOMETRIC & FULL-HOST MULTI-SILICON EFFICIENCY ARCHITECTURE:
 //   - Tool 363: Shell 2 CPU+SSD Growable Sparse MoE Bank (16 Active / 256 Pre-Allocated
 //               64B Cacheline Directory Slots in E:\...\sh_xi_moe_experts.sh4z for Week 3
@@ -12,12 +12,12 @@
 //               Standard Rust Default vs Zero-Bracket L0 Rust, & IFEval Format Adherence)
 //   - Tool 365: Intel UHD iGPU WebGPU WGSL (igpu_sh_xi_rag_384d_cosine.wgsl) + 12T AVX2
 //               Parallel 384D Shell 0 Workspace RAG & Live Tri-Silicon Hardware Telemetry
-//               (Host RTX 3050 + USB Pixel 10 58170DLCR0004V + Wireless ADB Rooted Pixel 8)
+//               (Host RTX 3050 + USB Pixel 10 Edge-1 + Wireless ADB Rooted Pixel 8 Edge-2)
 //   - Tool 366: Deterministic Pushdown JSON Grammar FSM (<|tool_call|> 100.0% Valid JSON)
 //               + Coordinator Bus 5W1H Roundtrip Execution & Honest Epistemic Abstention
 //   - Tool 367: Programmatic IFEval-Lite-64 (8 Categories x 8 = 64 Tasks, 0.0% RW-Eval-500
 //               Overlap) + 8-Turn Stateful Multi-Turn Coherence & Tool-Use Gauntlet
-//   - Tool 368: Week 2 Master Certification (CHAIN 368 | 995/995 Lean 4 QED)
+//   - Tool 368: Week 2 Master Certification (CHAIN 368 | Live Lean 4 QED)
 // Primary Author & Principal Systems Architect: Donevin Frownfelter (@bospaladin34-crypto)
 // Strictly Zero Square Brackets (0x5B / 0x5D = 0) & Zero Unmeasured Data
 // =============================================================================
@@ -42,7 +42,7 @@ use crate::v72_1_sh_xi_matryoshka_384_768_cuda_pretrainer::{
     v72_1_batch_forward_shells_and_logits, v72_1_bpe16k_decode, v72_1_bpe16k_encode,
     v72_1_build_holdout_shingle_blacklist, v72_1_box_muller, v72_1_ensure_model_loaded_for_sha,
     v72_1_ensure_sealed_rw_eval_500, v72_1_exact_ce_loss_and_probsum,
-    v72_1_extract_13gram_shingles, v72_1_extract_5gram_shingles, v72_1_extract_bool_param,
+    v72_1_extract_13gram_shingles, v72_1_extract_bool_param,
     v72_1_extract_opt_f64_param, v72_1_extract_str_param, v72_1_extract_usize_param,
     v72_1_fnv1a64_str, v72_1_forward_shell0_384_only, v72_1_forward_shells_and_logits,
     v72_1_forward_shells_and_logits_in_ram, v72_1_get_bpe16k_tokenizer,
@@ -911,16 +911,17 @@ fn v72_2_eval_single_expert_swiglu_scalar(ex: &V72_2DomainExpert, h768: &Vec<f32
     (swiglu_energy / (V72_2_EXPERT_HIDDEN_RANK as f32)).tanh()
 }
 
-fn v72_2_apply_shell2_moe_to_logits(
-    bank: &V72_2SparseMoeBank,
+fn v72_2_apply_shell2_moe_experts_to_logits(
+    experts: &Vec<V72_2DomainExpert>,
+    global_alpha_moe: f32,
     h768: &Vec<f32>,
     logits_s1: &Vec<f32>,
     _prev2_tok: Option<u16>,
     _prev1_tok: Option<u16>,
 ) -> (Vec<f32>, usize, usize, f32, f32) {
-    let (e1_id, e2_id, w1, w2) = v72_2_route_top2_experts(&bank.experts, h768);
+    let (e1_id, e2_id, w1, w2) = v72_2_route_top2_experts(experts, h768);
     let mut out = logits_s1.clone();
-    let g_alpha = bank.global_alpha_moe;
+    let g_alpha = global_alpha_moe;
     if g_alpha == 0.0_f32 {
         return (out, e1_id, e2_id, w1, w2);
     }
@@ -928,13 +929,13 @@ fn v72_2_apply_shell2_moe_to_logits(
     // Parallel Top-2 expert evaluation via rayon::join across AVX2 threads
     let (act1, act2) = rayon::join(
         || {
-            bank.experts
+            experts
                 .get(e1_id)
                 .map(|ex| (ex.alpha_gate, v72_2_eval_single_expert_swiglu_scalar(ex, h768)))
                 .unwrap_or((0.0, 0.0))
         },
         || {
-            bank.experts
+            experts
                 .get(e2_id)
                 .map(|ex| (ex.alpha_gate, v72_2_eval_single_expert_swiglu_scalar(ex, h768)))
                 .unwrap_or((0.0, 0.0))
@@ -953,14 +954,31 @@ fn v72_2_apply_shell2_moe_to_logits(
         }
     };
 
-    if let Some(ex1) = bank.experts.get(e1_id) {
+    if let Some(ex1) = experts.get(e1_id) {
         apply_one(&mut out, ex1, w1, act1.1);
     }
-    if let Some(ex2) = bank.experts.get(e2_id) {
+    if let Some(ex2) = experts.get(e2_id) {
         apply_one(&mut out, ex2, w2, act2.1);
     }
 
     (out, e1_id, e2_id, w1, w2)
+}
+
+fn v72_2_apply_shell2_moe_to_logits(
+    bank: &V72_2SparseMoeBank,
+    h768: &Vec<f32>,
+    logits_s1: &Vec<f32>,
+    prev2_tok: Option<u16>,
+    prev1_tok: Option<u16>,
+) -> (Vec<f32>, usize, usize, f32, f32) {
+    v72_2_apply_shell2_moe_experts_to_logits(
+        &bank.experts,
+        bank.global_alpha_moe,
+        h768,
+        logits_s1,
+        prev2_tok,
+        prev1_tok,
+    )
 }
 
 fn v72_2_hex_nibble(b: u8) -> u8 {
@@ -1174,8 +1192,9 @@ pub fn v72_2_precompute_shell01_positions(
     Ok((out_items, eval_bytes))
 }
 
-pub fn v72_2_eval_moe_from_cached(
-    b_ref: &V72_2SparseMoeBank,
+pub fn v72_2_eval_moe_experts_from_cached(
+    experts: &Vec<V72_2DomainExpert>,
+    global_alpha_moe: f32,
     cached: &Vec<(Vec<f32>, f64, f64, Vec<f32>, Option<u16>, Option<u16>, u16)>,
     eval_bytes: usize,
 ) -> (f64, f64, f64, f64) {
@@ -1186,8 +1205,14 @@ pub fn v72_2_eval_moe_from_cached(
     let sums: (f64, f64, f64) = cached
         .par_iter()
         .map(|(h768_s, n0, n1, lg1, prev2, prev1, tgt)| {
-            let (lg2, _, _, _, _) =
-                v72_2_apply_shell2_moe_to_logits(b_ref, h768_s, lg1, *prev2, *prev1);
+            let (lg2, _, _, _, _) = v72_2_apply_shell2_moe_experts_to_logits(
+                experts,
+                global_alpha_moe,
+                h768_s,
+                lg1,
+                *prev2,
+                *prev1,
+            );
             let (n2, _) = v72_1_exact_ce_loss_and_probsum(&lg2, *tgt);
             (*n0, *n1, n2)
         })
@@ -1203,6 +1228,14 @@ pub fn v72_2_eval_moe_from_cached(
     };
     let ln2 = std::f64::consts::LN_2;
     (m0 / (cpt * ln2), m1 / (cpt * ln2), m2 / (cpt * ln2), m2.exp())
+}
+
+pub fn v72_2_eval_moe_from_cached(
+    b_ref: &V72_2SparseMoeBank,
+    cached: &Vec<(Vec<f32>, f64, f64, Vec<f32>, Option<u16>, Option<u16>, u16)>,
+    eval_bytes: usize,
+) -> (f64, f64, f64, f64) {
+    v72_2_eval_moe_experts_from_cached(&b_ref.experts, b_ref.global_alpha_moe, cached, eval_bytes)
 }
 
 pub fn v72_2_extract_f64_from_json(json_str: &str, key: &str) -> Option<f64> {
@@ -1786,7 +1819,9 @@ pub fn v72_2_train_or_get_moe_bank(force_rebuild: bool) -> (f64, f64, f64, f64, 
     let lr_moe: f32 = 0.005_f32;
     let lr_wout: f32 = 0.08_f32;
     let wd_moe: f32 = 0.01_f32;
-    let mut moe_curve_csv = String::from("step,lr_moe,lr_wout,train_mean_ce_nats\n");
+    let val_pairs: Vec<(Vec<u16>, usize)> = val_seqs.into_iter().map(|(s, b, _)| (s, b)).collect();
+    let val_precomputed_opt = v72_2_precompute_shell01_positions(&val_pairs).ok();
+    let mut moe_curve_csv = String::from("step,lr_moe,lr_wout,train_mean_ce_nats,val_bpb_384d,val_bpb_768d,val_bpb_3shell,val_ppl_3shell\n");
     let mut step_m: usize = 0;
     while step_m < 16 {
         let mut d_centroids: Vec<Vec<f32>> = Vec::with_capacity(V72_2_ACTIVE_MOE_EXPERTS);
@@ -1973,12 +2008,22 @@ pub fn v72_2_train_or_get_moe_bank(force_rebuild: bool) -> (f64, f64, f64, f64, 
             ei += 1;
         }
         let step_mean_ce = step_ce_accum / (norm as f64);
+        let (svb0, svb1, svb2, svppl2) = match val_precomputed_opt {
+            Some((ref val_cached, val_bytes)) => {
+                v72_2_eval_moe_experts_from_cached(&experts, 0.30_f32, val_cached, val_bytes)
+            }
+            None => (0.0, 0.0, 0.0, 1.0),
+        };
         moe_curve_csv.push_str(&format!(
-            "{},{:.5},{:.5},{:.6}\n",
-            step_m + 1,
+            "{},{:.5},{:.5},{:.6},{:.6},{:.6},{:.6},{:.6}\n",
+            step_m,
             lr_moe,
             lr_wout,
-            step_mean_ce
+            step_mean_ce,
+            svb0,
+            svb1,
+            svb2,
+            svppl2
         ));
         step_m += 1;
     }
@@ -2062,11 +2107,34 @@ pub fn v72_2_train_or_get_moe_bank(force_rebuild: bool) -> (f64, f64, f64, f64, 
         }
     }
 
-    let val_pairs: Vec<(Vec<u16>, usize)> = val_seqs.into_iter().map(|(s, b, _)| (s, b)).collect();
-    let (vb0, vb1, vb2, vppl2) = match v72_2_precompute_shell01_positions(&val_pairs) {
-        Ok((val_cached, val_bytes)) => v72_2_eval_moe_from_cached(&bank, &val_cached, val_bytes),
-        Err(_) => (0.0, 0.0, 0.0, 1.0),
+    let (vb0, vb1, vb2, vppl2) = match val_precomputed_opt {
+        Some((ref val_cached, val_bytes)) => v72_2_eval_moe_from_cached(&bank, val_cached, val_bytes),
+        None => (0.0, 0.0, 0.0, 1.0),
     };
+    let mut final_train_ce_accum: f64 = 0.0;
+    let mut final_train_cnt: usize = 0;
+    for (h768, _, _, lg1, prev2, prev1, tgt) in train_cached.iter() {
+        let (lg2, _, _, _, _) =
+            v72_2_apply_shell2_moe_to_logits(&bank, h768, lg1, *prev2, *prev1);
+        let (ce_n, _) = v72_1_exact_ce_loss_and_probsum(&lg2, *tgt);
+        final_train_ce_accum += ce_n;
+        final_train_cnt += 1;
+    }
+    let final_train_ce = if final_train_cnt > 0 {
+        final_train_ce_accum / (final_train_cnt as f64)
+    } else {
+        0.0
+    };
+    moe_curve_csv.push_str(&format!(
+        "16,{:.5},{:.5},{:.6},{:.6},{:.6},{:.6},{:.6}\n",
+        lr_moe,
+        lr_wout,
+        final_train_ce,
+        vb0,
+        vb1,
+        vb2,
+        vppl2
+    ));
 
     let (ssd_path, ssd_bytes, ssd_sha) = v72_2_serialize_moe_sh4z_256slot_vault(&bank.experts);
     let _ = fs::create_dir_all("03_vault/connectome");
@@ -2310,9 +2378,11 @@ pub fn v72_2_dispatch_tool_363_shell2_cpu_ssd_sparse_moe_bank(payload: &str) -> 
         } else {
             String::from("WEIGHT_LOAD_FAILED: MoE bank verification failed or offline")
         };
+        let live_ver = crate::v73_2_cloudflare_vpc_mesh_and_pgwire_hyperdrive::v73_2_read_live_release_version();
         let elapsed_us = t0.elapsed().as_micros() as u64;
         return format!(
-            "{{\"status\":\"UNMEASURED/OFFLINE\",\"tool_id\":363,\"version\":\"v72.2.0\",\"engine\":\"SH_XI_SHELL2_CPU_AVX2_SSD_SPARSE_MOE_BANK\",\"measurement_latency_us\":{},\"error\":\"{}\",\"reason\":\"{}\",\"ssd_vault_path\":\"{}\",\"ssd_vault_bytes\":{},\"ssd_vault_sha256\":\"{}\",\"http206_slot1_verified\":{}}}",
+            "{{\"status\":\"UNMEASURED/OFFLINE\",\"tool_id\":363,\"version\":\"{}\",\"engine\":\"SH_XI_SHELL2_CPU_AVX2_SSD_SPARSE_MOE_BANK\",\"measurement_latency_us\":{},\"error\":\"{}\",\"reason\":\"{}\",\"ssd_vault_path\":\"{}\",\"ssd_vault_bytes\":{},\"ssd_vault_sha256\":\"{}\",\"http206_slot1_verified\":{}}}",
+            v61_escape_clean(&live_ver),
             elapsed_us,
             v61_escape_clean(&err_msg),
             v61_escape_clean(&err_msg),
@@ -2323,12 +2393,14 @@ pub fn v72_2_dispatch_tool_363_shell2_cpu_ssd_sparse_moe_bank(payload: &str) -> 
         );
     }
 
+    let live_ver = crate::v73_2_cloudflare_vpc_mesh_and_pgwire_hyperdrive::v73_2_read_live_release_version();
     let status = "MEASURED";
     let elapsed_us = t0.elapsed().as_micros() as u64;
 
     format!(
-        "{{\"status\":\"{}\",\"tool_id\":363,\"version\":\"v72.2.0\",\"engine\":\"SH_XI_SHELL2_CPU_AVX2_SSD_SPARSE_MOE_BANK\",\"measurement_latency_us\":{},\"moe_architecture\":{{\"active_experts\":{},\"top_k_selected\":{},\"active_compute_fraction\":0.125,\"preallocated_directory_slots\":{},\"slot_descriptor_bytes\":{},\"header_bytes\":{},\"expert_slice_bytes\":{},\"experts_utilized\":{},\"dead_experts\":{},\"load_balance_cv\":{:.4}}},\"zero_gate_step0_invariance\":{{\"alpha_moe_step0\":0.0,\"vocab_logits_checked\":{},\"step0_max_abs_logit_diff\":{:.12},\"bit_exact_step0_preserved\":{}}},\"three_shell_matryoshka_progression\":{{\"val_bpb_shell0_384d\":{:.6},\"val_bpb_shell1_768d\":{:.6},\"val_bpb_shell2_768d_plus_moe\":{:.6},\"val_ppl_shell2_moe\":{:.4},\"strictly_monotonic_improvement\":{}}},\"coexecution_and_ssd_vault\":{{\"rtx3050_dense_768d_ms\":{:.4},\"i5_12450hx_12t_avx2_moe_us\":{},\"ssd_vault_path\":\"{}\",\"ssd_vault_bytes\":{},\"ssd_vault_sha256\":\"{}\",\"http206_slot1_verified\":{},\"http206_slot1_byte_range\":\"bytes={}-{}\",\"http206_slot1_len\":{}}},\"lean4_theorems_verified\":\"thm_v72_2_981..985\",\"proof\":\"SH_XI_WEEK2_TOOL363_SPARSE_MOE | BPB: {:.6} -> {:.6} -> {:.6} | Experts={}/16 | Step0Diff=0.0 | Monotonic={}\"}}",
+        "{{\"status\":\"{}\",\"tool_id\":363,\"version\":\"{}\",\"engine\":\"SH_XI_SHELL2_CPU_AVX2_SSD_SPARSE_MOE_BANK\",\"measurement_latency_us\":{},\"moe_architecture\":{{\"active_experts\":{},\"top_k_selected\":{},\"active_compute_fraction\":0.125,\"preallocated_directory_slots\":{},\"slot_descriptor_bytes\":{},\"header_bytes\":{},\"expert_slice_bytes\":{},\"experts_utilized\":{},\"dead_experts\":{},\"load_balance_cv\":{:.4}}},\"zero_gate_step0_invariance\":{{\"alpha_moe_step0\":0.0,\"vocab_logits_checked\":{},\"step0_max_abs_logit_diff\":{:.12},\"bit_exact_step0_preserved\":{}}},\"three_shell_matryoshka_progression\":{{\"val_bpb_shell0_384d\":{:.6},\"val_bpb_shell1_768d\":{:.6},\"val_bpb_shell2_768d_plus_moe\":{:.6},\"val_ppl_shell2_moe\":{:.4},\"strictly_monotonic_improvement\":{}}},\"coexecution_and_ssd_vault\":{{\"rtx3050_dense_768d_ms\":{:.4},\"i5_12450hx_12t_avx2_moe_us\":{},\"ssd_vault_path\":\"{}\",\"ssd_vault_bytes\":{},\"ssd_vault_sha256\":\"{}\",\"http206_slot1_verified\":{},\"http206_slot1_byte_range\":\"bytes={}-{}\",\"http206_slot1_len\":{}}},\"lean4_theorems_verified\":\"thm_v72_2_981..985\",\"proof\":\"SH_XI_WEEK2_TOOL363_SPARSE_MOE | BPB: {:.6} -> {:.6} -> {:.6} | Experts={}/16 | Step0Diff=0.0 | Monotonic={}\"}}",
         status,
+        v61_escape_clean(&live_ver),
         elapsed_us,
         V72_2_ACTIVE_MOE_EXPERTS,
         V72_2_TOP_K_EXPERTS,
@@ -2480,6 +2552,38 @@ fn v72_2_empty_offline_sft_receipt() -> V72_2SftReceipt {
     }
 }
 
+pub fn v72_2_extract_word_5gram_shingles(text: &str) -> HashSet<u64> {
+    let low = text.to_lowercase();
+    let words: Vec<&str> = low
+        .split(|c: char| !(c.is_ascii_lowercase() || c.is_ascii_digit() || c == '_'))
+        .filter(|w| !w.is_empty())
+        .collect();
+    if words.len() < 5 {
+        return HashSet::new();
+    }
+    let count = words.len() - 5 + 1;
+    let mut out: HashSet<u64> = HashSet::with_capacity(count);
+    let mut pos: usize = 0;
+    while pos < count {
+        let mut h: u64 = 0xcbf29ce484222325;
+        let mut k: usize = 0;
+        while k < 5 {
+            if let Some(wd) = words.get(pos + k) {
+                for b in wd.as_bytes().iter() {
+                    h ^= (*b) as u64;
+                    h = h.wrapping_mul(0x100000001b3);
+                }
+                h ^= 0x20_u64;
+                h = h.wrapping_mul(0x100000001b3);
+            }
+            k += 1;
+        }
+        out.insert(h);
+        pos += 1;
+    }
+    out
+}
+
 fn v72_2_parse_and_dedup_sft(
     live_sft_content: &str,
     blacklist: &HashSet<u64>,
@@ -2551,7 +2655,7 @@ fn v72_2_parse_and_dedup_sft(
             continue;
         }
 
-        let shs5 = v72_1_extract_5gram_shingles(&flat);
+        let shs5 = v72_2_extract_word_5gram_shingles(&flat);
         let mut pair_max: f64 = 0.0;
         let mut jac_rejected = false;
         for prev in accepted_sh5.iter() {
@@ -3068,8 +3172,10 @@ pub fn v72_2_train_or_get_masked_chatml_sft(force_retrain: bool) -> V72_2SftRece
         let _ = fs::write(E_SH_XI_SOURCED_SFT_JSONL_PATH, live_sft_content.as_bytes());
         let _ = fs::write(E_SH_XI_SFT_CORPUS_JSONL_PATH, live_sft_content.as_bytes());
     }
+    let live_ver = crate::v73_2_cloudflare_vpc_mesh_and_pgwire_hyperdrive::v73_2_read_live_release_version();
     let manifest = format!(
-        "{{\"version\":\"v72.2.0\",\"dialogues\":{},\"min_turns\":{},\"max_turns\":{},\"source_files_read\":{},\"raw_doc_count\":{},\"deduplicated_doc_count\":{},\"max_pairwise_5gram_jaccard\":{:.6},\"prompt_masked_tokens\":{},\"assistant_target_tokens\":{},\"prompt_grad_norm\":{:.12},\"assistant_grad_norm\":{:.8},\"init_ce_nats\":{:.6},\"final_ce_nats\":{:.6},\"rweval500_overlap\":{},\"sha256\":\"{}\"}}",
+        "{{\"version\":\"{}\",\"dialogues\":{},\"min_turns\":{},\"max_turns\":{},\"source_files_read\":{},\"raw_doc_count\":{},\"deduplicated_doc_count\":{},\"max_pairwise_5gram_jaccard\":{:.6},\"prompt_masked_tokens\":{},\"assistant_target_tokens\":{},\"prompt_grad_norm\":{:.12},\"assistant_grad_norm\":{:.8},\"init_ce_nats\":{:.6},\"final_ce_nats\":{:.6},\"rweval500_overlap\":{},\"sha256\":\"{}\"}}",
+        v61_escape_clean(&live_ver),
         dialogues.len(),
         min_turns_seen,
         max_turns_seen,
@@ -3252,9 +3358,11 @@ pub fn v72_2_dispatch_tool_364_chatml_masked_sft_trainer(payload: &str) -> Strin
         "UNMEASURED/OFFLINE"
     };
 
+    let live_ver = crate::v73_2_cloudflare_vpc_mesh_and_pgwire_hyperdrive::v73_2_read_live_release_version();
     format!(
-        "{{\"status\":\"{}\",\"tool_id\":364,\"version\":\"v72.2.0\",\"engine\":\"SH_XI_MASKED_CHATML_MULTITURN_SFT_TRAINER\",\"measurement_latency_us\":{},\"dataset_hygiene\":{{\"source_files_read\":{},\"raw_doc_count\":{},\"deduplicated_doc_count\":{},\"max_pairwise_5gram_jaccard\":{:.6},\"sft_dialogues\":{},\"min_turns\":{},\"max_turns\":{},\"prompt_masked_tokens_loss0\":{},\"assistant_target_tokens_loss1\":{},\"rweval500_overlap_shingles\":{},\"sft_jsonl_bytes\":{},\"corpus_sha256\":\"{}\",\"sft_sha256\":\"{}\"}},\"masked_gradient_verification\":{{\"system_and_user_loss_mask\":0,\"assistant_loss_mask\":1,\"measured_prompt_grad_norm\":{:.12},\"measured_assistant_grad_norm\":{:.8},\"zero_prompt_gradient_leakage\":{},\"init_assistant_ce_nats\":{:.6},\"final_assistant_ce_nats\":{:.6},\"ce_loss_improved\":{}}},\"capabilities_unlocked\":\"Direct_QA, Stateful_8Turn_Session_And_OpenAI_Messages, Induction_Entity_Copy, StdRust_Default_Vs_ZeroBracket_L0, IFEval_Format_Constraints\",\"lean4_theorems_verified\":\"thm_v72_2_986..988\",\"proof\":\"SH_XI_WEEK2_TOOL364_MASKED_CHATML_SFT_QED | PromptGradNorm={:.12} | CE: {:.4} -> {:.4} | Turns=1..{} | MaxJacc={:.4}\"}}",
+        "{{\"status\":\"{}\",\"tool_id\":364,\"version\":\"{}\",\"engine\":\"SH_XI_MASKED_CHATML_MULTITURN_SFT_TRAINER\",\"measurement_latency_us\":{},\"dataset_hygiene\":{{\"source_files_read\":{},\"raw_doc_count\":{},\"deduplicated_doc_count\":{},\"max_pairwise_5gram_jaccard\":{:.6},\"sft_dialogues\":{},\"min_turns\":{},\"max_turns\":{},\"prompt_masked_tokens_loss0\":{},\"assistant_target_tokens_loss1\":{},\"rweval500_overlap_shingles\":{},\"sft_jsonl_bytes\":{},\"corpus_sha256\":\"{}\",\"sft_sha256\":\"{}\"}},\"masked_gradient_verification\":{{\"system_and_user_loss_mask\":0,\"assistant_loss_mask\":1,\"measured_prompt_grad_norm\":{:.12},\"measured_assistant_grad_norm\":{:.8},\"zero_prompt_gradient_leakage\":{},\"init_assistant_ce_nats\":{:.6},\"final_assistant_ce_nats\":{:.6},\"ce_loss_improved\":{}}},\"capabilities_unlocked\":\"Direct_QA, Stateful_8Turn_Session_And_OpenAI_Messages, Induction_Entity_Copy, StdRust_Default_Vs_ZeroBracket_L0, IFEval_Format_Constraints\",\"lean4_theorems_verified\":\"thm_v72_2_986..988\",\"proof\":\"SH_XI_WEEK2_TOOL364_MASKED_CHATML_SFT_QED | PromptGradNorm={:.12} | CE: {:.4} -> {:.4} | Turns=1..{} | MaxJacc={:.4}\"}}",
         status,
+        v61_escape_clean(&live_ver),
         elapsed_us,
         r.source_files_read,
         r.raw_doc_count,
@@ -3507,6 +3615,18 @@ pub fn v72_2_probe_live_trisilicon_telemetry(force_refresh: bool) -> V72_2TriSil
     let adb_exe = v72_2_resolve_adb_exe();
     let mut p10_serial = String::new();
     let mut p8_serial = String::new();
+    let mut ext_p10 = String::new();
+    let mut ext_p8 = String::new();
+    if let Ok(raw_cfg) = fs::read_to_string("C:\\Users\\Nbell\\.act_omega_adb_devices.json") {
+        if let Ok(cfg_json) = serde_json::from_str::<serde_json::Value>(&raw_cfg) {
+            if let Some(s) = cfg_json.get("pixel10").and_then(|o| o.get("serial")).and_then(|x| x.as_str()) {
+                ext_p10 = String::from(s.trim());
+            }
+            if let Some(s) = cfg_json.get("pixel8").and_then(|o| o.get("serial")).and_then(|x| x.as_str()) {
+                ext_p8 = String::from(s.trim());
+            }
+        }
+    }
 
     if let Ok(dev_out) = Command::new(&adb_exe).arg("devices").arg("-l").output() {
         if dev_out.status.success() {
@@ -3520,12 +3640,12 @@ pub fn v72_2_probe_live_trisilicon_telemetry(force_refresh: bool) -> V72_2TriSil
                 }
                 if raw_line.contains("Pixel_10")
                     || raw_line.contains("frankel")
-                    || ser == "58170DLCR0004V"
+                    || (!ext_p10.is_empty() && ser == ext_p10)
                 {
                     p10_serial = String::from(ser);
                 } else if raw_line.contains("Pixel_8")
                     || raw_line.contains("shiba")
-                    || ser == "3A121FDJH00BW5"
+                    || (!ext_p8.is_empty() && ser == ext_p8)
                     || ser.ends_with(":5555")
                 {
                     p8_serial = String::from(ser);
@@ -3872,12 +3992,14 @@ pub fn v72_2_dispatch_tool_365_igpu_grounded_rag_and_telemetry(payload: &str) ->
         let _ = fs::write(E_SH_XI_WGSL_RAG_SHADER_PATH, wgsl_src.as_bytes());
     }
 
+    let live_ver = crate::v73_2_cloudflare_vpc_mesh_and_pgwire_hyperdrive::v73_2_read_live_release_version();
     // 2. Check RAG index availability
     let rag_chunks = match v72_2_get_workspace_rag_index() {
         Ok(c) => c,
         Err(_) => {
             return format!(
-                "{{\"status\":\"RAG_UNAVAILABLE_UNTRAINED_OR_MISSING_WEIGHTS\",\"tool_id\":365,\"version\":\"v72.2.0\",\"reason\":\"Missing or untrained weights manifest verification failure\",\"workspace_rag_384d\":{{\"indexed_chunks\":0,\"embed_dim\":384,\"query\":\"{}\",\"ranking_method\":\"trained_shell0_384d_signed_cosine\",\"rag_top_chunks\":\x5b\x5d,\"top_hits\":\x5b\x5d,\"lexical_baseline_chunks\":\x5b\x5d}}}}",
+                "{{\"status\":\"RAG_UNAVAILABLE_UNTRAINED_OR_MISSING_WEIGHTS\",\"tool_id\":365,\"version\":\"{}\",\"reason\":\"Missing or untrained weights manifest verification failure\",\"workspace_rag_384d\":{{\"indexed_chunks\":0,\"embed_dim\":384,\"query\":\"{}\",\"ranking_method\":\"trained_shell0_384d_signed_cosine\",\"rag_top_chunks\":\x5b\x5d,\"top_hits\":\x5b\x5d,\"lexical_baseline_chunks\":\x5b\x5d}}}}",
+                v61_escape_clean(&live_ver),
                 v61_escape_clean(&query)
             );
         }
@@ -3900,10 +4022,21 @@ pub fn v72_2_dispatch_tool_365_igpu_grounded_rag_and_telemetry(payload: &str) ->
     } else {
         "UNMEASURED/OFFLINE"
     };
+    let p10_serial_redacted = if snap.pixel10.adb_serial.is_empty() || snap.pixel10.adb_serial == "OFFLINE" {
+        "UNMEASURED/OFFLINE"
+    } else {
+        "EDGE-1-PIXEL10-G5"
+    };
+    let p8_serial_redacted = if snap.pixel8.adb_serial.is_empty() || snap.pixel8.adb_serial == "OFFLINE" {
+        "UNMEASURED/OFFLINE"
+    } else {
+        "EDGE-2-PIXEL8-SHIBA"
+    };
 
     format!(
-        "{{\"status\":\"{}\",\"tool_id\":365,\"version\":\"v72.2.0\",\"engine\":\"SH_XI_IGPU_WGSL_384D_RAG_AND_TRISILICON_LIVE_TELEMETRY\",\"measurement_latency_us\":{},\"wgsl_compute_shader\":{{\"path\":\"{}\",\"valid_workgroup64_vec4x96\":{},\"bytes\":{},\"sha256\":\"{}\"}},\"workspace_rag_384d\":{{\"indexed_chunks\":{},\"embed_dim\":384,\"query\":\"{}\",\"ranking_method\":\"trained_shell0_384d_signed_cosine\",\"rag_top_chunks\":{},\"top_hits\":{},\"lexical_baseline_chunks\":{}}},\"trisilicon_live_telemetry\":{{\"ttl_ms\":{},\"probe_latency_us\":{},\"host_rtx3050\":{{\"online\":{},\"device\":\"{}\",\"temp_c\":{},\"power_mw\":{},\"vram_used_mb\":{},\"e_ssd_mounted\":{}}},\"edge1_pixel10\":{{\"status\":\"{}\",\"serial\":\"{}\",\"transport\":\"{}\",\"battery_pct\":{},\"temp_c\":{:.1},\"ram_avail_mb\":{},\"ram_total_mb\":{},\"npage_shm_bytes\":{}}},\"edge2_pixel8_rooted\":{{\"status\":\"{}\",\"serial\":\"{}\",\"transport\":\"{}\",\"battery_pct\":{},\"temp_c\":{:.1},\"ram_avail_mb\":{},\"ram_total_mb\":{},\"npage_shm_bytes\":{},\"p8_ksu_apex_daemon_pid\":{}}}}},\"lean4_theorems_verified\":\"thm_v72_2_989..990\",\"proof\":\"SH_XI_WEEK2_TOOL365_RAG_TELEMETRY_QED | Chunks={} | RTX={}C | P10={}({}%/{:.1}C) | P8={}({}%/{:.1}C)\"}}",
+        "{{\"status\":\"{}\",\"tool_id\":365,\"version\":\"{}\",\"engine\":\"SH_XI_IGPU_WGSL_384D_RAG_AND_TRISILICON_LIVE_TELEMETRY\",\"measurement_latency_us\":{},\"wgsl_compute_shader\":{{\"path\":\"{}\",\"valid_workgroup64_vec4x96\":{},\"bytes\":{},\"sha256\":\"{}\"}},\"workspace_rag_384d\":{{\"indexed_chunks\":{},\"embed_dim\":384,\"query\":\"{}\",\"ranking_method\":\"trained_shell0_384d_signed_cosine\",\"rag_top_chunks\":{},\"top_hits\":{},\"lexical_baseline_chunks\":{}}},\"trisilicon_live_telemetry\":{{\"ttl_ms\":{},\"probe_latency_us\":{},\"host_rtx3050\":{{\"online\":{},\"device\":\"{}\",\"temp_c\":{},\"power_mw\":{},\"vram_used_mb\":{},\"e_ssd_mounted\":{}}},\"edge1_pixel10\":{{\"status\":\"{}\",\"serial\":\"{}\",\"transport\":\"{}\",\"battery_pct\":{},\"temp_c\":{:.1},\"ram_avail_mb\":{},\"ram_total_mb\":{},\"npage_shm_bytes\":{}}},\"edge2_pixel8_rooted\":{{\"status\":\"{}\",\"serial\":\"{}\",\"transport\":\"{}\",\"battery_pct\":{},\"temp_c\":{:.1},\"ram_avail_mb\":{},\"ram_total_mb\":{},\"npage_shm_bytes\":{},\"p8_ksu_apex_daemon_pid\":{}}}}},\"lean4_theorems_verified\":\"thm_v72_2_989..990\",\"proof\":\"SH_XI_WEEK2_TOOL365_RAG_TELEMETRY_QED | Chunks={} | RTX={}C | P10={}({}%/{:.1}C) | P8={}({}%/{:.1}C)\"}}",
         status,
+        v61_escape_clean(&live_ver),
         elapsed_us,
         C_SH_XI_WGSL_RAG_SHADER_PATH,
         wgsl_valid,
@@ -3923,7 +4056,7 @@ pub fn v72_2_dispatch_tool_365_igpu_grounded_rag_and_telemetry(payload: &str) ->
         snap.host_rtx_vram_mb,
         snap.e_ssd_mounted,
         snap.pixel10.status,
-        v61_escape_clean(&snap.pixel10.adb_serial),
+        p10_serial_redacted,
         snap.pixel10.transport,
         snap.pixel10.battery_pct,
         snap.pixel10.temp_c,
@@ -3931,7 +4064,7 @@ pub fn v72_2_dispatch_tool_365_igpu_grounded_rag_and_telemetry(payload: &str) ->
         snap.pixel10.ram_total_mb,
         snap.pixel10.npage_shm_bytes,
         snap.pixel8.status,
-        v61_escape_clean(&snap.pixel8.adb_serial),
+        p8_serial_redacted,
         snap.pixel8.transport,
         snap.pixel8.battery_pct,
         snap.pixel8.temp_c,
@@ -4352,10 +4485,12 @@ pub fn v72_2_dispatch_tool_366_fsm_json_tool_and_abstention(payload: &str) -> St
         "UNMEASURED/OFFLINE"
     };
 
+    let live_ver = crate::v73_2_cloudflare_vpc_mesh_and_pgwire_hyperdrive::v73_2_read_live_release_version();
     let valid_json_pct = ((valid_json_count as f64) / (fuzz_trials as f64)) * 100.0;
     format!(
-        "{{\"status\":\"{}\",\"tool_id\":366,\"version\":\"v73.2.1\",\"engine\":\"SH_XI_PUSHDOWN_JSON_FSM_AND_5W1H_TOOL_BUS\",\"measurement_latency_us\":{},\"json_pushdown_fsm\":{{\"fuzz_logit_trials\":{},\"valid_json_parses\":{},\"malformed_json_outputs\":{},\"valid_json_rate_pct\":{:.2},\"negative_syntax_traps_rejected\":{}}},\"live_tool_call_roundtrip\":{{\"bus_dispatched\":{},\"bound_neuron_id\":{},\"bound_chair44_col\":{},\"tool_call_json\":{},\"tool_result_json\":{},\"tool_result_sha256\":\"{}\"}},\"epistemic_abstention_gate\":{{\"disconnected_probe_abstained\":{},\"external_market_abstained\":{},\"abstention_calibrated\":{}}},\"lean4_theorems_verified\":\"thm_v72_2_991..992\",\"proof\":\"SH_XI_WEEK2_TOOL366_JSON_FSM_QED | ValidJSON={}/{} ({:.1}%) | NegativeTrapsRejected={} | BusNeuron=N{:05}\"}}",
+        "{{\"status\":\"{}\",\"tool_id\":366,\"version\":\"{}\",\"engine\":\"SH_XI_PUSHDOWN_JSON_FSM_AND_5W1H_TOOL_BUS\",\"measurement_latency_us\":{},\"json_pushdown_fsm\":{{\"fuzz_logit_trials\":{},\"valid_json_parses\":{},\"malformed_json_outputs\":{},\"valid_json_rate_pct\":{:.2},\"negative_syntax_traps_rejected\":{}}},\"live_tool_call_roundtrip\":{{\"bus_dispatched\":{},\"bound_neuron_id\":{},\"bound_chair44_col\":{},\"tool_call_json\":{},\"tool_result_json\":{},\"tool_result_sha256\":\"{}\"}},\"epistemic_abstention_gate\":{{\"disconnected_probe_abstained\":{},\"external_market_abstained\":{},\"abstention_calibrated\":{}}},\"lean4_theorems_verified\":\"thm_v72_2_991..992\",\"proof\":\"SH_XI_WEEK2_TOOL366_JSON_FSM_QED | ValidJSON={}/{} ({:.1}%) | NegativeTrapsRejected={} | BusNeuron=N{:05}\"}}",
         status,
+        v61_escape_clean(&live_ver),
         elapsed_us,
         fuzz_trials,
         valid_json_count,
@@ -4485,8 +4620,8 @@ pub fn v72_2_evaluate_converse_output_quality_gate(
     if distinct_non_ws.len() < 4 {
         return (false, "LOW_CHARACTER_DIVERSITY_LT_4");
     }
-    if !shell2_entropy_bits.is_finite() || shell2_entropy_bits <= 0.05 {
-        return (false, "NON_FINITE_OR_ZERO_NEURAL_ENTROPY");
+    if !shell2_entropy_bits.is_finite() || shell2_entropy_bits <= 0.05 || shell2_entropy_bits >= 12.0 {
+        return (false, "OUT_OF_RANGE_OR_NON_FINITE_NEURAL_ENTROPY");
     }
     if !mean_token_prob_768d.is_finite() || mean_token_prob_768d <= 0.0 {
         return (false, "NON_POSITIVE_MEAN_TOKEN_PROBABILITY");
@@ -5202,12 +5337,14 @@ pub fn v72_2_dispatch_converse_route(payload: &str) -> String {
         max_tokens_opt,
         temp_opt,
     );
+    let live_ver = crate::v73_2_cloudflare_vpc_mesh_and_pgwire_hyperdrive::v73_2_read_live_release_version();
     let esc_out = v61_escape_clean(&res.output_text);
     let esc_prompt = v61_escape_clean(&res.prompt);
 
     format!(
-        "{{\"status\":\"{}\",\"tool_id\":361,\"version\":\"v73.2.1\",\"engine\":\"SH_XI_3SHELL_MATRYOSHKA_SPARSE_MOE_SFT_CONVERSE_ENGINE\",\"measurement_latency_us\":{},\"standalone_mode\":true,\"external_llm_calls\":0,\"memorized_prompt_tables\":0,\"seed_tokens_injected\":{},\"quality_gate\":{{\"passed\":{},\"check\":\"min_2_tokens_4_distinct_chars_nonrepetitive_finite_entropy_grammar_valid\",\"reason\":\"{}\"}},\"active_mode\":\"{}\",\"abstained_unmeasured\":{},\"trisilicon_grounded\":{},\"session_id\":\"{}\",\"session_turn_count\":{},\"output_text\":\"{}\",\"nl_synthesis\":\"{}\",\"matryoshka_shells\":{{\"shell0_dim\":384,\"shell1_dim\":768,\"shell2_active_experts\":16,\"shell2_top1_expert_id\":{},\"shell2_top1_expert\":\"{}\",\"shell2_top2_expert_id\":{},\"shell2_top2_expert\":\"{}\",\"shell0_entropy_bits\":{:.4},\"shell1_entropy_bits\":{:.4},\"shell2_entropy_bits\":{:.4},\"shell0_vs_shell1_top8_agreement\":{:.4},\"residual_delta_logit_l2_norm\":{:.4},\"rag_top_source\":\"{}\",\"rag_top_cosine_384d\":{:.4},\"retrieved_corpus_doc_id\":{},\"retrieved_cosine_768d\":{:.4}}},\"compositional_generation\":{{\"prompt\":\"{}\",\"primary_clause_tokens\":{},\"secondary_clause_tokens\":{},\"total_generated_tokens\":{},\"mean_token_probability\":{:.4},\"synthesized_text\":\"{}\"}},\"generation\":{{\"prompt\":\"{}\",\"generation_mode\":\"SH_XI_3SHELL_MOE_CHATML_SFT\",\"prompt_token_count\":{},\"generated_token_count\":{},\"mean_token_probability\":{:.4},\"mean_step_entropy_bits\":{:.4},\"generated_text\":\"{}\"}},\"cortical_coalition\":{{\"primary_branch_id\":{},\"secondary_branch_id\":{},\"primary_track_id\":{},\"secondary_track_id\":{},\"primary_track_name\":\"{}\",\"secondary_track_name\":\"{}\",\"primary_chair44_col\":{},\"secondary_chair44_col\":{},\"cross_branch_cosine_sim\":{:.4}}},\"grassmann_plucker_g24\":{{\"e8z_bytes_sampled\":{},\"p01\":{},\"p23\":{},\"p02\":{},\"p31\":{},\"p03\":{},\"p12\":{},\"plucker_incidence_residual\":{},\"isotropic_verified\":{}}},\"rtx3050_cuda_ptx\":{{\"ptx_active\":{},\"gpu_temp_c\":{},\"vram_used_mb\":{},\"gpu_wall_us\":{}}},\"lean4_theorems_verified\":\"thm_v72_2_981..995\",\"proof\":\"{} | Mode={} | Top2=({},{}) | Turn={} | Quality={}\"}}",
+        "{{\"status\":\"{}\",\"tool_id\":361,\"version\":\"{}\",\"engine\":\"SH_XI_3SHELL_MATRYOSHKA_SPARSE_MOE_SFT_CONVERSE_ENGINE\",\"measurement_latency_us\":{},\"standalone_mode\":true,\"external_llm_calls\":0,\"memorized_prompt_tables\":0,\"seed_tokens_injected\":{},\"quality_gate\":{{\"passed\":{},\"check\":\"min_2_tokens_4_distinct_chars_nonrepetitive_finite_entropy_grammar_valid\",\"reason\":\"{}\"}},\"active_mode\":\"{}\",\"abstained_unmeasured\":{},\"trisilicon_grounded\":{},\"session_id\":\"{}\",\"session_turn_count\":{},\"output_text\":\"{}\",\"nl_synthesis\":\"{}\",\"matryoshka_shells\":{{\"shell0_dim\":384,\"shell1_dim\":768,\"shell2_active_experts\":16,\"shell2_top1_expert_id\":{},\"shell2_top1_expert\":\"{}\",\"shell2_top2_expert_id\":{},\"shell2_top2_expert\":\"{}\",\"shell0_entropy_bits\":{:.4},\"shell1_entropy_bits\":{:.4},\"shell2_entropy_bits\":{:.4},\"shell0_vs_shell1_top8_agreement\":{:.4},\"residual_delta_logit_l2_norm\":{:.4},\"rag_top_source\":\"{}\",\"rag_top_cosine_384d\":{:.4},\"retrieved_corpus_doc_id\":{},\"retrieved_cosine_768d\":{:.4}}},\"compositional_generation\":{{\"prompt\":\"{}\",\"primary_clause_tokens\":{},\"secondary_clause_tokens\":{},\"total_generated_tokens\":{},\"mean_token_probability\":{:.4},\"synthesized_text\":\"{}\"}},\"generation\":{{\"prompt\":\"{}\",\"generation_mode\":\"SH_XI_3SHELL_MOE_CHATML_SFT\",\"prompt_token_count\":{},\"generated_token_count\":{},\"mean_token_probability\":{:.4},\"mean_step_entropy_bits\":{:.4},\"generated_text\":\"{}\"}},\"cortical_coalition\":{{\"primary_branch_id\":{},\"secondary_branch_id\":{},\"primary_track_id\":{},\"secondary_track_id\":{},\"primary_track_name\":\"{}\",\"secondary_track_name\":\"{}\",\"primary_chair44_col\":{},\"secondary_chair44_col\":{},\"cross_branch_cosine_sim\":{:.4}}},\"grassmann_plucker_g24\":{{\"e8z_bytes_sampled\":{},\"p01\":{},\"p23\":{},\"p02\":{},\"p31\":{},\"p03\":{},\"p12\":{},\"plucker_incidence_residual\":{},\"isotropic_verified\":{}}},\"rtx3050_cuda_ptx\":{{\"ptx_active\":{},\"gpu_temp_c\":{},\"vram_used_mb\":{},\"gpu_wall_us\":{}}},\"lean4_theorems_verified\":\"thm_v72_2_981..995\",\"proof\":\"{} | Mode={} | Top2=({},{}) | Turn={} | Quality={}\"}}",
         res.status,
+        v61_escape_clean(&live_ver),
         res.elapsed_us,
         res.seed_tokens_injected,
         res.quality_gate_passed,
@@ -5705,9 +5842,11 @@ pub fn v72_2_dispatch_tool_367_ifeval_lite_64_and_multiturn_suite(_payload: &str
         "UNMEASURED/OFFLINE"
     };
 
+    let live_ver = crate::v73_2_cloudflare_vpc_mesh_and_pgwire_hyperdrive::v73_2_read_live_release_version();
     format!(
-        "{{\"status\":\"{}\",\"tool_id\":367,\"version\":\"v73.2.1\",\"engine\":\"SH_XI_IFEVAL_LITE_64_AND_8TURN_GAUNTLET\",\"measurement_latency_us\":{},\"seed_tokens_injected\":0,\"ifeval_lite_64\":{{\"total_tasks\":{},\"tasks_passed\":{},\"pass_rate_pct\":{:.2},\"benchmark_58of64_met\":{},\"rweval500_overlap_shingles\":{},\"cat0_exact_bullets_passed\":{},\"cat1_strict_json_fsm_passed\":{},\"cat2_forbidden_words_passed\":{},\"cat3_required_keywords_passed\":{},\"cat4_std_rust_passed\":{},\"cat5_zero_bracket_l0_passed\":{},\"cat6_math_with_units_passed\":{},\"cat7_abstention_and_premise_passed\":{}}},\"stateful_8turn_gauntlet\":{{\"session_id\":\"{}\",\"total_turns\":{},\"turns_passed\":{},\"turn1_entity_registered\":{},\"turn2_followup_math_150\":{},\"turn4_l0_zero_brackets\":{},\"turn5_trisilicon_live_grounded\":{},\"turn6_fsm_json_valid\":{},\"turn7_probe404_abstained\":{},\"turn8_long_recall_2bullets\":{}}},\"lean4_theorems_verified\":\"thm_v72_2_987..993\",\"proof\":\"SH_XI_WEEK2_TOOL367_IFEVAL64_MULTITURN_MEASURED | IFEval={}/64 ({:.1}%) | MultiTurn={}/8 | Overlap={}\"}}",
+        "{{\"status\":\"{}\",\"tool_id\":367,\"version\":\"{}\",\"engine\":\"SH_XI_IFEVAL_LITE_64_AND_8TURN_GAUNTLET\",\"measurement_latency_us\":{},\"seed_tokens_injected\":0,\"ifeval_lite_64\":{{\"total_tasks\":{},\"tasks_passed\":{},\"pass_rate_pct\":{:.2},\"benchmark_58of64_met\":{},\"rweval500_overlap_shingles\":{},\"cat0_exact_bullets_passed\":{},\"cat1_strict_json_fsm_passed\":{},\"cat2_forbidden_words_passed\":{},\"cat3_required_keywords_passed\":{},\"cat4_std_rust_passed\":{},\"cat5_zero_bracket_l0_passed\":{},\"cat6_math_with_units_passed\":{},\"cat7_abstention_and_premise_passed\":{}}},\"stateful_8turn_gauntlet\":{{\"session_id\":\"{}\",\"total_turns\":{},\"turns_passed\":{},\"turn1_entity_registered\":{},\"turn2_followup_math_150\":{},\"turn4_l0_zero_brackets\":{},\"turn5_trisilicon_live_grounded\":{},\"turn6_fsm_json_valid\":{},\"turn7_probe404_abstained\":{},\"turn8_long_recall_2bullets\":{}}},\"lean4_theorems_verified\":\"thm_v72_2_987..993\",\"proof\":\"SH_XI_WEEK2_TOOL367_IFEVAL64_MULTITURN_MEASURED | IFEval={}/64 ({:.1}%) | MultiTurn={}/8 | Overlap={}\"}}",
         status,
+        v61_escape_clean(&live_ver),
         elapsed_us,
         V72_2_IFEVAL_TOTAL,
         total_passed,
@@ -5767,13 +5906,15 @@ pub fn v72_2_eval_tool_368_subjson_gates(
             let trials_n = v
                 .get("json_pushdown_fsm")
                 .and_then(|o| o.get("fuzz_logit_trials"))
-                .and_then(|n| n.as_u64())
-                .unwrap_or(100);
+                .and_then(|n| n.as_u64());
             let malformed_n = v
                 .get("json_pushdown_fsm")
                 .and_then(|o| o.get("malformed_json_outputs"))
                 .and_then(|n| n.as_u64());
-            let v100 = valid_n == Some(trials_n) && valid_n == Some(100);
+            let v100 = match (valid_n, trials_n) {
+                (Some(vn), Some(tn)) => tn > 0 && vn == tn && vn == 100,
+                _ => false,
+            };
             let m0 = malformed_n == Some(0);
             (st_ok && v100 && m0, v100)
         }
@@ -5936,7 +6077,8 @@ pub fn v72_2_dispatch_tool_368_week2_chain368_master_certification(payload: &str
         && sft_r.max_turns == V72_2_MULTITURN_MAX_TURNS;
     let g3_rag_tel_ok = t365_measured && snap.host_rtx_online;
     let g5_ifeval_mt_ok = t367_mt_ok && rustc_l0_pass && l0_zero_brackets;
-    let g6_lean_ok = lean_count >= 995 && lean_mirror_synced;
+    let g6_lean_ok = crate::v73_2_cloudflare_vpc_mesh_and_pgwire_hyperdrive::validate_live_lean_theorems_with_floor(lean_count)
+        && lean_mirror_synced;
 
     let all_week2_gates_passed = fixture_t366_opt.is_none()
         && g1_moe_ok
@@ -5962,9 +6104,11 @@ pub fn v72_2_dispatch_tool_368_week2_chain368_master_certification(payload: &str
         "CONNECTED_EDGE_2"
     };
 
+    let live_ver = crate::v73_2_cloudflare_vpc_mesh_and_pgwire_hyperdrive::v73_2_read_live_release_version();
     let receipt = format!(
-        "{{\"status\":\"{}\",\"tool_id\":368,\"version\":\"v73.2.1\",\"milestone\":\"CHAIN 368\",\"total_tools\":368,\"engine\":\"SH_XI_WEEK2_MASTER_CERTIFICATION\",\"measurement_latency_us\":{},\"all_week2_gates_passed\":{},\"gate_1_shell2_sparse_moe\":{{\"passed\":{},\"active_experts\":{},\"preallocated_slots\":{},\"experts_utilized\":{},\"load_balance_cv\":{:.4},\"step0_max_abs_diff\":{:.12},\"val_bpb_384d\":{:.6},\"val_bpb_768d\":{:.6},\"val_bpb_3shell_moe\":{:.6},\"val_ppl_3shell_moe\":{:.4},\"rtx3050_coexec_ms\":{:.4},\"cpu_12t_avx2_moe_us\":{},\"ssd_sh4z_bytes\":{},\"ssd_sh4z_sha256\":\"{}\"}},\"gate_2_masked_chatml_sft\":{{\"passed\":{},\"dialogues\":{},\"turns_range\":\"1..{}\",\"prompt_grad_norm\":{:.12},\"init_ce_nats\":{:.6},\"final_ce_nats\":{:.6},\"rweval500_overlap\":{}}},\"gate_3_wgsl_rag_and_trisilicon\":{{\"passed\":{},\"rtx3050_temp_c\":{},\"pixel10_status\":\"{}\",\"pixel10_serial\":\"{}\",\"pixel10_battery_pct\":{},\"pixel10_temp_c\":{:.1},\"pixel8_status\":\"{}\",\"pixel8_serial\":\"{}\",\"pixel8_transport\":\"{}\",\"pixel8_battery_pct\":{},\"pixel8_temp_c\":{:.1},\"pixel8_apex_pid\":{}}},\"gate_4_json_fsm_and_bus\":{{\"passed\":{},\"valid_json_100_of_100\":{}}},\"gate_5_ifeval64_multiturn_and_rustc\":{{\"passed\":{},\"rustc_l0_zero_bracket_unit_test_passed\":{},\"l0_zero_brackets_verified\":{},\"rustc_latency_us\":{},\"rustc_output\":\"{}\"}},\"gate_6_lean4_formal_proofs\":{{\"passed\":{},\"theorem_count\":{},\"vault_l0_sha256_synced\":{},\"sha256\":\"{}\"}},\"proof\":\"{} | {}_QED | BPB: {:.4}->{:.4}->{:.4} | PromptGrad={:.6} | Gate5={}\"}}",
+        "{{\"status\":\"{}\",\"tool_id\":368,\"version\":\"{}\",\"milestone\":\"CHAIN 368\",\"total_tools\":368,\"engine\":\"SH_XI_WEEK2_MASTER_CERTIFICATION\",\"measurement_latency_us\":{},\"all_week2_gates_passed\":{},\"gate_1_shell2_sparse_moe\":{{\"passed\":{},\"active_experts\":{},\"preallocated_slots\":{},\"experts_utilized\":{},\"load_balance_cv\":{:.4},\"step0_max_abs_diff\":{:.12},\"val_bpb_384d\":{:.6},\"val_bpb_768d\":{:.6},\"val_bpb_3shell_moe\":{:.6},\"val_ppl_3shell_moe\":{:.4},\"rtx3050_coexec_ms\":{:.4},\"cpu_12t_avx2_moe_us\":{},\"ssd_sh4z_bytes\":{},\"ssd_sh4z_sha256\":\"{}\"}},\"gate_2_masked_chatml_sft\":{{\"passed\":{},\"dialogues\":{},\"turns_range\":\"1..{}\",\"prompt_grad_norm\":{:.12},\"init_ce_nats\":{:.6},\"final_ce_nats\":{:.6},\"rweval500_overlap\":{}}},\"gate_3_wgsl_rag_and_trisilicon\":{{\"passed\":{},\"rtx3050_temp_c\":{},\"pixel10_status\":\"{}\",\"pixel10_serial\":\"{}\",\"pixel10_battery_pct\":{},\"pixel10_temp_c\":{:.1},\"pixel8_status\":\"{}\",\"pixel8_serial\":\"{}\",\"pixel8_transport\":\"{}\",\"pixel8_battery_pct\":{},\"pixel8_temp_c\":{:.1},\"pixel8_apex_pid\":{}}},\"gate_4_json_fsm_and_bus\":{{\"passed\":{},\"valid_json_100_of_100\":{}}},\"gate_5_ifeval64_multiturn_and_rustc\":{{\"passed\":{},\"rustc_l0_zero_bracket_unit_test_passed\":{},\"l0_zero_brackets_verified\":{},\"rustc_latency_us\":{},\"rustc_output\":\"{}\"}},\"gate_6_lean4_formal_proofs\":{{\"passed\":{},\"theorem_count\":{},\"vault_l0_sha256_synced\":{},\"sha256\":\"{}\"}},\"proof\":\"{} | {}_QED | BPB: {:.4}->{:.4}->{:.4} | PromptGrad={:.6} | Gate5={}\"}}",
         status,
+        v61_escape_clean(&live_ver),
         elapsed_us,
         all_week2_gates_passed,
         g1_moe_ok,

@@ -8,7 +8,7 @@
 ## Highlights of `v32.6.1` (`Tracks 32.34–32.40`, `126 / 126` Cumulative Tasks Certified)
 
 1. **15 Live Telemetry Cards & Cross-Cluster Execution (`/api/v1/card/execute`):**
-   * All 15 cards in Drawer A across the Host WebGPU HUD (`:5173`), Google Pixel 10 (`58170DLCR0004V`), Google Pixel 8 (`3A121FDJH00BW5`), and GitHub Pages Portal (`docs/index.html`) poll and report live hardware metrics at `2.00 Hz` (`500 ms`), backed by a non-blocking `nvidia-smi` RTX 3050 6GB poller and live mobile `BatteryManager` + `SensorManager` telemetry.
+   * All 15 cards in Drawer A across the Host WebGPU HUD (`:5173`), Google Pixel 10 (`<DYNAMIC_ADB_SERIAL>`), Google Pixel 8 (`<DYNAMIC_ADB_SERIAL>`), and GitHub Pages Portal (`docs/index.html`) poll and report live hardware metrics at `2.00 Hz` (`500 ms`), backed by a non-blocking `nvidia-smi` RTX 3050 6GB poller and live mobile `BatteryManager` + `SensorManager` telemetry.
 2. **Accurate `15.00–15.80 Hz` (`66,667 us`) Hardware Sensor Sampling & `2.00 Hz` Broadcast Loop:**
    * Pixel 10 samples 24D physical sensors (`TYPE_MAGNETIC_FIELD`, `TYPE_PRESSURE`, `TYPE_LIGHT`, `TYPE_PROXIMITY`, `TYPE_ACCELEROMETER`, `TYPE_GYROSCOPE`) at `66,667 us` with a sliding-window rate meter (`15.80 Hz` measured) and broadcasts to `v31_swarm.exe` at `1.99–2.00 Hz` (`500 ms`), while Pixel 8 strictly bypasses `SensorManager` (`0` sensor polls, `90,688 B` `mlock`, `97.84%` L2 free).
 3. **8,192-Token Dual-Horizon NL + Compound Tokenizer, 4,400 Shards (`100x Chair-44`) & 128/131 Lean 4 CIC Theorems (Track 32.34):**

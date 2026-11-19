@@ -483,7 +483,10 @@ fn execute_domain_1_lattice_algebra(method: &str, _body: &str, sub_epoch: u64) -
         }
     }
 
-    let lean_verified = lean_bytes > 0 && qed_count >= 624 && axiom_count == 0 && sorry_count == 0;
+    let lean_verified = lean_bytes > 0
+        && crate::v73_2_cloudflare_vpc_mesh_and_pgwire_hyperdrive::validate_live_lean_theorems_with_floor(qed_count)
+        && axiom_count == 0
+        && sorry_count == 0;
     let hs_bin_path = "06_algebraic_haskell\\bin\\sovereign_algebra_hs.exe";
     let alt_hs_bin_path = "C:\\sovereign_manifold_v31\\06_algebraic_haskell\\bin\\sovereign_algebra_hs.exe";
     let hs_bytes = v56_1_file_len(hs_bin_path).max(v56_1_file_len(alt_hs_bin_path));
@@ -590,7 +593,7 @@ fn execute_domain_5_dual_pixel(method: &str, _body: &str, sub_epoch: u64) -> Str
     let elapsed_us = t0.elapsed().as_micros() as f64;
 
     format!(
-        "{{\"status\":\"{}\",\"domain\":\"dual_pixel_ksu_edge\",\"domain_id\":5,\"canonical_tool_id\":105,\"tool_id\":105,\"tool_count\":16,\"method\":\"{}\",\"sub_epoch\":{},\"pixel10_serial\":\"58170DLCR0004V\",\"pixel8_serial\":\"3A121FDJH00BW5\",\"pixel8_connected\":{},\"pixel8_probe_source\":\"{}\",\"pixel8_root_type\":\"{}\",\"apex_daemon_port\":8098,\"p8_apex_snapshot_exists\":{},\"mali_g715_l2_pinned_bytes\":4194304,\"k_speculative_drafter\":4,\"sensor_imu_stream_hz\":1,\"writeback_category\":\"drawer1_2_sensor_sdr_captures\",\"elapsed_us\":{:.2}}}",
+        "{{\"status\":\"{}\",\"domain\":\"dual_pixel_ksu_edge\",\"domain_id\":5,\"canonical_tool_id\":105,\"tool_id\":105,\"tool_count\":16,\"method\":\"{}\",\"sub_epoch\":{},\"pixel10_serial\":\"EDGE-1-PIXEL10-G5\",\"pixel8_serial\":\"EDGE-2-PIXEL8-SHIBA\",\"pixel8_connected\":{},\"pixel8_probe_source\":\"{}\",\"pixel8_root_type\":\"{}\",\"apex_daemon_port\":8098,\"p8_apex_snapshot_exists\":{},\"mali_g715_l2_pinned_bytes\":4194304,\"k_speculative_drafter\":4,\"sensor_imu_stream_hz\":1,\"writeback_category\":\"drawer1_2_sensor_sdr_captures\",\"elapsed_us\":{:.2}}}",
         status, method, sub_epoch, p8_hw.is_online, probe_source,
         if p8_hw.is_online { "KernelSU-Next" } else { "OFFLINE_SNAPSHOT_CACHED" },
         p8_snapshot_exists, elapsed_us

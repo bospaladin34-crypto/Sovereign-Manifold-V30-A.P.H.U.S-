@@ -1090,9 +1090,18 @@ function Run-Tier4 {
     if (Should-RunTest 4 "M_FINAL" "F17") {
         $sw = [System.Diagnostics.Stopwatch]::StartNew()
         $passed = $false
-        $adbRaw = (adb devices 2>$null) -join " "
-        $p8Attached = ($adbRaw -match "3A121FDJH00BW5")
-        $p10Attached = ($adbRaw -match "58170DLCR0004V")
+        $adbLines = @(adb devices -l 2>$null)
+        $cfgFile = "C:\Users\Nbell\.act_omega_adb_devices.json"
+        $p8Cfg = ""; $p10Cfg = ""
+        if (Test-Path $cfgFile) {
+            try {
+                $cfg = Get-Content -Raw $cfgFile | ConvertFrom-Json
+                if ($cfg.pixel8.serial) { $p8Cfg = [string]$cfg.pixel8.serial }
+                if ($cfg.pixel10.serial) { $p10Cfg = [string]$cfg.pixel10.serial }
+            } catch {}
+        }
+        $p8Attached = [bool]($adbLines | Where-Object { $_ -match "\s+device\b" -and ($_ -match "model:Pixel_8|product:shiba|192\.168\.137\.8:" -or ($p8Cfg -and $_ -match [regex]::Escape($p8Cfg))) })
+        $p10Attached = [bool]($adbLines | Where-Object { $_ -match "\s+device\b" -and ($_ -match "model:Pixel_10|product:frankel|192\.168\.137\.10:" -or ($p10Cfg -and $_ -match [regex]::Escape($p10Cfg))) })
 
         # Muse Zero-Mock Rule: At least one edge attached OR honestly accounted
         $shmPath = "$RepoRoot\00_control\weights\neurons_v5000_63360.npage"

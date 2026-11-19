@@ -338,10 +338,10 @@
                         "name":  "Pixel 8 Stock Slot _b Invariance Boundary",
                         "measured_data":  {
                                               "TamperDetected":  true,
-                                              "Serial":  "3A121FDJH00BW5",
+                                              "Serial":  "EDGE-2-PIXEL8-SHIBA",
                                               "Hash":  "84ECFA41044D301D096B31657430F693D605C88DB77969E8B604B804C8D5E55D"
                                           },
-                        "message":  "Stock slot _b SHA-256 strictly invariant (84ECFA41044D301D096B31657430F693D605C88DB77969E8B604B804C8D5E55D) for Pixel 8 (3A121FDJH00BW5)",
+                        "message":  "Stock slot _b SHA-256 strictly invariant (84ECFA41044D301D096B31657430F693D605C88DB77969E8B604B804C8D5E55D) for Pixel 8 (EDGE-2-PIXEL8-SHIBA)",
                         "milestone":  "M4"
                     },
                     {

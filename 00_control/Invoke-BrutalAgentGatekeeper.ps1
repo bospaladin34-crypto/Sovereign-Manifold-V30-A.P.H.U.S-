@@ -2,7 +2,11 @@ param(
     [switch]$HookStdin,
     [switch]$FullAudit,
     [switch]$StaticOnly,
-    [string]$RepoPath = ""
+    [switch]$TestNegativeCloudflareInjection,
+    [switch]$TestNegativePixelSerialInjection,
+    [string]$RepoPath = "",
+    [string[]]$ExtraFilesToScan = @(),
+    [string]$LeanOverridePath = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -22,6 +26,331 @@ if (-not (Test-Path $RepoRoot)) {
     $RepoRoot = "C:\sovereign_manifold_v31"
 }
 
+function Get-LiveLean4TheoremCount {
+    param([string]$LeanPath)
+    if (-not (Test-Path $LeanPath)) { return 0 }
+    $txt = [System.IO.File]::ReadAllText($LeanPath)
+    return ([regex]::Matches($txt, '(?m)^\s*theorem\s+')).Count
+}
+
+function Test-Lean4ThresholdCheck {
+    param(
+        [string]$LeanPath,
+        [int]$ReportedCount = -1
+    )
+    $errs = New-Object System.Collections.Generic.List[string]
+    if (-not (Test-Path $LeanPath)) {
+        $errs.Add("LEAN4_MISSING: $LeanPath not found")
+        return ,$errs
+    }
+    $leanText = [System.IO.File]::ReadAllText($LeanPath)
+    $thmCount = ([regex]::Matches($leanText, '(?m)^\s*theorem\s+')).Count
+    $sorryCount = ([regex]::Matches($leanText, '\bsorry\b')).Count
+    $trivialEqCount = ([regex]::Matches($leanText, ':\s*(\w+)\s*=\s*\1\s*:=')).Count
+    $trivialCommCount = ([regex]::Matches($leanText, '\(a\s+b\s*:\s*Nat\)\s*:\s*a\s*\+\s*b\s*=\s*b\s*\+\s*a')).Count
+    if ($thmCount -lt 1010) {
+        $errs.Add("LEAN4_COUNT_LOW: Found $thmCount theorems in $LeanPath (Req: >= 1010)")
+    }
+    if ($ReportedCount -ge 0 -and ($ReportedCount -lt 1010 -or $ReportedCount -ne $thmCount)) {
+        $errs.Add("LEAN4_REPORTED_MISMATCH: Reported $ReportedCount theorems != live $thmCount (Req: >= 1010 and exact match)")
+    }
+    if ($sorryCount -gt 0) {
+        $errs.Add("LEAN4_SORRY_FOUND: Found $sorryCount 'sorry' tokens (Req: 0)")
+    }
+    if (($trivialEqCount + $trivialCommCount) -gt 0) {
+        $errs.Add("LEAN4_TRIVIAL_PADDING: Found $($trivialEqCount + $trivialCommCount) trivial arithmetic padding theorems (Req: 0)")
+    }
+    return ,$errs
+}
+
+function Test-CloudflareIdLeakScan {
+    param(
+        [string]$RootPath,
+        [string[]]$ExtraFiles = @(),
+        [string[]]$AdditionalRetiredSha256 = @()
+    )
+    $cfViolations = New-Object System.Collections.Generic.List[string]
+    $cfIdsPath = if (Test-Path "C:\Users\Nbell\.act_omega_cloudflare_ids.json") {
+        "C:\Users\Nbell\.act_omega_cloudflare_ids.json"
+    } elseif ($env:USERPROFILE -and (Test-Path "$env:USERPROFILE\.act_omega_cloudflare_ids.json")) {
+        "$env:USERPROFILE\.act_omega_cloudflare_ids.json"
+    } else {
+        $null
+    }
+
+    $activeVals = @{}
+    $retiredHashes = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+    $retiredPrefixes = New-Object System.Collections.Generic.List[string]
+    foreach ($ah in $AdditionalRetiredSha256) {
+        if (-not [string]::IsNullOrWhiteSpace($ah)) {
+            [void]$retiredHashes.Add($ah.Trim().ToLowerInvariant())
+        }
+    }
+
+    if ($cfIdsPath) {
+        $cfCfg = Get-Content -Raw $cfIdsPath | ConvertFrom-Json
+        $activeKeys = @("account_id","d1_database_id","hyperdrive_id","kv_id","vpc_anchor_id","vpc_deno_id","vpc_p10_id","vpc_p8_id")
+        foreach ($k in $activeKeys) {
+            $v = [string]$cfCfg.$k
+            if (-not [string]::IsNullOrWhiteSpace($v) -and $v.Length -ge 16) {
+                $activeVals[$k] = $v.Trim()
+            }
+        }
+        foreach ($h in $cfCfg.retired_ids_sha256) {
+            if (-not [string]::IsNullOrWhiteSpace([string]$h)) {
+                [void]$retiredHashes.Add(([string]$h).Trim().ToLowerInvariant())
+            }
+        }
+        foreach ($p in $cfCfg.retired_id_prefixes) {
+            if (-not [string]::IsNullOrWhiteSpace([string]$p)) {
+                $retiredPrefixes.Add(([string]$p).Trim().ToLowerInvariant())
+            }
+        }
+    } else {
+        $cfViolations.Add("CF_IDS_CONFIG_MISSING: External ~/.act_omega_cloudflare_ids.json not found")
+    }
+
+    $sha256 = [System.Security.Cryptography.SHA256]::Create()
+    $utf8NoBom = [System.Text.UTF8Encoding]::new($false)
+    $uuidHexRegex = [regex]::new('(?i)\b(?:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|[0-9a-f]{32})\b')
+
+    # 1. Enumerate all tracked repository files via git ls-files
+    $trackedFiles = @(git -C $RootPath ls-files 2>$null)
+    if ($LASTEXITCODE -ne 0 -or $trackedFiles.Count -eq 0) {
+        $cfViolations.Add("CF_SCAN_GIT_LS_FILES_FAILED: Could not enumerate git ls-files at $RootPath")
+        return ,$cfViolations
+    }
+
+    # 1a. Scan all tracked text files for every active CF ID value via git grep (zero secret values printed)
+    foreach ($kv in $activeVals.GetEnumerator()) {
+        $matchedFiles = @(git -C $RootPath grep -l -i -I -F -- $kv.Value 2>$null)
+        if ($LASTEXITCODE -eq 0 -and $matchedFiles.Count -gt 0) {
+            foreach ($mf in $matchedFiles) {
+                $cfViolations.Add("CF_ACTIVE_ID_LEAK: Key '$($kv.Key)' matched in tracked file '$mf'")
+            }
+        }
+    }
+
+    # 1b. Extract all 32-hex and 36-char UUID candidate tokens across all tracked text files and check retired SHA-256 & prefixes
+    $rawTokens = @(git -C $RootPath grep -h -I -o -E '\b([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}|[0-9a-fA-F]{32})\b' 2>$null)
+    $uniqueTokens = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+    foreach ($t in $rawTokens) {
+        if (-not [string]::IsNullOrWhiteSpace($t)) {
+            [void]$uniqueTokens.Add($t.Trim().ToLowerInvariant())
+        }
+    }
+    foreach ($tok in $uniqueTokens) {
+        $hashHex = ([System.BitConverter]::ToString($sha256.ComputeHash($utf8NoBom.GetBytes($tok))) -replace '-', '').ToLowerInvariant()
+        if ($retiredHashes.Contains($hashHex)) {
+            $offFiles = @(git -C $RootPath grep -l -i -I -F -- $tok 2>$null)
+            $cfViolations.Add("CF_RETIRED_ID_SHA256_LEAK: Retired CF ID sha256=$($hashHex.Substring(0,16))... found in tracked file(s): $($offFiles -join ', ')")
+        } else {
+            foreach ($pref in $retiredPrefixes) {
+                if ($tok.StartsWith($pref)) {
+                    $offFiles = @(git -C $RootPath grep -l -i -I -F -- $tok 2>$null)
+                    $cfViolations.Add("CF_RETIRED_ID_PREFIX_LEAK: Retired CF ID prefix matched in tracked file(s): $($offFiles -join ', ')")
+                }
+            }
+        }
+    }
+
+    # 1c. Scan ALL wrangler*.toml files in git ls-files for literal hex ID assignments
+    $wranglerFiles = @($trackedFiles | Where-Object { $_ -match '(^|[/\\])wrangler[^/\\]*\.toml$' })
+    foreach ($wfRel in $wranglerFiles) {
+        $wfFull = Join-Path $RootPath $wfRel
+        if (-not (Test-Path $wfFull)) { continue }
+        $wfText = [System.IO.File]::ReadAllText($wfFull)
+        if ($wfText -match '(?mi)^\s*account_id\s*=\s*"[0-9a-f]{32}"') {
+            $cfViolations.Add("CF_WRANGLER_LITERAL_HEX_LEAK: $wfRel contains literal 32-hex account_id")
+        }
+        if ($wfText -match '(?mi)^\s*database_id\s*=\s*"[0-9a-f-]{36}"') {
+            $cfViolations.Add("CF_WRANGLER_LITERAL_HEX_LEAK: $wfRel contains literal 36-char UUID database_id")
+        }
+        if ($wfText -match '(?mi)^\s*id\s*=\s*"[0-9a-f]{32}"') {
+            $cfViolations.Add("CF_WRANGLER_LITERAL_HEX_LEAK: $wfRel contains literal 32-hex id")
+        }
+    }
+
+    # 2. Scan any extra fixture files (e.g. negative-injection test fixtures)
+    foreach ($ef in $ExtraFiles) {
+        if (-not $ef -or -not (Test-Path $ef -PathType Leaf)) { continue }
+        $efText = [System.IO.File]::ReadAllText($ef)
+        foreach ($kv in $activeVals.GetEnumerator()) {
+            if ($efText.IndexOf($kv.Value, [System.StringComparison]::OrdinalIgnoreCase) -ge 0) {
+                $cfViolations.Add("CF_ACTIVE_ID_LEAK: Key '$($kv.Key)' matched in extra scan file '$ef'")
+            }
+        }
+        $efSeen = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+        foreach ($m in $uuidHexRegex.Matches($efText)) {
+            $tok = $m.Value.ToLowerInvariant()
+            if (-not $efSeen.Add($tok)) { continue }
+            $hashHex = ([System.BitConverter]::ToString($sha256.ComputeHash($utf8NoBom.GetBytes($tok))) -replace '-', '').ToLowerInvariant()
+            if ($retiredHashes.Contains($hashHex)) {
+                $cfViolations.Add("CF_RETIRED_ID_SHA256_LEAK: Retired CF ID sha256=$($hashHex.Substring(0,16))... found in extra scan file '$ef'")
+            } else {
+                foreach ($pref in $retiredPrefixes) {
+                    if ($tok.StartsWith($pref)) {
+                        $cfViolations.Add("CF_RETIRED_ID_PREFIX_LEAK: Retired CF ID prefix matched in extra scan file '$ef'")
+                    }
+                }
+            }
+        }
+        if ($efText -match '(?mi)^\s*account_id\s*=\s*"[0-9a-f]{32}"') {
+            $cfViolations.Add("CF_WRANGLER_LITERAL_HEX_LEAK: $ef contains literal 32-hex account_id")
+        }
+        if ($efText -match '(?mi)^\s*database_id\s*=\s*"[0-9a-f-]{36}"') {
+            $cfViolations.Add("CF_WRANGLER_LITERAL_HEX_LEAK: $ef contains literal 36-char UUID database_id")
+        }
+        if ($efText -match '(?mi)^\s*id\s*=\s*"[0-9a-f]{32}"') {
+            $cfViolations.Add("CF_WRANGLER_LITERAL_HEX_LEAK: $ef contains literal 32-hex id")
+        }
+    }
+
+    return ,$cfViolations
+}
+
+function Test-PixelSerialLeakScan {
+    param(
+        [string]$RootPath,
+        [string[]]$ExtraFiles = @(),
+        [string[]]$AdditionalRetiredSha256 = @()
+    )
+    $pxViolations = New-Object System.Collections.Generic.List[string]
+    $adbCfgPath = if (Test-Path "C:\Users\Nbell\.act_omega_adb_devices.json") {
+        "C:\Users\Nbell\.act_omega_adb_devices.json"
+    } elseif ($env:USERPROFILE -and (Test-Path "$env:USERPROFILE\.act_omega_adb_devices.json")) {
+        "$env:USERPROFILE\.act_omega_adb_devices.json"
+    } else {
+        $null
+    }
+
+    $activeSerials = @{}
+    $retiredHashes = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+    foreach ($ah in $AdditionalRetiredSha256) {
+        if (-not [string]::IsNullOrWhiteSpace($ah)) {
+            [void]$retiredHashes.Add($ah.Trim().ToLowerInvariant())
+        }
+    }
+
+    if ($adbCfgPath) {
+        $adbCfg = Get-Content -Raw $adbCfgPath | ConvertFrom-Json
+        foreach ($role in @("pixel10", "pixel8")) {
+            $s = if ($adbCfg.$role -and $adbCfg.$role.serial) { ([string]$adbCfg.$role.serial).Trim() } else { "" }
+            if ($s.Length -ge 8) {
+                $activeSerials[$role] = $s
+            }
+        }
+        if ($adbCfg.retired_serials_sha256) {
+            foreach ($rh in $adbCfg.retired_serials_sha256) {
+                if (-not [string]::IsNullOrWhiteSpace([string]$rh)) {
+                    [void]$retiredHashes.Add(([string]$rh).Trim().ToLowerInvariant())
+                }
+            }
+        }
+    } else {
+        $pxViolations.Add("ADB_DEVICES_CONFIG_MISSING: External ~/.act_omega_adb_devices.json not found")
+    }
+
+    $sha256 = [System.Security.Cryptography.SHA256]::Create()
+    $utf8NoBom = [System.Text.UTF8Encoding]::new($false)
+    try {
+        # 1. Scan ALL tracked files (including binary files via -a) for active Pixel serials
+        foreach ($kv in $activeSerials.GetEnumerator()) {
+            $matchedFiles = @(git -C $RootPath grep -a -l -F -- $kv.Value 2>$null)
+            if ($LASTEXITCODE -eq 0 -and $matchedFiles.Count -gt 0) {
+                foreach ($mf in $matchedFiles) {
+                    $pxViolations.Add("PIXEL_ACTIVE_SERIAL_LEAK: Role '$($kv.Key)' serial matched in tracked file '$mf'")
+                }
+            }
+        }
+
+        # 2. Scan untracked non-ignored files in workspace for active Pixel serials
+        $untrackedFiles = @(git -C $RootPath ls-files --others --exclude-standard 2>$null)
+        foreach ($ufRel in $untrackedFiles) {
+            $ufFull = Join-Path $RootPath ($ufRel -replace '/', '\')
+            if (-not (Test-Path $ufFull -PathType Leaf)) { continue }
+            $item = Get-Item $ufFull
+            if ($item.Length -gt 20MB) { continue }
+            $ufText = [System.IO.File]::ReadAllText($ufFull)
+            foreach ($kv in $activeSerials.GetEnumerator()) {
+                if ($ufText.IndexOf($kv.Value, [System.StringComparison]::Ordinal) -ge 0) {
+                    $pxViolations.Add("PIXEL_ACTIVE_SERIAL_LEAK: Role '$($kv.Key)' serial matched in untracked file '$ufRel'")
+                }
+            }
+        }
+
+        # 3. Scan retired SHA-256 hashes across tracked text files (alphanumeric serial-like tokens 10..20 chars)
+        if ($retiredHashes.Count -gt 0) {
+            $candTokens = @(git -C $RootPath grep -h -I -o -E '\b[0-9A-Za-z]{10,20}\b' 2>$null)
+            if (-not ('SovereignBatchShaMatcher' -as [type])) {
+                Add-Type -TypeDefinition @"
+using System;
+using System.Collections.Generic;
+using System.Security.Cryptography;
+using System.Text;
+public static class SovereignBatchShaMatcher {
+    public static List<string> FindMatches(string[] tokens, string[] retiredHashesHex) {
+        var retSet = new HashSet<string>(retiredHashesHex, StringComparer.OrdinalIgnoreCase);
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        var hits = new List<string>();
+        using (var sha = SHA256.Create()) {
+            foreach (var raw in tokens) {
+                if (string.IsNullOrEmpty(raw)) continue;
+                var tok = raw.Trim();
+                if (!seen.Add(tok)) continue;
+                var hash = sha.ComputeHash(Encoding.UTF8.GetBytes(tok));
+                var sb = new StringBuilder(64);
+                for (int i = 0; i < hash.Length; i++) sb.Append(hash[i].ToString("x2"));
+                var hHex = sb.ToString();
+                if (retSet.Contains(hHex)) {
+                    hits.Add(tok + "|" + hHex);
+                }
+            }
+        }
+        return hits;
+    }
+}
+"@
+            }
+            $retArr = [string[]]@($retiredHashes)
+            $hits = [SovereignBatchShaMatcher]::FindMatches($candTokens, $retArr)
+            foreach ($hit in $hits) {
+                $parts = $hit.Split('|', 2)
+                $tok = $parts[0]
+                $hHex = $parts[1]
+                $offFiles = @(git -C $RootPath grep -l -I -F -- $tok 2>$null)
+                $pxViolations.Add("PIXEL_RETIRED_SERIAL_SHA256_LEAK: Retired serial sha256=$($hHex.Substring(0,16))... found in tracked file(s): $($offFiles -join ', ')")
+            }
+        }
+
+        # 4. Scan any extra fixture files (for negative-injection self-tests)
+        foreach ($ef in $ExtraFiles) {
+            if (-not $ef -or -not (Test-Path $ef -PathType Leaf)) { continue }
+            $efText = [System.IO.File]::ReadAllText($ef)
+            foreach ($kv in $activeSerials.GetEnumerator()) {
+                if ($efText.IndexOf($kv.Value, [System.StringComparison]::Ordinal) -ge 0) {
+                    $pxViolations.Add("PIXEL_ACTIVE_SERIAL_LEAK: Role '$($kv.Key)' serial matched in extra scan file '$ef'")
+                }
+            }
+            if ($retiredHashes.Count -gt 0) {
+                $efSeen = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::Ordinal)
+                foreach ($m in [regex]::Matches($efText, '\b[0-9A-Za-z]{10,20}\b')) {
+                    $tok = $m.Value
+                    if (-not $efSeen.Add($tok)) { continue }
+                    $hHex = ([System.BitConverter]::ToString($sha256.ComputeHash($utf8NoBom.GetBytes($tok))) -replace '-', '').ToLowerInvariant()
+                    if ($retiredHashes.Contains($hHex)) {
+                        $pxViolations.Add("PIXEL_RETIRED_SERIAL_SHA256_LEAK: Retired serial sha256=$($hHex.Substring(0,16))... found in extra scan file '$ef'")
+                    }
+                }
+            }
+        }
+    } finally {
+        $sha256.Dispose()
+    }
+
+    return ,$pxViolations
+}
+
 function Run-StaticGatekeeperChecks {
     $failures = New-Object System.Collections.Generic.List[string]
 
@@ -35,30 +364,22 @@ function Run-StaticGatekeeperChecks {
         }
     }
 
-    # 2. Substantive Lean 4 & Vault/L0 Mirror Parity Check
-    $leanVault = "$RepoRoot\03_vault\lean4\SovereignManifoldTheorems.lean"
+    # 2. Substantive Lean 4 & Vault/L0 Mirror Parity Check (Live >= 1010)
+    $leanVault = if ($LeanOverridePath) { $LeanOverridePath } else { "$RepoRoot\03_vault\lean4\SovereignManifoldTheorems.lean" }
     $leanL0 = "$RepoRoot\01_l0_rust\lean4\SovereignManifoldTheorems.lean"
     if (-not (Test-Path $leanVault) -or -not (Test-Path $leanL0)) {
         $failures.Add("LEAN4_MISSING: SovereignManifoldTheorems.lean missing in 03_vault or 01_l0_rust")
     } else {
-        $h1 = (Get-FileHash $leanVault -Algorithm SHA256).Hash
-        $h2 = (Get-FileHash $leanL0 -Algorithm SHA256).Hash
-        if ($h1 -ne $h2) {
-            $failures.Add("LEAN4_MIRROR_DRIFT: 03_vault/lean4 ($($h1.Substring(0,12))) != 01_l0_rust/lean4 ($($h2.Substring(0,12)))")
+        if (-not $LeanOverridePath) {
+            $h1 = (Get-FileHash $leanVault -Algorithm SHA256).Hash
+            $h2 = (Get-FileHash $leanL0 -Algorithm SHA256).Hash
+            if ($h1 -ne $h2) {
+                $failures.Add("LEAN4_MIRROR_DRIFT: 03_vault/lean4 ($($h1.Substring(0,12))) != 01_l0_rust/lean4 ($($h2.Substring(0,12)))")
+            }
         }
-        $leanText = [System.IO.File]::ReadAllText($leanVault)
-        $thmCount = ([regex]::Matches($leanText, '(?m)^theorem\s+')).Count
-        $sorryCount = ([regex]::Matches($leanText, '\bsorry\b')).Count
-        $trivialEqCount = ([regex]::Matches($leanText, ':\s*(\w+)\s*=\s*\1\s*:=')).Count
-        $trivialCommCount = ([regex]::Matches($leanText, '\(a\s+b\s*:\s*Nat\)\s*:\s*a\s*\+\s*b\s*=\s*b\s*\+\s*a')).Count
-        if ($thmCount -lt 800) {
-            $failures.Add("LEAN4_COUNT_LOW: Found $thmCount theorems (Req: >= 800)")
-        }
-        if ($sorryCount -gt 0) {
-            $failures.Add("LEAN4_SORRY_FOUND: Found $sorryCount 'sorry' tokens (Req: 0)")
-        }
-        if (($trivialEqCount + $trivialCommCount) -gt 0) {
-            $failures.Add("LEAN4_TRIVIAL_PADDING: Found $($trivialEqCount + $trivialCommCount) trivial arithmetic padding theorems (Req: 0)")
+        $leanErrs = Test-Lean4ThresholdCheck -LeanPath $leanVault
+        foreach ($le in $leanErrs) {
+            $failures.Add($le)
         }
     }
 
@@ -68,10 +389,39 @@ function Run-StaticGatekeeperChecks {
     if ((Get-FileHash $hud1 -Algorithm SHA256).Hash -ne (Get-FileHash $hud2 -Algorithm SHA256).Hash) {
         $failures.Add("HUD_MIRROR_DRIFT: 05_hud_cockpit/src/App.tsx != 02_l2_orchestration/hud/src/App.tsx")
     }
+    $ktRoot = "$RepoRoot\04_edge_silicon\pixel10_ndk_app\MainActivity.kt"
     $kt1 = "$RepoRoot\04_edge_silicon\pixel10_ndk_app\app\src\main\java\com\actomega\manifold\MainActivity.kt"
     $kt2 = "$RepoRoot\04_edge_silicon\pixel10_ndk_app\src\main\java\com\actomega\manifold\MainActivity.kt"
-    if ((Get-FileHash $kt1 -Algorithm SHA256).Hash -ne (Get-FileHash $kt2 -Algorithm SHA256).Hash) {
-        $failures.Add("MOBILE_MIRROR_DRIFT: app/src MainActivity.kt != src MainActivity.kt")
+    $hKt1 = (Get-FileHash $kt1 -Algorithm SHA256).Hash
+    $hKt2 = (Get-FileHash $kt2 -Algorithm SHA256).Hash
+    $hKtR = if (Test-Path $ktRoot) { (Get-FileHash $ktRoot -Algorithm SHA256).Hash } else { "" }
+    if (($hKt1 -ne $hKt2) -or ($hKtR -and ($hKt1 -ne $hKtR))) {
+        $failures.Add("MOBILE_MIRROR_DRIFT: 3-way MainActivity.kt SHA-256 mismatch")
+    }
+    $stagingKt = "$RepoRoot\03_vault\config\MainActivity.kt.staging"
+    $stagingTracked = @(git -C $RepoRoot ls-files "03_vault/config/MainActivity.kt.staging" 2>$null)
+    if ((Test-Path $stagingKt) -or $stagingTracked.Count -gt 0) {
+        $failures.Add("STAGING_MAINACTIVITY_PRESENT: 03_vault/config/MainActivity.kt.staging must be deleted")
+    }
+    $androidXmls = @(
+        "$RepoRoot\04_edge_silicon\pixel10_ndk_app\app\src\main\res\values\strings.xml",
+        "$RepoRoot\04_edge_silicon\pixel10_ndk_app\src\main\res\values\strings.xml",
+        "$RepoRoot\04_edge_silicon\pixel10_ndk_app\app\src\main\AndroidManifest.xml",
+        "$RepoRoot\04_edge_silicon\pixel10_ndk_app\src\main\AndroidManifest.xml"
+    )
+    foreach ($ax in $androidXmls) {
+        if (Test-Path $ax) {
+            $axTxt = [System.IO.File]::ReadAllText($ax)
+            if ($axTxt -match 'v72\.2\.0|CHAIN 368|995/995') {
+                $failures.Add("ANDROID_XML_STALE_STAMP: Stale v72.2.0 / CHAIN 368 / 995/995 in $ax")
+            }
+        }
+    }
+    if (Test-Path $kt1) {
+        $ktTxt = [System.IO.File]::ReadAllText($kt1)
+        if ($ktTxt -match '/1010\b|1,010/1,010\s+(?:Lean\s+4\s+)?QED|CHAIN 368') {
+            $failures.Add("ANDROID_KOTLIN_STALE_STAMP: Static /1010, 1,010/1,010 QED, or CHAIN 368 literal in MainActivity.kt")
+        }
     }
 
     # 3a. Single Canonical Cloudflare Edge Worker Check (B9: zero duplicate root worker)
@@ -262,6 +612,33 @@ function Run-StaticGatekeeperChecks {
         }
     }
 
+    # 8. Repo-Wide git ls-files Cloudflare ID Leak & Wrangler Hex Assignment Scan (Item #5)
+    $cfViolations = Test-CloudflareIdLeakScan -RootPath $RepoRoot -ExtraFiles $ExtraFilesToScan
+    foreach ($cfv in $cfViolations) {
+        $failures.Add($cfv)
+    }
+
+    # 9. Repo-Wide Pixel ADB Serial Leak Scan (Item #10c)
+    $pxViolations = Test-PixelSerialLeakScan -RootPath $RepoRoot -ExtraFiles $ExtraFilesToScan
+    foreach ($pxv in $pxViolations) {
+        $failures.Add($pxv)
+    }
+
+    # 10. External HMAC-Signed Lean 4 Verification Receipt Gate (Item #13)
+    $leanReceiptVerifier = "$RepoRoot\00_control\Verify-Lean4IndependentReceipt.ps1"
+    if (-not (Test-Path $leanReceiptVerifier)) {
+        $failures.Add("LEAN4_RECEIPT_VERIFIER_MISSING: $leanReceiptVerifier not found")
+    } else {
+        try {
+            $vOut = (& powershell -NoProfile -ExecutionPolicy Bypass -File $leanReceiptVerifier -VerifyOnly -RepoRoot $RepoRoot 2>&1) -join " "
+            if ($LASTEXITCODE -ne 0) {
+                $failures.Add("LEAN4_HMAC_RECEIPT_INVALID: $vOut")
+            }
+        } catch {
+            $failures.Add("LEAN4_HMAC_RECEIPT_ERROR: $($_.Exception.Message)")
+        }
+    }
+
     return ,$failures
 }
 
@@ -306,8 +683,160 @@ if ($HookStdin) {
     exit 0
 }
 
+# Negative-Injection Self-Test Mode (Item #5 CF ID leak + Item #6 1,009-theorem threshold)
+if ($TestNegativeCloudflareInjection) {
+    Write-Host "==========================================================================" -ForegroundColor Cyan
+    Write-Host "   ACT-OMEGA GATEKEEPER: NEGATIVE-INJECTION VERIFICATION (ITEMS #5 & #6)  " -ForegroundColor Cyan
+    Write-Host "==========================================================================" -ForegroundColor Cyan
+    $negFailures = 0
+
+    # Baseline clean CF scan must pass with 0 violations
+    $cleanViolations = Test-CloudflareIdLeakScan -RootPath $RepoRoot
+    if ($cleanViolations.Count -ne 0) {
+        Write-Host "  [NEG-TEST BASELINE] [FAIL] Tracked repo already has CF violations: $($cleanViolations -join '; ')" -ForegroundColor Red
+        exit 1
+    }
+    Write-Host "  [NEG-TEST 1/5 CLEAN]     [PASS] Repo-wide git ls-files CF scan = 0 leaks" -ForegroundColor Green
+
+    $tmpNegDir = Join-Path ([System.IO.Path]::GetTempPath()) "act_omega_m3_neg_$([System.Diagnostics.Process]::GetCurrentProcess().Id)"
+    New-Item -ItemType Directory -Force -Path $tmpNegDir | Out-Null
+    try {
+        $cfIdsFile = "C:\Users\Nbell\.act_omega_cloudflare_ids.json"
+        $cfData = Get-Content -Raw $cfIdsFile | ConvertFrom-Json
+
+        # Test 2: Inject active CF ID into temp fixture -> MUST FAIL
+        $fActive = Join-Path $tmpNegDir "injected_active_cf.txt"
+        [System.IO.File]::WriteAllText($fActive, "leaked_d1 = `"$($cfData.d1_database_id)`"`n")
+        $vActive = Test-CloudflareIdLeakScan -RootPath $RepoRoot -ExtraFiles @($fActive)
+        if ($vActive.Count -gt 0 -and ($vActive -join " ") -match "CF_ACTIVE_ID_LEAK") {
+            Write-Host "  [NEG-TEST 2/5 ACTIVE CF] [PASS] Scanner caught injected active CF ID ($($vActive[0]))" -ForegroundColor Green
+        } else {
+            Write-Host "  [NEG-TEST 2/5 ACTIVE CF] [FAIL] Scanner missed injected active CF ID" -ForegroundColor Red
+            $negFailures++
+        }
+
+        # Test 3: Inject literal hex ID into temp wrangler.toml fixture -> MUST FAIL
+        $fWrangler = Join-Path $tmpNegDir "wrangler.toml"
+        [System.IO.File]::WriteAllText($fWrangler, "account_id = `"0123456789abcdef0123456789abcdef`"`ndatabase_id = `"11111111-2222-3333-4444-555555555555`"`n")
+        $vWrangler = Test-CloudflareIdLeakScan -RootPath $RepoRoot -ExtraFiles @($fWrangler)
+        if ($vWrangler.Count -gt 0 -and ($vWrangler -join " ") -match "CF_WRANGLER_LITERAL_HEX_LEAK") {
+            Write-Host "  [NEG-TEST 3/5 WRANGLER]  [PASS] Scanner caught literal hex assignment ($($vWrangler[0]))" -ForegroundColor Green
+        } else {
+            Write-Host "  [NEG-TEST 3/5 WRANGLER]  [FAIL] Scanner missed literal hex assignment" -ForegroundColor Red
+            $negFailures++
+        }
+
+        # Test 4: Inject retired SHA-256 token (runtime-assembled synthetic UUID + its SHA-256 digest) -> MUST FAIL
+        $synUuid = ("dead" + "beef-") + ("1234-" + "5678-") + ("9abc-" + "def012345678")
+        $sha = [System.Security.Cryptography.SHA256]::Create()
+        $synHash = ([System.BitConverter]::ToString($sha.ComputeHash([System.Text.UTF8Encoding]::new($false).GetBytes($synUuid))) -replace '-', '').ToLowerInvariant()
+        $fRetired = Join-Path $tmpNegDir "injected_retired_cf.txt"
+        [System.IO.File]::WriteAllText($fRetired, "retired_token = $synUuid`n")
+        $vRetired = Test-CloudflareIdLeakScan -RootPath $RepoRoot -ExtraFiles @($fRetired) -AdditionalRetiredSha256 @($synHash)
+        if ($vRetired.Count -gt 0 -and ($vRetired -join " ") -match "CF_RETIRED_ID_SHA256_LEAK") {
+            Write-Host "  [NEG-TEST 4/5 RETIRED]   [PASS] Scanner caught retired SHA-256 token ($($vRetired[0]))" -ForegroundColor Green
+        } else {
+            Write-Host "  [NEG-TEST 4/5 RETIRED]   [FAIL] Scanner missed retired SHA-256 token" -ForegroundColor Red
+            $negFailures++
+        }
+
+        # Test 5: 1,009-theorem Lean 4 negative fixture -> MUST FAIL, 1,010 live -> MUST PASS
+        $fLean1009 = Join-Path $tmpNegDir "SovereignManifoldTheorems_1009.lean"
+        $sb = New-Object System.Text.StringBuilder
+        for ($i = 1; $i -le 1009; $i++) {
+            [void]$sb.AppendLine("theorem neg_ps_fixture_$i : True := by trivial")
+        }
+        [System.IO.File]::WriteAllText($fLean1009, $sb.ToString())
+        $vLean1009 = Test-Lean4ThresholdCheck -LeanPath $fLean1009
+        $vLean1010 = Test-Lean4ThresholdCheck -LeanPath "$RepoRoot\03_vault\lean4\SovereignManifoldTheorems.lean" -ReportedCount 1010
+        $vLeanMismatch = Test-Lean4ThresholdCheck -LeanPath "$RepoRoot\03_vault\lean4\SovereignManifoldTheorems.lean" -ReportedCount 1009
+        if ($vLean1009.Count -gt 0 -and $vLeanMismatch.Count -gt 0 -and $vLean1010.Count -eq 0) {
+            Write-Host "  [NEG-TEST 5/5 LEAN 1009] [PASS] 1009-theorem fixture rejected ($($vLean1009[0])) | 1009-report rejected | 1010 live passed" -ForegroundColor Green
+        } else {
+            Write-Host "  [NEG-TEST 5/5 LEAN 1009] [FAIL] Lean threshold negative check failed" -ForegroundColor Red
+            $negFailures++
+        }
+    } finally {
+        Remove-Item $tmpNegDir -Recurse -Force -ErrorAction SilentlyContinue
+    }
+
+    if ($negFailures -gt 0) {
+        Write-Host "  [NEGATIVE-INJECTION SUITE: FAILED ($negFailures)]" -ForegroundColor Red
+        exit 1
+    }
+    Write-Host "  [NEGATIVE-INJECTION SUITE: PASSED (5/5)]" -ForegroundColor Green
+    exit 0
+}
+
+# Negative-Injection Self-Test Mode for Item #10c (Pixel ADB Serial Leak Scan)
+if ($TestNegativePixelSerialInjection) {
+    Write-Host "==========================================================================" -ForegroundColor Cyan
+    Write-Host "   ACT-OMEGA GATEKEEPER: PIXEL SERIAL NEGATIVE-INJECTION VERIFY (ITEM #10)" -ForegroundColor Cyan
+    Write-Host "==========================================================================" -ForegroundColor Cyan
+    $pxNegFailures = 0
+
+    $cleanPx = Test-PixelSerialLeakScan -RootPath $RepoRoot
+    if ($cleanPx.Count -ne 0) {
+        Write-Host "  [PX-NEG 1/4 CLEAN]       [FAIL] Tracked repo still has Pixel serial leaks: $($cleanPx -join '; ')" -ForegroundColor Red
+        exit 1
+    }
+    Write-Host "  [PX-NEG 1/4 CLEAN]       [PASS] Repo-wide git ls-files Pixel serial scan = 0 leaks" -ForegroundColor Green
+
+    $tmpPxDir = Join-Path ([System.IO.Path]::GetTempPath()) "act_omega_m4_pxneg_$([System.Diagnostics.Process]::GetCurrentProcess().Id)"
+    New-Item -ItemType Directory -Force -Path $tmpPxDir | Out-Null
+    try {
+        $adbCfg = Get-Content -Raw "C:\Users\Nbell\.act_omega_adb_devices.json" | ConvertFrom-Json
+
+        # Test 2: Inject active Pixel 10 serial into temp fixture -> MUST FAIL
+        $fP10 = Join-Path $tmpPxDir "injected_p10.txt"
+        [System.IO.File]::WriteAllText($fP10, "adb -s $($adbCfg.pixel10.serial) shell id`n")
+        $vP10 = Test-PixelSerialLeakScan -RootPath $RepoRoot -ExtraFiles @($fP10)
+        if ($vP10.Count -gt 0 -and ($vP10 -join " ") -match "PIXEL_ACTIVE_SERIAL_LEAK") {
+            Write-Host "  [PX-NEG 2/4 ACTIVE P10]  [PASS] Scanner caught injected Pixel 10 serial ($($vP10[0]))" -ForegroundColor Green
+        } else {
+            Write-Host "  [PX-NEG 2/4 ACTIVE P10]  [FAIL] Scanner missed injected Pixel 10 serial" -ForegroundColor Red
+            $pxNegFailures++
+        }
+
+        # Test 3: Inject active Pixel 8 serial into temp fixture -> MUST FAIL
+        $fP8 = Join-Path $tmpPxDir "injected_p8.txt"
+        [System.IO.File]::WriteAllText($fP8, "device_serial=$($adbCfg.pixel8.serial)`n")
+        $vP8 = Test-PixelSerialLeakScan -RootPath $RepoRoot -ExtraFiles @($fP8)
+        if ($vP8.Count -gt 0 -and ($vP8 -join " ") -match "PIXEL_ACTIVE_SERIAL_LEAK") {
+            Write-Host "  [PX-NEG 3/4 ACTIVE P8]   [PASS] Scanner caught injected Pixel 8 serial ($($vP8[0]))" -ForegroundColor Green
+        } else {
+            Write-Host "  [PX-NEG 3/4 ACTIVE P8]   [FAIL] Scanner missed injected Pixel 8 serial" -ForegroundColor Red
+            $pxNegFailures++
+        }
+
+        # Test 4: Inject synthetic retired serial + its SHA-256 -> MUST FAIL
+        $synSer = ("99ZZ" + "0ABCD") + "12345"
+        $sha = [System.Security.Cryptography.SHA256]::Create()
+        $synHash = ([System.BitConverter]::ToString($sha.ComputeHash([System.Text.UTF8Encoding]::new($false).GetBytes($synSer))) -replace '-', '').ToLowerInvariant()
+        $sha.Dispose()
+        $fRet = Join-Path $tmpPxDir "injected_retired_px.txt"
+        [System.IO.File]::WriteAllText($fRet, "old_serial = $synSer`n")
+        $vRet = Test-PixelSerialLeakScan -RootPath $RepoRoot -ExtraFiles @($fRet) -AdditionalRetiredSha256 @($synHash)
+        if ($vRet.Count -gt 0 -and ($vRet -join " ") -match "PIXEL_RETIRED_SERIAL_SHA256_LEAK") {
+            Write-Host "  [PX-NEG 4/4 RETIRED]     [PASS] Scanner caught retired serial SHA-256 ($($vRet[0]))" -ForegroundColor Green
+        } else {
+            Write-Host "  [PX-NEG 4/4 RETIRED]     [FAIL] Scanner missed retired serial SHA-256" -ForegroundColor Red
+            $pxNegFailures++
+        }
+    } finally {
+        Remove-Item $tmpPxDir -Recurse -Force -ErrorAction SilentlyContinue
+    }
+
+    if ($pxNegFailures -gt 0) {
+        Write-Host "  [PIXEL SERIAL NEGATIVE-INJECTION SUITE: FAILED ($pxNegFailures)]" -ForegroundColor Red
+        exit 1
+    }
+    Write-Host "  [PIXEL SERIAL NEGATIVE-INJECTION SUITE: PASSED (4/4)]" -ForegroundColor Green
+    exit 0
+}
+
 # Default to -StaticOnly when invoked without switches
-if (-not $HookStdin -and -not $FullAudit -and -not $StaticOnly) {
+if (-not $HookStdin -and -not $FullAudit -and -not $StaticOnly -and -not $TestNegativeCloudflareInjection -and -not $TestNegativePixelSerialInjection) {
     $StaticOnly = $true
 }
 
@@ -318,9 +847,9 @@ if ($StaticOnly) {
 
     $failures = Run-StaticGatekeeperChecks
     if ($failures.Count -eq 0) {
-        Write-Host "  [STATIC INVARIANTS] [PASS] All 7 Static Invariants Verified (Zero-Bracket, Lean4, Mirrors, Secrets, Agents/Rules, SSR & Bundles, GSC Lock)" -ForegroundColor Green
+        Write-Host "  [STATIC INVARIANTS] [PASS] All 10 Static Invariants Verified (Zero-Bracket, Lean4+HMAC, Mirrors+Stamps, Secrets+CF+PixelSerials=0, Agents/Rules, SSR & Bundles, GSC Lock)" -ForegroundColor Green
         Write-Host "==========================================================================" -ForegroundColor Cyan
-        Write-Host "  [BRUTAL GATEKEEPER RESULT: PASSED (All 7 Static Invariants Verified)]" -ForegroundColor Green
+        Write-Host "  [BRUTAL GATEKEEPER RESULT: PASSED (All 10 Static Invariants Verified)]" -ForegroundColor Green
         exit 0
     } else {
         foreach ($f in $failures) {
@@ -337,9 +866,10 @@ if ($FullAudit) {
     Write-Host "   ACT-OMEGA BRUTAL AGENT GATEKEEPER: 13-POINT ARCHITECTURAL AUDIT        " -ForegroundColor Cyan
     Write-Host "==========================================================================" -ForegroundColor Cyan
 
+    $liveLeanCount = Get-LiveLean4TheoremCount -LeanPath "$RepoRoot\03_vault\lean4\SovereignManifoldTheorems.lean"
     $failures = Run-StaticGatekeeperChecks
     if ($failures.Count -eq 0) {
-        Write-Host "  [1-7 STATIC INVARIANTS] [PASS] Zero-Bracket(v33..v68+)=0 | Lean4>=800(0 trivial) | HUD/Mobile/Agent Mirrors=LOCKED | SecretsInRepo=0 | SSR & Bundles=VERIFIED | GSC 7-Mirror=LOCKED" -ForegroundColor Green
+        Write-Host "  [1-10 STATIC INVARIANTS][PASS] Zero-Bracket(v33..v73+)=0 | Lean4=$liveLeanCount(>=1010, HMAC=OK) | HUD/Mobile/Agent Mirrors=LOCKED | Secrets/CF/PixelSerials=0 | SSR & Bundles=VERIFIED | GSC 7-Mirror=LOCKED" -ForegroundColor Green
     } else {
         foreach ($f in $failures) {
             Write-Host "  [STATIC FAIL] $f" -ForegroundColor Red
@@ -497,7 +1027,7 @@ if ($FullAudit) {
         $c308Tools = if ($c308.tools_verified) { $c308.tools_verified } else { $c308.total_tools }
         $c312Tools = if ($c312.tools_verified) { $c312.tools_verified } else { $c312.total_tools }
         $c316Tools = if ($c316.tools_verified) { $c316.tools_verified } else { $c316.total_tools }
-        $c350HonestOk = ($c350.status -in @("MEASURED", "UNMEASURED/OFFLINE")) -and ($c350.total_tools -eq 350) -and ($c350.lean4_theorems_qed -ge 950)
+        $c350HonestOk = ($c350.status -in @("MEASURED", "UNMEASURED/OFFLINE")) -and ($c350.total_tools -eq 350) -and ($liveLeanCount -ge 1010) -and ($c350.lean4_theorems_qed -ge 1010) -and ($c350.lean4_theorems_qed -eq $liveLeanCount)
         $c362HonestOk = (
             ($c362.status -in @("MEASURED", "UNMEASURED/OFFLINE")) -and
             ($c362.gate_1_corpus_and_minhash.surviving_eval500_overlaps -eq 0) -and
@@ -507,7 +1037,8 @@ if ($FullAudit) {
             ($c362.gate_4_rtx3050_cuda_pretrain.ptx_loaded -eq $true) -and
             ([double]$c362.gate_4_rtx3050_cuda_pretrain.val_bpb_768d -lt [double]$c362.gate_4_rtx3050_cuda_pretrain.val_bpb_384d) -and
             ($c362.gate_6_lean4_formal_proofs.vault_l0_sha256_synced -eq $true) -and
-            ($c362.gate_6_lean4_formal_proofs.theorem_count -ge 995)
+            ($c362.gate_6_lean4_formal_proofs.theorem_count -ge 1010) -and
+            ($c362.gate_6_lean4_formal_proofs.theorem_count -eq $liveLeanCount)
         )
         $c368HonestOk = (
             ($c368.status -in @("MEASURED", "UNMEASURED/OFFLINE")) -and
@@ -519,9 +1050,10 @@ if ($FullAudit) {
             ($c368.gate_2_masked_chatml_sft.rweval500_overlap -eq 0) -and
             ($c368.gate_3_wgsl_rag_and_trisilicon.passed -eq $true) -and
             ($c368.gate_6_lean4_formal_proofs.passed -eq $true) -and
-            ($c368.gate_6_lean4_formal_proofs.theorem_count -ge 995)
+            ($c368.gate_6_lean4_formal_proofs.theorem_count -ge 1010) -and
+            ($c368.gate_6_lean4_formal_proofs.theorem_count -eq $liveLeanCount)
         )
-        if ($c292.status -eq "CHAIN_292_MASTER_CERTIFIED_OK" -and $c292.all_gates_passed -eq $true -and $c292.gates_passed -eq 12 -and $c300.status -match "CHAIN_300" -and $toolsCount -eq 300 -and $thmCount -ge 800 -and $c308.status -eq "MEASURED" -and $c308Tools -eq 308 -and $c312.status -eq "MEASURED" -and $c312Tools -eq 312 -and $c316.status -eq "MEASURED" -and $c316Tools -eq 316 -and $c350HonestOk -and $c362HonestOk -and $c368HonestOk) {
+        if ($c292.status -eq "CHAIN_292_MASTER_CERTIFIED_OK" -and $c292.all_gates_passed -eq $true -and $c292.gates_passed -eq 12 -and $c300.status -match "CHAIN_300" -and $toolsCount -eq 300 -and $thmCount -ge 1010 -and $thmCount -eq $liveLeanCount -and $c308.status -eq "MEASURED" -and $c308Tools -eq 308 -and $c312.status -eq "MEASURED" -and $c312Tools -eq 312 -and $c316.status -eq "MEASURED" -and $c316Tools -eq 316 -and $c350HonestOk -and $c362HonestOk -and $c368HonestOk) {
             Write-Host "  [13 CHAIN 292..368]     [PASS] CHAIN292=$($c292.status) (12/12) | C350=$($c350.status) | C362=$($c362.status)(QED=$($c362.gate_6_lean4_formal_proofs.theorem_count)) | C368=$($c368.status)(QED=$($c368.gate_6_lean4_formal_proofs.theorem_count)) | CLs=$($c316.bijected_cachelines_262144)" -ForegroundColor Green
         } else {
             $failures.Add("CHAIN_CERT_AUDIT_FAIL: C292=$($c292.status) C300=$($c300.status) C308=$($c308.status) C312=$($c312.status) C316=$($c316.status) C350=$($c350.status) C362=$($c362.status) C368=$($c368.status)")

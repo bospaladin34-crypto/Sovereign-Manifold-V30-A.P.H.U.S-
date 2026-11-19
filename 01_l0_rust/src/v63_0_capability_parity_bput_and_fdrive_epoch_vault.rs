@@ -751,7 +751,7 @@ pub fn v63_2_dispatch_tool_296_chain296_cert(input: &str) -> String {
         && spage_bytes == 4055040
         && e8z_bytes == 133120
         && measured_bijected_cls == 132960
-        && lean_count >= 750
+        && crate::v73_2_cloudflare_vpc_mesh_and_pgwire_hyperdrive::validate_live_lean_theorems_with_floor(lean_count)
         && bput.measured_live
         && bput.bput_act_omega_gib <= 1.650
         && fdrive_ok

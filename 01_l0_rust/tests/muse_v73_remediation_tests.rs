@@ -1,25 +1,71 @@
 // 01_l0_rust/tests/muse_v73_remediation_tests.rs
 // Unit, Perturbation & Negative-Case Verification Suite for Muse v73.2.1 (D2, D3, C2, E3, E4, E5, E7)
 
-use act_omega_l0_core::v71_2_sovereign_harmonic_week2_chinchilla_16k_bpe_leech::v71_2_dispatch_tool_339_week2_7test_torture_gauntlet;
-use act_omega_l0_core::v71_3_sovereign_harmonic_week3_speculative_k4_long_context_4k::v71_3_dispatch_tool_341_k4_speculative_cascade;
+use act_omega_l0_core::{v61_escape_clean, v61_json_escape};
+use act_omega_l0_core::v71_0_sovereign_harmonic_standalone_model::{
+    v71_bpe_encode,
+    v71_load_or_build_bpe_vocabulary,
+    v71_load_sh4z_weights,
+};
+use act_omega_l0_core::v71_1_sovereign_harmonic_week1_deep12l_bptt_eval256::{
+    v71_1_build_sh_eval_256_suite,
+    v71_1_load_deep12l_stack_strict,
+};
+use act_omega_l0_core::v71_2_sovereign_harmonic_week2_chinchilla_16k_bpe_leech::{
+    v71_2_dispatch_tool_339_week2_7test_torture_gauntlet,
+    v71_2_load_16k_codebook_strict,
+};
+use act_omega_l0_core::v71_3_sovereign_harmonic_week3_speculative_k4_long_context_4k::{
+    v71_3_dispatch_tool_341_k4_speculative_cascade,
+    v71_3_evaluate_week3_sequence_cross_entropy,
+};
 use act_omega_l0_core::v71_4_sovereign_harmonic_week4_rlvf_tree_speculative_sae_eval256::{
     v71_4_run_tool_351_core,
     v71_4_run_tool_352_core,
     v71_4_verify_candidate_formal_reward_custom,
 };
+use act_omega_l0_core::v72_1_sh_xi_matryoshka_384_768_cuda_pretrainer::{
+    v72_1_build_holdout_shingle_blacklist,
+    v72_1_ensure_sealed_rw_eval_500,
+    v72_1_run_canary_contamination_fixture,
+    v72_1_sha256_hex,
+    v72_1_try_load_verified_disk_corpus,
+};
 use act_omega_l0_core::v72_2_sh_xi_sparse_moe_chatml_sft_and_rag::{
     v72_2_contains_seed_prefix_artifact,
     v72_2_converse_execute_full_with_params,
+    v72_2_dispatch_tool_363_shell2_cpu_ssd_sparse_moe_bank,
+    v72_2_dispatch_tool_364_chatml_masked_sft_trainer,
+    v72_2_dispatch_tool_365_igpu_grounded_rag_and_telemetry,
     v72_2_eval_tool_368_subjson_gates,
     v72_2_evaluate_converse_output_quality_gate,
+    v72_2_extract_word_5gram_shingles,
     v72_2_validate_json_object_fsm,
 };
 use act_omega_l0_core::v73_1_nov12_15_research_kernels::{
+    v73_1_constant_time_eq_hex_64,
+    v73_1_dispatch_chain399_master_certification,
+    v73_1_dispatch_tool_383_curvetq,
     v73_1_dispatch_tool_385_volk_sheaf,
     v73_1_dispatch_tool_389_disco_spec,
     v73_1_dispatch_tool_391_directkv_ubep,
     v73_1_dispatch_tool_392_flash_so2,
+    v73_1_hmac_sha256_hex_lower,
+    v73_1_load_operator_key_bytes,
+    v73_1_verify_lean4_compiler_and_mirror,
+    v73_1_verify_signed_lean_receipt_at,
+};
+use act_omega_l0_core::v73_2_cloudflare_vpc_mesh_and_pgwire_hyperdrive::{
+    count_live_lean_theorems_at_path,
+    count_live_lean_theorems_canonical,
+    v73_2_count_live_lean_theorems,
+    v73_2_dispatch_chain404_master_certification,
+    v73_2_parse_sync_matrix_json,
+    v73_2_read_live_ota_metadata,
+    v73_2_read_live_release_version,
+    v73_2_resolve_allowed_l0_cors_origin,
+    validate_live_lean_theorems_with_floor,
+    validate_live_lean_threshold,
 };
 
 fn ensure_repo_root_cwd() {
@@ -31,6 +77,11 @@ fn ensure_repo_root_cwd() {
 #[test]
 fn test_d2_answer_seeding_detection_and_pure_neural_converse() {
     ensure_repo_root_cwd();
+    let _rw_guard = RW_EVAL500_GUARD.lock().unwrap_or_else(|e| e.into_inner());
+    let _rw_restore = guard_paths(&[
+        "03_vault/connectome/sh_xi_rw_eval_500_sealed.jsonl",
+        "E:\\Sovereign_Manifold_SSD_Vault\\connectome\\sh_xi_rw_eval_500_sealed.jsonl",
+    ]);
     // Negative test: seeded prefix templates from e9804bf MUST be detected and flagged
     assert!(v72_2_contains_seed_prefix_artifact(
         "At 40% battery: Edge-1 Pixel 10 lowers sampling duty cycle."
@@ -58,6 +109,11 @@ fn test_d2_answer_seeding_detection_and_pure_neural_converse() {
 #[test]
 fn test_e4_converse_quality_gate_rejects_bad_or_truncated_output() {
     ensure_repo_root_cwd();
+    let _rw_guard = RW_EVAL500_GUARD.lock().unwrap_or_else(|e| e.into_inner());
+    let _rw_restore = guard_paths(&[
+        "03_vault/connectome/sh_xi_rw_eval_500_sealed.jsonl",
+        "E:\\Sovereign_Manifold_SSD_Vault\\connectome\\sh_xi_rw_eval_500_sealed.jsonl",
+    ]);
     // Negative 1: truncated 1-token output fails quality gate
     let (ok_trunc, reason_trunc) = v72_2_evaluate_converse_output_quality_gate(
         "the",
@@ -110,6 +166,39 @@ fn test_e4_converse_quality_gate_rejects_bad_or_truncated_output() {
     );
     assert!(!ok_brack, "Square bracket violation MUST fail E4 gate");
 
+    // Negative 5 (M3 Item #7 E4): entropy >= 12.0, <= 0.05, or NaN MUST fail E4 gate
+    for bad_ent in [12.0_f64, 14.5_f64, 0.05_f64, f64::NAN] {
+        let (ok_ent, reason_ent) = v72_2_evaluate_converse_output_quality_gate(
+            "Valid coherent neural output explaining E8 lattice sphere packing.",
+            12,
+            10,
+            bad_ent,
+            0.22,
+            false,
+            false,
+            false,
+        );
+        assert!(
+            !ok_ent,
+            "Out-of-range/non-finite entropy ({}) MUST fail E4 gate (got {})",
+            bad_ent,
+            reason_ent
+        );
+    }
+
+    // Positive (M3 Item #7 E4): valid entropy in (0.05, 12.0) passes
+    let (ok_good_ent, reason_good_ent) = v72_2_evaluate_converse_output_quality_gate(
+        "Valid coherent neural output explaining E8 lattice sphere packing.",
+        12,
+        10,
+        4.2,
+        0.22,
+        false,
+        false,
+        false,
+    );
+    assert!(ok_good_ent, "Valid entropy 4.2 MUST pass E4 gate (got {})", reason_good_ent);
+
     // Live converse with max_tokens=1 MUST report UNMEASURED/OFFLINE
     let live_trunc = v72_2_converse_execute_full_with_params(
         "Explain the Leech lattice.",
@@ -139,6 +228,16 @@ fn test_e5_serde_json_gate_rejects_substring_spoofing() {
     let genuine_t366 = r#"{"status":"MEASURED","json_pushdown_fsm":{"valid_json_parses":100,"fuzz_logit_trials":100,"malformed_json_outputs":0}}"#;
     let (_, g6_ok, g6_v100, _) = v72_2_eval_tool_368_subjson_gates(valid_t365, genuine_t366, valid_t367);
     assert!(g6_ok && g6_v100);
+
+    // Negative test (M3 Item #7 E5): missing fuzz_logit_trials MUST fail closed (no unwrap_or(100) bypass)
+    let missing_trials_t366 = r#"{"status":"MEASURED","json_pushdown_fsm":{"valid_json_parses":100,"malformed_json_outputs":0}}"#;
+    let (_, m_ok, m_v100, _) = v72_2_eval_tool_368_subjson_gates(valid_t365, missing_trials_t366, valid_t367);
+    assert!(!m_ok && !m_v100, "Missing fuzz_logit_trials MUST fail closed in E5 gate");
+
+    // Negative test (M3 Item #7 E5): zero fuzz_logit_trials MUST fail closed
+    let zero_trials_t366 = r#"{"status":"MEASURED","json_pushdown_fsm":{"valid_json_parses":100,"fuzz_logit_trials":0,"malformed_json_outputs":0}}"#;
+    let (_, z_ok, z_v100, _) = v72_2_eval_tool_368_subjson_gates(valid_t365, zero_trials_t366, valid_t367);
+    assert!(!z_ok && !z_v100, "Zero fuzz_logit_trials MUST fail closed in E5 gate");
 
     // Pushdown JSON FSM rejects malformed JSON
     let (fsm_bad, _, _, _) = v72_2_validate_json_object_fsm("{\"tool\":\"x\", unquoted}");
@@ -206,9 +305,32 @@ fn test_e3_plucker_and_track_ab_reject_keyword_stuffing_and_missing_stack() {
     );
 }
 
+static T341_KL_RECEIPT_GUARD: std::sync::Mutex<()> = std::sync::Mutex::new(());
+static T339_ABLATION_GUARD: std::sync::Mutex<()> = std::sync::Mutex::new(());
+static CURVETQ_RECEIPT_GUARD: std::sync::Mutex<()> = std::sync::Mutex::new(());
+static LEAN_RECEIPT_GUARD: std::sync::Mutex<()> = std::sync::Mutex::new(());
+static RW_EVAL500_GUARD: std::sync::Mutex<()> = std::sync::Mutex::new(());
+
 #[test]
 fn test_c2_and_e10_corrupt_speculative_acceptance_fails_kl_gate() {
     ensure_repo_root_cwd();
+    let _kl_guard = T341_KL_RECEIPT_GUARD.lock().unwrap_or_else(|e| e.into_inner());
+    let _kl_restore = guard_paths(&[
+        "03_vault/connectome/sh_week4_tree_speculative_kl_receipt.json",
+        "03_vault/connectome/sh_week3_k4_empirical_kl_receipt.json",
+    ]);
+    // Establish clean MEASURED canonical receipts on disk first
+    let t352_clean = v71_4_run_tool_352_core("{}");
+    assert!(t352_clean.tree_speculative_certified, "Clean Tool 352 run MUST certify");
+    let t341_clean_str = v71_3_dispatch_tool_341_k4_speculative_cascade("{}");
+    let v341_clean: serde_json::Value = serde_json::from_str(&t341_clean_str).expect("valid clean t341 json");
+    assert_eq!(v341_clean.get("status").and_then(|s| s.as_str()), Some("MEASURED"));
+
+    let w3_kl_before = std::fs::read_to_string("03_vault/connectome/sh_week3_k4_empirical_kl_receipt.json")
+        .expect("sh_week3_k4_empirical_kl_receipt.json before negative tests");
+    let w4_kl_before = std::fs::read_to_string("03_vault/connectome/sh_week4_tree_speculative_kl_receipt.json")
+        .expect("sh_week4_tree_speculative_kl_receipt.json before negative tests");
+
     // Negative test on Tool 352 (C2): accepting mismatched drafter tokens without rejection MUST exceed kl_bound_tau and fail
     let t352_bad = v71_4_run_tool_352_core(r#"{"corrupt_accept_without_rejection":true}"#);
     assert!(!t352_bad.tree_speculative_certified, "Un-rejected mismatched drafter MUST fail tree_speculative_certified");
@@ -223,6 +345,11 @@ fn test_c2_and_e10_corrupt_speculative_acceptance_fails_kl_gate() {
         .unwrap_or(0.06);
     assert!(emp_kl > tau, "Corrupted drafter empirical_output_kl ({}) MUST exceed kl_bound_tau ({})", emp_kl, tau);
 
+    // Poisoned draft tree negative-injection check on Tool 352
+    let t352_poison = v71_4_run_tool_352_core(r#"{"poison_draft_tree":true}"#);
+    assert!(t352_poison.tree_speculative_certified);
+    assert_eq!(t352_poison.poisoned_draft_nodes_accepted, 0);
+
     // Negative test on Tool 341 (E10)
     let t341_bad_str = v71_3_dispatch_tool_341_k4_speculative_cascade(r#"{"corrupt_accept_without_rejection":true}"#);
     let v341: serde_json::Value = serde_json::from_str(&t341_bad_str).expect("valid t341 json");
@@ -230,11 +357,37 @@ fn test_c2_and_e10_corrupt_speculative_acceptance_fails_kl_gate() {
         v341.get("speculative_cascade").and_then(|o| o.get("zero_distribution_drift_verified")).and_then(|b| b.as_bool()),
         Some(false)
     );
+
+    // Regression invariant: negative KL fault-injection probes MUST NOT overwrite canonical KL receipts on disk
+    let w3_kl_after = std::fs::read_to_string("03_vault/connectome/sh_week3_k4_empirical_kl_receipt.json")
+        .expect("sh_week3_k4_empirical_kl_receipt.json after negative tests");
+    let w4_kl_after = std::fs::read_to_string("03_vault/connectome/sh_week4_tree_speculative_kl_receipt.json")
+        .expect("sh_week4_tree_speculative_kl_receipt.json after negative tests");
+    assert_eq!(w3_kl_before, w3_kl_after, "Negative Tool 341 probe MUST NOT overwrite sh_week3_k4_empirical_kl_receipt.json");
+    assert_eq!(w4_kl_before, w4_kl_after, "Negative Tool 352 probes MUST NOT overwrite sh_week4_tree_speculative_kl_receipt.json");
+
+    let w3_json: serde_json::Value = serde_json::from_str(&w3_kl_after).expect("valid w3 kl receipt json");
+    let w4_json: serde_json::Value = serde_json::from_str(&w4_kl_after).expect("valid w4 kl receipt json");
+    assert_eq!(w3_json.get("status").and_then(|v| v.as_str()), Some("MEASURED"));
+    assert_eq!(w3_json.get("corrupt_accept_without_rejection").and_then(|v| v.as_bool()), Some(false));
+    assert_eq!(w4_json.get("status").and_then(|v| v.as_str()), Some("MEASURED"));
+    assert_eq!(w4_json.get("corrupt_accept_without_rejection").and_then(|v| v.as_bool()), Some(false));
 }
 
 #[test]
 fn test_d3_active_d_perturbation_changes_d64_cell_loss() {
     ensure_repo_root_cwd();
+    let _abl_guard = T339_ABLATION_GUARD.lock().unwrap_or_else(|e| e.into_inner());
+    let _restore_guards = guard_paths(&[
+        "03_vault/connectome/sh_week2_6way_ablation_receipt.json",
+        "E:\\Sovereign_Manifold_SSD_Vault\\connectome\\sh_week2_6way_ablation_receipt.json",
+        "03_vault/receipts/v71_2_week2_torture_benchmark_receipt.json",
+        "E:\\Sovereign_Manifold_SSD_Vault\\connectome\\v71_2_week2_torture_benchmark_receipt.json",
+        "03_vault/connectome/sh_week2_curated_corpus.jsonl",
+        "03_vault/connectome/sh_week2_curated_corpus.binshard",
+        "E:\\Sovereign_Manifold_SSD_Vault\\connectome\\sh_week2_curated_corpus.jsonl",
+        "E:\\Sovereign_Manifold_SSD_Vault\\training_corpus\\sh_week2_curated_corpus.binshard",
+    ]);
     let base_json = v71_2_dispatch_tool_339_week2_7test_torture_gauntlet("{}");
     let pert_json = v71_2_dispatch_tool_339_week2_7test_torture_gauntlet(r#"{"d64_seed_samples_override":8}"#);
     let vb: serde_json::Value = serde_json::from_str(&base_json).expect("valid base t339");
@@ -266,4 +419,940 @@ fn test_e7_research_kernels_report_self_test_and_fail_on_bad_inputs() {
 
     let t392_bad: serde_json::Value = serde_json::from_str(&v73_1_dispatch_tool_392_flash_so2(r#"{"ozaki_s":4000001}"#)).unwrap();
     assert_eq!(t392_bad.get("ok").and_then(|b| b.as_bool()), Some(false));
+}
+
+#[test]
+fn test_m1_item11_cors_6_origin_allowlist_and_negative_origins() {
+    let allowlist = [
+        "https://act-omega-net.dev",
+        "https://api.act-omega-net.dev",
+        "https://mcp.act-omega-net.dev",
+        "http://127.0.0.1:5173",
+        "http://localhost:5173",
+        "http://127.0.0.1:8097",
+    ];
+    for origin in allowlist {
+        assert_eq!(
+            v73_2_resolve_allowed_l0_cors_origin(origin),
+            origin,
+            "Allowlisted origin {} MUST resolve identically",
+            origin
+        );
+    }
+    assert_eq!(
+        v73_2_resolve_allowed_l0_cors_origin("  https://act-omega-net.dev  "),
+        "https://act-omega-net.dev"
+    );
+
+    let rejected = [
+        "",
+        "*",
+        "null",
+        "https://evil.example",
+        "http://evil.example:5173",
+        "https://act-omega-net.dev.evil.com",
+        "http://localhost:8097",
+        "https://127.0.0.1:8097",
+    ];
+    for bad in rejected {
+        assert_eq!(
+            v73_2_resolve_allowed_l0_cors_origin(bad),
+            "",
+            "Disallowed origin '{}' MUST resolve to empty string",
+            bad
+        );
+    }
+}
+
+#[test]
+fn test_m1_item9_sync_matrix_json_bounds_and_negative_rejections() {
+    assert_eq!(
+        v73_2_parse_sync_matrix_json(r#"{"pixel10_kops":12.5,"pixel8_kops":8.25}"#),
+        Ok((Some(12.5), Some(8.25)))
+    );
+    assert_eq!(
+        v73_2_parse_sync_matrix_json(r#"{"pixel10":0.0}"#),
+        Ok((Some(0.0), None))
+    );
+    assert_eq!(
+        v73_2_parse_sync_matrix_json(r#"{"pixel8":100000.0}"#),
+        Ok((None, Some(100_000.0)))
+    );
+
+    let invalid_bodies = [
+        "",
+        "   ",
+        "{bad_json",
+        "[]",
+        "123",
+        "{}",
+        r#"{"other":42}"#,
+        r#"{"pixel10_kops":-0.01}"#,
+        r#"{"pixel8_kops":-1.0}"#,
+        r#"{"pixel10_kops":100000.01}"#,
+        r#"{"pixel8_kops":999999}"#,
+        r#"{"pixel10_kops":"12.5"}"#,
+        r#"{"pixel8":null}"#,
+        r#"{"pixel10_kops":true}"#,
+        r#"{"pixel10_kops":1e500}"#,
+        r#"{"pixel10_kops":12.5,"pixel8_kops":-5.0}"#,
+    ];
+    for bad in invalid_bodies {
+        assert!(
+            v73_2_parse_sync_matrix_json(bad).is_err(),
+            "Invalid sync_matrix payload '{}' MUST be rejected",
+            bad
+        );
+    }
+}
+
+#[test]
+fn test_m1_item8_live_ota_metadata_and_source_invariants() {
+    ensure_repo_root_cwd();
+    let lean_cnt = v73_2_count_live_lean_theorems();
+    assert!(lean_cnt >= 1010, "Live .lean theorem count {} must be >= 1010", lean_cnt);
+
+    let meta = v73_2_read_live_ota_metadata();
+    assert_ne!(meta.ota_version, "v61.0.0-sh4z-v6000");
+    assert_ne!(meta.ota_version, "30.0.0");
+    assert_ne!(meta.ota_version, "UNMEASURED/OFFLINE");
+    assert!(meta.ota_version.starts_with("v73."), "Unexpected ota_version: {}", meta.ota_version);
+    assert!(meta.tools_count >= 404, "tools_count {} must be >= 404", meta.tools_count);
+    assert_eq!(meta.lean4_qed, lean_cnt);
+    assert_eq!(meta.combined_shards, 84_480);
+    assert_eq!(meta.total_synapses, 4_055_040);
+    assert_eq!(meta.bijected_cachelines, 262_144);
+
+    let bin_src = std::fs::read("01_l0_rust/src/bin/v31_swarm.rs").expect("bin/v31_swarm.rs");
+    let lib_src = std::fs::read("01_l0_rust/src/v31_swarm.rs").expect("src/v31_swarm.rs");
+    assert_eq!(bin_src, lib_src, "bin/v31_swarm.rs and src/v31_swarm.rs MUST remain 1:1 identical");
+
+    let bin_str = String::from_utf8(bin_src).expect("utf8 bin/v31_swarm.rs");
+    assert!(
+        !bin_str.contains("Access-Control-Allow-Origin: *"),
+        "Wildcard Access-Control-Allow-Origin: * MUST NOT exist in v31_swarm.rs"
+    );
+    assert!(
+        !bin_str.contains("0.085).exp()"),
+        "Proxy PPL formula 0.085).exp() MUST NOT exist in v31_swarm.rs"
+    );
+    assert!(
+        !bin_str.contains("v61.0.0-sh4z-v6000"),
+        "Stale v61.0.0-sh4z-v6000 literal MUST NOT exist in v31_swarm.rs"
+    );
+
+    let v73_2_str = std::fs::read_to_string(
+        "01_l0_rust/src/v73_2_cloudflare_vpc_mesh_and_pgwire_hyperdrive.rs",
+    )
+    .expect("v73_2 source");
+    assert!(
+        !v73_2_str.contains('[') && !v73_2_str.contains(']'),
+        "v73_2 module MUST have zero square brackets"
+    );
+}
+
+#[test]
+fn test_m2_item1_disk_corpus_guard_and_base_curve_meta_parity() {
+    ensure_repo_root_cwd();
+    let _rw_guard = RW_EVAL500_GUARD.lock().unwrap_or_else(|e| e.into_inner());
+    let _rw_restore = guard_paths(&[
+        "03_vault/connectome/sh_xi_rw_eval_500_sealed.jsonl",
+        "E:\\Sovereign_Manifold_SSD_Vault\\connectome\\sh_xi_rw_eval_500_sealed.jsonl",
+    ]);
+    let (eval_items, eval_sha, _) = v72_1_ensure_sealed_rw_eval_500();
+    let blacklist = v72_1_build_holdout_shingle_blacklist(&eval_items);
+    let canary = v72_1_run_canary_contamination_fixture(&blacklist, &eval_items);
+
+    // Positive: valid disk corpus and manifest pass SHA-256 + 13-gram zero-overlap guard
+    let valid_loaded = v72_1_try_load_verified_disk_corpus(
+        &blacklist,
+        &eval_sha,
+        &canary,
+        std::time::Instant::now(),
+    );
+    let (docs, summary) = valid_loaded.expect("Verified disk corpus MUST load when manifest SHA matches");
+    assert!(!docs.is_empty(), "Verified disk corpus must contain documents");
+    assert_eq!(summary.surviving_overlap_shingles, 0);
+
+    // Negative: mismatched eval_sha (simulating tampered/drifted manifest metadata) MUST be rejected
+    let bad_sha = "0000000000000000000000000000000000000000000000000000000000000000";
+    let rejected = v72_1_try_load_verified_disk_corpus(
+        &blacklist,
+        bad_sha,
+        &canary,
+        std::time::Instant::now(),
+    );
+    assert!(rejected.is_none(), "Mismatched SHA-256 metadata MUST reject disk corpus cache");
+
+    // Verify sh_xi_week1_training_curve.csv schema & non-duplicated checkpoint rows
+    let curve_csv = std::fs::read_to_string("03_vault/connectome/sh_xi_week1_training_curve.csv")
+        .expect("sh_xi_week1_training_curve.csv");
+    let lines: Vec<&str> = curve_csv.lines().filter(|l| !l.trim().is_empty()).collect();
+    assert_eq!(
+        lines.first().copied(),
+        Some("step,lr,gamma_net2wider,val_nats_384d,val_nats_768d,val_bpb_384d,val_bpb_768d")
+    );
+    assert_eq!(lines.len(), 7, "Expected header + 6 rows (0 g=0, 0 g=1, 2500, 5000, 7500, 10000)");
+    let parse_row = |line: &str| -> (usize, f64, f64, f64, f64, f64) {
+        let cols: Vec<&str> = line.split(',').collect();
+        assert_eq!(cols.len(), 7, "Expected 7 CSV columns in {}", line);
+        (
+            cols[0].parse::<usize>().expect("step"),
+            cols[2].parse::<f64>().expect("gamma"),
+            cols[3].parse::<f64>().expect("val_nats_384d"),
+            cols[4].parse::<f64>().expect("val_nats_768d"),
+            cols[5].parse::<f64>().expect("val_bpb_384d"),
+            cols[6].parse::<f64>().expect("val_bpb_768d"),
+        )
+    };
+    let r0_g0 = parse_row(lines[1]);
+    let r0_g1 = parse_row(lines[2]);
+    let r_2500 = parse_row(lines[3]);
+    let r_5000 = parse_row(lines[4]);
+    let r_7500 = parse_row(lines[5]);
+    let r_10000 = parse_row(lines[6]);
+    assert_eq!((r0_g0.0, r0_g1.0, r_2500.0, r_5000.0, r_7500.0, r_10000.0), (0, 0, 2500, 5000, 7500, 10000));
+    assert!((r0_g0.1 - 0.0).abs() < 1e-6);
+    assert!((r0_g1.1 - 1.0).abs() < 1e-6);
+    assert!((r0_g1.3 - r0_g1.2).abs() > 1e-4, "Step 0 gamma=1.0 ungated 768D loss must differ from 384D");
+
+    // Verify sh_xi_base_train_meta.json fields & endpoint parity with curve CSV
+    let meta_str = std::fs::read_to_string("00_control/weights/sh_xi_base_train_meta.json")
+        .expect("sh_xi_base_train_meta.json");
+    let meta: serde_json::Value = serde_json::from_str(&meta_str).expect("valid base train meta JSON");
+    assert!(meta.get("val_eval_tokens").and_then(|v| v.as_u64()).unwrap_or(0) > 0);
+    let f32_sci = meta.get("prob_sum_max_dev_f32_sci").and_then(|v| v.as_str()).unwrap_or("");
+    assert!(!f32_sci.is_empty() && f32_sci.contains('e'), "prob_sum_max_dev_f32_sci must be scientific notation");
+    assert_eq!(meta.get("corpus_sha256").and_then(|v| v.as_str()), Some(summary.corpus_sha256.as_str()));
+
+    let m_init_b384 = meta.get("init_val_bpb_384").and_then(|v| v.as_f64()).expect("init_val_bpb_384");
+    let m_init_b768_ug = meta.get("init_val_bpb_768_ungated_gamma1").and_then(|v| v.as_f64()).expect("init_val_bpb_768_ungated_gamma1");
+    let m_fin_b384 = meta.get("final_val_bpb_384").and_then(|v| v.as_f64()).expect("final_val_bpb_384");
+    let m_fin_b768 = meta.get("final_val_bpb_768").and_then(|v| v.as_f64()).expect("final_val_bpb_768");
+    assert!((m_init_b384 - r0_g0.4).abs() < 1e-6);
+    assert!((m_init_b768_ug - r0_g1.5).abs() < 1e-6);
+    assert!((m_fin_b384 - r_10000.4).abs() < 1e-6);
+    assert!((m_fin_b768 - r_10000.5).abs() < 1e-6);
+}
+
+#[test]
+fn test_m2_item2_moe_per_step_curve_and_weights_manifest_provenance() {
+    ensure_repo_root_cwd();
+    let moe_csv = std::fs::read_to_string("03_vault/connectome/sh_xi_moe_training_curve.csv")
+        .expect("sh_xi_moe_training_curve.csv");
+    let lines: Vec<&str> = moe_csv.lines().filter(|l| !l.trim().is_empty()).collect();
+    assert_eq!(
+        lines.first().copied(),
+        Some("step,lr_moe,lr_wout,train_mean_ce_nats,val_bpb_384d,val_bpb_768d,val_bpb_3shell,val_ppl_3shell")
+    );
+    assert_eq!(lines.len(), 18, "Expected header + 17 rows (steps 0..=16)");
+
+    for (idx, line) in lines.iter().skip(1).enumerate() {
+        let cols: Vec<&str> = line.split(',').collect();
+        assert_eq!(cols.len(), 8);
+        let st = cols[0].parse::<usize>().expect("moe step");
+        assert_eq!(st, idx);
+        for c in &cols[1..] {
+            let v = c.parse::<f64>().expect("finite float");
+            assert!(v.is_finite());
+        }
+    }
+
+    let last_cols: Vec<&str> = lines[17].split(',').collect();
+    let s16_b384: f64 = last_cols[4].parse().expect("s16 val_bpb_384d");
+    let s16_b768: f64 = last_cols[5].parse().expect("s16 val_bpb_768d");
+    let s16_b3sh: f64 = last_cols[6].parse().expect("s16 val_bpb_3shell");
+    let s16_ppl3: f64 = last_cols[7].parse().expect("s16 val_ppl_3shell");
+
+    let moe_meta_str = std::fs::read_to_string("00_control/weights/sh_xi_moe_train_meta.json")
+        .expect("sh_xi_moe_train_meta.json");
+    let moe_meta: serde_json::Value = serde_json::from_str(&moe_meta_str).expect("valid moe meta JSON");
+    assert!((moe_meta.get("val_bpb_384d").and_then(|v| v.as_f64()).unwrap_or(0.0) - s16_b384).abs() < 1e-6);
+    assert!((moe_meta.get("val_bpb_768d").and_then(|v| v.as_f64()).unwrap_or(0.0) - s16_b768).abs() < 1e-6);
+    assert!((moe_meta.get("val_bpb_3shell").and_then(|v| v.as_f64()).unwrap_or(0.0) - s16_b3sh).abs() < 1e-6);
+    assert!((moe_meta.get("val_ppl_3shell").and_then(|v| v.as_f64()).unwrap_or(0.0) - s16_ppl3).abs() < 1e-6);
+
+    let man_str = std::fs::read_to_string("00_control/weights/sovereign_harmonic_weights_manifest.json")
+        .expect("sovereign_harmonic_weights_manifest.json");
+    let man: serde_json::Value = serde_json::from_str(&man_str).expect("valid manifest JSON");
+    let arts = man.get("artifacts").and_then(|v| v.as_object()).expect("artifacts map");
+
+    assert_eq!(
+        arts.get("week3_contrastive")
+            .and_then(|e| e.get("provenance"))
+            .and_then(|p| p.get("status"))
+            .and_then(|s| s.as_str()),
+        Some("QUARANTINED_NON_WEIGHT_LOOKUP")
+    );
+    for tok_key in ["sh_xi_bpe16k", "sh_week2_ast_bpe_16k_codebook", "week2_codebook"] {
+        assert_eq!(
+            arts.get(tok_key)
+                .and_then(|e| e.get("provenance"))
+                .and_then(|p| p.get("status"))
+                .and_then(|s| s.as_str()),
+            Some("DETERMINISTIC_TOKENIZER_OR_CODEBOOK"),
+            "{} must be DETERMINISTIC_TOKENIZER_OR_CODEBOOK",
+            tok_key
+        );
+    }
+    for hist_key in ["deep12l_weights", "e8z_lattice", "npage_neurons", "sh_ix_base", "spage_synapses", "week4_rlvf_sae"] {
+        assert_eq!(
+            arts.get(hist_key)
+                .and_then(|e| e.get("provenance"))
+                .and_then(|p| p.get("status"))
+                .and_then(|s| s.as_str()),
+            Some("UNMEASURED_HISTORICAL_CHECKPOINT"),
+            "{} must be UNMEASURED_HISTORICAL_CHECKPOINT",
+            hist_key
+        );
+    }
+    let drafter = arts.get("tree_drafter_2l").and_then(|e| e.get("provenance")).expect("tree_drafter_2l provenance");
+    assert_eq!(drafter.get("status").and_then(|s| s.as_str()), Some("MEASURED_REPRODUCIBLE"));
+    assert!(drafter.get("seed").and_then(|s| s.as_str()).is_some());
+    assert_eq!(drafter.get("trained_steps").and_then(|v| v.as_u64()), Some(160));
+    assert!(drafter.get("loss_curve_csv").and_then(|s| s.as_str()).is_some());
+}
+
+#[test]
+fn test_m2_item3_week3_ablation_flags_and_7stage_ledger_distinctness() {
+    ensure_repo_root_cwd();
+    let vocab = v71_load_or_build_bpe_vocabulary(false);
+    let weights = v71_load_sh4z_weights(&vocab).expect("sh4z weights");
+    let stack = v71_1_load_deep12l_stack_strict().expect("deep12l stack");
+    let cb_16k = v71_2_load_16k_codebook_strict().expect("16k codebook");
+    let npage_bytes = std::fs::read("00_control/weights/neurons_v6900_84480.npage").expect("npage");
+    let spage_bytes = std::fs::read("00_control/weights/synapses_v6900_2703360.spage").expect("spage");
+    let eval_suite = v71_1_build_sh_eval_256_suite();
+    let item = &eval_suite[0];
+    let toks_v71 = v71_bpe_encode(&vocab, &item.full_text);
+
+    let (nll_none, cnt_none, _, _) = v71_3_evaluate_week3_sequence_cross_entropy(
+        &weights, &stack, &cb_16k, &npage_bytes, &spage_bytes, &toks_v71, &item.full_text, item.track_id,
+        false, false, false, false,
+    );
+    let (nll_dpo, _, _, _) = v71_3_evaluate_week3_sequence_cross_entropy(
+        &weights, &stack, &cb_16k, &npage_bytes, &spage_bytes, &toks_v71, &item.full_text, item.track_id,
+        true, false, false, false,
+    );
+    let (nll_yarn, _, _, _) = v71_3_evaluate_week3_sequence_cross_entropy(
+        &weights, &stack, &cb_16k, &npage_bytes, &spage_bytes, &toks_v71, &item.full_text, item.track_id,
+        false, true, false, false,
+    );
+    let (nll_full, cnt_full, _, _) = v71_3_evaluate_week3_sequence_cross_entropy(
+        &weights, &stack, &cb_16k, &npage_bytes, &spage_bytes, &toks_v71, &item.full_text, item.track_id,
+        true, true, true, true,
+    );
+    assert!(cnt_none > 0 && cnt_full == cnt_none);
+    assert!((nll_none - nll_dpo).abs() > 1e-6, "DPO flag must alter NLL");
+    assert!((nll_none - nll_yarn).abs() > 1e-6, "YaRN flag must alter NLL");
+    assert!((nll_none - nll_full).abs() > 1e-6, "All-off vs all-on flags must produce distinct NLL");
+
+    let ledger_csv = std::fs::read_to_string("03_vault/connectome/sh_week4_7stage_ablation_ledger.csv")
+        .expect("sh_week4_7stage_ablation_ledger.csv");
+    let rows: Vec<&str> = ledger_csv.lines().filter(|l| !l.trim().is_empty()).collect();
+    assert_eq!(rows.len(), 8, "Expected header + 7 stages (0..6)");
+
+    let s4_cols: Vec<&str> = rows[5].split(',').collect();
+    let s5_cols: Vec<&str> = rows[6].split(',').collect();
+    let s4_tok_step: f64 = s4_cols[8].parse().expect("stage4 speculative_tok_per_step");
+    let s5_tok_step: f64 = s5_cols[8].parse().expect("stage5 speculative_tok_per_step");
+    assert!(s4_tok_step > 1.0 && s5_tok_step > 1.0, "Stage 4 ({}) and Stage 5 ({}) tok/step must be > 1.0", s4_tok_step, s5_tok_step);
+    assert!((s4_tok_step - s5_tok_step).abs() > 1e-4, "Stage 4 and Stage 5 tok/step must be distinct");
+
+    let receipt_str = std::fs::read_to_string("03_vault/connectome/sh_week4_7stage_ablation_receipt.json")
+        .expect("sh_week4_7stage_ablation_receipt.json");
+    let rec: serde_json::Value = serde_json::from_str(&receipt_str).expect("valid 7stage receipt JSON");
+    let stages = rec.get("stages").expect("stages");
+    let get_stage_metrics = |key: &str| -> (f64, f64, f64) {
+        let st = stages.get(key).expect(key);
+        (
+            st.get("eval256_nll").and_then(|v| v.as_f64()).expect("eval256_nll"),
+            st.get("eval256_ppl").and_then(|v| v.as_f64()).expect("eval256_ppl"),
+            st.get("holdout_v2_ppl").and_then(|v| v.as_f64()).expect("holdout_v2_ppl"),
+        )
+    };
+    let m3 = get_stage_metrics("stage3");
+    let m4 = get_stage_metrics("stage4");
+    let m5 = get_stage_metrics("stage5");
+    let m6 = get_stage_metrics("stage6");
+    let pairs = [(m3, m4), (m3, m5), (m3, m6), (m4, m5), (m4, m6), (m5, m6)];
+    for (a, b) in pairs {
+        assert!((a.0 - b.0).abs() > 1e-3, "Stages 3..6 eval256_nll must all be distinct ({} vs {})", a.0, b.0);
+        assert!((a.1 - b.1).abs() > 1e-4, "Stages 3..6 eval256_ppl must all be distinct ({} vs {})", a.1, b.1);
+        assert!((a.2 - b.2).abs() > 1e-4, "Stages 3..6 holdout_v2_ppl must all be distinct ({} vs {})", a.2, b.2);
+    }
+}
+
+#[test]
+fn test_m2_item4_sft_5gram_shingles_and_determinism_receipt() {
+    ensure_repo_root_cwd();
+    // Positive tests: /[^a-z0-9_]+/ splitting & lowercase normalization
+    let sh_5 = v72_2_extract_word_5gram_shingles("foo(bar) baz_1 qux quux");
+    assert_eq!(sh_5.len(), 1, "5 words split by /[^a-z0-9_]+/ must yield 1 5-gram shingle");
+    let sh_5_upper = v72_2_extract_word_5gram_shingles("FOO(Bar) BAZ_1 qux QUUX");
+    assert_eq!(sh_5, sh_5_upper, "Shingles must normalize ASCII case");
+
+    let sh_6 = v72_2_extract_word_5gram_shingles("foo(bar) baz_1 qux-2 quux");
+    assert_eq!(sh_6.len(), 2, "6 words split by /[^a-z0-9_]+/ must yield 2 5-gram shingles");
+
+    // Negative tests: < 5 words must return empty set
+    assert!(v72_2_extract_word_5gram_shingles("a b c d").is_empty());
+    assert!(v72_2_extract_word_5gram_shingles("").is_empty());
+
+    // Determinism receipt & Jaccard parity
+    let det_str = std::fs::read_to_string("03_vault/receipts/d1_sft_generator_run_and_diff_receipt.json")
+        .expect("d1_sft_generator_run_and_diff_receipt.json");
+    let det: serde_json::Value = serde_json::from_str(&det_str).expect("valid determinism receipt");
+    assert_eq!(det.get("status").and_then(|v| v.as_str()), Some("MEASURED"));
+    assert_eq!(det.get("committed_vs_fresh_diff_bytes").and_then(|v| v.as_u64()), Some(0));
+    assert_eq!(det.get("repeat_run_diff_bytes").and_then(|v| v.as_u64()), Some(0));
+    assert_eq!(
+        det.get("negative_perturbation_test").and_then(|n| n.get("passed")).and_then(|v| v.as_bool()),
+        Some(true)
+    );
+    let gen_jacc = det
+        .get("generator_max_pairwise_5gram_jaccard")
+        .and_then(|v| v.as_f64())
+        .expect("generator_max_pairwise_5gram_jaccard");
+    assert!(gen_jacc > 0.0 && gen_jacc <= 0.50, "Generator Jaccard {} must be in (0, 0.50]", gen_jacc);
+    let gen_rec_str = std::fs::read_to_string("03_vault/corpus/sh_xi_sft_generator_receipt.json")
+        .expect("sh_xi_sft_generator_receipt.json");
+    let gen_rec: serde_json::Value = serde_json::from_str(&gen_rec_str).expect("valid generator receipt");
+    let rec_jacc = gen_rec
+        .get("max_pairwise_5gram_jaccard")
+        .and_then(|v| v.as_f64())
+        .expect("generator receipt max_pairwise_5gram_jaccard");
+    assert!(
+        (gen_jacc - rec_jacc).abs() < 1e-6,
+        "Determinism receipt Jaccard ({}) MUST match generator receipt ({})",
+        gen_jacc,
+        rec_jacc
+    );
+
+    let sft_man_str = std::fs::read_to_string("03_vault/connectome/sh_xi_week2_chatml_sft_manifest.json")
+        .expect("sh_xi_week2_chatml_sft_manifest.json");
+    let sft_man: serde_json::Value = serde_json::from_str(&sft_man_str).expect("valid sft manifest");
+    let man_jacc = sft_man
+        .get("max_pairwise_5gram_jaccard")
+        .and_then(|v| v.as_f64())
+        .expect("manifest max_pairwise_5gram_jaccard");
+    assert!(
+        (man_jacc - gen_jacc).abs() < 1e-6,
+        "SFT manifest max_pairwise_5gram_jaccard ({}) MUST match generator receipt ({})",
+        man_jacc,
+        gen_jacc
+    );
+}
+
+#[test]
+fn test_m2_v61_escape_clean_all_ascii_controls_and_json_roundtrip() {
+    let mut all_controls = String::new();
+    for b in 0u8..=0x1Fu8 {
+        all_controls.push(char::from(b));
+    }
+    all_controls.push('\u{007F}');
+    all_controls.push('"');
+    all_controls.push('\\');
+    all_controls.push('/');
+    all_controls.push('[');
+    all_controls.push(']');
+    all_controls.push_str("▁Λ₂₄α");
+
+    let escaped = v61_escape_clean(&all_controls);
+    assert_eq!(escaped, v61_json_escape(&all_controls));
+    assert!(
+        !escaped.bytes().any(|b| b < 0x20 || b == 0x7F),
+        "Escaped JSON string MUST contain zero raw control bytes (<0x20 or 0x7F): {:?}",
+        escaped
+    );
+
+    let wrapped = format!("{{\"preview\":\"{}\"}}", escaped);
+    let parsed: serde_json::Value = serde_json::from_str(&wrapped)
+        .expect("Combined control-character JSON MUST parse cleanly with serde_json");
+    assert_eq!(
+        parsed.get("preview").and_then(|v| v.as_str()),
+        Some(all_controls.as_str()),
+        "Combined control-character roundtrip MUST match byte-for-byte"
+    );
+
+    let mut per_byte_cases: Vec<u8> = (0u8..=0x1Fu8).collect();
+    per_byte_cases.push(0x7Fu8);
+    per_byte_cases.push(b'"');
+    per_byte_cases.push(b'\\');
+    for b in per_byte_cases {
+        let ch = char::from(b);
+        let raw_single = ch.to_string();
+        let esc_single = v61_escape_clean(&raw_single);
+        assert!(
+            !esc_single.bytes().any(|x| x < 0x20 || x == 0x7F),
+            "Byte 0x{:02X} left raw control byte in {:?}",
+            b,
+            esc_single
+        );
+        let doc = format!("{{\"c\":\"{}\"}}", esc_single);
+        let v: serde_json::Value = serde_json::from_str(&doc)
+            .unwrap_or_else(|e| panic!("Byte 0x{:02X} failed serde_json parse: {} ({})", b, e, doc));
+        assert_eq!(
+            v.get("c").and_then(|x| x.as_str()),
+            Some(raw_single.as_str()),
+            "Byte 0x{:02X} roundtrip mismatch",
+            b
+        );
+    }
+}
+
+#[test]
+fn test_m2_t341_repeated_rng_json_serialization_and_kl_receipt_stability() {
+    ensure_repo_root_cwd();
+    let _kl_guard = T341_KL_RECEIPT_GUARD.lock().unwrap_or_else(|e| e.into_inner());
+    let _kl_restore = guard_paths(&[
+        "03_vault/connectome/sh_week3_k4_empirical_kl_receipt.json",
+    ]);
+
+    for iter in 0..12 {
+        let resp = v71_3_dispatch_tool_341_k4_speculative_cascade(r#"{"max_tokens":32}"#);
+        let val: serde_json::Value = serde_json::from_str(&resp).unwrap_or_else(|e| {
+            panic!("Tool 341 clean iteration {} produced invalid JSON: {} | raw={}", iter, e, resp)
+        });
+        assert_eq!(
+            val.get("status").and_then(|s| s.as_str()),
+            Some("MEASURED"),
+            "Tool 341 clean iteration {} must report MEASURED",
+            iter
+        );
+        assert_eq!(
+            val.get("speculative_cascade")
+                .and_then(|o| o.get("zero_distribution_drift_verified"))
+                .and_then(|b| b.as_bool()),
+            Some(true),
+            "Tool 341 clean iteration {} must verify zero distribution drift",
+            iter
+        );
+        assert!(
+            !resp.bytes().any(|b| b < 0x20 || b == 0x7F),
+            "Serialized Tool 341 JSON on iteration {} must not contain raw control bytes (<0x20 or 0x7F)",
+            iter
+        );
+        let preview = val
+            .get("generated_preview")
+            .and_then(|s| s.as_str())
+            .expect("top-level generated_preview string");
+        assert!(
+            !preview.is_empty() || resp.contains("\"generated_preview\":\"\""),
+            "generated_preview field must be present on iteration {}",
+            iter
+        );
+    }
+
+    for neg_iter in 0..3 {
+        let neg_resp = v71_3_dispatch_tool_341_k4_speculative_cascade(
+            r#"{"corrupt_accept_without_rejection":true,"max_tokens":32}"#,
+        );
+        let neg_val: serde_json::Value = serde_json::from_str(&neg_resp).unwrap_or_else(|e| {
+            panic!("Tool 341 negative iteration {} produced invalid JSON: {}", neg_iter, e)
+        });
+        assert_eq!(
+            neg_val
+                .get("speculative_cascade")
+                .and_then(|o| o.get("zero_distribution_drift_verified"))
+                .and_then(|b| b.as_bool()),
+            Some(false),
+            "Tool 341 negative iteration {} must fail zero_distribution_drift_verified",
+            neg_iter
+        );
+    }
+
+    let receipt_str = std::fs::read_to_string("03_vault/connectome/sh_week3_k4_empirical_kl_receipt.json")
+        .expect("sh_week3_k4_empirical_kl_receipt.json");
+    let receipt: serde_json::Value = serde_json::from_str(&receipt_str).expect("valid w3 kl receipt json");
+    assert_eq!(receipt.get("status").and_then(|v| v.as_str()), Some("MEASURED"));
+    assert_eq!(receipt.get("corrupt_accept_without_rejection").and_then(|v| v.as_bool()), Some(false));
+    assert_eq!(receipt.get("zero_distribution_drift_verified").and_then(|v| v.as_bool()), Some(true));
+    let emp_kl = receipt.get("empirical_output_kl").and_then(|v| v.as_f64()).expect("empirical_output_kl");
+    let tau = receipt.get("kl_bound_tau").and_then(|v| v.as_f64()).expect("kl_bound_tau");
+    assert!(emp_kl <= tau, "Canonical KL receipt empirical_output_kl ({}) must be <= kl_bound_tau ({})", emp_kl, tau);
+}
+
+#[test]
+fn test_m3_item6_live_lean4_1010_threshold_and_1009_negative_fixture() {
+    ensure_repo_root_cwd();
+    // Positive test against real 03_vault/lean4/SovereignManifoldTheorems.lean (1,010 theorems)
+    let live_count = count_live_lean_theorems_canonical().expect("canonical Lean4 theorem count");
+    assert!(
+        live_count >= 1010,
+        "Canonical SovereignManifoldTheorems.lean must have >= 1010 theorems, got {}",
+        live_count
+    );
+    assert!(
+        validate_live_lean_theorems_with_floor(live_count),
+        "Live theorem count {} must pass validate_live_lean_theorems_with_floor",
+        live_count
+    );
+    assert!(
+        !validate_live_lean_theorems_with_floor(1009),
+        "Reported count 1009 MUST fail validate_live_lean_theorems_with_floor against live {}",
+        live_count
+    );
+
+    // Negative fixture test: write a temporary .lean file with exactly 1,009 theorems
+    let tmp_dir = std::env::temp_dir().join("act_omega_m3_lean1009_neg_test");
+    let _ = std::fs::create_dir_all(&tmp_dir);
+    let tmp_lean = tmp_dir.join(format!("fixture_1009_{}.lean", std::process::id()));
+    let mut buf = String::new();
+    for i in 1..=1009 {
+        buf.push_str(&format!("theorem neg_fixture_{} : True := by trivial\n", i));
+    }
+    std::fs::write(&tmp_lean, buf.as_bytes()).expect("write temp 1009 lean fixture");
+
+    let counted = count_live_lean_theorems_at_path(tmp_lean.to_string_lossy().as_ref());
+    let _ = std::fs::remove_file(&tmp_lean);
+
+    assert_eq!(counted, Some(1009), "1,009-theorem fixture must count exactly 1009");
+    let c = counted.unwrap_or(0);
+    assert!(
+        !validate_live_lean_threshold(c, c),
+        "1,009-theorem fixture MUST fail validate_live_lean_threshold(1009, 1009)"
+    );
+    assert!(
+        !validate_live_lean_threshold(1010, c),
+        "1,009-theorem live count MUST reject stale 1,010 report"
+    );
+    assert!(
+        !validate_live_lean_threshold(c, 1010),
+        "1,009 measured count MUST fail against 1,010 live count"
+    );
+}
+
+#[test]
+fn test_m4_item10_dynamic_version_no_pixel_serials_and_android_parity() {
+    ensure_repo_root_cwd();
+    let _rw_guard = RW_EVAL500_GUARD.lock().unwrap_or_else(|e| e.into_inner());
+    let _rw_restore = guard_paths(&[
+        "03_vault/connectome/sh_xi_rw_eval_500_sealed.jsonl",
+        "E:\\Sovereign_Manifold_SSD_Vault\\connectome\\sh_xi_rw_eval_500_sealed.jsonl",
+        "E:\\Sovereign_Manifold_SSD_Vault\\autopoietic_codegen\\wgsl_kernels\\igpu_sh_xi_rag_384d_cosine.wgsl",
+    ]);
+
+    // 1. Runtime release version helper must NOT return stale v72.2.0 or Cargo 30.0.0
+    let live_ver = v73_2_read_live_release_version();
+    assert!(
+        live_ver.starts_with("v73."),
+        "Live release version must start with v73., got {}",
+        live_ver
+    );
+    assert_ne!(live_ver, "v72.2.0");
+    assert_ne!(live_ver, "30.0.0");
+
+    for (tid, raw) in [
+        (363, v72_2_dispatch_tool_363_shell2_cpu_ssd_sparse_moe_bank("{}")),
+        (364, v72_2_dispatch_tool_364_chatml_masked_sft_trainer("{}")),
+        (365, v72_2_dispatch_tool_365_igpu_grounded_rag_and_telemetry("{}")),
+    ] {
+        let v: serde_json::Value = serde_json::from_str(&raw)
+            .unwrap_or_else(|e| panic!("Tool {} invalid JSON: {}", tid, e));
+        let ver = v.get("version").and_then(|x| x.as_str()).unwrap_or("");
+        assert_ne!(ver, "v72.2.0", "Tool {} MUST NOT emit stale v72.2.0", tid);
+        assert_eq!(ver, live_ver, "Tool {} version MUST match live release version", tid);
+    }
+
+    // 2. External ADB config must exist and zero raw Pixel serials may appear in Rust or C/C++/ELF
+    let adb_raw = std::fs::read_to_string("C:\\Users\\Nbell\\.act_omega_adb_devices.json")
+        .expect("C:\\Users\\Nbell\\.act_omega_adb_devices.json must exist");
+    let adb_cfg: serde_json::Value = serde_json::from_str(&adb_raw).expect("valid external adb json");
+    let p10_ser = adb_cfg.get("pixel10").and_then(|o| o.get("serial")).and_then(|x| x.as_str()).unwrap_or("");
+    let p8_ser = adb_cfg.get("pixel8").and_then(|o| o.get("serial")).and_then(|x| x.as_str()).unwrap_or("");
+    assert!(p10_ser.len() >= 8 && p8_ser.len() >= 8, "External ADB serials must be populated");
+
+    for entry in std::fs::read_dir("01_l0_rust/src").expect("read 01_l0_rust/src") {
+        let path = entry.expect("dir entry").path();
+        if path.extension().and_then(|e| e.to_str()) == Some("rs") {
+            let txt = std::fs::read_to_string(&path).expect("read rs file");
+            assert!(
+                !txt.contains(p10_ser) && !txt.contains(p8_ser),
+                "Raw Pixel ADB serial leaked in {:?}",
+                path
+            );
+        }
+    }
+    for bin_or_src in [
+        "04_edge_silicon/pixel8_headless/p8_ksu_apex_daemon.c",
+        "04_edge_silicon/pixel8_headless/p8_v31_native_daemon.cpp",
+        "04_edge_silicon/pixel8_headless/p8_v31_native_daemon",
+    ] {
+        let bytes = std::fs::read(bin_or_src).expect("read edge silicon artifact");
+        let lossy = String::from_utf8_lossy(&bytes);
+        assert!(
+            !lossy.contains(p10_ser) && !lossy.contains(p8_ser),
+            "Raw Pixel ADB serial leaked in {}",
+            bin_or_src
+        );
+    }
+
+    // 3. Android NDK parity + stale literal purge + removed staging/stale JS bundle
+    assert!(!std::path::Path::new("03_vault/config/MainActivity.kt.staging").exists());
+    assert!(!std::path::Path::new("assets/index-5e7bpBRL.js").exists());
+
+    let ma_paths = [
+        "04_edge_silicon/pixel10_ndk_app/MainActivity.kt",
+        "04_edge_silicon/pixel10_ndk_app/app/src/main/java/com/actomega/manifold/MainActivity.kt",
+        "04_edge_silicon/pixel10_ndk_app/src/main/java/com/actomega/manifold/MainActivity.kt",
+    ];
+    let ma0 = std::fs::read_to_string(ma_paths[0]).expect("read MainActivity.kt");
+    for p in ma_paths.iter().skip(1) {
+        assert_eq!(ma0, std::fs::read_to_string(p).expect("read mirror MainActivity.kt"), "3x MainActivity.kt parity failed for {}", p);
+    }
+    for forbidden in ["/1010", "1,010/1,010", "v72.2.0", "CHAIN 368", "995/995", "965 LEAN 4"] {
+        assert!(!ma0.contains(forbidden), "MainActivity.kt still contains stale literal: {}", forbidden);
+    }
+
+    let str0 = std::fs::read_to_string("04_edge_silicon/pixel10_ndk_app/app/src/main/res/values/strings.xml").expect("strings.xml 1");
+    let str1 = std::fs::read_to_string("04_edge_silicon/pixel10_ndk_app/src/main/res/values/strings.xml").expect("strings.xml 2");
+    assert_eq!(str0, str1, "2x strings.xml parity failed");
+    assert!(!str0.contains("v72.2.0") && !str0.contains("CHAIN 368") && !str0.contains("995/995"));
+
+    let man0 = std::fs::read_to_string("04_edge_silicon/pixel10_ndk_app/app/src/main/AndroidManifest.xml").expect("AndroidManifest.xml 1");
+    let man1 = std::fs::read_to_string("04_edge_silicon/pixel10_ndk_app/src/main/AndroidManifest.xml").expect("AndroidManifest.xml 2");
+    assert_eq!(man0, man1, "2x AndroidManifest.xml parity failed");
+    assert!(man0.contains("@string/app_name") && man0.contains("@string/sovereign_widget_label"));
+}
+
+struct FileRestoreGuard {
+    path: std::path::PathBuf,
+    original: Option<Vec<u8>>,
+}
+
+impl FileRestoreGuard {
+    fn capture<P: AsRef<std::path::Path>>(path: P) -> Self {
+        let path_buf = path.as_ref().to_path_buf();
+        let original = match std::fs::read(&path_buf) {
+            Ok(bytes) => Some(bytes),
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => None,
+            Err(e) => panic!(
+                "FileRestoreGuard::capture failed to read {:?}: {}",
+                path_buf, e
+            ),
+        };
+        Self {
+            path: path_buf,
+            original,
+        }
+    }
+}
+
+impl Drop for FileRestoreGuard {
+    fn drop(&mut self) {
+        match &self.original {
+            Some(bytes) => {
+                if let Some(parent) = self.path.parent() {
+                    if !parent.as_os_str().is_empty() {
+                        let _ = std::fs::create_dir_all(parent);
+                    }
+                }
+                let _ = std::fs::write(&self.path, bytes);
+            }
+            None => {
+                let _ = std::fs::remove_file(&self.path);
+            }
+        }
+    }
+}
+
+fn guard_paths(paths: &[&str]) -> Vec<FileRestoreGuard> {
+    let e_exists = std::path::Path::new("E:\\").exists();
+    paths
+        .iter()
+        .filter(|p| {
+            let is_e_drive = p.starts_with("E:\\") || p.starts_with("E:/");
+            !is_e_drive || e_exists
+        })
+        .map(FileRestoreGuard::capture)
+        .collect()
+}
+
+#[test]
+fn test_m4_item13_hmac_signed_lean_receipt_positive_and_fail_closed_negatives() {
+    ensure_repo_root_cwd();
+
+    let lean_bytes = std::fs::read("03_vault/lean4/SovereignManifoldTheorems.lean").expect("read canonical .lean");
+    let vault_sha = v72_1_sha256_hex(&lean_bytes);
+    let theorems = count_live_lean_theorems_canonical().expect("canonical theorem count");
+    assert!(theorems >= 1010);
+
+    let key = v73_1_load_operator_key_bytes().expect("external operator key must be available");
+    let lean_ver = "Lean (version 4.36.0, x86_64-w64-windows-gnu, Release)";
+    let canonical_payload = format!("{}||{}||{}||0||0", vault_sha, lean_ver, theorems);
+    let valid_hmac = v73_1_hmac_sha256_hex_lower(&key, &canonical_payload.as_bytes().to_vec());
+    assert_eq!(valid_hmac.len(), 64);
+
+    // Constant-time hex equality positive & negative checks
+    assert!(v73_1_constant_time_eq_hex_64(&valid_hmac, &valid_hmac.to_ascii_uppercase()));
+    let mut flipped = valid_hmac.clone();
+    let last_ch = if flipped.ends_with('0') { '1' } else { '0' };
+    flipped.pop();
+    flipped.push(last_ch);
+    assert!(!v73_1_constant_time_eq_hex_64(&valid_hmac, &flipped));
+    assert!(!v73_1_constant_time_eq_hex_64(&valid_hmac, "abcd"));
+
+    let tmp_dir = std::env::temp_dir().join(format!("act_omega_m4_lean_hmac_{}", std::process::id()));
+    let _ = std::fs::create_dir_all(&tmp_dir);
+
+    let mk_receipt = |sha: &str, lver: &str, thms: usize, exit_code: i64, payload: &str, hmac: &str| -> String {
+        format!(
+            "{{\"schema\":\"ACT_OMEGA_LEAN4_COMPILER_VERIFICATION_RECEIPT_V2\",\"lean_sha256\":\"{}\",\"l0_mirror_sha256\":\"{}\",\"lean_version\":\"{}\",\"theorem_count\":{},\"theorems_verified\":{},\"sorry_count\":0,\"axiom_count\":0,\"exit_code\":{},\"compiler_exit_code\":{},\"lean_exe_exit_zero\":{},\"canonical_payload\":\"{}\",\"hmac_sha256\":\"{}\"}}",
+            sha, sha, lver, thms, thms, exit_code, exit_code, exit_code == 0, payload, hmac
+        )
+    };
+
+    // Positive: valid signed receipt passes
+    let valid_path = tmp_dir.join("valid_signed.json");
+    std::fs::write(&valid_path, mk_receipt(&vault_sha, lean_ver, theorems, 0, &canonical_payload, &valid_hmac)).unwrap();
+    assert_eq!(
+        v73_1_verify_signed_lean_receipt_at(valid_path.to_str().unwrap(), &vault_sha, theorems),
+        Ok(())
+    );
+
+    // Negative 1: missing file
+    assert_eq!(
+        v73_1_verify_signed_lean_receipt_at(tmp_dir.join("nonexistent.json").to_str().unwrap(), &vault_sha, theorems),
+        Err("MISSING_LEAN_RECEIPT")
+    );
+
+    // Negative 2: unsigned receipt (empty hmac)
+    let unsigned_path = tmp_dir.join("unsigned.json");
+    std::fs::write(&unsigned_path, mk_receipt(&vault_sha, lean_ver, theorems, 0, &canonical_payload, "")).unwrap();
+    assert_eq!(
+        v73_1_verify_signed_lean_receipt_at(unsigned_path.to_str().unwrap(), &vault_sha, theorems),
+        Err("LEAN_RECEIPT_UNSIGNED")
+    );
+
+    // Negative 3: forged HMAC
+    let forged_path = tmp_dir.join("forged_hmac.json");
+    let zero_hmac = "0".repeat(64);
+    std::fs::write(&forged_path, mk_receipt(&vault_sha, lean_ver, theorems, 0, &canonical_payload, &zero_hmac)).unwrap();
+    assert_eq!(
+        v73_1_verify_signed_lean_receipt_at(forged_path.to_str().unwrap(), &vault_sha, theorems),
+        Err("LEAN_RECEIPT_HMAC_INVALID")
+    );
+
+    // Negative 4: tampered theorem_count
+    let bad_thm_path = tmp_dir.join("tampered_theorems.json");
+    std::fs::write(&bad_thm_path, mk_receipt(&vault_sha, lean_ver, theorems - 1, 0, &canonical_payload, &valid_hmac)).unwrap();
+    assert_eq!(
+        v73_1_verify_signed_lean_receipt_at(bad_thm_path.to_str().unwrap(), &vault_sha, theorems),
+        Err("LEAN_RECEIPT_THEOREM_COUNT_MISMATCH")
+    );
+
+    // Negative 5: tampered exit_code
+    let bad_exit_path = tmp_dir.join("tampered_exit.json");
+    std::fs::write(&bad_exit_path, mk_receipt(&vault_sha, lean_ver, theorems, 1, &canonical_payload, &valid_hmac)).unwrap();
+    assert_eq!(
+        v73_1_verify_signed_lean_receipt_at(bad_exit_path.to_str().unwrap(), &vault_sha, theorems),
+        Err("LEAN_RECEIPT_NONZERO_EXIT")
+    );
+
+    // Negative 6: tampered lean_sha256
+    let bad_sha = "f".repeat(64);
+    let bad_sha_path = tmp_dir.join("tampered_sha.json");
+    std::fs::write(&bad_sha_path, mk_receipt(&bad_sha, lean_ver, theorems, 0, &canonical_payload, &valid_hmac)).unwrap();
+    assert_eq!(
+        v73_1_verify_signed_lean_receipt_at(bad_sha_path.to_str().unwrap(), &vault_sha, theorems),
+        Err("LEAN_RECEIPT_SHA_MISMATCH")
+    );
+
+    let _ = std::fs::remove_dir_all(&tmp_dir);
+
+    // Negative 7 (End-to-end fail-closed CHAIN 399 & CHAIN 404 via guarded swap-and-restore of on-disk receipt)
+    let _lean_guard = LEAN_RECEIPT_GUARD.lock().unwrap_or_else(|e| e.into_inner());
+    let _curvetq_guard = CURVETQ_RECEIPT_GUARD.lock().unwrap_or_else(|e| e.into_inner());
+    let connectome_rec_path = std::path::PathBuf::from("03_vault/connectome/lean4_compiler_verified_receipt.json");
+    let _restore = guard_paths(&[
+        "03_vault/connectome/lean4_compiler_verified_receipt.json",
+        "03_vault/connectome/curvetq_hessian_receipt.json",
+        "E:\\Sovereign_Manifold_SSD_Vault\\connectome\\curvetq_hessian_receipt.json",
+    ]);
+    std::fs::write(
+        &connectome_rec_path,
+        mk_receipt(&vault_sha, lean_ver, theorems, 0, &canonical_payload, &"a".repeat(64)),
+    )
+    .expect("write forged connectome receipt");
+
+    let (lean_ok, _, _, _) = v73_1_verify_lean4_compiler_and_mirror();
+    assert!(!lean_ok, "Forged connectome receipt MUST fail v73_1_verify_lean4_compiler_and_mirror()");
+
+    let c399: serde_json::Value = serde_json::from_str(&v73_1_dispatch_chain399_master_certification("{}")).expect("c399 json");
+    assert_eq!(c399.get("ok").and_then(|v| v.as_bool()), Some(false), "CHAIN 399 MUST fail closed on forged receipt");
+    assert_eq!(c399.get("certified").and_then(|v| v.as_bool()), Some(false));
+    assert_eq!(c399.get("lean4_compiler_verified").and_then(|v| v.as_bool()), Some(false));
+    assert_eq!(c399.get("status").and_then(|v| v.as_str()), Some("UNMEASURED/OFFLINE"));
+
+    let c404: serde_json::Value = serde_json::from_str(&v73_2_dispatch_chain404_master_certification("{}")).expect("c404 json");
+    assert_eq!(c404.get("ok").and_then(|v| v.as_bool()), Some(false), "CHAIN 404 MUST fail closed on forged receipt");
+    assert_eq!(c404.get("certified").and_then(|v| v.as_bool()), Some(false));
+    assert_eq!(c404.get("lean4_compiler_verified").and_then(|v| v.as_bool()), Some(false));
+    assert_eq!(c404.get("status").and_then(|v| v.as_str()), Some("UNMEASURED/OFFLINE"));
+}
+
+#[test]
+fn test_m4_item16_t383_curvetq_ce_scope_and_v71_2_narrow_172_support_label() {
+    ensure_repo_root_cwd();
+
+    // 1. T383 CurveTQ emits CE comparison alongside Fisher distortion + explicit scope & support notes
+    {
+        let _curvetq_guard = CURVETQ_RECEIPT_GUARD.lock().unwrap_or_else(|e| e.into_inner());
+        let _curvetq_restore = guard_paths(&[
+            "03_vault/connectome/curvetq_hessian_receipt.json",
+            "E:\\Sovereign_Manifold_SSD_Vault\\connectome\\curvetq_hessian_receipt.json",
+        ]);
+        let base_raw = v73_1_dispatch_tool_383_curvetq("{}");
+        let base: serde_json::Value = serde_json::from_str(&base_raw).expect("t383 base json");
+        assert_eq!(base.get("status").and_then(|v| v.as_str()), Some("MEASURED"));
+        assert_eq!(base.get("val_positions_evaluated").and_then(|v| v.as_u64()), Some(16));
+        assert_eq!(
+            base.get("distortion_metric_scope").and_then(|v| v.as_str()),
+            Some("FISHER_WEIGHTED_DISTORTION_ONLY_NOT_CE")
+        );
+        assert_eq!(
+            base.get("eval_support_note").and_then(|v| v.as_str()),
+            Some("16_VALIDATION_POSITIONS_ONLY")
+        );
+        let unweighted_mse = base.get("unweighted_hessian_loss").and_then(|v| v.as_f64()).expect("unweighted_hessian_loss");
+        let scalar_fisher = base.get("scalar_3bpw_fisher_loss").and_then(|v| v.as_f64()).expect("scalar_3bpw_fisher_loss");
+        assert!(unweighted_mse.is_finite() && unweighted_mse > 0.0);
+        assert!((unweighted_mse - scalar_fisher).abs() > 1e-6, "unweighted_hessian_loss ({}) must differ from scalar_3bpw_fisher_loss ({})", unweighted_mse, scalar_fisher);
+        let fp32_base = base.get("fp32_val_ce_nats").and_then(|v| v.as_f64()).expect("fp32_val_ce_nats");
+        let scalar_base = base.get("scalar_3bpw_val_ce_nats").and_then(|v| v.as_f64()).expect("scalar_3bpw_val_ce_nats");
+        let curvetq_base = base.get("curvetq_3bpw_val_ce_nats").and_then(|v| v.as_f64()).expect("curvetq_3bpw_val_ce_nats");
+        assert!(fp32_base.is_finite() && scalar_base.is_finite() && curvetq_base.is_finite());
+
+        // Negative perturbation: perturb_delta=0.25 must shift CE nats significantly
+        let pert_raw = v73_1_dispatch_tool_383_curvetq(r#"{"perturb_delta":0.25}"#);
+        let pert: serde_json::Value = serde_json::from_str(&pert_raw).expect("t383 pert json");
+        let fp32_pert = pert.get("fp32_val_ce_nats").and_then(|v| v.as_f64()).expect("pert fp32_val_ce_nats");
+        let curvetq_pert = pert.get("curvetq_3bpw_val_ce_nats").and_then(|v| v.as_f64()).expect("pert curvetq_3bpw_val_ce_nats");
+        assert!((fp32_base - fp32_pert).abs() > 0.1, "perturb_delta=0.25 MUST shift fp32_val_ce_nats");
+        assert!((curvetq_base - curvetq_pert).abs() > 0.1, "perturb_delta=0.25 MUST shift curvetq_3bpw_val_ce_nats");
+    }
+
+    // 2. v71_2 Tool 339 emits eval_vocab_support_size=172 and NARROW_172_TOKEN_EVAL_SUPPORT
+    {
+        let _abl_guard = T339_ABLATION_GUARD.lock().unwrap_or_else(|e| e.into_inner());
+        let _abl_restore = guard_paths(&[
+            "03_vault/connectome/sh_week2_6way_ablation_receipt.json",
+            "E:\\Sovereign_Manifold_SSD_Vault\\connectome\\sh_week2_6way_ablation_receipt.json",
+            "03_vault/receipts/v71_2_week2_torture_benchmark_receipt.json",
+            "E:\\Sovereign_Manifold_SSD_Vault\\connectome\\v71_2_week2_torture_benchmark_receipt.json",
+            "03_vault/connectome/sh_week2_curated_corpus.jsonl",
+            "03_vault/connectome/sh_week2_curated_corpus.binshard",
+            "E:\\Sovereign_Manifold_SSD_Vault\\connectome\\sh_week2_curated_corpus.jsonl",
+            "E:\\Sovereign_Manifold_SSD_Vault\\training_corpus\\sh_week2_curated_corpus.binshard",
+        ]);
+        let t339_raw = v71_2_dispatch_tool_339_week2_7test_torture_gauntlet("{}");
+        let t339: serde_json::Value = serde_json::from_str(&t339_raw).expect("t339 json");
+        let w2_8 = t339.get("w2_8_six_way_ablation_matrix").expect("w2_8_six_way_ablation_matrix");
+        assert_eq!(w2_8.get("eval_vocab_support_size").and_then(|v| v.as_u64()), Some(172));
+        assert_eq!(
+            w2_8.get("eval_vocab_support_label").and_then(|v| v.as_str()),
+            Some("NARROW_172_TOKEN_EVAL_SUPPORT")
+        );
+    }
 }

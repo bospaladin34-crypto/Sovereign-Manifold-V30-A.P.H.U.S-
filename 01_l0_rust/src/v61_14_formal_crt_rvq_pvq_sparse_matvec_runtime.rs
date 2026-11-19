@@ -1043,7 +1043,7 @@ pub fn v61_14_dispatch_tool_292_chain292_cert(input: &str) -> String {
         && spage_bytes == 4055040
         && e8z_bytes == 133120
         && measured_bijected_cls == 132960
-        && lean_count >= 740
+        && crate::v73_2_cloudflare_vpc_mesh_and_pgwire_hyperdrive::validate_live_lean_theorems_with_floor(lean_count)
         && unmeasured_override != "G12";
 
     let mut unmeasured_list = String::new();

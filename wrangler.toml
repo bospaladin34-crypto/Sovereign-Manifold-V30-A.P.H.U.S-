@@ -1,3 +1,6 @@
+# DEPLOY RESTRICTION: Do NOT run bare `npx wrangler deploy` from the repository root!
+# This file intentionally stores <EXTERNAL_*> placeholders (never raw Cloudflare IDs/names).
+# Always deploy via: 00_control\cloudflare_edge\Deploy-CloudflareEdge.ps1 -ConfigScope root
 name = "sovereign-loq15-vpc-shadow"
 main = "00_control/cloudflare_edge/worker_vpc_shadow_v3700.js"
 compatibility_date = "2026-07-28"
@@ -25,7 +28,7 @@ binding = "AI"
 # --- Cloudflare D1 Vault (Remote 5GB 10-Table SQLite Database) ---
 [[d1_databases]]
 binding = "ACT_OMEGA_D1"
-database_name = "act_omega_d1_vault"
+database_name = "<EXTERNAL_D1_DATABASE_NAME>"
 database_id = "<EXTERNAL_D1_DATABASE_ID>"
 
 # --- Cloudflare Durable Object (SovereignEdgeShadowDO SQLite Continuum) ---

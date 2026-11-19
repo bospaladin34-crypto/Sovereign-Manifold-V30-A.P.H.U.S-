@@ -8,9 +8,7 @@
 
 use std::fs;
 use std::path::Path;
-use std::process::Command;
 use std::sync::atomic::{AtomicU64, Ordering};
-use std::sync::{Mutex, OnceLock};
 use std::time::Instant;
 
 use crate::v61_gemma4_multimodal_ple_speculative_cascade_and_mcp_suite::v61_escape_clean;
@@ -27,11 +25,10 @@ pub const V73_1_E8Z_WEIGHT_PATH: &str = "00_control/weights/sovereign_harmonic_v
 pub const V73_1_SH4Z_WEIGHT_PATH: &str = "00_control/weights/sovereign_harmonic_xi_rw384_768_base.sh4z";
 pub const V73_1_LEAN_VAULT_PATH: &str = "C:\\sovereign_manifold_v31\\03_vault\\lean4\\SovereignManifoldTheorems.lean";
 pub const V73_1_LEAN_L0_MIRROR_PATH: &str = "C:\\sovereign_manifold_v31\\01_l0_rust\\lean4\\SovereignManifoldTheorems.lean";
-pub const V73_1_LEAN_EXE_PATH: &str = "C:\\Users\\Nbell\\.elan\\bin\\lean.exe";
 pub const V73_1_LEAN_RECEIPT_PATH: &str = "03_vault/connectome/lean4_compiler_verified_receipt.json";
+pub const V73_1_LEAN_AUDIT_RECEIPT_PATH: &str = "03_vault/receipts/lean4_compiler_verification_receipt.json";
+pub const V73_1_OPERATOR_KEY_FILE_PATH: &str = "C:\\Users\\Nbell\\.act_omega_operator_vault_key";
 pub const V73_1_CURVETQ_RECEIPT_PATH: &str = "03_vault/connectome/curvetq_hessian_receipt.json";
-
-static V73_1_LEAN_VERIFY_CACHE: OnceLock<Mutex<Option<(String, bool, usize)>>> = OnceLock::new();
 
 fn v73_1_extract_f64_param(payload: &str, key: &str, default_val: f64) -> f64 {
     if let Ok(v) = serde_json::from_str::<serde_json::Value>(payload) {
@@ -53,7 +50,199 @@ fn v73_1_extract_i64_param(payload: &str, key: &str, default_val: i64) -> i64 {
     default_val
 }
 
-/// Verify Lean 4 mirror parity, zero `sorry` / `axiom`, and `lean.exe` compilation bound to exact file SHA-256 (C1).
+pub fn v73_1_load_operator_key_bytes() -> Option<Vec<u8>> {
+    if let Ok(env_k) = std::env::var("ACT_OMEGA_OPERATOR_KEY") {
+        let t = env_k.trim();
+        if t.len() >= 24 {
+            return Some(t.as_bytes().to_vec());
+        }
+    }
+    if let Ok(file_k) = fs::read_to_string(V73_1_OPERATOR_KEY_FILE_PATH) {
+        let t = file_k.trim();
+        if t.len() >= 24 {
+            return Some(t.as_bytes().to_vec());
+        }
+    }
+    None
+}
+
+fn v73_1_hex_nibble(b: u8) -> Option<u8> {
+    if b >= b'0' && b <= b'9' {
+        Some(b - b'0')
+    } else if b >= b'a' && b <= b'f' {
+        Some(10 + (b - b'a'))
+    } else if b >= b'A' && b <= b'F' {
+        Some(10 + (b - b'A'))
+    } else {
+        None
+    }
+}
+
+fn v73_1_hex_to_bytes_32(hex_s: &str) -> Option<Vec<u8>> {
+    let raw = hex_s.trim().as_bytes();
+    if raw.len() != 64 {
+        return None;
+    }
+    let mut out = Vec::with_capacity(32);
+    let mut i: usize = 0;
+    while i < 64 {
+        let hi = v73_1_hex_nibble(*raw.get(i)?)?;
+        let lo = v73_1_hex_nibble(*raw.get(i + 1)?)?;
+        out.push((hi << 4) | lo);
+        i += 2;
+    }
+    Some(out)
+}
+
+pub fn v73_1_hmac_sha256_hex_lower(key: &Vec<u8>, message: &Vec<u8>) -> String {
+    let key_block_src = if key.len() > 64 {
+        let hashed_hex = v72_1_sha256_hex(key);
+        v73_1_hex_to_bytes_32(&hashed_hex).unwrap_or_default()
+    } else {
+        key.clone()
+    };
+
+    let mut ipad = Vec::with_capacity(64 + message.len());
+    let mut opad = Vec::with_capacity(64 + 32);
+    let mut i: usize = 0;
+    while i < 64 {
+        let kb = key_block_src.get(i).copied().unwrap_or(0u8);
+        ipad.push(kb ^ 0x36u8);
+        opad.push(kb ^ 0x5Cu8);
+        i += 1;
+    }
+    ipad.extend_from_slice(message.as_slice());
+    let inner_hex = v72_1_sha256_hex(&ipad);
+    let inner_bytes = v73_1_hex_to_bytes_32(&inner_hex).unwrap_or_default();
+    opad.extend_from_slice(inner_bytes.as_slice());
+    v72_1_sha256_hex(&opad)
+}
+
+pub fn v73_1_constant_time_eq_hex_64(a: &str, b: &str) -> bool {
+    let a_low = a.trim().to_ascii_lowercase();
+    let b_low = b.trim().to_ascii_lowercase();
+    let a_b = a_low.as_bytes();
+    let b_b = b_low.as_bytes();
+    if a_b.len() != 64 || b_b.len() != 64 {
+        return false;
+    }
+    let mut diff: u8 = 0;
+    let mut i: usize = 0;
+    while i < 64 {
+        let ca = a_b.get(i).copied().unwrap_or(0u8);
+        let cb = b_b.get(i).copied().unwrap_or(1u8);
+        if !ca.is_ascii_hexdigit() || !cb.is_ascii_hexdigit() {
+            diff |= 0xFF;
+        }
+        diff |= ca ^ cb;
+        i += 1;
+    }
+    diff == 0
+}
+
+// TRUST BOUNDARY: Rust L0 verifies an externally signed RFC 2104 HMAC-SHA256 Lean 4 compiler
+// receipt produced by 00_control/Verify-Lean4IndependentReceipt.ps1 using the external operator
+// key (ACT_OMEGA_OPERATOR_KEY or C:\Users\Nbell\.act_omega_operator_vault_key) and NEVER
+// self-executes lean.exe or self-writes the receipt file. Because both processes run under the
+// same local Windows OS user principal when reading the same key file, multi-process principal
+// isolation would additionally require an asymmetric hardware FIDO2 / public-key signature check.
+pub fn v73_1_verify_signed_lean_receipt_at(
+    receipt_path: &str,
+    expected_lean_sha256: &str,
+    expected_theorems: usize,
+) -> Result<(), &'static str> {
+    let rec_raw = fs::read_to_string(receipt_path).map_err(|_| "MISSING_LEAN_RECEIPT")?;
+    let val: serde_json::Value =
+        serde_json::from_str(&rec_raw).map_err(|_| "INVALID_LEAN_RECEIPT_JSON")?;
+
+    let expected_sha_low = expected_lean_sha256.trim().to_ascii_lowercase();
+    let r_sha = val
+        .get("lean_sha256")
+        .and_then(|x| x.as_str())
+        .unwrap_or("")
+        .trim()
+        .to_ascii_lowercase();
+    if r_sha.len() != 64 || r_sha != expected_sha_low {
+        return Err("LEAN_RECEIPT_SHA_MISMATCH");
+    }
+
+    if let Some(m_sha) = val.get("l0_mirror_sha256").and_then(|x| x.as_str()) {
+        if m_sha.trim().to_ascii_lowercase() != expected_sha_low {
+            return Err("LEAN_RECEIPT_MIRROR_SHA_MISMATCH");
+        }
+    }
+
+    let r_exit_zero = val
+        .get("lean_exe_exit_zero")
+        .and_then(|x| x.as_bool())
+        .unwrap_or(false);
+    let r_exit_code = val
+        .get("exit_code")
+        .or_else(|| val.get("compiler_exit_code"))
+        .and_then(|x| x.as_i64())
+        .unwrap_or(-1);
+    if !r_exit_zero || r_exit_code != 0 {
+        return Err("LEAN_RECEIPT_NONZERO_EXIT");
+    }
+
+    let r_sorry = val.get("sorry_count").and_then(|x| x.as_u64()).unwrap_or(1);
+    let r_axiom = val.get("axiom_count").and_then(|x| x.as_u64()).unwrap_or(1);
+    if r_sorry != 0 || r_axiom != 0 {
+        return Err("LEAN_RECEIPT_SORRY_OR_AXIOM");
+    }
+
+    let r_theorems_verified = val
+        .get("theorems_verified")
+        .and_then(|x| x.as_u64())
+        .unwrap_or(0) as usize;
+    let r_theorem_count = val
+        .get("theorem_count")
+        .and_then(|x| x.as_u64())
+        .unwrap_or(r_theorems_verified as u64) as usize;
+    if r_theorems_verified != expected_theorems || r_theorem_count != expected_theorems {
+        return Err("LEAN_RECEIPT_THEOREM_COUNT_MISMATCH");
+    }
+
+    let r_lean_ver = val
+        .get("lean_version")
+        .and_then(|x| x.as_str())
+        .unwrap_or("")
+        .trim();
+    if r_lean_ver.is_empty() || r_lean_ver.contains('\n') || r_lean_ver.contains('\r') {
+        return Err("LEAN_RECEIPT_MISSING_LEAN_VERSION");
+    }
+
+    let expected_payload = format!(
+        "{}||{}||{}||0||0",
+        expected_sha_low, r_lean_ver, expected_theorems
+    );
+    let r_payload = val
+        .get("canonical_payload")
+        .and_then(|x| x.as_str())
+        .unwrap_or("");
+    if r_payload != expected_payload {
+        return Err("LEAN_RECEIPT_CANONICAL_PAYLOAD_MISMATCH");
+    }
+
+    let r_hmac = val
+        .get("hmac_sha256")
+        .and_then(|x| x.as_str())
+        .unwrap_or("");
+    if r_hmac.trim().is_empty() {
+        return Err("LEAN_RECEIPT_UNSIGNED");
+    }
+
+    let key = v73_1_load_operator_key_bytes().ok_or("OPERATOR_KEY_UNAVAILABLE")?;
+    let msg_bytes = expected_payload.as_bytes().to_vec();
+    let expected_hmac = v73_1_hmac_sha256_hex_lower(&key, &msg_bytes);
+    if !v73_1_constant_time_eq_hex_64(r_hmac, &expected_hmac) {
+        return Err("LEAN_RECEIPT_HMAC_INVALID");
+    }
+
+    Ok(())
+}
+
+/// Verify Lean 4 mirror parity, zero `sorry` / `axiom`, and externally HMAC-signed Lean 4 compiler receipts (C1).
 pub fn v73_1_verify_lean4_compiler_and_mirror() -> (bool, usize, usize, String) {
     let vault_path = if Path::new("03_vault/lean4/SovereignManifoldTheorems.lean").exists() {
         "03_vault/lean4/SovereignManifoldTheorems.lean"
@@ -106,58 +295,32 @@ pub fn v73_1_verify_lean4_compiler_and_mirror() -> (bool, usize, usize, String) 
             sorries += 1;
         }
     }
-    if sorries > 0 || axioms > 0 || theorems == 0 {
+    if sorries > 0
+        || axioms > 0
+        || !crate::v73_2_cloudflare_vpc_mesh_and_pgwire_hyperdrive::validate_live_lean_theorems_with_floor(theorems)
+    {
         return (false, theorems, sorries + axioms, vault_sha);
     }
 
-    let cache_mtx = V73_1_LEAN_VERIFY_CACHE.get_or_init(|| Mutex::new(None));
-    if let Ok(guard) = cache_mtx.lock() {
-        if let Some((ref cached_sha, cached_ok, cached_cnt)) = *guard {
-            if cached_sha == &vault_sha {
-                return (cached_ok, cached_cnt, 0, vault_sha);
-            }
-        }
+    let connectome_rec_path = if Path::new(V73_1_LEAN_RECEIPT_PATH).exists() {
+        V73_1_LEAN_RECEIPT_PATH
+    } else {
+        "C:\\sovereign_manifold_v31\\03_vault\\connectome\\lean4_compiler_verified_receipt.json"
+    };
+    let audit_rec_path = if Path::new(V73_1_LEAN_AUDIT_RECEIPT_PATH).exists() {
+        V73_1_LEAN_AUDIT_RECEIPT_PATH
+    } else {
+        "C:\\sovereign_manifold_v31\\03_vault\\receipts\\lean4_compiler_verification_receipt.json"
+    };
+
+    if let Err(err_code) = v73_1_verify_signed_lean_receipt_at(connectome_rec_path, &vault_sha, theorems) {
+        return (false, theorems, 0, format!("UNVERIFIED_CONNECTOME_RECEIPT:{}", err_code));
+    }
+    if let Err(err_code) = v73_1_verify_signed_lean_receipt_at(audit_rec_path, &vault_sha, theorems) {
+        return (false, theorems, 0, format!("UNVERIFIED_AUDIT_RECEIPT:{}", err_code));
     }
 
-    // Check on-disk SHA-256-bound compiler receipt before invoking lean.exe
-    if let Ok(rec_raw) = fs::read_to_string(V73_1_LEAN_RECEIPT_PATH)
-        .or_else(|_| fs::read_to_string("C:/sovereign_manifold_v31/03_vault/connectome/lean4_compiler_verified_receipt.json"))
-    {
-        if let Ok(val) = serde_json::from_str::<serde_json::Value>(&rec_raw) {
-            let r_sha = val.get("lean_sha256").and_then(|x| x.as_str()).unwrap_or("");
-            let r_ok = val.get("lean_exe_exit_zero").and_then(|x| x.as_bool()).unwrap_or(false);
-            if r_sha == vault_sha && r_ok {
-                if let Ok(mut guard) = cache_mtx.lock() {
-                    *guard = Some((vault_sha.clone(), true, theorems));
-                }
-                return (true, theorems, 0, vault_sha);
-            }
-        }
-    }
-
-    if !Path::new(V73_1_LEAN_EXE_PATH).exists() {
-        return (false, theorems, 0, vault_sha);
-    }
-    let t_lean = Instant::now();
-    let lean_ok = Command::new(V73_1_LEAN_EXE_PATH)
-        .arg(vault_path)
-        .output()
-        .map(|o| o.status.success())
-        .unwrap_or(false);
-    let verify_ms = t_lean.elapsed().as_secs_f64() * 1000.0;
-
-    if lean_ok {
-        let _ = fs::create_dir_all("03_vault/connectome");
-        let rec_json = format!(
-            "{{\"lean_sha256\":\"{}\",\"l0_mirror_sha256\":\"{}\",\"lean_exe_exit_zero\":true,\"theorems_verified\":{},\"sorry_count\":0,\"axiom_count\":0,\"verify_elapsed_ms\":{:.2}}}",
-            vault_sha, l0_sha, theorems, verify_ms
-        );
-        let _ = fs::write(V73_1_LEAN_RECEIPT_PATH, rec_json.as_bytes());
-    }
-    if let Ok(mut guard) = cache_mtx.lock() {
-        *guard = Some((vault_sha.clone(), lean_ok, theorems));
-    }
-    (lean_ok, theorems, 0, vault_sha)
+    (true, theorems, 0, vault_sha)
 }
 
 /// T382: BITCOS Sub-1.58-Bit Ternary Block (2 - z bits/weight bitmap + compacted signs).
@@ -449,6 +612,7 @@ pub fn v73_1_dispatch_tool_383_curvetq(payload: &str) -> String {
     let step_8 = (2.0 * w_abs_max) / 7.0;
     let mut scalar_q_weights = v72_1_vec_f32(num_weights, 0.0);
     let mut scalar_fisher_loss: f64 = 0.0;
+    let mut unweighted_scalar_mse_acc: f64 = 0.0;
     let mut k: usize = 0;
     while k < num_weights {
         let w = (*model.stiefel_p0.get(k).unwrap_or(&0.0)) as f64;
@@ -460,8 +624,10 @@ pub fn v73_1_dispatch_tool_383_curvetq(payload: &str) -> String {
         }
         let diff = w - w_hat;
         scalar_fisher_loss += f_w * diff * diff;
+        unweighted_scalar_mse_acc += diff * diff;
         k += 1;
     }
+    let unweighted_scalar_mse = unweighted_scalar_mse_acc / (num_weights.max(1) as f64);
 
     // 2. 4-State Ungerboeck Viterbi Trellis Coded Quantizer at identical 3.000 bits/weight
     //    Expanded 16-level codebook partitioned into 4 cosets {0,4,8,12}, {1,5,9,13}, {2,6,10,14}, {3,7,11,15}.
@@ -627,7 +793,7 @@ pub fn v73_1_dispatch_tool_383_curvetq(payload: &str) -> String {
         && trace_s == 0;
 
     let json = format!(
-        "{{\"ok\":{},\"status\":\"{}\",\"tool_id\":383,\"tool_name\":\"curvetq_rotation_free_trellis\",\"weight_artifact\":\"sovereign_harmonic_xi_rw384_768_base.sh4z\",\"tensor_quantized\":\"stiefel_p0_48x384\",\"weights_sampled\":{},\"val_positions_evaluated\":{},\"bits_per_weight\":3.0,\"trellis_states\":4,\"rotation_free\":true,\"perturb_delta\":{:.6},\"fisher_trace\":{:.9},\"nonzero_fisher_coords\":{},\"unweighted_hessian_loss\":{:.9},\"scalar_3bpw_fisher_loss\":{:.9},\"curvetq_hessian_loss\":{:.9},\"distortion_reduction_pct\":{:.4},\"fp32_val_ce_nats\":{:.6},\"scalar_3bpw_val_ce_nats\":{:.6},\"curvetq_3bpw_val_ce_nats\":{:.6},\"elapsed_us\":{:.2}}}",
+        "{{\"ok\":{},\"status\":\"{}\",\"tool_id\":383,\"tool_name\":\"curvetq_rotation_free_trellis\",\"weight_artifact\":\"sovereign_harmonic_xi_rw384_768_base.sh4z\",\"tensor_quantized\":\"stiefel_p0_48x384\",\"weights_sampled\":{},\"val_positions_evaluated\":{},\"bits_per_weight\":3.0,\"trellis_states\":4,\"rotation_free\":true,\"perturb_delta\":{:.6},\"fisher_trace\":{:.9},\"nonzero_fisher_coords\":{},\"unweighted_hessian_loss\":{:.9},\"scalar_3bpw_fisher_loss\":{:.9},\"curvetq_hessian_loss\":{:.9},\"distortion_reduction_pct\":{:.4},\"distortion_metric_scope\":\"FISHER_WEIGHTED_DISTORTION_ONLY_NOT_CE\",\"eval_support_note\":\"16_VALIDATION_POSITIONS_ONLY\",\"fp32_val_ce_nats\":{:.6},\"scalar_3bpw_val_ce_nats\":{:.6},\"curvetq_3bpw_val_ce_nats\":{:.6},\"elapsed_us\":{:.2}}}",
         ok,
         if ok { "MEASURED" } else { "UNMEASURED/OFFLINE" },
         num_weights,
@@ -635,7 +801,7 @@ pub fn v73_1_dispatch_tool_383_curvetq(payload: &str) -> String {
         perturb_delta,
         fisher_trace,
         nonzero_fisher_coords,
-        scalar_fisher_loss,
+        unweighted_scalar_mse,
         scalar_fisher_loss,
         curvetq_fisher_loss,
         gain_pct,
@@ -1137,7 +1303,11 @@ pub fn v73_1_dispatch_tool_393_crustify_lean(_payload: &str) -> String {
     let sec_rc = omega_sec_manifold::omega_sec_self_test();
     let (lean_verified, theorem_count, sorry_count, lean_sha) = v73_1_verify_lean4_compiler_and_mirror();
     let forge_up = v73_0_probe_station_live_json(19780, "/api/tools", 120).is_ok();
-    let ok = defect == 0 && sec_rc == 0 && lean_verified && sorry_count == 0 && theorem_count > 0;
+    let ok = defect == 0
+        && sec_rc == 0
+        && lean_verified
+        && sorry_count == 0
+        && crate::v73_2_cloudflare_vpc_mesh_and_pgwire_hyperdrive::validate_live_lean_theorems_with_floor(theorem_count);
     let elapsed_us = t0.elapsed().as_secs_f64() * 1_000_000.0;
     format!(
         "{{\"ok\":{},\"status\":\"{}\",\"tool_id\":393,\"tool_name\":\"crustify_ffibox_lean_comparator\",\"ffi_coboundary_defect\":{},\"omega_sec_self_test_rc\":{},\"lean4_compiler_verified\":{},\"lean4_sha256\":\"{}\",\"lean_theorems_observed\":{},\"lean_sorry_count\":{},\"station_09_forge_19780_online\":{},\"elapsed_us\":{:.2}}}",
@@ -1234,7 +1404,7 @@ pub fn v73_1_dispatch_chain399_master_certification(payload: &str) -> String {
         && weights_manifest_ok
         && lean_verified
         && lean_sorries == 0
-        && lean_theorems > 0;
+        && crate::v73_2_cloudflare_vpc_mesh_and_pgwire_hyperdrive::validate_live_lean_theorems_with_floor(lean_theorems);
 
     let elapsed_ms = t0.elapsed().as_secs_f64() * 1000.0;
     format!(

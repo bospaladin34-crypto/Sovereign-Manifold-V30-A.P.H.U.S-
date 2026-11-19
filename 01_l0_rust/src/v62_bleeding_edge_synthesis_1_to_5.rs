@@ -3012,7 +3012,7 @@ pub fn v62_measure_vesper_swarm_formations_and_chain288_cert(input: &str) -> Str
         && sample.spage_bytes == 4055040
         && sample.e8z_bytes == 133120
         && measured_bijected_cls == 132960
-        && lean_count >= 730;
+        && crate::v73_2_cloudflare_vpc_mesh_and_pgwire_hyperdrive::validate_live_lean_theorems_with_floor(lean_count);
 
     let cert_status = if cert_ok {
         "CHAIN_288_MASTER_CERTIFIED_OK"

@@ -1,263 +1,280 @@
 {
-    "$schema":  "https://json-schema.org/draft/2020-12/schema",
-    "architect":  "Donevin Frownfelter (@bospaladin34-crypto)",
-    "artifacts":  {
-                      "deep12l_weights":  {
-                                              "expected_bytes":  110720,
-                                              "filename":  "sovereign_harmonic_deep12l_weights.sh4z",
-                                              "magic":  "0x53483132",
-                                              "relative_path":  "00_control/weights/sovereign_harmonic_deep12l_weights.sh4z",
-                                              "sha256":  "dfb60a527bcac96bd07c5d5bbb25e40afbd0107e23db97752f03d98b0a696832",
-                                              "version":  7110,
-                                              "provenance":  {
-                                                                 "status":  "UNMEASURED_HISTORICAL_CHECKPOINT",
-                                                                 "integrity_verified":  true,
-                                                                 "note":  "Pre-v71.2 checkpoint; byte length, magic header, and SHA-256 verified at load time. Original per-step training log not retained in repo; labeled UNMEASURED_HISTORICAL_CHECKPOINT per Muse E11."
-                                                             }
-                                          },
-                      "e8z_lattice":  {
-                                          "expected_bytes":  557056,
-                                          "filename":  "sovereign_harmonic_viii_v6900_8704cl.e8z",
-                                          "magic":  "0x00000000",
-                                          "relative_path":  "00_control/weights/sovereign_harmonic_viii_v6900_8704cl.e8z",
-                                          "sha256":  "087a1bc61f4a850f2ab4a39726229296b8bf33665e28bde5e1f82c3a33f5430a",
-                                          "version":  6900,
-                                          "provenance":  {
-                                                             "status":  "UNMEASURED_HISTORICAL_CHECKPOINT",
-                                                             "integrity_verified":  true,
-                                                             "note":  "Pre-v71.2 checkpoint; byte length, magic header, and SHA-256 verified at load time. Original per-step training log not retained in repo; labeled UNMEASURED_HISTORICAL_CHECKPOINT per Muse E11."
-                                                         }
-                                      },
-                      "npage_neurons":  {
-                                            "expected_bytes":  10813440,
-                                            "filename":  "neurons_v6900_84480.npage",
-                                            "magic":  "0x00000000",
-                                            "relative_path":  "00_control/weights/neurons_v6900_84480.npage",
-                                            "sha256":  "1be33a601cf6ebfd778c08fc110d395ebcdaabde81fd71aa559a99fbf5c85e8e",
-                                            "version":  6900,
-                                            "provenance":  {
-                                                               "status":  "UNMEASURED_HISTORICAL_CHECKPOINT",
-                                                               "integrity_verified":  true,
-                                                               "note":  "Pre-v71.2 checkpoint; byte length, magic header, and SHA-256 verified at load time. Original per-step training log not retained in repo; labeled UNMEASURED_HISTORICAL_CHECKPOINT per Muse E11."
-                                                           }
-                                        },
-                      "sh_ix_base":  {
-                                         "expected_bytes":  330246,
-                                         "filename":  "sovereign_harmonic_ix_weights.sh4z",
-                                         "magic":  "0x5348345A",
-                                         "relative_path":  "00_control/weights/sovereign_harmonic_ix_weights.sh4z",
-                                         "sha256":  "53537033fd4eeffeddb265abd2b8ced169861f768710ae90d6507b71517e8f3a",
-                                         "version":  7100,
-                                         "provenance":  {
-                                                            "status":  "UNMEASURED_HISTORICAL_CHECKPOINT",
-                                                            "integrity_verified":  true,
-                                                            "note":  "Pre-v71.2 checkpoint; byte length, magic header, and SHA-256 verified at load time. Original per-step training log not retained in repo; labeled UNMEASURED_HISTORICAL_CHECKPOINT per Muse E11."
-                                                        }
-                                     },
-                      "sh_week2_ast_bpe_16k_codebook":  {
-                                                            "expected_bytes":  1048608,
-                                                            "filename":  "sovereign_harmonic_week2_16384_codebook.sh4z",
-                                                            "magic":  "0x5348324B",
-                                                            "relative_path":  "00_control/weights/sovereign_harmonic_week2_16384_codebook.sh4z",
-                                                            "sha256":  "c115b746846609a4502c672532e655b412abfeefbfcd53aa994b6d90246dddf7",
-                                                            "version":  7120,
-                                                            "provenance":  {
-                                                                               "status":  "MEASURED_REPRODUCIBLE",
-                                                                               "vocab_size":  16384,
-                                                                               "codebook_dim":  56,
-                                                                               "corpus_path":  "03_vault/connectome/sh_week2_curated_corpus.jsonl",
-                                                                               "builder_tool":  "Tool 336 (v71_2 tied E8^4 x Leech24 codebook)"
-                                                                           }
-                                                        },
-                      "sh_xi_bpe16k":  {
-                                           "expected_bytes":  156792,
-                                           "filename":  "sovereign_harmonic_xi_bpe16k.bin",
-                                           "magic":  "0x00000000",
-                                           "relative_path":  "00_control/weights/sovereign_harmonic_xi_bpe16k.bin",
-                                           "sha256":  "101d3da7327db4cf49ba9312cbe4f182d8baed75e46fe92401980d19dd72b3f1",
-                                           "version":  7210,
-                                           "provenance":  {
-                                                              "status":  "MEASURED_REPRODUCIBLE",
-                                                              "vocab_size":  16384,
-                                                              "corpus_path":  "03_vault/corpus/sh_rw_corpus_v7210.jsonl",
-                                                              "corpus_manifest":  "03_vault/connectome/sh_rw_corpus_v7210_manifest.json",
-                                                              "builder_tool":  "Tool 358 (v72_1_dispatch_tool_358_bpe16k_and_eval500)"
-                                                          }
-                                       },
-                      "sh_xi_moe_experts":  {
-                                                "expected_bytes":  869328,
-                                                "filename":  "sh_xi_moe_experts.sh4z",
-                                                "magic":  "0x45583732",
-                                                "relative_path":  "00_control/weights/sh_xi_moe_experts.sh4z",
-                                                "sha256":  "125fcd03b56e4af0d670676a4090922994f73f0880df58185da6d3991ddb7c0e",
-                                                "version":  7220,
-                                                "provenance":  {
-                                                                   "status":  "MEASURED_REPRODUCIBLE",
-                                                                   "seed":  "0x7220_E800",
-                                                                   "trained_steps":  16,
-                                                                   "lr_moe":  0.00500,
-                                                                   "lr_wout":  0.08000,
-                                                                   "wd_moe":  0.0100,
-                                                                   "corpus_path":  "03_vault/corpus/sh_rw_corpus_v7210.jsonl",
-                                                                   "corpus_sha256":  "03919d4b0d4ca86231df70882250c1a15a68518c2112b87970e79f3cbe2d3c23",
-                                                                   "base_sh4z_sha256":  "68c207850b41d50ac7e2f0614e445cb65e1d2c6f0ce17d6ab406815149cd2029",
-                                                                   "meta_receipt":  "00_control/weights/sh_xi_moe_train_meta.json",
-                                                                   "loss_curve_csv":  "03_vault/connectome/sh_xi_moe_training_curve.csv",
-                                                                   "val_bpb_3shell":  0.113064,
-                                                                   "val_ppl_3shell":  87.638513,
-                                                                   "force_rebuild_note":  "When force_retrain=true, v72_2_init_expert_scratch seeds Kaiming/Box-Muller weights from 0x7220_E800 and executes a 16-step analytical softmax-CE gradient loop over held-in sequences before unpadded serialization; normal load path fails closed via v72_2_load_moe_bank_strict."
-                                                               }
-                                            },
-                      "sh_xi_moe_experts_dir":  {
-                                                    "expected_bytes":  16384,
-                                                    "filename":  "sh_xi_moe_experts_dir.sh4z",
-                                                    "magic":  "0x45583732",
-                                                    "relative_path":  "00_control/weights/sh_xi_moe_experts_dir.sh4z",
-                                                    "sha256":  "ee9ac55862966f49287f2adcad73de0a2b2e50aae2db718632644250ee9ddca1",
-                                                    "version":  7220,
-                                                    "provenance":  {
-                                                                       "status":  "MEASURED_REPRODUCIBLE",
-                                                                       "seed":  "0x7220_E800",
-                                                                       "trained_steps":  16,
-                                                                       "lr_moe":  0.00500,
-                                                                       "lr_wout":  0.08000,
-                                                                       "wd_moe":  0.0100,
-                                                                       "corpus_path":  "03_vault/corpus/sh_rw_corpus_v7210.jsonl",
-                                                                       "corpus_sha256":  "03919d4b0d4ca86231df70882250c1a15a68518c2112b87970e79f3cbe2d3c23",
-                                                                       "base_sh4z_sha256":  "68c207850b41d50ac7e2f0614e445cb65e1d2c6f0ce17d6ab406815149cd2029",
-                                                                       "meta_receipt":  "00_control/weights/sh_xi_moe_train_meta.json",
-                                                                       "loss_curve_csv":  "03_vault/connectome/sh_xi_moe_training_curve.csv",
-                                                                       "val_bpb_3shell":  0.113064,
-                                                                       "val_ppl_3shell":  87.638513,
-                                                                       "force_rebuild_note":  "When force_retrain=true, v72_2_init_expert_scratch seeds Kaiming/Box-Muller weights from 0x7220_E800 and executes a 16-step analytical softmax-CE gradient loop over held-in sequences before unpadded serialization; normal load path fails closed via v72_2_load_moe_bank_strict."
-                                                                   }
-                                                },
-                      "sh_xi_rw384_768_base":  {
-                                                   "expected_bytes":  2295936,
-                                                   "filename":  "sovereign_harmonic_xi_rw384_768_base.sh4z",
-                                                   "magic":  "0x53485849",
-                                                   "relative_path":  "00_control/weights/sovereign_harmonic_xi_rw384_768_base.sh4z",
-                                                   "sha256":  "68c207850b41d50ac7e2f0614e445cb65e1d2c6f0ce17d6ab406815149cd2029",
-                                                   "version":  7210,
-                                                   "provenance":  {
-                                                                      "status":  "MEASURED_REPRODUCIBLE",
-                                                                      "seed":  "0x7210_0001_5EED_CAFE",
-                                                                      "trained_steps":  10000,
-                                                                      "corpus_path":  "03_vault/corpus/sh_rw_corpus_v7210.jsonl",
-                                                                      "corpus_sha256":  "03919d4b0d4ca86231df70882250c1a15a68518c2112b87970e79f3cbe2d3c23",
-                                                                      "meta_receipt":  "00_control/weights/sh_xi_base_train_meta.json",
-                                                                      "loss_curve_csv":  "03_vault/connectome/sh_xi_week1_training_curve.csv",
-                                                                      "step0_net2wider_note":  "At step 0 gamma_net2wider=0.0 so Shell-1 768D preserves Shell-0 384D bit-identically; init_val_nats_768_ungated_gamma1 records distinct random Shell-1 loss when gamma=1.0",
-                                                                      "init_val_bpb_384_gated":  0.244138,
-                                                                      "init_val_bpb_768_ungated_gamma1":  0.245257,
-                                                                      "final_val_bpb_384":  0.132292,
-                                                                      "final_val_bpb_768":  0.113401,
-                                                                      "final_val_ppl_384":  187.526750,
-                                                                      "final_val_ppl_768":  88.815700,
-                                                                      "prob_sum_max_dev_f64_sci":  "1.454e-14"
-                                                                  }
-                                               },
-                      "sovereign_harmonic_deep12l_weights":  {
-                                                                 "expected_bytes":  110720,
-                                                                 "filename":  "sovereign_harmonic_deep12l_weights.sh4z",
-                                                                 "magic":  "0x53483132",
-                                                                 "relative_path":  "00_control/weights/sovereign_harmonic_deep12l_weights.sh4z",
-                                                                 "sha256":  "dfb60a527bcac96bd07c5d5bbb25e40afbd0107e23db97752f03d98b0a696832",
-                                                                 "version":  7110,
-                                                                 "provenance":  {
-                                                                                    "status":  "UNMEASURED_HISTORICAL_CHECKPOINT",
-                                                                                    "integrity_verified":  true,
-                                                                                    "note":  "Pre-v71.2 checkpoint; byte length, magic header, and SHA-256 verified at load time. Original per-step training log not retained in repo; labeled UNMEASURED_HISTORICAL_CHECKPOINT per Muse E11."
-                                                                                }
-                                                             },
-                      "sovereign_harmonic_ix_weights":  {
-                                                            "expected_bytes":  330246,
-                                                            "filename":  "sovereign_harmonic_ix_weights.sh4z",
-                                                            "magic":  "0x5348345A",
-                                                            "relative_path":  "00_control/weights/sovereign_harmonic_ix_weights.sh4z",
-                                                            "sha256":  "53537033fd4eeffeddb265abd2b8ced169861f768710ae90d6507b71517e8f3a",
-                                                            "version":  7100,
-                                                            "provenance":  {
-                                                                               "status":  "UNMEASURED_HISTORICAL_CHECKPOINT",
-                                                                               "integrity_verified":  true,
-                                                                               "note":  "Pre-v71.2 checkpoint; byte length, magic header, and SHA-256 verified at load time. Original per-step training log not retained in repo; labeled UNMEASURED_HISTORICAL_CHECKPOINT per Muse E11."
-                                                                           }
-                                                        },
-                      "spage_synapses":  {
-                                             "expected_bytes":  5406720,
-                                             "filename":  "synapses_v6900_2703360.spage",
-                                             "magic":  "0x00000000",
-                                             "relative_path":  "00_control/weights/synapses_v6900_2703360.spage",
-                                             "sha256":  "f9b737f11fb701747dc4ea0748a6ab631e849989dd53bfb38ecd75bbde0f1da0",
-                                             "version":  6900,
-                                             "provenance":  {
-                                                                "status":  "UNMEASURED_HISTORICAL_CHECKPOINT",
-                                                                "integrity_verified":  true,
-                                                                "note":  "Pre-v71.2 checkpoint; byte length, magic header, and SHA-256 verified at load time. Original per-step training log not retained in repo; labeled UNMEASURED_HISTORICAL_CHECKPOINT per Muse E11."
-                                                            }
-                                         },
-                      "tree_drafter_2l":  {
-                                              "expected_bytes":  131104,
-                                              "filename":  "sovereign_harmonic_tree_drafter_2l.sh4z",
-                                              "magic":  "0x53484432",
-                                              "relative_path":  "00_control/weights/sovereign_harmonic_tree_drafter_2l.sh4z",
-                                              "sha256":  "1eddab34efe549e161b532ebce9bb18135f1a876e23975b203b3fee316dccf32",
-                                              "provenance":  {
-                                                                 "status":  "MEASURED_REPRODUCIBLE",
-                                                                 "layers":  2,
-                                                                 "optimizer":  "Least-squares gradient descent over deep-state pairs",
-                                                                 "kl_receipt":  "03_vault/connectome/sh_week4_tree_speculative_kl_receipt.json",
-                                                                 "builder_tool":  "Tool 352 (v71_4 tree_speculative_k4_b2_cascade)"
-                                                             }
-                                          },
-                      "week2_codebook":  {
-                                             "expected_bytes":  1048608,
-                                             "filename":  "sovereign_harmonic_week2_16384_codebook.sh4z",
-                                             "magic":  "0x5348324B",
-                                             "relative_path":  "00_control/weights/sovereign_harmonic_week2_16384_codebook.sh4z",
-                                             "sha256":  "c115b746846609a4502c672532e655b412abfeefbfcd53aa994b6d90246dddf7",
-                                             "version":  7120,
-                                             "provenance":  {
-                                                                "status":  "MEASURED_REPRODUCIBLE",
-                                                                "vocab_size":  16384,
-                                                                "codebook_dim":  56,
-                                                                "corpus_path":  "03_vault/connectome/sh_week2_curated_corpus.jsonl",
-                                                                "builder_tool":  "Tool 336 (v71_2 tied E8^4 x Leech24 codebook)"
-                                                            }
-                                         },
-                      "week3_contrastive":  {
-                                                "expected_bytes":  65568,
-                                                "filename":  "sovereign_harmonic_week3_contrastive_weights.sh4z",
-                                                "magic":  "0x53483344",
-                                                "relative_path":  "00_control/weights/sovereign_harmonic_week3_contrastive_weights.sh4z",
-                                                "sha256":  "c4f9cc3a8730453e601eaf1b59406cc24b52fd184c620568f0e6ffe5bf10203d",
-                                                "version":  7130,
-                                                "provenance":  {
-                                                                   "status":  "MEASURED_REPRODUCIBLE",
-                                                                   "preference_pairs":  512,
-                                                                   "optimizer":  "Riemannian Stiefel Cayley DPO",
-                                                                   "builder_tool":  "Tool 344 (v71_3 contrastive_stiefel_alignment)"
-                                                               }
-                                            },
-                      "week4_rlvf_sae":  {
-                                             "expected_bytes":  32784,
-                                             "filename":  "sovereign_harmonic_x_rlvf_sae_weights.sh4z",
-                                             "magic":  "0x53485834",
-                                             "relative_path":  "00_control/weights/sovereign_harmonic_x_rlvf_sae_weights.sh4z",
-                                             "sha256":  "576ae45985009729952501ee9da2798562a39cf5d5a9aeb87a78420628c18cf7",
-                                             "version":  7140,
-                                             "provenance":  {
-                                                                "status":  "MEASURED_REPRODUCIBLE",
-                                                                "sae_features":  128,
-                                                                "top_k":  8,
-                                                                "builder_tool":  "Tools 351 \u0026 353 (v71_4 compiler-gated RLVF + Top-k SAE)"
-                                                            }
-                                         }
-                  },
-    "doi_osf":  "10.17605/OSF.IO/2XQ5Z",
-    "doi_zenodo":  "10.5281/zenodo.23651696",
-    "generated_at_utc":  "2026-11-19T00:15:17Z",
-    "title":  "SovereignHarmonicWeightsManifest",
-    "version":  "v73.2.1",
-    "zero_unmeasured_mandate":  "ENFORCED"
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "architect": "Donevin Frownfelter (@bospaladin34-crypto)",
+  "artifacts": {
+    "deep12l_weights": {
+      "expected_bytes": 110720,
+      "filename": "sovereign_harmonic_deep12l_weights.sh4z",
+      "magic": "0x53483132",
+      "provenance": {
+        "integrity_verified": true,
+        "note": "Pre-v71.2 checkpoint; byte length, magic header, and SHA-256 verified at load time. Original per-step training log not retained in repo; labeled UNMEASURED_HISTORICAL_CHECKPOINT per Muse E11.",
+        "status": "UNMEASURED_HISTORICAL_CHECKPOINT"
+      },
+      "relative_path": "00_control/weights/sovereign_harmonic_deep12l_weights.sh4z",
+      "sha256": "dfb60a527bcac96bd07c5d5bbb25e40afbd0107e23db97752f03d98b0a696832",
+      "version": 7110
+    },
+    "e8z_lattice": {
+      "expected_bytes": 557056,
+      "filename": "sovereign_harmonic_viii_v6900_8704cl.e8z",
+      "magic": "0x00000000",
+      "provenance": {
+        "integrity_verified": true,
+        "note": "Pre-v71.2 checkpoint; byte length, magic header, and SHA-256 verified at load time. Original per-step training log not retained in repo; labeled UNMEASURED_HISTORICAL_CHECKPOINT per Muse E11.",
+        "status": "UNMEASURED_HISTORICAL_CHECKPOINT"
+      },
+      "relative_path": "00_control/weights/sovereign_harmonic_viii_v6900_8704cl.e8z",
+      "sha256": "087a1bc61f4a850f2ab4a39726229296b8bf33665e28bde5e1f82c3a33f5430a",
+      "version": 6900
+    },
+    "npage_neurons": {
+      "expected_bytes": 10813440,
+      "filename": "neurons_v6900_84480.npage",
+      "magic": "0x00000000",
+      "provenance": {
+        "integrity_verified": true,
+        "note": "Pre-v71.2 checkpoint; byte length, magic header, and SHA-256 verified at load time. Original per-step training log not retained in repo; labeled UNMEASURED_HISTORICAL_CHECKPOINT per Muse E11.",
+        "status": "UNMEASURED_HISTORICAL_CHECKPOINT"
+      },
+      "relative_path": "00_control/weights/neurons_v6900_84480.npage",
+      "sha256": "1be33a601cf6ebfd778c08fc110d395ebcdaabde81fd71aa559a99fbf5c85e8e",
+      "version": 6900
+    },
+    "sh_ix_base": {
+      "expected_bytes": 330246,
+      "filename": "sovereign_harmonic_ix_weights.sh4z",
+      "magic": "0x5348345A",
+      "provenance": {
+        "integrity_verified": true,
+        "note": "Pre-v71.2 checkpoint; byte length, magic header, and SHA-256 verified at load time. Original per-step training log not retained in repo; labeled UNMEASURED_HISTORICAL_CHECKPOINT per Muse E11.",
+        "status": "UNMEASURED_HISTORICAL_CHECKPOINT"
+      },
+      "relative_path": "00_control/weights/sovereign_harmonic_ix_weights.sh4z",
+      "sha256": "53537033fd4eeffeddb265abd2b8ced169861f768710ae90d6507b71517e8f3a",
+      "version": 7100
+    },
+    "sh_week2_ast_bpe_16k_codebook": {
+      "expected_bytes": 1048608,
+      "filename": "sovereign_harmonic_week2_16384_codebook.sh4z",
+      "magic": "0x5348324B",
+      "provenance": {
+        "builder_tool": "Tool 336 (v71_2 tied E8^4 x Leech24 codebook)",
+        "codebook_dim": 56,
+        "corpus_path": "03_vault/connectome/sh_week2_curated_corpus.jsonl",
+        "note": "Deterministic 56D joint E8^4 (32D) x Leech Lambda_24 (24D) lattice quantization codebook (non-SGD lookup artifact).",
+        "status": "DETERMINISTIC_TOKENIZER_OR_CODEBOOK",
+        "vocab_size": 16384
+      },
+      "relative_path": "00_control/weights/sovereign_harmonic_week2_16384_codebook.sh4z",
+      "sha256": "c115b746846609a4502c672532e655b412abfeefbfcd53aa994b6d90246dddf7",
+      "version": 7120
+    },
+    "sh_xi_bpe16k": {
+      "expected_bytes": 156792,
+      "filename": "sovereign_harmonic_xi_bpe16k.bin",
+      "magic": "0x00000000",
+      "provenance": {
+        "builder_tool": "Tool 358 (v72_1_dispatch_tool_358_bpe_16k_chatml_tokenizer)",
+        "corpus_manifest": "03_vault/connectome/sh_rw_corpus_v7210_manifest.json",
+        "corpus_path": "03_vault/corpus/sh_rw_corpus_v7210.jsonl",
+        "note": "Deterministic frequency-ranked byte-level + structural indentation BPE-16K vocabulary table (non-SGD lookup artifact).",
+        "status": "DETERMINISTIC_TOKENIZER_OR_CODEBOOK",
+        "vocab_size": 16384
+      },
+      "relative_path": "00_control/weights/sovereign_harmonic_xi_bpe16k.bin",
+      "sha256": "101d3da7327db4cf49ba9312cbe4f182d8baed75e46fe92401980d19dd72b3f1",
+      "version": 7210
+    },
+    "sh_xi_moe_experts": {
+      "expected_bytes": 869328,
+      "filename": "sh_xi_moe_experts.sh4z",
+      "magic": "0x45583732",
+      "provenance": {
+        "base_sh4z_sha256": "b93c753bf52d9ee2c0c25b871c1cd8afafd812b82656cd03d034a1ba46a164d9",
+        "corpus_path": "03_vault/corpus/sh_rw_corpus_v7210.jsonl",
+        "corpus_sha256": "db92b0b751856fe8b5bb2454e09bab942e20fd7217f3421230adfb09dfb6be7f",
+        "force_rebuild_note": "When force_retrain=true, v72_2_init_expert_scratch seeds Kaiming/Box-Muller weights from 0x7220_E800 and executes a 16-step analytical softmax-CE gradient loop over held-in sequences before unpadded serialization; normal load path fails closed via v72_2_load_moe_bank_strict.",
+        "loss_curve_csv": "03_vault/connectome/sh_xi_moe_training_curve.csv",
+        "lr_moe": 0.005,
+        "lr_wout": 0.08,
+        "meta_receipt": "00_control/weights/sh_xi_moe_train_meta.json",
+        "seed": "0x7220_E800",
+        "status": "MEASURED_REPRODUCIBLE",
+        "trained_steps": 16,
+        "val_bpb_3shell": 0.100278,
+        "val_ppl_3shell": 52.84472,
+        "wd_moe": 0.01
+      },
+      "relative_path": "00_control/weights/sh_xi_moe_experts.sh4z",
+      "sha256": "b6ddae6cf0a597bee1587464af9701b301ea7c6e9af6c17c73fc2d8093bff1d4",
+      "version": 7220
+    },
+    "sh_xi_moe_experts_dir": {
+      "expected_bytes": 16384,
+      "filename": "sh_xi_moe_experts_dir.sh4z",
+      "magic": "0x45583732",
+      "provenance": {
+        "base_sh4z_sha256": "b93c753bf52d9ee2c0c25b871c1cd8afafd812b82656cd03d034a1ba46a164d9",
+        "corpus_path": "03_vault/corpus/sh_rw_corpus_v7210.jsonl",
+        "corpus_sha256": "db92b0b751856fe8b5bb2454e09bab942e20fd7217f3421230adfb09dfb6be7f",
+        "directory_mirror_of": "sh_xi_moe_experts",
+        "force_rebuild_note": "When force_retrain=true, v72_2_init_expert_scratch seeds Kaiming/Box-Muller weights from 0x7220_E800 and executes a 16-step analytical softmax-CE gradient loop over held-in sequences before unpadded serialization; normal load path fails closed via v72_2_load_moe_bank_strict.",
+        "loss_curve_csv": "03_vault/connectome/sh_xi_moe_training_curve.csv",
+        "lr_moe": 0.005,
+        "lr_wout": 0.08,
+        "meta_receipt": "00_control/weights/sh_xi_moe_train_meta.json",
+        "seed": "0x7220_E800",
+        "status": "MEASURED_REPRODUCIBLE",
+        "trained_steps": 16,
+        "val_bpb_3shell": 0.100278,
+        "val_ppl_3shell": 52.84472,
+        "wd_moe": 0.01
+      },
+      "relative_path": "00_control/weights/sh_xi_moe_experts_dir.sh4z",
+      "sha256": "abe8ad2e87084b29f5bd9949a00612627f14f6cbb25c3f24dedaa8a1df48be53",
+      "version": 7220
+    },
+    "sh_xi_rw384_768_base": {
+      "expected_bytes": 2295936,
+      "filename": "sovereign_harmonic_xi_rw384_768_base.sh4z",
+      "magic": "0x53485849",
+      "provenance": {
+        "corpus_path": "03_vault/corpus/sh_rw_corpus_v7210.jsonl",
+        "corpus_sha256": "db92b0b751856fe8b5bb2454e09bab942e20fd7217f3421230adfb09dfb6be7f",
+        "final_val_bpb_384": 0.100494,
+        "final_val_bpb_768": 0.099882,
+        "final_val_ppl_384": 54.78834,
+        "final_val_ppl_768": 53.46746,
+        "init_val_bpb_384_gated": 0.242456,
+        "init_val_bpb_768_ungated_gamma1": 0.243568,
+        "loss_curve_csv": "03_vault/connectome/sh_xi_week1_training_curve.csv",
+        "meta_receipt": "00_control/weights/sh_xi_base_train_meta.json",
+        "prob_sum_max_dev_f32_sci": "5.960e-6",
+        "prob_sum_max_dev_f64_sci": "1.088e-14",
+        "seed": "0x7210_0001_5EED_CAFE",
+        "status": "MEASURED_REPRODUCIBLE",
+        "step0_net2wider_note": "At step 0 gamma_net2wider=0.0 so Shell-1 768D preserves Shell-0 384D bit-identically; init_val_nats_768_ungated_gamma1 records distinct random Shell-1 loss when gamma=1.0",
+        "trained_steps": 10000
+      },
+      "relative_path": "00_control/weights/sovereign_harmonic_xi_rw384_768_base.sh4z",
+      "sha256": "b93c753bf52d9ee2c0c25b871c1cd8afafd812b82656cd03d034a1ba46a164d9",
+      "version": 7210
+    },
+    "sovereign_harmonic_deep12l_weights": {
+      "expected_bytes": 110720,
+      "filename": "sovereign_harmonic_deep12l_weights.sh4z",
+      "magic": "0x53483132",
+      "provenance": {
+        "integrity_verified": true,
+        "note": "Pre-v71.2 checkpoint; byte length, magic header, and SHA-256 verified at load time. Original per-step training log not retained in repo; labeled UNMEASURED_HISTORICAL_CHECKPOINT per Muse E11.",
+        "status": "UNMEASURED_HISTORICAL_CHECKPOINT"
+      },
+      "relative_path": "00_control/weights/sovereign_harmonic_deep12l_weights.sh4z",
+      "sha256": "dfb60a527bcac96bd07c5d5bbb25e40afbd0107e23db97752f03d98b0a696832",
+      "version": 7110
+    },
+    "sovereign_harmonic_ix_weights": {
+      "expected_bytes": 330246,
+      "filename": "sovereign_harmonic_ix_weights.sh4z",
+      "magic": "0x5348345A",
+      "provenance": {
+        "integrity_verified": true,
+        "note": "Pre-v71.2 checkpoint; byte length, magic header, and SHA-256 verified at load time. Original per-step training log not retained in repo; labeled UNMEASURED_HISTORICAL_CHECKPOINT per Muse E11.",
+        "status": "UNMEASURED_HISTORICAL_CHECKPOINT"
+      },
+      "relative_path": "00_control/weights/sovereign_harmonic_ix_weights.sh4z",
+      "sha256": "53537033fd4eeffeddb265abd2b8ced169861f768710ae90d6507b71517e8f3a",
+      "version": 7100
+    },
+    "spage_synapses": {
+      "expected_bytes": 5406720,
+      "filename": "synapses_v6900_2703360.spage",
+      "magic": "0x00000000",
+      "provenance": {
+        "integrity_verified": true,
+        "note": "Pre-v71.2 checkpoint; byte length, magic header, and SHA-256 verified at load time. Original per-step training log not retained in repo; labeled UNMEASURED_HISTORICAL_CHECKPOINT per Muse E11.",
+        "status": "UNMEASURED_HISTORICAL_CHECKPOINT"
+      },
+      "relative_path": "00_control/weights/synapses_v6900_2703360.spage",
+      "sha256": "f9b737f11fb701747dc4ea0748a6ab631e849989dd53bfb38ecd75bbde0f1da0",
+      "version": 6900
+    },
+    "tree_drafter_2l": {
+      "expected_bytes": 131104,
+      "filename": "sovereign_harmonic_tree_drafter_2l.sh4z",
+      "magic": "0x53484432",
+      "provenance": {
+        "builder_tool": "Tool 352 (v71_4 tree_speculative_k4_b2_cascade)",
+        "kl_receipt": "03_vault/connectome/sh_week4_tree_speculative_kl_receipt.json",
+        "layers": 2,
+        "loss_curve_csv": "03_vault/connectome/sh_week4_tree_speculative_kl_receipt.json",
+        "optimizer": "Momentum gradient descent (eta=0.90/g_row_max, beta=0.80) least-squares 2L->12L bridge",
+        "seed": "deterministic_eval256_target_12l_pairs",
+        "slots": 32,
+        "status": "MEASURED_REPRODUCIBLE",
+        "train_tokens": 64,
+        "trained_steps": 160
+      },
+      "relative_path": "00_control/weights/sovereign_harmonic_tree_drafter_2l.sh4z",
+      "sha256": "1eddab34efe549e161b532ebce9bb18135f1a876e23975b203b3fee316dccf32"
+    },
+    "week2_codebook": {
+      "expected_bytes": 1048608,
+      "filename": "sovereign_harmonic_week2_16384_codebook.sh4z",
+      "magic": "0x5348324B",
+      "provenance": {
+        "alias_of": "sh_week2_ast_bpe_16k_codebook",
+        "builder_tool": "Tool 336 (v71_2 tied E8^4 x Leech24 codebook)",
+        "codebook_dim": 56,
+        "corpus_path": "03_vault/connectome/sh_week2_curated_corpus.jsonl",
+        "note": "Manifest alias for deterministic 56D joint E8^4 x Leech Lambda_24 lattice quantization codebook (non-SGD lookup artifact).",
+        "status": "DETERMINISTIC_TOKENIZER_OR_CODEBOOK",
+        "vocab_size": 16384
+      },
+      "relative_path": "00_control/weights/sovereign_harmonic_week2_16384_codebook.sh4z",
+      "sha256": "c115b746846609a4502c672532e655b412abfeefbfcd53aa994b6d90246dddf7",
+      "version": 7120
+    },
+    "week3_contrastive": {
+      "expected_bytes": 65568,
+      "filename": "sovereign_harmonic_week3_contrastive_weights.sh4z",
+      "magic": "0x53483344",
+      "provenance": {
+        "builder_tool": "Tool 344 (v71_3 contrastive_stiefel_alignment)",
+        "note": "Explicitly stamped with 0x4E4F5457 ('NOTW') non-weight quarantine marker; lookup/margin table rather than learned neural weight tensors.",
+        "optimizer": "Riemannian Stiefel Cayley DPO (stiefel_w updated in deep12l_weights; this blob stores FNV-1a pair hashes & margin deltas)",
+        "preference_pairs": 512,
+        "quarantine_marker": "0x4E4F5457 ('NOTW')",
+        "quarantine_source": "01_l0_rust/src/v71_3_sovereign_harmonic_week3_speculative_k4_long_context_4k.rs:2766",
+        "status": "QUARANTINED_NON_WEIGHT_LOOKUP"
+      },
+      "relative_path": "00_control/weights/sovereign_harmonic_week3_contrastive_weights.sh4z",
+      "sha256": "c4f9cc3a8730453e601eaf1b59406cc24b52fd184c620568f0e6ffe5bf10203d",
+      "version": 7130
+    },
+    "week4_rlvf_sae": {
+      "expected_bytes": 32784,
+      "filename": "sovereign_harmonic_x_rlvf_sae_weights.sh4z",
+      "magic": "0x53485834",
+      "provenance": {
+        "builder_tool": "Tools 351 & 353 (v71_4 compiler-gated RLVF + Top-k SAE)",
+        "integrity_verified": true,
+        "note": "30-epoch Top-8 Matching Pursuit SAE dictionary (512x32 Q14) without a retained per-epoch training loss curve CSV in repo; labeled UNMEASURED_HISTORICAL_CHECKPOINT per Muse Item #2 / E11.",
+        "sae_features": 512,
+        "status": "UNMEASURED_HISTORICAL_CHECKPOINT",
+        "top_k": 8,
+        "trained_epochs": 30
+      },
+      "relative_path": "00_control/weights/sovereign_harmonic_x_rlvf_sae_weights.sh4z",
+      "sha256": "576ae45985009729952501ee9da2798562a39cf5d5a9aeb87a78420628c18cf7",
+      "version": 7140
+    }
+  },
+  "doi_osf": "10.17605/OSF.IO/2XQ5Z",
+  "doi_zenodo": "10.5281/zenodo.23651696",
+  "generated_at_utc": "2026-11-19T00:15:17Z",
+  "title": "SovereignHarmonicWeightsManifest",
+  "version": "v73.2.1",
+  "zero_unmeasured_mandate": "ENFORCED"
 }

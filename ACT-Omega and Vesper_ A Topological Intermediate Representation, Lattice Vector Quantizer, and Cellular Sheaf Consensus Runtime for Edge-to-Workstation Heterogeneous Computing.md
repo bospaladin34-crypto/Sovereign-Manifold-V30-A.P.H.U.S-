@@ -483,8 +483,8 @@ Following the foundational **v29.0** (`10 x Chair-44 = 440` shards) and **v31.0 
 1. **SH4Z v3101 $\rightarrow$ SH4Z v4900 80-Sector Dual-Word `u128` Manifold (`133,120 B`)**:
    - The binary `.e8z` container (`00_control/weights/sovereign_harmonic_iv_v4000.e8z`) scaled to **80 Active Sectors (`S00..S79`)** governed by a 128-bit dual-word mask (`mask_lo = 0xFFFFFFFFFFFFFFFF`, `mask_hi = 0x000000000000FFFF`) across **`2,080 x 64 B = 133,120 B`** cachelines:
      - **Sectors `S00..S47`**: Primary Host Anchor (`Lenovo LOQ 15`, `Intel i5-12450HX` AVX2 + `NVIDIA RTX 3050 6GB`).
-     - **Sectors `S48..S63`**: Primary Edge Verifier & 24D Sensor Node (`Google Pixel 10`, `Tensor G5`, ADB `58170DLCR0004V`).
-     - **Sectors `S64..S79`**: Secondary Edge Speculative Drafter (`Google Pixel 8`, `Tensor G3 P8-APEX`, ADB `3A121FDJH00BW5`, `4.00 MB` Mali-G715 L2 Cache Pinning).
+     - **Sectors `S48..S63`**: Primary Edge Verifier & 24D Sensor Node (`Google Pixel 10`, `Tensor G5`, ADB `<DYNAMIC_ADB_SERIAL>`).
+     - **Sectors `S64..S79`**: Secondary Edge Speculative Drafter (`Google Pixel 8`, `Tensor G3 P8-APEX`, ADB `<DYNAMIC_ADB_SERIAL>`, `4.00 MB` Mali-G715 L2 Cache Pinning).
 2. **1:1 Shard-to-Neuron Connectome Bijection (`42,240` 3-Compartment Dendritic Neurons / `5,406,720 B` SHM)**:
    - Expanded from `440` (`v30`) and `21,120` Core Shards (`03_vault/shards/shard_00001..21120.binshard` $\leftrightarrow$ `neurons_v4000.npage`, `2,703,360 B`) to **`42,240` Total Shards & 3-Compartment Dendritic Pyramidal Neurons** (`03_vault/shards_expansion/shard_21121..42240.binshard` + Core $\leftrightarrow$ `00_control/weights/neurons_v4600_42240.npage` & `neurons_v4400_p8_shm.npage`, **`5,406,720 B = 42,240 x 128 B`**, **`960 x Chair-44` columns**, **`337,920` active BDH/KAN synapses**).
 3. **Production Socket & Edge Cloud Topology (`:8097` & `:5173` + Cloudflare HTTP/2 Named Tunnel + Durable Objects + 10-Table D1)**:

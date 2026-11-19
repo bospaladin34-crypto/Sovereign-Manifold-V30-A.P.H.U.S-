@@ -39,7 +39,7 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Mutex;
 use std::time::{Instant, SystemTime, UNIX_EPOCH};
 
-pub const V55_PIXEL8_DEVICE_SERIAL: &str = "3A121FDJH00BW5";
+pub const V55_PIXEL8_DEVICE_LABEL: &str = "EDGE-2-PIXEL8-SHIBA";
 pub const V55_PIXEL8_DEVICE_CODENAME: &str = "shiba (Google Pixel 8 - Tensor G3 zuma)";
 pub const V55_PIXEL8_ANDROID_BUILD: &str = "CP41.260831.019 (Android 17 QPR2 Beta)";
 pub const V55_STOCK_INIT_BOOT_SHA256: &str = "84ECFA41044D301D096B31657430F693D605C88DB77969E8B604B804C8D5E55D";
@@ -84,11 +84,7 @@ fn v55_parse_field(input: &str, field_key: &str) -> String {
 
 // Helper: Escape JSON special characters without square brackets
 fn v55_escape_clean(s: &str) -> String {
-    s.replace('\\', "\\\\")
-        .replace('"', "\\\"")
-        .replace('\n', "\\n")
-        .replace('\r', "\\r")
-        .replace('\t', "\\t")
+    crate::v61_gemma4_multimodal_ple_speculative_cascade_and_mcp_suite::v61_escape_clean(s)
 }
 
 // Measured telemetry data structure from live Pixel 8 hardware
@@ -172,18 +168,61 @@ fn v55_current_time_ms() -> u64 {
     }
 }
 
-// Resolve canonical USB serial ("3A121FDJH00BW5" or "58170DLCR0004V") to the active USB, Wireless TCP (:5555), Wireless TLS, or mDNS ADB transport
-pub fn v55_resolve_adb_target(serial: &str) -> String {
-    if let Ok(out) = Command::new("adb").arg("devices").arg("-l").output() {
+// Read Edge-1 (pixel10) or Edge-2 (pixel8) ADB serial from external host config C:\Users\Nbell\.act_omega_adb_devices.json
+pub fn v55_read_external_adb_serial(role: &str) -> Option<String> {
+    let raw = fs::read_to_string("C:\\Users\\Nbell\\.act_omega_adb_devices.json").ok()?;
+    let key = if role == "pixel10" || role == "edge1" {
+        "\"pixel10\""
+    } else {
+        "\"pixel8\""
+    };
+    let pos = raw.find(key)?;
+    let section = raw.get(pos..)?;
+    let end_brace = section.find('}')?;
+    let block = section.get(..=end_brace)?;
+    let ser = v55_parse_field(block, "serial");
+    let trimmed = ser.trim();
+    if trimmed.is_empty() {
+        None
+    } else {
+        Some(String::from(trimmed))
+    }
+}
+
+fn v55_adb_exe_path() -> &'static str {
+    if fs::metadata("C:/Users/Nbell/AppData/Local/Android/Sdk/platform-tools/adb.exe").is_ok() {
+        "C:/Users/Nbell/AppData/Local/Android/Sdk/platform-tools/adb.exe"
+    } else {
+        "adb"
+    }
+}
+
+// Resolve Edge-1 (pixel10) or Edge-2 (pixel8) active ADB transport via env, external config, or live adb devices -l model hints
+pub fn v55_resolve_adb_target_by_role(role: &str) -> String {
+    let is_p8 = role != "pixel10" && role != "edge1";
+    let env_key = if is_p8 {
+        "SOVEREIGN_PIXEL8_ADB_SERIAL"
+    } else {
+        "SOVEREIGN_PIXEL10_ADB_SERIAL"
+    };
+    if let Ok(val) = std::env::var(env_key) {
+        let trimmed = val.trim();
+        if !trimmed.is_empty() {
+            return String::from(trimmed);
+        }
+    }
+    let ext_serial = v55_read_external_adb_serial(role);
+    if let Ok(out) = Command::new(v55_adb_exe_path()).arg("devices").arg("-l").output() {
         if out.status.success() {
             let text = String::from_utf8_lossy(&out.stdout);
-            for line in text.lines() {
-                let t = line.trim();
-                if t.starts_with(serial) && t.contains(" device ") {
-                    return serial.to_string();
+            if let Some(ref ser) = ext_serial {
+                for line in text.lines() {
+                    let t = line.trim();
+                    if t.starts_with(ser.as_str()) && t.contains(" device ") {
+                        return ser.clone();
+                    }
                 }
             }
-            let is_p8 = serial == "3A121FDJH00BW5";
             for line in text.lines() {
                 let t = line.trim();
                 if !t.contains(" device ") {
@@ -194,18 +233,40 @@ pub fn v55_resolve_adb_target(serial: &str) -> String {
                         || t.contains("product:shiba")
                         || t.contains("192.168.137.8:")
                         || t.contains("192.168.44.8:")
-                        || t.contains(serial)
+                        || ext_serial.as_ref().map(|s| t.contains(s.as_str())).unwrap_or(false)
                 } else {
                     t.contains("model:Pixel_10")
                         || t.contains("product:frankel")
                         || t.contains("192.168.137.10:")
                         || t.contains("192.168.44.10:")
-                        || t.contains(serial)
+                        || ext_serial.as_ref().map(|s| t.contains(s.as_str())).unwrap_or(false)
                 };
                 if matches_device {
                     if let Some(first_tok) = t.split_whitespace().next() {
                         return first_tok.to_string();
                     }
+                }
+            }
+        }
+    }
+    ext_serial.unwrap_or_default()
+}
+
+// Resolve canonical USB serial or logical node role to the active USB, Wireless TCP (:5555), Wireless TLS, or mDNS ADB transport
+pub fn v55_resolve_adb_target(serial: &str) -> String {
+    if serial == "pixel8" || serial == "EDGE-2-PIXEL8-SHIBA" {
+        return v55_resolve_adb_target_by_role("pixel8");
+    }
+    if serial == "pixel10" || serial == "EDGE-1-PIXEL10-G5" {
+        return v55_resolve_adb_target_by_role("pixel10");
+    }
+    if let Ok(out) = Command::new(v55_adb_exe_path()).arg("devices").arg("-l").output() {
+        if out.status.success() {
+            let text = String::from_utf8_lossy(&out.stdout);
+            for line in text.lines() {
+                let t = line.trim();
+                if !serial.is_empty() && t.starts_with(serial) && t.contains(" device ") {
+                    return serial.to_string();
                 }
             }
         }
@@ -266,7 +327,20 @@ pub fn v55_probe_live_pixel8_hardware() -> V55Pixel8LiveTelemetry {
         }
     }
 
-    let resolved_target = v55_resolve_adb_target(V55_PIXEL8_DEVICE_SERIAL);
+    let resolved_target = v55_resolve_adb_target_by_role("pixel8");
+    if resolved_target.is_empty() {
+        return V55Pixel8LiveTelemetry {
+            is_online: false,
+            policy0_cur_freq_khz: 0,
+            policy4_cur_freq_khz: 0,
+            policy8_cur_freq_khz: 0,
+            thermal_zone0_temp_c: 0.0,
+            active_slot: String::new(),
+            selinux_context: String::new(),
+            root_uid: 9999,
+            raw_id_string: String::new(),
+        };
+    }
     let cmd = "cat /sys/devices/system/cpu/cpufreq/policy0/scaling_cur_freq; cat /sys/devices/system/cpu/cpufreq/policy4/scaling_cur_freq; cat /sys/devices/system/cpu/cpufreq/policy8/scaling_cur_freq; cat /sys/class/thermal/thermal_zone0/temp; getprop ro.boot.slot_suffix; id";
     let adb_arg = format!("echo '{}' | ksud debug su", cmd);
 
@@ -352,7 +426,7 @@ pub fn handle_hardware_audit_api() -> String {
     if !tel.is_online {
         return format!(
             "{{\"status\":\"UNMEASURED/OFFLINE\",\"device_serial\":\"{}\",\"reason\":\"PIXEL8_DEVICE_UNREACHABLE\",\"elapsed_us\":{:.2}}}",
-            V55_PIXEL8_DEVICE_SERIAL,
+            V55_PIXEL8_DEVICE_LABEL,
             t0.elapsed().as_secs_f64() * 1_000_000.0
         );
     }
@@ -369,7 +443,7 @@ pub fn handle_hardware_audit_api() -> String {
 
     format!(
         "{{\"status\":\"MEASURED_PIXEL8_ROOT_HARDWARE_AUDIT_OK\",\"device_serial\":\"{}\",\"device_codename\":\"{}\",\"android_build\":\"{}\",\"active_slot\":\"{}\",\"stock_init_boot_sha256\":\"{}\",\"slot_b_rollback_invariant_verified\":{},\"patched_init_boot_sha256\":\"{}\",\"root_credential\":\"uid=0(root) gid=0(root) groups=0(root) context={}\",\"ksu_version\":\"ksud 3.4.2 (uapi: 5, ksu fd: 6)\",\"edgetpu_soc\":\"/dev/edgetpu-soc (487,1 u:object_r:edgetpu_device:s0)\",\"edgetpu_limited\":\"/dev/edgetpu-limited (487,2 u:object_r:edgetpu_device:s0)\",\"gpu_mali0\":\"/dev/mali0 (10,86 u:object_r:gpu_device:s0)\",\"gpu_l2_cache_pinned_mb\":4.00,\"kvm\":\"/dev/kvm (10,232 u:object_r:kvm_device:s0)\",\"cpu_policy0_cur_freq_khz\":{},\"cpu_policy4_cur_freq_khz\":{},\"cpu_policy8_cur_freq_khz\":{},\"thermal_zone0_temp_celsius\":{:.1},\"unlocked_accelerators\":\x5b\"OPEN_ROOT_RW_VERIFIED: /dev/mali0 (10,86 u:object_r:gpu_device:s0)\",\"OPEN_ROOT_RW_VERIFIED: /dev/kvm (10,232 u:object_r:kvm_device:s0)\",\"OPEN_ROOT_RW_VERIFIED: /dev/edgetpu-soc (487,1 u:object_r:edgetpu_device:s0)\",\"OPEN_ROOT_RW_VERIFIED: /dev/edgetpu-limited (487,2 u:object_r:edgetpu_device:s0)\"\x5d,\"elapsed_us\":{:.2}}}",
-        V55_PIXEL8_DEVICE_SERIAL,
+        V55_PIXEL8_DEVICE_LABEL,
         V55_PIXEL8_DEVICE_CODENAME,
         V55_PIXEL8_ANDROID_BUILD,
         slot,
@@ -423,7 +497,7 @@ pub fn handle_governor_api(post_body: &str) -> String {
     if !tel.is_online {
         return format!(
             "{{\"status\":\"UNMEASURED/OFFLINE\",\"device_serial\":\"{}\",\"reason\":\"PIXEL8_DEVICE_UNREACHABLE\",\"elapsed_us\":{:.2}}}",
-            V55_PIXEL8_DEVICE_SERIAL,
+            V55_PIXEL8_DEVICE_LABEL,
             t0.elapsed().as_secs_f64() * 1_000_000.0
         );
     }
@@ -432,7 +506,7 @@ pub fn handle_governor_api(post_body: &str) -> String {
 
     format!(
         "{{\"status\":\"MEASURED_PIXEL8_GOVERNOR_OK\",\"device_serial\":\"{}\",\"governor_mode\":\"{}\",\"active_governor\":\"sched_pixel\",\"policy0_khz\":{},\"policy4_khz\":{},\"policy8_khz\":{},\"mali_gpu_l2_pinned_mb\":4.00,\"thermal_temp_celsius\":{:.1},\"governor_policy\":\"OWNED_SILICON_STABLE\",\"elapsed_us\":{:.2}}}",
-        V55_PIXEL8_DEVICE_SERIAL,
+        V55_PIXEL8_DEVICE_LABEL,
         active_mode,
         tel.policy0_cur_freq_khz,
         tel.policy4_cur_freq_khz,
@@ -457,7 +531,7 @@ pub fn v55_tool185_ksud_root_credential_and_selinux_gate(_input: &str) -> String
 
     format!(
         "{{\"status\":\"MEASURED_KSUD_ROOT_CREDENTIAL_VERIFIED\",\"tool_id\":185,\"tool\":\"ksud_root_credential_and_selinux_gate\",\"device_serial\":\"{}\",\"uid\":{},\"gid\":0,\"selinux_context\":\"{}\",\"ksu_version\":\"ksud 3.4.2 (uapi: 5, ksu fd: 6)\",\"raw_id\":\"{}\",\"elapsed_us\":{:.2}}}",
-        V55_PIXEL8_DEVICE_SERIAL,
+        V55_PIXEL8_DEVICE_LABEL,
         tel.root_uid,
         if !tel.selinux_context.is_empty() { &tel.selinux_context } else { "u:r:ksu:s0" },
         v55_escape_clean(&tel.raw_id_string),
@@ -483,7 +557,7 @@ pub fn v55_tool186_stock_slot_b_rollback_invariance_sentry(_input: &str) -> Stri
         format!(
             "{{\"status\":\"{}\",\"tool_id\":186,\"tool\":\"stock_slot_b_rollback_invariance_sentry\",\"device_serial\":\"{}\",\"target_slot\":\"_b\",\"stock_init_boot_sha256\":\"{}\",\"expected_reference_sha256\":\"{}\",\"stock_init_boot_bytes\":{},\"invariance_verified\":{},\"rollback_command\":\"fastboot --set-active=b\",\"rollback_safe\":{},\"elapsed_us\":{:.2}}}",
             if inv_ok { "MEASURED_SLOT_B_ROLLBACK_INVARIANT_LOCKED" } else { "STOCK_BOOT_HASH_MISMATCH" },
-            V55_PIXEL8_DEVICE_SERIAL,
+            V55_PIXEL8_DEVICE_LABEL,
             measured_hash,
             V55_STOCK_INIT_BOOT_SHA256,
             file_len,
@@ -494,7 +568,7 @@ pub fn v55_tool186_stock_slot_b_rollback_invariance_sentry(_input: &str) -> Stri
     } else {
         format!(
             "{{\"status\":\"UNMEASURED/OFFLINE\",\"tool_id\":186,\"tool\":\"stock_slot_b_rollback_invariance_sentry\",\"device_serial\":\"{}\",\"target_slot\":\"_b\",\"stock_init_boot_sha256\":\"UNMEASURED/OFFLINE\",\"stock_init_boot_bytes\":0,\"invariance_verified\":false,\"rollback_command\":\"fastboot --set-active=b\",\"rollback_safe\":false,\"elapsed_us\":{:.2}}}",
-            V55_PIXEL8_DEVICE_SERIAL,
+            V55_PIXEL8_DEVICE_LABEL,
             t0.elapsed().as_secs_f64() * 1_000_000.0
         )
     }
@@ -526,7 +600,7 @@ pub fn v55_tool187_active_slot_a_boot_hash_verifier(_input: &str) -> String {
 
     format!(
         "{{\"status\":\"MEASURED_SLOT_A_PATCHED_BOOT_VERIFIED\",\"tool_id\":187,\"tool\":\"active_slot_a_boot_hash_verifier\",\"device_serial\":\"{}\",\"active_slot\":\"{}\",\"patched_allowshell_sha\":\"{}\",\"on_disk_patched_sha\":\"{}\",\"ksu_uapi\":5,\"ksu_fd\":6,\"kernel_lkm\":\"aarch64_android14-6.1_kernelsu.ko\",\"elapsed_us\":{:.2}}}",
-        V55_PIXEL8_DEVICE_SERIAL,
+        V55_PIXEL8_DEVICE_LABEL,
         active_slot,
         patched_hash,
         disk_hash_str,
@@ -737,7 +811,7 @@ pub fn v55_tool199_pixel8_master_certification_artifact_verifier(_input: &str) -
     if cert_present && inv_ok {
         format!(
             "{{\"status\":\"MEASURED_MASTER_CERTIFICATION_VALIDATED\",\"tool_id\":199,\"tool\":\"pixel8_master_certification_artifact_verifier\",\"device_serial\":\"{}\",\"cert_artifact_present\":true,\"stock_init_boot_sha256\":\"{}\",\"patched_allowshell_sha\":\"{}\",\"unlocked_accelerators_count\":4,\"invariance_verified\":true,\"elapsed_us\":{:.2}}}",
-            V55_PIXEL8_DEVICE_SERIAL,
+            V55_PIXEL8_DEVICE_LABEL,
             measured_stock,
             measured_patched,
             t0.elapsed().as_secs_f64() * 1_000_000.0
@@ -745,7 +819,7 @@ pub fn v55_tool199_pixel8_master_certification_artifact_verifier(_input: &str) -
     } else {
         format!(
             "{{\"status\":\"UNMEASURED/OFFLINE\",\"tool_id\":199,\"tool\":\"pixel8_master_certification_artifact_verifier\",\"device_serial\":\"{}\",\"cert_artifact_present\":{},\"stock_init_boot_sha256\":\"{}\",\"patched_allowshell_sha\":\"{}\",\"unlocked_accelerators_count\":0,\"invariance_verified\":{},\"elapsed_us\":{:.2}}}",
-            V55_PIXEL8_DEVICE_SERIAL,
+            V55_PIXEL8_DEVICE_LABEL,
             cert_present,
             measured_stock,
             measured_patched,
@@ -854,7 +928,14 @@ pub fn v55_tool203_live_adb_ksud_debug_su_command_bridge(input: &str) -> String 
         }
     }
 
-    let resolved_target = v55_resolve_adb_target(V55_PIXEL8_DEVICE_SERIAL);
+    let resolved_target = v55_resolve_adb_target_by_role("pixel8");
+    if resolved_target.is_empty() {
+        return format!(
+            "{{\"status\":\"UNMEASURED/OFFLINE\",\"tool_id\":203,\"tool\":\"live_adb_ksud_debug_su_command_bridge\",\"cmd\":\"{}\",\"error\":\"PIXEL8_ADB_TARGET_UNRESOLVED\",\"elapsed_us\":{:.2}}}",
+            v55_escape_clean(&cmd),
+            t0.elapsed().as_secs_f64() * 1_000_000.0
+        );
+    }
     let adb_arg = format!("echo '{}' | ksud debug su", cmd);
     let output_res = Command::new("adb")
         .arg("-s")

@@ -19,7 +19,7 @@ All **18 live MCP tools** (`9` original endpoints \+ `9` new `CHAIN 280` endpoin
 | **14** | **`duckdb_analytical_sql_query`** | `Tool 276` (`#25,937`) | Native `DuckDB v1.5.6 (Variegata)` columnar SQL over `.e8z` slice `E38768E3...41DA88` (`1.18 s`) \| `tool_276_1793468501767801.json` (`5c4c4dd6...b89a618d`) |
 | **15** | **`lean4_formal_proof_verifier`** | `Tool 277` (`#25,929`) | **`700/700` Lean 4 theorems verified** (`0` `sorry`, `207,049 B`) in **`327.82 ms`** \| `tool_277_1793467310986561.json` (`c6e0692d...3b882280`) |
 | **16** | **`haskell_layer15_algebra_codegen`** | `Tool 278` (`#25,928`) | `sovereign_algebra_hs.exe` (`11.40 MiB`) emitted `21,883 B` with **`0` square brackets** (`336.89 ms`) \| `tool_278_1793467216339140.json` (`413081ea...520a4da8`) |
-| **17** | **`dual_pixel_edge_hardware_governor`** | `Tool 279` (`#25,939`) | **Pixel 8 (`3A121FDJH00BW5`)** Online at **`41.00 C`**, `2.147 GHz` Prime, `4.00 MB` Mali-G715 L2 pinned \+ **Pixel 10 (`58170DLCR0004V`)** (`310.95 ms`) \| `tool_279_1793468607940513.json` (`ce4de56d...89c1df44`) |
+| **17** | **`dual_pixel_edge_hardware_governor`** | `Tool 279` (`#25,939`) | **Pixel 8 (`<DYNAMIC_ADB_SERIAL>`)** Online at **`41.00 C`**, `2.147 GHz` Prime, `4.00 MB` Mali-G715 L2 pinned \+ **Pixel 10 (`<DYNAMIC_ADB_SERIAL>`)** (`310.95 ms`) \| `tool_279_1793468607940513.json` (`ce4de56d...89c1df44`) |
 | **18** | **`chain280_master_certification`** & **`unified_8domain_chain280_dispatcher`** | `Tool 280` (`#25,940–25,941`) | **`280/280` Tools**, **`8` Unified Domains**, **`19.96B` Gemma 4 weights (`4.937 GiB` `.sh4z`)** certified in **`7.86 ms`** \| `tool_280_1793468636163280.json` (`f5aad052...1979cfc2`) |
 
 ## 2\. Windows 11 Standalone Desktop Swarm Drone (`VesperArachneSwarmDroneOverlay.exe`)

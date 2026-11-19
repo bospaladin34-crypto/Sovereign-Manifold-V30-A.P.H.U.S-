@@ -15,7 +15,7 @@ Adding your `3 TB HDD` (`F:\`) alongside your two YubiKeys gives ACT-Omega a tru
 | **`C:\` (Internal NVMe)** | High-Speed PCIe NVMe SSD | **Hot Active Workspace:** `C:\sovereign_manifold_v31`, `C:\ACT_OMEGA_7777D_ORTHOPLEX_LAB`, `C:\ACT_OMEGA_MODELS` | Read/Write during active development & live `:8097` MCP inference. |
 | **`E:\` (`ORICO` External SSD)** | USB 3.2 SSD | **Warm Staging & Bridge Vault:** `E:\ACT_OMEGA_7777D_AV_ENGINE`, `E:\ACT_OMEGA_COLD_VAULT\7777d_orthoplex_receipts`, `VESPER-OS` shared partition | Append-only receipts & high-bandwidth AV / model staging. |
 | **`F:\` (`3 TB HDD`)** | **3,000 GB Spinning HDD** | **Immutable Decadic Epoch Vault (`F:\ACT_OMEGA_IMMUTABLE_EPOCH_ARCHIVES\`):** Full project + model + receipt snapshots at every **10-version milestone (`v40`, `v50`, `v60`, `v70`, ...)** | **WORM (Write-Once, Read-Many):** Sealed with `+R` Read-Only attributes, `IMMUTABLE_LOCK.seal`, Merkle SHA-256 root, and YubiKey signature. |
-| **`Pixel 8` (`3A121FDJH00BW5`)** | On-Device UFS 3.1 (`/data/adb/...`) | **Edge Execution Mirror:** `gemma-4-E4B-it-full.sh4z` (`1.978 GiB`) + `orthoplex_7777d\` (`154 KB`) | Verified against Host/YubiKey Merkle root on USB sync. |
+| **`Pixel 8` (`<DYNAMIC_ADB_SERIAL>`)** | On-Device UFS 3.1 (`/data/adb/...`) | **Edge Execution Mirror:** `gemma-4-E4B-it-full.sh4z` (`1.978 GiB`) + `orthoplex_7777d\` (`154 KB`) | Verified against Host/YubiKey Merkle root on USB sync. |
 
 ---
 

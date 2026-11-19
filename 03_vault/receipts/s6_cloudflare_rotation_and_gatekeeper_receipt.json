@@ -1,0 +1,69 @@
+{
+  "receipt_id": "s6_cloudflare_rotation_and_gatekeeper_receipt",
+  "version": "v73.2.2",
+  "item": "Item #5 (S6 Cloudflare Credential Rotation, Wrangler Parameterization & Repo-Wide Gatekeeper Scan)",
+  "recorded_at_utc": "2026-11-19T05:37:00Z",
+  "overall_status": "PARTIAL",
+  "reason_for_partial": "D1 database, Hyperdrive config, and KV namespace were rotated to fresh instances and old exposed instances were permanently deleted; Cloudflare tenant account_id is immutable in-place without migrating to a separate Cloudflare tenant account.",
+  "external_credentials_store": "C:\\Users\\Nbell\\.act_omega_cloudflare_ids.json",
+  "rotated_resources": {
+    "d1_database": {
+      "status": "ROTATED_AND_OLD_DELETED",
+      "old_name": "act_omega_d1_vault",
+      "old_id_sha256": "b3dda0afb2765df03483d88deaa8e936037104d521a9b138c14c9fe5c66ecc6b",
+      "new_name": "act_omega_d1_vault_v7322",
+      "new_id_sha256": "1cf8a842576926000b8604f237a21c39c3824b513c7590b3e3a83f5fc4a4b62d",
+      "tables_migrated": 11,
+      "migration_queries_executed": 6884
+    },
+    "hyperdrive": {
+      "status": "ROTATED_AND_OLD_DELETED",
+      "old_name": "act-omega-duckdb-hyperdrive",
+      "old_id_sha256": "f450a1f2cfb7ce81a91bc8daf0625e50767580c3965bbcaf48ce078ad238a15",
+      "new_name": "act-omega-duckdb-hyperdrive-v7322",
+      "new_id_sha256": "a965a24de15cd68af2462952bc5e5015060c401f9a640c5b98b3d2805d430836"
+    },
+    "workers_kv": {
+      "status": "ROTATED_AND_OLD_DELETED",
+      "old_title": "ACT_OMEGA_KV",
+      "old_id_sha256": "0032e2e08d8ffda0ba553ebfceea7b57d2edbbeae4ee3761f074aeed54497aeb",
+      "new_title": "ACT_OMEGA_KV_V7322",
+      "new_id_sha256": "7dffc307ff4cb8582f58076f39fa3804c5fb8317fd4fab503bec0490db644a15"
+    },
+    "account_id": {
+      "status": "PARTIAL",
+      "immutable_in_place": true,
+      "id_sha256": "8e6a8f04e18e666debd249a7e2664148277a909320ec58bf1051e8453767fe1e",
+      "note": "Cloudflare tenant account_id cannot be rotated in-place without migrating the entire account, zone, tunnel, and VPC mesh to a separate Cloudflare tenant account."
+    }
+  },
+  "wrangler_parameterization": {
+    "tokenized_configs": [
+      "wrangler.toml",
+      "00_control/cloudflare_edge/wrangler.toml",
+      "00_control/cloudflare_edge/wrangler.workflow.toml"
+    ],
+    "d1_name_placeholder": "<EXTERNAL_D1_DATABASE_NAME>",
+    "deploy_script": "00_control/cloudflare_edge/Deploy-CloudflareEdge.ps1",
+    "config_scopes_supported": [
+      "edge_and_workflow",
+      "edge",
+      "workflow",
+      "root",
+      "all"
+    ],
+    "root_deploy_restriction_documented": true,
+    "root_deploy_note": "Direct wrangler deploy from repo root is restricted because root wrangler.toml holds <EXTERNAL_*> tokens and must be rendered via Deploy-CloudflareEdge.ps1 -ConfigScope root."
+  },
+  "gatekeeper_repo_wide_scan": {
+    "script": "00_control/Invoke-BrutalAgentGatekeeper.ps1",
+    "function": "Test-CloudflareIdLeakScan",
+    "scope": "git ls-files (all tracked repository files + wrangler*.toml literal hex check)",
+    "active_cf_id_leaks": 0,
+    "retired_sha256_leaks": 0,
+    "retired_prefix_leaks": 0,
+    "wrangler_literal_hex_leaks": 0,
+    "negative_injection_test_script": "tests/e2e/test_m3_gatekeeper_negative.ps1",
+    "negative_injection_passed": true
+  }
+}

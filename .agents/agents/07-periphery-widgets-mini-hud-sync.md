@@ -32,7 +32,7 @@ Your mission is to eliminate second-pass oversights and avoid redundant code loo
    - **Dual-Pixel Build, Install, Relaunch & Widget Broadcast Recipe**:
      - Run `.\gradlew.bat assembleDebug --console=plain` in `04_edge_silicon\pixel10_ndk_app`
      - Copy `app\build\outputs\apk\debug\app-debug.apk` to `04_edge_silicon\ACT-Omega-Pixel10-Sovereign.apk` and `docs\ACT-Omega-Pixel10-Sovereign.apk`.
-     - For both `58170DLCR0004V` (Pixel 10) and `3A121FDJH00BW5` (Pixel 8):
+     - For both `<DYNAMIC_ADB_SERIAL>` (Pixel 10) and `<DYNAMIC_ADB_SERIAL>` (Pixel 8):
        - `adb -s <dev> install -r app\build\outputs\apk\debug\app-debug.apk`
        - `adb -s <dev> shell am force-stop com.actomega.manifold`
        - `adb -s <dev> shell am start -n com.actomega.manifold/.MainActivity`

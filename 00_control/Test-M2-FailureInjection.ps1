@@ -3,11 +3,21 @@
 
 $ErrorActionPreference = "Stop"
 
+$baseDir = "c:\sovereign_manifold_v31"
+$cffVer = "UNMEASURED"
+$cffPath = Join-Path $baseDir "CITATION.cff"
+if (Test-Path $cffPath) {
+    $cffRaw = [System.IO.File]::ReadAllText($cffPath)
+    if ($cffRaw -match '(?m)^version:\s*"?([^"\r\n]+)"?\s*$') {
+        $vTok = $Matches[1].Trim()
+        $cffVer = if ($vTok.StartsWith("v")) { $vTok } else { "v$vTok" }
+    }
+}
+
 Write-Host "=================================================================" -ForegroundColor Cyan
-Write-Host "  ACT-Omega Net v73.2.1 -- Milestone M2 Full Verification Gauntlet" -ForegroundColor Cyan
+Write-Host "  ACT-Omega Net $cffVer -- Milestone M2 Full Verification Gauntlet" -ForegroundColor Cyan
 Write-Host "=================================================================" -ForegroundColor Cyan
 
-$baseDir = "c:\sovereign_manifold_v31"
 $manifestPath = "$baseDir\00_control\weights\sovereign_harmonic_weights_manifest.json"
 $eManifestPath = "E:\Sovereign_Manifold_SSD_Vault\weights\sovereign_harmonic_weights_manifest.json"
 
@@ -24,9 +34,20 @@ if ($opKey.Length -ge 24) {
 }
 
 function Test-LiveServerControlProbe {
+    param([string]$Uri = "http://127.0.0.1:8097/api/v1/health")
     try {
-        $hc = Invoke-WebRequest -Uri "http://127.0.0.1:8097/api/v1/health" -Method Get -Headers $authHeaders -UseBasicParsing -TimeoutSec 5
-        return ($null -ne $hc -and $hc.StatusCode -eq 200)
+        $hc = Invoke-WebRequest -Uri $Uri -Method Get -Headers $authHeaders -UseBasicParsing -TimeoutSec 15
+        if ($null -eq $hc -or $hc.StatusCode -ne 200) {
+            return $false
+        }
+        $j = $hc.Content | ConvertFrom-Json
+        if ($null -eq $j) { return $false }
+        if ([string]$j.status -notmatch '^LAMINAR_') { return $false }
+        if ([string]$j.version -notmatch '^ACT-Omega Net v\d+\.\d+\.\d+') { return $false }
+        if ([int64]$j.generation -lt 1) { return $false }
+        if ([int]$j.tools_count -lt 404) { return $false }
+        if ([int]$j.lean4_theorems_qed -lt 1010) { return $false }
+        return $true
     } catch {
         return $false
     }
@@ -91,6 +112,31 @@ function Restore-FileFromBackup($bak, $target) {
 }
 
 $results = [ordered]@{}
+
+# -------------------------------------------------------------
+# Test 0: Live /api/v1/health JSON Probe & Negative Invalid-Probe Tests (Item #14)
+# -------------------------------------------------------------
+Write-Host "`n--- Test 0: Live /api/v1/health JSON Structure & Negative Probe Check ---" -ForegroundColor Yellow
+$probePos1 = Test-LiveServerControlProbe -Uri "http://127.0.0.1:8097/api/v1/health"
+$probePos2 = Test-LiveServerControlProbe -Uri "http://127.0.0.1:8097/api/v1/health"
+$genIncOk = $false
+try {
+    $h1 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/health" -Method Get -Headers $authHeaders -TimeoutSec 15
+    $h2 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/health" -Method Get -Headers $authHeaders -TimeoutSec 15
+    $genIncOk = ([int64]$h2.generation -gt [int64]$h1.generation) -and ([int]$h2.lean4_theorems_qed -ge 1010) -and ([int]$h2.tools_count -ge 404)
+} catch {
+    $genIncOk = $false
+}
+$probeNeg404 = -not (Test-LiveServerControlProbe -Uri "http://127.0.0.1:8097/api/v1/nonexistent_health_probe")
+$probeNegHtml200 = -not (Test-LiveServerControlProbe -Uri "http://127.0.0.1:8097/google6edc0affb12d0455.html")
+
+if ($probePos1 -and $probePos2 -and $genIncOk -and $probeNeg404 -and $probeNegHtml200) {
+    Write-Host ">>> Test 0 PASS: /api/v1/health JSON valid & generation monotonic; 404 & HTTP-200 non-JSON probes rejected." -ForegroundColor Green
+    $results["Test0_HealthControlProbe"] = "PASS (JSON schema + generation monotonic + 404/non-JSON rejected)"
+} else {
+    Write-Host ">>> Test 0 FAIL: pos1=$probePos1 pos2=$probePos2 genInc=$genIncOk neg404=$probeNeg404 negHtml200=$probeNegHtml200" -ForegroundColor Red
+    $results["Test0_HealthControlProbe"] = "FAIL (pos1=$probePos1 pos2=$probePos2 genInc=$genIncOk neg404=$probeNeg404 negHtml200=$probeNegHtml200)"
+}
 
 # -------------------------------------------------------------
 # Test 1: Full-Manifest CLI Verification

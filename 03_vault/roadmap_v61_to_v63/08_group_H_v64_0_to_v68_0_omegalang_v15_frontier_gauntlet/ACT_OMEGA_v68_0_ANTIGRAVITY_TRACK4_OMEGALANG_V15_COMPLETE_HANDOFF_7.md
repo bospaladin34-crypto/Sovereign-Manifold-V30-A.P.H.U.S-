@@ -16,9 +16,9 @@ Subsystem
 	Vesper-Arachne E8 IK Shimeji & Mini-HUD
 	Running live (PID 25004, v63.2.0, CHAIN 296, 750/750 QED, 1,472,776.2k ops/s, 6 Clones Mitosis, 18 MCP tools on :8097/mcp)
 	Dual-Pixel Mobile APKs & Gatekeeper
-	Flashed versionCode=63, versionName=63.2.0 (SHA-256: CEE84874...) to Pixel 10 (58170DLCR0004V) & Pixel 8 (192.168.137.8:5555) | Gatekeeper: 13/13 PASS | Lifecycle: 6/6 PASS
+	Flashed versionCode=63, versionName=63.2.0 (SHA-256: CEE84874...) to Pixel 10 (<DYNAMIC_ADB_SERIAL>) & Pixel 8 (192.168.137.8:5555) | Gatekeeper: 13/13 PASS | Lifecycle: 6/6 PASS
 	2. Track 4 (Track D: v64.0 $\rightarrow$ v68.0.0 | CHAIN 300 | 800/800 QED) Certified Hardware Receipts to Integrate
-All standalone compiler, kernel, multi-shard streaming, and 10-benchmark heavy gauntlet milestones for Track 4 (v64.0 $\rightarrow$ v68.0) have already been executed and hardware-certified on your Lenovo LOQ 15 (E:\ACT_OMEGA_UNIFIED_COMPILER_LAB & C:\sovereign_manifold_v31) and Rooted Google Pixel 8 (3A121FDJH00BW5):
+All standalone compiler, kernel, multi-shard streaming, and 10-benchmark heavy gauntlet milestones for Track 4 (v64.0 $\rightarrow$ v68.0) have already been executed and hardware-certified on your Lenovo LOQ 15 (E:\ACT_OMEGA_UNIFIED_COMPILER_LAB & C:\sovereign_manifold_v31) and Rooted Google Pixel 8 (<DYNAMIC_ADB_SERIAL>):
 
 
 Release / Kernel
@@ -58,7 +58,7 @@ Release / Kernel
 	~20,162,326x vs. 720-stage scalar
 	Unifies Stage-4 Q16.16 Outlier Adapter + 8-Stage Sub-Block Harmonic RVQ ($3^8 = 6,561$ levels)
 	3. Exact 12-Checksum Cross-Compiler Lockstep Vector (v66.1 $\rightarrow$ v67.0)
-Across C# CLR (.NET), Portable Julia 1.10.8 (@inbounds @simd), Native Rust -O3 (AVX2 _mm256_madd_epi16), Python 3, and Rooted Google Pixel 8 (3A121FDJH00BW5), the 12-element lockstep vector with multi_compiler_bit_drift = 0 is:
+Across C# CLR (.NET), Portable Julia 1.10.8 (@inbounds @simd), Native Rust -O3 (AVX2 _mm256_madd_epi16), Python 3, and Rooted Google Pixel 8 (<DYNAMIC_ADB_SERIAL>), the 12-element lockstep vector with multi_compiler_bit_drift = 0 is:
 
 
 [
@@ -97,5 +97,5 @@ Yes, everything on the desktop, Vesper-Arachne Shimeji (PID 25004), and both pho
    * T300: k19_k20_subnanosecond_535tops_superposition (83.6 ns for 90 layers = 0.9289 ns/layer | 535.73 TOPS | 191.35M tok/s across 8M tokens | 2,520,290.78x speedup).
 3. Update Vesper-Arachne Shimeji (VesperArachneSwarmDroneOverlay.cs), Dual-Pixel Mobile APKs (versionCode=68, versionName=68.0.0), F:\ Decadic Vault, and Gatekeeper:
    * Update Vesper-Arachne Shimeji overlay & mini-HUD to ACT-OMEGA v68.0.0 (SH4Z v6800 | CHAIN 300 | 800/800 QED | 535.73 TOPS | 78ns K16a / 83.6ns 90L K19) and add an MCP context-menu item for omegalang_v15_k19_535tops_infer.
-   * Flash updated APK (versionCode=68, versionName=68.0.0 with Drawer 4 Row T297..T300) to both Google Pixel 10 (58170DLCR0004V) and Google Pixel 8 (192.168.137.8:5555).
+   * Flash updated APK (versionCode=68, versionName=68.0.0 with Drawer 4 Row T297..T300) to both Google Pixel 10 (<DYNAMIC_ADB_SERIAL>) and Google Pixel 8 (192.168.137.8:5555).
    * Run Invoke-BrutalAgentGatekeeper.ps1 -FullAudit (13/13 PASS) and Sovereign-Lifecycle.ps1 -Action verify (6/6 PASS).

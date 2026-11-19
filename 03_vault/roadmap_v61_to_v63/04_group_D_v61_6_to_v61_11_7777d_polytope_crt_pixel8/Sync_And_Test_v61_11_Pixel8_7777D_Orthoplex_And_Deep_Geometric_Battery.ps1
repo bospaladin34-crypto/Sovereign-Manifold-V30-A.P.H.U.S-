@@ -1,16 +1,26 @@
-param(
+﻿param(
     [string]$LabRoot = "C:\ACT_OMEGA_7777D_ORTHOPLEX_LAB",
     [string]$ModelsRoot = "C:\ACT_OMEGA_MODELS",
     [string]$ColdVaultRoot = "E:\ACT_OMEGA_COLD_VAULT\7777d_orthoplex_receipts",
-    [string]$Serial = "3A121FDJH00BW5"
+    [string]$Serial = ""
 )
 
 $ErrorActionPreference = "Continue"
 $CrChar = [char]13
 
+if ([string]::IsNullOrWhiteSpace($Serial)) {
+    $cfgFile = "C:\Users\Nbell\.act_omega_adb_devices.json"
+    if (Test-Path $cfgFile) {
+        try {
+            $cfg = Get-Content -Raw $cfgFile | ConvertFrom-Json
+            if ($cfg.pixel8.serial) { $Serial = [string]$cfg.pixel8.serial }
+        } catch {}
+    }
+}
+
 Write-Host "=========================================================================" -ForegroundColor Cyan
 Write-Host " ACT-OMEGA v61.11: DEEP 7777D ORTHOPLEX GEOMETRY RESEARCH (5 BATTERIES)  " -ForegroundColor Cyan
-Write-Host " + HOST MODELS VAULT & ROOTED PIXEL 8 (3A121FDJH00BW5) DUAL-MIRROR SYNC  " -ForegroundColor Cyan
+Write-Host " + HOST MODELS VAULT & ROOTED PIXEL 8 (EDGE-2-PIXEL8-SHIBA) DUAL-MIRROR SYNC" -ForegroundColor Cyan
 Write-Host "=========================================================================" -ForegroundColor Cyan
 
 $SubDirs = @("src", "slices", "compiled_o7777", "hybrid_sh4z_index", "multilayer_cascade", "receipts", "benchmarks")
@@ -424,7 +434,7 @@ if ($DeepReceipt -and (Test-Path "E:\")) {
 }
 
 # =========================================================================
-# BATTERY 5C: Rooted Google Pixel 8 (3A121FDJH00BW5) ADB + ksud Vault Sync
+# BATTERY 5C: Rooted Google Pixel 8 (EDGE-2-PIXEL8-SHIBA) ADB + ksud Vault Sync
 # =========================================================================
 $AdbCandidates = @(
     "C:\ACT_OMEGA_FB_EXTRACT\platform-tools\adb.exe",
@@ -434,9 +444,18 @@ $AdbCandidates = @(
 $AdbExe = $AdbCandidates | Where-Object { Get-Command $_ -ErrorAction SilentlyContinue } | Select-Object -First 1
 
 if ($AdbExe) {
-    $DevList = & $AdbExe devices 2>&1 | Out-String
-    if ($DevList -match $Serial) {
-        Write-Host ">>> [PIXEL 8 DETECTED: $Serial] Pushing 7777D Orthoplex + Hybrid E8 Vaults & Receipts..." -ForegroundColor Cyan
+    $DevLines = & $AdbExe devices -l 2>&1
+    if ([string]::IsNullOrWhiteSpace($Serial)) {
+        foreach ($dl in $DevLines) {
+            if ($dl -match "^(\S+)\s+device\b" -and $dl -match "model:Pixel_8|product:shiba|192\.168\.137\.8:") {
+                $Serial = $Matches[1]
+                break
+            }
+        }
+    }
+    $DevList = $DevLines | Out-String
+    if ($Serial -and ($DevList -match [regex]::Escape($Serial))) {
+        Write-Host ">>> [PIXEL 8 DETECTED: EDGE-2-PIXEL8-SHIBA] Pushing 7777D Orthoplex + Hybrid E8 Vaults & Receipts..." -ForegroundColor Cyan
         $PushItems = @(
             (Join-Path (Join-Path $LabRoot "compiled_o7777") "gemma-4-E4B-it_layer0_7777d.o7777"),
             (Join-Path (Join-Path $LabRoot "hybrid_sh4z_index") "gemma-4-E4B-it_layer0_hybrid_o7777_sh4z.bin"),

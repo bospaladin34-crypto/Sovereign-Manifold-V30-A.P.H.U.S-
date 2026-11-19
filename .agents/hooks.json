@@ -8,7 +8,7 @@
           {
             "type": "command",
             "command": "powershell -NoProfile -ExecutionPolicy Bypass -File C:\\sovereign_manifold_v31\\00_control\\Invoke-BrutalAgentGatekeeper.ps1 -HookStdin",
-            "timeout": 15
+            "timeout": 90
           }
         ]
       }

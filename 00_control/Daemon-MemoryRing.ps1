@@ -2,8 +2,26 @@
 # ACT-Omega Net v47.0.0 (SH4Z v4700 TLV) Watchdog, Atomic Hot-Swapper, Pixel 8 P8-APEX + Pixel 10 Unplugged SHM Sync & Safe Pause Sentinel
 $ErrorActionPreference = "SilentlyContinue"
 $root = "C:\sovereign_manifold_v31"
-$p8Serial = "3A121FDJH00BW5"
-$p10Serial = "58170DLCR0004V"
+function Get-ExternalAdbSerialByRole {
+    param([string]$Role, [string]$ModelHint)
+    $cfgFile = "C:\Users\Nbell\.act_omega_adb_devices.json"
+    $cfgSerial = ""
+    if (Test-Path $cfgFile) {
+        try {
+            $cfg = Get-Content -Raw $cfgFile | ConvertFrom-Json
+            if ($cfg.$Role -and $cfg.$Role.serial) { $cfgSerial = [string]$cfg.$Role.serial }
+        } catch {}
+    }
+    $lines = adb devices -l 2>$null
+    foreach ($l in $lines) {
+        if ($l -match "\s+device\b" -and ($l -match $ModelHint -or ($cfgSerial -and $l -match [regex]::Escape($cfgSerial)))) {
+            return ($l -split "\s+")[0]
+        }
+    }
+    return $cfgSerial
+}
+$p8Serial = Get-ExternalAdbSerialByRole -Role "pixel8" -ModelHint "model:Pixel_8|product:shiba|192\.168\.137\.8:|192\.168\.44\.8:"
+$p10Serial = Get-ExternalAdbSerialByRole -Role "pixel10" -ModelHint "model:Pixel_10|product:frankel|192\.168\.137\.10:|192\.168\.44\.10:"
 $pauseFile = "C:\sovereign_manifold_v31\00_control\daemon.paused"
 $shmPath   = "C:\sovereign_manifold_v31\00_control\weights\neurons_v4400_p8_shm.npage"
 

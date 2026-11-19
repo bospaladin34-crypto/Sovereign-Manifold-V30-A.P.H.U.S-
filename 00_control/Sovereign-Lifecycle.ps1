@@ -19,33 +19,56 @@ $cfCfg           = "C:\sovereign_manifold_v31\00_control\cloudflare_named_config
 $trayHudExe      = "C:\sovereign_manifold_v31\SovereignCockpitHUD.exe"
 $shmPath         = "C:\sovereign_manifold_v31\00_control\weights\neurons_v5000_63360.npage"
 $capsulePath     = "C:\sovereign_manifold_v31\03_vault\connectome\continuum_handover_capsule.json"
+function Get-SovereignCitationVersion {
+    $cff = Join-Path $root "CITATION.cff"
+    if (Test-Path $cff) {
+        $txt = [System.IO.File]::ReadAllText($cff)
+        if ($txt -match '(?m)^version:\s*"?([^"\r\n]+)"?\s*$') {
+            $v = $Matches[1].Trim()
+            if (-not $v.StartsWith("v")) { return "v$v" }
+            return $v
+        }
+    }
+    return "UNMEASURED/OFFLINE"
+}
+
 function Resolve-SovereignAdbTarget {
-    param([string]$CanonicalSerial, [string]$ModelPattern)
+    param([string]$Role, [string]$ModelPattern, [string]$FallbackEndpoint = "")
+    $cfgSerial = ""
+    $cfgFile = "C:\Users\Nbell\.act_omega_adb_devices.json"
+    if (Test-Path $cfgFile) {
+        try {
+            $cfg = Get-Content -Raw $cfgFile | ConvertFrom-Json
+            if ($cfg.$Role -and $cfg.$Role.serial) { $cfgSerial = [string]$cfg.$Role.serial }
+        } catch {}
+    }
     $lines = adb devices -l 2>$null
-    foreach ($l in $lines) {
-        if ($l -match "^$([regex]::Escape($CanonicalSerial))\s+device\b") {
-            return $CanonicalSerial
+    if ($cfgSerial) {
+        foreach ($l in $lines) {
+            if ($l -match "^$([regex]::Escape($cfgSerial))\s+device\b") {
+                return $cfgSerial
+            }
         }
     }
     foreach ($l in $lines) {
-        if ($l -match "\s+device\b" -and ($l -match $ModelPattern -or $l -match $CanonicalSerial)) {
+        if ($l -match "\s+device\b" -and ($l -match $ModelPattern -or ($cfgSerial -and $l -match [regex]::Escape($cfgSerial)))) {
             return ($l -split "\s+")[0]
         }
     }
-    if ($CanonicalSerial -eq "3A121FDJH00BW5") {
-        adb connect 192.168.137.8:5555 2>$null | Out-Null
+    if ($FallbackEndpoint) {
+        adb connect $FallbackEndpoint 2>$null | Out-Null
         $lines2 = adb devices -l 2>$null
         foreach ($l in $lines2) {
-            if ($l -match "\s+device\b" -and ($l -match $ModelPattern -or $l -match $CanonicalSerial)) {
+            if ($l -match "\s+device\b" -and ($l -match $ModelPattern -or ($cfgSerial -and $l -match [regex]::Escape($cfgSerial)))) {
                 return ($l -split "\s+")[0]
             }
         }
     }
-    return $CanonicalSerial
+    return $cfgSerial
 }
 
-$p10Serial       = Resolve-SovereignAdbTarget -CanonicalSerial "58170DLCR0004V" -ModelPattern "model:Pixel_10|product:frankel|192\.168\.137\.10:|192\.168\.44\.10:"
-$p8Serial        = Resolve-SovereignAdbTarget -CanonicalSerial "3A121FDJH00BW5" -ModelPattern "model:Pixel_8|product:shiba|192\.168\.137\.8:|192\.168\.44\.8:"
+$p10Serial       = Resolve-SovereignAdbTarget -Role "pixel10" -ModelPattern "model:Pixel_10|product:frankel|192\.168\.137\.10:|192\.168\.44\.10:"
+$p8Serial        = Resolve-SovereignAdbTarget -Role "pixel8" -ModelPattern "model:Pixel_8|product:shiba|192\.168\.137\.8:|192\.168\.44\.8:" -FallbackEndpoint "192.168.137.8:5555"
 $p8ApexBinLocal  = "C:\sovereign_manifold_v31\04_edge_silicon\pixel8_headless\p8_ksu_apex_daemon"
 $p8ApexBinRemote = "/data/local/tmp/p8_ksu_apex_daemon"
 $p8ApexPidPath   = "/data/local/tmp/p8_ksu_apex.pid"
@@ -152,6 +175,7 @@ function Invoke-SovereignContinuumHandover {
     $rtxT = if ($prof -and $prof.rtx3050_temp_c) { $prof.rtx3050_temp_c } else { 49.0 }
     $shmSha = (Get-FileHash -Path $shmPath -Algorithm SHA256).Hash.ToLower()
     $leanSha = (Get-FileHash -Path "C:\sovereign_manifold_v31\01_l0_rust\lean4\SovereignManifoldTheorems.lean" -Algorithm SHA256).Hash.ToLower()
+    $liveLeanCnt = ([regex]::Matches([System.IO.File]::ReadAllText("C:\sovereign_manifold_v31\03_vault\lean4\SovereignManifoldTheorems.lean"), '(?m)^\s*theorem\s+')).Count
     $tsUtc = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
 
     $capsuleObj = [ordered]@{
@@ -164,8 +188,8 @@ function Invoke-SovereignContinuumHandover {
         shm_chair44_cols = 1440
         shm_sha256 = $shmSha
         lean4_sha256 = $leanSha
-        lean4_theorems_qed = 800
-        tools_total = 300
+        lean4_theorems_qed = $liveLeanCnt
+        tools_total = 404
         metabolic_atp = $atp
         last_host_kops = $kops
         last_rtx_temp_c = $rtxT
@@ -309,14 +333,17 @@ function Invoke-SovereignSixLayerVerify {
     if (-not $l1Pass) { $failCount++ }
     Write-Host ("  [LAYER 1 - L0 RUST]     [{0}] Brackets(v33..v68+)={1} (Req:0) | QAT PPL={2} (Req:>1.0001) | Latency={3}ms" -f ($(if($l1Pass){"PASS"}else{"FAIL"}), $brackets, $(if($qat){$qat.holdout_ppl}else{"UNREACHABLE"}), $(if($qat){$qat.dag_latency_ms}else{"N/A"}))) -ForegroundColor $(if($l1Pass){"Green"}else{"Red"})
 
-    # Layer 2: Lean 4 Formal Proofs
-    $leanRaw = Get-Content -Raw "C:\sovereign_manifold_v31\01_l0_rust\lean4\SovereignManifoldTheorems.lean"
-    $thmCnt = ([regex]::Matches($leanRaw, '(?m)^theorem\s+')).Count
+    # Layer 2: Lean 4 Formal Proofs (Dynamic Live Count >= 1010)
+    $leanVaultPath = "C:\sovereign_manifold_v31\03_vault\lean4\SovereignManifoldTheorems.lean"
+    $leanL0Path = "C:\sovereign_manifold_v31\01_l0_rust\lean4\SovereignManifoldTheorems.lean"
+    $leanRaw = [System.IO.File]::ReadAllText($leanL0Path)
+    $liveLeanVaultCnt = if (Test-Path $leanVaultPath) { ([regex]::Matches([System.IO.File]::ReadAllText($leanVaultPath), '(?m)^\s*theorem\s+')).Count } else { 0 }
+    $thmCnt = ([regex]::Matches($leanRaw, '(?m)^\s*theorem\s+')).Count
     $trivCnt = ([regex]::Matches($leanRaw, '\((\d+) = \1\)')).Count
-    $leanSha = (Get-FileHash "C:\sovereign_manifold_v31\01_l0_rust\lean4\SovereignManifoldTheorems.lean" -Algorithm SHA256).Hash.ToLower().Substring(0, 16)
-    $l2Pass = ($thmCnt -ge 840) -and ($trivCnt -eq 0)
+    $leanSha = (Get-FileHash $leanL0Path -Algorithm SHA256).Hash.ToLower().Substring(0, 16)
+    $l2Pass = ($liveLeanVaultCnt -ge 1010) -and ($thmCnt -ge 1010) -and ($thmCnt -eq $liveLeanVaultCnt) -and ($trivCnt -eq 0)
     if (-not $l2Pass) { $failCount++ }
-    Write-Host ("  [LAYER 2 - LEAN 4 QED]  [{0}] Theorems={1}/840 (Req:>=800) | Trivial(N=N)={2} (Req:0) | SHA256={3}..." -f ($(if($l2Pass){"PASS"}else{"FAIL"}), $thmCnt, $trivCnt, $leanSha)) -ForegroundColor $(if($l2Pass){"Green"}else{"Red"})
+    Write-Host ("  [LAYER 2 - LEAN 4 QED]  [{0}] Theorems={1}/{2} (Req:>=1010 & ==Live) | Trivial(N=N)={3} (Req:0) | SHA256={4}..." -f ($(if($l2Pass){"PASS"}else{"FAIL"}), $thmCnt, $liveLeanVaultCnt, $trivCnt, $leanSha)) -ForegroundColor $(if($l2Pass){"Green"}else{"Red"})
 
     # Layer 3: 5W1H & 63,360-Neuron Shared Memory (.npage)
     $prof = $null
@@ -439,9 +466,10 @@ function Invoke-SovereignSixLayerVerify {
 
 function Stop-SovereignClusterSafely {
     param([bool]$StopPhonesToo = $false)
+    $relVer = Get-SovereignCitationVersion
     Write-Host ""
     Write-Host "==========================================================================" -ForegroundColor Yellow
-    Write-Host "   SAFE GRACEFUL SHUTDOWN: ACT-OMEGA NET v73.2.0 (SH4Z v7320 | CHAIN 404)             " -ForegroundColor Yellow
+    Write-Host "   SAFE GRACEFUL SHUTDOWN: ACT-OMEGA NET $relVer (SH4Z v7321 | CHAIN 404)" -ForegroundColor Yellow
     Write-Host "==========================================================================" -ForegroundColor Yellow
 
     # 1. Hand over state to Pixel 8, Pixel 10 & Cloudflare Edge DO before stopping Host
@@ -491,9 +519,10 @@ function Stop-SovereignClusterSafely {
 }
 
 function Start-SovereignClusterSafely {
+    $relVer = Get-SovereignCitationVersion
     Write-Host ""
     Write-Host "==========================================================================" -ForegroundColor Cyan
-    Write-Host "   SAFE CLUSTER IGNITION: ACT-OMEGA NET v63.2.0 (SH4Z v6200 | CHAIN 296)              " -ForegroundColor Cyan
+    Write-Host "   SAFE CLUSTER IGNITION: ACT-OMEGA NET $relVer (SH4Z v7321 | CHAIN 404)" -ForegroundColor Cyan
     Write-Host "==========================================================================" -ForegroundColor Cyan
 
     if (Test-Path $pauseFile) {
@@ -541,15 +570,15 @@ function Start-SovereignClusterSafely {
     }
 
     $adbRaw = (adb devices) -join " "
-    if ($adbRaw -match $p10Serial) {
+    if ($p10Serial -and ($adbRaw -match [regex]::Escape($p10Serial))) {
         $null = Ensure-PhoneUnpluggedShm -Serial $p10Serial -Label "Pixel 10"
         adb -s $p10Serial shell "am start -n com.actomega.manifold/.MainActivity" | Out-Null
-        Write-Host "  [4/6] Engaged Pixel 10 ($p10Serial): ADB :8097/:5173 + 8.11MB Unplugged .npage SHM Armed + Launched NDK HUD..." -ForegroundColor Green
+        Write-Host "  [4/6] Engaged Pixel 10 (EDGE-1-PIXEL10-G5): ADB :8097/:5173 + 8.11MB Unplugged .npage SHM Armed + Launched NDK HUD..." -ForegroundColor Green
     } else {
-        Write-Host "  [4/6] Pixel 10 ($p10Serial) is Unplugged Roaming (Synced via Wi-Fi LAN / Cloudflare WAN)..." -ForegroundColor Cyan
+        Write-Host "  [4/6] Pixel 10 (EDGE-1-PIXEL10-G5) is Unplugged Roaming (Synced via Wi-Fi LAN / Cloudflare WAN)..." -ForegroundColor Cyan
     }
 
-    if ($adbRaw -match $p8Serial) {
+    if ($p8Serial -and ($adbRaw -match [regex]::Escape($p8Serial))) {
         $null = Ensure-PhoneUnpluggedShm -Serial $p8Serial -Label "Pixel 8"
         # Forwarding port 8098 via ADB and auto-detecting/auto-relaunching p8_ksu_apex_daemon
         $null = Ensure-Pixel8ApexDaemon
@@ -557,9 +586,9 @@ function Start-SovereignClusterSafely {
         adb -s $p8Serial shell "cmd power set-fixed-performance-mode-enabled true" | Out-Null
         adb -s $p8Serial shell "cmd thermalservice override-status 0" | Out-Null
         adb -s $p8Serial shell "am start -n com.actomega.manifold/.MainActivity" | Out-Null
-        Write-Host "  [5/6] Engaged Pixel 8 ($p8Serial): P8-APEX Lock + :8098 KSU Bridge + 8.11MB .npage SHM Mapped + Launched NDK HUD..." -ForegroundColor Green
+        Write-Host "  [5/6] Engaged Pixel 8 (EDGE-2-PIXEL8-SHIBA): P8-APEX Lock + :8098 KSU Bridge + 8.11MB .npage SHM Mapped + Launched NDK HUD..." -ForegroundColor Green
     } else {
-        Write-Host "  [5/6] Pixel 8 ($p8Serial) is Disconnected..." -ForegroundColor Yellow
+        Write-Host "  [5/6] Pixel 8 (EDGE-2-PIXEL8-SHIBA) is Disconnected..." -ForegroundColor Yellow
     }
 
     $trayProc = Get-Process -Name "SovereignCockpitHUD" -ErrorAction SilentlyContinue

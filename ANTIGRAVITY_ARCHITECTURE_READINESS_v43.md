@@ -28,8 +28,8 @@ flowchart TD
     end
 
     subgraph EDGE["Dual-Pixel Edge Silicon (ADB Tethered Lockstep)"]
-        P10["Edge-1: Google Pixel 10 (58170DLCR0004V)\nTensor G5 | S48..S63 | 642.0k ops/s | 1Hz 24D IMU"]
-        P8["Edge-2: Google Pixel 8 (3A121FDJH00BW5)\nTensor G3 P8-APEX | S64..S79 | 588.0k ops/s | 4MB L2"]
+        P10["Edge-1: Google Pixel 10 (<DYNAMIC_ADB_SERIAL>)\nTensor G5 | S48..S63 | 642.0k ops/s | 1Hz 24D IMU"]
+        P8["Edge-2: Google Pixel 8 (<DYNAMIC_ADB_SERIAL>)\nTensor G3 P8-APEX | S64..S79 | 588.0k ops/s | 4MB L2"]
     end
 
     subgraph CLOUD["Cloudflare Edge & External Tier-2 Vaults"]
@@ -79,8 +79,8 @@ flowchart TD
 
 ### 2.4 `@dual-pixel-edge-ndk` — Dual-Pixel Edge Silicon & NDK APK
 - **Live Hardware ADB Lockstep**:
-  - **Edge-1 (Google Pixel 10)**: Serial `58170DLCR0004V` (`frankel_beta`, Tensor G5, Sectors `S48..S63`, `642.0k ops/s`, 1Hz 24D IMU stream) — **ONLINE**.
-  - **Edge-2 (Google Pixel 8)**: Serial `3A121FDJH00BW5` (`shiba_beta`, Tensor G3 P8-APEX, Sectors `S64..S79`, `588.0k ops/s`, `4.00 MB` Mali-G715 L2 cache) — **ONLINE**.
+  - **Edge-1 (Google Pixel 10)**: Serial `<DYNAMIC_ADB_SERIAL>` (`frankel_beta`, Tensor G5, Sectors `S48..S63`, `642.0k ops/s`, 1Hz 24D IMU stream) — **ONLINE**.
+  - **Edge-2 (Google Pixel 8)**: Serial `<DYNAMIC_ADB_SERIAL>` (`shiba_beta`, Tensor G3 P8-APEX, Sectors `S64..S79`, `588.0k ops/s`, `4.00 MB` Mali-G715 L2 cache) — **ONLINE**.
 - **Kotlin Compose & Native NDK Parity**: Both `app/src/main/java/com/actomega/manifold/MainActivity.kt` and `src/main/java/com/actomega/manifold/MainActivity.kt`, C++ JNI kernels (`harmonic_engine.cpp`, `tpu_tachyon_delegate.hpp`, `vulkan_compute_dispatcher.hpp`), and `app-debug.apk` (`28,794,784 B`) preserve all 15 cards, 60 FPS scopes, 16x130 heatmap, and `Tools T01..T72` (`ToolButton603010` + `invokeHostEndpoint`).
 
 ### 2.5 `@cloudflare-d1-tunnel-ops` — Cloudflare Named Tunnel, D1 Vault, MCP & Tier-2 Storage

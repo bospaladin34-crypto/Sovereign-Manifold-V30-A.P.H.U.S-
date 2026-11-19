@@ -992,7 +992,7 @@ end Sovereign7777DPolytopeTheorems
   - **Measured MatVec Speedup (Dense `7777D` vs. Orthoplex-Routed `256D E8`):** **`24.04x` speedup** (`37.31 ms` vs. `1.55 ms`)
 
 
-## 10. Deep `7777D` Orthoplex ($\beta_{7777}$) Geometry Certification & Rooted Pixel 8 (`3A121FDJH00BW5`) Vault Sync (`v61.11`)
+## 10. Deep `7777D` Orthoplex ($\beta_{7777}$) Geometry Certification & Rooted Pixel 8 (`<DYNAMIC_ADB_SERIAL>`) Vault Sync (`v61.11`)
 
 - **Receipt 3 (`v61_11_deep_7777d_orthoplex_geometry_receipt.json`, `PXL_20261102_191813873.jpg` & `PXL_20261102_191821109.jpg`):**
   - **$(k-1)$-Face Simplicial Hierarchy of $\beta_{7777}$:** `0-Faces = 15,554` | `1-Faces (Edges) = 120,947,904` | `2-Faces (Triangles) = 626,913,302,400` | Real `gemma-4-E4B-it` $k$-Face Cosine Recovery: `k=1: 0.0256`, `k=7: 0.0677`, `k=11: 0.0848`, `k=24: 0.1253`, `k=101: 0.2568`, **`k=777 (10% density): 0.6468`** in `1.68 ms`.
@@ -1001,4 +1001,4 @@ end Sovereign7777DPolytopeTheorems
     - `gemma-4-E4B-it`: **`Shell 1 = 9.87 dB` $\to$ `Shell 2 = 14.25 dB` $\to$ `Shell 3 = 17.95 dB` (`+8.08 dB` cascade gain!)**
     - `gemma-4-12B-it`: **`Shell 1 = 4.48 dB` $\to$ `Shell 2 = 8.05 dB` $\to$ `Shell 3 = 10.21 dB` (`+5.74 dB` cascade gain!)**
   - **CRT Marginal Shannon Entropy on Real `gemma-4-12B-it` Weights:** $H(\mathbb{Z}_7) = 2.8073\text{ b}$, $H(\mathbb{Z}_{11}) = 3.4593\text{ b}$, $H(\mathbb{Z}_{101}) = 6.6569\text{ b}$ $\implies$ **`12.9236 / 12.9250 bits` (`99.989%` Shannon Entropy Uniformity!)**.
-  - **Rooted Google Pixel 8 (`3A121FDJH00BW5`) Vault Sync Verified:** All 6 `.o7777`, Hybrid `.bin`, 3-Shell Cascade, and `.json` receipt artifacts verified in `/data/adb/act_omega_shiba/gemma4_edge/gemma-4-E4B-it/orthoplex_7777d/` (`total 154 KB`) alongside `C:\ACT_OMEGA_MODELS` and `E:\ACT_OMEGA_COLD_VAULT\7777d_orthoplex_receipts`.
+  - **Rooted Google Pixel 8 (`<DYNAMIC_ADB_SERIAL>`) Vault Sync Verified:** All 6 `.o7777`, Hybrid `.bin`, 3-Shell Cascade, and `.json` receipt artifacts verified in `/data/adb/act_omega_shiba/gemma4_edge/gemma-4-E4B-it/orthoplex_7777d/` (`total 154 KB`) alongside `C:\ACT_OMEGA_MODELS` and `E:\ACT_OMEGA_COLD_VAULT\7777d_orthoplex_receipts`.

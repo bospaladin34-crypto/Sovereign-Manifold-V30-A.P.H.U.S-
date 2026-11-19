@@ -850,7 +850,7 @@ pub fn v69_0_dispatch_tool_308_chain308_master_certification(payload: &str) -> S
         && rec.npage_neurons > 0
         && rec.total_synapses > 0
         && rec.e8z_cachelines > 0
-        && theorem_count >= 820;
+        && crate::v73_2_cloudflare_vpc_mesh_and_pgwire_hyperdrive::validate_live_lean_theorems_with_floor(theorem_count);
     let status = if certified { "MEASURED" } else { "UNMEASURED/OFFLINE" };
     let proof_str = if certified {
         format!(

@@ -1,5 +1,5 @@
 // ACT-Omega Net Cloudflare Edge Durable Object Continuum (Dynamic D1/DO-Backed Telemetry)
-// D1 Vault: act_omega_d1_vault | Dynamic Version/Chain/Proof Metadata (Zero Hardcoded Counts)
+// D1 Vault: act_omega_d1_vault_v7322 | Dynamic Version/Chain/Proof Metadata (Zero Hardcoded Counts)
 // Module: SovereignEdgeShadowDO — Persistent SQLite Ring Buffer (<= 8 rows), 60s Write Debounce & Quota Governor
 // Zero-Unmeasured Mandate: Strictly no synthetic telemetry constants or unmeasured fallbacks.
 

@@ -23,14 +23,30 @@ Write-Host "  [MODELS]  sh4_leech_720.e8z=$sh4Len B | Ternary_e8t=$e8tLen B | Co
 & "C:\sovereign_manifold_v31\01_l0_rust\target\release\v31_bench.exe";
 & "C:\sovereign_manifold_v31\01_l0_rust\target\release\v31_swarm.exe";
 & "C:\sovereign_manifold_v31\01_l0_rust\target\release\v31_harvester.exe";
-$adbDevs=[string]::Join(",",(adb devices));
-if($adbDevs.Contains("58170DLCR0004V")){
-    $p10Out=[string]::Join(" | ",(adb -s 58170DLCR0004V shell "ls -l /data/local/tmp/sh4_leech_720.e8z /data/local/tmp/sierpinski_158_manifold.e8t /data/local/tmp/sheaf_context_158.e8t"));
-    Write-Host "  [PIXEL 10 58170DLCR0004V] Files=$p10Out" -ForegroundColor Green;
+$adbLines = @(adb devices -l 2>$null);
+$cfgFile = "C:\Users\Nbell\.act_omega_adb_devices.json";
+$p10Ser = ""; $p8Ser = "";
+if (Test-Path $cfgFile) {
+    try {
+        $cfg = Get-Content -Raw $cfgFile | ConvertFrom-Json;
+        if ($cfg.pixel10.serial) { $p10Ser = [string]$cfg.pixel10.serial }
+        if ($cfg.pixel8.serial) { $p8Ser = [string]$cfg.pixel8.serial }
+    } catch {}
 }
-if($adbDevs.Contains("3A121FDJH00BW5")){
-    $p8Out=[string]::Join(" | ",(adb -s 3A121FDJH00BW5 shell "ls -l /data/local/tmp/sh4_leech_720.e8z /data/local/tmp/p8_v31_worker.sh"));
-    Write-Host "  [PIXEL 8  3A121FDJH00BW5] Files=$p8Out" -ForegroundColor Green;
+$p10Tgt = ""; $p8Tgt = "";
+foreach ($l in $adbLines) {
+    if ($l -match "\s+device\b") {
+        if (($p10Ser -and $l -match [regex]::Escape($p10Ser)) -or $l -match "model:Pixel_10|product:frankel") { $p10Tgt = ($l -split "\s+")[0] }
+        elseif (($p8Ser -and $l -match [regex]::Escape($p8Ser)) -or $l -match "model:Pixel_8|product:shiba") { $p8Tgt = ($l -split "\s+")[0] }
+    }
+}
+if($p10Tgt){
+    $p10Out=[string]::Join(" | ",(adb -s $p10Tgt shell "ls -l /data/local/tmp/sh4_leech_720.e8z /data/local/tmp/sierpinski_158_manifold.e8t /data/local/tmp/sheaf_context_158.e8t"));
+    Write-Host "  [PIXEL 10 EDGE-1-PIXEL10-G5] Files=$p10Out" -ForegroundColor Green;
+}
+if($p8Tgt){
+    $p8Out=[string]::Join(" | ",(adb -s $p8Tgt shell "ls -l /data/local/tmp/sh4_leech_720.e8z /data/local/tmp/p8_v31_worker.sh"));
+    Write-Host "  [PIXEL 8  EDGE-2-PIXEL8-SHIBA] Files=$p8Out" -ForegroundColor Green;
 }
 Write-Host "=========================================================================" -ForegroundColor Cyan;
 Write-Host "   ACT-OMEGA NET v31.0 (SH-4) FULL-CLUSTER CERTIFICATION: PASS           " -ForegroundColor Green;

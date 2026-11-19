@@ -200,7 +200,7 @@ pub fn execute_tool77_p8_npage_shm_bridge(
     }
 
     let diag = format!(
-        "TOOL 77 HOST <-> PIXEL 8 (3A121FDJH00BW5) .NPAGE SHARED-MEMORY RING (Sync #{} | RTT={:.1}ms | USB 3.2=337.8 MB/s): Mapped {}B .npage (63,360 Neurons, 1,440x Chair-44, 1,013,760 Synapses) + {}B .e8z (L2 Active Window {}B inside Pixel 8 4.00MB Mali-G715 L2 Cache: {:.2}% residency, {}B queue headroom) | Dirty Mask={} ({} cols / {} neurons = {}B delta vs {}B full page, {:.3}% bandwidth saved) -> Pixel 8 P8-APEX Boosted to {:.1}k ops/s (+93.9%) | Base Tri-Silicon={:.1}k ops/s",
+        "TOOL 77 HOST <-> PIXEL 8 (EDGE-2-PIXEL8-SHIBA) .NPAGE SHARED-MEMORY RING (Sync #{} | RTT={:.1}ms | USB 3.2=337.8 MB/s): Mapped {}B .npage (63,360 Neurons, 1,440x Chair-44, 1,013,760 Synapses) + {}B .e8z (L2 Active Window {}B inside Pixel 8 4.00MB Mali-G715 L2 Cache: {:.2}% residency, {}B queue headroom) | Dirty Mask={} ({} cols / {} neurons = {}B delta vs {}B full page, {:.3}% bandwidth saved) -> Pixel 8 P8-APEX Boosted to {:.1}k ops/s (+93.9%) | Base Tri-Silicon={:.1}k ops/s",
         sync_seq,
         p8_rtt_ms,
         shm_bytes,

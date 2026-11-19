@@ -31,7 +31,7 @@ description: >-
 1. Mirror `05_hud_cockpit/src/App.tsx` and `index.html` (`data-sovereign-ssr="v<VER>"`) to `02_l2_orchestration/hud/`, run `npm run build` in `05_hud_cockpit`, remove stale `index-*.js`, and sync `dist/*` to `02_l2_orchestration/hud/dist/`, `docs/`, and repo root (`index.html`, `hud.html`, `assets/`).
 2. Sync `manifest.webmanifest`, `llms.txt`, `wiki.html`, and `telemetry_snapshot.json` across all 6 targets (`05_hud_cockpit/{public,dist}`, `02_l2_orchestration/hud/{public,dist}`, `docs/`, root).
 3. Rebuild Win11 Native Tray via `00_control/Win11_Native_Tray_HUD/Build-SovereignTray.ps1` (mirrors `SovereignCockpitHUD.exe` to root and `docs/`).
-4. Mirror `MainActivity.kt` across all 3 paths (`pixel10_ndk_app/MainActivity.kt`, `app/src/...`, `src/...`), run `.\gradlew.bat assembleDebug --console=plain`, copy `app-debug.apk` to all 4 APK mirrors (`releases/`, `04_edge_silicon/`, `docs/`, `03_vault/ota/`), and install onto Pixel 10 (`58170DLCR0004V`) and Pixel 8 (`192.168.*` or `3A121FDJH00BW5`).
+4. Mirror `MainActivity.kt` across all 3 paths (`pixel10_ndk_app/MainActivity.kt`, `app/src/...`, `src/...`), run `.\gradlew.bat assembleDebug --console=plain`, copy `app-debug.apk` to all 4 APK mirrors (`releases/`, `04_edge_silicon/`, `docs/`, `03_vault/ota/`), and install onto Pixel 10 (`<DYNAMIC_ADB_SERIAL>`) and Pixel 8 (`192.168.*` or `<DYNAMIC_ADB_SERIAL>`).
 
 ## 5. Mandatory 13-Point Brutal Gatekeeper & 6-Layer Lifecycle Audit
 1. Run `powershell -ExecutionPolicy Bypass -File "C:\sovereign_manifold_v31\00_control\Invoke-BrutalAgentGatekeeper.ps1" -FullAudit` (`13/13 PASS`).

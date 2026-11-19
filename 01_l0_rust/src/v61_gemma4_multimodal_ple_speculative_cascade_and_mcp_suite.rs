@@ -215,11 +215,24 @@ pub fn v61_parse_field(input: &str, key: &str) -> String {
 
 // Helper: Safely escape string for JSON serialization without square brackets
 pub fn v61_escape_clean(s: &str) -> String {
-    s.replace('\\', "\\\\")
-        .replace('"', "\\\"")
-        .replace('\n', "\\n")
-        .replace('\r', "\\r")
-        .replace('\t', "\\t")
+    use std::fmt::Write as _;
+    let mut out = String::with_capacity(s.len().saturating_add(16));
+    for c in s.chars() {
+        match c {
+            '\\' => out.push_str("\\\\"),
+            '"' => out.push_str("\\\""),
+            '\u{0008}' => out.push_str("\\b"),
+            '\u{000C}' => out.push_str("\\f"),
+            '\n' => out.push_str("\\n"),
+            '\r' => out.push_str("\\r"),
+            '\t' => out.push_str("\\t"),
+            c if (c as u32) < 0x20 || c == '\u{007F}' => {
+                let _ = write!(out, "\\u{:04x}", c as u32);
+            }
+            c => out.push(c),
+        }
+    }
+    out
 }
 
 pub fn v61_json_escape(s: &str) -> String {

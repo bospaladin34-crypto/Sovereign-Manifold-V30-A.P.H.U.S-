@@ -1,5 +1,5 @@
 # C:\sovereign_manifold_v31\00_control\Sovereign-Lifecycle.ps1
-# ACT-Omega Net v73.2.1 (SH4Z v7320 TLV | CHAIN 404 | 1,010/1,010 Lean 4 QED) -- Unified Safe Cluster Start / Stop / Handover / Verify / Status Controller
+# ACT-Omega Net v73.2.2 (SH4Z v7321 TLV | CHAIN 404 | 1,010/1,010 Lean 4 QED) -- Unified Safe Cluster Start / Stop / Handover / Verify / Status Controller
 param(
     [ValidateSet("start", "stop", "stop-all", "restart", "status", "handover", "verify")]
     [string]$Action = "status",
@@ -178,9 +178,10 @@ function Invoke-SovereignContinuumHandover {
     $liveLeanCnt = ([regex]::Matches([System.IO.File]::ReadAllText("C:\sovereign_manifold_v31\03_vault\lean4\SovereignManifoldTheorems.lean"), '(?m)^\s*theorem\s+')).Count
     $tsUtc = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
 
+    $relVer = Get-SovereignCitationVersion
     $capsuleObj = [ordered]@{
         status = "CONTINUUM_HANDOVER_CAPSULE_READY"
-        version = "ACT-Omega Net v73.2.0 (SH4Z v7320 TLV | CHAIN 404 | 1,010/1,010 Lean 4 QED)"
+        version = "ACT-Omega Net $relVer (SH4Z v7321 TLV | CHAIN 404 | $liveLeanCnt/$liveLeanCnt Lean 4 QED)"
         handover_mode = $HandoverMode
         timestamp_utc = $tsUtc
         shm_npage_bytes = 8110080
@@ -234,9 +235,10 @@ function Invoke-SovereignContinuumHandover {
 }
 
 function Show-SovereignStatus {
+    $relVer = Get-SovereignCitationVersion
     Write-Host ""
     Write-Host "==========================================================================" -ForegroundColor Cyan
-    Write-Host "   ACT-OMEGA NET v73.2.1 (SH4Z v7320 | CHAIN 404) -- TRI-SILICON CLUSTER STATUS       " -ForegroundColor Cyan
+    Write-Host "   ACT-OMEGA NET $relVer (SH4Z v7321 | CHAIN 404) -- TRI-SILICON CLUSTER STATUS       " -ForegroundColor Cyan
     Write-Host "==========================================================================" -ForegroundColor Cyan
 
     $isPaused = Test-Path $pauseFile
@@ -311,9 +313,10 @@ function Show-SovereignClusterStatus {
 }
 
 function Invoke-SovereignSixLayerVerify {
+    $relVer = Get-SovereignCitationVersion
     Write-Host ""
     Write-Host "==========================================================================" -ForegroundColor Cyan
-    Write-Host "   ACT-OMEGA v73.2.1: 6-LAYER TRUE-DATA & ANTI-502 VERIFICATION AUDIT     " -ForegroundColor Cyan
+    Write-Host "   ACT-OMEGA ${relVer}: 6-LAYER TRUE-DATA & ANTI-502 VERIFICATION AUDIT     " -ForegroundColor Cyan
     Write-Host "==========================================================================" -ForegroundColor Cyan
 
     $failCount = 0

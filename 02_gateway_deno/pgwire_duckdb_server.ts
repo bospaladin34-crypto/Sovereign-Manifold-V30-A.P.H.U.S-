@@ -1,8 +1,36 @@
 // =============================================================================
-// ACT-OMEGA NET v73.2.0 — ZERO-DEPENDENCY TLS PGWIRE v3 -> NATIVE DUCKDB SERVER
+// ACT-OMEGA NET v73.2.3 — ZERO-DEPENDENCY TLS PGWIRE v3 -> NATIVE DUCKDB SERVER
 // Listens on 127.0.0.1:5439 for Cloudflare Hyperdrive (SSLRequest 'S' + TLS)
 // Authenticated constant-time against C:\Users\Nbell\.act_omega_operator_vault_key
 // Executes read-only analytical SQL via C:\sovereign_manifold_v31\00_control\foss_bin\duckdb.exe
+//
+// PGWIRE v3 PROTOCOL HANDSHAKE & SESSION COMPATIBILITY SHIMS (NON-TELEMETRY):
+// All shims below exist strictly for Cloudflare Hyperdrive / libpq / node-postgres
+// PGWire v3 driver handshake compatibility. NONE of these shims emits or represents
+// live silicon/cluster telemetry measurements:
+//   - Wire Startup Shims:
+//     * ParameterStatus ('S') x7: server_version="16.4", server_encoding="UTF8",
+//       client_encoding="UTF8", DateStyle="ISO, MDY", TimeZone="UTC",
+//       integer_datetimes="on", standard_conforming_strings="on"
+//     * BackendKeyData ('K'): synthetic session PID (pgWireTlsHandshakes + 1000)
+//       and static cancellation token 0x4143544f ("ACTO")
+//   - SQL Session / Transaction No-Op Shims:
+//     * BEGIN / BEGIN TRANSACTION / START TRANSACTION / COMMIT / COMMIT TRANSACTION /
+//       END / ROLLBACK / ROLLBACK TRANSACTION / DISCARD ALL / RESET <guc> /
+//       DEALLOCATE <stmt> / CLOSE <cursor> / UNLISTEN <ch> / SET <guc>
+//       (each DuckDB query runs as an isolated stateless -readonly subprocess)
+//   - SQL Introspection & Health Probe Shims:
+//     * SHOW SERVER_VERSION -> "16.4-ACT-Omega-DuckDB"
+//     * SHOW TRANSACTION_ISOLATION / SHOW TRANSACTION ISOLATION LEVEL -> "read committed"
+//     * SHOW STANDARD_CONFORMING_STRINGS -> "on"
+//     * SELECT 1 [AS <alias>] -> 1
+//     * SELECT VERSION() -> "PostgreSQL 16.4 (ACT-Omega Sovereign Manifold DuckDB v1.5.6 Bridge)"
+//     * SELECT pg_is_in_recovery() -> probes resolveDuckdbCorpusPath() (default
+//       DUCKDB_CORPUS_PATH, optional ACT_OMEGA_PGWIRE_CORPUS_PATH override)
+//       readability via Deno.statSync + Deno.openSync({ read: true }) before
+//       returning "f" (embedded DuckDB -readonly has no PostgreSQL WAL recovery
+//       state; throws SQLSTATE 57P03 cannot_connect_now if corpus file is
+//       missing or unreadable).
 // =============================================================================
 
 import net from "node:net";
@@ -20,16 +48,22 @@ const TLS_KEY_PATH = "C:\\Users\\Nbell\\.act_omega_pgwire_tls\\server.key";
 const DUCKDB_EXE_PATH = "C:\\sovereign_manifold_v31\\00_control\\foss_bin\\duckdb.exe";
 const DUCKDB_CORPUS_PATH = "E:\\Sovereign_Manifold_SSD_Vault\\training_corpus\\sh_rw_corpus_v7210.duckdb";
 
+function resolveDuckdbCorpusPath(): string {
+  const override = Deno.env.get("ACT_OMEGA_PGWIRE_CORPUS_PATH");
+  return override && override.trim().length > 0 ? override.trim() : DUCKDB_CORPUS_PATH;
+}
+
 let pgWireActiveConnections = 0;
 let pgWireQueriesServed = 0;
 let pgWireTlsHandshakes = 0;
 let pgWireLastError = "";
 
 export function getPgWireStatus() {
+  const corpusPath = resolveDuckdbCorpusPath();
   let dbExists = false;
   let dbBytes = 0;
   try {
-    const st = Deno.statSync(DUCKDB_CORPUS_PATH);
+    const st = Deno.statSync(corpusPath);
     dbExists = st.isFile;
     dbBytes = st.size;
   } catch {}
@@ -42,7 +76,7 @@ export function getPgWireStatus() {
     listening_port: PGWIRE_PORT,
     tls_ready: certExists,
     duckdb_exe: DUCKDB_EXE_PATH,
-    duckdb_corpus_db: DUCKDB_CORPUS_PATH,
+    duckdb_corpus_db: corpusPath,
     duckdb_corpus_present: dbExists,
     duckdb_corpus_bytes: dbBytes,
     active_connections: pgWireActiveConnections,
@@ -292,43 +326,89 @@ function substituteParams(sql: string, params: (string | null)[]): string {
   });
 }
 
-async function runReadOnlyDuckdbSql(rawSql: string, params: (string | null)[] = []): Promise<ExecResult> {
-  const trimmed = rawSql.trim().replace(/;+\s*$/, "");
+export class PgWireSqlError extends Error {
+  readonly sqlstate: string;
+  constructor(sqlstate: string, message: string) {
+    super(message);
+    this.name = "PgWireSqlError";
+    this.sqlstate = sqlstate;
+  }
+}
+
+export function probeDuckdbCorpusReadable(corpusPath: string): void {
+  let st: Deno.FileInfo;
+  try {
+    st = Deno.statSync(corpusPath);
+  } catch (e) {
+    throw new PgWireSqlError("57P03", `DUCKDB_CORPUS_UNAVAILABLE: stat failed for ${corpusPath}: ${e}`);
+  }
+  if (!st.isFile || st.size <= 0) {
+    throw new PgWireSqlError("57P03", `DUCKDB_CORPUS_UNAVAILABLE: ${corpusPath} is not a non-empty regular file`);
+  }
+  let f: Deno.FsFile | null = null;
+  try {
+    f = Deno.openSync(corpusPath, { read: true });
+  } catch (e) {
+    throw new PgWireSqlError("57P03", `DUCKDB_CORPUS_UNREADABLE: open failed for ${corpusPath}: ${e}`);
+  } finally {
+    try {
+      f?.close();
+    } catch {}
+  }
+}
+
+export async function runReadOnlyDuckdbSql(rawSql: string, params: (string | null)[] = []): Promise<ExecResult> {
+  const trimmed = rawSql.replace(/(?:\s*;+\s*)+$/, "").trim();
   if (!trimmed) {
     return { kind: "empty", commandTag: "", columns: [], rows: [] };
   }
 
-  const upper = trimmed.toUpperCase();
+  const collapsed = trimmed.replace(/\s+/g, " ");
+  const upper = collapsed.toUpperCase();
+  // PROTOCOL_SHIM: Transaction/session control no-op shims for poolers/drivers; each DuckDB query runs as an isolated stateless -readonly subprocess (non-telemetry).
   if (upper === "BEGIN" || upper === "BEGIN TRANSACTION" || upper === "START TRANSACTION") {
     return { kind: "cmd", commandTag: "BEGIN", columns: [], rows: [] };
   }
+  // PROTOCOL_SHIM: Stateless transaction commit no-op for Hyperdrive/libpq driver compatibility (non-telemetry).
   if (upper === "COMMIT" || upper === "COMMIT TRANSACTION" || upper === "END") {
     return { kind: "cmd", commandTag: "COMMIT", columns: [], rows: [] };
   }
+  // PROTOCOL_SHIM: Stateless transaction rollback no-op for Hyperdrive/libpq driver compatibility (non-telemetry).
   if (upper === "ROLLBACK" || upper === "ROLLBACK TRANSACTION") {
     return { kind: "cmd", commandTag: "ROLLBACK", columns: [], rows: [] };
   }
+  // PROTOCOL_SHIM: Connection pool reset no-op; no persistent DuckDB session state exists across subprocess invocations (non-telemetry).
   if (upper === "DISCARD ALL") return { kind: "cmd", commandTag: "DISCARD ALL", columns: [], rows: [] };
+  // PROTOCOL_SHIM: Session GUC reset no-op for PGWire v3 driver cleanup (non-telemetry).
   if (upper.startsWith("RESET ")) return { kind: "cmd", commandTag: "RESET", columns: [], rows: [] };
+  // PROTOCOL_SHIM: Prepared statement cleanup no-op; portal/statement maps are managed in PGWire handler (non-telemetry).
   if (upper.startsWith("DEALLOCATE ")) return { kind: "cmd", commandTag: "DEALLOCATE ALL", columns: [], rows: [] };
+  // PROTOCOL_SHIM: Cursor close no-op for PGWire driver compatibility (non-telemetry).
   if (upper.startsWith("CLOSE ")) return { kind: "cmd", commandTag: "CLOSE ALL", columns: [], rows: [] };
+  // PROTOCOL_SHIM: Pub/sub UNLISTEN no-op for pooler reset sequences (non-telemetry).
   if (upper.startsWith("UNLISTEN ")) return { kind: "cmd", commandTag: "UNLISTEN", columns: [], rows: [] };
+  // PROTOCOL_SHIM: Session GUC SET no-op (e.g., application_name, statement_timeout, client_encoding) for PGWire handshake compatibility (non-telemetry).
   if (upper.startsWith("SET ")) return { kind: "cmd", commandTag: "SET", columns: [], rows: [] };
+  // PROTOCOL_SHIM: Constant PGWire server_version introspection response for Hyperdrive/libpq capability detection (non-telemetry).
   if (upper === "SHOW SERVER_VERSION") {
     return { kind: "rows", commandTag: "SELECT 1", columns: [{ name: "server_version", oid: 25 }], rows: [["16.4-ACT-Omega-DuckDB"]] };
   }
+  // PROTOCOL_SHIM: Constant PGWire transaction_isolation introspection response; bridge only permits read-only analytical queries (non-telemetry).
   if (upper === "SHOW TRANSACTION_ISOLATION" || upper === "SHOW TRANSACTION ISOLATION LEVEL") {
     return { kind: "rows", commandTag: "SELECT 1", columns: [{ name: "transaction_isolation", oid: 25 }], rows: [["read committed"]] };
   }
+  // PROTOCOL_SHIM: Constant PGWire standard_conforming_strings="on" response for libpq/pg string quoting compatibility (non-telemetry).
   if (upper === "SHOW STANDARD_CONFORMING_STRINGS") {
     return { kind: "rows", commandTag: "SELECT 1", columns: [{ name: "standard_conforming_strings", oid: 25 }], rows: [["on"]] };
   }
-  if (/^SELECT\s+1(?:\s+AS\s+(\w+))?$/i.test(trimmed)) {
-    const m = /^SELECT\s+1(?:\s+AS\s+(\w+))?$/i.exec(trimmed);
+  // PROTOCOL_SHIM: Fast-path liveness ping probe ("SELECT 1") returning constant 1 without spawning duckdb.exe (non-telemetry).
+  if (/^SELECT\s+1(?:\s+AS\s+(\w+))?$/i.test(collapsed)) {
+    const m = /^SELECT\s+1(?:\s+AS\s+(\w+))?$/i.exec(collapsed);
     const colName = m && m[1] ? m[1] : "?column?";
     return { kind: "rows", commandTag: "SELECT 1", columns: [{ name: colName, oid: 23 }], rows: [["1"]] };
   }
-  if (/^SELECT\s+VERSION\s*\(\s*\)$/i.test(trimmed)) {
+  // PROTOCOL_SHIM: Constant PostgreSQL banner string for driver version() introspection (non-telemetry).
+  if (/^SELECT\s+VERSION\s*\(\s*\)$/i.test(collapsed)) {
     return {
       kind: "rows",
       commandTag: "SELECT 1",
@@ -336,7 +416,9 @@ async function runReadOnlyDuckdbSql(rawSql: string, params: (string | null)[] = 
       rows: [["PostgreSQL 16.4 (ACT-Omega Sovereign Manifold DuckDB v1.5.6 Bridge)"]],
     };
   }
-  if (/^SELECT\s+pg_is_in_recovery\s*\(\s*\)$/i.test(trimmed)) {
+  // PROTOCOL_SHIM: Embedded DuckDB -readonly has no PostgreSQL WAL recovery state; probe real resolveDuckdbCorpusPath() readability before returning "f" (throws SQLSTATE 57P03 if unavailable/unreadable).
+  if (/^SELECT\s+pg_is_in_recovery(?:\s*\(\s*\))?$/i.test(collapsed)) {
+    probeDuckdbCorpusReadable(resolveDuckdbCorpusPath());
     return {
       kind: "rows",
       commandTag: "SELECT 1",
@@ -346,21 +428,22 @@ async function runReadOnlyDuckdbSql(rawSql: string, params: (string | null)[] = 
   }
 
   // Reject multi-statements and non-readonly mutating SQL keywords
-  if (trimmed.includes(";")) {
+  if (collapsed.includes(";")) {
     throw new Error("MULTI_STATEMENT_SQL_FORBIDDEN");
   }
-  if (/\b(INSERT|UPDATE|DELETE|DROP|ALTER|CREATE|ATTACH|DETACH|COPY|PRAGMA|EXPORT|IMPORT|LOAD|INSTALL|CALL|VACUUM|TRUNCATE)\b/i.test(trimmed)) {
+  if (/\b(INSERT|UPDATE|DELETE|DROP|ALTER|CREATE|ATTACH|DETACH|COPY|PRAGMA|EXPORT|IMPORT|LOAD|INSTALL|CALL|VACUUM|TRUNCATE)\b/i.test(collapsed)) {
     throw new Error("READ_ONLY_SQL_VIOLATION");
   }
-  if (!/^(SELECT|WITH|SHOW|DESCRIBE|EXPLAIN)\b/i.test(trimmed)) {
+  if (!/^(SELECT|WITH|SHOW|DESCRIBE|EXPLAIN)\b/i.test(collapsed)) {
     throw new Error("ONLY_READ_ONLY_ANALYTICAL_QUERIES_ALLOWED");
   }
 
   const finalSql = substituteParams(trimmed, params);
+  const corpusPath = resolveDuckdbCorpusPath();
   let dbArg: string | null = null;
   try {
-    if (Deno.statSync(DUCKDB_CORPUS_PATH).isFile) {
-      dbArg = DUCKDB_CORPUS_PATH;
+    if (Deno.statSync(corpusPath).isFile) {
+      dbArg = corpusPath;
     }
   } catch {}
 
@@ -494,6 +577,7 @@ async function handlePgWireClient(rawSock: net.Socket) {
 
     // 3. Send AuthenticationOk + ParameterStatus + BackendKeyData + ReadyForQuery
     await writeAll(conn, buildFrame("R", [i32Bytes(0)]));
+    // PROTOCOL_SHIM: Static PGWire v3 session parameters required by Cloudflare Hyperdrive / libpq / node-postgres handshake (non-telemetry).
     await writeAll(conn, buildParamStatus("server_version", "16.4"));
     await writeAll(conn, buildParamStatus("server_encoding", "UTF8"));
     await writeAll(conn, buildParamStatus("client_encoding", "UTF8"));
@@ -501,11 +585,13 @@ async function handlePgWireClient(rawSock: net.Socket) {
     await writeAll(conn, buildParamStatus("TimeZone", "UTC"));
     await writeAll(conn, buildParamStatus("integer_datetimes", "on"));
     await writeAll(conn, buildParamStatus("standard_conforming_strings", "on"));
+    // PROTOCOL_SHIM: Synthetic PGWire BackendKeyData PID (pgWireTlsHandshakes + 1000) and static secret key 0x4143544f ("ACTO") for driver cancellation framing (non-telemetry).
     await writeAll(conn, buildFrame("K", [i32Bytes(pgWireTlsHandshakes + 1000), i32Bytes(0x4143544f)]));
     await writeAll(conn, buildReady("I"));
 
     const statements = new Map<string, { sql: string; paramCount: number }>();
     const portals = new Map<string, { sql: string; params: (string | null)[]; cachedResult?: ExecResult }>();
+    let inExtendedError = false;
 
     // 4. Query message loop
     while (true) {
@@ -522,19 +608,23 @@ async function handlePgWireClient(rawSock: net.Socket) {
       if (msgTag === "X") break;
 
       if (msgTag === "Q") {
+        inExtendedError = false;
         const sql = decoder.decode(body).replace(/\0+$/, "");
         try {
           const res = await runReadOnlyDuckdbSql(sql);
           await emitExecResult(conn, res, true);
         } catch (err) {
-          pgWireLastError = String(err);
-          await writeAll(conn, buildError("ERROR", "42501", String(err)));
+          const sqlstate = err instanceof PgWireSqlError ? err.sqlstate : "42501";
+          const msg = err instanceof Error ? err.message : String(err);
+          pgWireLastError = msg;
+          await writeAll(conn, buildError("ERROR", sqlstate, msg));
         }
         await writeAll(conn, buildReady("I"));
         continue;
       }
 
       if (msgTag === "P") {
+        if (inExtendedError) continue;
         const nul1 = body.indexOf(0);
         const stmtName = decoder.decode(body.subarray(0, nul1));
         const rest1 = body.subarray(nul1 + 1);
@@ -548,6 +638,7 @@ async function handlePgWireClient(rawSock: net.Socket) {
       }
 
       if (msgTag === "B") {
+        if (inExtendedError) continue;
         let off = 0;
         const readCstr = () => {
           const end = body.indexOf(0, off);
@@ -580,6 +671,7 @@ async function handlePgWireClient(rawSock: net.Socket) {
       }
 
       if (msgTag === "D") {
+        if (inExtendedError) continue;
         const kind = String.fromCharCode(body[0]);
         const name = decoder.decode(body.subarray(1)).replace(/\0+$/, "");
         if (kind === "S") {
@@ -614,9 +706,11 @@ async function handlePgWireClient(rawSock: net.Socket) {
                 await writeAll(conn, buildFrame("n", []));
               }
             } catch (err) {
-              pgWireLastError = String(err);
-              await writeAll(conn, buildFrame("n", []));
-              await writeAll(conn, buildError("ERROR", "42501", String(err)));
+              const sqlstate = err instanceof PgWireSqlError ? err.sqlstate : "42501";
+              const msg = err instanceof Error ? err.message : String(err);
+              pgWireLastError = msg;
+              inExtendedError = true;
+              await writeAll(conn, buildError("ERROR", sqlstate, msg));
             }
           } else {
             await writeAll(conn, buildFrame("n", []));
@@ -626,6 +720,7 @@ async function handlePgWireClient(rawSock: net.Socket) {
       }
 
       if (msgTag === "E") {
+        if (inExtendedError) continue;
         const nul = body.indexOf(0);
         const portalName = decoder.decode(body.subarray(0, nul));
         const pt = portals.get(portalName);
@@ -635,8 +730,11 @@ async function handlePgWireClient(rawSock: net.Socket) {
             pt.cachedResult = undefined;
             await emitExecResult(conn, res, false);
           } catch (err) {
-            pgWireLastError = String(err);
-            await writeAll(conn, buildError("ERROR", "42501", String(err)));
+            const sqlstate = err instanceof PgWireSqlError ? err.sqlstate : "42501";
+            const msg = err instanceof Error ? err.message : String(err);
+            pgWireLastError = msg;
+            inExtendedError = true;
+            await writeAll(conn, buildError("ERROR", sqlstate, msg));
           }
         }
         continue;
@@ -652,6 +750,7 @@ async function handlePgWireClient(rawSock: net.Socket) {
       }
 
       if (msgTag === "S") {
+        inExtendedError = false;
         await writeAll(conn, buildReady("I"));
         continue;
       }

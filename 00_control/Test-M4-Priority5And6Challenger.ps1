@@ -342,12 +342,30 @@ try {
 }
 
 # Subtest 3D: Live Weight Perturbation Proving Real Weight Sensitivity (Tool 361 + /converse)
+function Write-BytesAtomicRetry {
+    param([string]$TargetPath, [byte[]]$Bytes)
+    $tmp = "$TargetPath.m4tmp"
+    [System.IO.File]::WriteAllBytes($tmp, $Bytes)
+    for ($i = 0; $i -lt 10; $i++) {
+        try {
+            Move-Item -LiteralPath $tmp -Destination $TargetPath -Force
+            return
+        } catch {
+            Start-Sleep -Milliseconds 150
+        }
+    }
+    [System.IO.File]::WriteAllBytes($TargetPath, $Bytes)
+    if (Test-Path $tmp) { Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue }
+}
 $manifestFile = "$baseDir\00_control\weights\sovereign_harmonic_weights_manifest.json"
 $trainMetaFile = "$baseDir\00_control\weights\sh_xi_base_train_meta.json"
 $origSh4zBytes = [System.IO.File]::ReadAllBytes($baseSh4z)
-$origManifestText = [System.IO.File]::ReadAllText($manifestFile)
-$origTrainMetaText = [System.IO.File]::ReadAllText($trainMetaFile)
+$origManifestBytes = [System.IO.File]::ReadAllBytes($manifestFile)
+$origManifestText = [System.Text.Encoding]::UTF8.GetString($origManifestBytes)
+$origTrainMetaBytes = [System.IO.File]::ReadAllBytes($trainMetaFile)
+$origTrainMetaText = [System.Text.Encoding]::UTF8.GetString($origTrainMetaBytes)
 try {
+    try { $null = Invoke-ToolPost "/api/v1/aegis/cron_status" @{ enabled = $false } 15 } catch {}
     $probeBody = @{ prompt = "Describe Viviani 1000 mV dendritic conservation in Rust."; max_tokens = 24; temperature = 0.0 }
     $baselineConv = Invoke-ToolPost "/api/v1/sovereign_harmonic/converse" $probeBody 30
     $baselineT361 = Invoke-ToolPost "/api/v1/tools/t361" $probeBody 30
@@ -358,9 +376,10 @@ try {
     $origSha = Get-BytesSha256 $origSh4zBytes
     $mutSha = Get-BytesSha256 $mutBytes
 
-    [System.IO.File]::WriteAllBytes($baseSh4z, $mutBytes)
-    [System.IO.File]::WriteAllText($manifestFile, $origManifestText.Replace($origSha, $mutSha))
-    [System.IO.File]::WriteAllText($trainMetaFile, $origTrainMetaText.Replace($origSha, $mutSha))
+    $utf8NoBom = [System.Text.UTF8Encoding]::new($false)
+    Write-BytesAtomicRetry -TargetPath $baseSh4z -Bytes $mutBytes
+    Write-BytesAtomicRetry -TargetPath $manifestFile -Bytes ($utf8NoBom.GetBytes($origManifestText.Replace($origSha, $mutSha)))
+    Write-BytesAtomicRetry -TargetPath $trainMetaFile -Bytes ($utf8NoBom.GetBytes($origTrainMetaText.Replace($origSha, $mutSha)))
 
     $mutConv = Invoke-ToolPost "/api/v1/sovereign_harmonic/converse" $probeBody 30
     $mutT361 = Invoke-ToolPost "/api/v1/tools/t361" $probeBody 30
@@ -378,9 +397,10 @@ try {
     $results["Case3D_LiveWeightPerturbation"] = "FAIL ($($_))"
     $allPass = $false
 } finally {
-    [System.IO.File]::WriteAllBytes($baseSh4z, $origSh4zBytes)
-    [System.IO.File]::WriteAllText($manifestFile, $origManifestText)
-    [System.IO.File]::WriteAllText($trainMetaFile, $origTrainMetaText)
+    Write-BytesAtomicRetry -TargetPath $baseSh4z -Bytes $origSh4zBytes
+    Write-BytesAtomicRetry -TargetPath $manifestFile -Bytes $origManifestBytes
+    Write-BytesAtomicRetry -TargetPath $trainMetaFile -Bytes $origTrainMetaBytes
+    try { $null = Invoke-ToolPost "/api/v1/aegis/cron_status" @{ enabled = $true } 15 } catch {}
     # Trigger clean cache reload back to restored weights
     $null = Invoke-ToolPost "/api/v1/tools/t361" @{ prompt = "cache restore"; max_tokens = 4; temperature = 0.0 } 30
 }

@@ -1,10 +1,10 @@
 {
   "receipt_id": "s6_cloudflare_rotation_and_gatekeeper_receipt",
-  "version": "v73.2.2",
-  "item": "Item #5 (S6 Cloudflare Credential Rotation, Wrangler Parameterization & Repo-Wide Gatekeeper Scan)",
-  "recorded_at_utc": "2026-11-19T05:37:00Z",
+  "version": "v73.2.3",
+  "item": "Item #6 (Cloudflare 11-Table Reconciliation, Live Wrangler Rotation Proof & account_id PARTIAL Controls; prior v73.2.2 Item #5)",
+  "recorded_at_utc": "2026-11-23T04:10:15Z",
   "overall_status": "PARTIAL",
-  "reason_for_partial": "D1 database, Hyperdrive config, and KV namespace were rotated to fresh instances and old exposed instances were permanently deleted; Cloudflare tenant account_id is immutable in-place without migrating to a separate Cloudflare tenant account.",
+  "reason_for_partial": "D1 database, Hyperdrive config, and KV namespace were rotated to fresh instances and old exposed instances were permanently deleted (verified live via wrangler); Cloudflare tenant account_id is immutable in-place without migrating to a separate Cloudflare tenant account.",
   "external_credentials_store": "C:\\Users\\Nbell\\.act_omega_cloudflare_ids.json",
   "rotated_resources": {
     "d1_database": {
@@ -14,6 +14,26 @@
       "new_name": "act_omega_d1_vault_v7322",
       "new_id_sha256": "1cf8a842576926000b8604f237a21c39c3824b513c7590b3e3a83f5fc4a4b62d",
       "tables_migrated": 11,
+      "user_tables_verified": 11,
+      "system_tables_verified": 2,
+      "total_sqlite_master_tables": 13,
+      "user_table_names": [
+        "edge_cluster_metadata",
+        "harness_5w1h_audit_log",
+        "npage_tier_snapshots",
+        "v40_qat_training_sessions",
+        "v40_shard_registry",
+        "v41_measured_sha256_audit",
+        "v42_5w1h_distributed_routes",
+        "v43_antigravity_agent_roster",
+        "v44_multiturn_working_memory_ring",
+        "v44_visiting_llm_agent_ledger",
+        "wal_merkle_checkpoints"
+      ],
+      "system_table_names": [
+        "_cf_KV",
+        "sqlite_sequence"
+      ],
       "migration_queries_executed": 6884
     },
     "hyperdrive": {
@@ -34,8 +54,33 @@
       "status": "PARTIAL",
       "immutable_in_place": true,
       "id_sha256": "8e6a8f04e18e666debd249a7e2664148277a909320ec58bf1051e8453767fe1e",
-      "note": "Cloudflare tenant account_id cannot be rotated in-place without migrating the entire account, zone, tunnel, and VPC mesh to a separate Cloudflare tenant account."
+      "note": "Cloudflare tenant account_id cannot be rotated in-place without migrating the entire account, zone, tunnel, and VPC mesh to a separate Cloudflare tenant account.",
+      "compensating_controls": {
+        "externalized_config_only": true,
+        "external_store": "C:\\Users\\Nbell\\.act_omega_cloudflare_ids.json",
+        "no_access_from_account_id_alone": true,
+        "api_auth_isolation": "Cloudflare OAuth / scoped API tokens stored exclusively outside git; Deploy-CloudflareEdge.ps1 and Verify-CloudflareRotationLive.ps1 strip CLOUDFLARE_API_TOKEN and render ephemeral configs in $env:TEMP.",
+        "zero_trust_and_operator_auth_enforced": true,
+        "edge_auth_layers": "Cloudflare Access RS256 JWT + encrypted SOVEREIGN_OPERATOR_KEY secret (X-Sovereign-Operator-Key header, ?key= rejected) + pre-proxy 403 gate in worker_vpc_shadow_v3700.js.",
+        "repo_wide_leak_gatekeeper": "00_control/Invoke-BrutalAgentGatekeeper.ps1 :: Test-CloudflareIdLeakScan",
+        "live_wrangler_verification_receipt": "03_vault/receipts/s6_cloudflare_live_wrangler_verification.txt",
+        "residual_risk": "Historical account_id values remain in prior git commits (e9804bf2 and earlier); account_id cannot rotate in-place without migrating zone, tunnel, and VPC mesh to a new Cloudflare account."
+      }
     }
+  },
+  "live_wrangler_verification": {
+    "script": "00_control/cloudflare_edge/Verify-CloudflareRotationLive.ps1",
+    "receipt": "03_vault/receipts/s6_cloudflare_live_wrangler_verification.txt",
+    "receipt_sha256": "e9d1c27b794fe221a3edfa4a3fdcc29eb10f7d8ed7914d48f3bdbb75fc287d54",
+    "transcript_body_sha256": "6b0424b2967a2c575b2e19b021e847c38a798d04bff691dbd2435946c380bc0b",
+    "hmac_algorithm": "RFC2104_HMAC_SHA256",
+    "hmac_sha256": "ff210ad9e15b18f6027b8dfbefd86c82adde43937e22c5b78e25162be347d5f4",
+    "deleted_instances_confirmed_absent": [
+      "act_omega_d1_vault",
+      "act-omega-duckdb-hyperdrive",
+      "ACT_OMEGA_KV"
+    ],
+    "verify_only_command": "powershell -NoProfile -ExecutionPolicy Bypass -File 00_control\\cloudflare_edge\\Verify-CloudflareRotationLive.ps1 -VerifyOnly"
   },
   "wrangler_parameterization": {
     "tokenized_configs": [

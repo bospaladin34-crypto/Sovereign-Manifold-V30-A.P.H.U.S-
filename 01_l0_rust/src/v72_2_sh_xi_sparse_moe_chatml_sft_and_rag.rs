@@ -85,6 +85,8 @@ pub const E_SH_XI_WGSL_RAG_SHADER_PATH: &str =
     "E:\\Sovereign_Manifold_SSD_Vault\\autopoietic_codegen\\wgsl_kernels\\igpu_sh_xi_rag_384d_cosine.wgsl";
 pub const C_SH_XI_SFT_MANIFEST_PATH: &str =
     "03_vault/connectome/sh_xi_week2_chatml_sft_manifest.json";
+pub const E_SH_XI_SFT_MANIFEST_PATH: &str =
+    "E:\\Sovereign_Manifold_SSD_Vault\\connectome\\sh_xi_week2_chatml_sft_manifest.json";
 pub const C_SH_XI_SOURCED_SFT_JSONL_PATH: &str =
     "03_vault/corpus/sh_xi_sourced_multiturn_sft_v1.jsonl";
 pub const E_SH_XI_SOURCED_SFT_JSONL_PATH: &str =
@@ -1821,7 +1823,7 @@ pub fn v72_2_train_or_get_moe_bank(force_rebuild: bool) -> (f64, f64, f64, f64, 
     let wd_moe: f32 = 0.01_f32;
     let val_pairs: Vec<(Vec<u16>, usize)> = val_seqs.into_iter().map(|(s, b, _)| (s, b)).collect();
     let val_precomputed_opt = v72_2_precompute_shell01_positions(&val_pairs).ok();
-    let mut moe_curve_csv = String::from("step,lr_moe,lr_wout,train_mean_ce_nats,val_bpb_384d,val_bpb_768d,val_bpb_3shell,val_ppl_3shell\n");
+    let mut moe_curve_csv = String::from("step,lr_moe,lr_wout,train_mean_ce_nats,val_bpb_384d,val_bpb_768d,val_bpb_3shell,val_ppl_3shell,global_alpha_moe,eval_footing\n");
     let mut step_m: usize = 0;
     while step_m < 16 {
         let mut d_centroids: Vec<Vec<f32>> = Vec::with_capacity(V72_2_ACTIVE_MOE_EXPERTS);
@@ -2015,7 +2017,7 @@ pub fn v72_2_train_or_get_moe_bank(force_rebuild: bool) -> (f64, f64, f64, f64, 
             None => (0.0, 0.0, 0.0, 1.0),
         };
         moe_curve_csv.push_str(&format!(
-            "{},{:.5},{:.5},{:.6},{:.6},{:.6},{:.6},{:.6}\n",
+            "{},{:.5},{:.5},{:.6},{:.6},{:.6},{:.6},{:.6},0.3000,per_step_pre_rebalance_alpha_0.30\n",
             step_m,
             lr_moe,
             lr_wout,
@@ -2126,19 +2128,23 @@ pub fn v72_2_train_or_get_moe_bank(force_rebuild: bool) -> (f64, f64, f64, f64, 
         0.0
     };
     moe_curve_csv.push_str(&format!(
-        "16,{:.5},{:.5},{:.6},{:.6},{:.6},{:.6},{:.6}\n",
+        "16,{:.5},{:.5},{:.6},{:.6},{:.6},{:.6},{:.6},{:.4},post_rebalance_calibrated_alpha_eval\n",
         lr_moe,
         lr_wout,
         final_train_ce,
         vb0,
         vb1,
         vb2,
-        vppl2
+        vppl2,
+        bank.global_alpha_moe
     ));
 
     let (ssd_path, ssd_bytes, ssd_sha) = v72_2_serialize_moe_sh4z_256slot_vault(&bank.experts);
     let _ = fs::create_dir_all("03_vault/connectome");
     let _ = fs::write("03_vault/connectome/sh_xi_moe_training_curve.csv", moe_curve_csv.as_bytes());
+    if Path::new("E:\\Sovereign_Manifold_SSD_Vault\\connectome").exists() {
+        let _ = fs::write("E:\\Sovereign_Manifold_SSD_Vault\\connectome\\sh_xi_moe_training_curve.csv", moe_curve_csv.as_bytes());
+    }
     let base_meta_sha = fs::read(crate::v72_1_sh_xi_matryoshka_384_768_cuda_pretrainer::C_SH_XI_BASE_SH4Z_PATH)
         .map(|b| v72_1_sha256_hex(&b))
         .unwrap_or_else(|_| String::from("UNMEASURED/OFFLINE"));
@@ -2147,7 +2153,7 @@ pub fn v72_2_train_or_get_moe_bank(force_rebuild: bool) -> (f64, f64, f64, f64, 
         .map(|b| v72_1_sha256_hex(&b))
         .unwrap_or_else(|_| String::from("UNMEASURED/OFFLINE"));
     let meta_json = format!(
-        "{{\"artifact_key\":\"sh_xi_moe_experts\",\"ssd_moe_bytes\":{},\"ssd_moe_sha256\":\"{}\",\"seed_init\":\"0x7220_E800\",\"trained_steps\":16,\"lr_moe\":{:.5},\"lr_wout\":{:.5},\"wd_moe\":{:.4},\"base_sh4z_sha256\":\"{}\",\"corpus_path\":\"03_vault/corpus/sh_rw_corpus_v7210.jsonl\",\"corpus_sha256\":\"{}\",\"loss_curve_csv\":\"03_vault/connectome/sh_xi_moe_training_curve.csv\",\"active_experts_count\":{},\"experts_utilized\":{},\"load_balance_cv\":{:.6},\"global_alpha_moe\":{:.4},\"val_bpb_384d\":{:.6},\"val_bpb_768d\":{:.6},\"val_bpb_3shell\":{:.6},\"val_ppl_3shell\":{:.6},\"rtx3050_coexec_ms\":{:.4},\"cpu_12t_avx2_moe_us\":{}}}\n",
+        "{{\"artifact_key\":\"sh_xi_moe_experts\",\"ssd_moe_bytes\":{},\"ssd_moe_sha256\":\"{}\",\"seed_init\":\"0x7220_E800\",\"trained_steps\":16,\"lr_moe\":{:.5},\"lr_wout\":{:.5},\"wd_moe\":{:.4},\"base_sh4z_sha256\":\"{}\",\"corpus_path\":\"03_vault/corpus/sh_rw_corpus_v7210.jsonl\",\"corpus_sha256\":\"{}\",\"loss_curve_csv\":\"03_vault/connectome/sh_xi_moe_training_curve.csv\",\"curve_footing_note\":\"Steps 0..15 evaluate pre-rebalance experts at global_alpha_moe=0.3000 (eval_footing=per_step_pre_rebalance_alpha_0.30); row 16 evaluates post-rebalance experts with held-in calibrated global_alpha_moe (eval_footing=post_rebalance_calibrated_alpha_eval).\",\"frozen_base_q8_0_eval_note\":\"val_bpb_384d and val_bpb_768d are intentionally constant across steps 0..16 because the Q8_0 384D/768D base model is frozen during Shell-2 sparse MoE training.\",\"active_experts_count\":{},\"experts_utilized\":{},\"load_balance_cv\":{:.6},\"global_alpha_moe\":{:.4},\"val_bpb_384d\":{:.6},\"val_bpb_768d\":{:.6},\"val_bpb_3shell\":{:.6},\"val_ppl_3shell\":{:.6},\"rtx3050_coexec_ms\":{:.4},\"cpu_12t_avx2_moe_us\":{}}}\n",
         ssd_bytes,
         ssd_sha,
         lr_moe,
@@ -3194,6 +3200,10 @@ pub fn v72_2_train_or_get_masked_chatml_sft(force_retrain: bool) -> V72_2SftRece
     );
     let _ = fs::create_dir_all("03_vault/connectome");
     let _ = fs::write(C_SH_XI_SFT_MANIFEST_PATH, manifest.as_bytes());
+    if Path::new("E:\\").exists() {
+        let _ = fs::create_dir_all("E:\\Sovereign_Manifold_SSD_Vault\\connectome");
+        let _ = fs::write(E_SH_XI_SFT_MANIFEST_PATH, manifest.as_bytes());
+    }
 
     let receipt = V72_2SftReceipt {
         dialogues_count: dialogues.len(),
@@ -6105,10 +6115,12 @@ pub fn v72_2_dispatch_tool_368_week2_chain368_master_certification(payload: &str
     };
 
     let live_ver = crate::v73_2_cloudflare_vpc_mesh_and_pgwire_hyperdrive::v73_2_read_live_release_version();
+    let live_ota = crate::v73_2_cloudflare_vpc_mesh_and_pgwire_hyperdrive::v73_2_read_live_ota_metadata();
     let receipt = format!(
-        "{{\"status\":\"{}\",\"tool_id\":368,\"version\":\"{}\",\"milestone\":\"CHAIN 368\",\"total_tools\":368,\"engine\":\"SH_XI_WEEK2_MASTER_CERTIFICATION\",\"measurement_latency_us\":{},\"all_week2_gates_passed\":{},\"gate_1_shell2_sparse_moe\":{{\"passed\":{},\"active_experts\":{},\"preallocated_slots\":{},\"experts_utilized\":{},\"load_balance_cv\":{:.4},\"step0_max_abs_diff\":{:.12},\"val_bpb_384d\":{:.6},\"val_bpb_768d\":{:.6},\"val_bpb_3shell_moe\":{:.6},\"val_ppl_3shell_moe\":{:.4},\"rtx3050_coexec_ms\":{:.4},\"cpu_12t_avx2_moe_us\":{},\"ssd_sh4z_bytes\":{},\"ssd_sh4z_sha256\":\"{}\"}},\"gate_2_masked_chatml_sft\":{{\"passed\":{},\"dialogues\":{},\"turns_range\":\"1..{}\",\"prompt_grad_norm\":{:.12},\"init_ce_nats\":{:.6},\"final_ce_nats\":{:.6},\"rweval500_overlap\":{}}},\"gate_3_wgsl_rag_and_trisilicon\":{{\"passed\":{},\"rtx3050_temp_c\":{},\"pixel10_status\":\"{}\",\"pixel10_serial\":\"{}\",\"pixel10_battery_pct\":{},\"pixel10_temp_c\":{:.1},\"pixel8_status\":\"{}\",\"pixel8_serial\":\"{}\",\"pixel8_transport\":\"{}\",\"pixel8_battery_pct\":{},\"pixel8_temp_c\":{:.1},\"pixel8_apex_pid\":{}}},\"gate_4_json_fsm_and_bus\":{{\"passed\":{},\"valid_json_100_of_100\":{}}},\"gate_5_ifeval64_multiturn_and_rustc\":{{\"passed\":{},\"rustc_l0_zero_bracket_unit_test_passed\":{},\"l0_zero_brackets_verified\":{},\"rustc_latency_us\":{},\"rustc_output\":\"{}\"}},\"gate_6_lean4_formal_proofs\":{{\"passed\":{},\"theorem_count\":{},\"vault_l0_sha256_synced\":{},\"sha256\":\"{}\"}},\"proof\":\"{} | {}_QED | BPB: {:.4}->{:.4}->{:.4} | PromptGrad={:.6} | Gate5={}\"}}",
+        "{{\"status\":\"{}\",\"tool_id\":368,\"version\":\"{}\",\"suite_milestone\":\"SH_XI_WEEK2\",\"total_tools\":{},\"engine\":\"SH_XI_WEEK2_MASTER_CERTIFICATION\",\"measurement_latency_us\":{},\"all_week2_gates_passed\":{},\"gate_1_shell2_sparse_moe\":{{\"passed\":{},\"active_experts\":{},\"preallocated_slots\":{},\"experts_utilized\":{},\"load_balance_cv\":{:.4},\"step0_max_abs_diff\":{:.12},\"val_bpb_384d\":{:.6},\"val_bpb_768d\":{:.6},\"val_bpb_3shell_moe\":{:.6},\"val_ppl_3shell_moe\":{:.4},\"rtx3050_coexec_ms\":{:.4},\"cpu_12t_avx2_moe_us\":{},\"ssd_sh4z_bytes\":{},\"ssd_sh4z_sha256\":\"{}\"}},\"gate_2_masked_chatml_sft\":{{\"passed\":{},\"dialogues\":{},\"turns_range\":\"1..{}\",\"prompt_grad_norm\":{:.12},\"init_ce_nats\":{:.6},\"final_ce_nats\":{:.6},\"rweval500_overlap\":{}}},\"gate_3_wgsl_rag_and_trisilicon\":{{\"passed\":{},\"rtx3050_temp_c\":{},\"pixel10_status\":\"{}\",\"pixel10_serial\":\"{}\",\"pixel10_battery_pct\":{},\"pixel10_temp_c\":{:.1},\"pixel8_status\":\"{}\",\"pixel8_serial\":\"{}\",\"pixel8_transport\":\"{}\",\"pixel8_battery_pct\":{},\"pixel8_temp_c\":{:.1},\"pixel8_apex_pid\":{}}},\"gate_4_json_fsm_and_bus\":{{\"passed\":{},\"valid_json_100_of_100\":{}}},\"gate_5_ifeval64_multiturn_and_rustc\":{{\"passed\":{},\"rustc_l0_zero_bracket_unit_test_passed\":{},\"l0_zero_brackets_verified\":{},\"rustc_latency_us\":{},\"rustc_output\":\"{}\"}},\"gate_6_lean4_formal_proofs\":{{\"passed\":{},\"theorem_count\":{},\"vault_l0_sha256_synced\":{},\"sha256\":\"{}\"}},\"proof\":\"{} | {}_QED | BPB: {:.4}->{:.4}->{:.4} | PromptGrad={:.6} | Gate5={}\"}}",
         status,
         v61_escape_clean(&live_ver),
+        live_ota.tools_count,
         elapsed_us,
         all_week2_gates_passed,
         g1_moe_ok,
@@ -6156,7 +6168,7 @@ pub fn v72_2_dispatch_tool_368_week2_chain368_master_certification(payload: &str
         lean_mirror_synced,
         lean_c_sha,
         if all_week2_gates_passed {
-            "SH_XI_WEEK2_CHAIN368_MASTER_CERTIFIED"
+            "SH_XI_WEEK2_MASTER_CERTIFIED"
         } else {
             "UNMEASURED_WEEK2_GATES_INCOMPLETE"
         },

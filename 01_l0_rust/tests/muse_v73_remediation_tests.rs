@@ -37,6 +37,7 @@ use act_omega_l0_core::v72_2_sh_xi_sparse_moe_chatml_sft_and_rag::{
     v72_2_dispatch_tool_363_shell2_cpu_ssd_sparse_moe_bank,
     v72_2_dispatch_tool_364_chatml_masked_sft_trainer,
     v72_2_dispatch_tool_365_igpu_grounded_rag_and_telemetry,
+    v72_2_dispatch_tool_368_week2_chain368_master_certification,
     v72_2_eval_tool_368_subjson_gates,
     v72_2_evaluate_converse_output_quality_gate,
     v72_2_extract_word_5gram_shingles,
@@ -56,14 +57,22 @@ use act_omega_l0_core::v73_1_nov12_15_research_kernels::{
     v73_1_verify_signed_lean_receipt_at,
 };
 use act_omega_l0_core::v73_2_cloudflare_vpc_mesh_and_pgwire_hyperdrive::{
+    V73_2_HEALTH_ENDPOINT,
+    V73_2_TELEMETRY_INGEST_ENDPOINT,
     count_live_lean_theorems_at_path,
     count_live_lean_theorems_canonical,
+    v73_2_constant_time_compare_key,
     v73_2_count_live_lean_theorems,
     v73_2_dispatch_chain404_master_certification,
+    v73_2_has_query_key_param,
+    v73_2_has_telemetry_write_query_param,
     v73_2_parse_sync_matrix_json,
+    v73_2_percent_decode_ascii,
     v73_2_read_live_ota_metadata,
     v73_2_read_live_release_version,
     v73_2_resolve_allowed_l0_cors_origin,
+    v73_2_validate_telemetry_bounds,
+    v73_2_verify_telemetry_or_operator_auth_with_keys,
     validate_live_lean_theorems_with_floor,
     validate_live_lean_threshold,
 };
@@ -590,12 +599,16 @@ fn test_m2_item1_disk_corpus_guard_and_base_curve_meta_parity() {
     let lines: Vec<&str> = curve_csv.lines().filter(|l| !l.trim().is_empty()).collect();
     assert_eq!(
         lines.first().copied(),
-        Some("step,lr,gamma_net2wider,val_nats_384d,val_nats_768d,val_bpb_384d,val_bpb_768d")
+        Some("step,lr,gamma_net2wider,val_nats_384d,val_nats_768d,val_bpb_384d,val_bpb_768d,checkpoint_kind")
     );
-    assert_eq!(lines.len(), 7, "Expected header + 6 rows (0 g=0, 0 g=1, 2500, 5000, 7500, 10000)");
-    let parse_row = |line: &str| -> (usize, f64, f64, f64, f64, f64) {
+    assert!(
+        lines.len() >= 13 && lines.len() <= 14,
+        "Expected header + 12 or 13 rows (0 g=0, 0 g=1, 1000..10000, optional selected_best_checkpoint), got {}",
+        lines.len()
+    );
+    let parse_row = |line: &str| -> (usize, f64, f64, f64, f64, f64, String) {
         let cols: Vec<&str> = line.split(',').collect();
-        assert_eq!(cols.len(), 7, "Expected 7 CSV columns in {}", line);
+        assert_eq!(cols.len(), 8, "Expected 8 CSV columns in {}", line);
         (
             cols[0].parse::<usize>().expect("step"),
             cols[2].parse::<f64>().expect("gamma"),
@@ -603,18 +616,39 @@ fn test_m2_item1_disk_corpus_guard_and_base_curve_meta_parity() {
             cols[4].parse::<f64>().expect("val_nats_768d"),
             cols[5].parse::<f64>().expect("val_bpb_384d"),
             cols[6].parse::<f64>().expect("val_bpb_768d"),
+            cols[7].trim().to_string(),
         )
     };
-    let r0_g0 = parse_row(lines[1]);
-    let r0_g1 = parse_row(lines[2]);
-    let r_2500 = parse_row(lines[3]);
-    let r_5000 = parse_row(lines[4]);
-    let r_7500 = parse_row(lines[5]);
-    let r_10000 = parse_row(lines[6]);
-    assert_eq!((r0_g0.0, r0_g1.0, r_2500.0, r_5000.0, r_7500.0, r_10000.0), (0, 0, 2500, 5000, 7500, 10000));
+    let parsed_rows: Vec<(usize, f64, f64, f64, f64, f64, String)> =
+        lines.iter().skip(1).map(|l| parse_row(l)).collect();
+    let r0_g0 = &parsed_rows[0];
+    let r0_g1 = &parsed_rows[1];
+    assert_eq!((r0_g0.0, r0_g0.6.as_str()), (0, "init_gated_gamma0"));
+    assert_eq!((r0_g1.0, r0_g1.6.as_str()), (0, "init_ungated_gamma1"));
     assert!((r0_g0.1 - 0.0).abs() < 1e-6);
     assert!((r0_g1.1 - 1.0).abs() < 1e-6);
     assert!((r0_g1.3 - r0_g1.2).abs() > 1e-4, "Step 0 gamma=1.0 ungated 768D loss must differ from 384D");
+
+    let live_rows: Vec<&(usize, f64, f64, f64, f64, f64, String)> = parsed_rows
+        .iter()
+        .filter(|r| r.6 == "live_step")
+        .collect();
+    assert!(live_rows.len() >= 9, "Expected at least 9 live_step rows, got {}", live_rows.len());
+    for i in 0..live_rows.len() {
+        for j in (i + 1)..live_rows.len() {
+            let a = live_rows[i];
+            let b = live_rows[j];
+            let same_tuple = (a.2 - b.2).abs() < 1e-9
+                && (a.3 - b.3).abs() < 1e-9
+                && (a.4 - b.4).abs() < 1e-9
+                && (a.5 - b.5).abs() < 1e-9;
+            assert!(
+                !same_tuple,
+                "Duplicate live_step 4-metric tuple detected between step {} and step {}",
+                a.0, b.0
+            );
+        }
+    }
 
     // Verify sh_xi_base_train_meta.json fields & endpoint parity with curve CSV
     let meta_str = std::fs::read_to_string("00_control/weights/sh_xi_base_train_meta.json")
@@ -625,14 +659,43 @@ fn test_m2_item1_disk_corpus_guard_and_base_curve_meta_parity() {
     assert!(!f32_sci.is_empty() && f32_sci.contains('e'), "prob_sum_max_dev_f32_sci must be scientific notation");
     assert_eq!(meta.get("corpus_sha256").and_then(|v| v.as_str()), Some(summary.corpus_sha256.as_str()));
 
+    let sel_step = meta.get("selected_checkpoint_step").and_then(|v| v.as_u64()).expect("selected_checkpoint_step") as usize;
+    let s10k_live_n768 = meta.get("step_10000_live_val_nats_768").and_then(|v| v.as_f64()).expect("step_10000_live_val_nats_768");
+    let s10k_live_bpb768 = meta.get("step_10000_live_val_bpb_768").and_then(|v| v.as_f64()).expect("step_10000_live_val_bpb_768");
+    assert!(s10k_live_n768.is_finite() && s10k_live_bpb768.is_finite());
+    let sampling_note = meta.get("curve_sampling_note").and_then(|v| v.as_str()).unwrap_or("");
+    assert!(!sampling_note.is_empty(), "curve_sampling_note must be non-empty");
+    let grad_rec_path = meta.get("layer_grad_l2_norms_receipt").and_then(|v| v.as_str()).expect("layer_grad_l2_norms_receipt");
+    assert_eq!(grad_rec_path, "03_vault/connectome/sh_xi_base_step_grad_norms_receipt.json");
+    let grad_rec_str = std::fs::read_to_string(grad_rec_path).expect("sh_xi_base_step_grad_norms_receipt.json");
+    let grad_rec: serde_json::Value = serde_json::from_str(&grad_rec_str).expect("valid grad receipt json");
+    assert_eq!(grad_rec.get("sh4z_sha256").and_then(|v| v.as_str()), meta.get("sh4z_sha256").and_then(|v| v.as_str()));
+    assert_eq!(grad_rec.get("corpus_sha256").and_then(|v| v.as_str()), meta.get("corpus_sha256").and_then(|v| v.as_str()));
+    assert_eq!(
+        grad_rec.get("layer_grad_l2_norms").and_then(|v| v.as_array()).map(|a| a.len()),
+        Some(12)
+    );
+
+    let sel_row = parsed_rows
+        .iter()
+        .find(|r| r.6 == "selected_best_checkpoint")
+        .expect("selected_best_checkpoint row");
+    assert_eq!(sel_row.0, sel_step);
+    let row_10000 = parsed_rows
+        .iter()
+        .find(|r| r.0 == 10000)
+        .expect("step 10000 row");
+    assert!((s10k_live_n768 - row_10000.3).abs() < 1e-6);
+    assert!((s10k_live_bpb768 - row_10000.5).abs() < 1e-6);
+
     let m_init_b384 = meta.get("init_val_bpb_384").and_then(|v| v.as_f64()).expect("init_val_bpb_384");
     let m_init_b768_ug = meta.get("init_val_bpb_768_ungated_gamma1").and_then(|v| v.as_f64()).expect("init_val_bpb_768_ungated_gamma1");
     let m_fin_b384 = meta.get("final_val_bpb_384").and_then(|v| v.as_f64()).expect("final_val_bpb_384");
     let m_fin_b768 = meta.get("final_val_bpb_768").and_then(|v| v.as_f64()).expect("final_val_bpb_768");
     assert!((m_init_b384 - r0_g0.4).abs() < 1e-6);
     assert!((m_init_b768_ug - r0_g1.5).abs() < 1e-6);
-    assert!((m_fin_b384 - r_10000.4).abs() < 1e-6);
-    assert!((m_fin_b768 - r_10000.5).abs() < 1e-6);
+    assert!((m_fin_b384 - sel_row.4).abs() < 1e-6);
+    assert!((m_fin_b768 - sel_row.5).abs() < 1e-6);
 }
 
 #[test]
@@ -643,18 +706,24 @@ fn test_m2_item2_moe_per_step_curve_and_weights_manifest_provenance() {
     let lines: Vec<&str> = moe_csv.lines().filter(|l| !l.trim().is_empty()).collect();
     assert_eq!(
         lines.first().copied(),
-        Some("step,lr_moe,lr_wout,train_mean_ce_nats,val_bpb_384d,val_bpb_768d,val_bpb_3shell,val_ppl_3shell")
+        Some("step,lr_moe,lr_wout,train_mean_ce_nats,val_bpb_384d,val_bpb_768d,val_bpb_3shell,val_ppl_3shell,global_alpha_moe,eval_footing")
     );
     assert_eq!(lines.len(), 18, "Expected header + 17 rows (steps 0..=16)");
 
     for (idx, line) in lines.iter().skip(1).enumerate() {
         let cols: Vec<&str> = line.split(',').collect();
-        assert_eq!(cols.len(), 8);
+        assert_eq!(cols.len(), 10);
         let st = cols[0].parse::<usize>().expect("moe step");
         assert_eq!(st, idx);
-        for c in &cols[1..] {
+        for c in &cols[1..9] {
             let v = c.parse::<f64>().expect("finite float");
             assert!(v.is_finite());
+        }
+        if idx < 16 {
+            assert_eq!(cols[9].trim(), "per_step_pre_rebalance_alpha_0.30");
+            assert!((cols[8].parse::<f64>().expect("alpha") - 0.30).abs() < 1e-4);
+        } else {
+            assert_eq!(cols[9].trim(), "post_rebalance_calibrated_alpha_eval");
         }
     }
 
@@ -663,6 +732,7 @@ fn test_m2_item2_moe_per_step_curve_and_weights_manifest_provenance() {
     let s16_b768: f64 = last_cols[5].parse().expect("s16 val_bpb_768d");
     let s16_b3sh: f64 = last_cols[6].parse().expect("s16 val_bpb_3shell");
     let s16_ppl3: f64 = last_cols[7].parse().expect("s16 val_ppl_3shell");
+    let s16_alpha: f64 = last_cols[8].parse().expect("s16 global_alpha_moe");
 
     let moe_meta_str = std::fs::read_to_string("00_control/weights/sh_xi_moe_train_meta.json")
         .expect("sh_xi_moe_train_meta.json");
@@ -671,6 +741,9 @@ fn test_m2_item2_moe_per_step_curve_and_weights_manifest_provenance() {
     assert!((moe_meta.get("val_bpb_768d").and_then(|v| v.as_f64()).unwrap_or(0.0) - s16_b768).abs() < 1e-6);
     assert!((moe_meta.get("val_bpb_3shell").and_then(|v| v.as_f64()).unwrap_or(0.0) - s16_b3sh).abs() < 1e-6);
     assert!((moe_meta.get("val_ppl_3shell").and_then(|v| v.as_f64()).unwrap_or(0.0) - s16_ppl3).abs() < 1e-6);
+    assert!((moe_meta.get("global_alpha_moe").and_then(|v| v.as_f64()).unwrap_or(0.0) - s16_alpha).abs() < 1e-4);
+    assert!(!moe_meta.get("curve_footing_note").and_then(|v| v.as_str()).unwrap_or("").is_empty());
+    assert!(!moe_meta.get("frozen_base_q8_0_eval_note").and_then(|v| v.as_str()).unwrap_or("").is_empty());
 
     let man_str = std::fs::read_to_string("00_control/weights/sovereign_harmonic_weights_manifest.json")
         .expect("sovereign_harmonic_weights_manifest.json");
@@ -1148,7 +1221,17 @@ impl Drop for FileRestoreGuard {
                         let _ = std::fs::create_dir_all(parent);
                     }
                 }
-                let _ = std::fs::write(&self.path, bytes);
+                let mut restored = false;
+                for _ in 0..20 {
+                    if std::fs::write(&self.path, bytes).is_ok() {
+                        restored = true;
+                        break;
+                    }
+                    std::thread::sleep(std::time::Duration::from_millis(50));
+                }
+                if !restored && !std::thread::panicking() {
+                    panic!("FileRestoreGuard failed to restore {:?}", self.path);
+                }
             }
             None => {
                 let _ = std::fs::remove_file(&self.path);
@@ -1353,6 +1436,264 @@ fn test_m4_item16_t383_curvetq_ce_scope_and_v71_2_narrow_172_support_label() {
         assert_eq!(
             w2_8.get("eval_vocab_support_label").and_then(|v| v.as_str()),
             Some("NARROW_172_TOKEN_EVAL_SUPPORT")
+        );
+    }
+}
+
+#[test]
+fn test_r1_item7_tool368_live_tools_count_and_zero_brackets() {
+    ensure_repo_root_cwd();
+    let _rw_guard = RW_EVAL500_GUARD.lock().unwrap_or_else(|e| e.into_inner());
+    let _restore = guard_paths(&[
+        "03_vault/connectome/sh_xi_rw_eval_500_sealed.jsonl",
+        "E:\\Sovereign_Manifold_SSD_Vault\\connectome\\sh_xi_rw_eval_500_sealed.jsonl",
+        "03_vault/connectome/sh_xi_week2_master_receipt.json",
+        "E:\\Sovereign_Manifold_SSD_Vault\\connectome\\sh_xi_week2_master_receipt.json",
+    ]);
+
+    let live_ota = v73_2_read_live_ota_metadata();
+    let live_ver = v73_2_read_live_release_version();
+    let raw = v72_2_dispatch_tool_368_week2_chain368_master_certification("{}");
+    assert!(
+        !raw.contains("CHAIN 368") && !raw.contains("CHAIN368"),
+        "Tool 368 response MUST NOT contain stale CHAIN 368/CHAIN368 stamps"
+    );
+    let val: serde_json::Value = serde_json::from_str(&raw).expect("valid Tool 368 JSON");
+    assert_eq!(val.get("suite_milestone").and_then(|v| v.as_str()), Some("SH_XI_WEEK2"));
+    assert!(val.get("milestone").is_none(), "Stale 'milestone' field must be replaced by 'suite_milestone'");
+    assert_eq!(val.get("total_tools").and_then(|v| v.as_u64()), Some(live_ota.tools_count));
+    assert_eq!(val.get("version").and_then(|v| v.as_str()), Some(live_ver.as_str()));
+
+    for path in [
+        "01_l0_rust/src/v72_1_sh_xi_matryoshka_384_768_cuda_pretrainer.rs",
+        "01_l0_rust/src/v72_2_sh_xi_sparse_moe_chatml_sft_and_rag.rs",
+        "01_l0_rust/src/v73_2_cloudflare_vpc_mesh_and_pgwire_hyperdrive.rs",
+    ] {
+        let src = std::fs::read_to_string(path).unwrap_or_else(|e| panic!("read {}: {}", path, e));
+        assert!(
+            !src.contains('[') && !src.contains(']'),
+            "{} MUST contain zero square brackets",
+            path
+        );
+    }
+}
+
+#[test]
+fn test_r2_r3_r4_r8_l0_security_gates_health_ingest_tao_and_source_invariants() {
+    ensure_repo_root_cwd();
+
+    assert_eq!(V73_2_HEALTH_ENDPOINT, "/api/v1/health");
+    assert_eq!(V73_2_TELEMETRY_INGEST_ENDPOINT, "/api/v1/telemetry/ingest");
+
+    // 1. Write query parameter detection on GET endpoints
+    for write_url in [
+        "/api/v1/telemetry?node=pixel10&kops=12.5",
+        "/api/v1/telemetry/snapshot?pixel10_kops=9.0",
+        "/api/v1/StateGraph?anchor1_kops=42.0",
+        "/api/v1/health?mx=1.0",
+        "/api/v1/telemetry?BEARER=usb",
+    ] {
+        assert!(
+            v73_2_has_telemetry_write_query_param(write_url),
+            "Write query param MUST be detected in {}",
+            write_url
+        );
+    }
+    for clean_url in [
+        "/api/v1/health",
+        "/api/v1/telemetry",
+        "/api/v1/telemetry/snapshot?format=json",
+        "/api/v1/StateGraph",
+    ] {
+        assert!(
+            !v73_2_has_telemetry_write_query_param(clean_url),
+            "Clean read-only URL {} must NOT trigger write-param denial",
+            clean_url
+        );
+    }
+
+    assert!(v73_2_has_query_key_param("/api/v1/telemetry/ingest?key=secret"));
+    assert!(v73_2_has_query_key_param("/api/v1/telemetry/ingest?a=1&KEY=secret"));
+    assert!(!v73_2_has_query_key_param("/api/v1/telemetry/ingest?format=json"));
+
+    // 2. Constant-time auth gate (loopback + telemetry/operator header, reject ?key= & non-loopback)
+    let tel_key = "test_telemetry_ingest_key_0123456789abcdef0123456789abcdef";
+    let op_key = "test_operator_vault_key_fedcba9876543210fedcba9876543210";
+    assert!(v73_2_constant_time_compare_key(tel_key, tel_key));
+    assert!(!v73_2_constant_time_compare_key(tel_key, op_key));
+    assert!(!v73_2_constant_time_compare_key("", tel_key));
+
+    assert_eq!(
+        v73_2_verify_telemetry_or_operator_auth_with_keys(
+            true,
+            tel_key,
+            "",
+            "/api/v1/telemetry/ingest",
+            tel_key,
+            op_key
+        ),
+        Ok("X-Sovereign-Telemetry-Key")
+    );
+    assert_eq!(
+        v73_2_verify_telemetry_or_operator_auth_with_keys(
+            true,
+            "",
+            op_key,
+            "/api/v1/telemetry/ingest",
+            tel_key,
+            op_key
+        ),
+        Ok("X-Sovereign-Operator-Key")
+    );
+    assert!(v73_2_verify_telemetry_or_operator_auth_with_keys(
+        false,
+        tel_key,
+        "",
+        "/api/v1/telemetry/ingest",
+        tel_key,
+        op_key
+    ).is_err(), "Non-loopback telemetry ingest MUST be rejected");
+    assert!(v73_2_verify_telemetry_or_operator_auth_with_keys(
+        true,
+        tel_key,
+        "",
+        "/api/v1/telemetry/ingest?key=abc",
+        tel_key,
+        op_key
+    ).is_err(), "?key= query param MUST be rejected");
+    assert!(v73_2_verify_telemetry_or_operator_auth_with_keys(
+        true,
+        "wrong_key_0123456789abcdef",
+        "",
+        "/api/v1/telemetry/ingest",
+        tel_key,
+        op_key
+    ).is_err(), "Wrong key MUST be rejected");
+    assert!(v73_2_verify_telemetry_or_operator_auth_with_keys(
+        true,
+        "short_key",
+        "",
+        "/api/v1/telemetry/ingest",
+        "short_key",
+        op_key
+    ).is_err(), "Key shorter than 24 chars MUST be rejected");
+
+    // 3. Finite JSON bounds validation
+    let valid_json = r#"{"node":"pixel10","kops":480.5,"mx":-29.3,"baro":1013.25,"temp":33.8,"bat":84,"shz":15.965,"col":1919,"bearer":"USB_ADB"}"#;
+    let parsed = v73_2_validate_telemetry_bounds(valid_json).expect("valid telemetry payload");
+    assert_eq!(parsed.node.as_deref(), Some("pixel10"));
+    assert_eq!(parsed.bat, Some(84));
+    assert_eq!(parsed.col, Some(1919));
+
+    for bad_payload in [
+        "",
+        "{bad",
+        "[]",
+        r#"{"node":"pixel10"}"#,
+        r#"{"node":"rogue_node","kops":10.0}"#,
+        r#"{"node":"pixel10","kops":-1.0}"#,
+        r#"{"node":"pixel10","kops":1000001.0}"#,
+        r#"{"node":"pixel10","kops":1e500}"#,
+        r#"{"node":"pixel10","temp":250.0}"#,
+        r#"{"node":"pixel10","baro":50.0}"#,
+        r#"{"node":"pixel10","bat":101}"#,
+        r#"{"node":"pixel10","col":1920}"#,
+    ] {
+        assert!(
+            v73_2_validate_telemetry_bounds(bad_payload).is_err(),
+            "Invalid telemetry payload MUST be rejected: {}",
+            bad_payload
+        );
+    }
+
+    // 4. L0 source invariants across bin/v31_swarm.rs == src/v31_swarm.rs
+    let bin_src = std::fs::read_to_string("01_l0_rust/src/bin/v31_swarm.rs").expect("bin/v31_swarm.rs");
+    let lib_src = std::fs::read_to_string("01_l0_rust/src/v31_swarm.rs").expect("src/v31_swarm.rs");
+    assert_eq!(bin_src, lib_src, "bin/v31_swarm.rs and src/v31_swarm.rs MUST remain 1:1 identical");
+    assert!(!bin_src.contains("Timing-Allow-Origin: *"), "Timing-Allow-Origin: * MUST NOT exist in v31_swarm.rs");
+    assert!(!bin_src.contains("1,010/1,010"), "Static 1,010/1,010 MUST NOT exist in v31_swarm.rs");
+    assert!(!bin_src.contains("v73.2.2"), "Hardcoded v73.2.2 MUST NOT exist in v31_swarm.rs");
+    assert!(
+        bin_src.contains("if (id >= 211 && id <= 270) || (id >= 275 && id <= 280)"),
+        "dispatch_cycle6_211_to_270 MUST exclude t271..t274 so they cannot bypass operator gate"
+    );
+    assert!(bin_src.contains("V73_2_HEALTH_ENDPOINT"));
+    assert!(bin_src.contains("V73_2_TELEMETRY_INGEST_ENDPOINT"));
+    assert!(bin_src.contains("v73_2_has_telemetry_write_query_param"));
+
+    for marker in [
+        "if clean_path == \"/api/v1/p8_root/hardware_audit\" {\n            if !enforce_operator_gate_403",
+        "if clean_path == \"/api/v1/p8_root/governor\" {\n            if !enforce_operator_gate_403",
+        "|| clean_path == \"/api/v1/connectome/spage_3m_synapses\"\n        {\n            if !enforce_operator_gate_403",
+        "if is_gemma4_271_to_274_route {\n            if !enforce_operator_gate_403",
+    ] {
+        let normalized_src = bin_src.replace("\r\n", "\n");
+        assert!(
+            normalized_src.contains(marker),
+            "Missing operator gate before lock/dispatch for marker:\n{}",
+            marker
+        );
+    }
+
+    // 5. Iteration 2 regressions: percent-decoding, strict integer col, /api/v1/health 405, R4 alias gates, C:/E: parity
+    assert_eq!(v73_2_percent_decode_ascii("%6bey"), "key");
+    assert_eq!(v73_2_percent_decode_ascii("%6Eode"), "node");
+    assert_eq!(v73_2_percent_decode_ascii("%4Eode"), "Node");
+    assert!(v73_2_has_query_key_param("/api/v1/telemetry/ingest?%6bey=foo"));
+    assert!(v73_2_has_query_key_param("/api/v1/telemetry/ingest?%6Bey=foo"));
+    assert!(v73_2_has_query_key_param("/api/v1/telemetry/ingest?%256bey=foo"));
+    assert!(v73_2_has_telemetry_write_query_param("/api/v1/health?%6eode=pixel10"));
+    assert!(v73_2_has_telemetry_write_query_param("/api/v1/telemetry?%6Eode=pixel10"));
+    assert!(v73_2_has_telemetry_write_query_param("/api/v1/StateGraph?%256eode=pixel10"));
+    assert!(v73_2_validate_telemetry_bounds("{\"node\":\"pixel10\",\"col\":1.5}").is_err());
+    assert!(v73_2_validate_telemetry_bounds("{\"node\":\"pixel10\",\"col\":1.0}").is_err());
+    assert_eq!(
+        v73_2_validate_telemetry_bounds("{\"node\":\"pixel10\",\"col\":0}").expect("col=0 valid").col,
+        Some(0)
+    );
+
+    let normalized_src = bin_src.replace("\r\n", "\n");
+    assert!(
+        normalized_src.contains("if clean_path == V73_2_HEALTH_ENDPOINT {\n            if v73_2_has_telemetry_write_query_param(raw_target) {")
+            && normalized_src.contains("if !method.eq_ignore_ascii_case(\"GET\") && !method.eq_ignore_ascii_case(\"HEAD\") {\n                let m_json = format!(\n                    \"{{\\\"status\\\":\\\"HTTP_405_METHOD_NOT_ALLOWED\\\",\\\"endpoint\\\":\\\"/api/v1/health\\\"")
+    );
+    assert!(normalized_src.contains("fn is_r4_operator_gated_tool_id(id: usize) -> bool"));
+    for required_id in ["(id >= 185 && id <= 204)", "id == 212", "id == 258", "id == 259", "id == 260", "(id >= 271 && id <= 274)"] {
+        assert!(
+            normalized_src.contains(required_id),
+            "is_r4_operator_gated_tool_id MUST gate {}",
+            required_id
+        );
+    }
+    assert!(normalized_src.contains("if let Some(r4_tid) = extract_r4_route_or_execute_tool_id(clean_path, raw_target, &post_body)"));
+    assert!(normalized_src.contains("if is_r4_operator_gated_tool_id(id) && !operator_authed {\n                return None;\n            }"));
+
+    if std::path::Path::new("E:\\Sovereign_Manifold_SSD_Vault").exists() {
+        let c_sft_man = std::fs::read("03_vault/connectome/sh_xi_week2_chatml_sft_manifest.json")
+            .expect("C: sh_xi_week2_chatml_sft_manifest.json");
+        let e_sft_man = std::fs::read("E:\\Sovereign_Manifold_SSD_Vault\\connectome\\sh_xi_week2_chatml_sft_manifest.json")
+            .expect("E: sh_xi_week2_chatml_sft_manifest.json");
+        assert_eq!(
+            v72_1_sha256_hex(&c_sft_man),
+            v72_1_sha256_hex(&e_sft_man),
+            "C: and E: sh_xi_week2_chatml_sft_manifest.json MUST be SHA-256 identical"
+        );
+
+        let c_base_meta = std::fs::read("00_control/weights/sh_xi_base_train_meta.json")
+            .expect("C: sh_xi_base_train_meta.json");
+        let e_conn_meta = std::fs::read("E:\\Sovereign_Manifold_SSD_Vault\\connectome\\sh_xi_base_train_meta.json")
+            .expect("E: connectome sh_xi_base_train_meta.json");
+        let e_wt_meta = std::fs::read("E:\\Sovereign_Manifold_SSD_Vault\\weights\\sh_xi_base_train_meta.json")
+            .expect("E: weights sh_xi_base_train_meta.json");
+        assert_eq!(
+            v72_1_sha256_hex(&c_base_meta),
+            v72_1_sha256_hex(&e_conn_meta),
+            "C: and E:\\connectome sh_xi_base_train_meta.json MUST be SHA-256 identical"
+        );
+        assert_eq!(
+            v72_1_sha256_hex(&c_base_meta),
+            v72_1_sha256_hex(&e_wt_meta),
+            "C: and E:\\weights sh_xi_base_train_meta.json MUST be SHA-256 identical"
         );
     }
 }

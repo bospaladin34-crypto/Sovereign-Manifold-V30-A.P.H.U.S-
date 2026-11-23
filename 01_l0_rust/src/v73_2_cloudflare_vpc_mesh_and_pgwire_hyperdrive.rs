@@ -25,6 +25,10 @@ pub const V73_2_DUCKDB_EXE_PATH: &str = "C:\\sovereign_manifold_v31\\00_control\
 pub const V73_2_DUCKDB_CORPUS_PATH: &str = "E:\\Sovereign_Manifold_SSD_Vault\\training_corpus\\sh_rw_corpus_v7210.duckdb";
 pub const V73_2_PGWIRE_CERT_PATH: &str = "C:\\Users\\Nbell\\.act_omega_pgwire_tls\\server.pem";
 pub const V73_2_PGWIRE_CA_PATH: &str = "C:\\Users\\Nbell\\.act_omega_pgwire_tls\\ca.pem";
+pub const V73_2_HEALTH_ENDPOINT: &str = "/api/v1/health";
+pub const V73_2_TELEMETRY_INGEST_ENDPOINT: &str = "/api/v1/telemetry/ingest";
+pub const V73_2_TELEMETRY_KEY_FILE_PATH: &str = "C:\\Users\\Nbell\\.act_omega_telemetry_ingest_key";
+pub const V73_2_OPERATOR_KEY_FILE_PATH: &str = "C:\\Users\\Nbell\\.act_omega_operator_vault_key";
 
 fn v73_2_tcp_connect_ms(port: u16, timeout_ms: u64, send_pg_cancel: bool) -> Result<f64, &'static str> {
     let addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::LOCALHOST), port);
@@ -499,6 +503,419 @@ pub fn v73_2_parse_sync_matrix_json(body: &str) -> Result<(Option<f64>, Option<f
         return Err("MISSING_PIXEL_KOPS_FIELDS");
     }
     Ok((p10, p8))
+}
+
+fn v73_2_hex_nibble(b: u8) -> Option<u8> {
+    match b {
+        b'0'..=b'9' => Some(b - b'0'),
+        b'a'..=b'f' => Some(b - b'a' + 10),
+        b'A'..=b'F' => Some(b - b'A' + 10),
+        _ => None,
+    }
+}
+
+pub fn v73_2_percent_decode_ascii(input: &str) -> String {
+    let bytes = input.as_bytes();
+    let mut out: Vec<u8> = Vec::with_capacity(bytes.len());
+    let mut i: usize = 0;
+    while i < bytes.len() {
+        let b = *bytes.get(i).unwrap_or(&0);
+        if b == b'%' && i + 2 < bytes.len() {
+            let hi = v73_2_hex_nibble(*bytes.get(i + 1).unwrap_or(&0));
+            let lo = v73_2_hex_nibble(*bytes.get(i + 2).unwrap_or(&0));
+            if let (Some(h), Some(l)) = (hi, lo) {
+                out.push((h << 4) | l);
+                i += 3;
+                continue;
+            }
+        }
+        out.push(b);
+        i += 1;
+    }
+    String::from_utf8_lossy(&out).into_owned()
+}
+
+fn v73_2_decode_query_param_name(raw_name: &str) -> String {
+    let mut cur = String::from(raw_name.trim());
+    let mut pass: usize = 0;
+    while pass < 4 {
+        let next = v73_2_percent_decode_ascii(&cur);
+        if next == cur {
+            break;
+        }
+        cur = next;
+        pass += 1;
+    }
+    cur.trim().to_ascii_lowercase()
+}
+
+pub fn v73_2_has_query_key_param(raw_target: &str) -> bool {
+    let qs = match raw_target.split_once('?') {
+        Some((_, q)) => q,
+        None => return false,
+    };
+    for pair in qs.split('&') {
+        let raw_name = pair.split('=').next().unwrap_or("");
+        let key_name = v73_2_decode_query_param_name(raw_name);
+        if key_name == "key" {
+            return true;
+        }
+    }
+    false
+}
+
+pub fn v73_2_has_telemetry_write_query_param(raw_target: &str) -> bool {
+    let qs = match raw_target.split_once('?') {
+        Some((_, q)) => q,
+        None => return false,
+    };
+    for pair in qs.split('&') {
+        let raw_name = pair.split('=').next().unwrap_or("");
+        let key_low = v73_2_decode_query_param_name(raw_name);
+        let is_write = key_low == "node"
+            || key_low == "kops"
+            || key_low == "p8_kops"
+            || key_low == "pixel10_kops"
+            || key_low == "pixel10"
+            || key_low == "pixel8_kops"
+            || key_low == "pixel8"
+            || key_low == "loq15_kops"
+            || key_low == "loq15"
+            || key_low == "anchor1_kops"
+            || key_low == "p8_free"
+            || key_low == "col"
+            || key_low == "mx"
+            || key_low == "my"
+            || key_low == "mz"
+            || key_low == "bn"
+            || key_low == "baro"
+            || key_low == "lux"
+            || key_low == "acc"
+            || key_low == "gyro"
+            || key_low == "temp"
+            || key_low == "mv"
+            || key_low == "bat"
+            || key_low == "ram_u"
+            || key_low == "ram_t"
+            || key_low == "shz"
+            || key_low == "thz"
+            || key_low == "rtt"
+            || key_low == "bearer";
+        if is_write {
+            return true;
+        }
+    }
+    false
+}
+
+pub fn v73_2_constant_time_compare_key(supplied: &str, expected: &str) -> bool {
+    if supplied.is_empty() || expected.is_empty() {
+        return false;
+    }
+    let sup_vec = supplied.as_bytes().to_vec();
+    let exp_vec = expected.as_bytes().to_vec();
+    let h_sup = crate::v72_1_sh_xi_matryoshka_384_768_cuda_pretrainer::v72_1_sha256_hex(&sup_vec);
+    let h_exp = crate::v72_1_sh_xi_matryoshka_384_768_cuda_pretrainer::v72_1_sha256_hex(&exp_vec);
+    crate::v73_1_nov12_15_research_kernels::v73_1_constant_time_eq_hex_64(&h_sup, &h_exp)
+}
+
+pub fn v73_2_resolve_expected_telemetry_key() -> String {
+    let raw = std::env::var("ACT_OMEGA_TELEMETRY_KEY")
+        .ok()
+        .or_else(|| fs::read_to_string(V73_2_TELEMETRY_KEY_FILE_PATH).ok())
+        .unwrap_or_default();
+    let trimmed = raw.trim();
+    if trimmed.len() < 24 {
+        String::new()
+    } else {
+        String::from(trimmed)
+    }
+}
+
+pub fn v73_2_resolve_expected_operator_key() -> String {
+    let raw = std::env::var("ACT_OMEGA_OPERATOR_KEY")
+        .or_else(|_| std::env::var("SOVEREIGN_OPERATOR_KEY"))
+        .ok()
+        .or_else(|| fs::read_to_string(V73_2_OPERATOR_KEY_FILE_PATH).ok())
+        .unwrap_or_default();
+    let trimmed = raw.trim();
+    if trimmed.len() < 24 {
+        String::new()
+    } else {
+        String::from(trimmed)
+    }
+}
+
+pub fn v73_2_verify_telemetry_or_operator_auth_with_keys(
+    is_loopback: bool,
+    telemetry_header_key: &str,
+    operator_header_key: &str,
+    raw_target: &str,
+    expected_telemetry_key: &str,
+    expected_operator_key: &str,
+) -> Result<&'static str, (&'static str, &'static str)> {
+    if !is_loopback {
+        return Err(("NON_LOOPBACK_TELEMETRY_INGEST_DENIED", "Telemetry ingest requires 127.0.0.1 loopback"));
+    }
+    if v73_2_has_query_key_param(raw_target) {
+        return Err((
+            "QUERY_KEY_PARAMETER_FORBIDDEN_USE_TELEMETRY_OR_OPERATOR_HEADER",
+            "Passing ?key= in URL query is forbidden",
+        ));
+    }
+    let clean_tel = telemetry_header_key.trim();
+    if clean_tel.len() >= 24
+        && expected_telemetry_key.len() >= 24
+        && v73_2_constant_time_compare_key(clean_tel, expected_telemetry_key)
+    {
+        return Ok("X-Sovereign-Telemetry-Key");
+    }
+    let clean_op = operator_header_key.trim();
+    if clean_op.len() >= 24
+        && expected_operator_key.len() >= 24
+        && v73_2_constant_time_compare_key(clean_op, expected_operator_key)
+    {
+        return Ok("X-Sovereign-Operator-Key");
+    }
+    Err((
+        "INVALID_OR_MISSING_TELEMETRY_OR_OPERATOR_HEADER",
+        "Requires valid X-Sovereign-Telemetry-Key or X-Sovereign-Operator-Key header",
+    ))
+}
+
+pub fn v73_2_require_loopback_and_telemetry_or_operator_header(
+    is_loopback: bool,
+    telemetry_header_key: &str,
+    operator_header_key: &str,
+    raw_target: &str,
+) -> Result<&'static str, (&'static str, &'static str)> {
+    let exp_tel = v73_2_resolve_expected_telemetry_key();
+    let exp_op = v73_2_resolve_expected_operator_key();
+    v73_2_verify_telemetry_or_operator_auth_with_keys(
+        is_loopback,
+        telemetry_header_key,
+        operator_header_key,
+        raw_target,
+        &exp_tel,
+        &exp_op,
+    )
+}
+
+pub struct V732TelemetryIngestPayload {
+    pub node: Option<String>,
+    pub kops: Option<f64>,
+    pub p8_kops: Option<f64>,
+    pub pixel10_kops: Option<f64>,
+    pub pixel8_kops: Option<f64>,
+    pub loq15_kops: Option<f64>,
+    pub p8_free: Option<f64>,
+    pub col: Option<u64>,
+    pub mx: Option<f64>,
+    pub my: Option<f64>,
+    pub mz: Option<f64>,
+    pub bn: Option<f64>,
+    pub baro: Option<f64>,
+    pub lux: Option<f64>,
+    pub acc: Option<f64>,
+    pub gyro: Option<f64>,
+    pub temp: Option<f64>,
+    pub mv: Option<u64>,
+    pub bat: Option<u64>,
+    pub ram_u: Option<u64>,
+    pub ram_t: Option<u64>,
+    pub shz: Option<f64>,
+    pub thz: Option<f64>,
+    pub rtt: Option<f64>,
+    pub bearer: Option<String>,
+}
+
+fn v73_2_opt_bounded_f64(
+    obj: &serde_json::Map<String, serde_json::Value>,
+    key: &str,
+    min_val: f64,
+    max_val: f64,
+    err_code: &'static str,
+) -> Result<Option<f64>, (&'static str, &'static str)> {
+    match obj.get(key) {
+        None => Ok(None),
+        Some(raw) => {
+            let num = raw.as_f64().ok_or((err_code, "Field must be a finite JSON number"))?;
+            if !num.is_finite() || num < min_val || num > max_val {
+                return Err((err_code, "Numeric telemetry field out of physical bounds"));
+            }
+            Ok(Some(num))
+        }
+    }
+}
+
+fn v73_2_opt_bounded_u64(
+    obj: &serde_json::Map<String, serde_json::Value>,
+    key: &str,
+    max_val: u64,
+    err_code: &'static str,
+) -> Result<Option<u64>, (&'static str, &'static str)> {
+    match obj.get(key) {
+        None => Ok(None),
+        Some(raw) => {
+            if let Some(u) = raw.as_u64() {
+                if u > max_val {
+                    return Err((err_code, "Integer telemetry field exceeds maximum bound"));
+                }
+                return Ok(Some(u));
+            }
+            let f = raw.as_f64().ok_or((err_code, "Field must be a non-negative finite number"))?;
+            if !f.is_finite() || f < 0.0 || f > (max_val as f64) {
+                return Err((err_code, "Numeric telemetry field out of physical bounds"));
+            }
+            Ok(Some(f.round() as u64))
+        }
+    }
+}
+
+fn v73_2_opt_strict_bounded_u64(
+    obj: &serde_json::Map<String, serde_json::Value>,
+    key: &str,
+    max_val: u64,
+    err_code: &'static str,
+) -> Result<Option<u64>, (&'static str, &'static str)> {
+    match obj.get(key) {
+        None => Ok(None),
+        Some(raw) => {
+            let u = raw
+                .as_u64()
+                .ok_or((err_code, "Integer telemetry field must be a non-negative integer"))?;
+            if u > max_val {
+                return Err((err_code, "Integer telemetry field exceeds maximum bound"));
+            }
+            Ok(Some(u))
+        }
+    }
+}
+
+pub fn v73_2_validate_telemetry_bounds(
+    body: &str,
+) -> Result<V732TelemetryIngestPayload, (&'static str, &'static str)> {
+    let trimmed = body.trim();
+    if trimmed.is_empty() {
+        return Err(("EMPTY_TELEMETRY_BODY", "Request body must be a non-empty JSON object"));
+    }
+    let parsed = serde_json::from_str::<serde_json::Value>(trimmed)
+        .map_err(|_| ("INVALID_TELEMETRY_JSON", "Malformed or non-finite JSON payload"))?;
+    let obj = parsed
+        .as_object()
+        .ok_or(("TELEMETRY_BODY_MUST_BE_OBJECT", "JSON payload must be an object"))?;
+
+    let node = match obj.get("node") {
+        None => None,
+        Some(v) => {
+            let s = v.as_str().ok_or(("INVALID_NODE_FIELD", "node must be a string"))?.trim();
+            if s != "pixel10" && s != "pixel8" && s != "loq15" {
+                return Err(("UNKNOWN_TELEMETRY_NODE", "node must be pixel10, pixel8, or loq15"));
+            }
+            Some(String::from(s))
+        }
+    };
+
+    let bearer = match obj.get("bearer") {
+        None => None,
+        Some(v) => {
+            let s = v.as_str().ok_or(("INVALID_BEARER_FIELD", "bearer must be a string"))?.trim();
+            if s.is_empty() || s.len() > 128 || s.bytes().any(|b| b < 0x20 || b == 0x7F) {
+                return Err(("INVALID_BEARER_VALUE", "bearer must be 1..=128 printable chars"));
+            }
+            Some(String::from(s))
+        }
+    };
+
+    let kops = v73_2_opt_bounded_f64(obj, "kops", 0.0, 1_000_000.0, "INVALID_OR_OOB_KOPS")?;
+    let p8_kops = v73_2_opt_bounded_f64(obj, "p8_kops", 0.0, 1_000_000.0, "INVALID_OR_OOB_P8_KOPS")?;
+    let p10_kops = v73_2_opt_bounded_f64(obj, "pixel10_kops", 0.0, 1_000_000.0, "INVALID_OR_OOB_PIXEL10_KOPS")?;
+    let p10_alias = v73_2_opt_bounded_f64(obj, "pixel10", 0.0, 1_000_000.0, "INVALID_OR_OOB_PIXEL10_KOPS")?;
+    let p8_kops_full = v73_2_opt_bounded_f64(obj, "pixel8_kops", 0.0, 1_000_000.0, "INVALID_OR_OOB_PIXEL8_KOPS")?;
+    let p8_alias = v73_2_opt_bounded_f64(obj, "pixel8", 0.0, 1_000_000.0, "INVALID_OR_OOB_PIXEL8_KOPS")?;
+    let loq_kops = v73_2_opt_bounded_f64(obj, "loq15_kops", 0.0, 1_000_000.0, "INVALID_OR_OOB_LOQ15_KOPS")?;
+    let loq_alias = v73_2_opt_bounded_f64(obj, "loq15", 0.0, 1_000_000.0, "INVALID_OR_OOB_LOQ15_KOPS")?;
+    let anchor1_alias = v73_2_opt_bounded_f64(obj, "anchor1_kops", 0.0, 1_000_000.0, "INVALID_OR_OOB_LOQ15_KOPS")?;
+
+    let p8_free = v73_2_opt_bounded_f64(obj, "p8_free", 0.0, 1_000_000.0, "INVALID_OR_OOB_P8_FREE")?;
+    let col = v73_2_opt_strict_bounded_u64(obj, "col", 1_919, "INVALID_OR_OOB_COL")?;
+    let mx = v73_2_opt_bounded_f64(obj, "mx", -100_000.0, 100_000.0, "INVALID_OR_OOB_MAG")?;
+    let my = v73_2_opt_bounded_f64(obj, "my", -100_000.0, 100_000.0, "INVALID_OR_OOB_MAG")?;
+    let mz = v73_2_opt_bounded_f64(obj, "mz", -100_000.0, 100_000.0, "INVALID_OR_OOB_MAG")?;
+    let bn = v73_2_opt_bounded_f64(obj, "bn", 0.0, 1_000_000.0, "INVALID_OR_OOB_BN")?;
+    let baro = v73_2_opt_bounded_f64(obj, "baro", 300.0, 1_200.0, "INVALID_OR_OOB_BARO")?;
+    let lux = v73_2_opt_bounded_f64(obj, "lux", 0.0, 1_000_000.0, "INVALID_OR_OOB_LUX")?;
+    let acc = v73_2_opt_bounded_f64(obj, "acc", 0.0, 1_000_000.0, "INVALID_OR_OOB_ACC")?;
+    let gyro = v73_2_opt_bounded_f64(obj, "gyro", 0.0, 1_000_000.0, "INVALID_OR_OOB_GYRO")?;
+    let temp = v73_2_opt_bounded_f64(obj, "temp", -40.0, 150.0, "INVALID_OR_OOB_TEMP")?;
+    let mv = v73_2_opt_bounded_u64(obj, "mv", 10_000, "INVALID_OR_OOB_MV")?;
+    let bat = v73_2_opt_bounded_u64(obj, "bat", 100, "INVALID_OR_OOB_BAT")?;
+    let ram_u = v73_2_opt_bounded_u64(obj, "ram_u", 1_048_576, "INVALID_OR_OOB_RAM_U")?;
+    let ram_t = v73_2_opt_bounded_u64(obj, "ram_t", 1_048_576, "INVALID_OR_OOB_RAM_T")?;
+    let shz = v73_2_opt_bounded_f64(obj, "shz", 0.0, 1_000_000.0, "INVALID_OR_OOB_SHZ")?;
+    let thz = v73_2_opt_bounded_f64(obj, "thz", 0.0, 1_000_000.0, "INVALID_OR_OOB_THZ")?;
+    let rtt = v73_2_opt_bounded_f64(obj, "rtt", 0.0, 1_000_000.0, "INVALID_OR_OOB_RTT")?;
+
+    let pixel10_kops = p10_kops.or(p10_alias);
+    let pixel8_kops = p8_kops_full.or(p8_alias);
+    let loq15_kops = loq_kops.or(loq_alias).or(anchor1_alias);
+
+    let has_any_metric = kops.is_some()
+        || p8_kops.is_some()
+        || pixel10_kops.is_some()
+        || pixel8_kops.is_some()
+        || loq15_kops.is_some()
+        || p8_free.is_some()
+        || col.is_some()
+        || mx.is_some()
+        || my.is_some()
+        || mz.is_some()
+        || bn.is_some()
+        || baro.is_some()
+        || lux.is_some()
+        || acc.is_some()
+        || gyro.is_some()
+        || temp.is_some()
+        || mv.is_some()
+        || bat.is_some()
+        || ram_u.is_some()
+        || ram_t.is_some()
+        || shz.is_some()
+        || thz.is_some()
+        || rtt.is_some()
+        || bearer.is_some();
+
+    if !has_any_metric {
+        return Err(("EMPTY_TELEMETRY_METRICS", "At least one bounded telemetry metric is required"));
+    }
+
+    Ok(V732TelemetryIngestPayload {
+        node,
+        kops,
+        p8_kops,
+        pixel10_kops,
+        pixel8_kops,
+        loq15_kops,
+        p8_free,
+        col,
+        mx,
+        my,
+        mz,
+        bn,
+        baro,
+        lux,
+        acc,
+        gyro,
+        temp,
+        mv,
+        bat,
+        ram_u,
+        ram_t,
+        shz,
+        thz,
+        rtt,
+        bearer,
+    })
 }
 
 pub const SOVEREIGN_LEAN4_MIN_THEOREMS: usize = 1010;

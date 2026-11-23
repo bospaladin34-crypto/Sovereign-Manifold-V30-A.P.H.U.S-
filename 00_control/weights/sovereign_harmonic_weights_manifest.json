@@ -87,7 +87,7 @@
       "version": 7210
     },
     "sh_xi_moe_experts": {
-      "expected_bytes": 869328,
+      "expected_bytes": 869200,
       "filename": "sh_xi_moe_experts.sh4z",
       "magic": "0x45583732",
       "provenance": {
@@ -102,12 +102,13 @@
         "seed": "0x7220_E800",
         "status": "MEASURED_REPRODUCIBLE",
         "trained_steps": 16,
-        "val_bpb_3shell": 0.100278,
-        "val_ppl_3shell": 52.84472,
+        "global_alpha_moe": 0.5,
+        "val_bpb_3shell": 0.099587,
+        "val_ppl_3shell": 52.84419,
         "wd_moe": 0.01
       },
       "relative_path": "00_control/weights/sh_xi_moe_experts.sh4z",
-      "sha256": "b6ddae6cf0a597bee1587464af9701b301ea7c6e9af6c17c73fc2d8093bff1d4",
+      "sha256": "801c0950db5fc3d14f085ba7997e879e496c9c4ba437b2b64efc2705fcef6933",
       "version": 7220
     },
     "sh_xi_moe_experts_dir": {
@@ -127,12 +128,13 @@
         "seed": "0x7220_E800",
         "status": "MEASURED_REPRODUCIBLE",
         "trained_steps": 16,
-        "val_bpb_3shell": 0.100278,
-        "val_ppl_3shell": 52.84472,
+        "global_alpha_moe": 0.5,
+        "val_bpb_3shell": 0.099587,
+        "val_ppl_3shell": 52.84419,
         "wd_moe": 0.01
       },
       "relative_path": "00_control/weights/sh_xi_moe_experts_dir.sh4z",
-      "sha256": "abe8ad2e87084b29f5bd9949a00612627f14f6cbb25c3f24dedaa8a1df48be53",
+      "sha256": "d65363659eb051cf16a99828858e525aec1be9f2c0dafa56a8b1cea0519ded78",
       "version": 7220
     },
     "sh_xi_rw384_768_base": {
@@ -148,13 +150,16 @@
         "final_val_ppl_768": 53.46746,
         "init_val_bpb_384_gated": 0.242456,
         "init_val_bpb_768_ungated_gamma1": 0.243568,
+        "layer_grad_l2_norms_receipt": "03_vault/connectome/sh_xi_base_step_grad_norms_receipt.json",
         "loss_curve_csv": "03_vault/connectome/sh_xi_week1_training_curve.csv",
         "meta_receipt": "00_control/weights/sh_xi_base_train_meta.json",
         "prob_sum_max_dev_f32_sci": "5.960e-6",
         "prob_sum_max_dev_f64_sci": "1.088e-14",
         "seed": "0x7210_0001_5EED_CAFE",
+        "selected_checkpoint_step": 6250,
         "status": "MEASURED_REPRODUCIBLE",
         "step0_net2wider_note": "At step 0 gamma_net2wider=0.0 so Shell-1 768D preserves Shell-0 384D bit-identically; init_val_nats_768_ungated_gamma1 records distinct random Shell-1 loss when gamma=1.0",
+        "step_10000_live_val_bpb_768": 0.127713,
         "trained_steps": 10000
       },
       "relative_path": "00_control/weights/sovereign_harmonic_xi_rw384_768_base.sh4z",

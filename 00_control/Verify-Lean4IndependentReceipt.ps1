@@ -416,7 +416,7 @@ $receiptObj = [ordered]@{
 }
 
 $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
-$jsonText = ($receiptObj | ConvertTo-Json -Depth 4) + "`n"
+$jsonText = ((($receiptObj | ConvertTo-Json -Depth 4) -replace "`r`n", "`n" -replace "`r", "`n").TrimEnd("`n") + "`n")
 foreach ($outPath in @($receiptPrimary, $receiptConnectome)) {
     $parent = Split-Path -Parent $outPath
     if (-not (Test-Path $parent)) {

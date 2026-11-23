@@ -1,0 +1,132 @@
+# ACT-Omega Net v73.2.3 — Independent Redacted Live Wrangler Verification Receipt (R6)
+verified_at_utc: 2026-11-23T04:10:15Z
+account_id_redacted: <REDACTED_account_id_sha256:8e6a8f04e18e666d>
+account_id_disposition: PARTIAL (immutable in-place; compensating controls documented in s6_cloudflare_rotation_and_gatekeeper_receipt.json)
+d1_active_database: act_omega_d1_vault_v7322
+user_tables_count: 11
+system_tables_count: 2
+total_sqlite_master_tables: 13
+user_tables_list: edge_cluster_metadata, harness_5w1h_audit_log, npage_tier_snapshots, v40_qat_training_sessions, v40_shard_registry, v41_measured_sha256_audit, v42_5w1h_distributed_routes, v43_antigravity_agent_roster, v44_multiturn_working_memory_ring, v44_visiting_llm_agent_ledger, wal_merkle_checkpoints
+system_tables_list: _cf_KV, sqlite_sequence
+old_instances_confirmed_absent: act_omega_d1_vault, act-omega-duckdb-hyperdrive, ACT_OMEGA_KV
+
+=== [1] wrangler d1 list (exit=0) ===
+⛅️ wrangler 4.166.0
+────────────────────
+┌──────────────────────────────────────┬──────────────────────────┬──────────────────────────┬────────────┬──────────────┬────────────┬───────────┐
+│ uuid                                 │ name                     │ created_at               │ version    │ jurisdiction │ num_tables │ file_size │
+├──────────────────────────────────────┼──────────────────────────┼──────────────────────────┼────────────┼──────────────┼────────────┼───────────┤
+│ <REDACTED_d1_database_id_sha256:1cf8a84257692600> │ act_omega_d1_vault_v7322 │ 2026-11-19T05:12:48.704Z │ production │              │ 0          │ 1945600   │
+└──────────────────────────────────────┴──────────────────────────┴──────────────────────────┴────────────┴──────────────┴────────────┴───────────┘
+
+=== [2] wrangler d1 info act_omega_d1_vault (expected non-zero not-found, exit=1) ===
+⛅️ wrangler 4.166.0
+────────────────────
+
+X [ERROR] Couldn't find a D1 DB with name or binding 'act_omega_d1_vault' in your config or the API. Run 'wrangler d1 create act_omega_d1_vault' to create it.
+System.Management.Automation.RemoteException
+System.Management.Automation.RemoteException
+
+=== [3] wrangler d1 execute act_omega_d1_vault_v7322 --remote --json --command "SELECT name, type FROM sqlite_master WHERE type='table' ORDER BY name;" (exit=0) ===
+[
+  {
+    "results": [
+      {
+        "name": "_cf_KV",
+        "type": "table"
+      },
+      {
+        "name": "edge_cluster_metadata",
+        "type": "table"
+      },
+      {
+        "name": "harness_5w1h_audit_log",
+        "type": "table"
+      },
+      {
+        "name": "npage_tier_snapshots",
+        "type": "table"
+      },
+      {
+        "name": "sqlite_sequence",
+        "type": "table"
+      },
+      {
+        "name": "v40_qat_training_sessions",
+        "type": "table"
+      },
+      {
+        "name": "v40_shard_registry",
+        "type": "table"
+      },
+      {
+        "name": "v41_measured_sha256_audit",
+        "type": "table"
+      },
+      {
+        "name": "v42_5w1h_distributed_routes",
+        "type": "table"
+      },
+      {
+        "name": "v43_antigravity_agent_roster",
+        "type": "table"
+      },
+      {
+        "name": "v44_multiturn_working_memory_ring",
+        "type": "table"
+      },
+      {
+        "name": "v44_visiting_llm_agent_ledger",
+        "type": "table"
+      },
+      {
+        "name": "wal_merkle_checkpoints",
+        "type": "table"
+      }
+    ],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "WNAM",
+      "served_by_colo": "SJC",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 0.832
+      },
+      "duration": 0.832,
+      "changes": 0,
+      "last_row_id": 0,
+      "changed_db": false,
+      "size_after": 1945600,
+      "rows_read": 27,
+      "rows_written": 0,
+      "total_attempts": 1
+    }
+  }
+]
+
+=== [4] wrangler kv namespace list (exit=0) ===
+[
+  {
+    "id": "<REDACTED_kv_id_sha256:7dffc307ff4cb858>",
+    "title": "ACT_OMEGA_KV_V7322",
+    "supports_url_encoding": true
+  }
+]
+
+=== [5] wrangler hyperdrive list (exit=0) ===
+⛅️ wrangler 4.166.0
+────────────────────
+📋 Listing Hyperdrive configs
+┌──────────────────────────────────┬───────────────────────────────────┬───────────┬──────┬──────┬────────────┬─────────────────┬─────────────────────────────────────────────────┬──────┬─────────────────────────┐
+│ id                               │ name                              │ user      │ host │ port │ scheme     │ database        │ caching                                         │ mtls │ origin_connection_limit │
+├──────────────────────────────────┼───────────────────────────────────┼───────────┼──────┼──────┼────────────┼─────────────────┼─────────────────────────────────────────────────┼──────┼─────────────────────────┤
+│ <REDACTED_hyperdrive_id_sha256:a965a24de15cd68a> │ act-omega-duckdb-hyperdrive-v7322 │ sovereign │      │      │ PostgreSQL │ act_omega_vault │ max_age: undefined, stale_while_revalidate: 120 │ {}   │ 60                      │
+└──────────────────────────────────┴───────────────────────────────────┴───────────┴──────┴──────┴────────────┴─────────────────┴─────────────────────────────────────────────────┴──────┴─────────────────────────┘
+=== SIGNATURE_BLOCK ===
+verified_at_utc: 2026-11-23T04:10:15Z
+transcript_sha256: 6b0424b2967a2c575b2e19b021e847c38a798d04bff691dbd2435946c380bc0b
+canonical_payload: 6b0424b2967a2c575b2e19b021e847c38a798d04bff691dbd2435946c380bc0b||2026-11-23T04:10:15Z||d1_tables=11+2sys
+hmac_algorithm: RFC2104_HMAC_SHA256
+hmac_sha256: ff210ad9e15b18f6027b8dfbefd86c82adde43937e22c5b78e25162be347d5f4
+trust_boundary: RFC2104_HMAC_SHA256 signed externally by 00_control/cloudflare_edge/Verify-CloudflareRotationLive.ps1 using the local external operator key (ACT_OMEGA_OPERATOR_KEY / ~/.act_omega_operator_vault_key).

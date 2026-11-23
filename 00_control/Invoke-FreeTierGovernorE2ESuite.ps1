@@ -516,7 +516,7 @@ function Run-FreeTierTier1 {
 
         # T1.ZT.4
         $sw = [System.Diagnostics.Stopwatch]::StartNew()
-        $hasOpKeyCheck = (($edgeContent -match "X-Sovereign-Operator-Key") -and ($edgeContent -match 'searchParams\.has\("key"\)|REJECTED_QUERY_PARAM_KEY'))
+        $hasOpKeyCheck = (($edgeContent -match "X-Sovereign-Operator-Key") -and ($edgeContent -match 'searchParams\.has\("key"\)|REJECTED_QUERY_PARAM_KEY|hasQueryParamKey|QUERY_PARAM_KEY_FORBIDDEN'))
         $sw.Stop()
         $passed = $hasOpKeyCheck
         $msg = if ($hasOpKeyCheck) { "Operator key header enforcement verified (rejecting query parameter ?key=)" } else { "Operator key header enforcement missing or query param permitted" }
@@ -1210,7 +1210,7 @@ function Run-FreeTierTier4 {
         $r2Ok = $false
         if ($edgeOnline) {
             try {
-                $curlOut = & curl.exe -s -i -H "Range: bytes=0-15" "$EdgeWorkerUri/api/v1/r2/range_get?key=test_range_slice" 2>&1
+                $curlOut = & curl.exe -s -i -H "Range: bytes=0-15" "$EdgeWorkerUri/api/v1/r2/vault/test_range_slice" 2>&1
                 if ($curlOut -match "HTTP/\S+ 20[06]|404") { $r2Ok = $true }
             } catch {}
         }
@@ -1522,7 +1522,8 @@ function Finish-FreeTierRun {
     if ($ReportFormat -eq "JSON") {
         $jsonOut = $AllTestResults | ConvertTo-Json -Depth 5
         if ($OutputPath) {
-            Set-Content -Path $OutputPath -Value $jsonOut -Encoding UTF8 -Force
+            $jsonNorm = (($jsonOut -replace "`r`n", "`n" -replace "`r", "`n").TrimEnd("`n") + "`n")
+            [System.IO.File]::WriteAllText($OutputPath, $jsonNorm, [System.Text.UTF8Encoding]::new($false))
             Write-Host ("  [REPORT WRITTEN] JSON report saved to: " + $OutputPath) -ForegroundColor Green
         } else {
             Write-Output $jsonOut
@@ -1541,9 +1542,9 @@ function Finish-FreeTierRun {
             $st = if ($r.Skipped) { "SKIP" } elseif ($r.Passed) { "PASS" } else { "FAIL" }
             $mdLines.Add("| $($r.Tier) | $($r.Id) | $($r.Name) | $($r.Milestone) | $st | $($r.ElapsedMs.ToString('F1')) |")
         }
-        $mdContent = $mdLines -join [Environment]::NewLine
+        $mdContent = ($mdLines -join "`n").TrimEnd("`n") + "`n"
         if ($OutputPath) {
-            Set-Content -Path $OutputPath -Value $mdContent -Encoding UTF8 -Force
+            [System.IO.File]::WriteAllText($OutputPath, $mdContent, [System.Text.UTF8Encoding]::new($false))
             Write-Host ("  [REPORT WRITTEN] Markdown report saved to: " + $OutputPath) -ForegroundColor Green
         } else {
             Write-Output $mdContent

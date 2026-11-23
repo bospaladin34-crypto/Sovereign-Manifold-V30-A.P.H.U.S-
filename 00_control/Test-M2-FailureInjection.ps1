@@ -1,7 +1,25 @@
 # 00_control\Test-M2-FailureInjection.ps1
 # Milestone M2 Negative Failure-Injection & Verification Gauntlet
+param(
+    [string]$TranscriptOutPath = ""
+)
 
 $ErrorActionPreference = "Stop"
+$script:TranscriptLines = New-Object System.Collections.Generic.List[string]
+function Write-Host {
+    [CmdletBinding()]
+    param(
+        [Parameter(Position = 0, ValueFromPipeline = $true)]
+        [object]$Object = "",
+        [System.ConsoleColor]$ForegroundColor,
+        [System.ConsoleColor]$BackgroundColor,
+        [switch]$NoNewline,
+        [object]$Separator
+    )
+    $lineText = if ($null -eq $Object) { "" } else { [string]$Object }
+    $script:TranscriptLines.Add($lineText)
+    Microsoft.PowerShell.Utility\Write-Host @PSBoundParameters
+}
 
 $baseDir = "c:\sovereign_manifold_v31"
 $cffVer = "UNMEASURED"
@@ -120,10 +138,18 @@ Write-Host "`n--- Test 0: Live /api/v1/health JSON Structure & Negative Probe Ch
 $probePos1 = Test-LiveServerControlProbe -Uri "http://127.0.0.1:8097/api/v1/health"
 $probePos2 = Test-LiveServerControlProbe -Uri "http://127.0.0.1:8097/api/v1/health"
 $genIncOk = $false
+$healthRawJson1 = ""
+$healthRawJson2 = ""
 try {
-    $h1 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/health" -Method Get -Headers $authHeaders -TimeoutSec 15
-    $h2 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/health" -Method Get -Headers $authHeaders -TimeoutSec 15
+    $hr1 = Invoke-WebRequest -Uri "http://127.0.0.1:8097/api/v1/health" -Method Get -Headers $authHeaders -UseBasicParsing -TimeoutSec 15
+    $hr2 = Invoke-WebRequest -Uri "http://127.0.0.1:8097/api/v1/health" -Method Get -Headers $authHeaders -UseBasicParsing -TimeoutSec 15
+    $healthRawJson1 = $hr1.Content
+    $healthRawJson2 = $hr2.Content
+    $h1 = $healthRawJson1 | ConvertFrom-Json
+    $h2 = $healthRawJson2 | ConvertFrom-Json
     $genIncOk = ([int64]$h2.generation -gt [int64]$h1.generation) -and ([int]$h2.lean4_theorems_qed -ge 1010) -and ([int]$h2.tools_count -ge 404)
+    Write-Host "  Live GET /api/v1/health #1 JSON: $healthRawJson1" -ForegroundColor Gray
+    Write-Host "  Live GET /api/v1/health #2 JSON: $healthRawJson2" -ForegroundColor Gray
 } catch {
     $genIncOk = $false
 }
@@ -446,6 +472,15 @@ foreach ($k in $results.Keys) {
     Write-Host "  - $k : $val" -ForegroundColor $color
 }
 Write-Host "=================================================================" -ForegroundColor Cyan
+
+if (-not [string]::IsNullOrWhiteSpace($TranscriptOutPath)) {
+    $tParent = Split-Path -Parent $TranscriptOutPath
+    if ($tParent -and -not (Test-Path $tParent)) {
+        New-Item -ItemType Directory -Force -Path $tParent | Out-Null
+    }
+    $tNorm = (($script:TranscriptLines -join "`n") -replace "`r`n", "`n" -replace "`r", "`n").TrimEnd("`n") + "`n"
+    [System.IO.File]::WriteAllText($TranscriptOutPath, $tNorm, [System.Text.UTF8Encoding]::new($false))
+}
 
 if (-not $allPass) {
     exit 1

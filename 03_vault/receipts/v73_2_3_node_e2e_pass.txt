@@ -1,0 +1,31 @@
+=== RUNNING UNIT TEST: SovereignEdgeShadowDO Quota & Debounce Audit ===
+[Test 1] DO Initialized. Initial DB queries executed: 24
+[PASS] 8-row ring buffer confirmed: Table contains strictly 8 rows after 20 sync operations.
+[PASS] Zero SELECT COUNT(*) confirmed: 0 table scans across 20 sync operations.
+[PASS] 60-second write debouncing confirmed: 10 incoming telemetry bursts resulted in exactly 1 SQLite write.
+[PASS] In-memory status serving confirmed: 0 SQLite queries executed on /shadow/status.
+[PASS] E12 deterministic 3-vector cosine similarity verified: scores=[1, 0.6, -1].
+[PASS] E12 negative test confirmed: empty/missing D1 returns [] (0 synthetic neighbors).
+=== ALL UNIT TESTS PASSED (5/5 TESTS SUCCESSFUL) ===
+
+=== [1] Verifying Single Canonical Edge Worker (B9) ===
+PASS: Canonical worker verified at 00_control/cloudflare_edge/worker_vpc_shadow_v3700.js (178974 bytes).
+=== [2] Verifying Deletion of generateDeterministic32DPolytonicE8 ===
+PASS: generateDeterministic32DPolytonicE8 is completely absent from worker.
+=== [3] Verifying Zero Leaks of account_id, d1_uuid, and hyperdrive_id across Worker & Wrangler Configs (S6) ===
+PASS: Zero plaintext cloud resource IDs across worker and all wrangler*.toml files.
+=== [4] Verifying Deletion of TOOL_CALLED_OK Mocks ===
+PASS: All hardcoded TOOL_CALLED_OK mock strings deleted.
+=== [5] Testing Worker Request Dispatch with Mock Environment ===
+Testing N1: /api/v1/kv/get...
+PASS: N1 /api/v1/kv/get authorization and parameter checks confirmed.
+Testing N2: /api/v1/cloudflare/cron_sync...
+PASS: N2 /api/v1/cloudflare/cron_sync method and auth gating confirmed.
+Testing N3: Telemetry, SHM relay, Continuum handover...
+PASS: N3 Telemetry, SHM relay, and Handover gating confirmed.
+Testing N4: MCP tools/call gating and mock eradication...
+PASS: N4 MCP tools/call gating and error -32002 confirmed.
+Testing S2-S5 & E1: Hyperdrive SQL allowlist, D1 dumps, Vectorize/AI rate+fail-closed, MCP CORS/no-key-inject, and E1 status routes...
+PASS: S2-S5 & E1 edge security gates verified.
+
+>>> ALL M1 WORKER DISPATCH VERIFICATIONS PASSED SUCCESSFULLY! <<<

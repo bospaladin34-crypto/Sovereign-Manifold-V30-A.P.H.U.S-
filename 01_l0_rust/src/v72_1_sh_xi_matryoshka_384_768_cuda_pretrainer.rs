@@ -119,6 +119,12 @@ pub const C_SH_XI_BASE_TRAIN_META_PATH: &str =
     "00_control/weights/sh_xi_base_train_meta.json";
 pub const E_SH_XI_BASE_TRAIN_META_PATH: &str =
     "E:\\Sovereign_Manifold_SSD_Vault\\connectome\\sh_xi_base_train_meta.json";
+pub const E_SH_XI_WEIGHTS_BASE_TRAIN_META_PATH: &str =
+    "E:\\Sovereign_Manifold_SSD_Vault\\weights\\sh_xi_base_train_meta.json";
+pub const C_SH_XI_BASE_GRAD_NORMS_RECEIPT_PATH: &str =
+    "03_vault/connectome/sh_xi_base_step_grad_norms_receipt.json";
+pub const E_SH_XI_BASE_GRAD_NORMS_RECEIPT_PATH: &str =
+    "E:\\Sovereign_Manifold_SSD_Vault\\connectome\\sh_xi_base_step_grad_norms_receipt.json";
 
 // --- Zero-Bracket Allocation, Serialization & Cryptographic Hash Helpers ---
 
@@ -5562,6 +5568,28 @@ pub fn v72_1_refresh_base_train_meta_from_verified_sh4z() -> Result<String, Stri
     let existing_meta = fs::read_to_string(C_SH_XI_BASE_TRAIN_META_PATH).unwrap_or_default();
     let prev_val = serde_json::from_str::<serde_json::Value>(&existing_meta).unwrap_or(serde_json::Value::Null);
     let trained_steps = prev_val.get("trained_steps").and_then(|v| v.as_u64()).unwrap_or(10000) as usize;
+    let selected_checkpoint_step = prev_val
+        .get("selected_checkpoint_step")
+        .and_then(|v| v.as_u64())
+        .unwrap_or(trained_steps as u64) as usize;
+    let prev_live_n768 = prev_val
+        .get(&format!("step_{}_live_val_nats_768", trained_steps))
+        .and_then(|v| v.as_f64());
+    let prev_live_bpb768 = prev_val
+        .get(&format!("step_{}_live_val_bpb_768", trained_steps))
+        .and_then(|v| v.as_f64());
+    let curve_sampling_note = prev_val
+        .get("curve_sampling_note")
+        .and_then(|v| v.as_str())
+        .map(String::from)
+        .unwrap_or_else(|| {
+            format!(
+                "Live candidate checkpoints evaluated every {} steps (1..={}); final Q8_0 model reflects selected_best_checkpoint at step {}",
+                (trained_steps / 10).max(1),
+                trained_steps,
+                selected_checkpoint_step
+            )
+        });
     let mut layer_norms: Vec<f64> = Vec::with_capacity(V72_1_HYBRID_LAYERS);
     if let Some(arr) = prev_val.get("layer_grad_l2_norms").and_then(|v| v.as_array()) {
         for item in arr.iter() {
@@ -5634,15 +5662,23 @@ pub fn v72_1_refresh_base_train_meta_from_verified_sh4z() -> Result<String, Stri
         .map(|b| v72_1_sha256_hex(&b))
         .unwrap_or_else(|_| String::from("UNMEASURED/OFFLINE"));
 
+    let grad_receipt_ref = if Path::new(C_SH_XI_BASE_GRAD_NORMS_RECEIPT_PATH).exists() {
+        C_SH_XI_BASE_GRAD_NORMS_RECEIPT_PATH
+    } else {
+        "UNMEASURED/OFFLINE"
+    };
     let mut meta_str = String::from("{\n");
     meta_str.push_str(&format!("  \"sh4z_sha256\": \"{}\",\n", sh4z_sha));
     meta_str.push_str(&format!("  \"sh4z_bytes\": {},\n", sh4z_len));
     meta_str.push_str(&format!("  \"trained_steps\": {},\n", trained_steps));
+    meta_str.push_str(&format!("  \"selected_checkpoint_step\": {},\n", selected_checkpoint_step));
     meta_str.push_str("  \"seed_init\": \"0x7210_0001_5EED_CAFE\",\n");
     meta_str.push_str("  \"corpus_path\": \"03_vault/corpus/sh_rw_corpus_v7210.jsonl\",\n");
     meta_str.push_str(&format!("  \"corpus_sha256\": \"{}\",\n", corpus_sha));
     meta_str.push_str(&format!("  \"val_eval_tokens\": {},\n", eval_toks));
     meta_str.push_str("  \"loss_curve_csv\": \"03_vault/connectome/sh_xi_week1_training_curve.csv\",\n");
+    meta_str.push_str(&format!("  \"layer_grad_l2_norms_receipt\": \"{}\",\n", grad_receipt_ref));
+    meta_str.push_str(&format!("  \"curve_sampling_note\": \"{}\",\n", curve_sampling_note));
     meta_str.push_str("  \"step0_net2wider_note\": \"At step 0 gamma_net2wider=0.0 so Shell-1 768D preserves Shell-0 384D bit-identically; init_val_nats_768_ungated_gamma1 records distinct random Shell-1 loss when gamma=1.0\",\n");
     meta_str.push_str(&format!("  \"init_val_nats_384\": {:.6},\n", init_n384));
     meta_str.push_str(&format!("  \"init_val_nats_768\": {:.6},\n", init_n768_g0));
@@ -5651,6 +5687,8 @@ pub fn v72_1_refresh_base_train_meta_from_verified_sh4z() -> Result<String, Stri
     meta_str.push_str(&format!("  \"init_val_bpb_384\": {:.6},\n", init_bpb384));
     meta_str.push_str(&format!("  \"init_val_bpb_768\": {:.6},\n", init_bpb768_g0));
     meta_str.push_str(&format!("  \"init_val_bpb_768_ungated_gamma1\": {:.6},\n", init_bpb768_ungated));
+    meta_str.push_str(&format!("  \"step_{}_live_val_nats_768\": {:.6},\n", trained_steps, prev_live_n768.unwrap_or(fin_n768)));
+    meta_str.push_str(&format!("  \"step_{}_live_val_bpb_768\": {:.6},\n", trained_steps, prev_live_bpb768.unwrap_or(fin_bpb768)));
     meta_str.push_str(&format!("  \"final_val_nats_384\": {:.6},\n", fin_n384));
     meta_str.push_str(&format!("  \"final_val_nats_768\": {:.6},\n", fin_n768));
     meta_str.push_str(&format!("  \"final_val_bpb_384\": {:.6},\n", fin_bpb384));
@@ -6043,9 +6081,9 @@ pub fn v72_1_train_with_steps(force_retrain: bool, steps_override: Option<usize>
     let beta2: f32 = 0.95_f32;
     let wd: f32 = 0.01_f32;
 
-    let mut csv_curve = String::from("step,lr,gamma_net2wider,val_nats_384d,val_nats_768d,val_bpb_384d,val_bpb_768d\n");
+    let mut csv_curve = String::from("step,lr,gamma_net2wider,val_nats_384d,val_nats_768d,val_bpb_384d,val_bpb_768d,checkpoint_kind\n");
     csv_curve.push_str(&format!(
-        "0,0.003000,0.000000,{:.6},{:.6},{:.6},{:.6}\n",
+        "0,0.003000,0.000000,{:.6},{:.6},{:.6},{:.6},init_gated_gamma0\n",
         init_n384, init_n768, init_bpb384, init_bpb768
     ));
     let (init_n384_ug, init_n768_ungated, init_bpb384_ug, init_bpb768_ungated, _, _) = {
@@ -6059,7 +6097,7 @@ pub fn v72_1_train_with_steps(force_retrain: bool, steps_override: Option<usize>
         v72_1_eval_validation_metrics(&m_ungated, &val_seqs)
     };
     csv_curve.push_str(&format!(
-        "0,0.003000,1.000000,{:.6},{:.6},{:.6},{:.6}\n",
+        "0,0.003000,1.000000,{:.6},{:.6},{:.6},{:.6},init_ungated_gamma1\n",
         init_n384_ug, init_n768_ungated, init_bpb384_ug, init_bpb768_ungated
     ));
 
@@ -6070,13 +6108,20 @@ pub fn v72_1_train_with_steps(force_retrain: bool, steps_override: Option<usize>
     let mut best_s0_model = model.clone();
     let mut best_vn768: f64 = f64::INFINITY;
     let mut best_s1_model = model.clone();
+    let mut best_s1_step: usize = 0;
+    let mut best_s1_lr: f32 = 0.003_f32;
+    let mut step_last_live_n384: f64 = init_n384;
+    let mut step_last_live_n768: f64 = init_n768;
+    let mut step_last_live_bpb384: f64 = init_bpb384;
+    let mut step_last_live_bpb768: f64 = init_bpb768;
+    let mut last_layer_norms_step: usize = 0;
     let phase_a_eval_stride: usize = (phase_a_steps / 12).max(1);
     let phase_b_eval_stride: usize = ((total_steps.saturating_sub(phase_a_steps)) / 16).max(1);
 
     let mut step: usize = 1;
     let mut last_lr: f32 = 0.003_f32;
     let mut last_layer_norms = v72_1_vec_f64(V72_1_HYBRID_LAYERS, 0.01);
-    let checkpoint_stride: usize = (total_steps / 4).max(1);
+    let checkpoint_stride: usize = (total_steps / 10).max(1);
 
     while step <= total_steps {
         let progress = (step as f32) / (total_steps as f32);
@@ -6253,6 +6298,7 @@ pub fn v72_1_train_with_steps(force_retrain: bool, steps_override: Option<usize>
         }
 
         last_layer_norms = step_grads.compute_layer_l2_norms();
+        last_layer_norms_step = step;
 
         if in_phase_a {
             if step % phase_a_eval_stride == 0 || step == phase_a_steps || step % checkpoint_stride == 0 {
@@ -6263,7 +6309,7 @@ pub fn v72_1_train_with_steps(force_retrain: bool, steps_override: Option<usize>
                 }
                 if step % checkpoint_stride == 0 {
                     csv_curve.push_str(&format!(
-                        "{},{:.6},{:.6},{:.6},{:.6},{:.6},{:.6}\n",
+                        "{},{:.6},{:.6},{:.6},{:.6},{:.6},{:.6},live_step\n",
                         step, cosine_lr, model.gamma_net2wider, vn384, vn768, vb384, vb768
                     ));
                 }
@@ -6309,6 +6355,8 @@ pub fn v72_1_train_with_steps(force_retrain: bool, steps_override: Option<usize>
                 }
                 let (s0_n384, s0_n768, _, _, _, _) = v72_1_eval_validation_metrics(&model, &val_seqs);
                 best_vn768 = s0_n384.min(s0_n768);
+                best_s1_step = phase_a_steps;
+                best_s1_lr = cosine_lr;
                 best_s1_model = model.clone();
             }
         } else if in_phase_b {
@@ -6321,24 +6369,31 @@ pub fn v72_1_train_with_steps(force_retrain: bool, steps_override: Option<usize>
                     V72_1_LATENT_RANK_R1,
                 );
                 cand_model.u_delta1_table = u1_q_cand;
-                let (_, vn768, _, _, _, _) = v72_1_eval_validation_metrics(&cand_model, &val_seqs);
+                let (cand_n384, vn768, cand_bpb384, cand_bpb768, _, _) =
+                    v72_1_eval_validation_metrics(&cand_model, &val_seqs);
+                if step % checkpoint_stride == 0 && step < total_steps {
+                    csv_curve.push_str(&format!(
+                        "{},{:.6},{:.6},{:.6},{:.6},{:.6},{:.6},live_step\n",
+                        step, cosine_lr, cand_model.gamma_net2wider, cand_n384, vn768, cand_bpb384, cand_bpb768
+                    ));
+                }
+                if step == total_steps {
+                    step_last_live_n384 = cand_n384;
+                    step_last_live_n768 = vn768;
+                    step_last_live_bpb384 = cand_bpb384;
+                    step_last_live_bpb768 = cand_bpb768;
+                }
                 if vn768 < best_vn768 {
                     best_vn768 = vn768;
+                    best_s1_step = step;
+                    best_s1_lr = cosine_lr;
                     best_s1_model = cand_model;
-                }
-                if step % checkpoint_stride == 0 && step < total_steps {
-                    let (b_n384, b_n768, b_bpb384, b_bpb768, _, _) =
-                        v72_1_eval_validation_metrics(&best_s1_model, &val_seqs);
-                    csv_curve.push_str(&format!(
-                        "{},{:.6},{:.6},{:.6},{:.6},{:.6},{:.6}\n",
-                        step, cosine_lr, best_s1_model.gamma_net2wider, b_n384, b_n768, b_bpb384, b_bpb768
-                    ));
                 }
             }
         } else if step % checkpoint_stride == 0 && step < total_steps {
             let (vn384, vn768, vb384, vb768, _, _) = v72_1_eval_validation_metrics(&model, &val_seqs);
             csv_curve.push_str(&format!(
-                "{},{:.6},{:.6},{:.6},{:.6},{:.6},{:.6}\n",
+                "{},{:.6},{:.6},{:.6},{:.6},{:.6},{:.6},live_step\n",
                 step, cosine_lr, model.gamma_net2wider, vn384, vn768, vb384, vb768
             ));
         }
@@ -6365,10 +6420,32 @@ pub fn v72_1_train_with_steps(force_retrain: bool, steps_override: Option<usize>
 
     let (fin_n384, fin_n768, fin_bpb384, fin_bpb768, fin_pdev, fin_eval_toks) =
         v72_1_eval_validation_metrics(&model, &val_seqs);
-    csv_curve.push_str(&format!(
-        "{},{:.6},{:.6},{:.6},{:.6},{:.6},{:.6}\n",
-        total_steps, last_lr, model.gamma_net2wider, fin_n384, fin_n768, fin_bpb384, fin_bpb768
-    ));
+    if !is_two_phase {
+        csv_curve.push_str(&format!(
+            "{},{:.6},{:.6},{:.6},{:.6},{:.6},{:.6},live_step\n",
+            total_steps, last_lr, model.gamma_net2wider, fin_n384, fin_n768, fin_bpb384, fin_bpb768
+        ));
+    } else if best_s1_step != total_steps {
+        csv_curve.push_str(&format!(
+            "{},{:.6},{:.6},{:.6},{:.6},{:.6},{:.6},live_step\n",
+            total_steps,
+            last_lr,
+            model.gamma_net2wider,
+            step_last_live_n384,
+            step_last_live_n768,
+            step_last_live_bpb384,
+            step_last_live_bpb768
+        ));
+        csv_curve.push_str(&format!(
+            "{},{:.6},{:.6},{:.6},{:.6},{:.6},{:.6},selected_best_checkpoint\n",
+            best_s1_step, best_s1_lr, model.gamma_net2wider, fin_n384, fin_n768, fin_bpb384, fin_bpb768
+        ));
+    } else {
+        csv_curve.push_str(&format!(
+            "{},{:.6},{:.6},{:.6},{:.6},{:.6},{:.6},selected_best_checkpoint\n",
+            total_steps, last_lr, model.gamma_net2wider, fin_n384, fin_n768, fin_bpb384, fin_bpb768
+        ));
+    }
     let mut max_pdev_f32: f64 = 0.0;
     if let Some((sq0, _)) = val_seqs.first() {
         if sq0.len() >= 3 {
@@ -6464,16 +6541,50 @@ pub fn v72_1_train_with_steps(force_retrain: bool, steps_override: Option<usize>
         .map(|b| v72_1_sha256_hex(&b))
         .unwrap_or_else(|_| String::from("UNMEASURED/OFFLINE"));
 
+    let selected_ckpt_step = if is_two_phase { best_s1_step } else { total_steps };
+    let live_last_n768 = if is_two_phase { step_last_live_n768 } else { fin_n768 };
+    let live_last_bpb768 = if is_two_phase { step_last_live_bpb768 } else { fin_bpb768 };
+    let curve_sampling_note = format!(
+        "Live candidate checkpoints evaluated every {} steps (1..={}); final Q8_0 model reflects selected_best_checkpoint at step {}",
+        checkpoint_stride,
+        total_steps,
+        selected_ckpt_step
+    );
+
+    let mut norm_vals: Vec<serde_json::Value> = Vec::with_capacity(last_layer_norms.len());
+    for norm in last_layer_norms.iter() {
+        norm_vals.push(serde_json::Value::from(*norm));
+    }
+    let mut grad_map = serde_json::Map::new();
+    grad_map.insert(String::from("schema"), serde_json::Value::String(String::from("sh_xi_base_step_grad_norms_receipt_v1")));
+    grad_map.insert(String::from("trained_steps"), serde_json::Value::from(total_steps as u64));
+    grad_map.insert(String::from("measured_at_step"), serde_json::Value::from(last_layer_norms_step as u64));
+    grad_map.insert(String::from("selected_checkpoint_step"), serde_json::Value::from(selected_ckpt_step as u64));
+    grad_map.insert(String::from("corpus_sha256"), serde_json::Value::String(corpus_sha.clone()));
+    grad_map.insert(String::from("sh4z_sha256"), serde_json::Value::String(sh4z_sha.clone()));
+    grad_map.insert(String::from("layer_grad_l2_norms"), serde_json::Value::Array(norm_vals));
+    let mut grad_receipt_str = serde_json::to_string_pretty(&serde_json::Value::Object(grad_map))
+        .unwrap_or_else(|_| String::from("{}"));
+    grad_receipt_str.push('\n');
+    let _ = fs::write(C_SH_XI_BASE_GRAD_NORMS_RECEIPT_PATH, grad_receipt_str.as_bytes());
+    if Path::new("E:\\").exists() {
+        let _ = fs::create_dir_all("E:\\Sovereign_Manifold_SSD_Vault\\connectome");
+        let _ = fs::write(E_SH_XI_BASE_GRAD_NORMS_RECEIPT_PATH, grad_receipt_str.as_bytes());
+    }
+
     // Write sh_xi_base_train_meta.json with full Net2Wider step-0 gated/ungated provenance & f64/f32 softmax sum precision
     let mut meta_str = String::from("{\n");
     meta_str.push_str(&format!("  \"sh4z_sha256\": \"{}\",\n", sh4z_sha));
     meta_str.push_str(&format!("  \"sh4z_bytes\": {},\n", sh4z_len));
     meta_str.push_str(&format!("  \"trained_steps\": {},\n", total_steps));
+    meta_str.push_str(&format!("  \"selected_checkpoint_step\": {},\n", selected_ckpt_step));
     meta_str.push_str("  \"seed_init\": \"0x7210_0001_5EED_CAFE\",\n");
     meta_str.push_str("  \"corpus_path\": \"03_vault/corpus/sh_rw_corpus_v7210.jsonl\",\n");
     meta_str.push_str(&format!("  \"corpus_sha256\": \"{}\",\n", corpus_sha));
     meta_str.push_str(&format!("  \"val_eval_tokens\": {},\n", fin_eval_toks));
     meta_str.push_str("  \"loss_curve_csv\": \"03_vault/connectome/sh_xi_week1_training_curve.csv\",\n");
+    meta_str.push_str(&format!("  \"layer_grad_l2_norms_receipt\": \"{}\",\n", C_SH_XI_BASE_GRAD_NORMS_RECEIPT_PATH));
+    meta_str.push_str(&format!("  \"curve_sampling_note\": \"{}\",\n", curve_sampling_note));
     meta_str.push_str("  \"step0_net2wider_note\": \"At step 0 gamma_net2wider=0.0 so Shell-1 768D preserves Shell-0 384D bit-identically; init_val_nats_768_ungated_gamma1 records distinct random Shell-1 loss when gamma=1.0\",\n");
     meta_str.push_str(&format!("  \"init_val_nats_384\": {:.6},\n", init_n384));
     meta_str.push_str(&format!("  \"init_val_nats_768\": {:.6},\n", init_n768));
@@ -6482,6 +6593,8 @@ pub fn v72_1_train_with_steps(force_retrain: bool, steps_override: Option<usize>
     meta_str.push_str(&format!("  \"init_val_bpb_384\": {:.6},\n", init_bpb384));
     meta_str.push_str(&format!("  \"init_val_bpb_768\": {:.6},\n", init_bpb768));
     meta_str.push_str(&format!("  \"init_val_bpb_768_ungated_gamma1\": {:.6},\n", init_bpb768_ungated));
+    meta_str.push_str(&format!("  \"step_{}_live_val_nats_768\": {:.6},\n", total_steps, live_last_n768));
+    meta_str.push_str(&format!("  \"step_{}_live_val_bpb_768\": {:.6},\n", total_steps, live_last_bpb768));
     meta_str.push_str(&format!("  \"final_val_nats_384\": {:.6},\n", fin_n384));
     meta_str.push_str(&format!("  \"final_val_nats_768\": {:.6},\n", fin_n768));
     meta_str.push_str(&format!("  \"final_val_bpb_384\": {:.6},\n", fin_bpb384));
@@ -6507,6 +6620,7 @@ pub fn v72_1_train_with_steps(force_retrain: bool, steps_override: Option<usize>
     if Path::new("E:\\").exists() {
         let _ = fs::create_dir_all("E:\\Sovereign_Manifold_SSD_Vault\\weights");
         let _ = fs::write(E_SH_XI_BASE_SH4Z_PATH, &sh4z_buf);
+        let _ = fs::write(E_SH_XI_WEIGHTS_BASE_TRAIN_META_PATH, meta_str.as_bytes());
         let _ = fs::create_dir_all("E:\\Sovereign_Manifold_SSD_Vault\\connectome");
         let _ = fs::write(E_SH_XI_TRAIN_CURVE_CSV_PATH, csv_curve.as_bytes());
         let _ = fs::write(E_SH_XI_BASE_TRAIN_META_PATH, meta_str.as_bytes());

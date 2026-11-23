@@ -1,4 +1,4 @@
-// ACT-Omega Net Sovereign Manifold Cloudflare Workers VPC + 10-Table D1 + SQLite Durable Object Continuum
+// ACT-Omega Net Sovereign Manifold Cloudflare Workers VPC + 11-User-Table D1 (+2 System) + SQLite Durable Object Continuum
 // D1 Vault: act_omega_d1_vault_v7322 | Dynamic Metadata Synced via /api/v1/cloudflare/cron_sync (Zero Hardcoded Counts)
 // Zero-Unmeasured Mandate: No hardcoded telemetry, version, chain, or SHA-256 digests. All values read from D1 / DO SQLite or computed via WebCrypto SHA-256.
 
@@ -426,8 +426,69 @@ async function timingSafeEqualString(a, b) {
   return diff === 0;
 }
 
+function safeDecodePathname(rawPath) {
+  return String(rawPath || "/").replace(/(?:%[0-9a-fA-F]{2})+/g, (seq) => {
+    try {
+      return decodeURIComponent(seq);
+    } catch {
+      return seq.replace(/%[0-7][0-9a-fA-F]/g, (b) =>
+        String.fromCharCode(parseInt(b.slice(1), 16))
+      );
+    }
+  });
+}
+
+function normalizeEdgePathname(rawPathname) {
+  const decoded = safeDecodePathname(rawPathname).replace(/\\/g, "/");
+  const segments = decoded.split("/");
+  const stack = [];
+  for (const seg of segments) {
+    if (seg === "" || seg === ".") continue;
+    if (seg === "..") {
+      if (stack.length > 0) stack.pop();
+    } else {
+      stack.push(seg);
+    }
+  }
+  return "/" + stack.join("/");
+}
+
+function safeDecodeQueryKey(rawKey) {
+  let decoded = String(rawKey || "");
+  for (let pass = 0; pass < 2; pass++) {
+    if (!decoded.includes("%")) break;
+    const next = safeDecodePathname(decoded);
+    if (next === decoded) break;
+    decoded = next;
+  }
+  return decoded;
+}
+
+function hasQueryParamKey(url) {
+  for (const k of url.searchParams.keys()) {
+    if (safeDecodeQueryKey(k).toLowerCase() === "key") {
+      return true;
+    }
+  }
+  return false;
+}
+
 async function verifyZeroTrustAndOperatorHeaders(request, env) {
-  // 1. Cloudflare Access JWT Assertion header
+  // 1. Reject ?key= query parameters strictly BEFORE any auth path (Constitutional Invariant #7)
+  // Exception: /api/v1/kv/get where key designates the KV store key (not an operator credential)
+  const url = new URL(request.url);
+  if (hasQueryParamKey(url) && normalizeEdgePathname(url.pathname).toLowerCase() !== "/api/v1/kv/get") {
+    return {
+      authorized: false,
+      error: "QUERY_PARAM_KEY_FORBIDDEN",
+      status: 403,
+      role: "REJECTED_QUERY_PARAM",
+      bypassDebounce: false,
+      isOperator: false
+    };
+  }
+
+  // 2. Cloudflare Access JWT Assertion header
   const jwtAssertion = request.headers.get("Cf-Access-Jwt-Assertion");
   if (jwtAssertion) {
     const verifiedJwt = await verifyCloudflareAccessJwt(jwtAssertion, env);
@@ -440,20 +501,6 @@ async function verifyZeroTrustAndOperatorHeaders(request, env) {
       error: "INVALID_ZERO_TRUST_JWT",
       status: 403,
       role: "REJECTED_JWT",
-      bypassDebounce: false,
-      isOperator: false
-    };
-  }
-
-  // 2. Reject ?key= query parameters strictly (Constitutional Invariant #7)
-  // Exception: /api/v1/kv/get where key designates the KV store key (not an operator credential)
-  const url = new URL(request.url);
-  if (url.searchParams.has("key") && url.pathname !== "/api/v1/kv/get") {
-    return {
-      authorized: false,
-      error: "QUERY_PARAM_KEY_FORBIDDEN",
-      status: 403,
-      role: "REJECTED_QUERY_PARAM",
       bypassDebounce: false,
       isOperator: false
     };
@@ -540,6 +587,16 @@ async function flushAnalyticsBatchBufferToD1(env) {
     );
     await env.ACT_OMEGA_D1.batch(stmts);
   } catch {}
+}
+
+const D1_USER_TABLES_SQL =
+  "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%' ORDER BY name ASC;";
+
+function extractD1UserTables(res) {
+  if (!res || !Array.isArray(res.results)) return null;
+  return res.results
+    .map((r) => (r && typeof r.name === "string" ? r.name : ""))
+    .filter((n) => n.length > 0 && !n.startsWith("sqlite_") && !n.startsWith("_cf_"));
 }
 
 export async function computeD1CosineSimilarityFallback(queryVec, topK, env) {
@@ -828,7 +885,7 @@ export default {
     const t0 = Date.now();
 
     // STRICT DO NOT REMOVE: Google Search Console Ownership Verification Certificate (google6edc0affb12d0455.html)
-    if (url.pathname === "/google6edc0affb12d0455.html") {
+    if (url.pathname === "/google6edc0affb12d0455.html" && !hasQueryParamKey(url)) {
       return new Response("google-site-verification: google6edc0affb12d0455.html", {
         status: 200,
         headers: {
@@ -838,6 +895,11 @@ export default {
         }
       });
     }
+
+    const normalizedPath = normalizeEdgePathname(url.pathname);
+    const lowerPath = normalizedPath.toLowerCase();
+    const toolNumMatch = lowerPath.match(/^\/api\/v1\/tools?\/t?(\d+)$/);
+    const parsedToolNum = toolNumMatch ? Number(toolNumMatch[1]) : 0;
 
     // ANTI-530 (CLOUDFLARE ERROR 1033) & ANTI-502 ORIGIN TUNNEL SHIELD:
     // When invoked on custom zone routes (act-omega-net.dev / *.act-omega-net.dev),
@@ -851,51 +913,94 @@ export default {
     const isEdgeNativeRoute =
       url.searchParams.get("edge_direct") === "1" ||
       request.headers.get("X-Sovereign-Edge-Direct") === "1" ||
-      url.pathname === "/mcp" ||
-      url.pathname === "/api/v1/mcp/rpc" ||
-      url.pathname === "/api/v1/telemetry" ||
-      url.pathname === "/api/v1/cloudflare/d1_vpc_shadow" ||
-      url.pathname === "/api/v1/cloudflare/d1_all8tables" ||
-      url.pathname === "/api/v1/cloudflare/d1_all10tables" ||
-      url.pathname === "/api/v1/cloudflare/cron_sync" ||
-      url.pathname === "/api/v1/cloudflare/shm_relay" ||
-      url.pathname === "/api/v1/cloudflare/free_tier_governor" ||
-      url.pathname === "/api/v1/cloudflare/paid_tier_governor" ||
-      url.pathname === "/api/v1/cloudflare/wal_enqueue" ||
-      url.pathname === "/api/v1/cloudflare/workflow_trigger" ||
-      url.pathname === "/api/v1/cloudflare/shadow_ws" ||
-      url.pathname === "/api/v1/cloudflare/vpc_mesh_status" ||
-      url.pathname === "/api/v1/cloudflare/mesh_register" ||
-      url.pathname === "/api/v1/cloudflare/vpc_probe" ||
-      url.pathname === "/api/v1/cloudflare/hyperdrive_query" ||
-      url.pathname === "/api/v1/continuum/handover" ||
-      url.pathname === "/api/v1/edge_continuum/status" ||
-      url.pathname === "/api/v1/ota/pixel_manifest" ||
-      url.pathname === "/api/v1/vectorize/query" ||
-      url.pathname.startsWith("/api/v1/r2/vault/") ||
-      url.pathname === "/api/v1/ai/embed" ||
-      url.pathname === "/api/v1/kv/get" ||
-      url.pathname === "/api/v1/kv/put" ||
-      url.pathname === "/api/v1/cloudflare/turnstile_verify";
+      lowerPath === "/mcp" ||
+      lowerPath === "/api/v1/mcp/rpc" ||
+      lowerPath === "/api/v1/telemetry" ||
+      lowerPath === "/api/v1/cloudflare/d1_vpc_shadow" ||
+      lowerPath === "/api/v1/cloudflare/d1_all8tables" ||
+      lowerPath === "/api/v1/cloudflare/d1_all10tables" ||
+      lowerPath === "/api/v1/cloudflare/cron_sync" ||
+      lowerPath === "/api/v1/cloudflare/shm_relay" ||
+      lowerPath === "/api/v1/cloudflare/free_tier_governor" ||
+      lowerPath === "/api/v1/cloudflare/paid_tier_governor" ||
+      lowerPath === "/api/v1/cloudflare/wal_enqueue" ||
+      lowerPath === "/api/v1/cloudflare/workflow_trigger" ||
+      lowerPath === "/api/v1/cloudflare/shadow_ws" ||
+      lowerPath === "/api/v1/cloudflare/vpc_mesh_status" ||
+      lowerPath === "/api/v1/cloudflare/mesh_register" ||
+      lowerPath === "/api/v1/cloudflare/vpc_probe" ||
+      lowerPath === "/api/v1/cloudflare/hyperdrive_query" ||
+      lowerPath === "/api/v1/continuum/handover" ||
+      lowerPath === "/api/v1/edge_continuum/status" ||
+      lowerPath === "/api/v1/ota/pixel_manifest" ||
+      lowerPath === "/api/v1/vectorize/query" ||
+      lowerPath.startsWith("/api/v1/r2/vault/") ||
+      lowerPath === "/api/v1/ai/embed" ||
+      lowerPath === "/api/v1/kv/get" ||
+      lowerPath === "/api/v1/kv/put" ||
+      lowerPath === "/api/v1/cloudflare/turnstile_verify";
 
-    // Edge Pre-Proxy Defense-in-Depth (Gate 1 & E1/E2): Enforce operator auth BEFORE origin tunnel pass-through!
-    const toolNumMatch = url.pathname.match(/^\/api\/v1\/tools?\/t?(\d+)$/);
-    const parsedToolNum = toolNumMatch ? Number(toolNumMatch[1]) : 0;
+    // Edge Pre-Proxy Defense-in-Depth (Gate 1, E1/E2, & R4): Enforce operator auth BEFORE origin tunnel pass-through!
+    const TELEMETRY_WRITE_QUERY_KEYS = new Set([
+      "node", "kops", "p8_kops", "pixel10_kops", "pixel10", "pixel8_kops", "pixel8",
+      "loq15_kops", "loq15", "anchor1_kops", "p8_free", "col", "mx", "my", "mz", "bn",
+      "baro", "lux", "acc", "gyro", "temp", "mv", "bat", "ram_u", "ram_t", "shz", "thz",
+      "rtt", "bearer"
+    ]);
+    const isTelemetryOrHealthReadPath =
+      lowerPath === "/api/v1/telemetry" ||
+      lowerPath === "/api/v1/telemetry/snapshot" ||
+      lowerPath === "/api/v1/stategraph" ||
+      lowerPath === "/api/v1/health";
+    let hasTelemetryWriteQueryParam = false;
+    if (isTelemetryOrHealthReadPath) {
+      for (const k of url.searchParams.keys()) {
+        if (TELEMETRY_WRITE_QUERY_KEYS.has(safeDecodeQueryKey(k).toLowerCase())) {
+          hasTelemetryWriteQueryParam = true;
+          break;
+        }
+      }
+    }
+    if (isTelemetryOrHealthReadPath && hasTelemetryWriteQueryParam) {
+      return Response.json(
+        { error: "TELEMETRY_QUERY_WRITE_FORBIDDEN", status: 403 },
+        { status: 403, headers: { "Cache-Control": "no-store" } }
+      );
+    }
+
+    if (hasQueryParamKey(url) && lowerPath !== "/api/v1/kv/get") {
+      return Response.json(
+        { error: "QUERY_PARAM_KEY_FORBIDDEN", status: 403 },
+        { status: 403, headers: { "Cache-Control": "no-store" } }
+      );
+    }
+
     const isEdgeGatedBeforeOrigin =
-      url.pathname.startsWith("/api/v1/admin/") ||
-      url.pathname.startsWith("/api/v1/router/") ||
-      url.pathname === "/api/v1/auth/operator_vault_gate" ||
-      url.pathname.startsWith("/api/v1/lab/") ||
-      url.pathname.startsWith("/api/v1/research/") ||
-      url.pathname.startsWith("/api/v1/pgwire/") ||
-      (url.pathname.startsWith("/api/v1/cloudflare/") && url.pathname !== "/api/v1/cloudflare/turnstile_verify") ||
-      url.pathname.startsWith("/api/v1/vesper_arachne/") ||
-      url.pathname.startsWith("/api/v1/chain") ||
-      url.pathname.startsWith("/api/v1/cert/") ||
-      url.pathname.startsWith("/api/v1/synthesis/bleeding_edge_") ||
-      url.pathname.startsWith("/api/v1/bleeding_edge/synthesis_") ||
-      parsedToolNum === 287 ||
-      parsedToolNum === 288 ||
+      lowerPath.startsWith("/api/v1/admin/") ||
+      lowerPath.startsWith("/api/v1/router/") ||
+      lowerPath === "/api/v1/auth/operator_vault_gate" ||
+      lowerPath.startsWith("/api/v1/lab/") ||
+      lowerPath.startsWith("/api/v1/research/") ||
+      lowerPath.startsWith("/api/v1/pgwire/") ||
+      (lowerPath.startsWith("/api/v1/cloudflare/") && lowerPath !== "/api/v1/cloudflare/turnstile_verify") ||
+      lowerPath.startsWith("/api/v1/vesper_arachne/") ||
+      lowerPath.startsWith("/api/v1/chain") ||
+      lowerPath.startsWith("/api/v1/cert/") ||
+      lowerPath.startsWith("/api/v1/synthesis/bleeding_edge_") ||
+      lowerPath.startsWith("/api/v1/bleeding_edge/synthesis_") ||
+      lowerPath.startsWith("/api/v1/p8_root/") ||
+      lowerPath.startsWith("/api/v1/aegis/") ||
+      lowerPath.startsWith("/api/v1/harness/") ||
+      lowerPath.startsWith("/api/v1/gemma4/") ||
+      lowerPath === "/api/v1/connectome/spage_3m_synapses" ||
+      lowerPath === "/api/v1/telemetry/ingest" ||
+      lowerPath.startsWith("/api/v1/l0_core/") ||
+      lowerPath === "/api/v1/tool/execute" ||
+      (parsedToolNum >= 185 && parsedToolNum <= 204) ||
+      parsedToolNum === 212 ||
+      (parsedToolNum >= 258 && parsedToolNum <= 260) ||
+      (parsedToolNum >= 271 && parsedToolNum <= 275) ||
+      (parsedToolNum >= 281 && parsedToolNum <= 288) ||
       parsedToolNum === 292 ||
       parsedToolNum === 316 ||
       (parsedToolNum >= 369 && parsedToolNum <= 404);
@@ -938,7 +1043,7 @@ export default {
     }
 
     // FEATURE F13 & F14: Model Context Protocol (MCP) JSON-RPC 2.0 Surface (/mcp and /api/v1/mcp/rpc)
-    if (url.pathname === "/mcp" || url.pathname === "/api/v1/mcp/rpc") {
+    if (lowerPath === "/mcp" || lowerPath === "/api/v1/mcp/rpc") {
       const corsCheck = resolveMcpCorsHeaders(request);
       if (!corsCheck.allowed) {
         return Response.json(
@@ -1076,7 +1181,7 @@ export default {
                 { uri: "manifold://connectome/synapses_v6900_2703360.spage", name: "synapses_v6900_2703360.spage", description: "Auxiliary Plastic Synapses Connectome Pagefile", mimeType: "application/octet-stream" },
                 { uri: "manifold://models/gemma-4-E4B-it-full.sh4z", name: "gemma-4-E4B-it-full.sh4z", description: "Gemma 4 E4B-it 256D E8 Ternary Vault", mimeType: "application/octet-stream" },
                 { uri: "manifold://models/gemma-4-12B-it-full.sh4z", name: "gemma-4-12B-it-full.sh4z", description: "Gemma 4 12B-it 256D E8 Ternary Vault", mimeType: "application/octet-stream" },
-                { uri: "manifold://d1/act_omega_d1_vault_v7322", name: "act_omega_d1_vault_v7322", description: "Cloudflare D1 10-Table Remote SQLite Vault", mimeType: "application/json" }
+                { uri: "manifold://d1/act_omega_d1_vault_v7322", name: "act_omega_d1_vault_v7322", description: "Cloudflare D1 11-User-Table Remote SQLite Vault", mimeType: "application/json" }
               ]
             }
           }, { headers: corsHeaders });
@@ -1202,7 +1307,7 @@ export default {
                 { name: "safe_llm_gateway_interact", description: "Converse across sub-domains and crystallize a dendritic neuron (/api/v1/agent_gateway/interact).", inputSchema: { type: "object", properties: { query: { type: "string", description: "Prompt or mathematical/physical hypothesis to transduce and crystallize" } } } },
                 { name: "browser_article_operationalizer", description: "4-stage research article to L0 Rust + Lean 4 QED + shard/neuron transducer (/api/v1/browser/fetch).", inputSchema: { type: "object", properties: { query: { type: "string", description: "URL or scientific topic to operationalize into Rust and Lean 4 QED" } } } },
                 { name: "metabolic_5w1h_harness", description: "5W1H Metabolic Autopoietic Harness across 4 ATP bands (/api/v1/harness/metabolic_5w1h).", inputSchema: { type: "object", properties: { query: { type: "string", description: "Optional thermal or metabolic query for the 5W1H harness" } } } },
-                { name: "cloudflare_d1_vpc_shadow", description: "Cloudflare D1 10-table + Durable Object shadow status (/api/v1/cloudflare/d1_vpc_shadow).", inputSchema: { type: "object", properties: { query: { type: "string", description: "Optional SQL or table synchronization query for act_omega_d1_vault_v7322" } } } },
+                { name: "cloudflare_d1_vpc_shadow", description: "Cloudflare D1 11-user-table + Durable Object shadow status (/api/v1/cloudflare/d1_vpc_shadow).", inputSchema: { type: "object", properties: { query: { type: "string", description: "Optional SQL or table synchronization query for act_omega_d1_vault_v7322" } } } },
                 { name: "gemma4_speculative_cascade", description: "Execute k=4 Gemma 4 E4B draft to 12B K=V verifier speculative cascade with in-place Hebbian distillation into .spage synapses (/api/v1/gemma4/speculative_cascade).", inputSchema: { type: "object", properties: { prompt: { type: "string", description: "Input prompt or seed text for speculative cascade drafting" }, k: { type: "integer", description: "Number of speculative draft tokens (default: 4, range: 1..16)" } } } },
                 { name: "gemma4_multimodal_tower_probe", description: "Evaluate live wave packets across Gemma 4 E4B audio/vision towers and 12B unified embedding projectors (/api/v1/gemma4/multimodal_tower_probe).", inputSchema: { type: "object", properties: { query: { type: "string", description: "Optional multimodal probe modality filter or sensor wave packet query" } } } },
                 { name: "gemma4_ple_256d_surgical_router", description: "Query and route 256D Per-Layer Embeddings (PLE) across layers from Gemma 4 E4B-it .sh4z vault (/api/v1/gemma4/ple_256d_surgical_router).", inputSchema: { type: "object", properties: { layer: { type: "integer", description: "Target layer index to inspect (0..41)" }, token: { type: "string", description: "Optional token or vocabulary string to project into 256D PLE" } } } },
@@ -1288,9 +1393,9 @@ export default {
 
     // Tool 287: Vesper-Arachne E8 Inverse Kinematics & Click-Through Companion Route Handler (Gated per E1)
     if (
-      url.pathname === "/api/v1/vesper_arachne/ik_swarm_companion" ||
-      url.pathname === "/api/v1/vesper_arachne/e8_ik" ||
-      url.pathname === "/api/v1/tools/t287"
+      lowerPath === "/api/v1/vesper_arachne/ik_swarm_companion" ||
+      lowerPath === "/api/v1/vesper_arachne/e8_ik" ||
+      lowerPath === "/api/v1/tools/t287"
     ) {
       const auth = await verifyZeroTrustAndOperatorHeaders(request, env);
       if (!auth.authorized) {
@@ -1418,23 +1523,23 @@ export default {
 
     // Tools 292..316+: Mitotic Swarm & Master Certification Route Handler (Gated per E1)
     if (
-      url.pathname === "/api/v1/chain316/master_certification" ||
-      url.pathname === "/api/v1/chain312/master_certification" ||
-      url.pathname === "/api/v1/chain308/master_certification" ||
-      url.pathname === "/api/v1/chain304/master_certification" ||
-      url.pathname === "/api/v1/chain300/master_certification" ||
-      url.pathname === "/api/v1/chain292/master_certification" ||
-      url.pathname === "/api/v1/chain292/suite" ||
-      url.pathname === "/api/v1/chain292_suite" ||
-      url.pathname === "/api/v1/chain288/master_certification" ||
-      url.pathname === "/api/v1/chain288/suite" ||
-      url.pathname === "/api/v1/chain288_suite" ||
-      url.pathname === "/api/v1/chain280/master_certification" ||
-      url.pathname === "/api/v1/chain280/suite" ||
-      url.pathname === "/api/v1/chain280_suite" ||
-      url.pathname === "/api/v1/tools/t316" ||
-      url.pathname === "/api/v1/tools/t292" ||
-      url.pathname === "/api/v1/tools/t288"
+      lowerPath === "/api/v1/chain316/master_certification" ||
+      lowerPath === "/api/v1/chain312/master_certification" ||
+      lowerPath === "/api/v1/chain308/master_certification" ||
+      lowerPath === "/api/v1/chain304/master_certification" ||
+      lowerPath === "/api/v1/chain300/master_certification" ||
+      lowerPath === "/api/v1/chain292/master_certification" ||
+      lowerPath === "/api/v1/chain292/suite" ||
+      lowerPath === "/api/v1/chain292_suite" ||
+      lowerPath === "/api/v1/chain288/master_certification" ||
+      lowerPath === "/api/v1/chain288/suite" ||
+      lowerPath === "/api/v1/chain288_suite" ||
+      lowerPath === "/api/v1/chain280/master_certification" ||
+      lowerPath === "/api/v1/chain280/suite" ||
+      lowerPath === "/api/v1/chain280_suite" ||
+      lowerPath === "/api/v1/tools/t316" ||
+      lowerPath === "/api/v1/tools/t292" ||
+      lowerPath === "/api/v1/tools/t288"
     ) {
       const auth = await verifyZeroTrustAndOperatorHeaders(request, env);
       if (!auth.authorized) {
@@ -1521,9 +1626,9 @@ export default {
 
     // Bleeding-Edge Synthesis Tools 281..286 Route Handlers (Gated per E1)
     if (
-      url.pathname.startsWith("/api/v1/synthesis/bleeding_edge_") ||
-      url.pathname.startsWith("/api/v1/bleeding_edge/synthesis_") ||
-      url.pathname === "/api/v1/research/bleeding_edge_5_syntheses"
+      lowerPath.startsWith("/api/v1/synthesis/bleeding_edge_") ||
+      lowerPath.startsWith("/api/v1/bleeding_edge/synthesis_") ||
+      lowerPath === "/api/v1/research/bleeding_edge_5_syntheses"
     ) {
       const auth = await verifyZeroTrustAndOperatorHeaders(request, env);
       if (!auth.authorized) {
@@ -1532,7 +1637,7 @@ export default {
           { status: 403, headers: { "Cache-Control": "no-store" } }
         );
       }
-      const seg = url.pathname.split("/").pop();
+      const seg = lowerPath.split("/").pop();
       const synthIdx = parseInt(seg.replace(/[^0-9]/g, ""), 10) || 1;
       const toolMap = { 1: 281, 2: 282, 3: 283, 4: 285, 5: 286 };
       const toolId = toolMap[synthIdx] || 281;
@@ -1555,7 +1660,7 @@ export default {
     }
 
     // Tool 284: Authenticated Dynamic Checksummed Pixel OTA Manifest (Fail-Closed 503 if Unsynced; No Device Serials per E9)
-    if (url.pathname === "/api/v1/ota/pixel_manifest") {
+    if (lowerPath === "/api/v1/ota/pixel_manifest") {
       const auth = await verifyZeroTrustAndOperatorHeaders(request, env);
       if (!auth.authorized) {
         return Response.json(
@@ -1609,9 +1714,9 @@ export default {
 
     // Continuum Telemetry & Unplugged Shared-Memory Relay backed strictly by D1 + Durable Object SQLite
     if (
-      url.pathname === "/api/v1/telemetry" ||
-      url.pathname === "/api/v1/cloudflare/shm_relay" ||
-      url.pathname === "/api/v1/continuum/handover"
+      lowerPath === "/api/v1/telemetry" ||
+      lowerPath === "/api/v1/cloudflare/shm_relay" ||
+      lowerPath === "/api/v1/continuum/handover"
     ) {
       const auth = await verifyZeroTrustAndOperatorHeaders(request, env);
       if (!auth.authorized) {
@@ -1764,7 +1869,7 @@ export default {
     }
 
     // Gated D1 Cron Sync Route Handler (Requires POST + Operator Auth + JSON Body)
-    if (url.pathname === "/api/v1/cloudflare/cron_sync") {
+    if (lowerPath === "/api/v1/cloudflare/cron_sync") {
       if (request.method !== "POST") {
         return Response.json({ error: "METHOD_NOT_ALLOWED", message: "cron_sync requires POST" }, { status: 405 });
       }
@@ -1810,7 +1915,8 @@ export default {
       const liveChainMilestone = typeof syncBody.chain_milestone === "string" && syncBody.chain_milestone.trim() ? syncBody.chain_milestone.trim() : null;
       const liveToolsTotal = parseOptionalNumber(syncBody.tools_total);
 
-      let d1Summary = { tables_queried: 10, live_d1_connected: false };
+      let d1Summary = { tables_queried: null, d1_tables_status: "UNMEASURED/OFFLINE", live_d1_connected: false };
+      let liveD1TableCount = null;
       let doSummary = { active: false };
       if (env && env.SOVEREIGN_EDGE_SHADOW_DO) {
         try {
@@ -1941,8 +2047,8 @@ export default {
           gD1TelemetryCache.timestamp_ms = 0;
           gEdgeMetaCache.timestamp_ms = 0;
 
-          // Single-round-trip batched D1 read across all 4 summary views
-          const [auditRes, rosterRes, snapRes, visitRes] = await env.ACT_OMEGA_D1.batch([
+          // Single-round-trip batched D1 read across all 4 summary views + live sqlite_master table count
+          const [auditRes, rosterRes, snapRes, visitRes, tablesRes] = await env.ACT_OMEGA_D1.batch([
             env.ACT_OMEGA_D1.prepare(
               "SELECT artifact_name, byte_length, sha256_digest, measured_shards, measured_neurons FROM v41_measured_sha256_audit ORDER BY artifact_name ASC;"
             ),
@@ -1954,10 +2060,15 @@ export default {
             ),
             env.ACT_OMEGA_D1.prepare(
               "SELECT visit_id, agent_id, protocol, dominant_domain, crystallized_neuron_id, crystallized_shard_id FROM v44_visiting_llm_agent_ledger ORDER BY visit_id DESC LIMIT 3;"
-            )
+            ),
+            env.ACT_OMEGA_D1.prepare(D1_USER_TABLES_SQL)
           ]);
+          const userTables = extractD1UserTables(tablesRes);
+          liveD1TableCount = userTables !== null ? userTables.length : null;
           d1Summary = {
-            tables_queried: 10,
+            tables_queried: liveD1TableCount,
+            d1_tables_status: liveD1TableCount !== null ? "MEASURED_SQLITE_MASTER" : "UNMEASURED/OFFLINE",
+            user_tables: userTables ?? [],
             live_d1_connected: true,
             query_latency_ms: Date.now() - t0,
             sha256_audit: auditRes.results || [],
@@ -1967,7 +2078,8 @@ export default {
           };
         } catch (err) {
           gWorkerSqliteErrCount++;
-          d1Summary = { tables_queried: 10, live_d1_connected: false, error: String(err), sqlite_err_count: gWorkerSqliteErrCount };
+          liveD1TableCount = null;
+          d1Summary = { tables_queried: null, d1_tables_status: "UNMEASURED/OFFLINE", live_d1_connected: false, error: String(err), sqlite_err_count: gWorkerSqliteErrCount };
         }
       }
 
@@ -1981,7 +2093,8 @@ export default {
         lean4_theorems_qed: liveLeanQed !== null ? `${liveLeanQed}/${liveLeanQed}` : syncedAfter.lean4_qed_label,
         tools_total: liveToolsTotal ?? syncedAfter.tools_total,
         d1_database: "act_omega_d1_vault_v7322",
-        d1_tables_count: 10,
+        d1_tables_count: liveD1TableCount,
+        d1_tables_status: liveD1TableCount !== null ? "MEASURED_SQLITE_MASTER" : "UNMEASURED/OFFLINE",
         sqlite_err_count: gWorkerSqliteErrCount,
         workers_vpc_tunnel: "sovereign-loq15-vpc-binding",
         cron_schedule: "*/15 * * * *",
@@ -2001,9 +2114,9 @@ export default {
     }
 
     if (
-      url.pathname === "/api/v1/cloudflare/d1_vpc_shadow" ||
-      url.pathname === "/api/v1/cloudflare/d1_all8tables" ||
-      url.pathname === "/api/v1/cloudflare/d1_all10tables"
+      lowerPath === "/api/v1/cloudflare/d1_vpc_shadow" ||
+      lowerPath === "/api/v1/cloudflare/d1_all8tables" ||
+      lowerPath === "/api/v1/cloudflare/d1_all10tables"
     ) {
       const auth = await verifyZeroTrustAndOperatorHeaders(request, env);
       if (!auth.authorized) {
@@ -2022,7 +2135,8 @@ export default {
       const liveNpageBytes = parseOptionalNumber(url.searchParams.get("npage_bytes"));
 
       const synced = await getSyncedEdgeMetadata(env);
-      let d1Summary = { tables_queried: 10, live_d1_connected: false };
+      let d1Summary = { tables_queried: null, d1_tables_status: "UNMEASURED/OFFLINE", live_d1_connected: false };
+      let liveD1TableCount = null;
       let doSummary = { active: false };
       if (env && env.SOVEREIGN_EDGE_SHADOW_DO) {
         try {
@@ -2038,8 +2152,8 @@ export default {
       }
       if (env && env.ACT_OMEGA_D1) {
         try {
-          // Single-round-trip batched D1 read returning trimmed operational counts & latest snapshot metadata (S3)
-          const [auditRes, rosterRes, snapRes, visitRes] = await env.ACT_OMEGA_D1.batch([
+          // Single-round-trip batched D1 read returning trimmed operational counts & latest snapshot metadata (S3) + live sqlite_master table count
+          const [auditRes, rosterRes, snapRes, visitRes, tablesRes] = await env.ACT_OMEGA_D1.batch([
             env.ACT_OMEGA_D1.prepare(
               "SELECT COUNT(*) AS cnt, COALESCE(SUM(byte_length), 0) AS total_bytes FROM v41_measured_sha256_audit;"
             ),
@@ -2051,13 +2165,18 @@ export default {
             ),
             env.ACT_OMEGA_D1.prepare(
               "SELECT COUNT(*) AS cnt FROM v44_visiting_llm_agent_ledger;"
-            )
+            ),
+            env.ACT_OMEGA_D1.prepare(D1_USER_TABLES_SQL)
           ]);
           const auditAgg = auditRes && auditRes.results && auditRes.results[0] ? auditRes.results[0] : { cnt: 0, total_bytes: 0 };
           const rosterAgg = rosterRes && rosterRes.results && rosterRes.results[0] ? rosterRes.results[0] : { cnt: 0 };
           const visitAgg = visitRes && visitRes.results && visitRes.results[0] ? visitRes.results[0] : { cnt: 0 };
+          const userTables = extractD1UserTables(tablesRes);
+          liveD1TableCount = userTables !== null ? userTables.length : null;
           d1Summary = {
-            tables_queried: 10,
+            tables_queried: liveD1TableCount,
+            d1_tables_status: liveD1TableCount !== null ? "MEASURED_SQLITE_MASTER" : "UNMEASURED/OFFLINE",
+            user_tables: userTables ?? [],
             live_d1_connected: true,
             query_latency_ms: Date.now() - t0,
             sha256_audit_count: Number(auditAgg.cnt || 0),
@@ -2068,7 +2187,8 @@ export default {
           };
         } catch (err) {
           gWorkerSqliteErrCount++;
-          d1Summary = { tables_queried: 10, live_d1_connected: false, error: String(err), sqlite_err_count: gWorkerSqliteErrCount };
+          liveD1TableCount = null;
+          d1Summary = { tables_queried: null, d1_tables_status: "UNMEASURED/OFFLINE", live_d1_connected: false, error: String(err), sqlite_err_count: gWorkerSqliteErrCount };
         }
       }
 
@@ -2089,7 +2209,8 @@ export default {
         lean4_theorems_qed: synced.lean4_qed_label,
         tools_total: synced.tools_total,
         d1_database: "act_omega_d1_vault_v7322",
-        d1_tables_count: 10,
+        d1_tables_count: liveD1TableCount,
+        d1_tables_status: liveD1TableCount !== null ? "MEASURED_SQLITE_MASTER" : "UNMEASURED/OFFLINE",
         sqlite_err_count: gWorkerSqliteErrCount,
         workers_vpc_tunnel: "sovereign-loq15-vpc-binding",
         cron_schedule: "*/5 * * * *",
@@ -2110,7 +2231,7 @@ export default {
     // ==============================================================================
     // ROUTE: /api/v1/cloudflare/free_tier_governor (Feature F07 & Tool 317 — Gated per E1)
     // ==============================================================================
-    if (url.pathname === "/api/v1/cloudflare/free_tier_governor") {
+    if (lowerPath === "/api/v1/cloudflare/free_tier_governor") {
       const auth = await verifyZeroTrustAndOperatorHeaders(request, env);
       if (!auth.authorized) {
         return Response.json(
@@ -2265,7 +2386,7 @@ export default {
     // ==============================================================================
     // ROUTE: /api/v1/cloudflare/turnstile_verify (Tier 4 Zero Trust & Turnstile)
     // ==============================================================================
-    if (url.pathname === "/api/v1/cloudflare/turnstile_verify") {
+    if (lowerPath === "/api/v1/cloudflare/turnstile_verify") {
       let body = {};
       try {
         body = await request.json();
@@ -2364,7 +2485,7 @@ export default {
     // ==============================================================================
     // ROUTE: /api/v1/vectorize/query (Tier 1 Vectorize — Operator Auth & Rate-Limited per S4)
     // ==============================================================================
-    if (url.pathname === "/api/v1/vectorize/query") {
+    if (lowerPath === "/api/v1/vectorize/query") {
       const auth = await verifyZeroTrustAndOperatorHeaders(request, env);
       if (!auth.authorized) {
         return Response.json(
@@ -2499,8 +2620,8 @@ export default {
     // ==============================================================================
     // ROUTE: /api/v1/r2/vault/* (Tier 2 R2 Vault)
     // ==============================================================================
-    if (url.pathname.startsWith("/api/v1/r2/vault/")) {
-      const objectKey = url.pathname.replace(/^\/api\/v1\/r2\/vault\//, "");
+    if (lowerPath.startsWith("/api/v1/r2/vault/")) {
+      const objectKey = normalizedPath.slice("/api/v1/r2/vault/".length);
       const rangeHeader = request.headers.get("Range");
 
       if (request.method === "GET" || request.method === "HEAD") {
@@ -2630,7 +2751,7 @@ export default {
     // ==============================================================================
     // ROUTE: /api/v1/ai/embed (Tier 3 Workers AI — Operator Auth & Rate-Limited per S4)
     // ==============================================================================
-    if (url.pathname === "/api/v1/ai/embed") {
+    if (lowerPath === "/api/v1/ai/embed") {
       const auth = await verifyZeroTrustAndOperatorHeaders(request, env);
       if (!auth.authorized) {
         return Response.json(
@@ -2740,7 +2861,7 @@ export default {
     // ==============================================================================
     // ROUTE: /api/v1/kv/get & /api/v1/kv/put (Tier 5 Workers KV)
     // ==============================================================================
-    if (url.pathname === "/api/v1/kv/get") {
+    if (lowerPath === "/api/v1/kv/get") {
       const auth = await verifyZeroTrustAndOperatorHeaders(request, env);
       if (!auth.authorized) {
         return Response.json({ error: "OPERATOR_AUTH_REQUIRED", status: 403 }, { status: 403 });
@@ -2797,7 +2918,7 @@ export default {
       });
     }
 
-    if (url.pathname === "/api/v1/kv/put") {
+    if (lowerPath === "/api/v1/kv/put") {
       const auth = await verifyZeroTrustAndOperatorHeaders(request, env);
       if (!auth.authorized) {
         return Response.json({ error: "OPERATOR_AUTH_REQUIRED", status: 403 }, { status: 403 });
@@ -2877,7 +2998,7 @@ export default {
     // ==============================================================================
     // ROUTE: /api/v1/cloudflare/paid_tier_governor (Workers Paid $5/mo Governance — Gated per E1)
     // ==============================================================================
-    if (url.pathname === "/api/v1/cloudflare/paid_tier_governor") {
+    if (lowerPath === "/api/v1/cloudflare/paid_tier_governor") {
       const auth = await verifyZeroTrustAndOperatorHeaders(request, env);
       if (!auth.authorized) {
         return Response.json(
@@ -2967,8 +3088,8 @@ export default {
     // ==============================================================================
     // ROUTE: /api/v1/cloudflare/wal_enqueue (Workers Paid Queues WAL Producer)
     // ==============================================================================
-    if (url.pathname === "/api/v1/cloudflare/wal_enqueue") {
-      const hasQueryKey = url.searchParams.has("key");
+    if (lowerPath === "/api/v1/cloudflare/wal_enqueue") {
+      const hasQueryKey = hasQueryParamKey(url);
       const auth = await verifyZeroTrustAndOperatorHeaders(request, env);
       if (hasQueryKey || !auth.authorized) {
         return Response.json(
@@ -3038,8 +3159,8 @@ export default {
     // ==============================================================================
     // ROUTE: /api/v1/cloudflare/workflow_trigger (Workers Paid Workflows)
     // ==============================================================================
-    if (url.pathname === "/api/v1/cloudflare/workflow_trigger") {
-      const hasQueryKey = url.searchParams.has("key");
+    if (lowerPath === "/api/v1/cloudflare/workflow_trigger") {
+      const hasQueryKey = hasQueryParamKey(url);
       const auth = await verifyZeroTrustAndOperatorHeaders(request, env);
       if (hasQueryKey || !auth.authorized) {
         return Response.json(
@@ -3104,8 +3225,8 @@ export default {
     // ==============================================================================
     // ROUTE: /api/v1/cloudflare/shadow_ws (DO WebSocket Hibernation Gateway)
     // ==============================================================================
-    if (url.pathname === "/api/v1/cloudflare/shadow_ws") {
-      const hasQueryKey = url.searchParams.has("key");
+    if (lowerPath === "/api/v1/cloudflare/shadow_ws") {
+      const hasQueryKey = hasQueryParamKey(url);
       const auth = await verifyZeroTrustAndOperatorHeaders(request, env);
       if (hasQueryKey || !auth.authorized) {
         return Response.json(
@@ -3128,7 +3249,7 @@ export default {
     // ==============================================================================
     // ROUTE: /api/v1/cloudflare/vpc_mesh_status (Mesh Registry & VPC Bindings — Gated per E1)
     // ==============================================================================
-    if (url.pathname === "/api/v1/cloudflare/vpc_mesh_status") {
+    if (lowerPath === "/api/v1/cloudflare/vpc_mesh_status") {
       const auth = await verifyZeroTrustAndOperatorHeaders(request, env);
       if (!auth.authorized) {
         return Response.json(
@@ -3171,8 +3292,8 @@ export default {
     // ==============================================================================
     // ROUTE: /api/v1/cloudflare/mesh_register (Authenticated Cluster Mesh Roster)
     // ==============================================================================
-    if (url.pathname === "/api/v1/cloudflare/mesh_register") {
-      const hasQueryKey = url.searchParams.has("key");
+    if (lowerPath === "/api/v1/cloudflare/mesh_register") {
+      const hasQueryKey = hasQueryParamKey(url);
       const auth = await verifyZeroTrustAndOperatorHeaders(request, env);
       if (hasQueryKey || !auth.authorized) {
         return Response.json(
@@ -3213,7 +3334,7 @@ export default {
     // ==============================================================================
     // ROUTE: /api/v1/cloudflare/vpc_probe (Direct Cloudflare Workers VPC Service Probes — Gated per E1)
     // ==============================================================================
-    if (url.pathname === "/api/v1/cloudflare/vpc_probe") {
+    if (lowerPath === "/api/v1/cloudflare/vpc_probe") {
       const auth = await verifyZeroTrustAndOperatorHeaders(request, env);
       if (!auth.authorized) {
         return Response.json(
@@ -3287,8 +3408,8 @@ export default {
     // ==============================================================================
     // ROUTE: /api/v1/cloudflare/hyperdrive_query (Authenticated Allowlist Hyperdrive -> PGWire DuckDB per S2)
     // ==============================================================================
-    if (url.pathname === "/api/v1/cloudflare/hyperdrive_query") {
-      const hasQueryKey = url.searchParams.has("key");
+    if (lowerPath === "/api/v1/cloudflare/hyperdrive_query") {
+      const hasQueryKey = hasQueryParamKey(url);
       const auth = await verifyZeroTrustAndOperatorHeaders(request, env);
       if (hasQueryKey || !auth.authorized) {
         return Response.json(
@@ -3356,12 +3477,12 @@ export default {
     }
 
     const isHtmlReq =
-      !url.pathname.startsWith("/api/") && (
-        url.pathname === "/" ||
-        url.pathname === "/index.html" ||
-        url.pathname === "/hud" ||
-        url.pathname === "/hud.html" ||
-        (url.pathname.endsWith(".html") && url.pathname !== "/google6edc0affb12d0455.html") ||
+      !lowerPath.startsWith("/api/") && (
+        lowerPath === "/" ||
+        lowerPath === "/index.html" ||
+        lowerPath === "/hud" ||
+        lowerPath === "/hud.html" ||
+        (lowerPath.endsWith(".html") && lowerPath !== "/google6edc0affb12d0455.html") ||
         (request.headers.get("Accept") && request.headers.get("Accept").includes("text/html"))
       );
 
@@ -3422,7 +3543,7 @@ export default {
         </li>
         <li style="background:#0D1117;border-left:3px solid #79C0FF;padding:10px 14px;border-radius:0 4px 4px 0;">
           <strong style="color:#79C0FF;">Layer 1.5 &amp; Multi-Tier Vault</strong><br />
-          GHC 9.8.2 Pure Algebraic Haskell (sovereign_algebra_hs.exe) + Native DuckDB. Tier-2 SSD Vault (E:\\Sovereign_Manifold_SSD_Vault) + Cloudflare D1 (act_omega_d1_vault_v7322, 10 Tables) + Durable Object.
+          GHC 9.8.2 Pure Algebraic Haskell (sovereign_algebra_hs.exe) + Native DuckDB. Tier-2 SSD Vault (E:\\Sovereign_Manifold_SSD_Vault) + Cloudflare D1 (act_omega_d1_vault_v7322, 11 User Tables + 2 System) + Durable Object.
         </li>
       </ul>
     </section>

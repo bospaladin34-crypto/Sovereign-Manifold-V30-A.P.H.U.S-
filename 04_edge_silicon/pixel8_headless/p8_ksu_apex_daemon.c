@@ -1,5 +1,5 @@
 // =============================================================================
-// ACT-OMEGA NET v56.0.0 (SH4Z v5600 TLV / CHAIN 210)
+// ACT-OMEGA NET v73.2.3 (SH4Z v7321 TLV / CHAIN 404)
 // FILE: 04_edge_silicon/pixel8_headless/p8_ksu_apex_daemon.c
 // TARGET: Google Pixel 8 (Edge-2 Pixel 8, Tensor G3 Zuma 4nm, Mali-G715 4MB L2)
 // RUNTIME: KernelSU-Next ksud 3.4.2 (uid=0 root, context=u:r:ksu:s0)
@@ -34,7 +34,8 @@
 #define P8_SH4Z_PATH       "/data/local/tmp/sh4_leech_720.e8z"
 #define P8_E8T1_PATH       "/data/local/tmp/sierpinski_158_manifold.e8t"
 #define P8_E8T2_PATH       "/data/local/tmp/sheaf_context_158.e8t"
-#define P8_NPAGE_PATH      "/data/local/tmp/neurons_v5000_63360.npage"
+#define P8_NPAGE_PATH         "/data/local/tmp/neurons_v5000_63360.npage"
+#define P8_TELEMETRY_KEY_PATH "/data/local/tmp/.act_omega_telemetry_ingest_key"
 
 #define P8_L2_TOTAL_BYTES  4194304u // 4.00 MB Mali-G715 L2 cache
 #define P8_PORT            8098
@@ -61,6 +62,12 @@ static uint64_t get_time_us(void) {
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC, &ts);
     return (uint64_t)ts.tv_sec * 1000000ULL + (uint64_t)ts.tv_nsec / 1000ULL;
+}
+
+static uint64_t get_time_ns(void) {
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    return (uint64_t)ts.tv_sec * 1000000000ULL + (uint64_t)ts.tv_nsec;
 }
 
 static uint64_t get_time_sec(void) {
@@ -127,21 +134,54 @@ static void ensure_kernel_wakelock(void) {
 
 static int g_sticky_host_idx = 0;
 
+static bool read_telemetry_ingest_key(char* out_buf, size_t max_len) {
+    if (!out_buf || max_len < 32) return false;
+    out_buf[0] = '\0';
+    FILE* f = fopen(P8_TELEMETRY_KEY_PATH, "r");
+    if (!f) return false;
+    char raw[256];
+    size_t n = fread(raw, 1, sizeof(raw) - 1, f);
+    fclose(f);
+    raw[n] = '\0';
+    size_t start = 0;
+    while (start < n && (raw[start] == ' ' || raw[start] == '\t' || raw[start] == '\r' || raw[start] == '\n')) {
+        start++;
+    }
+    size_t end = n;
+    while (end > start && (raw[end - 1] == ' ' || raw[end - 1] == '\t' || raw[end - 1] == '\r' || raw[end - 1] == '\n')) {
+        end--;
+    }
+    size_t len = end - start;
+    if (len < 24 || len >= max_len) {
+        memset(raw, 0, sizeof(raw));
+        return false;
+    }
+    memcpy(out_buf, raw + start, len);
+    out_buf[len] = '\0';
+    memset(raw, 0, sizeof(raw));
+    return true;
+}
+
 // Non-blocking Headless HTTP Telemetry Streamer to Host (:8097) across Tri-Bearer Mesh:
-// - Bearer 0: 192.168.137.1:8097 (Windows 11 Wi-Fi 6 Direct Hotspot Gateway)
-// - Bearer 1: 192.168.44.1:8097  (Stationary Bluetooth PAN Gateway)
-// - Bearer 2: 127.0.0.1:8097     (ADB Reverse / USB Loopback)
+// - Bearer 0: 127.0.0.1:8097     (ADB Reverse / USB Loopback -- required for POST /api/v1/telemetry/ingest)
+// - Bearer 1: 192.168.137.1:8097 (Windows 11 Wi-Fi 6 Direct Hotspot Gateway)
+// - Bearer 2: 192.168.44.1:8097  (Stationary Bluetooth PAN Gateway)
 static void push_headless_telemetry_to_host(int temp_deci_c, double kops) {
     static const char* k_host_ips[3] = {
+        "127.0.0.1",
         "192.168.137.1",
-        "192.168.44.1",
-        "127.0.0.1"
+        "192.168.44.1"
     };
     static const char* k_bearer_labels[3] = {
-        "B2:WIFI6-HOTSPOT(:8097)%20DIRECT-APEX",
-        "B3:BT-PAN(:8097)%20STATIONARY-APEX",
-        "B1:ADB-REV(:8097)%20SHM-APEX"
+        "B1:ADB-REV(:8097) SHM-APEX",
+        "B2:WIFI6-HOTSPOT(:8097) DIRECT-APEX",
+        "B3:BT-PAN(:8097) STATIONARY-APEX"
     };
+
+    char telemetry_key[256];
+    if (!read_telemetry_ingest_key(telemetry_key, sizeof(telemetry_key))) {
+        return;
+    }
 
     int batt_mv = read_battery_mv();
     int batt_pct = read_battery_pct();
@@ -150,6 +190,7 @@ static void push_headless_telemetry_to_host(int temp_deci_c, double kops) {
     read_ram_mb(&ram_u, &ram_t);
     double l2_free_pct = 100.0 * (1.0 - ((double)g_total_pinned_bytes / (double)P8_L2_TOTAL_BYTES));
     unsigned long long dirty_col = (unsigned long long)(g_step_counter % 1920ULL);
+    double kops_val = (isfinite(kops) && kops >= 0.0) ? kops : 0.0;
 
     for (int attempt = 0; attempt < 3; ++attempt) {
         int idx = (g_sticky_host_idx + attempt) % 3;
@@ -190,14 +231,12 @@ static void push_headless_telemetry_to_host(int temp_deci_c, double kops) {
         if (connected) {
             double rtt_ms = (double)(get_time_us() - t0) / 1000.0;
             if (rtt_ms < 0.2) rtt_ms = 0.2;
-            char req[1024];
-            int rlen = snprintf(req, sizeof(req),
-                "GET /api/v1/telemetry?node=pixel8&kops=%.2f&p8_kops=%.2f&p8_free=%.2f&col=%llu&temp=%.1f&mv=%d&bat=%d&ram_u=%d&ram_t=%d&thz=2.00&rtt=%.2f&bearer=%s HTTP/1.1\r\n"
-                "Host: %s:8097\r\n"
-                "User-Agent: ACT-Omega-P8-KSU-Apex/71.1.0\r\n"
-                "Connection: close\r\n\r\n",
-                kops,
-                kops,
+
+            char json_body[1024];
+            int jlen = snprintf(json_body, sizeof(json_body),
+                "{\"node\":\"pixel8\",\"kops\":%.2f,\"p8_kops\":%.2f,\"p8_free\":%.2f,\"col\":%llu,\"temp\":%.1f,\"mv\":%d,\"bat\":%d,\"ram_u\":%d,\"ram_t\":%d,\"thz\":2.00,\"rtt\":%.2f,\"bearer\":\"%s\"}",
+                kops_val,
+                kops_val,
                 l2_free_pct,
                 dirty_col,
                 (double)temp_deci_c / 10.0,
@@ -206,28 +245,63 @@ static void push_headless_telemetry_to_host(int temp_deci_c, double kops) {
                 ram_u,
                 ram_t,
                 rtt_ms,
-                bearer_lbl,
-                host_ip
+                bearer_lbl
             );
-            if (rlen > 0 && send(fd, req, (size_t)rlen, MSG_NOSIGNAL) > 0) {
-                g_sticky_host_idx = idx;
-                // Wait up to 35ms for HTTP response header so Host processes query params
-                fd_set rfds;
-                FD_ZERO(&rfds);
-                FD_SET(fd, &rfds);
-                struct timeval rtv;
-                rtv.tv_sec = 0;
-                rtv.tv_usec = 35000;
-                if (select(fd + 1, &rfds, NULL, NULL, &rtv) > 0) {
-                    char rbuf[256];
-                    (void)recv(fd, rbuf, sizeof(rbuf), 0);
+
+            char req[2048];
+            int rlen = (jlen > 0 && jlen < (int)sizeof(json_body)) ? snprintf(req, sizeof(req),
+                "POST /api/v1/telemetry/ingest HTTP/1.1\r\n"
+                "Host: %s:8097\r\n"
+                "User-Agent: ACT-Omega-P8-KSU-Apex/73.2.3\r\n"
+                "Content-Type: application/json\r\n"
+                "X-Sovereign-Telemetry-Key: %s\r\n"
+                "Content-Length: %d\r\n"
+                "Connection: close\r\n\r\n"
+                "%s",
+                host_ip,
+                telemetry_key,
+                jlen,
+                json_body
+            ) : -1;
+
+            if (rlen > 0 && rlen < (int)sizeof(req)) {
+                size_t total_sent = 0;
+                bool send_ok = true;
+                while (total_sent < (size_t)rlen) {
+                    ssize_t sw = send(fd, req + total_sent, (size_t)rlen - total_sent, MSG_NOSIGNAL);
+                    if (sw <= 0) {
+                        send_ok = false;
+                        break;
+                    }
+                    total_sent += (size_t)sw;
                 }
-                close(fd);
-                return;
+                memset(req, 0, sizeof(req));
+                if (send_ok) {
+                    fd_set rfds;
+                    FD_ZERO(&rfds);
+                    FD_SET(fd, &rfds);
+                    struct timeval rtv;
+                    rtv.tv_sec = 0;
+                    rtv.tv_usec = 50000; // 50ms HTTP response wait
+                    if (select(fd + 1, &rfds, NULL, NULL, &rtv) > 0) {
+                        char rbuf[512];
+                        ssize_t rn = recv(fd, rbuf, sizeof(rbuf) - 1, 0);
+                        if (rn > 0) {
+                            rbuf[rn] = '\0';
+                            if (strstr(rbuf, "HTTP/1.1 200") != NULL || strstr(rbuf, "HTTP/1.0 200") != NULL) {
+                                g_sticky_host_idx = idx;
+                                close(fd);
+                                memset(telemetry_key, 0, sizeof(telemetry_key));
+                                return;
+                            }
+                        }
+                    }
+                }
             }
         }
         close(fd);
     }
+    memset(telemetry_key, 0, sizeof(telemetry_key));
 }
 
 static void read_selinux_context(char* out_buf, size_t max_len) {
@@ -315,7 +389,7 @@ static void update_status_file(pid_t pid, int temp_deci_c, uint32_t affinity_mas
     FILE* out = fopen(P8_STATUS_PATH, "w");
     if (out) {
         fprintf(out,
-            "{\"daemon\":\"p8_ksu_apex_daemon\",\"version\":\"v56.0.0\",\"pid\":%d,\"step\":%llu,\"uptime_s\":%llu,\"temp_c\":%.1f,\"affinity_mask\":\"0x%03X\",\"selinux_context\":\"%s\",\"mlock_pinned_bytes\":%zu,\"mali_g715_l2_total_bytes\":%u,\"l2_free_pct\":%.2f,\"policy0_khz\":%d,\"policy4_khz\":%d,\"policy8_khz\":%d,\"zero_mul_energy\":%.4f,\"live_kops\":%.2f,\"accelerators\":{\"mali0\":true,\"kvm\":true,\"edgetpu\":true}}\n",
+            "{\"daemon\":\"p8_ksu_apex_daemon\",\"version\":\"v73.2.3\",\"pid\":%d,\"step\":%llu,\"uptime_s\":%llu,\"temp_c\":%.1f,\"affinity_mask\":\"0x%03X\",\"selinux_context\":\"%s\",\"mlock_pinned_bytes\":%zu,\"mali_g715_l2_total_bytes\":%u,\"l2_free_pct\":%.2f,\"policy0_khz\":%d,\"policy4_khz\":%d,\"policy8_khz\":%d,\"zero_mul_energy\":%.4f,\"live_kops\":%.2f,\"accelerators\":{\"mali0\":true,\"kvm\":true,\"edgetpu\":true}}\n",
             (int)pid,
             (unsigned long long)g_step_counter,
             (unsigned long long)(get_time_sec() - g_start_time_sec),
@@ -336,8 +410,9 @@ static void update_status_file(pid_t pid, int temp_deci_c, uint32_t affinity_mas
 }
 
 // Zero-multiplication ternary / cubic energy sweep over L2-pinned weights
-static double sweep_l2_energy(uint64_t step) {
+static double sweep_l2_energy(uint64_t step, size_t* out_ops) {
     double acc = 0.0;
+    size_t ops = 0;
     const double phase_cos = cos(0.15000);
     if (g_e8t1_buf) {
         for (size_t i = 0; i < g_e8t1_len; ++i) {
@@ -346,19 +421,23 @@ static double sweep_l2_energy(uint64_t step) {
                 int trit = (int)(rem % 3u) - 1;
                 rem /= 3u;
                 acc += (double)trit * phase_cos;
+                ops++;
             }
         }
     }
     if (g_e8t2_buf) {
         for (size_t i = 0; i < g_e8t2_len; i += 64u) {
             acc += (double)g_e8t2_buf[i] * 0.00125;
+            ops++;
         }
     }
     if (g_sh4z_buf) {
         for (size_t i = 0; i < g_sh4z_len; i += 64u) {
             acc += (double)(g_sh4z_buf[i] ^ (uint8_t)(step & 0xFFu)) * 0.0005;
+            ops++;
         }
     }
+    if (out_ops) *out_ops = ops;
     return acc;
 }
 
@@ -518,17 +597,21 @@ static void handle_client_socket(int client_fd) {
             (unsigned long long)elapsed_us
         );
     } else if (strstr(in_buf, "\"throughput\"") || strstr(in_buf, "THROUGHPUT")) {
-        uint64_t t0 = get_time_us();
-        double energy = sweep_l2_energy(g_step_counter);
-        uint64_t dt_us = get_time_us() - t0;
+        size_t ops = 0;
+        uint64_t t0_ns = get_time_ns();
+        double energy = sweep_l2_energy(g_step_counter, &ops);
+        uint64_t dt_ns = get_time_ns() - t0_ns;
+        if (dt_ns == 0) dt_ns = 1;
+        uint64_t dt_us = (dt_ns + 500ULL) / 1000ULL;
         if (dt_us == 0) dt_us = 1;
-        double live_kops = (1013760.0 / ((double)dt_us / 1000000.0)) / 1000.0;
+        double live_kops = ((double)ops * 1000000.0) / (double)dt_ns;
 
         snprintf(out_buf, sizeof(out_buf),
-            "{\"status\":\"MEASURED_P8_UNTHROTTLED_THROUGHPUT_OK\",\"zero_mul_energy\":%.4f,\"live_kops\":%.2f,\"elapsed_us\":%llu,\"active_synapses\":1013760,\"unthrottled\":true}\n",
+            "{\"status\":\"MEASURED_P8_UNTHROTTLED_THROUGHPUT_OK\",\"zero_mul_energy\":%.4f,\"live_kops\":%.2f,\"elapsed_us\":%llu,\"active_synapses\":%zu,\"unthrottled\":true}\n",
             energy,
             live_kops,
-            (unsigned long long)dt_us
+            (unsigned long long)dt_us,
+            ops
         );
     } else if (strstr(in_buf, "\"stop\"") || strstr(in_buf, "STOP")) {
         // Guarded: Disallow unauthenticated remote shutdown via socket (GAP-04)
@@ -631,11 +714,12 @@ int main(int argc, char** argv) {
         int temp_deci_c = read_battery_temp_deci_c();
         uint32_t mask = apply_zuma_thermal_affinity(temp_deci_c);
 
-        uint64_t t0 = get_time_us();
-        double energy = sweep_l2_energy(g_step_counter);
-        uint64_t dt_us = get_time_us() - t0;
-        if (dt_us == 0) dt_us = 1;
-        double kops = (1013760.0 / ((double)dt_us / 1000000.0)) / 1000.0;
+        size_t ops = 0;
+        uint64_t t0_ns = get_time_ns();
+        double energy = sweep_l2_energy(g_step_counter, &ops);
+        uint64_t dt_ns = get_time_ns() - t0_ns;
+        if (dt_ns == 0) dt_ns = 1;
+        double kops = ((double)ops * 1000000.0) / (double)dt_ns;
 
         update_status_file(my_pid, temp_deci_c, mask, energy, kops);
 

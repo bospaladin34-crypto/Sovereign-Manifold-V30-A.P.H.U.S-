@@ -4,10 +4,35 @@
 # Primary Author & Principal Systems Architect: Donevin Frownfelter (@bospaladin34-crypto)
 # =============================================================================
 param(
-    [switch]$TestPerturbationFail
+    [switch]$TestPerturbationFail,
+    [string]$TranscriptOutPath = ""
 )
 
 $ErrorActionPreference = "Stop"
+$script:TranscriptLines = New-Object System.Collections.Generic.List[string]
+function Write-Host {
+    [CmdletBinding()]
+    param(
+        [Parameter(Position = 0, ValueFromPipeline = $true)]
+        [object]$Object = "",
+        [System.ConsoleColor]$ForegroundColor,
+        [System.ConsoleColor]$BackgroundColor,
+        [switch]$NoNewline,
+        [object]$Separator
+    )
+    $lineText = if ($null -eq $Object) { "" } else { [string]$Object }
+    $script:TranscriptLines.Add($lineText)
+    Microsoft.PowerShell.Utility\Write-Host @PSBoundParameters
+}
+function Save-Week4Transcript {
+    if ([string]::IsNullOrWhiteSpace($TranscriptOutPath)) { return }
+    $parent = Split-Path -Parent $TranscriptOutPath
+    if ($parent -and -not (Test-Path $parent)) {
+        New-Item -ItemType Directory -Force -Path $parent | Out-Null
+    }
+    $norm = (($script:TranscriptLines -join "`n") -replace "`r`n", "`n" -replace "`r", "`n").TrimEnd("`n") + "`n"
+    [System.IO.File]::WriteAllText($TranscriptOutPath, $norm, [System.Text.UTF8Encoding]::new($false))
+}
 $RepoRoot = "c:\sovereign_manifold_v31"
 $ManifestPath = "$RepoRoot\00_control\weights\sovereign_harmonic_weights_manifest.json"
 if (-not (Test-Path $ManifestPath)) {
@@ -171,7 +196,8 @@ if ($TestPerturbationFail) {
         $mPert = (Get-Content -Path $ManifestPath -Raw | ConvertFrom-Json)
         $mPert.artifacts.week4_rlvf_sae.expected_bytes = ($ExpectedShxBytes + 64)
         $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
-        [System.IO.File]::WriteAllText($ManifestPath, ($mPert | ConvertTo-Json -Depth 10) + "`n", $utf8NoBom)
+        $pertNorm = ((($mPert | ConvertTo-Json -Depth 10) -replace "`r`n", "`n" -replace "`r", "`n").TrimEnd("`n") + "`n")
+        [System.IO.File]::WriteAllText($ManifestPath, $pertNorm, $utf8NoBom)
         $mReload = (Get-Content -Path $ManifestPath -Raw | ConvertFrom-Json)
         $pertExpected = [int64]$mReload.artifacts.week4_rlvf_sae.expected_bytes
         $chkC = Test-Week4StageAssertions -T351 $t351Live -T352 $t352Live -RtPoisonTree $rtPoisonLive -ExpectedShxBytes $pertExpected -ActualShxDiskBytes $ActualShxDiskBytes
@@ -186,6 +212,7 @@ if ($TestPerturbationFail) {
         $pertFailures++
     }
 
+    Save-Week4Transcript
     if ($pertFailures -gt 0) { exit 1 }
     exit 0
 }
@@ -388,13 +415,16 @@ $receiptJson = @{
         rt_w4_6_week4_metaphor_grounded_output = $rtMetaphor.generation.generated_text
     }
 } | ConvertTo-Json -Depth 6
-[System.IO.File]::WriteAllText("$RepoRoot\03_vault\receipts\v72_0_week4_shx_torture_benchmark_receipt.json", $receiptJson)
+$receiptNorm = (($receiptJson -replace "`r`n", "`n" -replace "`r", "`n").TrimEnd("`n") + "`n")
+[System.IO.File]::WriteAllText("$RepoRoot\03_vault\receipts\v72_0_week4_shx_torture_benchmark_receipt.json", $receiptNorm, [System.Text.UTF8Encoding]::new($false))
 
 Write-Host "==========================================================================" -ForegroundColor Cyan
 if ($failures -eq 0) {
     Write-Host "  [WEEK 4 PROPERTY & NEGATIVE-INJECTION SUITE RESULT: PASSED (8/8 STAGES)]" -ForegroundColor Green
+    Save-Week4Transcript
     exit 0
 } else {
     Write-Host "  [WEEK 4 PROPERTY & NEGATIVE-INJECTION SUITE RESULT: FAILED ($failures STAGES)]" -ForegroundColor Red
+    Save-Week4Transcript
     exit 1
 }

@@ -140,7 +140,7 @@ try {
     $overallPassed = $repeatExact -and $negPassed -and ($committedVsFreshExact -or $AllowCommittedDrift)
 
     $receipt = [ordered]@{
-        schema = 'ACT-Omega-SFT-Determinism-Receipt-v73.2.2'
+        schema = 'ACT-Omega-SFT-Determinism-Receipt-v73.2.3'
         generated_at_utc = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
         generator_script = $genScriptRel
         committed_corpus_path = $committedCorpusRel
@@ -178,7 +178,8 @@ try {
         $null = New-Item -ItemType Directory -Force -Path $receiptDir
     }
     $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
-    [System.IO.File]::WriteAllText($receiptOutPath, ($receipt | ConvertTo-Json -Depth 8) + "`n", $utf8NoBom)
+    $receiptNorm = ((($receipt | ConvertTo-Json -Depth 8) -replace "`r`n", "`n" -replace "`r", "`n").TrimEnd("`n") + "`n")
+    [System.IO.File]::WriteAllText($receiptOutPath, $receiptNorm, $utf8NoBom)
 
     Write-Output ("[SFT-DETERMINISM] committed_vs_fresh_diff_bytes={0} repeat_run_diff_bytes={1} neg_diff_bytes={2} neg_sha_changed={3} status={4}" -f `
         $committedVsFreshDiff, $repeatDiff, $negVsFreshDiff, $negShaChanged, $receipt.status)

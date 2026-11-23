@@ -2,11 +2,11 @@
   "schema": "ACT-Omega-SFT-Corpus-Receipt-v73.2.1",
   "generator_script": "00_control/generate_sft_corpus.mjs",
   "output_jsonl_path": "03_vault/corpus/sh_xi_sourced_multiturn_sft_v1.jsonl",
-  "output_jsonl_bytes": 238583,
-  "output_jsonl_sha256": "2e40d13fca6b9c055dbed46756c149d72b1487a6f82c9c6c80ba0bb5ae0e48fb",
+  "output_jsonl_bytes": 242236,
+  "output_jsonl_sha256": "d5ed7bb69c7fad78325930f9bcad3280018463eed89aa78a50dad2733b1bb01d",
   "corpus_nature": "Deterministic workspace-harvested code & formal-proof Q/A pairs extracted via fs.readFileSync from real repository source files",
   "license": "CC-BY-4.0 / MIT (First-Party ACT-Omega Sovereign Manifold Workspace)",
-  "raw_candidate_items_extracted": 1007,
+  "raw_candidate_items_extracted": 1017,
   "dialogues_emitted": 64,
   "unique_turns_emitted": 288,
   "min_turns": 1,
@@ -26,8 +26,8 @@
     "lean4_proof": 13,
     "algebraic_haskell": 3,
     "lattice_stem": 3,
-    "std_rust": 14,
-    "edge_worker_rust": 7
+    "std_rust": 12,
+    "edge_worker_rust": 9
   },
   "sources": [
     {
@@ -40,7 +40,7 @@
     {
       "source_path": "06_algebraic_haskell/src/Sovereign/Codegen/ZeroBracketRustAndLean4.hs",
       "bytes": 22802,
-      "sha256": "d62f571f90b0dc1c749dc12c6692da830156f5e752daae4432ae83c475599134",
+      "sha256": "5abb9f552d9a170a4a7bae9abee8b73d9196dfbd66ace2121ee0f5b247910bcf",
       "license": "CC-BY-4.0 / MIT (ACT-Omega First-Party Workspace)",
       "extracted_items": 2
     },
@@ -61,7 +61,7 @@
     {
       "source_path": "06_algebraic_haskell/src/Main.hs",
       "bytes": 5984,
-      "sha256": "26d20148e8a311fa050db75d64b931ab4c83cc2b5925e1218d96dff966ec8a54",
+      "sha256": "8ff06f5c8244a58888fe558ce928536aa4b36cdbf0c9e3c9fc55e3e887060fd0",
       "license": "CC-BY-4.0 / MIT (ACT-Omega First-Party Workspace)",
       "extracted_items": 5
     },
@@ -123,10 +123,10 @@
     },
     {
       "source_path": "01_l0_rust/src/v73_2_cloudflare_vpc_mesh_and_pgwire_hyperdrive.rs",
-      "bytes": 30185,
-      "sha256": "88928e4dad7d8090c0ecafc25d2396f0ed5320d0409a938acfcc9becc3929ccb",
+      "bytes": 44951,
+      "sha256": "986d66f4f428211ce5b31628fe3d46df3839cc0f31d4c03b3189e5f31d18f9d2",
       "license": "CC-BY-4.0 / MIT (ACT-Omega First-Party Workspace)",
-      "extracted_items": 15
+      "extracted_items": 25
     },
     {
       "source_path": "01_l0_rust/src/v57_aegis_autonomous_agent_harness.rs",

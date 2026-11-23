@@ -1,0 +1,83 @@
+{
+    "schema":  "act_omega.android_apk_build_receipt.v1",
+    "version":  "v73.2.3",
+    "version_code":  76,
+    "version_name":  "73.2.3",
+    "gradle_command":  "JAVA_HOME=\u0027C:\\Program Files\\Android\\Android Studio\\jbr\u0027 .\\gradlew.bat clean assembleDebug --console=plain",
+    "gradle_exit_code":  0,
+    "apk_source_path":  "04_edge_silicon/pixel10_ndk_app/app/build/outputs/apk/debug/app-debug.apk",
+    "apk_bytes":  30530390,
+    "apk_sha256":  "edf27a909a6fa3d28eec9e37a63606f6b8fc64f2190718624a2f8255953f454d",
+    "signing_cert_sha256":  "6bf532ee3a0836ad537d1194a8ebcb3686ba8367f3d17f05c3f987413515494c",
+    "mirrors":  [
+                    {
+                        "path":  "03_vault/ota/ACT-Omega-Pixel10-Sovereign.apk",
+                        "bytes":  30530390,
+                        "sha256":  "edf27a909a6fa3d28eec9e37a63606f6b8fc64f2190718624a2f8255953f454d",
+                        "matches_build":  true
+                    },
+                    {
+                        "path":  "03_vault/ota/act_omega_manifold_latest.apk",
+                        "bytes":  30530390,
+                        "sha256":  "edf27a909a6fa3d28eec9e37a63606f6b8fc64f2190718624a2f8255953f454d",
+                        "matches_build":  true
+                    },
+                    {
+                        "path":  "04_edge_silicon/ACT-Omega-Pixel10-Sovereign.apk",
+                        "bytes":  30530390,
+                        "sha256":  "edf27a909a6fa3d28eec9e37a63606f6b8fc64f2190718624a2f8255953f454d",
+                        "matches_build":  true
+                    },
+                    {
+                        "path":  "docs/ACT-Omega-Pixel10-Sovereign.apk",
+                        "bytes":  30530390,
+                        "sha256":  "edf27a909a6fa3d28eec9e37a63606f6b8fc64f2190718624a2f8255953f454d",
+                        "matches_build":  true
+                    },
+                    {
+                        "path":  "releases/ACT-Omega-Pixel10-Sovereign.apk",
+                        "bytes":  30530390,
+                        "sha256":  "edf27a909a6fa3d28eec9e37a63606f6b8fc64f2190718624a2f8255953f454d",
+                        "matches_build":  true
+                    },
+                    {
+                        "path":  "ACT-Omega-Pixel10-Sovereign.apk",
+                        "bytes":  30530390,
+                        "sha256":  "edf27a909a6fa3d28eec9e37a63606f6b8fc64f2190718624a2f8255953f454d",
+                        "matches_build":  true
+                    }
+                ],
+    "all_6_mirrors_sha256_match":  true,
+    "zero_secret_in_apk_verified":  true,
+    "main_activity_3way_sha256":  "32d33bde16d4efd63687d54d35f80108cca487d111ae2f8d1ead69a4b0e27407",
+    "p8_daemon_2way_sha256":  "a855b2c0566dd5457235576175833cc39722ff617a985ffc8e7205b41af07bca",
+    "devices_provisioned_and_installed":  [
+                                              {
+                                                  "role":  "pixel10",
+                                                  "package_name":  "com.actomega.manifold",
+                                                  "version_code":  76,
+                                                  "version_name":  "73.2.3",
+                                                  "app_private_key_path":  "files/.act_omega_telemetry_ingest_key",
+                                                  "app_private_key_mode":  "0600",
+                                                  "app_private_key_bytes":  64,
+                                                  "adb_reverse":  "tcp:8097-\u003etcp:8097",
+                                                  "live_ingest_verified":  true
+                                              },
+                                              {
+                                                  "role":  "pixel8",
+                                                  "package_name":  "com.actomega.manifold",
+                                                  "version_code":  76,
+                                                  "version_name":  "73.2.3",
+                                                  "app_private_key_path":  "files/.act_omega_telemetry_ingest_key",
+                                                  "app_private_key_mode":  "0600",
+                                                  "app_private_key_bytes":  64,
+                                                  "root_daemon_key_path":  "/data/local/tmp/.act_omega_telemetry_ingest_key",
+                                                  "root_daemon_key_mode":  "0600",
+                                                  "root_daemon_key_bytes":  64,
+                                                  "p8_daemon_sha256":  "a855b2c0566dd5457235576175833cc39722ff617a985ffc8e7205b41af07bca",
+                                                  "adb_reverse":  "tcp:8097-\u003etcp:8097",
+                                                  "live_ingest_verified":  true
+                                              }
+                                          ],
+    "generated_at_utc":  "2026-11-23T05:32:54Z"
+}

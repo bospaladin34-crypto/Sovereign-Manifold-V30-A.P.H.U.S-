@@ -121,6 +121,65 @@ interface TelemetryState {
   last_browser_trace: string;
   last_lean_trace: string;
   last_term_out: string;
+  lean4_theorems_qed?: number | null;
+  lean4_qed?: boolean;
+  tools_count?: number | null;
+  release_version?: string;
+}
+
+function liveLeanRatio(
+  leanCount: number | null | undefined,
+  isOffline: boolean,
+  leanQed?: boolean
+): string {
+  if (isOffline || typeof leanCount !== "number" || leanCount <= 0 || !leanQed) {
+    return "UNMEASURED/OFFLINE";
+  }
+  const formatted = leanCount.toLocaleString("en-US");
+  return `${formatted}/${formatted}`;
+}
+
+function liveLeanBadge(
+  leanCount: number | null | undefined,
+  isOffline: boolean,
+  leanQed?: boolean,
+  includeLean4 = true
+): string {
+  const ratio = liveLeanRatio(leanCount, isOffline, leanQed);
+  if (ratio === "UNMEASURED/OFFLINE") {
+    return "UNMEASURED/OFFLINE";
+  }
+  return includeLean4 ? `${ratio} Lean 4 QED` : `${ratio} QED`;
+}
+
+function liveChainLabel(
+  toolsCount: number | null | undefined,
+  isOffline: boolean
+): string {
+  if (isOffline || typeof toolsCount !== "number" || toolsCount <= 0) {
+    return "UNMEASURED/OFFLINE";
+  }
+  return `CHAIN ${toolsCount}`;
+}
+
+function liveToolsRangeLabel(
+  toolsCount: number | null | undefined,
+  isOffline: boolean
+): string {
+  if (isOffline || typeof toolsCount !== "number" || toolsCount <= 0) {
+    return "UNMEASURED/OFFLINE";
+  }
+  return `Tools 1..${toolsCount}`;
+}
+
+function liveReleaseLabel(
+  releaseVersion: string | undefined,
+  isOffline: boolean
+): string {
+  if (isOffline || !releaseVersion || releaseVersion === "UNMEASURED/OFFLINE") {
+    return "UNMEASURED/OFFLINE";
+  }
+  return releaseVersion;
 }
 
 const SECTOR_NAMES = [
@@ -283,7 +342,7 @@ export const DOMAINS_CATALOG: FunctionalDomainDef[] = [
     accent: "#B388FF",
     bg: "#160C22",
     border: "#8A4FFF",
-    desc: "E8/Leech lattice, 80-sector .e8z norm scan, Layer 1.5 Haskell algebra, and 1,010/1,010 Lean 4 QED theorem verification.",
+    desc: "E8/Leech lattice, 80-sector .e8z norm scan, Layer 1.5 Haskell algebra, and live Lean 4 formal QED theorem verification.",
     tools: [
       { id: 1, tag: "T01", label: "E8 Lattice Roots", ep: "/api/v1/algebra/e8_roots" },
       { id: 2, tag: "T02", label: "Leech Lattice 24D", ep: "/api/v1/algebra/leech_24d" },
@@ -344,7 +403,7 @@ export const DOMAINS_CATALOG: FunctionalDomainDef[] = [
     border: "#00B38F",
     desc: "84,480-neuron .npage+.spage (16.00 MiB / 262,144 CLs), SH-XI 3-Shell + 16/256 MoE, 524,288-vocab BPE, and 5W1H metabolic memory.",
     tools: [
-      { id: 13, tag: "T13", label: "1,010/1,010 Lean 4 QED", ep: "/api/v1/compiler/verify" },
+      { id: 13, tag: "T13", label: "Live Lean 4 Formal QED", ep: "/api/v1/compiler/verify" },
       { id: 14, tag: "T14", label: "Shard Connectome Map", ep: "/api/v1/connectome/shards" },
       { id: 15, tag: "T15", label: "Dendritic Compartment State", ep: "/api/v1/connectome/dendrite_state" },
       { id: 16, tag: "T16", label: "Per-Sensor Stiefel", ep: "/api/v1/manifold/stiefel_step" },
@@ -586,7 +645,7 @@ export const DOMAINS_CATALOG: FunctionalDomainDef[] = [
       { id: 55, tag: "T55", label: "TOOL 55: Gemini Drive Bridge", ep: "/api/v1/tools/t55" },
       { id: 56, tag: "T56", label: "TOOL 56: Autonomous Coder", ep: "/api/v1/tools/t56" },
       { id: 59, tag: "T59", label: "TOOL 59: Omni-Wiring Audit", ep: "/api/v1/tools/t59" },
-      { id: 60, tag: "T60", label: "TOOL 60: D1 10-Table Pipeline", ep: "/api/v1/tools/t60" },
+      { id: 60, tag: "T60", label: "TOOL 60: D1 11-Table Pipeline", ep: "/api/v1/tools/t60" },
       { id: 69, tag: "T69", label: "TOOL 69: .agents/ Rules", ep: "/api/v1/antigravity/rules_subagents" },
       { id: 70, tag: "T70", label: "TOOL 70: 5W1H+63,360 Connectome", ep: "/api/v1/connectome/harness_5w1h_npage" },
       { id: 71, tag: "T71", label: "TOOL 71: Argon 7-Subagents", ep: "/api/v1/antigravity/argon_teamwork" },
@@ -643,14 +702,14 @@ export const DOMAINS_CATALOG: FunctionalDomainDef[] = [
       { id: 365, tag: "T365", label: "T365: SH-XI 384D WGSL Grounded Workspace RAG", ep: "/api/v1/sovereign_harmonic/xi/week2/igpu_grounded_rag" },
       { id: 366, tag: "T366", label: "T366: SH-XI Constrained JSON FSM Tool Dispatcher", ep: "/api/v1/sovereign_harmonic/xi/week2/fsm_json_tool" },
       { id: 367, tag: "T367", label: "T367: SH-XI IFEval-Lite-64 (64/64) & Multi-Turn Gauntlet", ep: "/api/v1/sovereign_harmonic/xi/week2/ifeval_lite_64" },
-      { id: 368, tag: "T368", label: "T368: CHAIN 368 Master Certification (1,010/1,010 QED)", ep: "/api/v1/chain368/master_certification" },
+      { id: 368, tag: "T368", label: "T368: SH-XI Week 1-2 Master Certification (Live Lean 4 QED)", ep: "/api/v1/chain368/master_certification" },
       { id: 370, tag: "T370", label: "T370: Unified 58-File Standalone & R&D Lab Deck", ep: "/api/v1/tools/t370" },
       { id: 399, tag: "T399", label: "T399: CHAIN 399 Research Kernels (T382..T393)", ep: "/api/v1/chain399/master_certification" },
       { id: 400, tag: "T400", label: "T400: Cloudflare VPC Service Registry Probe", ep: "/api/v1/tools/t400" },
       { id: 401, tag: "T401", label: "T401: Cloudflare Mesh Cluster Device Roster", ep: "/api/v1/tools/t401" },
       { id: 402, tag: "T402", label: "T402: TLS PGWire (:5439) -> DuckDB Audit", ep: "/api/v1/tools/t402" },
       { id: 403, tag: "T403", label: "T403: Cloudflare Hyperdrive DuckDB Query", ep: "/api/v1/tools/t403" },
-      { id: 404, tag: "T404", label: "T404: CHAIN 404 Master Certification (1,010/1,010 QED)", ep: "/api/v1/tools/t404" }
+      { id: 404, tag: "T404", label: "T404: CHAIN 404 Master Certification (Live Lean 4 QED)", ep: "/api/v1/tools/t404" }
     ]
   }
 ];
@@ -661,6 +720,10 @@ export interface VesperArachneHudShimejiProps {
   selectedCardIndex?: number;
   onSelectCard?: (idx: number) => void;
   onCallEndpoint?: (ep: string, desc: string) => void;
+  telemetrySource?: "LIVE_L0_SWARM" | "SNAPSHOT_FALLBACK" | "UNMEASURED/OFFLINE";
+  lean4TheoremsQed?: number | null;
+  lean4Qed?: boolean;
+  toolsCount?: number | null;
 }
 
 interface VesperSwarmClone {
@@ -688,7 +751,11 @@ export function VesperArachneHudShimeji({
   onToggleDock,
   selectedCardIndex = 0,
   onSelectCard,
-  onCallEndpoint
+  onCallEndpoint,
+  telemetrySource = "UNMEASURED/OFFLINE",
+  lean4TheoremsQed = null,
+  lean4Qed = false,
+  toolsCount = null
 }: VesperArachneHudShimejiProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const hitTargetRef = useRef<HTMLDivElement | null>(null);
@@ -702,7 +769,7 @@ export function VesperArachneHudShimeji({
     y: 0
   });
   const [speech, setSpeech] = useState<{ text: string; timer: number }>({
-    text: "VESPER-ARACHNE E8 IK HUD COMPANION READY (60 FPS | v73.2.2 | SH-XI MoE | CHAIN 404 | 1,010/1,010 QED)",
+    text: "VESPER-ARACHNE E8 IK HUD COMPANION READY (60 FPS | v73.2.3 | SH-XI MoE | Live Telemetry)",
     timer: 300
   });
   const [clones, setClones] = useState<VesperSwarmClone[]>([]);
@@ -1987,7 +2054,7 @@ export function VesperArachneHudShimeji({
               }}
               style={{ background: "#0E2418", color: "#56D364", border: "1px solid #56D364", borderRadius: 4, padding: "3px 6px", cursor: "pointer", textAlign: "left", fontSize: 9 }}
             >
-              📜 MCP: Lean 4 1,010/1,010 QED Verifier
+              {`📜 MCP: Lean 4 ${liveLeanBadge(lean4TheoremsQed, telemetrySource === "UNMEASURED/OFFLINE", lean4Qed, false)} Verifier`}
             </button>
           </div>
         </div>
@@ -2338,7 +2405,9 @@ export function VesperReceiptCard({
   receiptLines,
   statusMode,
   endpointTag,
-  sha256
+  sha256,
+  lean4TheoremsQed = null,
+  lean4Qed = false
 }: {
   compact?: boolean;
   skeleton?: boolean;
@@ -2346,6 +2415,8 @@ export function VesperReceiptCard({
   statusMode: "LIVE_L0_SWARM" | "SNAPSHOT_FALLBACK" | "UNMEASURED/OFFLINE";
   endpointTag?: string;
   sha256?: string;
+  lean4TheoremsQed?: number | null;
+  lean4Qed?: boolean;
 }) {
   const [expanded, setExpanded] = useState<boolean>(false);
   const [copied, setCopied] = useState<boolean>(false);
@@ -2576,7 +2647,7 @@ export function VesperReceiptCard({
               fontSize: 11
             }}
           >
-            <span>1,010/1,010 Lean 4 QED</span>
+            <span>{liveLeanBadge(lean4TheoremsQed, isOffline, lean4Qed, true)}</span>
             <span>•</span>
             <span>262,144 Bijected CLs (16.00 MiB)</span>
             <span>•</span>
@@ -2986,7 +3057,11 @@ export function VesperHeaderBar({
   p10Broadcasts,
   p8Broadcasts,
   p10RttMs,
-  p8RttMs
+  p8RttMs,
+  releaseVersion,
+  toolsCount = null,
+  lean4TheoremsQed = null,
+  lean4Qed = false
 }: {
   mode: VesperShellMode;
   onSelectMode: (m: VesperShellMode, rail?: VesperRailLabel) => void;
@@ -3008,6 +3083,10 @@ export function VesperHeaderBar({
   p8Broadcasts: number;
   p10RttMs: number;
   p8RttMs: number;
+  releaseVersion?: string;
+  toolsCount?: number | null;
+  lean4TheoremsQed?: number | null;
+  lean4Qed?: boolean;
 }) {
   const modeTabs: Array<{ id: VesperShellMode; label: string; rail: VesperRailLabel }> = [
     { id: "calm", label: "Calm", rail: "Chat" },
@@ -3068,7 +3147,7 @@ export function VesperHeaderBar({
             ACT-Omega
           </div>
           <div style={{ marginTop: 2, fontSize: 10, color: "#7B8E88" }}>
-            Net v73.2.2 · CHAIN 404 · 1,010/1,010 QED
+            {`Net ${liveReleaseLabel(releaseVersion, isOffline)} · ${liveChainLabel(toolsCount, isOffline)} · ${liveLeanBadge(lean4TheoremsQed, isOffline, lean4Qed, false)}`}
           </div>
         </div>
       </div>
@@ -3321,7 +3400,7 @@ export function VesperHeaderBar({
                   : `${p8TempC.toFixed(1)}°C (${p8BattPct}%) · #${p8Broadcasts} (${p8RttMs.toFixed(1)}ms)`}
               </div>
               <div>YubiKey 5C NFC · {isOffline ? "UNMEASURED/OFFLINE" : "HRoT Attested"}</div>
-              <div>Lean 4 Formal · 1,010/1,010 QED (0 sorry)</div>
+              <div>Lean 4 Formal · {liveLeanBadge(lean4TheoremsQed, isOffline, lean4Qed, false)} (0 sorry)</div>
               <div>Carrier · 15.965 Hz (Gen #{generation})</div>
               <div>
                 Write-Back SHA ·{" "}
@@ -3491,7 +3570,9 @@ export function VesperCalmView({
   bNorm,
   p10Broadcasts,
   p8Broadcasts,
-  p10RttMs
+  p10RttMs,
+  lean4TheoremsQed = null,
+  lean4Qed = false
 }: {
   showSkeleton: boolean;
   telemetrySource: "LIVE_L0_SWARM" | "SNAPSHOT_FALLBACK" | "UNMEASURED/OFFLINE";
@@ -3517,6 +3598,8 @@ export function VesperCalmView({
   p10Broadcasts: number;
   p8Broadcasts: number;
   p10RttMs: number;
+  lean4TheoremsQed?: number | null;
+  lean4Qed?: boolean;
 }) {
   const now = new Date();
   const hr = now.getHours();
@@ -3646,7 +3729,7 @@ export function VesperCalmView({
           >
             {isOffline
               ? ":8097 L0 daemon UNMEASURED/OFFLINE · Zero cloud calls · Honest fallback active"
-              : `P10 ${p10TempC.toFixed(1)}°C · |B|=${bNorm.toFixed(1)}µT (#${p10Broadcasts}, ${p10RttMs.toFixed(1)}ms) · P8 ${p8TempC.toFixed(1)}°C (#${p8Broadcasts}) · 1,010/1,010 QED`}
+              : `P10 ${p10TempC.toFixed(1)}°C · |B|=${bNorm.toFixed(1)}µT (#${p10Broadcasts}, ${p10RttMs.toFixed(1)}ms) · P8 ${p8TempC.toFixed(1)}°C (#${p8Broadcasts}) · ${liveLeanBadge(lean4TheoremsQed, isOffline, lean4Qed, false)}`}
           </div>
         </div>
         <button
@@ -3837,6 +3920,8 @@ export function VesperCalmView({
                     }
                     endpointTag={msg.endpointTag}
                     sha256={msg.sha256 ?? defaultSha256}
+                    lean4TheoremsQed={lean4TheoremsQed}
+                    lean4Qed={lean4Qed}
                   />
                 </div>
               )}
@@ -3892,8 +3977,8 @@ export function VesperCalmView({
           <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", color: "#7B8E88" }}>
             PROOFS
           </div>
-          <div style={{ marginTop: 8, fontSize: 22, fontWeight: 800, letterSpacing: "-0.02em", color: "#00E5A0" }}>
-            1,010/1,010 QED
+          <div style={{ marginTop: 8, fontSize: 22, fontWeight: 800, letterSpacing: "-0.02em", color: isOffline ? "#FF9B6B" : "#00E5A0" }}>
+            {liveLeanBadge(lean4TheoremsQed, isOffline, lean4Qed, false)}
           </div>
           <div style={{ marginTop: 4, fontSize: 12, color: "#A7B8B2" }}>
             Lean 4 formal · 0 sorry, 0 axiom ·{" "}
@@ -3951,7 +4036,9 @@ export function VesperProofView({
   termOut,
   receiptLines,
   onRunVerifyEndpoint,
-  onOpenHudLeanVerifier
+  onOpenHudLeanVerifier,
+  lean4TheoremsQed = null,
+  lean4Qed = false
 }: {
   showSkeleton: boolean;
   telemetrySource: "LIVE_L0_SWARM" | "SNAPSHOT_FALLBACK" | "UNMEASURED/OFFLINE";
@@ -3966,6 +4053,8 @@ export function VesperProofView({
   receiptLines: string[];
   onRunVerifyEndpoint: (ep: string, label: string) => void;
   onOpenHudLeanVerifier: () => void;
+  lean4TheoremsQed?: number | null;
+  lean4Qed?: boolean;
 }) {
   const isOffline = telemetrySource === "UNMEASURED/OFFLINE";
 
@@ -3977,11 +4066,11 @@ export function VesperProofView({
     ep: string;
   }> = [
     {
-      title: "Lean 4 1,010/1,010 QED (Zero-Sorry / Zero-Axiom)",
-      status: isOffline ? "UNMEASURED/OFFLINE" : "1,010/1,010 QED",
-      detail: isOffline
+      title: `Lean 4 ${liveLeanBadge(lean4TheoremsQed, isOffline, lean4Qed, false)} (Zero-Sorry / Zero-Axiom)`,
+      status: liveLeanBadge(lean4TheoremsQed, isOffline, lean4Qed, false),
+      detail: isOffline || !lean4Qed || !lean4TheoremsQed || lean4TheoremsQed <= 0
         ? ":8097 L0 daemon offline — live lean.exe & RLVF compiler-in-the-loop verification requires local swarm connection."
-        : `All 1,010 substantive formal theorems in SovereignManifoldTheorems.lean verified locally (${lean4VerifyMs.toFixed(1)} ms) with 0 sorry, 0 axiom, and Week 4 RLVF GRPO compiler-in-the-loop reward gating.`,
+        : `All ${lean4TheoremsQed.toLocaleString("en-US")} substantive formal theorems in SovereignManifoldTheorems.lean verified locally (${lean4VerifyMs.toFixed(1)} ms) with 0 sorry, 0 axiom, and Week 4 RLVF GRPO compiler-in-the-loop reward gating.`,
       btnLabel: "Verify RLVF (Tool 351)",
       ep: "/api/v1/sovereign_harmonic/week4/rlvf_grpo_compiler_in_the_loop"
     },
@@ -3990,7 +4079,7 @@ export function VesperProofView({
       status: isOffline ? "UNMEASURED/OFFLINE" : "LIVE VIA T404",
       detail: isOffline
         ? ":8097 L0 daemon offline — SH-XI 3-shell Matryoshka + Sparse MoE certification awaiting live local probe."
-        : "384D Mobile + 768D Host + 16/256 Disk-Backed MoE · PromptGradNorm = 0.0 · Run T368 (CHAIN 368) for live measured BPB, IFEval-Lite, MultiTurn & JSON FSM scores.",
+        : "384D Mobile + 768D Host + 16/256 Disk-Backed MoE · PromptGradNorm = 0.0 · Run T368 (SH-XI Cert) for live measured BPB, IFEval-Lite, MultiTurn & JSON FSM scores.",
       btnLabel: "Verify CHAIN 404 (T404)",
       ep: "/api/v1/tools/t404"
     },
@@ -4050,7 +4139,7 @@ export function VesperProofView({
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
           <button
             type="button"
-            onClick={() => onRunVerifyEndpoint("/api/v1/chain368/master_certification", "CHAIN 368 MASTER CERTIFICATION")}
+            onClick={() => onRunVerifyEndpoint("/api/v1/chain368/master_certification", "T368 SH-XI MASTER CERTIFICATION")}
             style={{
               height: 36,
               borderRadius: 999,
@@ -4251,6 +4340,8 @@ export function VesperProofView({
         statusMode={telemetrySource}
         endpointTag="/api/v1/chain368/master_certification"
         sha256={writebackSha256}
+        lean4TheoremsQed={lean4TheoremsQed}
+        lean4Qed={lean4Qed}
       />
     </div>
   );
@@ -4387,7 +4478,7 @@ export function VesperVaultView({
             </button>
             <button
               type="button"
-              onClick={() => onRunEndpoint("/api/v1/manifold/v44_omni_snapshot", "VAULT: SYNC 10-TABLE CLOUDFLARE D1")}
+              onClick={() => onRunEndpoint("/api/v1/manifold/v44_omni_snapshot", "VAULT: SYNC 11-TABLE CLOUDFLARE D1")}
               style={{
                 height: 32,
                 borderRadius: 999,
@@ -4400,7 +4491,7 @@ export function VesperVaultView({
                 cursor: "pointer"
               }}
             >
-              Sync 10-Table D1 (T76)
+              Sync 11-Table D1 (T76)
             </button>
           </div>
         </div>
@@ -4560,7 +4651,9 @@ export function VesperToolsView({
   writebackStatus,
   onRunEndpoint,
   onOpenCmdPalette,
-  onOpenFullDrawer4
+  onOpenFullDrawer4,
+  lean4TheoremsQed = null,
+  lean4Qed = false
 }: {
   telemetrySource: "LIVE_L0_SWARM" | "SNAPSHOT_FALLBACK" | "UNMEASURED/OFFLINE";
   termOut: string;
@@ -4575,6 +4668,8 @@ export function VesperToolsView({
   onRunEndpoint: (ep: string, label: string) => void;
   onOpenCmdPalette: () => void;
   onOpenFullDrawer4: () => void;
+  lean4TheoremsQed?: number | null;
+  lean4Qed?: boolean;
 }) {
   const isOffline = telemetrySource === "UNMEASURED/OFFLINE";
 
@@ -4586,7 +4681,7 @@ export function VesperToolsView({
     { label: "T366 · JSON FSM Grammar", ep: "/api/v1/sovereign_harmonic/xi/week2/fsm_json_tool" },
     { label: "T367 · IFEval-Lite 64/64", ep: "/api/v1/sovereign_harmonic/xi/week2/ifeval_lite_64" },
     { label: "T360 · RTX 3050 Matryoshka", ep: "/api/v1/sovereign_harmonic/xi/week1/rtx3050_matryoshka_cuda_pretrain" },
-    { label: "T368 · CHAIN 368 Cert", ep: "/api/v1/chain368/master_certification" }
+    { label: "T368 · SH-XI Cert", ep: "/api/v1/chain368/master_certification" }
   ];
 
   const week4Featured = [
@@ -4654,7 +4749,7 @@ export function VesperToolsView({
       {/* Sovereign Harmonic XI (SH-XI) Weeks 1 & 2 Featured Strip */}
       <div className="vesper-card" style={{ padding: 16, border: "1px solid rgba(0, 229, 160, 0.32)" }}>
         <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.1em", color: "#00E5A0", marginBottom: 10 }}>
-          SOVEREIGN HARMONIC XI (SH-XI) WEEKS 1 &amp; 2 SUITE (TOOLS 357..368 · 1,010/1,010 LEAN 4 QED)
+          {`SOVEREIGN HARMONIC XI (SH-XI) WEEKS 1 & 2 SUITE (TOOLS 357..368 · ${liveLeanBadge(lean4TheoremsQed, isOffline, lean4Qed, true).toUpperCase()})`}
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
           {shXiFeatured.map((item) => (
@@ -4683,7 +4778,7 @@ export function VesperToolsView({
       {/* Week 3–4 SH-Deep-12L Featured Strip */}
       <div className="vesper-card" style={{ padding: 16 }}>
         <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.1em", color: "#7C5CFF", marginBottom: 10 }}>
-          SH-DEEP-12L FRONTIER SUITE (TOOLS 346..356 · 1,010/1,010 LEAN 4 QED)
+          {`SH-DEEP-12L FRONTIER SUITE (TOOLS 346..356 · ${liveLeanBadge(lean4TheoremsQed, isOffline, lean4Qed, true).toUpperCase()})`}
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
           {week4Featured.map((item) => (
@@ -5115,7 +5210,7 @@ export function VesperSettingsView({
 }
 
 export function App() {
-  // v73.2.2 Vesper Multi-Mode Mica Shell Persistent State, SH-XI Multi-Turn Session & CLS 0.00 Layout State
+  // v73.2.3 Vesper Multi-Mode Mica Shell Persistent State, SH-XI Multi-Turn Session & CLS 0.00 Layout State
   const [vesperMode, setVesperModeState] = useState<VesperShellMode>(() => {
     if (typeof window !== "undefined") {
       try {
@@ -5161,7 +5256,7 @@ export function App() {
     {
       id: "vesper-init-assistant",
       role: "assistant",
-      text: "Dual-L1D is a double check on distance inside local silicon. One layer keeps every claim tied to our 1,010 Lean 4 formal theorems, and the second keeps all 84,480 dendritic neurons (262,144 bijected 64-byte cachelines = 16.00 MiB) from drifting while Sovereign Harmonic XI (384D Mobile Shell 0 + 768D Host Shell 1 + 16/256 Sparse MoE Shell 2) assembles your answer locally. If any check moves outside the 31,108 / 32,768 L1D bound, it is rebuilt locally or marked UNMEASURED/OFFLINE — never guessed.",
+      text: "Dual-L1D is a double check on distance inside local silicon. One layer keeps every claim tied to our formally verified Lean 4 theorems, and the second keeps all 84,480 dendritic neurons (262,144 bijected 64-byte cachelines = 16.00 MiB) from drifting while Sovereign Harmonic XI (384D Mobile Shell 0 + 768D Host Shell 1 + 16/256 Sparse MoE Shell 2) assembles your answer locally. If any check moves outside the 31,108 / 32,768 L1D bound, it is rebuilt locally or marked UNMEASURED/OFFLINE — never guessed.",
       receipt: true,
       endpointTag: "LOCAL_BOOT_ORIENTATION"
     }
@@ -5197,7 +5292,7 @@ export function App() {
   const [helpSidebarOpen, setHelpSidebarOpen] = useState<boolean>(false);
   const [helpSection, setHelpSection] = useState<string>("QUICKSTART");
   const [helpSearch, setHelpSearch] = useState<string>("");
-  const [ideConsoleLog, setIdeConsoleLog] = useState<string>("[OPERATOR & ANTIGRAVITY VAULT READY] Gemini 4 Argon (10 Subagents) + Goose v1.55.0 + Zed v1.24.4 + VSCodium/Cline locked to SH4Z-v7321-TriSilicon (C:\\sovereign_manifold_v31). All 15 Telemetry Cards, 3D Stiefel Scope, 16x130 Bijection Heatmap (262,144 Bijected 64B CLs = 16.00 MiB), SH-XI 3-Shell + 16/256 Sparse MoE, OmegaLang v16 (535.73 TOPS / 4.235 POPS) & 404 Tools (CHAIN 404 | 1,010/1,010 QED) active.");
+  const [ideConsoleLog, setIdeConsoleLog] = useState<string>("[OPERATOR & ANTIGRAVITY VAULT READY] Gemini 4 Argon (10 Subagents) + Goose v1.55.0 + Zed v1.24.4 + VSCodium/Cline locked to SH4Z-v7321-TriSilicon (C:\\sovereign_manifold_v31). All 15 Telemetry Cards, 3D Stiefel Scope, 16x130 Bijection Heatmap (262,144 Bijected 64B CLs = 16.00 MiB), SH-XI 3-Shell + 16/256 Sparse MoE, OmegaLang v16 (535.73 TOPS / 4.235 POPS) & live L0 Tools (wired to :8097) active.");
   const [vesperDocked, setVesperDocked] = useState<boolean>(false);
   const [tel, setTel] = useState<TelemetryState>({
     generation: 745000,
@@ -5293,7 +5388,11 @@ export function App() {
     last_card_diag: "[CARD #1 15.965 Hz DECADIC EPOCH]: Receiving 15.965Hz (62,637us) Physical / 2.00Hz Telemetry from Pixel 10 & Pixel 8 L2.",
     last_browser_trace: "",
     last_lean_trace: "",
-    last_term_out: ""
+    last_term_out: "",
+    lean4_theorems_qed: null,
+    lean4_qed: false,
+    tools_count: null,
+    release_version: "UNMEASURED/OFFLINE"
   });
   const [selectedLine, setSelectedLine] = useState<number>(0);
   const [heatmapBank, setHeatmapBank] = useState<number>(0);
@@ -6512,7 +6611,16 @@ export function App() {
                 last_card_diag: d.last_card_diag ?? prev.last_card_diag,
                 last_browser_trace: d.last_browser_trace ?? prev.last_browser_trace,
                 last_lean_trace: d.last_lean_trace ?? prev.last_lean_trace,
-                last_term_out: d.last_term_out ?? prev.last_term_out
+                last_term_out: d.last_term_out ?? prev.last_term_out,
+                lean4_theorems_qed: typeof d.lean4_theorems_qed === "number" ? d.lean4_theorems_qed : null,
+                lean4_qed: typeof d.lean4_qed === "boolean" ? d.lean4_qed : false,
+                tools_count: typeof d.tools_count === "number" ? d.tools_count : null,
+                release_version:
+                  typeof d.release_version === "string" && d.release_version.trim().length > 0
+                    ? d.release_version.trim()
+                    : typeof d.version === "string" && /\b(v\d+(?:\.\d+)+)\b/.test(d.version)
+                    ? (d.version.match(/\b(v\d+(?:\.\d+)+)\b/)?.[1] ?? "UNMEASURED/OFFLINE")
+                    : "UNMEASURED/OFFLINE"
               }));
               if (typeof d.webgpu_active_leases === "number") setWebgpuActiveWorkers(d.webgpu_active_leases);
               if (typeof d.webgpu_leased_kops === "number") setWebgpuLeasedKops(d.webgpu_leased_kops);
@@ -6534,13 +6642,19 @@ export function App() {
       }
       if (active) {
         setVesperTelemetrySource("UNMEASURED/OFFLINE");
-        setTel((prev) => ({ ...prev, generation: prev.generation + 1 }));
+        setTel((prev) => ({
+          ...prev,
+          generation: prev.generation + 1,
+          lean4_theorems_qed: null,
+          lean4_qed: false,
+          tools_count: null,
+          release_version: "UNMEASURED/OFFLINE"
+        }));
       }
       } finally {
         pollInFlight = false;
       }
     };
-    document.title = "ACT-Omega Net v73.2.2 (SH4Z v7321 Vesper Multi-Mode Mica HUD) -- Sovereign Harmonic XI (384D/768D + 16/256 MoE), 84,480 Neurons, 4,055,040 Synapses, 262,144 Bijected Cachelines (16.00 MiB), 1,010/1,010 Lean 4 QED & Tools 1..404 (CHAIN 404 Suite)";
     pollTelemetry();
     runE8LeechFluencyBridge(e8LeechQuery);
     const id = window.setInterval(pollTelemetry, 500);
@@ -6549,6 +6663,15 @@ export function App() {
       window.clearInterval(id);
     };
   }, []);
+
+  useEffect(() => {
+    const isOff = vesperTelemetrySource === "UNMEASURED/OFFLINE";
+    const verLabel = liveReleaseLabel(tel.release_version, isOff);
+    const leanLabel = liveLeanBadge(tel.lean4_theorems_qed, isOff, tel.lean4_qed, true);
+    const chainLbl = liveChainLabel(tel.tools_count, isOff);
+    const toolsLbl = liveToolsRangeLabel(tel.tools_count, isOff);
+    document.title = `ACT-Omega Net ${verLabel} (SH4Z v7321 Vesper Multi-Mode Mica HUD) -- Sovereign Harmonic XI (384D/768D + 16/256 MoE), 84,480 Neurons, 4,055,040 Synapses, 262,144 Bijected Cachelines (16.00 MiB), ${leanLabel} & ${toolsLbl} (${chainLbl})`;
+  }, [vesperTelemetrySource, tel.lean4_theorems_qed, tel.lean4_qed, tel.tools_count, tel.release_version]);
 
   // 2. Continuous 20 FPS animation timer for scopes, heatmaps & sparklines
   useEffect(() => {
@@ -7463,17 +7586,19 @@ export function App() {
             ? `${Number(j.elapsed_ms).toFixed(2)} ms`
             : "MEASURED";
 
+        const liveQedShort = liveLeanBadge(tel.lean4_theorems_qed, vesperTelemetrySource === "UNMEASURED/OFFLINE", tel.lean4_qed, false);
+        const liveQedLong = liveLeanBadge(tel.lean4_theorems_qed, vesperTelemetrySource === "UNMEASURED/OFFLINE", tel.lean4_qed, true);
         if (modeKind === "prove") {
           const pass1 = typeof j.post_rlvf_pass_at_1 === "number" ? `${(j.post_rlvf_pass_at_1 * 100).toFixed(1)}%` : "100.0%";
           const pass4 = typeof j.post_rlvf_pass_at_4 === "number" ? `${(j.post_rlvf_pass_at_4 * 100).toFixed(1)}%` : "100.0%";
           const hacksBlocked = j.adversarial_reward_hacks_blocked ?? 4;
           const obls = j.obligations_evaluated ?? 8;
-          answerProse = `Verified locally via Tool 351 (RLVF GRPO Compiler-in-the-Loop): Evaluated ${obls} formal proof & zero-bracket Rust obligations with live lean.exe verification. Post-RLVF Pass@1 = ${pass1} (Pass@4 = ${pass4}), blocking ${hacksBlocked}/${j.adversarial_exploit_families_tested ?? hacksBlocked} adversarial reward-hack families (${j.lean4_theorems_verified || "1,010/1,010 Lean 4 QED"}).`;
+          answerProse = `Verified locally via Tool 351 (RLVF GRPO Compiler-in-the-Loop): Evaluated ${obls} formal proof & zero-bracket Rust obligations with live lean.exe verification. Post-RLVF Pass@1 = ${pass1} (Pass@4 = ${pass4}), blocking ${hacksBlocked}/${j.adversarial_exploit_families_tested ?? hacksBlocked} adversarial reward-hack families (${j.lean4_theorems_verified || liveQedLong}).`;
           receiptLines = [
             `Endpoint · ${targetPath.split("?")[0]} (Tool ${j.tool_id ?? 351})`,
             `RLVF Compiler Pass · Pass@1 ${pass1} · Pass@4 ${pass4} · Latency ${latencyLabel}`,
             `Reward Hacks Blocked · ${hacksBlocked} (0 sorry, 0 axiom, 0 square brackets)`,
-            `Lean 4 Verified · ${j.lean4_theorems_verified || "1,010/1,010 QED"}`,
+            `Lean 4 Verified · ${j.lean4_theorems_verified || liveQedShort}`,
             `Stiefel Ortho Err · ${j.stiefel_max_orthogonality_error ?? tel.stiefel_ortho_err}`,
             `Bus Seq #${wbSeq} · E:\\ SHA-256 ${wbSha}`
           ];
@@ -7485,7 +7610,7 @@ export function App() {
             `Endpoint · /api/v1/sovereign_harmonic/week3/human_ambiguity_and_metaphor_gauntlet (Tool ${j.tool_id ?? 346})`,
             `Prompts Tested · ${tested} · All 5 Modes Remediated = ${String(all5)}`,
             `Measured Latency · ${latencyLabel}`,
-            `Lean 4 Theorems · ${j.lean4_theorems_verified || "1,010/1,010 QED"}`,
+            `Lean 4 Theorems · ${j.lean4_theorems_verified || liveQedShort}`,
             `Proof Tag · ${j.proof || "WEEK3_AMBIGUITY_GAUNTLET_QED"}`,
             `Bus Seq #${wbSeq} · E:\\ SHA-256 ${wbSha}`
           ];
@@ -7497,7 +7622,7 @@ export function App() {
             `Endpoint · /api/v1/sovereign_harmonic/week4/medusa_eagle_dendritic_tree_speculative_k8 (Tool ${j.tool_id ?? 352})`,
             `Speculative Tree · ${Number(acceptRate || 4.0).toFixed(2)} tok/step · ${Number(speedup || 3.5).toFixed(2)}× speedup`,
             `Measured Latency · ${latencyLabel} · 0 External Cloud Calls`,
-            `Lean 4 Theorems · ${j.lean4_theorems_verified || "1,010/1,010 QED"}`,
+            `Lean 4 Theorems · ${j.lean4_theorems_verified || liveQedShort}`,
             `Write-Back Path · ${j.e_vault_writeback_path || writebackStatus.path}`,
             `Bus Seq #${wbSeq} · SHA-256 ${wbSha}`
           ];
@@ -7538,7 +7663,7 @@ export function App() {
             `3-Shell Matryoshka · 384D Mobile + 768D Host (Top-8 Agree ${agree}) + 16/256 MoE Experts #${top1Exp}, #${top2Exp}`,
             `384D WGSL Grounded RAG · Source ${ragSrc} · Cosine ${ragCos}`,
             `Measured Latency · ${latencyLabel} · Prompt/Gen Tokens = ${ms.prompt_tokens ?? 0}/${ms.generated_tokens ?? 0}`,
-            `Lean 4 Theorems · ${j.lean4_theorems_verified || "1,010/1,010 QED"}`,
+            `Lean 4 Theorems · ${j.lean4_theorems_verified || liveQedShort}`,
             `Bus Seq #${wbSeq} · E:\\ SHA-256 ${wbSha}`
           ];
         }
@@ -7747,9 +7872,9 @@ export function App() {
       endpoint: "/api/v1/cloudflare/free_tier_governor"
     },
     {
-      title: "1,010/1,010 LEAN 4 PROOFS & MEASURED QAT",
-      primary: `Seen PPL ${sh9State.post_train_perplexity.toFixed(4)} | Holdout PPL ${sh9State.post_holdout_perplexity.toFixed(4)} -- 1,010 / 1,010 QED`,
-      secondary: `1,010 Formal Theorems (SH-XI 3-Shell MoE + SH-Deep-12L RLVF + 262,144 CLs | CHAIN 404) -- ${tel.lean4_verify_ms.toFixed(1)}ms`,
+      title: `${liveLeanRatio(tel.lean4_theorems_qed, vesperTelemetrySource === "UNMEASURED/OFFLINE", tel.lean4_qed)} LEAN 4 PROOFS & MEASURED QAT`,
+      primary: `Seen PPL ${sh9State.post_train_perplexity.toFixed(4)} | Holdout PPL ${sh9State.post_holdout_perplexity.toFixed(4)} -- ${liveLeanBadge(tel.lean4_theorems_qed, vesperTelemetrySource === "UNMEASURED/OFFLINE", tel.lean4_qed, false)}`,
+      secondary: `${vesperTelemetrySource === "UNMEASURED/OFFLINE" || !tel.lean4_qed || !tel.lean4_theorems_qed ? "UNMEASURED/OFFLINE" : `${tel.lean4_theorems_qed.toLocaleString("en-US")} Formal Theorems`} (SH-XI 3-Shell MoE + SH-Deep-12L RLVF + 262,144 CLs | ${liveChainLabel(tel.tools_count, vesperTelemetrySource === "UNMEASURED/OFFLINE")}) -- ${tel.lean4_verify_ms.toFixed(1)}ms`,
       sector: 9,
       endpoint: "/api/v1/card/execute?card_id=7"
     },
@@ -8464,14 +8589,14 @@ export function App() {
           "STATUS · UNMEASURED/OFFLINE (:8097 L0 daemon unreachable — zero synthetic values emitted)",
           "Manifold Spec · 262,144 Bijected CLs (16.00 MiB = .npage + .spage + .e8z)",
           "SH-XI Spec · 384D Mobile + 768D Host + 16/256 Sparse MoE (.sh4z v7321)",
-          "Formal Spec · 1,010/1,010 Lean 4 QED target (0 sorry, 0 axiom · CHAIN 404)",
+          "Formal Spec · UNMEASURED/OFFLINE (:8097 L0 daemon unreachable)",
           "Hardware Key · YubiKey 5C NFC HRoT (UNMEASURED/OFFLINE — awaiting live loopback check)"
         ]
       : [
           `Telemetry Source · ${vesperTelemetrySource} (Gen #${tel.generation} · 15.965 Hz E${tel.decadic_sub_epoch}/9)`,
           "Bijected Manifold · 262,144 CLs (16.00 MiB = 10.81 MB .npage + 5.41 MB .spage + 557 KB .e8z)",
           "SH-XI 3-Shell Model · 384D Mobile + 768D Host (2,164,864 B) + 16/256 Disk-Backed MoE",
-          `Formal Proofs · 1,010/1,010 QED Lean 4 — 0 sorry, 0 axiom (${tel.lean4_verify_ms.toFixed(1)} ms)`,
+          `Formal Proofs · ${liveLeanBadge(tel.lean4_theorems_qed, false, tel.lean4_qed, true)} — 0 sorry, 0 axiom (${tel.lean4_verify_ms.toFixed(1)} ms)`,
           "Dual-L1D Residency · 31,108 B < 32,768 B · 84,480 Neurons / 4,055,040 Synapses",
           `7,777D Coprime CRT · 3333 / 2828 / 1617 · Stiefel Err ${tel.stiefel_ortho_err.toExponential(2)}`,
           `5-Pool Tri-Silicon · ${tel.cluster_total_kops.toFixed(1)}k ops/s · RTX ${tel.rtx_temp_c.toFixed(0)}°C / P10 ${tel.p10_temp_c.toFixed(1)}°C / P8 ${tel.p8_temp_c.toFixed(1)}°C`,
@@ -8571,6 +8696,10 @@ export function App() {
             p8Broadcasts={tel.p8_broadcasts}
             p10RttMs={tel.p10_rtt_ms}
             p8RttMs={tel.p8_rtt_ms}
+            releaseVersion={tel.release_version}
+            toolsCount={tel.tools_count}
+            lean4TheoremsQed={tel.lean4_theorems_qed}
+            lean4Qed={tel.lean4_qed}
           />
         )}
 
@@ -8594,7 +8723,7 @@ export function App() {
                 triggerVesperToast(
                   vesperTelemetrySource === "UNMEASURED/OFFLINE"
                     ? "Vesper Arachne · Local UI Ready (:8097 UNMEASURED/OFFLINE)"
-                    : `Vesper Arachne · Locked to 15.965 Hz (Gen #${tel.generation} · 1,010/1,010 QED)`
+                    : `Vesper Arachne · Locked to 15.965 Hz (Gen #${tel.generation} · ${liveLeanBadge(tel.lean4_theorems_qed, false, tel.lean4_qed, false)})`
                 );
               }}
             />
@@ -8673,6 +8802,8 @@ export function App() {
                 p10Broadcasts={tel.p10_broadcasts}
                 p8Broadcasts={tel.p8_broadcasts}
                 p10RttMs={tel.p10_rtt_ms}
+                lean4TheoremsQed={tel.lean4_theorems_qed}
+                lean4Qed={tel.lean4_qed}
               />
             )}
 
@@ -8694,6 +8825,8 @@ export function App() {
                   setDrawer3Open(true);
                   selectVesperMode("hud", "HUD");
                 }}
+                lean4TheoremsQed={tel.lean4_theorems_qed}
+                lean4Qed={tel.lean4_qed}
               />
             )}
 
@@ -8723,6 +8856,8 @@ export function App() {
                   setDrawer4Open(true);
                   selectVesperMode("hud", "HUD");
                 }}
+                lean4TheoremsQed={tel.lean4_theorems_qed}
+                lean4Qed={tel.lean4_qed}
               />
             )}
 
@@ -9027,10 +9162,10 @@ export function App() {
                   fontSize: 13.5
                 }}
               >
-                SOVEREIGN MANIFOLD TELEMETRY CONSOLE — ACT-OMEGA NET v73.2.2 (SH4Z v7321 TLV | SH-XI 3-Shell + 16/256 MoE | 84,480 Neurons / 4,055,040 Synapses | 262,144 CLs | 524,288 BPE | CHAIN 404 | 1,010/1,010 Lean 4 QED | 4.235 POPS)
+                {`SOVEREIGN MANIFOLD TELEMETRY CONSOLE — ACT-OMEGA NET ${liveReleaseLabel(tel.release_version, vesperTelemetrySource === "UNMEASURED/OFFLINE")} (SH4Z v7321 TLV | SH-XI 3-Shell + 16/256 MoE | 84,480 Neurons / 4,055,040 Synapses | 262,144 CLs | 524,288 BPE | ${liveChainLabel(tel.tools_count, vesperTelemetrySource === "UNMEASURED/OFFLINE")} | ${liveLeanBadge(tel.lean4_theorems_qed, vesperTelemetrySource === "UNMEASURED/OFFLINE", tel.lean4_qed, true)} | 4.235 POPS)`}
               </div>
               <div style={{ color: "#9AA0A6", fontSize: 10, fontFamily: "'JetBrains Mono', Consolas, monospace" }}>
-                SH-XI v73.2.2 + SH-Deep-12L Active: 384D Mobile / 768D Host / 16-of-256 Sparse MoE • ChatML Masked SFT • 384D WGSL RAG • JSON FSM • 262,144 (2^18) Bijected CLs (16.00 MiB) • Vesper Mica CLS 0.00
+                {`SH-XI ${liveReleaseLabel(tel.release_version, vesperTelemetrySource === "UNMEASURED/OFFLINE")} + SH-Deep-12L Active: 384D Mobile / 768D Host / 16-of-256 Sparse MoE • ChatML Masked SFT • 384D WGSL RAG • JSON FSM • 262,144 (2^18) Bijected CLs (16.00 MiB) • Vesper Mica CLS 0.00`}
               </div>
             </div>
           </div>
@@ -9230,7 +9365,7 @@ export function App() {
           </div>
         </div>
         <div style={{ color: "#FFFEFB", fontSize: 11, marginTop: 2 }}>
-          15.965 Hz (62,637 us) Decadic Epoch E{tel.decadic_sub_epoch}/9 -- {tel.laplacian_face} -- 84,480 Neurons (4x 21,120 Tiers, 1,920x Chair-44, 4,055,040 Synapses, 262,144 Bijected 64B Cachelines = 16.00 MiB across 168,960 .npage + 84,480 .spage + 8,704 .e8z CLs) -- 5-Pool Tri-Silicon Conservation (t_A+F+t_B=1.00000) -- Dual CPU AVX2 (S00..S23) + RTX 3050 CUDA PTX (S24..S47) Co-Execution -- Hsiang P_4(x) Focal Harmonics &amp; Reversible Symplectic Leapfrog -- OmegaLang v16.0 Primary TLV Compiler (9 Targets + sm_86 PTX) -- 48 Macro-Domains (192 Sub-Domains) -- 524,288 (19-Bit) Open-Vocab BPE -- PPL={e8LeechState.holdout_ppl > 0 ? e8LeechState.holdout_ppl.toFixed(6) : "UNMEASURED/OFFLINE"} -- 1,010/1,010 Lean 4 QED -- Tools 1..404 (CHAIN 404 Suite)
+          15.965 Hz (62,637 us) Decadic Epoch E{tel.decadic_sub_epoch}/9 -- {tel.laplacian_face} -- 84,480 Neurons (4x 21,120 Tiers, 1,920x Chair-44, 4,055,040 Synapses, 262,144 Bijected 64B Cachelines = 16.00 MiB across 168,960 .npage + 84,480 .spage + 8,704 .e8z CLs) -- 5-Pool Tri-Silicon Conservation (t_A+F+t_B=1.00000) -- Dual CPU AVX2 (S00..S23) + RTX 3050 CUDA PTX (S24..S47) Co-Execution -- Hsiang P_4(x) Focal Harmonics &amp; Reversible Symplectic Leapfrog -- OmegaLang v16.0 Primary TLV Compiler (9 Targets + sm_86 PTX) -- 48 Macro-Domains (192 Sub-Domains) -- 524,288 (19-Bit) Open-Vocab BPE -- PPL={e8LeechState.holdout_ppl > 0 ? e8LeechState.holdout_ppl.toFixed(6) : "UNMEASURED/OFFLINE"} -- {liveLeanBadge(tel.lean4_theorems_qed, vesperTelemetrySource === "UNMEASURED/OFFLINE", tel.lean4_qed, true)} -- {liveToolsRangeLabel(tel.tools_count, vesperTelemetrySource === "UNMEASURED/OFFLINE")} ({liveChainLabel(tel.tools_count, vesperTelemetrySource === "UNMEASURED/OFFLINE")} Suite)
         </div>
         <div style={{ background: "#0A0D12", border: "1px solid #56D364", borderRadius: 4, padding: "4px 8px", marginTop: 5, color: "#56D364", fontSize: 10.5 }}>
           [TOOL 29 REAL-TIME PHYSICAL &amp; U(1) GAUGE ALERT BANNER]: {tel.anomaly_banner}
@@ -9255,7 +9390,7 @@ export function App() {
           </div>
           <div onClick={() => callEndpoint("/api/v1/tools/t404", "CHAIN 404: v73.2 MASTER CERT")} style={{ cursor: "pointer", borderLeft: "3px solid #00FFCC", paddingLeft: 6 }}>
             <div style={{ color: "#00FFCC", fontWeight: "bold", fontSize: 9.5 }}>NODE 5: 5-POOL WORKSTEAL + 524K BPE</div>
-            <div style={{ color: "#FFFEFB", fontSize: 10 }}>SH-XI 3-Shell MoE | 1,010/1,010 Lean 4 QED | CHAIN 404</div>
+            <div style={{ color: "#FFFEFB", fontSize: 10 }}>SH-XI 3-Shell MoE | {liveLeanBadge(tel.lean4_theorems_qed, vesperTelemetrySource === "UNMEASURED/OFFLINE", tel.lean4_qed, true)} | {liveChainLabel(tel.tools_count, vesperTelemetrySource === "UNMEASURED/OFFLINE")}</div>
           </div>
         </div>
         {/* v63.0-v63.2 Top-Strip 5-Metric Observability Bar (Gates, Parity, BPUT Win Metric, 15.965 Hz Clock, Drift & F:\ WORM + YubiKey 5C NFC HRoT) */}
@@ -10137,7 +10272,7 @@ export function App() {
                 <div style={{ background: "#070d14", border: "1px solid #00ffcc", borderRadius: "4px", padding: "8px" }}>
                   <div style={{ color: "#00ffcc", fontWeight: "bold", fontSize: "11px" }}>4. 5W1H + 63,360-NEURON CONNECTOME (T70)</div>
                   <div style={{ color: "#8ab4c9", fontSize: "10px", margin: "4px 0" }}>neurons_v5000_63360.npage (8,110,080 B, 1,013,760 Synapses)</div>
-                  <button onClick={() => { callEndpoint("/api/v1/connectome/harness_5w1h_npage", "TOOL 70: 5W1H + 63,360-NEURON CONNECTOME COUPLER"); setIdeConsoleLog("[5W1H+NPAGE T70] Coupled 4-Band M_ATP=0.9482 to 63,360 Dendritic Neurons (1,440x Chair-44) & 10 D1 Tables"); }} style={{ background: "#002b24", color: "#00ffcc", border: "1px solid #00ffcc", borderRadius: "3px", padding: "3px 8px", cursor: "pointer", fontFamily: "monospace", fontSize: "10px" }}>Couple 5W1H + Connectome (T70)</button>
+                  <button onClick={() => { callEndpoint("/api/v1/connectome/harness_5w1h_npage", "TOOL 70: 5W1H + 63,360-NEURON CONNECTOME COUPLER"); setIdeConsoleLog("[5W1H+NPAGE T70] Coupled 4-Band M_ATP=0.9482 to 63,360 Dendritic Neurons (1,440x Chair-44) & 11 D1 User Tables"); }} style={{ background: "#002b24", color: "#00ffcc", border: "1px solid #00ffcc", borderRadius: "3px", padding: "3px 8px", cursor: "pointer", fontFamily: "monospace", fontSize: "10px" }}>Couple 5W1H + Connectome (T70)</button>
                 </div>
                 <div style={{ gridColumn: "1 / -1", background: "#04080c", border: "1px solid #00ff66", borderRadius: "4px", padding: "6px 8px", color: "#00ff66", fontSize: "10px", fontFamily: "monospace" }}>
                   {ideConsoleLog}
@@ -11359,14 +11494,14 @@ export function App() {
       {/* DRAWER 3: Formal Verification Suite */}
       <div style={{ background: "#141922", border: "1px solid #2A3B4D", borderRadius: 6, padding: "8px 10px", marginBottom: 8 }}>
         <div onClick={() => setDrawer3Open(!drawer3Open)} style={{ display: "flex", justifyContent: "space-between", cursor: "pointer", fontWeight: "bold", marginBottom: drawer3Open ? 6 : 0 }}>
-          <span>[-] DRAWER 3: FORMAL VERIFICATION SUITE (1,010/1,010 LEAN 4 PROOFS QED) &amp; 10-PILLAR PHYSICS</span>
-          <span style={{ color: "#FFB454" }}>160 Sectors + SH-XI + Unified Lab + VPC Mesh = 1,010/1,010 Lean 4 Proofs QED ({tel.lean4_verify_ms.toFixed(1)}ms)</span>
+          <span>[-] DRAWER 3: FORMAL VERIFICATION SUITE ({liveLeanBadge(tel.lean4_theorems_qed, vesperTelemetrySource === "UNMEASURED/OFFLINE", tel.lean4_qed, true).toUpperCase()}) &amp; 10-PILLAR PHYSICS</span>
+          <span style={{ color: "#FFB454" }}>160 Sectors + SH-XI + Unified Lab + VPC Mesh = {liveLeanBadge(tel.lean4_theorems_qed, vesperTelemetrySource === "UNMEASURED/OFFLINE", tel.lean4_qed, true)} ({tel.lean4_verify_ms.toFixed(1)}ms)</span>
         </div>
         {drawer3Open && (
           <>
             <div style={{ display: "flex", gap: 6, marginBottom: 5 }}>
               <input value={leanQuery} onChange={(e) => setLeanQuery(e.target.value)} style={{ flex: 1, background: "#0A0D12", color: "#FFFEFB", border: "1px solid #2A3B4D", borderRadius: 4, padding: "4px 8px", fontFamily: "monospace", fontSize: 11 }} />
-              <button onClick={() => callEndpoint(`/api/v1/compiler/verify?q=${encodeURIComponent(leanQuery)}`, "VERIFY 1,010 LEAN 4 PROOFS")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 12px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>VERIFY 1,010/1,010 LEAN 4 PROOFS</button>
+              <button onClick={() => callEndpoint(`/api/v1/compiler/verify?q=${encodeURIComponent(leanQuery)}`, "VERIFY LEAN 4 PROOFS")} style={{ background: "#FFB454", color: "#0E1116", border: "none", borderRadius: 4, padding: "4px 12px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>VERIFY LEAN 4 PROOFS</button>
             </div>
             <div style={{ color: "#FFB454", fontSize: 10.5 }}>
               [10-Pillar Physics &amp; 4-Stage Cascade]: {tel.physics_10pillar} -- Verify={tel.lean4_verify_ms.toFixed(1)}ms
@@ -11378,7 +11513,7 @@ export function App() {
       {/* DRAWER 4: 304-Tool Execution Registry (CHAIN 304 Milestone), NL Synthesis, Episodic Memory Search & Terminal */}
       <div style={{ background: "#141922", border: "1px solid #00FFCC", borderRadius: 6, padding: "8px 10px" }}>
         <div onClick={() => setDrawer4Open(!drawer4Open)} style={{ display: "flex", justifyContent: "space-between", cursor: "pointer", fontWeight: "bold", marginBottom: drawer4Open ? 6 : 0 }}>
-          <span>[-] DRAWER 4: 404-TOOL EXECUTION REGISTRY (v73.2.2 SOVEREIGN HARMONIC XI 3-SHELL + 16/256 MOE, CHATML SFT, 384D WGSL RAG, SH-DEEP-12L, OMEGALANG v16 &amp; CHAIN 404 T01..T404), AUTONOMOUS INTELLIGENCE, NL SYNTHESIS &amp; MEMORY</span>
+          <span>[-] DRAWER 4: TOOL EXECUTION REGISTRY ({liveReleaseLabel(tel.release_version, vesperTelemetrySource === "UNMEASURED/OFFLINE")} SOVEREIGN HARMONIC XI 3-SHELL + 16/256 MOE, CHATML SFT, 384D WGSL RAG, SH-DEEP-12L, OMEGALANG v16 &amp; {liveChainLabel(tel.tools_count, vesperTelemetrySource === "UNMEASURED/OFFLINE")}), AUTONOMOUS INTELLIGENCE, NL SYNTHESIS &amp; MEMORY</span>
           <span style={{ color: "#00FFCC" }}>RSR #{tel.rsr_step} -- HybridLink={tel.hybrid_hops} -- WS={tel.cluster_total_kops.toFixed(1)}k ops/s -- Kasami={tel.kasami_cw_hex}</span>
         </div>
         {drawer4Open && (
@@ -11691,14 +11826,14 @@ export function App() {
             <div style={{ background: "#050E14", border: "1.5px solid #00FFCC", borderRadius: 5, padding: "8px 12px", marginBottom: 8, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 6 }}>
               <div>
                 <span style={{ color: "#00FFCC", fontWeight: "bold", fontSize: 11 }}>
-                  [8-DOMAIN FUNCTIONAL COMMAND DECK — 404 TOOLS CONSOLIDATED (CHAIN 404 | v73.2.2 | 1,010/1,010 LEAN 4 QED | 262,144 CACHELINES | 84,480 NEURONS | 4.05M SYNAPSES)]:
+                  [8-DOMAIN FUNCTIONAL COMMAND DECK — {liveToolsRangeLabel(tel.tools_count, vesperTelemetrySource === "UNMEASURED/OFFLINE").toUpperCase()} ({liveChainLabel(tel.tools_count, vesperTelemetrySource === "UNMEASURED/OFFLINE")} | {liveReleaseLabel(tel.release_version, vesperTelemetrySource === "UNMEASURED/OFFLINE")} | {liveLeanBadge(tel.lean4_theorems_qed, vesperTelemetrySource === "UNMEASURED/OFFLINE", tel.lean4_qed, true).toUpperCase()} | 262,144 CACHELINES | 84,480 NEURONS | 4.05M SYNAPSES)]:
                 </span>
                 <span style={{ color: "#FFB454", fontSize: 9.5, marginLeft: 8, fontWeight: "bold" }}>
                   SH-XI 3-Shell (384D Mobile + 768D Host + 16/256 MoE) | 262,144 (2^18) Bijected CLs (16.00 MiB) | 5-Pool Work-Steal (t_A+F+t_B=1) | CPU+RTX 3050 CUDA Co-Exec + P8-APEX (:8098)
                 </span>
               </div>
               <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
-                <button onClick={() => callEndpoint("/api/v1/tools/t404", "CHAIN 404: MASTER v73.2.2, UNIFIED LAB, VPC MESH + HYPERDRIVE & 1,010 QED CERTIFICATION")} style={{ background: "#00E5A0", color: "#050A0E", border: "none", borderRadius: 4, padding: "3px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>👑 CHAIN 404 MASTER CERT</button><button onClick={() => callEndpoint("/api/v1/chain368/master_certification", "CHAIN 368: MASTER CERTIFICATION")} style={{ background: "#09261E", color: "#00FFCC", border: "1px solid #00FFCC", borderRadius: 4, padding: "3px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>CHAIN 368 CERT</button>
+                <button onClick={() => callEndpoint("/api/v1/tools/t404", "CHAIN 404: MASTER SH-XI, UNIFIED LAB, VPC MESH + HYPERDRIVE CERTIFICATION")} style={{ background: "#00E5A0", color: "#050A0E", border: "none", borderRadius: 4, padding: "3px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>👑 CHAIN 404 MASTER CERT</button><button onClick={() => callEndpoint("/api/v1/chain368/master_certification", "T368: SH-XI MASTER CERTIFICATION")} style={{ background: "#09261E", color: "#00FFCC", border: "1px solid #00FFCC", borderRadius: 4, padding: "3px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>T368 SH-XI CERT</button>
                 <button onClick={() => callEndpoint("/api/v1/chain356/master_certification", "CHAIN 356: MASTER v71.5.0, SH-DEEP-12L & 965 QED CERTIFICATION")} style={{ background: "#FFD700", color: "#050A0E", border: "none", borderRadius: 4, padding: "3px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>CHAIN 356 CERT</button>
                 <button onClick={() => callEndpoint("/api/v1/chain316/master_certification", "CHAIN 316: MASTER v70.0.0, 262,144 BIJECTED CACHELINES, 5-POOL WORKSTEAL & 840 QED CERTIFICATION")} style={{ background: "#00E5FF", color: "#050A0E", border: "none", borderRadius: 4, padding: "3px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>CHAIN 316 CERT</button>
                 <button onClick={() => callEndpoint("/api/v1/chain308/master_certification", "CHAIN 308: MASTER v69.0.0, OMEGALANG v16 TLV, 84,480 NEURONS & 820 QED CERTIFICATION")} style={{ background: "#56D364", color: "#050A0E", border: "none", borderRadius: 4, padding: "3px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>CHAIN 308 CERT</button>
@@ -11706,14 +11841,14 @@ export function App() {
               </div>
             </div>
 
-            {/* Dedicated v72.1.0..v73.2.2 Sovereign Harmonic XI (SH-XI) Weeks 1 & 2 Suite (Tools 357..368 | 1,010/1,010 Lean 4 QED) */}
+            {/* Dedicated v72.1.0..v73.2.3 Sovereign Harmonic XI (SH-XI) Weeks 1 & 2 Suite (Tools 357..368 | Live Lean 4 QED) */}
             <div style={{ background: "#071412", border: "1.5px solid #00E5A0", borderRadius: 5, padding: "7px 10px", marginBottom: 8 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 6, marginBottom: 5 }}>
                 <span style={{ color: "#00E5A0", fontWeight: "bold", fontSize: 10.5 }}>
-                  [v73.2.2 SOVEREIGN HARMONIC XI (SH-XI) WEEKS 1 &amp; 2 — 3-SHELL MATRYOSHKA (384D/768D) + 16/256 SPARSE MOE + CHATML SFT + WGSL RAG (TOOLS 357..368 | 1,010/1,010 QED)]:
+                  [{liveReleaseLabel(tel.release_version, vesperTelemetrySource === "UNMEASURED/OFFLINE")} SOVEREIGN HARMONIC XI (SH-XI) WEEKS 1 &amp; 2 — 3-SHELL MATRYOSHKA (384D/768D) + 16/256 SPARSE MOE + CHATML SFT + WGSL RAG (TOOLS 357..368 | {liveLeanBadge(tel.lean4_theorems_qed, vesperTelemetrySource === "UNMEASURED/OFFLINE", tel.lean4_qed, false).toUpperCase()})]:
                 </span>
                 <span style={{ color: "#FFB454", fontSize: 9.5, fontWeight: "bold" }}>
-                  PromptGradNorm = 0.0 | Run T368 (CHAIN 368) for Live BPB / IFEval / FSM Metrics
+                  PromptGradNorm = 0.0 | Run T368 (SH-XI Cert) for Live BPB / IFEval / FSM Metrics
                 </span>
               </div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
@@ -11728,7 +11863,7 @@ export function App() {
                 <button onClick={() => callEndpoint(`/api/v1/sovereign_harmonic/xi/week2/igpu_grounded_rag?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 365: SH-XI INTEL UHD 384D WGSL GROUNDED RAG")} style={{ background: "#091F2C", color: "#00E5FF", border: "1px solid #00E5FF", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>🔎 T365: 384D WGSL RAG</button>
                 <button onClick={() => callEndpoint("/api/v1/sovereign_harmonic/xi/week2/fsm_json_tool", "TOOL 366: SH-XI DETERMINISTIC JSON FSM GRAMMAR CALLER")} style={{ background: "#2B2100", color: "#FFEA00", border: "1px solid #FFEA00", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>T366: JSON FSM (100/100)</button>
                 <button onClick={() => callEndpoint("/api/v1/sovereign_harmonic/xi/week2/ifeval_lite_64", "TOOL 367: SH-XI IFEVAL-LITE-64 & MULTI-TURN GAUNTLET")} style={{ background: "#002B24", color: "#00FFCC", border: "1px solid #00FFCC", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>✅ T367: IFEval-Lite 64/64</button>
-                <button onClick={() => callEndpoint("/api/v1/chain368/master_certification", "TOOL 368: CHAIN 368 MASTER CERTIFICATION (TOOLS 1..404 & 1,010/1,010 QED)")} style={{ background: "#FFD700", color: "#050A0E", border: "none", borderRadius: 4, padding: "4px 8px", cursor: "pointer", fontFamily: "monospace", fontSize: 9.5, fontWeight: "bold" }}>👑 T368: CHAIN 404 (1,010 QED)</button>
+                <button onClick={() => callEndpoint("/api/v1/chain368/master_certification", "TOOL 368: SH-XI MASTER CERTIFICATION")} style={{ background: "#FFD700", color: "#050A0E", border: "none", borderRadius: 4, padding: "4px 8px", cursor: "pointer", fontFamily: "monospace", fontSize: 9.5, fontWeight: "bold" }}>👑 T368: SH-XI CERT ({liveLeanBadge(tel.lean4_theorems_qed, vesperTelemetrySource === "UNMEASURED/OFFLINE", tel.lean4_qed, false)})</button>
               </div>
             </div>
 
@@ -11971,7 +12106,7 @@ export function App() {
             <div style={{ background: "#0A0D12", border: "1px solid #2A3B4D", borderRadius: 4, padding: 6, marginBottom: 6, fontSize: 10.5 }}>
               <div style={{ color: "#FFFEFB" }}>&gt; PROMPT: {cmdPrompt}</div>
               <div style={{ color: "#FFB454", marginTop: 2 }}>
-                [SH4Z v7321 (16.00 MiB Bijected / 15.965 Hz Decadic Epoch HUD)]: Work-Stealing={tel.ws_loq_lines}+{tel.ws_p10_lines}+{tel.ws_p8_lines}=2,080 Lines ({tel.cluster_total_kops.toFixed(1)}k ops/s) -- 1,010/1,010 Lean 4 QED -- 84,480 Neurons (1,920x Chair44, 4,055,040 Synapses, 262,144 CLs) -- SH-XI 3-Shell + 16/256 MoE -- OmegaLang v16 (535.73 TOPS / 4.235 POPS) -- Tools 1..404 (CHAIN 404 Suite) -- PPL={e8LeechState.holdout_ppl > 0 ? e8LeechState.holdout_ppl.toFixed(6) : "UNMEASURED/OFFLINE"}
+                [SH4Z v7321 (16.00 MiB Bijected / 15.965 Hz Decadic Epoch HUD)]: Work-Stealing={tel.ws_loq_lines}+{tel.ws_p10_lines}+{tel.ws_p8_lines}=2,080 Lines ({tel.cluster_total_kops.toFixed(1)}k ops/s) -- {liveLeanBadge(tel.lean4_theorems_qed, vesperTelemetrySource === "UNMEASURED/OFFLINE", tel.lean4_qed, true)} -- 84,480 Neurons (1,920x Chair44, 4,055,040 Synapses, 262,144 CLs) -- SH-XI 3-Shell + 16/256 MoE -- OmegaLang v16 (535.73 TOPS / 4.235 POPS) -- {liveToolsRangeLabel(tel.tools_count, vesperTelemetrySource === "UNMEASURED/OFFLINE")} ({liveChainLabel(tel.tools_count, vesperTelemetrySource === "UNMEASURED/OFFLINE")} Suite) -- PPL={e8LeechState.holdout_ppl > 0 ? e8LeechState.holdout_ppl.toFixed(6) : "UNMEASURED/OFFLINE"}
               </div>
               <div style={{ color: "#56D364", marginTop: 2 }}>&gt; OUTPUT: {termOut}</div>
             </div>
@@ -11981,7 +12116,7 @@ export function App() {
               <button onClick={() => callEndpoint(`/api/v1/converse/multiturn_memory?q=${encodeURIComponent(cmdPrompt)}`, "MULTI-TURN MEMORY T73")} style={{ background: "#261038", color: "#FFD700", border: "1px solid #FFD700", borderRadius: 4, padding: "4px 10px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>MEMORY (T73)</button>
               <button onClick={() => callEndpoint(`/api/v1/converse/dialectical_debate?q=${encodeURIComponent(cmdPrompt)}`, "SOCRATIC DEBATE T74")} style={{ background: "#002B24", color: "#00FFCC", border: "1px solid #00FFCC", borderRadius: 4, padding: "4px 10px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>DEBATE (T74)</button>
               <button onClick={() => callEndpoint(`/api/v1/agent_gateway/interact?agent_id=hud&q=${encodeURIComponent(cmdPrompt)}`, "EXECUTE PROMPT")} style={{ background: "#1C2632", color: "#FFFEFB", border: "1px solid #FFB454", borderRadius: 4, padding: "4px 12px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>EXECUTE</button>
-              <button onClick={() => callEndpoint("/api/v1/tools/t404", "CHAIN 404: MASTER CERT")} style={{ background: "#00E5A0", color: "#050A0E", border: "none", borderRadius: 4, padding: "4px 12px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>CHAIN 404</button><button onClick={() => callEndpoint("/api/v1/chain368/master_certification", "CHAIN 368: MASTER CERT")} style={{ background: "#14262E", color: "#00FFCC", border: "1px solid #00FFCC", borderRadius: 4, padding: "4px 10px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>CHAIN 368</button>
+              <button onClick={() => callEndpoint("/api/v1/tools/t404", "CHAIN 404: MASTER CERT")} style={{ background: "#00E5A0", color: "#050A0E", border: "none", borderRadius: 4, padding: "4px 12px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>CHAIN 404</button><button onClick={() => callEndpoint("/api/v1/chain368/master_certification", "T368: SH-XI MASTER CERT")} style={{ background: "#14262E", color: "#00FFCC", border: "1px solid #00FFCC", borderRadius: 4, padding: "4px 10px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>T368 CERT</button>
               <button onClick={() => callEndpoint("/api/v1/chain210/suite", "CHAIN 210: OMNI-SUITE")} style={{ background: "#00FFCC", color: "#050A0E", border: "none", borderRadius: 4, padding: "4px 12px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>CHAIN 210</button>
               <button onClick={() => callEndpoint("/api/v1/harmonic/tool_chain?q=chain89_parallel_dag", "CHAIN 89")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 12px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>CHAIN 89</button>
               <button onClick={() => setTermOut("READY.")} style={{ background: "#1C2632", color: "#FFFEFB", border: "1px solid #2A3B4D", borderRadius: 4, padding: "4px 10px", cursor: "pointer", fontSize: 10.5 }}>CLEAR</button>
@@ -12048,7 +12183,7 @@ export function App() {
                 [
                   { id: "calm", label: "Calm (Chat)", rail: "Chat" },
                   { id: "hud", label: "HUD (Engineer Mode)", rail: "HUD" },
-                  { id: "proof", label: "Proof Sheet (1,010 QED)", rail: "Proofs" },
+                  { id: "proof", label: `Proof Sheet (${liveLeanBadge(tel.lean4_theorems_qed, vesperTelemetrySource === "UNMEASURED/OFFLINE", tel.lean4_qed, false)})`, rail: "Proofs" },
                   { id: "vault", label: "Vault (16.00 MiB)", rail: "Vault" },
                   { id: "tools", label: "Tools (CHAIN 404)", rail: "Tools" },
                   { id: "settings", label: "Settings & CLS 0.00", rail: "Settings" },
@@ -12097,11 +12232,11 @@ export function App() {
             />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 6, maxHeight: 340, overflowY: "auto" }}>
               {[
-                { label: "CHAIN 404: v73.2.2 Unified Lab, Cloudflare VPC Mesh & Hyperdrive, Two-Phase Q8_0 Matryoshka Master Certification (Tools 1..404 & 1,010/1,010 Lean 4 QED)", ep: "/api/v1/tools/t404" },
+                { label: `CHAIN 404: ${liveReleaseLabel(tel.release_version, vesperTelemetrySource === "UNMEASURED/OFFLINE")} Unified Lab, Cloudflare VPC Mesh & Hyperdrive, Two-Phase Q8_0 Matryoshka Master Certification (${liveToolsRangeLabel(tel.tools_count, vesperTelemetrySource === "UNMEASURED/OFFLINE")} & ${liveLeanBadge(tel.lean4_theorems_qed, vesperTelemetrySource === "UNMEASURED/OFFLINE", tel.lean4_qed, true)})`, ep: "/api/v1/tools/t404" },
                 { label: "T400: Cloudflare VPC Service Registry Probe (4/4 Targets Online)", ep: "/api/v1/tools/t400" },
                 { label: "T403: Cloudflare Hyperdrive DuckDB Query (:5439 PGWire TLS)", ep: "/api/v1/tools/t403" },
                 { label: "CHAIN 399: Nov 12-15 Research Kernels (T382..T393)", ep: "/api/v1/chain399/master_certification" },
-                { label: "CHAIN 368: v73.2.2 Sovereign Harmonic XI Weeks 1–2 Master Certification (Tools 1..404 & 1,010/1,010 Lean 4 QED)", ep: "/api/v1/chain368/master_certification" },
+                { label: `Tool 368: ${liveReleaseLabel(tel.release_version, vesperTelemetrySource === "UNMEASURED/OFFLINE")} Sovereign Harmonic XI Weeks 1–2 Master Certification (${liveLeanBadge(tel.lean4_theorems_qed, vesperTelemetrySource === "UNMEASURED/OFFLINE", tel.lean4_qed, true)})`, ep: "/api/v1/chain368/master_certification" },
                 { label: "Tool 367: SH-XI Week 2 IFEval-Lite-64 (64/64) & 8-Session Multi-Turn Coherence Gauntlet", ep: "/api/v1/sovereign_harmonic/xi/week2/ifeval_lite_64" },
                 { label: "Tool 366: SH-XI Week 2 Deterministic JSON FSM Grammar-Constrained Tool Caller (100/100)", ep: "/api/v1/sovereign_harmonic/xi/week2/fsm_json_tool" },
                 { label: "Tool 365: SH-XI Week 2 Intel UHD WebGPU WGSL 384D Grounded RAG Engine", ep: "/api/v1/sovereign_harmonic/xi/week2/igpu_grounded_rag" },
@@ -12161,7 +12296,7 @@ export function App() {
                 { label: "Tool 287: Vesper-Arachne E8 IK & Click-Through Gate", ep: "/api/v1/vesper_arachne/ik_swarm_companion" },
                 { label: "COORDINATOR: 5-Stage Autopoietic DAG + E:\\ Codegen Write-Back", ep: `/api/v1/coordinator/dag_orchestrator?q=${encodeURIComponent(cmdPrompt)}` },
                 { label: "TOOL 90: v48 Layer 1.5 GHC Haskell Exact Rational Algebra & Codegen", ep: `/api/v1/v48/haskell_layer15_algebra?q=${encodeURIComponent(cmdPrompt)}` },
-                { label: "TOOL 13: Verify All 1,010/1,010 Lean 4 Formal Proofs QED", ep: "/api/v1/compiler/verify" }
+                { label: `TOOL 13: Verify All ${liveLeanBadge(tel.lean4_theorems_qed, vesperTelemetrySource === "UNMEASURED/OFFLINE", tel.lean4_qed, true)}`, ep: "/api/v1/compiler/verify" }
               ]
                 .filter((item) => !cmdPaletteFilter.trim() || item.label.toLowerCase().includes(cmdPaletteFilter.toLowerCase()))
                 .map((item) => (
@@ -12224,7 +12359,7 @@ export function App() {
               <div style={{ marginTop: 4, color: "#A7B8B2" }}>
                 {vesperTelemetrySource === "UNMEASURED/OFFLINE"
                   ? "Local UI active. :8097 L0 daemon is currently UNMEASURED/OFFLINE."
-                  : `CLS 0.00 locked · 15.965 Hz Gen #${tel.generation} · 1,010/1,010 Lean 4 QED.`}
+                  : `CLS 0.00 locked · 15.965 Hz Gen #${tel.generation} · ${liveLeanBadge(tel.lean4_theorems_qed, false, tel.lean4_qed, true)}.`}
               </div>
               <button
                 type="button"
@@ -12347,10 +12482,10 @@ export function App() {
           <div style={{ background: "#101822", borderBottom: "1px solid #2A3B4D", padding: "10px 14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div>
               <div style={{ color: "#00FFCC", fontWeight: "bold", fontSize: 12.5 }}>
-                ACT-OMEGA v73.2.2 OPERATOR MANUAL &amp; STEP-BY-STEP GUIDE (SH-XI MoE | CHAIN 404 | 1,010 QED)
+                ACT-OMEGA {liveReleaseLabel(tel.release_version, vesperTelemetrySource === "UNMEASURED/OFFLINE")} OPERATOR MANUAL &amp; STEP-BY-STEP GUIDE (SH-XI MoE | {liveChainLabel(tel.tools_count, vesperTelemetrySource === "UNMEASURED/OFFLINE")} | {liveLeanBadge(tel.lean4_theorems_qed, vesperTelemetrySource === "UNMEASURED/OFFLINE", tel.lean4_qed, false)})
               </div>
               <div style={{ color: "#9FB0C2", fontSize: 10, marginTop: 2 }}>
-                Live Status: <b style={{ color: "#56D364" }}>ONLINE ({tel.cluster_total_kops.toFixed(1)}k ops/s)</b> | 84,480N (4.05M Synapses / 262,144 CLs) | 1,010/1,010 QED | Tools 1..404 (v73.2.2)
+                Live Status: <b style={{ color: vesperTelemetrySource === "UNMEASURED/OFFLINE" ? "#FF9B6B" : "#56D364" }}>{vesperTelemetrySource === "UNMEASURED/OFFLINE" ? "UNMEASURED/OFFLINE" : `ONLINE (${tel.cluster_total_kops.toFixed(1)}k ops/s)`}</b> | 84,480N (4.05M Synapses / 262,144 CLs) | {liveLeanBadge(tel.lean4_theorems_qed, vesperTelemetrySource === "UNMEASURED/OFFLINE", tel.lean4_qed, false)} | {liveToolsRangeLabel(tel.tools_count, vesperTelemetrySource === "UNMEASURED/OFFLINE")} ({liveReleaseLabel(tel.release_version, vesperTelemetrySource === "UNMEASURED/OFFLINE")})
               </div>
             </div>
             <button
@@ -12520,11 +12655,11 @@ export function App() {
             {(helpSection === "CLOUD_D1" || helpSearch.trim() !== "") && (
               <div style={{ background: "#0D141D", border: "1px solid #FFEA00", borderRadius: 6, padding: "10px 12px", marginBottom: 10 }}>
                 <div style={{ color: "#FFEA00", fontWeight: "bold", fontSize: 11.5, marginBottom: 6 }}>
-                  5. CLOUDFLARE D1 (10 TABLES), GITHUB 3-BRANCH &amp; G:\ DRIVE MIRROR
+                  5. CLOUDFLARE D1 (11 USER TABLES), GITHUB 4-BRANCH &amp; G:\ DRIVE MIRROR
                 </div>
                 <div style={{ marginBottom: 6 }}>
-                  <b>• Remote 5 GB Cloudflare D1 (`act_omega_d1_vault`):</b><br />
-                  Synchronizes 10 tables (`harness_5w1h_audit_log`, `npage_tier_snapshots`, `wal_merkle_checkpoints`, `v40_qat_training_sessions`, `v40_shard_registry`, `v41_measured_sha256_audit`, `v42_5w1h_distributed_routes`, `v43_antigravity_agent_roster`, `v44_omni_manifold_snapshots`, `v44_webgpu_compute_leases`).
+                  <b>• Remote 5 GB Cloudflare D1 (`act_omega_d1_vault_v7322`):</b><br />
+                  Synchronizes 11 user tables (`edge_cluster_metadata`, `harness_5w1h_audit_log`, `npage_tier_snapshots`, `v40_qat_training_sessions`, `v40_shard_registry`, `v41_measured_sha256_audit`, `v42_5w1h_distributed_routes`, `v43_antigravity_agent_roster`, `v44_multiturn_working_memory_ring`, `v44_visiting_llm_agent_ledger`, `wal_merkle_checkpoints`) + 2 SQLite/CF system tables (`_cf_KV`, `sqlite_sequence`).
                 </div>
                 <div style={{ marginBottom: 8 }}>
                   <b>• External SSD (`E:\`) &amp; Google Drive (`G:\My Drive\ACT_OMEGA_GEMINI_BRIDGE`):</b><br />
@@ -12532,7 +12667,7 @@ export function App() {
                 </div>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                   <button onClick={() => callEndpoint("/api/v1/tools/t55", "MANUAL: SYNC G:\\ DRIVE BRIDGE")} style={{ background: "#FFEA00", color: "#050A0E", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>SYNC G:\ DRIVE BRIDGE (T55)</button>
-                  <button onClick={() => callEndpoint("/api/v1/manifold/v44_omni_snapshot", "MANUAL: SYNC 10-TABLE D1 SNAPSHOT")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>SYNC 10-TABLE CLOUDFLARE D1 (T76)</button>
+                  <button onClick={() => callEndpoint("/api/v1/manifold/v44_omni_snapshot", "MANUAL: SYNC 11-TABLE D1 SNAPSHOT")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>SYNC 11-TABLE CLOUDFLARE D1 (T76)</button>
                 </div>
               </div>
             )}
@@ -12665,7 +12800,7 @@ export function App() {
             whiteSpace: "nowrap"
           }}
         >
-          CHAIN 404 (1,010 QED)
+          {liveChainLabel(tel.tools_count, vesperTelemetrySource === "UNMEASURED/OFFLINE")} ({liveLeanBadge(tel.lean4_theorems_qed, vesperTelemetrySource === "UNMEASURED/OFFLINE", tel.lean4_qed, false)})
         </button>
       </div>
 
@@ -12682,6 +12817,10 @@ export function App() {
           }
         }}
         onCallEndpoint={(ep, desc) => callEndpoint(ep, desc)}
+        telemetrySource={vesperTelemetrySource}
+        lean4TheoremsQed={tel.lean4_theorems_qed}
+        lean4Qed={tel.lean4_qed}
+        toolsCount={tel.tools_count}
       />
     </div>
   );

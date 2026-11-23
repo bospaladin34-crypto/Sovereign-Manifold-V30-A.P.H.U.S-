@@ -1,5 +1,5 @@
 # C:\sovereign_manifold_v31\00_control\Sovereign-Lifecycle.ps1
-# ACT-Omega Net v73.2.2 (SH4Z v7321 TLV | CHAIN 404 | 1,010/1,010 Lean 4 QED) -- Unified Safe Cluster Start / Stop / Handover / Verify / Status Controller
+# ACT-Omega Net v73.2.3 (SH4Z v7321 TLV | CHAIN 404 | Live Lean 4 Formal QED) -- Unified Safe Cluster Start / Stop / Handover / Verify / Status Controller
 param(
     [ValidateSet("start", "stop", "stop-all", "restart", "status", "handover", "verify")]
     [string]$Action = "status",
@@ -228,7 +228,7 @@ function Invoke-SovereignContinuumHandover {
     }
     try {
         $cfHandover = Invoke-RestMethod -Uri "https://act-omega-net.dev/api/v1/continuum/handover?node=host_loq15&host_state=$HandoverMode&temp=$rtxT" -Headers $cfHeaders -TimeoutSec 5
-        Write-Host "  [3/3] Armed Cloudflare Edge DO & 10-Table D1 Continuum Relay ($($cfHandover.status))" -ForegroundColor Green
+        Write-Host "  [3/3] Armed Cloudflare Edge DO & 11-User-Table D1 Continuum Relay ($($cfHandover.status))" -ForegroundColor Green
     } catch {
         Write-Host "  [3/3] Local Continuum Handover armed (WAN offline)" -ForegroundColor Yellow
     }

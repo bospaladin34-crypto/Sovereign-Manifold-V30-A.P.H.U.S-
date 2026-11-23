@@ -4,12 +4,27 @@ param(
     [switch]$StaticOnly,
     [switch]$TestNegativeCloudflareInjection,
     [switch]$TestNegativePixelSerialInjection,
+    [switch]$TestNegativeTelemetryKeyInjection,
     [string]$RepoPath = "",
     [string[]]$ExtraFilesToScan = @(),
     [string]$LeanOverridePath = ""
 )
 
 $ErrorActionPreference = "Stop"
+
+$normalizedExtra = New-Object System.Collections.Generic.List[string]
+foreach ($efRaw in $ExtraFilesToScan) {
+    if ([string]::IsNullOrWhiteSpace($efRaw)) { continue }
+    if (-not (Test-Path $efRaw -PathType Leaf) -and $efRaw -match ',') {
+        foreach ($part in ($efRaw -split ',')) {
+            $pTrim = $part.Trim()
+            if (-not [string]::IsNullOrWhiteSpace($pTrim)) { $normalizedExtra.Add($pTrim) }
+        }
+    } else {
+        $normalizedExtra.Add($efRaw.Trim())
+    }
+}
+$ExtraFilesToScan = $normalizedExtra.ToArray()
 
 # Dynamic $RepoRoot resolution: -RepoPath -> $env:GITHUB_WORKSPACE -> $PSScriptRoot\.. -> fallback
 $RepoRoot = if ($RepoPath -and (Test-Path $RepoPath)) {
@@ -171,38 +186,73 @@ function Test-CloudflareIdLeakScan {
         }
     }
 
-    # 2. Scan any extra fixture files (e.g. negative-injection test fixtures)
-    foreach ($ef in $ExtraFiles) {
-        if (-not $ef -or -not (Test-Path $ef -PathType Leaf)) { continue }
-        $efText = [System.IO.File]::ReadAllText($ef)
-        foreach ($kv in $activeVals.GetEnumerator()) {
-            if ($efText.IndexOf($kv.Value, [System.StringComparison]::OrdinalIgnoreCase) -ge 0) {
-                $cfViolations.Add("CF_ACTIVE_ID_LEAK: Key '$($kv.Key)' matched in extra scan file '$ef'")
+    # 2. Scan untracked non-ignored files, built dist/docs/assets bundles, and ExtraFiles
+    $candidatePaths = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+    $extraSet = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+    $skipBundleExts = @('.apk', '.exe', '.png', '.jpg', '.jpeg', '.gif', '.webp', '.ico', '.woff2')
+
+    $untrackedFiles = @(git -C $RootPath ls-files --others --exclude-standard 2>$null)
+    foreach ($ufRel in $untrackedFiles) {
+        $ufFull = Join-Path $RootPath ($ufRel -replace '/', '\')
+        if (Test-Path $ufFull -PathType Leaf) { [void]$candidatePaths.Add($ufFull) }
+    }
+    foreach ($bundleDir in @(
+        "$RootPath\05_hud_cockpit\dist",
+        "$RootPath\02_l2_orchestration\hud\dist",
+        "$RootPath\docs",
+        "$RootPath\assets"
+    )) {
+        if (Test-Path $bundleDir) {
+            Get-ChildItem -Path $bundleDir -Recurse -File -ErrorAction SilentlyContinue | ForEach-Object {
+                if ($_.Extension -notin $skipBundleExts) {
+                    [void]$candidatePaths.Add($_.FullName)
+                }
             }
         }
-        $efSeen = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
-        foreach ($m in $uuidHexRegex.Matches($efText)) {
+    }
+    foreach ($ef in $ExtraFiles) {
+        if ($ef -and (Test-Path $ef -PathType Leaf)) {
+            [void]$candidatePaths.Add($ef)
+            [void]$extraSet.Add($ef)
+        }
+    }
+
+    foreach ($cp in $candidatePaths) {
+        $item = Get-Item $cp -ErrorAction SilentlyContinue
+        if (-not $item -or $item.Length -gt 20MB) { continue }
+        $isExtra = $extraSet.Contains($cp)
+        if (-not $isExtra -and ($item.Extension -in $skipBundleExts)) { continue }
+        $cpText = [System.IO.File]::ReadAllText($cp)
+        foreach ($kv in $activeVals.GetEnumerator()) {
+            if ($cpText.IndexOf($kv.Value, [System.StringComparison]::OrdinalIgnoreCase) -ge 0) {
+                $cfViolations.Add("CF_ACTIVE_ID_LEAK: Key '$($kv.Key)' matched in '$cp'")
+            }
+        }
+        $cpSeen = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+        foreach ($m in $uuidHexRegex.Matches($cpText)) {
             $tok = $m.Value.ToLowerInvariant()
-            if (-not $efSeen.Add($tok)) { continue }
+            if (-not $cpSeen.Add($tok)) { continue }
             $hashHex = ([System.BitConverter]::ToString($sha256.ComputeHash($utf8NoBom.GetBytes($tok))) -replace '-', '').ToLowerInvariant()
             if ($retiredHashes.Contains($hashHex)) {
-                $cfViolations.Add("CF_RETIRED_ID_SHA256_LEAK: Retired CF ID sha256=$($hashHex.Substring(0,16))... found in extra scan file '$ef'")
+                $cfViolations.Add("CF_RETIRED_ID_SHA256_LEAK: Retired CF ID sha256=$($hashHex.Substring(0,16))... found in '$cp'")
             } else {
                 foreach ($pref in $retiredPrefixes) {
                     if ($tok.StartsWith($pref)) {
-                        $cfViolations.Add("CF_RETIRED_ID_PREFIX_LEAK: Retired CF ID prefix matched in extra scan file '$ef'")
+                        $cfViolations.Add("CF_RETIRED_ID_PREFIX_LEAK: Retired CF ID prefix matched in '$cp'")
                     }
                 }
             }
         }
-        if ($efText -match '(?mi)^\s*account_id\s*=\s*"[0-9a-f]{32}"') {
-            $cfViolations.Add("CF_WRANGLER_LITERAL_HEX_LEAK: $ef contains literal 32-hex account_id")
-        }
-        if ($efText -match '(?mi)^\s*database_id\s*=\s*"[0-9a-f-]{36}"') {
-            $cfViolations.Add("CF_WRANGLER_LITERAL_HEX_LEAK: $ef contains literal 36-char UUID database_id")
-        }
-        if ($efText -match '(?mi)^\s*id\s*=\s*"[0-9a-f]{32}"') {
-            $cfViolations.Add("CF_WRANGLER_LITERAL_HEX_LEAK: $ef contains literal 32-hex id")
+        if ($isExtra -or ($item.Name -match '^wrangler[^/\\]*\.toml$')) {
+            if ($cpText -match '(?mi)^\s*account_id\s*=\s*"[0-9a-f]{32}"') {
+                $cfViolations.Add("CF_WRANGLER_LITERAL_HEX_LEAK: $cp contains literal 32-hex account_id")
+            }
+            if ($cpText -match '(?mi)^\s*database_id\s*=\s*"[0-9a-f-]{36}"') {
+                $cfViolations.Add("CF_WRANGLER_LITERAL_HEX_LEAK: $cp contains literal 36-char UUID database_id")
+            }
+            if ($cpText -match '(?mi)^\s*id\s*=\s*"[0-9a-f]{32}"') {
+                $cfViolations.Add("CF_WRANGLER_LITERAL_HEX_LEAK: $cp contains literal 32-hex id")
+            }
         }
     }
 
@@ -264,31 +314,18 @@ function Test-PixelSerialLeakScan {
             }
         }
 
-        # 2. Scan untracked non-ignored files in workspace for active Pixel serials
-        $untrackedFiles = @(git -C $RootPath ls-files --others --exclude-standard 2>$null)
-        foreach ($ufRel in $untrackedFiles) {
-            $ufFull = Join-Path $RootPath ($ufRel -replace '/', '\')
-            if (-not (Test-Path $ufFull -PathType Leaf)) { continue }
-            $item = Get-Item $ufFull
-            if ($item.Length -gt 20MB) { continue }
-            $ufText = [System.IO.File]::ReadAllText($ufFull)
-            foreach ($kv in $activeSerials.GetEnumerator()) {
-                if ($ufText.IndexOf($kv.Value, [System.StringComparison]::Ordinal) -ge 0) {
-                    $pxViolations.Add("PIXEL_ACTIVE_SERIAL_LEAK: Role '$($kv.Key)' serial matched in untracked file '$ufRel'")
-                }
-            }
-        }
-
-        # 3. Scan retired SHA-256 hashes across tracked text files (alphanumeric serial-like tokens 10..20 chars)
+        # 2. Scan retired SHA-256 hashes across tracked text files (alphanumeric serial-like tokens 10..20 chars)
+        $retArr = [string[]]@($retiredHashes)
         if ($retiredHashes.Count -gt 0) {
-            $candTokens = @(git -C $RootPath grep -h -I -o -E '\b[0-9A-Za-z]{10,20}\b' 2>$null)
             if (-not ('SovereignBatchShaMatcher' -as [type])) {
                 Add-Type -TypeDefinition @"
 using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 public static class SovereignBatchShaMatcher {
+    private static readonly Regex TokenRx = new Regex(@"\b[0-9A-Za-z]{10,20}\b", RegexOptions.Compiled);
     public static List<string> FindMatches(string[] tokens, string[] retiredHashesHex) {
         var retSet = new HashSet<string>(retiredHashesHex, StringComparer.OrdinalIgnoreCase);
         var seen = new HashSet<string>(StringComparer.Ordinal);
@@ -309,10 +346,30 @@ public static class SovereignBatchShaMatcher {
         }
         return hits;
     }
+    public static List<string> FindMatchesInText(string content, string[] retiredHashesHex) {
+        var retSet = new HashSet<string>(retiredHashesHex, StringComparer.OrdinalIgnoreCase);
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        var hits = new List<string>();
+        if (string.IsNullOrEmpty(content)) return hits;
+        using (var sha = SHA256.Create()) {
+            foreach (Match m in TokenRx.Matches(content)) {
+                var tok = m.Value;
+                if (!seen.Add(tok)) continue;
+                var hash = sha.ComputeHash(Encoding.UTF8.GetBytes(tok));
+                var sb = new StringBuilder(64);
+                for (int i = 0; i < hash.Length; i++) sb.Append(hash[i].ToString("x2"));
+                var hHex = sb.ToString();
+                if (retSet.Contains(hHex)) {
+                    hits.Add(tok + "|" + hHex);
+                }
+            }
+        }
+        return hits;
+    }
 }
 "@
             }
-            $retArr = [string[]]@($retiredHashes)
+            $candTokens = @(git -C $RootPath grep -h -I -o -E '\b[0-9A-Za-z]{10,20}\b' 2>$null)
             $hits = [SovereignBatchShaMatcher]::FindMatches($candTokens, $retArr)
             foreach ($hit in $hits) {
                 $parts = $hit.Split('|', 2)
@@ -323,24 +380,54 @@ public static class SovereignBatchShaMatcher {
             }
         }
 
-        # 4. Scan any extra fixture files (for negative-injection self-tests)
+        # 3. Scan untracked non-ignored files, built dist/docs/assets bundles, and ExtraFiles (active + retired SHA-256)
+        $candidatePaths = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+        $extraSet = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+        $skipBundleExts = @('.apk', '.exe', '.png', '.jpg', '.jpeg', '.gif', '.webp', '.ico', '.woff2')
+
+        $untrackedFiles = @(git -C $RootPath ls-files --others --exclude-standard 2>$null)
+        foreach ($ufRel in $untrackedFiles) {
+            $ufFull = Join-Path $RootPath ($ufRel -replace '/', '\')
+            if (Test-Path $ufFull -PathType Leaf) { [void]$candidatePaths.Add($ufFull) }
+        }
+        foreach ($bundleDir in @(
+            "$RootPath\05_hud_cockpit\dist",
+            "$RootPath\02_l2_orchestration\hud\dist",
+            "$RootPath\docs",
+            "$RootPath\assets"
+        )) {
+            if (Test-Path $bundleDir) {
+                Get-ChildItem -Path $bundleDir -Recurse -File -ErrorAction SilentlyContinue | ForEach-Object {
+                    if ($_.Extension -notin $skipBundleExts) {
+                        [void]$candidatePaths.Add($_.FullName)
+                    }
+                }
+            }
+        }
         foreach ($ef in $ExtraFiles) {
-            if (-not $ef -or -not (Test-Path $ef -PathType Leaf)) { continue }
-            $efText = [System.IO.File]::ReadAllText($ef)
+            if ($ef -and (Test-Path $ef -PathType Leaf)) {
+                [void]$candidatePaths.Add($ef)
+                [void]$extraSet.Add($ef)
+            }
+        }
+
+        foreach ($cp in $candidatePaths) {
+            $item = Get-Item $cp -ErrorAction SilentlyContinue
+            if (-not $item -or $item.Length -gt 20MB) { continue }
+            $isExtra = $extraSet.Contains($cp)
+            if (-not $isExtra -and ($item.Extension -in $skipBundleExts)) { continue }
+            $cpText = [System.IO.File]::ReadAllText($cp)
             foreach ($kv in $activeSerials.GetEnumerator()) {
-                if ($efText.IndexOf($kv.Value, [System.StringComparison]::Ordinal) -ge 0) {
-                    $pxViolations.Add("PIXEL_ACTIVE_SERIAL_LEAK: Role '$($kv.Key)' serial matched in extra scan file '$ef'")
+                if ($cpText.IndexOf($kv.Value, [System.StringComparison]::Ordinal) -ge 0) {
+                    $pxViolations.Add("PIXEL_ACTIVE_SERIAL_LEAK: Role '$($kv.Key)' serial matched in '$cp'")
                 }
             }
             if ($retiredHashes.Count -gt 0) {
-                $efSeen = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::Ordinal)
-                foreach ($m in [regex]::Matches($efText, '\b[0-9A-Za-z]{10,20}\b')) {
-                    $tok = $m.Value
-                    if (-not $efSeen.Add($tok)) { continue }
-                    $hHex = ([System.BitConverter]::ToString($sha256.ComputeHash($utf8NoBom.GetBytes($tok))) -replace '-', '').ToLowerInvariant()
-                    if ($retiredHashes.Contains($hHex)) {
-                        $pxViolations.Add("PIXEL_RETIRED_SERIAL_SHA256_LEAK: Retired serial sha256=$($hHex.Substring(0,16))... found in extra scan file '$ef'")
-                    }
+                $cpHits = [SovereignBatchShaMatcher]::FindMatchesInText($cpText, $retArr)
+                foreach ($hit in $cpHits) {
+                    $parts = $hit.Split('|', 2)
+                    $hHex = $parts[1]
+                    $pxViolations.Add("PIXEL_RETIRED_SERIAL_SHA256_LEAK: Retired serial sha256=$($hHex.Substring(0,16))... found in '$cp'")
                 }
             }
         }
@@ -349,6 +436,138 @@ public static class SovereignBatchShaMatcher {
     }
 
     return ,$pxViolations
+}
+
+function Test-SovereignKeyLeakScan {
+    param(
+        [string]$RootPath,
+        [string[]]$ExtraFiles = @(),
+        [string]$OperatorKeyOverridePath = "",
+        [string]$TelemetryKeyOverridePath = ""
+    )
+    $secViolations = New-Object System.Collections.Generic.List[string]
+    $retiredLiteral = "SOVEREIGN" + "-LOQ15-4200"
+
+    $opKeyPath = if ($OperatorKeyOverridePath) {
+        $OperatorKeyOverridePath
+    } elseif (Test-Path "C:\Users\Nbell\.act_omega_operator_vault_key") {
+        "C:\Users\Nbell\.act_omega_operator_vault_key"
+    } elseif ($env:USERPROFILE -and (Test-Path "$env:USERPROFILE\.act_omega_operator_vault_key")) {
+        "$env:USERPROFILE\.act_omega_operator_vault_key"
+    } else {
+        ""
+    }
+    $opKey = ""
+    if (-not $opKeyPath -or -not (Test-Path $opKeyPath -PathType Leaf)) {
+        $secViolations.Add("OPERATOR_KEY_MISSING: External operator vault key file not found")
+    } else {
+        $opKey = ([System.IO.File]::ReadAllText($opKeyPath)).Trim()
+        if ($opKey.Length -lt 24) {
+            $secViolations.Add("OPERATOR_KEY_MISSING: External operator vault key is shorter than 24 characters")
+            $opKey = ""
+        }
+    }
+
+    $telKeyPath = if ($TelemetryKeyOverridePath) {
+        $TelemetryKeyOverridePath
+    } elseif (Test-Path "C:\Users\Nbell\.act_omega_telemetry_ingest_key") {
+        "C:\Users\Nbell\.act_omega_telemetry_ingest_key"
+    } elseif ($env:USERPROFILE -and (Test-Path "$env:USERPROFILE\.act_omega_telemetry_ingest_key")) {
+        "$env:USERPROFILE\.act_omega_telemetry_ingest_key"
+    } else {
+        ""
+    }
+    $telKey = ""
+    if (-not $telKeyPath -or -not (Test-Path $telKeyPath -PathType Leaf)) {
+        $secViolations.Add("TELEMETRY_KEY_MISSING: External telemetry ingest key file not found")
+    } else {
+        $telKey = ([System.IO.File]::ReadAllText($telKeyPath)).Trim()
+        if ($telKey.Length -lt 24) {
+            $secViolations.Add("TELEMETRY_KEY_MISSING: External telemetry ingest key is shorter than 24 characters")
+            $telKey = ""
+        }
+    }
+
+    $slot2BackupPath = "F:\ACT_OMEGA_IMMUTABLE_EPOCH_ARCHIVES\YUBIKEY_ROOT_OF_TRUST_BACKUP\SLOT2_HMAC_SHARED_SECRET_FOR_KEY2_CLONING.txt"
+    $slot2SecretHex = ""
+    if (Test-Path $slot2BackupPath) {
+        $m = [regex]::Match((Get-Content $slot2BackupPath -Raw), '(?m)^[0-9a-fA-F]{40}\r?$')
+        if ($m.Success) { $slot2SecretHex = $m.Value.Trim() }
+    }
+
+    $secretSpecs = New-Object System.Collections.Generic.List[object]
+    $secretSpecs.Add([pscustomobject]@{ Code = "SECRET_LEAK_RETIRED"; Label = "Retired passkey literal"; Value = $retiredLiteral; IgnoreCase = $false })
+    if ($opKey.Length -ge 24) {
+        $secretSpecs.Add([pscustomobject]@{ Code = "SECRET_LEAK_ACTIVE"; Label = "Active external operator key"; Value = $opKey; IgnoreCase = $false })
+    }
+    if ($telKey.Length -ge 24) {
+        $secretSpecs.Add([pscustomobject]@{ Code = "SECRET_LEAK_TELEMETRY_KEY"; Label = "Active external telemetry ingest key"; Value = $telKey; IgnoreCase = $false })
+    }
+    if ($slot2SecretHex.Length -eq 40) {
+        $secretSpecs.Add([pscustomobject]@{ Code = "SECRET_LEAK_YUBIKEY_SLOT2"; Label = "YubiKey Slot-2 shared secret"; Value = $slot2SecretHex; IgnoreCase = $true })
+    }
+
+    # 1. Scan ALL tracked files (including binary APKs/EXEs via -a) using git grep
+    $trackedCheck = @(git -C $RootPath ls-files 2>$null)
+    if ($LASTEXITCODE -ne 0 -or $trackedCheck.Count -eq 0) {
+        $secViolations.Add("SECRET_SCAN_GIT_LS_FILES_FAILED: Could not enumerate git ls-files at $RootPath")
+        return ,$secViolations
+    }
+
+    foreach ($spec in $secretSpecs) {
+        $matchedFiles = if ($spec.IgnoreCase) {
+            @(git -C $RootPath grep -a -l -i -F -- $spec.Value 2>$null)
+        } else {
+            @(git -C $RootPath grep -a -l -F -- $spec.Value 2>$null)
+        }
+        $gExit = $LASTEXITCODE
+        if ($gExit -eq 0 -and $matchedFiles.Count -gt 0) {
+            foreach ($mf in $matchedFiles) {
+                $secViolations.Add("$($spec.Code): $($spec.Label) found in tracked file '$mf'")
+            }
+        } elseif ($gExit -gt 1) {
+            $secViolations.Add("SECRET_SCAN_GIT_GREP_ERROR: git grep exited with code $gExit while scanning $($spec.Code)")
+        }
+    }
+
+    # 2. Scan untracked non-ignored files <= 20MB, built dist/docs/assets bundles, and ExtraFiles
+    $candidatePaths = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+    $untrackedFiles = @(git -C $RootPath ls-files --others --exclude-standard 2>$null)
+    foreach ($ufRel in $untrackedFiles) {
+        $ufFull = Join-Path $RootPath ($ufRel -replace '/', '\')
+        if (Test-Path $ufFull -PathType Leaf) { [void]$candidatePaths.Add($ufFull) }
+    }
+    foreach ($bundleDir in @(
+        "$RootPath\05_hud_cockpit\dist",
+        "$RootPath\02_l2_orchestration\hud\dist",
+        "$RootPath\docs",
+        "$RootPath\assets"
+    )) {
+        if (Test-Path $bundleDir) {
+            Get-ChildItem -Path $bundleDir -Recurse -File -ErrorAction SilentlyContinue | ForEach-Object {
+                if ($_.Extension -notin @('.apk', '.exe', '.png', '.jpg', '.ico', '.woff2')) {
+                    [void]$candidatePaths.Add($_.FullName)
+                }
+            }
+        }
+    }
+    foreach ($ef in $ExtraFiles) {
+        if ($ef -and (Test-Path $ef -PathType Leaf)) { [void]$candidatePaths.Add($ef) }
+    }
+
+    foreach ($cp in $candidatePaths) {
+        $item = Get-Item $cp -ErrorAction SilentlyContinue
+        if (-not $item -or $item.Length -gt 20MB) { continue }
+        $content = [System.IO.File]::ReadAllText($cp)
+        foreach ($spec in $secretSpecs) {
+            $cmp = if ($spec.IgnoreCase) { [System.StringComparison]::OrdinalIgnoreCase } else { [System.StringComparison]::Ordinal }
+            if ($content.IndexOf($spec.Value, $cmp) -ge 0) {
+                $secViolations.Add("$($spec.Code): $($spec.Label) found in $cp")
+            }
+        }
+    }
+
+    return ,$secViolations
 }
 
 function Run-StaticGatekeeperChecks {
@@ -422,6 +641,173 @@ function Run-StaticGatekeeperChecks {
         if ($ktTxt -match '/1010\b|1,010/1,010\s+(?:Lean\s+4\s+)?QED|CHAIN 368') {
             $failures.Add("ANDROID_KOTLIN_STALE_STAMP: Static /1010, 1,010/1,010 QED, or CHAIN 368 literal in MainActivity.kt")
         }
+    }
+
+    # 3b. C# Tray/HUD Parity, Extended Stale-Stamp Scan (HUD, C#, Haskell, HTML/Wiki, L0 Rust) & Multi-Target Mirror Parity
+    $csTray = "$RepoRoot\00_control\Win11_Native_Tray_HUD\SovereignTrayAndHud.cs"
+    $csRoot = "$RepoRoot\00_control\SovereignCockpitHUD.cs"
+    if (-not (Test-Path $csTray) -or -not (Test-Path $csRoot)) {
+        $failures.Add("CSHARP_HUD_MISSING: SovereignTrayAndHud.cs or SovereignCockpitHUD.cs missing")
+    } elseif ((Get-FileHash $csTray -Algorithm SHA256).Hash -ne (Get-FileHash $csRoot -Algorithm SHA256).Hash) {
+        $failures.Add("CSHARP_HUD_MIRROR_DRIFT: SovereignTrayAndHud.cs != SovereignCockpitHUD.cs")
+    }
+
+    $staleDisplayPattern = '\b(?:\d{1,4}|\d{1,3},\d{3})\s*/\s*1,?010\b|(?<!\d)/1,?010\b|\b1,?010\s+(?:Lean\s+4\s+|Formal\s+)?(?:QED|Theorems)\b|CHAIN\s+368'
+    $staleD1TablePattern = '10[- ]Table|10\s+TABLES|10/10\s+D1\s+Tables|10\s+D1\s+Tables'
+    $staleScanFiles = New-Object System.Collections.Generic.List[string]
+    $staleScanSet = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+    foreach ($sf in @(
+        "$RepoRoot\05_hud_cockpit\src\App.tsx",
+        "$RepoRoot\02_l2_orchestration\hud\src\App.tsx",
+        "$RepoRoot\00_control\SovereignCockpitHUD.cs",
+        "$RepoRoot\00_control\Win11_Native_Tray_HUD\SovereignTrayAndHud.cs",
+        "$RepoRoot\00_control\Win11_Native_Tray_HUD\VesperArachneSwarmDroneOverlay.cs",
+        "$RepoRoot\06_algebraic_haskell\src\Main.hs",
+        "$RepoRoot\06_algebraic_haskell\src\Sovereign\Codegen\ZeroBracketRustAndLean4.hs",
+        "$RepoRoot\00_control\Sovereign-Lifecycle.ps1",
+        "$RepoRoot\CITATION.cff",
+        "$RepoRoot\.zenodo.json",
+        "$RepoRoot\index.html",
+        "$RepoRoot\hud.html",
+        "$RepoRoot\docs\index.html",
+        "$RepoRoot\docs\hud.html",
+        "$RepoRoot\05_hud_cockpit\index.html",
+        "$RepoRoot\02_l2_orchestration\hud\index.html",
+        "$RepoRoot\05_hud_cockpit\dist\index.html",
+        "$RepoRoot\02_l2_orchestration\hud\dist\index.html",
+        "$RepoRoot\05_hud_cockpit\public\act_omega_hud_gemini_win11_m3_redesign_template.html",
+        "$RepoRoot\02_l2_orchestration\hud\public\act_omega_hud_gemini_win11_m3_redesign_template.html",
+        "$RepoRoot\05_hud_cockpit\dist\act_omega_hud_gemini_win11_m3_redesign_template.html",
+        "$RepoRoot\02_l2_orchestration\hud\dist\act_omega_hud_gemini_win11_m3_redesign_template.html",
+        "$RepoRoot\docs\act_omega_hud_gemini_win11_m3_redesign_template.html",
+        "$RepoRoot\llms.txt",
+        "$RepoRoot\docs\llms.txt",
+        "$RepoRoot\05_hud_cockpit\public\llms.txt",
+        "$RepoRoot\05_hud_cockpit\dist\llms.txt",
+        "$RepoRoot\02_l2_orchestration\hud\public\llms.txt",
+        "$RepoRoot\02_l2_orchestration\hud\dist\llms.txt",
+        "$RepoRoot\manifest.webmanifest",
+        "$RepoRoot\docs\manifest.webmanifest",
+        "$RepoRoot\05_hud_cockpit\public\manifest.webmanifest",
+        "$RepoRoot\05_hud_cockpit\dist\manifest.webmanifest",
+        "$RepoRoot\02_l2_orchestration\hud\public\manifest.webmanifest",
+        "$RepoRoot\02_l2_orchestration\hud\dist\manifest.webmanifest",
+        "$RepoRoot\wiki.html",
+        "$RepoRoot\docs\wiki.html",
+        "$RepoRoot\05_hud_cockpit\public\wiki.html",
+        "$RepoRoot\05_hud_cockpit\dist\wiki.html",
+        "$RepoRoot\02_l2_orchestration\hud\public\wiki.html",
+        "$RepoRoot\02_l2_orchestration\hud\dist\wiki.html"
+    )) {
+        if ($staleScanSet.Add($sf)) { $staleScanFiles.Add($sf) }
+    }
+
+    foreach ($assetDir in @(
+        "$RepoRoot\05_hud_cockpit\dist\assets",
+        "$RepoRoot\02_l2_orchestration\hud\dist\assets",
+        "$RepoRoot\docs\assets",
+        "$RepoRoot\assets"
+    )) {
+        if (Test-Path $assetDir) {
+            Get-ChildItem -Path $assetDir -Filter "*.js" -File -ErrorAction SilentlyContinue | ForEach-Object {
+                if ($staleScanSet.Add($_.FullName)) { $staleScanFiles.Add($_.FullName) }
+            }
+        }
+    }
+
+    $extraJsonFiles = New-Object System.Collections.Generic.List[string]
+    foreach ($ef in $ExtraFilesToScan) {
+        if ($ef -and (Test-Path $ef -PathType Leaf)) {
+            if ([System.IO.Path]::GetExtension($ef) -ieq '.json') {
+                $extraJsonFiles.Add($ef)
+            }
+            if ([System.IO.Path]::GetFileName($ef) -notmatch '^telemetry_snapshot.*\.json$') {
+                if ($staleScanSet.Add($ef)) { $staleScanFiles.Add($ef) }
+            }
+        }
+    }
+
+    foreach ($scanPath in $staleScanFiles) {
+        if (-not (Test-Path $scanPath -PathType Leaf)) {
+            $failures.Add("STALE_SCAN_FILE_MISSING: Expected artifact $scanPath not found")
+            continue
+        }
+        $scanTxt = [System.IO.File]::ReadAllText($scanPath)
+        if ($scanPath.EndsWith('.rs', [System.StringComparison]::OrdinalIgnoreCase)) {
+            $scanTxt = [regex]::Replace($scanTxt, '(?m)^\s*//.*$', '')
+        }
+        $sm = [regex]::Match($scanTxt, $staleDisplayPattern)
+        if ($sm.Success) {
+            $failures.Add("STALE_DISPLAY_STAMP: Matched '$($sm.Value)' in $scanPath")
+        }
+        $dm = [regex]::Match($scanTxt, $staleD1TablePattern)
+        if ($dm.Success) {
+            $failures.Add("STALE_D1_TABLE_COUNT: Matched '$($dm.Value)' in $scanPath")
+        }
+    }
+
+    foreach ($rsPath in @(
+        "$RepoRoot\01_l0_rust\src\bin\v31_swarm.rs",
+        "$RepoRoot\01_l0_rust\src\v31_swarm.rs",
+        "$RepoRoot\01_l0_rust\src\v72_2_sh_xi_sparse_moe_chatml_sft_and_rag.rs"
+    )) {
+        if (Test-Path $rsPath -PathType Leaf) {
+            $rsRaw = [System.IO.File]::ReadAllText($rsPath)
+            # Strip // comment lines so historical M1 comments do not trigger false positives on active code/strings
+            $rsCodeOnly = [regex]::Replace($rsRaw, '(?m)^\s*//.*$', '')
+            $rm = [regex]::Match($rsCodeOnly, $staleDisplayPattern)
+            if ($rm.Success) {
+                $failures.Add("L0_RUST_STALE_DISPLAY_STAMP: Matched '$($rm.Value)' in active Rust code of $rsPath")
+            }
+        }
+    }
+
+    # 6-way Mirror Parity & JSON Validity for wiki.html, llms.txt, manifest.webmanifest, and telemetry_snapshot.json
+    $testSnapshotJson = {
+        param([string]$FullPath, [string]$Label)
+        $snapRaw = [System.IO.File]::ReadAllText($FullPath)
+        if ([string]::IsNullOrWhiteSpace($snapRaw)) {
+            $failures.Add("TELEMETRY_SNAPSHOT_EMPTY_JSON: $Label is empty or whitespace")
+            return
+        }
+        if ($snapRaw -match 'HRoT-5C-NFC') {
+            $failures.Add("TELEMETRY_SNAPSHOT_CORRUPT_TOKEN: Unquoted HRoT-5C-NFC found in $Label")
+        }
+        try {
+            $snapObj = $snapRaw | ConvertFrom-Json
+            if ($null -eq $snapObj) {
+                $failures.Add("TELEMETRY_SNAPSHOT_NULL_JSON: $Label parsed to null via ConvertFrom-Json")
+            }
+        } catch {
+            $failures.Add("TELEMETRY_SNAPSHOT_INVALID_JSON: $Label failed ConvertFrom-Json ($($_.Exception.Message))")
+        }
+    }
+
+    foreach ($mirrorRelGroup in @(
+        @("wiki.html", "docs\wiki.html", "05_hud_cockpit\public\wiki.html", "05_hud_cockpit\dist\wiki.html", "02_l2_orchestration\hud\public\wiki.html", "02_l2_orchestration\hud\dist\wiki.html"),
+        @("llms.txt", "docs\llms.txt", "05_hud_cockpit\public\llms.txt", "05_hud_cockpit\dist\llms.txt", "02_l2_orchestration\hud\public\llms.txt", "02_l2_orchestration\hud\dist\llms.txt"),
+        @("manifest.webmanifest", "docs\manifest.webmanifest", "05_hud_cockpit\public\manifest.webmanifest", "05_hud_cockpit\dist\manifest.webmanifest", "02_l2_orchestration\hud\public\manifest.webmanifest", "02_l2_orchestration\hud\dist\manifest.webmanifest"),
+        @("telemetry_snapshot.json", "docs\telemetry_snapshot.json", "05_hud_cockpit\public\telemetry_snapshot.json", "05_hud_cockpit\dist\telemetry_snapshot.json", "02_l2_orchestration\hud\public\telemetry_snapshot.json", "02_l2_orchestration\hud\dist\telemetry_snapshot.json")
+    )) {
+        $baseHash = $null
+        foreach ($relP in $mirrorRelGroup) {
+            $fullP = Join-Path $RepoRoot $relP
+            if (-not (Test-Path $fullP -PathType Leaf)) {
+                $failures.Add("MIRROR_FILE_MISSING: $relP not found")
+                continue
+            }
+            $curHash = (Get-FileHash $fullP -Algorithm SHA256).Hash
+            if (-not $baseHash) { $baseHash = $curHash }
+            elseif ($curHash -ne $baseHash) {
+                $failures.Add("MIRROR_PARITY_DRIFT: $relP SHA-256 differs from $($mirrorRelGroup[0])")
+            }
+            if ($relP.EndsWith("telemetry_snapshot.json")) {
+                & $testSnapshotJson $fullP $relP
+            }
+        }
+    }
+    foreach ($ej in $extraJsonFiles) {
+        & $testSnapshotJson $ej $ej
     }
 
     # 3a. Single Canonical Cloudflare Edge Worker Check (B9: zero duplicate root worker)
@@ -507,40 +893,10 @@ function Run-StaticGatekeeperChecks {
         }
     }
 
-    # 5. Zero-Secret Leak Check (Retired Passkey, Active External Key & YubiKey Slot-2 Secret)
-    $retiredLiteral = "SOVEREIGN" + "-LOQ15-4200"
-    $activeKeyPath = "C:\Users\Nbell\.act_omega_operator_vault_key"
-    $activeLiteral = if (Test-Path $activeKeyPath) { (Get-Content $activeKeyPath -Raw).Trim() } else { "" }
-    $slot2BackupPath = "F:\ACT_OMEGA_IMMUTABLE_EPOCH_ARCHIVES\YUBIKEY_ROOT_OF_TRUST_BACKUP\SLOT2_HMAC_SHARED_SECRET_FOR_KEY2_CLONING.txt"
-    $slot2SecretHex = ""
-    if (Test-Path $slot2BackupPath) {
-        $m = [regex]::Match((Get-Content $slot2BackupPath -Raw), '(?m)^[0-9a-fA-F]{40}\r?$')
-        if ($m.Success) { $slot2SecretHex = $m.Value.Trim() }
-    }
-
-    $checkFiles = @(
-        "$RepoRoot\05_hud_cockpit\src\App.tsx",
-        "$RepoRoot\02_l2_orchestration\hud\src\App.tsx",
-        "$RepoRoot\05_hud_cockpit\dist\index.html",
-        "$RepoRoot\docs\index.html",
-        "$RepoRoot\docs\hud.html",
-        "$RepoRoot\index.html",
-        "$RepoRoot\hud.html",
-        "$RepoRoot\wiki.html"
-    )
-    foreach ($cf in $checkFiles) {
-        if (Test-Path $cf) {
-            $content = [System.IO.File]::ReadAllText($cf)
-            if ($content.Contains($retiredLiteral)) {
-                $failures.Add("SECRET_LEAK_RETIRED: Retired passkey literal found in $cf")
-            }
-            if ($activeLiteral.Length -ge 16 -and $content.Contains($activeLiteral)) {
-                $failures.Add("SECRET_LEAK_ACTIVE: Active external operator key found in $cf")
-            }
-            if ($slot2SecretHex.Length -eq 40 -and $content.IndexOf($slot2SecretHex, [System.StringComparison]::OrdinalIgnoreCase) -ge 0) {
-                $failures.Add("SECRET_LEAK_YUBIKEY_SLOT2: YubiKey Slot-2 shared secret found in $cf")
-            }
-        }
+    # 5. Zero-Secret Leak Check (Fail-Closed git ls-files + Untracked/Dist Scan for Operator Key, Telemetry Key, Retired Passkey & Slot-2)
+    $secViolations = Test-SovereignKeyLeakScan -RootPath $RepoRoot -ExtraFiles $ExtraFilesToScan
+    foreach ($sv in $secViolations) {
+        $failures.Add($sv)
     }
 
     # 6. HTML External Crawler SSR Pre-Population & Asset Bundle Verification
@@ -549,7 +905,8 @@ function Run-StaticGatekeeperChecks {
         "$RepoRoot\hud.html",
         "$RepoRoot\docs\index.html",
         "$RepoRoot\docs\hud.html",
-        "$RepoRoot\05_hud_cockpit\dist\index.html"
+        "$RepoRoot\05_hud_cockpit\dist\index.html",
+        "$RepoRoot\02_l2_orchestration\hud\dist\index.html"
     )
     foreach ($hf in $htmlFiles) {
         if (-not (Test-Path $hf)) {
@@ -568,11 +925,15 @@ function Run-StaticGatekeeperChecks {
                 $bName = $bm.Groups[1].Value
                 $rootAsset = "$RepoRoot\assets\$bName"
                 $docsAsset = "$RepoRoot\docs\assets\$bName"
+                $l2DistAsset = "$RepoRoot\02_l2_orchestration\hud\dist\assets\$bName"
                 if (-not (Test-Path $rootAsset)) {
                     $failures.Add("JS_BUNDLE_MISSING_ROOT: $bName referenced in $hf missing at $rootAsset")
                 }
                 if (-not (Test-Path $docsAsset)) {
                     $failures.Add("JS_BUNDLE_MISSING_DOCS: $bName referenced in $hf missing at $docsAsset")
+                }
+                if (-not (Test-Path $l2DistAsset)) {
+                    $failures.Add("JS_BUNDLE_MISSING_L2_DIST: $bName referenced in $hf missing at $l2DistAsset")
                 }
                 if ($hf -like "*\dist\*") {
                     $distAsset = "$RepoRoot\05_hud_cockpit\dist\assets\$bName"
@@ -835,8 +1196,83 @@ if ($TestNegativePixelSerialInjection) {
     exit 0
 }
 
+# Negative-Injection Self-Test Mode for Telemetry & Operator Secret Keys (R3 / R7)
+if ($TestNegativeTelemetryKeyInjection) {
+    Write-Host "==========================================================================" -ForegroundColor Cyan
+    Write-Host "   ACT-OMEGA GATEKEEPER: TELEMETRY/OPERATOR KEY NEGATIVE-INJECTION VERIFY " -ForegroundColor Cyan
+    Write-Host "==========================================================================" -ForegroundColor Cyan
+    $secNegFailures = 0
+
+    $cleanSec = Test-SovereignKeyLeakScan -RootPath $RepoRoot
+    if ($cleanSec.Count -ne 0) {
+        Write-Host "  [KEY-NEG 1/5 CLEAN]      [FAIL] Repo already has key leak / missing key violation: $($cleanSec -join '; ')" -ForegroundColor Red
+        exit 1
+    }
+    Write-Host "  [KEY-NEG 1/5 CLEAN]      [PASS] Repo-wide git ls-files + dist/docs secret scan = 0 leaks" -ForegroundColor Green
+
+    $tmpKeyDir = Join-Path ([System.IO.Path]::GetTempPath()) "act_omega_m4_keyneg_$([System.Diagnostics.Process]::GetCurrentProcess().Id)"
+    New-Item -ItemType Directory -Force -Path $tmpKeyDir | Out-Null
+    try {
+        $telKeyVal = ([System.IO.File]::ReadAllText("C:\Users\Nbell\.act_omega_telemetry_ingest_key")).Trim()
+        $opKeyVal = ([System.IO.File]::ReadAllText("C:\Users\Nbell\.act_omega_operator_vault_key")).Trim()
+
+        # Test 2: Inject active telemetry ingest key into temp fixture -> MUST FAIL
+        $fTel = Join-Path $tmpKeyDir "injected_telemetry_key.txt"
+        [System.IO.File]::WriteAllText($fTel, "X-Sovereign-Telemetry-Key=$telKeyVal`n")
+        $vTel = Test-SovereignKeyLeakScan -RootPath $RepoRoot -ExtraFiles @($fTel)
+        if ($vTel.Count -gt 0 -and ($vTel -join " ") -match "SECRET_LEAK_TELEMETRY_KEY") {
+            Write-Host "  [KEY-NEG 2/5 TELEMETRY]  [PASS] Scanner caught injected telemetry ingest key ($($vTel[0]))" -ForegroundColor Green
+        } else {
+            Write-Host "  [KEY-NEG 2/5 TELEMETRY]  [FAIL] Scanner missed injected telemetry ingest key" -ForegroundColor Red
+            $secNegFailures++
+        }
+
+        # Test 3: Inject active operator vault key into temp fixture -> MUST FAIL
+        $fOp = Join-Path $tmpKeyDir "injected_operator_key.txt"
+        [System.IO.File]::WriteAllText($fOp, "X-Sovereign-Operator-Key=$opKeyVal`n")
+        $vOp = Test-SovereignKeyLeakScan -RootPath $RepoRoot -ExtraFiles @($fOp)
+        if ($vOp.Count -gt 0 -and ($vOp -join " ") -match "SECRET_LEAK_ACTIVE") {
+            Write-Host "  [KEY-NEG 3/5 OPERATOR]   [PASS] Scanner caught injected operator vault key ($($vOp[0]))" -ForegroundColor Green
+        } else {
+            Write-Host "  [KEY-NEG 3/5 OPERATOR]   [FAIL] Scanner missed injected operator vault key" -ForegroundColor Red
+            $secNegFailures++
+        }
+
+        # Test 4: Inject retired passkey literal into temp fixture -> MUST FAIL
+        $fRet = Join-Path $tmpKeyDir "injected_retired_passkey.txt"
+        [System.IO.File]::WriteAllText($fRet, "legacy=" + "SOVEREIGN" + "-LOQ15-4200`n")
+        $vRet = Test-SovereignKeyLeakScan -RootPath $RepoRoot -ExtraFiles @($fRet)
+        if ($vRet.Count -gt 0 -and ($vRet -join " ") -match "SECRET_LEAK_RETIRED") {
+            Write-Host "  [KEY-NEG 4/5 RETIRED]    [PASS] Scanner caught injected retired passkey ($($vRet[0]))" -ForegroundColor Green
+        } else {
+            Write-Host "  [KEY-NEG 4/5 RETIRED]    [FAIL] Scanner missed injected retired passkey" -ForegroundColor Red
+            $secNegFailures++
+        }
+
+        # Test 5: Missing telemetry key path -> MUST FAIL CLOSED
+        $vMiss = Test-SovereignKeyLeakScan -RootPath $RepoRoot -TelemetryKeyOverridePath (Join-Path $tmpKeyDir "nonexistent_telemetry_key")
+        if ($vMiss.Count -gt 0 -and ($vMiss -join " ") -match "TELEMETRY_KEY_MISSING") {
+            Write-Host "  [KEY-NEG 5/5 FAIL-CLOSE] [PASS] Scanner failed closed when telemetry key file missing ($($vMiss[0]))" -ForegroundColor Green
+        } else {
+            Write-Host "  [KEY-NEG 5/5 FAIL-CLOSE] [FAIL] Scanner did not fail closed on missing telemetry key" -ForegroundColor Red
+            $secNegFailures++
+        }
+    } finally {
+        $telKeyVal = ""
+        $opKeyVal = ""
+        Remove-Item $tmpKeyDir -Recurse -Force -ErrorAction SilentlyContinue
+    }
+
+    if ($secNegFailures -gt 0) {
+        Write-Host "  [KEY NEGATIVE-INJECTION SUITE: FAILED ($secNegFailures)]" -ForegroundColor Red
+        exit 1
+    }
+    Write-Host "  [KEY NEGATIVE-INJECTION SUITE: PASSED (5/5)]" -ForegroundColor Green
+    exit 0
+}
+
 # Default to -StaticOnly when invoked without switches
-if (-not $HookStdin -and -not $FullAudit -and -not $StaticOnly -and -not $TestNegativeCloudflareInjection -and -not $TestNegativePixelSerialInjection) {
+if (-not $HookStdin -and -not $FullAudit -and -not $StaticOnly -and -not $TestNegativeCloudflareInjection -and -not $TestNegativePixelSerialInjection -and -not $TestNegativeTelemetryKeyInjection) {
     $StaticOnly = $true
 }
 

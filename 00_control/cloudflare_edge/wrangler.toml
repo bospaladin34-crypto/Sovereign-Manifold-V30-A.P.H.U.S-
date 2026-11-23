@@ -27,7 +27,7 @@ CF_ACCESS_AUD = "act-omega-zero-trust-aud"
 [ai]
 binding = "AI"
 
-# --- Cloudflare D1 Vault (Remote 5GB 10-Table SQLite Database) ---
+# --- Cloudflare D1 Vault (Remote 5GB 11-User-Table SQLite Database) ---
 [[d1_databases]]
 binding = "ACT_OMEGA_D1"
 database_name = "<EXTERNAL_D1_DATABASE_NAME>"

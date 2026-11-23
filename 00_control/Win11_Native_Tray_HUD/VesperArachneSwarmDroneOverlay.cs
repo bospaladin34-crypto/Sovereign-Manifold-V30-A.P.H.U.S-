@@ -8,6 +8,7 @@ using System.Net;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Forms;
 
@@ -77,8 +78,75 @@ public class VesperArachneSwarmDroneOverlay : Form
     private int idleTicks = 0;
     private int idleLimitTicks = 900;
     private POINT lastCursor;
-    private string speechText = "ACT-OMEGA v73.2.1 | VESPER-ARACHNE E8 IK SHIMEJI | SH-XI MoE | CHAIN 404 | 1,010/1,010 QED | Ready!";
+    private long liveLean4Qed = -1;
+    private bool liveLean4QedPassed = false;
+    private long liveToolsCount = -1;
+    private bool telemetryOnline = false;
+    private System.Windows.Forms.Timer telemetryTimer;
+    private string speechText = "ACT-OMEGA v73.2.3 | VESPER-ARACHNE E8 IK SHIMEJI | SH-XI MoE | Live Telemetry Ready!";
     private int speechTimer = 340;
+
+    private string FormatLiveQedStatus()
+    {
+        if (!telemetryOnline || !liveLean4QedPassed || liveLean4Qed <= 0 || liveToolsCount <= 0)
+        {
+            return "UNMEASURED/OFFLINE";
+        }
+        string n = liveLean4Qed.ToString("N0", System.Globalization.CultureInfo.InvariantCulture);
+        return string.Format("CHAIN {0} | {1}/{1} QED", liveToolsCount, n);
+    }
+
+    private void PollTelemetryStatus()
+    {
+        ThreadPool.QueueUserWorkItem(delegate
+        {
+            long nextQed = -1;
+            bool nextLean4Qed = false;
+            long nextTools = -1;
+            bool nextOnline = false;
+            try
+            {
+                HttpWebRequest req = (HttpWebRequest)WebRequest.Create("http://127.0.0.1:8097/api/v1/telemetry");
+                req.Timeout = 700;
+                using (HttpWebResponse resp = (HttpWebResponse)req.GetResponse())
+                using (StreamReader sr = new StreamReader(resp.GetResponseStream()))
+                {
+                    string json = sr.ReadToEnd();
+                    Match mq = Regex.Match(json, "\"lean4_theorems_qed\"\\s*:\\s*([0-9]+)");
+                    Match mt = Regex.Match(json, "\"tools_count\"\\s*:\\s*([0-9]+)");
+                    if (mq.Success) long.TryParse(mq.Groups[1].Value, out nextQed);
+                    if (mt.Success) long.TryParse(mt.Groups[1].Value, out nextTools);
+                    nextLean4Qed = Regex.IsMatch(json, "\"lean4_qed\"\\s*:\\s*true\\b");
+                    nextOnline = true;
+                }
+            }
+            catch
+            {
+                nextOnline = false;
+                nextQed = -1;
+                nextLean4Qed = false;
+                nextTools = -1;
+            }
+            try
+            {
+                if (!this.IsDisposed && this.IsHandleCreated)
+                {
+                    this.BeginInvoke((MethodInvoker)delegate
+                    {
+                        telemetryOnline = nextOnline;
+                        liveLean4Qed = nextQed;
+                        liveLean4QedPassed = nextLean4Qed;
+                        liveToolsCount = nextTools;
+                        string statusSummary = FormatLiveQedStatus();
+                        string tip = "VESPER-ARACHNE v73.2.3 (" + statusSummary + ")";
+                        if (tip.Length > 63) tip = tip.Substring(0, 63);
+                        if (trayIcon != null) trayIcon.Text = tip;
+                    });
+                }
+            }
+            catch { }
+        });
+    }
 
     // Superpowers State
     private bool quasicrystalLatticeOn = false;
@@ -140,7 +208,7 @@ public class VesperArachneSwarmDroneOverlay : Form
     public VesperArachneSwarmDroneOverlay()
     {
         Rectangle bounds = Screen.PrimaryScreen.Bounds;
-        this.Text = "ACT-OMEGA v73.2.1 | VESPER-ARACHNE E8 IK SHIMEJI | SH-XI MoE | CHAIN 404 | 1,010/1,010 QED";
+        this.Text = "ACT-OMEGA v73.2.3 | VESPER-ARACHNE E8 IK SHIMEJI | SH-XI MoE | Live Telemetry";
         this.FormBorderStyle = FormBorderStyle.None;
         this.StartPosition = FormStartPosition.Manual;
         this.Bounds = bounds;
@@ -174,7 +242,7 @@ public class VesperArachneSwarmDroneOverlay : Form
 
         trayIcon = new NotifyIcon();
         trayIcon.Icon = SystemIcons.Shield;
-        string tipText = "VESPER-ARACHNE v72.2 E8 IK SHIMEJI (CHAIN 404 | 1,010 QED)";
+        string tipText = "VESPER-ARACHNE v73.2.3 (" + FormatLiveQedStatus() + ")";
         if (tipText.Length > 63) tipText = tipText.Substring(0, 63);
         trayIcon.Text = tipText;
         trayIcon.ContextMenuStrip = droneMenu;
@@ -190,6 +258,12 @@ public class VesperArachneSwarmDroneOverlay : Form
         frameTimer.Interval = 16; // ~62.5 FPS
         frameTimer.Tick += OnFrameTick;
         frameTimer.Start();
+
+        telemetryTimer = new System.Windows.Forms.Timer();
+        telemetryTimer.Interval = 2000;
+        telemetryTimer.Tick += delegate { PollTelemetryStatus(); };
+        telemetryTimer.Start();
+        PollTelemetryStatus();
     }
 
     protected override CreateParams CreateParams
@@ -596,7 +670,7 @@ public class VesperArachneSwarmDroneOverlay : Form
         corePulse = 1.2f;
         speechText = isDocked
             ? "Docked into Upper-Right Win11 Screen Corner. Click portal to summon!"
-            : "ACT-OMEGA v73.2.1 | VESPER-ARACHNE E8 IK SHIMEJI (CHAIN 404 | 1,010 QED) Unfurled onto Desktop!";
+            : "ACT-OMEGA v73.2.3 | VESPER-ARACHNE E8 IK SHIMEJI (" + FormatLiveQedStatus() + ") Unfurled onto Desktop!";
         speechTimer = 260;
     }
 

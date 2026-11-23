@@ -4351,35 +4351,81 @@ object SovereignLiveBus : SensorEventListener {
                     if (!candidateOrder.contains(i)) candidateOrder.add(i)
                 }
 
-                val dirtyCol = (tickCount % 1440L).toInt()
+                val dirtyCol = (tickCount % 1920L).toInt()
+                val telemetryKey = SovereignOtaSelfUpdater.readLocalTelemetryKey(appCtx)
                 for (idx in candidateOrder) {
                     val bUrl = baseHosts[idx].first
                     val bLabel = baseHosts[idx].second
                     val tOut = baseHosts[idx].third
                     val epPath = if (bUrl.contains("act-omega-net.dev")) "/api/v1/StateGraph" else "/api/v1/telemetry"
-                    val encBearer = try {
-                        java.net.URLEncoder.encode(bLabel, "UTF-8")
-                    } catch (_: Throwable) {
-                        "HOST-SYNC"
-                    }
                     val sendRtt = if (lastMeasuredRttMs > 0.0) lastMeasuredRttMs else rtt
-                    val querySuffix = if (isPixel8ComputeNode) {
-                        String.format(
-                            Locale.US,
-                            "%s?node=pixel8&col=%d&temp=%.1f&mv=%d&bat=%d&ram_u=%d&ram_t=%d&thz=2.00&rtt=%.1f&bearer=%s",
-                            epPath, dirtyCol, battTempC, battMv, battPct, ramUsedMb, ramTotalMb, sendRtt, encBearer
-                        )
-                    } else {
-                        String.format(
-                            Locale.US,
-                            "%s?node=pixel10&col=%d&mx=%.1f&my=%.1f&mz=%.1f&bn=%.1f&baro=%.1f&lux=%.0f&acc=%.2f&gyro=%.3f&temp=%.1f&mv=%d&bat=%d&ram_u=%d&ram_t=%d&shz=%.2f&thz=2.00&rtt=%.1f&bearer=%s",
-                            epPath, dirtyCol, magX, magY, magZ, bNormNow, baroHpa, lightLx, accNorm, gyroNorm,
-                            battTempC, battMv, battPct, ramUsedMb, ramTotalMb, measuredSensorHz, sendRtt, encBearer
-                        )
-                    }
                     val t0 = SystemClock.elapsedRealtime()
                     try {
-                        val u = URL(bUrl + querySuffix)
+                        if (bUrl == "http://127.0.0.1:8097" && telemetryKey.length >= 24) {
+                            val payload = JSONObject().apply {
+                                put("node", if (isPixel8ComputeNode) "pixel8" else "pixel10")
+                                put("col", dirtyCol)
+                                if (battTempC.isFinite() && battTempC in -40.0f..150.0f) {
+                                    put("temp", String.format(Locale.US, "%.1f", battTempC).toDouble())
+                                }
+                                if (battMv in 0..10000) put("mv", battMv)
+                                if (battPct in 0..100) put("bat", battPct)
+                                if (ramUsedMb in 0..1048576) put("ram_u", ramUsedMb)
+                                if (ramTotalMb in 0..1048576) put("ram_t", ramTotalMb)
+                                put("thz", 2.0)
+                                if (sendRtt.isFinite() && sendRtt in 0.0..1000000.0) {
+                                    put("rtt", String.format(Locale.US, "%.1f", sendRtt).toDouble())
+                                }
+                                put("bearer", bLabel)
+                                if (!isPixel8ComputeNode) {
+                                    if (magX.isFinite() && magX in -100000.0f..100000.0f) {
+                                        put("mx", String.format(Locale.US, "%.1f", magX).toDouble())
+                                    }
+                                    if (magY.isFinite() && magY in -100000.0f..100000.0f) {
+                                        put("my", String.format(Locale.US, "%.1f", magY).toDouble())
+                                    }
+                                    if (magZ.isFinite() && magZ in -100000.0f..100000.0f) {
+                                        put("mz", String.format(Locale.US, "%.1f", magZ).toDouble())
+                                    }
+                                    if (bNormNow.isFinite() && bNormNow in 0.0f..1000000.0f) {
+                                        put("bn", String.format(Locale.US, "%.1f", bNormNow).toDouble())
+                                    }
+                                    if (baroHpa.isFinite() && baroHpa in 300.0f..1200.0f) {
+                                        put("baro", String.format(Locale.US, "%.1f", baroHpa).toDouble())
+                                    }
+                                    if (lightLx.isFinite() && lightLx in 0.0f..1000000.0f) {
+                                        put("lux", String.format(Locale.US, "%.0f", lightLx).toDouble())
+                                    }
+                                    if (accNorm.isFinite() && accNorm in 0.0f..1000000.0f) {
+                                        put("acc", String.format(Locale.US, "%.2f", accNorm).toDouble())
+                                    }
+                                    if (gyroNorm.isFinite() && gyroNorm in 0.0f..1000000.0f) {
+                                        put("gyro", String.format(Locale.US, "%.3f", gyroNorm).toDouble())
+                                    }
+                                    if (measuredSensorHz.isFinite() && measuredSensorHz in 0.0f..1000000.0f) {
+                                        put("shz", String.format(Locale.US, "%.2f", measuredSensorHz).toDouble())
+                                    }
+                                }
+                            }
+                            val payloadBytes = payload.toString().toByteArray(Charsets.UTF_8)
+                            val postConn = (URL("$bUrl/api/v1/telemetry/ingest").openConnection() as HttpURLConnection).apply {
+                                connectTimeout = tOut
+                                readTimeout = tOut
+                                requestMethod = "POST"
+                                doOutput = true
+                                setRequestProperty("Content-Type", "application/json; charset=utf-8")
+                                setRequestProperty("X-Sovereign-Telemetry-Key", telemetryKey)
+                                setRequestProperty("Connection", "keep-alive")
+                                setFixedLengthStreamingMode(payloadBytes.size)
+                            }
+                            postConn.outputStream.use { it.write(payloadBytes) }
+                            val postCode = postConn.responseCode
+                            try {
+                                val stream = if (postCode in 200..299) postConn.inputStream else postConn.errorStream
+                                stream?.bufferedReader()?.use { it.readText() }
+                            } catch (_: Throwable) {}
+                        }
+                        val u = URL(bUrl + epPath)
                         val conn = (u.openConnection() as HttpURLConnection).apply {
                             connectTimeout = tOut
                             readTimeout = tOut
@@ -8159,6 +8205,24 @@ object SovereignOtaSelfUpdater {
             File(context.filesDir, ".act_omega_operator_vault_key"),
             context.getExternalFilesDir(null)?.let { File(it, ".act_omega_operator_vault_key") },
             File("/data/local/tmp/.act_omega_operator_vault_key")
+        )
+        for (f in candidates) {
+            try {
+                if (f.exists() && f.canRead()) {
+                    val k = f.readText(Charsets.UTF_8).trim()
+                    if (k.length >= 24) return k
+                }
+            } catch (_: Throwable) {
+            }
+        }
+        return ""
+    }
+
+    fun readLocalTelemetryKey(context: Context): String {
+        val candidates = listOfNotNull(
+            File(context.filesDir, ".act_omega_telemetry_ingest_key"),
+            context.getExternalFilesDir(null)?.let { File(it, ".act_omega_telemetry_ingest_key") },
+            File("/data/local/tmp/.act_omega_telemetry_ingest_key")
         )
         for (f in candidates) {
             try {

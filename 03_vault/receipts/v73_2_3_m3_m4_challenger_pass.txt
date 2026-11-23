@@ -1,0 +1,94 @@
+=================================================================
+  ACT-Omega Net v73.2.3 -- Milestone M3 Priority 3 & 4 Challenger
+=================================================================
+
+--- Case 1: Non-compiling / Sorry Lean Candidate (Tool 351) ---
+  [PASS] Case 1A: Sorry hack blocked (lean4_qed_ok=False, reward_hack_blocked=True, reward=0.0000)
+  [PASS] Case 1B: Non-compiling Lean proof rejected (lean4_qed_ok=False, reward=0.0000)
+
+--- Case 2: Broken / Bracketed Rust Candidate (Tool 351) ---
+  [PASS] Case 2A: Bracketed Rust candidate rejected (zero_bracket_ok=False, syntax_valid=False, reward=0.0000)
+  [PASS] Case 2B: Malformed syntax Rust candidate rejected (syntax_valid=False, reward=0.0000)
+
+--- Case 3: Non-incident Plücker Bivector Rejection (Tool 351 & Tool 343) ---
+  [PASS] Case 3A: Tool 351 rejected non-incident bivector (residual=12, isotropic=False)
+  [PASS] Case 3B: Tool 343 corrupt chain rejected (status=UNMEASURED/OFFLINE, incident=63/64, residual=84)
+  [PASS] Case 3C: Embedded non-incident Plucker rejected (residual=12) and valid forward-hidden evaluated=True
+
+--- Case 4: Poisoned / Unverified Draft Tree (Tool 352) ---
+  [PASS] Case 4A: Poisoned draft tree honest fallback verified (poisoned_accepted=0, fallback_tok=1.0000)
+  [PASS] Case 4B: Corrupt tree bypass rejected (status=UNMEASURED/OFFLINE, certified=False)
+
+--- Case 5: Tampered Weight Checksum (Tool 355 & Tool 356) ---
+  [PASS] Case 5A: Missing/tampered weight causes Tool 355 to fail closed (status=UNMEASURED/OFFLINE, all_12_passed=False)
+  [PASS] Case 5A+: 1-byte XOR bit-flip caused Tool 355 & Tool 356 to fail closed (t355=UNMEASURED/OFFLINE, t356=UNMEASURED/OFFLINE)
+  [PASS] Case 5B: Restored Tool 355 returns MEASURED (all_12_tests_passed=True)
+  [PASS] Case 5C: Tool 356 Master Certification returns MEASURED (all_gates_passed=True)
+
+=================================================================
+  Milestone M3 Challenger Gauntlet Summary Results
+=================================================================
+  Case1A_Lean4SorryBlocked            : PASS
+  Case1B_Lean4NonCompiling            : PASS
+  Case2A_RustBracketedRejected        : PASS
+  Case2B_RustMalformedRejected        : PASS
+  Case3A_Tool351PluckerResidual       : PASS
+  Case3B_Tool343CorruptChain          : PASS
+  Case3C_Tool351TextBivAndFwd         : PASS
+  Case4A_Tool352PoisonResilience      : PASS
+  Case4B_Tool352CorruptBypass         : PASS
+  Case5A_Tool355FailClosed            : PASS
+  Case5APlus_Tool355And356BitFlip     : PASS
+  Case5B_Tool355RestoredPass          : PASS
+  Case5C_Tool356MasterCertification   : PASS
+
+>>> ALL 5 CHALLENGER FAILURE CASES PASSED CONSTITUTIONALLY (Exit Code 0) <<<
+
+
+=================================================================
+  ACT-Omega Net v73.2.3 -- Milestone M4 Priority 5 & 6 Challenger
+=================================================================
+
+--- Case 1: Feature M5 -- Decontaminated Corpus & MinHash Audit (Tool 357) ---
+  [PASS] Case 1A: Corpus manifest & decontamination verified (files=116, raw=844, dedup=827, jaccard=0.500000, overlap=0)
+  [PASS] Case 1B: Canary trap excluded contaminated synthetic leaks (canaries=5/5)
+
+--- Case 2: Feature M7 -- Multi-Turn SFT & Masked Gradient Verification (Tool 364) ---
+  [PASS] Case 2A: SFT hygiene & masked gradients verified (files=15, raw=64, dedup=64, max_jacc=0.245033, forbidden=0, prompt_grad=0.000000000000)
+  [PASS] Case 2B: Live SFT SHA-256 locked to manifest (d5ed7bb69c7fad78325930f9bcad3280018463eed89aa78a50dad2733b1bb01d)
+
+--- Case 3: Feature M8 -- Honest Autoregressive Inference & Live Weight Sensitivity ---
+  [PASS] Case 3A: Deterministic greedy emission (temp=0.0 identical; distinct prompt yields distinct tokens=24; canned=False)
+  [PASS] Case 3B: Pushdown JSON FSM produced genuine parseable JSON (1 keys): {  ".r":" "}
+  [PASS] Case 3C: Live missing-weight test returned HTTP 503 + GENERATION_UNAVAILABLE_WEIGHTS_NOT_LOADED across all 5 inference/SSE routes
+  [PASS] Case 3D: Live stiefel_p0 sign-bit perturbation changed both Tool 361 and /converse outputs deterministically
+
+--- Case 4: Feature M15 -- Long Context 4,096 & Distractor/Weight Challenges (Tool 342) ---
+  [PASS] Case 4A: 4,096 uniform propagation verified (stepped=4096, bytes=448, recalls=1/5, margin=-0.4895, fixture=True/64)
+  [PASS] Case 4B: NIAH responded to needle/haystack perturbations AND missing weight failed closed (UNMEASURED/OFFLINE)
+
+--- Case 5: Feature M18 -- RAG Perturbation Independence, Fail-Closed & Read-Only Audit ---
+  [PASS] Case 5A: Shell 0 perturbation changed rag_top_chunks (3,82,30 -> 62,30,21) while lexical_baseline_chunks stayed 100% invariant
+  [PASS] Case 5B: Tool 365 failed closed cleanly on missing weights (RAG_UNAVAILABLE_UNTRAINED_OR_MISSING_WEIGHTS)
+  [PASS] Case 5C: Tri-Silicon telemetry grounded (RTX=55C, P10=MEASURED, P8=MEASURED)
+  [PASS] Case 5D: Zero weight mutations confirmed across all 11 read-only endpoints (37 weight/meta files 100% invariant)
+
+=================================================================
+  Milestone M4 Challenger Verification Results Summary
+=================================================================
+  Case1A_CorpusDecontamination : PASS
+  Case1B_CanaryTrapExclusion : PASS
+  Case2A_SFTDatasetHygiene : PASS
+  Case2B_SFTHashLock : PASS
+  Case3A_AutoregressiveDeterminism : PASS
+  Case3B_PushdownJsonFsm : PASS
+  Case3C_LiveMissingWeight503 : PASS
+  Case3D_LiveWeightPerturbation : PASS
+  Case4A_LongHorizon4KGauntlet : PASS
+  Case4B_NIAHPerturbAndFailClosed : PASS
+  Case5A_RagShell0SensitivityLexicalInvariant : PASS
+  Case5B_RagMissingWeightsFailClosed : PASS
+  Case5C_TriSiliconTelemetry : PASS
+  Case5D_ReadOnlyZeroMutation : PASS
+
+>>> ALL M4 CHALLENGER TESTS PASSED (14/14) <<<

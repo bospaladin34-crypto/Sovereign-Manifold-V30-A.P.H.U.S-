@@ -447,14 +447,18 @@ function Get-GitPathsNullDelimited {
     $psi.FileName = "git"
     $psi.Arguments = "-c core.quotepath=false -C `"$RootPath`" " + ($GitArgs -join " ")
     $psi.UseShellExecute = $false
+    $psi.RedirectStandardInput = $true
     $psi.RedirectStandardOutput = $true
     $psi.RedirectStandardError = $true
     $psi.CreateNoWindow = $true
     $proc = [System.Diagnostics.Process]::Start($psi)
     try {
+        $proc.StandardInput.Close()
+        $errTask = $proc.StandardError.ReadToEndAsync()
         $ms = New-Object System.IO.MemoryStream
         $proc.StandardOutput.BaseStream.CopyTo($ms)
         $proc.WaitForExit()
+        [void]$errTask.Wait(1000)
         if ($proc.ExitCode -ne 0) {
             return @()
         }
@@ -574,28 +578,7 @@ function Test-SovereignKeyLeakScan {
     }
     $untrackedRel = @(Get-GitPathsNullDelimited -RootPath $RootPath -GitArgs @("ls-files", "--others", "--exclude-standard", "-z"))
 
-    $scanPathsList = New-Object System.Collections.Generic.List[string]
-    $scanLabelsList = New-Object System.Collections.Generic.List[string]
-    $seenPaths = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
-
-    $addScanCandidate = {
-        param([string]$FullPath, [string]$DisplayLabel)
-        if ([string]::IsNullOrWhiteSpace($FullPath)) { return }
-        if (-not [System.IO.File]::Exists($FullPath)) { return }
-        if ($seenPaths.Add($FullPath)) {
-            $scanPathsList.Add($FullPath)
-            $scanLabelsList.Add($DisplayLabel)
-        }
-    }
-
-    foreach ($rfRel in $trackedRel) {
-        $full = Join-Path $RootPath ($rfRel -replace '/', '\')
-        & $addScanCandidate $full "tracked file '$rfRel'"
-    }
-    foreach ($ufRel in $untrackedRel) {
-        $full = Join-Path $RootPath ($ufRel -replace '/', '\')
-        & $addScanCandidate $full $full
-    }
+    $extraCandidates = New-Object System.Collections.Generic.List[string]
     foreach ($bundleDir in @(
         "$RootPath\05_hud_cockpit\dist",
         "$RootPath\02_l2_orchestration\hud\dist",
@@ -605,33 +588,79 @@ function Test-SovereignKeyLeakScan {
         if (Test-Path $bundleDir) {
             Get-ChildItem -Path $bundleDir -Recurse -File -ErrorAction SilentlyContinue | ForEach-Object {
                 if ($_.Extension -notin @('.apk', '.exe', '.png', '.jpg', '.ico', '.woff2')) {
-                    & $addScanCandidate $_.FullName $_.FullName
+                    $extraCandidates.Add($_.FullName)
                 }
             }
         }
     }
     foreach ($ef in $ExtraFiles) {
-        if ($ef -and [System.IO.File]::Exists($ef)) {
-            & $addScanCandidate $ef $ef
+        if ($ef) {
+            $extraCandidates.Add($ef)
         }
     }
 
-    # 2. Scan all enumerated files 100% in-process via chunked FileStream byte scanner
+    # 2. Build deduplicated path list & scan 100% of files in-process via parallel FileStream byte scanner
     if (-not ('SovereignByteStreamScanner' -as [type])) {
         Add-Type -TypeDefinition @"
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 public static class SovereignByteStreamScanner {
+    public static string[][] BuildScanCandidates(
+        string rootPath,
+        string[] trackedRel,
+        string[] untrackedRel,
+        string[] extraPaths
+    ) {
+        var paths = new List<string>(trackedRel.Length + untrackedRel.Length + extraPaths.Length);
+        var labels = new List<string>(trackedRel.Length + untrackedRel.Length + extraPaths.Length);
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        for (int i = 0; i < trackedRel.Length; i++) {
+            string rel = trackedRel[i];
+            if (string.IsNullOrWhiteSpace(rel)) continue;
+            string full = Path.Combine(rootPath, rel.Replace('/', '\\'));
+            if (!File.Exists(full)) continue;
+            if (seen.Add(full)) {
+                paths.Add(full);
+                labels.Add("tracked file '" + rel + "'");
+            }
+        }
+        for (int i = 0; i < untrackedRel.Length; i++) {
+            string rel = untrackedRel[i];
+            if (string.IsNullOrWhiteSpace(rel)) continue;
+            string full = Path.Combine(rootPath, rel.Replace('/', '\\'));
+            if (!File.Exists(full)) continue;
+            if (seen.Add(full)) {
+                paths.Add(full);
+                labels.Add(full);
+            }
+        }
+        for (int i = 0; i < extraPaths.Length; i++) {
+            string full = extraPaths[i];
+            if (string.IsNullOrWhiteSpace(full)) continue;
+            if (!File.Exists(full)) continue;
+            if (seen.Add(full)) {
+                paths.Add(full);
+                labels.Add(full);
+            }
+        }
+        return new string[][] { paths.ToArray(), labels.ToArray() };
+    }
+
     private static int IndexOfBytes(byte[] haystack, int haystackLen, byte[] needle) {
         int nLen = needle.Length;
         if (nLen == 0 || haystackLen < nLen) return -1;
         byte first = needle[0];
+        int lastOffset = nLen - 1;
+        byte last = needle[lastOffset];
         int limit = haystackLen - nLen;
         for (int i = 0; i <= limit; i++) {
-            if (haystack[i] != first) continue;
+            if (haystack[i] != first || haystack[i + lastOffset] != last) continue;
             bool match = true;
-            for (int j = 1; j < nLen; j++) {
+            for (int j = 1; j < lastOffset; j++) {
                 if (haystack[i + j] != needle[j]) { match = false; break; }
             }
             if (match) return i;
@@ -660,54 +689,73 @@ public static class SovereignByteStreamScanner {
         }
         int overlap = Math.Max(0, maxLen - 1);
         const int ChunkSize = 65536;
-        byte[] buf = new byte[overlap + ChunkSize];
-        byte[] lowerBuf = needLower ? new byte[overlap + ChunkSize] : null;
+        object hitsLock = new object();
 
-        for (int fIdx = 0; fIdx < filePaths.Length; fIdx++) {
-            string path = filePaths[fIdx];
-            string disp = displayLabels[fIdx];
-            bool[] matchedSpec = new bool[specCount];
-            try {
-                using (var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, ChunkSize)) {
-                    int carry = 0;
-                    while (true) {
-                        int bytesRead = fs.Read(buf, carry, ChunkSize);
-                        if (bytesRead <= 0) break;
-                        int validLen = carry + bytesRead;
-                        if (needLower) {
-                            for (int i = 0; i < validLen; i++) {
-                                byte b = buf[i];
-                                lowerBuf[i] = (b >= 0x41 && b <= 0x5A) ? (byte)(b + 0x20) : b;
+        Parallel.ForEach(
+            Partitioner.Create(0, filePaths.Length),
+            new ParallelOptions { MaxDegreeOfParallelism = Math.Min(8, Environment.ProcessorCount) },
+            range => {
+                byte[] buf = new byte[overlap + ChunkSize];
+                byte[] lowerBuf = needLower ? new byte[overlap + ChunkSize] : null;
+                bool[] matchedSpec = new bool[specCount];
+                for (int fIdx = range.Item1; fIdx < range.Item2; fIdx++) {
+                    string path = filePaths[fIdx];
+                    string disp = displayLabels[fIdx];
+                    Array.Clear(matchedSpec, 0, specCount);
+                    try {
+                        using (var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, ChunkSize, FileOptions.SequentialScan)) {
+                            int carry = 0;
+                            while (true) {
+                                int bytesRead = fs.Read(buf, carry, ChunkSize);
+                                if (bytesRead <= 0) break;
+                                int validLen = carry + bytesRead;
+                                if (needLower) {
+                                    for (int i = 0; i < validLen; i++) {
+                                        byte b = buf[i];
+                                        lowerBuf[i] = (b >= 0x41 && b <= 0x5A) ? (byte)(b + 0x20) : b;
+                                    }
+                                }
+                                for (int k = 0; k < specCount; k++) {
+                                    if (matchedSpec[k]) continue;
+                                    byte[] targetBuf = ignoreCaseAscii[k] ? lowerBuf : buf;
+                                    byte[] needle = ignoreCaseAscii[k] ? needlesLower[k] : needlesExact[k];
+                                    if (IndexOfBytes(targetBuf, validLen, needle) >= 0) {
+                                        matchedSpec[k] = true;
+                                        string msg = codes[k] + ": " + labels[k] + " found in " + disp;
+                                        lock (hitsLock) { hits.Add(msg); }
+                                    }
+                                }
+                                if (overlap > 0 && validLen > overlap) {
+                                    Buffer.BlockCopy(buf, validLen - overlap, buf, 0, overlap);
+                                    carry = overlap;
+                                } else if (overlap > 0) {
+                                    carry = validLen;
+                                } else {
+                                    carry = 0;
+                                }
                             }
                         }
-                        for (int k = 0; k < specCount; k++) {
-                            if (matchedSpec[k]) continue;
-                            byte[] targetBuf = ignoreCaseAscii[k] ? lowerBuf : buf;
-                            byte[] needle = ignoreCaseAscii[k] ? needlesLower[k] : needlesExact[k];
-                            if (IndexOfBytes(targetBuf, validLen, needle) >= 0) {
-                                matchedSpec[k] = true;
-                                hits.Add(codes[k] + ": " + labels[k] + " found in " + disp);
-                            }
-                        }
-                        if (overlap > 0 && validLen > overlap) {
-                            Buffer.BlockCopy(buf, validLen - overlap, buf, 0, overlap);
-                            carry = overlap;
-                        } else if (overlap > 0) {
-                            carry = validLen;
-                        } else {
-                            carry = 0;
-                        }
+                    } catch (Exception ex) {
+                        string errMsg = "SECRET_SCAN_READ_ERROR: Could not read " + disp + " (" + ex.Message + ")";
+                        lock (hitsLock) { hits.Add(errMsg); }
                     }
                 }
-            } catch (Exception ex) {
-                hits.Add("SECRET_SCAN_READ_ERROR: Could not read " + disp + " (" + ex.Message + ")");
             }
-        }
+        );
         return hits;
     }
 }
 "@ -Language CSharp -IgnoreWarnings
     }
+
+    $candidates = [SovereignByteStreamScanner]::BuildScanCandidates(
+        $RootPath,
+        [string[]]$trackedRel,
+        [string[]]$untrackedRel,
+        [string[]]$extraCandidates.ToArray()
+    )
+    $scanPathsArr = [string[]]$candidates[0]
+    $scanLabelsArr = [string[]]$candidates[1]
 
     $utf8NoBom = [System.Text.UTF8Encoding]::new($false)
     $needlesExact = New-Object 'byte[][]' $secretSpecs.Count
@@ -725,8 +773,8 @@ public static class SovereignByteStreamScanner {
     }
 
     $scanHits = [SovereignByteStreamScanner]::ScanFiles(
-        [string[]]$scanPathsList.ToArray(),
-        [string[]]$scanLabelsList.ToArray(),
+        $scanPathsArr,
+        $scanLabelsArr,
         $needlesExact,
         $needlesLower,
         $ignoreCaseArr,
@@ -1169,7 +1217,7 @@ function Run-StaticGatekeeperChecks {
         $failures.Add("LEAN4_RECEIPT_VERIFIER_MISSING: $leanReceiptVerifier not found")
     } else {
         try {
-            $vOut = (& powershell -NoProfile -ExecutionPolicy Bypass -File $leanReceiptVerifier -VerifyOnly -RepoRoot $RepoRoot 2>&1) -join " "
+            $vOut = (& powershell -InputFormat None -NoProfile -ExecutionPolicy Bypass -File $leanReceiptVerifier -VerifyOnly -RepoRoot $RepoRoot 2>&1) -join " "
             if ($LASTEXITCODE -ne 0) {
                 $failures.Add("LEAN4_HMAC_RECEIPT_INVALID: $vOut")
             }
@@ -1185,24 +1233,114 @@ if ($HookStdin) {
     $ErrorActionPreference = "SilentlyContinue"
     $rawInput = ""
     try {
-        if ([Console]::IsInputRedirected) {
-            $readTask = [Console]::In.ReadLineAsync()
-            if ($readTask.Wait(1500)) {
-                $rawInput = $readTask.Result
+        if (-not ('SovereignHookStdinReader' -as [type])) {
+            Add-Type -TypeDefinition @"
+using System;
+using System.Diagnostics;
+using System.IO;
+using System.Runtime.InteropServices;
+using System.Text;
+using System.Threading;
+public static class SovereignHookStdinReader {
+    private const int STD_INPUT_HANDLE = -10;
+    private const uint FILE_TYPE_DISK = 1;
+    private const uint FILE_TYPE_PIPE = 3;
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    private static extern IntPtr GetStdHandle(int nStdHandle);
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    private static extern uint GetFileType(IntPtr hFile);
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    private static extern bool PeekNamedPipe(
+        IntPtr hNamedPipe,
+        IntPtr lpBuffer,
+        uint nBufferSize,
+        IntPtr lpBytesRead,
+        out uint lpTotalBytesAvail,
+        IntPtr lpBytesLeftThisMessage
+    );
+
+    public static string ReadHookStdin(int timeoutMs) {
+        if (!Console.IsInputRedirected) return "";
+        IntPtr hIn = GetStdHandle(STD_INPUT_HANDLE);
+        if (hIn == IntPtr.Zero || hIn == new IntPtr(-1)) return "";
+        uint fType = GetFileType(hIn);
+        if (fType == FILE_TYPE_DISK) {
+            using (var sr = new StreamReader(Console.OpenStandardInput(), Encoding.UTF8, true, 4096, true)) {
+                return sr.ReadToEnd();
             }
         }
-    } catch {}
+        if (fType != FILE_TYPE_PIPE) return "";
 
-    if ([string]::IsNullOrWhiteSpace($rawInput) -or ($rawInput -notmatch 'git\s+(commit|push)')) {
+        var ms = new MemoryStream();
+        Stream stdin = Console.OpenStandardInput();
+        byte[] buf = new byte[65536];
+        var sw = Stopwatch.StartNew();
+        while (true) {
+            uint avail = 0;
+            bool ok = PeekNamedPipe(hIn, IntPtr.Zero, 0, IntPtr.Zero, out avail, IntPtr.Zero);
+            if (ok && avail > 0) {
+                int toRead = (int)Math.Min(avail, (uint)buf.Length);
+                int n = stdin.Read(buf, 0, toRead);
+                if (n > 0) {
+                    ms.Write(buf, 0, n);
+                }
+                continue;
+            }
+            if (!ok) {
+                break;
+            }
+            if (ms.Length > 0) {
+                Thread.Sleep(30);
+                uint availAfter = 0;
+                bool okAfter = PeekNamedPipe(hIn, IntPtr.Zero, 0, IntPtr.Zero, out availAfter, IntPtr.Zero);
+                if (okAfter && availAfter > 0) {
+                    continue;
+                }
+                break;
+            }
+            if (sw.ElapsedMilliseconds >= timeoutMs) {
+                break;
+            }
+            Thread.Sleep(20);
+        }
+        if (ms.Length == 0) return "";
+        string txt = Encoding.UTF8.GetString(ms.ToArray());
+        if (txt.Length > 0 && txt[0] == '\uFEFF') {
+            txt = txt.Substring(1);
+        }
+        return txt;
+    }
+}
+"@ -Language CSharp -IgnoreWarnings
+        }
+        $rawInput = [SovereignHookStdinReader]::ReadHookStdin(1500)
+    } catch {}
+    $ErrorActionPreference = "Stop"
+
+    if ([string]::IsNullOrWhiteSpace($rawInput) -or ($rawInput -notmatch '(?s)\bgit(?:\.exe)?\b.*\b(commit|push)\b')) {
         Write-Output '{"decision":"allow"}'
         exit 0
     }
 
+    $payload = $null
     try {
         $payload = $rawInput | ConvertFrom-Json
-        $toolName = $payload.toolCall.name
-        $cmdLine = $payload.toolCall.args.CommandLine
-        if ($toolName -eq "run_command" -and $cmdLine -match '\bgit\s+(commit|push)\b') {
+    } catch {
+        $payload = $null
+    }
+
+    if ($null -eq $payload) {
+        Write-Output '{"decision":"allow"}'
+        exit 0
+    }
+
+    $toolName = if ($payload.toolCall) { [string]$payload.toolCall.name } else { "" }
+    $cmdLine = if ($payload.toolCall -and $payload.toolCall.args) { [string]$payload.toolCall.args.CommandLine } else { "" }
+    if ($toolName -eq "run_command" -and $cmdLine -match '\bgit(?:\.exe)?(?:\s+(?:-[Cc]\s+(?:"[^"]+"|\S+)|--\S+|-\S+))*\s+(commit|push)\b') {
+        try {
             $violations = Run-StaticGatekeeperChecks
             if ($violations.Count -gt 0) {
                 $reasonStr = "BRUTAL GATEKEEPER BLOCKED COMMIT/PUSH: " + ($violations -join " | ")
@@ -1213,9 +1351,14 @@ if ($HookStdin) {
                 Write-Output $outObj
                 exit 0
             }
+        } catch {
+            $errObj = @{
+                decision = "deny"
+                reason   = "BRUTAL GATEKEEPER ERROR: $($_.Exception.Message)"
+            } | ConvertTo-Json -Compress
+            Write-Output $errObj
+            exit 0
         }
-    } catch {
-        # Fallback allow if JSON parsing fails on non-git input
     }
 
     Write-Output '{"decision":"allow"}'

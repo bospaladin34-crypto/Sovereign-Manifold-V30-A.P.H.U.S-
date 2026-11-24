@@ -390,6 +390,9 @@ function Run-Tier2 {
         }
     }
 
+    $opKeyTier2 = if ($env:ACT_OMEGA_OPERATOR_KEY) { $env:ACT_OMEGA_OPERATOR_KEY.Trim() } elseif (Test-Path "C:\Users\Nbell\.act_omega_operator_vault_key") { ([System.IO.File]::ReadAllText("C:\Users\Nbell\.act_omega_operator_vault_key")).Trim() } else { "" }
+    $opHdrsTier2 = if ($opKeyTier2.Length -ge 24) { @{ "X-Sovereign-Operator-Key" = $opKeyTier2 } } else { @{} }
+
     # T2.2: L0 Core 41-Module Sheaf Engine Dispatcher (/api/v1/l0_core/execute_41_modules)
     if (Should-RunTest 2 "M2" "F06") {
         $sw = [System.Diagnostics.Stopwatch]::StartNew()
@@ -398,7 +401,7 @@ function Run-Tier2 {
         $moduleCount = 0
         $busDigest = ""
         try {
-            $res = Invoke-RestMethod -Uri "$HostUri/api/v1/l0_core/execute_41_modules" -TimeoutSec $TimeoutSec -ErrorAction Stop
+            $res = Invoke-RestMethod -Uri "$HostUri/api/v1/l0_core/execute_41_modules" -Headers $opHdrsTier2 -TimeoutSec $TimeoutSec -ErrorAction Stop
             $status = $res.status
             $moduleCount = if ($res.modules_executed) { $res.modules_executed.Count } else { 0 }
             $busDigest = if ($res.bus_envelope_sha256) { $res.bus_envelope_sha256 } else { "" }
@@ -421,8 +424,8 @@ function Run-Tier2 {
         $passed = $false
         $status = ""
         try {
-            $resGet = Invoke-RestMethod -Uri "$HostUri/api/v1/gemma4/bpe_resolve?prompt=SovereignManifold" -TimeoutSec $TimeoutSec -ErrorAction Stop
-            $resPost = Invoke-RestMethod -Uri "$HostUri/api/v1/gemma4/bpe_resolve" -Method Post -ContentType "application/json" -Body '{"prompt":"SovereignManifold"}' -TimeoutSec $TimeoutSec -ErrorAction Stop
+            $resGet = Invoke-RestMethod -Uri "$HostUri/api/v1/gemma4/bpe_resolve?prompt=SovereignManifold" -Headers $opHdrsTier2 -TimeoutSec $TimeoutSec -ErrorAction Stop
+            $resPost = Invoke-RestMethod -Uri "$HostUri/api/v1/gemma4/bpe_resolve" -Method Post -ContentType "application/json" -Headers $opHdrsTier2 -Body '{"prompt":"SovereignManifold"}' -TimeoutSec $TimeoutSec -ErrorAction Stop
             $getCount = if ($resGet.token_count) { [int]$resGet.token_count } else { if ($resGet.token_ids) { $resGet.token_ids.Count } else { 0 } }
             $postCount = if ($resPost.token_count) { [int]$resPost.token_count } else { if ($resPost.token_ids) { $resPost.token_ids.Count } else { 0 } }
             if ($resGet.prompt -eq "SovereignManifold" -and $getCount -eq 17 -and $postCount -eq 17) {
@@ -448,7 +451,7 @@ function Run-Tier2 {
         $status = ""
         $sqnr = 0.0
         try {
-            $res = Invoke-RestMethod -Uri "$HostUri/api/v1/gemma4/ple_256d_surgical_router?layer=0" -TimeoutSec $TimeoutSec -ErrorAction Stop
+            $res = Invoke-RestMethod -Uri "$HostUri/api/v1/gemma4/ple_256d_surgical_router?layer=0" -Headers $opHdrsTier2 -TimeoutSec $TimeoutSec -ErrorAction Stop
             if ($res -and $res.ple_dim -eq 256) {
                 $passed = $true
                 $status = "PLE_256D_ROUTED_OK"
@@ -471,7 +474,7 @@ function Run-Tier2 {
         $passed = $false
         $status = ""
         try {
-            $res = Invoke-RestMethod -Uri "$HostUri/api/v1/gemma4/multimodal_tower_probe" -TimeoutSec $TimeoutSec -ErrorAction Stop
+            $res = Invoke-RestMethod -Uri "$HostUri/api/v1/gemma4/multimodal_tower_probe" -Headers $opHdrsTier2 -TimeoutSec $TimeoutSec -ErrorAction Stop
             if ($res -and ($res.audio_tower_eval -or $res.vision_tower_eval -or ($res.status -match "MULTIMODAL" -and $res.status -notmatch "V44_0_0"))) {
                 $passed = $true
                 $status = "MULTIMODAL_TOWERS_PROBED_OK"
@@ -493,7 +496,7 @@ function Run-Tier2 {
         $status = ""
         $accRate = 0.0
         try {
-            $res = Invoke-RestMethod -Uri "$HostUri/api/v1/gemma4/speculative_cascade?prompt=Quantum" -TimeoutSec $TimeoutSec -ErrorAction Stop
+            $res = Invoke-RestMethod -Uri "$HostUri/api/v1/gemma4/speculative_cascade?prompt=Quantum" -Headers $opHdrsTier2 -TimeoutSec $TimeoutSec -ErrorAction Stop
             $firstTok = if ($res.draft_tokens -and $res.draft_tokens.Count -gt 0) { [int]$res.draft_tokens[0] } else { 0 }
             if ($res -and $res.k_draft -eq 4 -and $firstTok -eq 27825) {
                 $passed = $true
@@ -521,7 +524,7 @@ function Run-Tier2 {
         $toolCount = 0
         $lean4Thm = 0
         try {
-            $res = Invoke-RestMethod -Uri "$HostUri/api/v1/chain288/master_certification" -TimeoutSec $TimeoutSec -ErrorAction Stop
+            $res = Invoke-RestMethod -Uri "$HostUri/api/v1/chain288/master_certification" -Headers $opHdrsTier2 -TimeoutSec $TimeoutSec -ErrorAction Stop
             $status = $res.status
             $toolCount = if ($res.total_chain_tools) { [int]$res.total_chain_tools } else { 0 }
             $lean4Thm = if ($res.lean4_qed_theorems) { [int]$res.lean4_qed_theorems } else { 0 }
@@ -544,7 +547,7 @@ function Run-Tier2 {
         $passed = $false
         $status = ""
         try {
-            $res = Invoke-RestMethod -Uri "$HostUri/api/v1/p8_root/hardware_audit" -TimeoutSec $TimeoutSec -ErrorAction Stop
+            $res = Invoke-RestMethod -Uri "$HostUri/api/v1/p8_root/hardware_audit" -Headers $opHdrsTier2 -TimeoutSec $TimeoutSec -ErrorAction Stop
             if ($res -and ($res.autopoietic_bus_seq -or $res.status -match "OK")) {
                 $passed = $true
                 $status = "P8_BUS_ROUTED_OK"
@@ -566,7 +569,7 @@ function Run-Tier2 {
         $status = ""
         $memAvail = 0
         try {
-            $res = Invoke-RestMethod -Uri "$HostUri/api/v1/tools/t214" -TimeoutSec $TimeoutSec -ErrorAction Stop
+            $res = Invoke-RestMethod -Uri "$HostUri/api/v1/tools/t214" -Headers $opHdrsTier2 -TimeoutSec $TimeoutSec -ErrorAction Stop
             if ($res) {
                 # Verify non-synthetic live memory binding
                 $avail = if ($res.mem_available) { [int64]$res.mem_available } elseif ($res.MemAvailable) { [int64]$res.MemAvailable } else { 0 }
@@ -598,7 +601,7 @@ function Run-Tier2 {
         for ($tId = 271; $tId -le 288; $tId++) {
             $toolsChecked++
             try {
-                $res = Invoke-RestMethod -Uri "$HostUri/api/v1/tools/t$tId" -TimeoutSec 3 -ErrorAction Stop
+                $res = Invoke-RestMethod -Uri "$HostUri/api/v1/tools/t$tId" -Headers $opHdrsTier2 -TimeoutSec 3 -ErrorAction Stop
                 if ($res -and $res.status -notmatch "V44_0_0" -and ($res.tool_id -ge 271 -or $res.tool -match "27[1-9]|28[0-8]" -or $res.synthesis_id -or $res.status -match "BLEEDING_EDGE|OTA_MANIFEST")) {
                     $toolsPassed++
                 } else {
@@ -617,7 +620,7 @@ function Run-Tier2 {
         }
     }
 
-    # T2.11: Operator Header Gate & Loopback Security (?key= rejected, Header accepted)
+    # T2.11: Operator Header Gate & Loopback Security (?key= rejected 403, Header accepted)
     if (Should-RunTest 2 "M1" "F04") {
         $sw = [System.Diagnostics.Stopwatch]::StartNew()
         $passed = $false
@@ -630,6 +633,10 @@ function Run-Tier2 {
             try {
                 $qResp = Invoke-RestMethod -Uri "$HostUri/api/v1/auth/operator_vault_gate?key=$opKey" -TimeoutSec $TimeoutSec -ErrorAction Stop
                 $qAuthorized = [bool]$qResp.authorized
+            } catch [System.Net.WebException] {
+                if ($_.Exception.Response -and ([int]$_.Exception.Response.StatusCode -eq 403)) {
+                    $qAuthorized = $false
+                }
             } catch {}
             try {
                 $hResp = Invoke-RestMethod -Uri "$HostUri/api/v1/auth/operator_vault_gate" -Headers @{ "X-Sovereign-Operator-Key" = $opKey } -TimeoutSec $TimeoutSec -ErrorAction Stop
@@ -678,7 +685,7 @@ function Run-Tier2 {
         try {
             # Case a: Missing / Empty HMAC -> returns REJECTED_MISSING_HMAC / TICKET_SENTRY_REJECTED
             $bodyMissing = @{ column_id = 44; ring_level = "RingA0"; sub_epoch = 1 } | ConvertTo-Json -Compress
-            $respMissing = Invoke-RestMethod -Uri "$HostUri/api/v1/tools/t183" -Method Post -ContentType "application/json" -Body $bodyMissing -TimeoutSec $TimeoutSec -ErrorAction Stop
+            $respMissing = Invoke-RestMethod -Uri "$HostUri/api/v1/tools/t183" -Method Post -ContentType "application/json" -Headers $opHdrsTier2 -Body $bodyMissing -TimeoutSec $TimeoutSec -ErrorAction Stop
             if ($respMissing.status -eq "TICKET_SENTRY_REJECTED" -and $respMissing.permission_status -eq "REJECTED_MISSING_HMAC" -and $respMissing.ticket_valid -eq $false) {
                 $caseMissingPassed = $true
             } else {
@@ -687,7 +694,7 @@ function Run-Tier2 {
 
             # Case b: Tampered / Invalid HMAC -> returns REJECTED_INVALID_HMAC / TICKET_SENTRY_REJECTED
             $bodyInvalid = @{ column_id = 44; ring_level = "RingA0"; sub_epoch = 1; ticket_hmac_sha256 = "000000000000000000000000000000000000000000000000000000000000DEAD" } | ConvertTo-Json -Compress
-            $respInvalid = Invoke-RestMethod -Uri "$HostUri/api/v1/tools/t183" -Method Post -ContentType "application/json" -Body $bodyInvalid -TimeoutSec $TimeoutSec -ErrorAction Stop
+            $respInvalid = Invoke-RestMethod -Uri "$HostUri/api/v1/tools/t183" -Method Post -ContentType "application/json" -Headers $opHdrsTier2 -Body $bodyInvalid -TimeoutSec $TimeoutSec -ErrorAction Stop
             if ($respInvalid.status -eq "TICKET_SENTRY_REJECTED" -and $respInvalid.permission_status -eq "REJECTED_INVALID_HMAC" -and $respInvalid.ticket_valid -eq $false) {
                 $caseInvalidPassed = $true
             } else {
@@ -697,7 +704,7 @@ function Run-Tier2 {
             # Case c & d: Mint legitimate ticket via Tool 182 and test authorized entry then replay
             $uniqueEpoch = [uint64]([DateTimeOffset]::UtcNow.ToUnixTimeSeconds())
             $mintBody = @{ column_id = 44; ring_level = "RingA0"; sub_epoch = $uniqueEpoch } | ConvertTo-Json -Compress
-            $mintResp = Invoke-RestMethod -Uri "$HostUri/api/v1/tools/t182" -Method Post -ContentType "application/json" -Body $mintBody -TimeoutSec $TimeoutSec -ErrorAction Stop
+            $mintResp = Invoke-RestMethod -Uri "$HostUri/api/v1/tools/t182" -Method Post -ContentType "application/json" -Headers $opHdrsTier2 -Body $mintBody -TimeoutSec $TimeoutSec -ErrorAction Stop
 
             $mintHmac = "$($mintResp.ticket_hmac_sha256)"
             $mintNonce = "$($mintResp.sturmian_nonce)"
@@ -705,7 +712,7 @@ function Run-Tier2 {
             if ($mintHmac -and $mintNonce) {
                 # Case c: Legitimate ticket -> returns AUTHORIZED / MEASURED_TICKET_SENTRY_AUTHORIZED
                 $bodyLegit = @{ column_id = 44; ring_level = "RingA0"; sub_epoch = $uniqueEpoch; sturmian_nonce = $mintNonce; ticket_hmac_sha256 = $mintHmac } | ConvertTo-Json -Compress
-                $respLegit = Invoke-RestMethod -Uri "$HostUri/api/v1/tools/t183" -Method Post -ContentType "application/json" -Body $bodyLegit -TimeoutSec $TimeoutSec -ErrorAction Stop
+                $respLegit = Invoke-RestMethod -Uri "$HostUri/api/v1/tools/t183" -Method Post -ContentType "application/json" -Headers $opHdrsTier2 -Body $bodyLegit -TimeoutSec $TimeoutSec -ErrorAction Stop
                 if ($respLegit.status -eq "MEASURED_TICKET_SENTRY_AUTHORIZED" -and $respLegit.permission_status -eq "AUTHORIZED" -and $respLegit.ticket_valid -eq $true) {
                     $caseAuthorizedPassed = $true
                 } else {
@@ -713,7 +720,7 @@ function Run-Tier2 {
                 }
 
                 # Case d: Replay of legitimate ticket -> returns REJECTED_NONCE_REPLAY / TICKET_SENTRY_REJECTED
-                $respReplay = Invoke-RestMethod -Uri "$HostUri/api/v1/tools/t183" -Method Post -ContentType "application/json" -Body $bodyLegit -TimeoutSec $TimeoutSec -ErrorAction Stop
+                $respReplay = Invoke-RestMethod -Uri "$HostUri/api/v1/tools/t183" -Method Post -ContentType "application/json" -Headers $opHdrsTier2 -Body $bodyLegit -TimeoutSec $TimeoutSec -ErrorAction Stop
                 if ($respReplay.status -eq "TICKET_SENTRY_REJECTED" -and $respReplay.permission_status -eq "REJECTED_NONCE_REPLAY" -and $respReplay.ticket_valid -eq $false -and $respReplay.replay_detected -eq $true) {
                     $caseReplayPassed = $true
                 } else {
@@ -747,7 +754,7 @@ function Run-Tier2 {
         $reidemeisterReduced = $false
         $vesperStatus = ""
         try {
-            $aegis = Invoke-RestMethod -Uri "$HostUri/api/v1/aegis/autonomous_harness" -TimeoutSec $TimeoutSec -ErrorAction Stop
+            $aegis = Invoke-RestMethod -Uri "$HostUri/api/v1/aegis/autonomous_harness" -Headers $opHdrsTier2 -TimeoutSec $TimeoutSec -ErrorAction Stop
             $status = $aegis.status
             $primaryCL = if ($aegis.connectome_scaling) { [int64]$aegis.connectome_scaling.primary_cachelines } else { 0 }
             $bijectedCL = if ($aegis.connectome_scaling) { [int64]$aegis.connectome_scaling.bijected_total_cachelines } else { 0 }

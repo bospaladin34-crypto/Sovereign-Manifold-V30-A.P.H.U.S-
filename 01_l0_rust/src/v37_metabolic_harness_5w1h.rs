@@ -23,7 +23,7 @@ pub struct MetabolicHarness5W1HTelemetry {
     pub coord_rule_id: u64,
     pub coord_why: &'static str,
     pub coord_what: &'static str,
-    pub coord_where: &'static str,
+    pub coord_where: String,
     pub coord_when: &'static str,
     pub coord_how: &'static str,
     pub autonomous_dispatches: u64,
@@ -91,39 +91,45 @@ pub fn evaluate_metabolic_harness_5w1h_with_load(
         _ => "BAND_4_CATABOLIC_SWR_CONSOLIDATION_RECOVERY (M_ATP < 0.25: Emergency Kerr KV Eviction + E: SSD .npage Flush + 159.65Hz SWR)",
     };
 
+    let d1_db_live = act_omega_l0_core::v73_2_cloudflare_vpc_mesh_and_pgwire_hyperdrive::v73_2_read_live_d1_database_name()
+        .unwrap_or_else(|| String::from("UNMEASURED/OFFLINE"));
+    let where_band3 = format!(
+        "WHERE: Host :8097/:5173 -> Cloudflare Zero Trust MCP Portal + D1 SQLite ({} 5GB) + Workers VPC Durable Object Shadow",
+        d1_db_live
+    );
     let (w_why, w_what, w_where, w_when, w_how) = match rule_override {
         0 => (
             "WHY: Band 1 Anabolic ATP Surplus (M_ATP >= 0.80, Thermal Headroom > 35C) -> Execute Full 6-Domain Compound QAT, Formant Speech Synthesis & 8x SWR Consolidation",
             "WHAT: Execute Tool 50 (/api/v1/training/cross_domain_compound_qat) -> Tool 49 (/api/v1/speech/cymatic_formant_tts) -> Tool 42 (/api/v1/pagefile/cauchy_sparse_npage) -> Tool 41 (/api/v1/torchtpu/openxla_pallas_bridge)",
-            "WHERE: LOQ15 i5-12450HX (12/12 Threads) + RTX 3050 6GB WGSL + Pixel 10 G5 TPU + Pixel 8 P8-APEX + neurons_v4000.npage (C: & E:)",
+            String::from("WHERE: LOQ15 i5-12450HX (12/12 Threads) + RTX 3050 6GB WGSL + Pixel 10 G5 TPU + Pixel 8 P8-APEX + neurons_v4000.npage (C: & E:)"),
             "WHEN: Continuous 50ms Autopoietic Heartbeat + Decadic Sub-Epoch E0..E1 (14.8ms 4-Wave Parallel DAG)",
             "HOW: 64B Cache-Line Aligned TorchTPU Systolic Contraction + 64-Epoch Compound QAT + Klatt Formant WAV + 364 Lean 4 QED"
         ),
         1 => (
             "WHY: Band 2 Homeostatic Laminar Cruise (0.50 <= M_ATP < 0.80) -> Maintain Low-Latency 3-Compartment Dendritic Inference, MCP Portal & OpenAI /v1 Serving",
             "WHAT: Execute Tool 46 (/api/v1/mcp/rpc) -> Tool 47 (/v1/chat/completions) -> Tool 43 (/api/v1/physics/skyrmion_fermi_xuv) -> Tool 22 (/api/v1/operator/fno_solve)",
-            "WHERE: LOQ15 i5-12450HX (8 P-Core Threads) + RTX 3050 FP16/INT8 + Pixel 10 Tensor G5 (424.6k ops/s)",
+            String::from("WHERE: LOQ15 i5-12450HX (8 P-Core Threads) + RTX 3050 FP16/INT8 + Pixel 10 Tensor G5 (424.6k ops/s)"),
             "WHEN: 250ms Homeostatic Dispatch Cadence; Decadic Sub-Epoch E2..E3",
             "HOW: Zero-Bracket L0 Rust JSON-RPC 2.0 MCP Dispatcher + 16-Mode FNO Operator + Amygdala Salience Gate"
         ),
         2 => (
             "WHY: Band 3 Thermal Conservation Offload (0.25 <= M_ATP < 0.50, GPU > 74C or Free RAM < 3.5GB) -> Bypass Dense GPU GEMM & Offload to P8-APEX + O(1) LUT",
             "WHAT: Execute Tool 40 (/api/v1/edge/p8_apex_coprocessor) -> Tool 35 (/api/v1/geometry/amplituhedron_clifford) -> Tool 38 (/api/v1/autopoiesis/dgm_azr_seal)",
-            "WHERE: Pixel 8 P8-APEX Tensor G3 (9 Threads @ 393.8k ops/s) + Host 4 E-Core Efficiency Threads",
+            String::from("WHERE: Pixel 8 P8-APEX Tensor G3 (9 Threads @ 393.8k ops/s) + Host 4 E-Core Efficiency Threads"),
             "WHEN: 1000ms Throttled Conservation Tick; Decadic Sub-Epoch E4..E5",
             "HOW: O(1) Positive Geometry Cache-Aligned LUT (0.24 us) + ADPF Fixed-Performance ARM64 Co-Processor Offload"
         ),
         3 => (
             "WHY: External Agent / MCP Client & Cloudflare D1 5GB Tier-3 Edge Synchronization Interval Reached",
             "WHAT: Execute Tool 46 (/api/v1/mcp/rpc) -> Tool 47 (/api/v1/openai/compat) -> Tool 48 (/api/v1/cloudflare/d1_vpc_shadow)",
-            "WHERE: Host :8097/:5173 -> Cloudflare Zero Trust MCP Portal + D1 SQLite (act_omega_d1_vault 5GB) + Workers VPC Durable Object Shadow",
+            where_band3,
             "WHEN: Decadic Sub-Epoch E6..E7 (Bi-Temporal WAL Checkpoint & Edge Replication Window)",
             "HOW: JSON-RPC 2.0 Streamable-HTTP MCP 2026-07-28 + 618x Sparse Socket Delta + X25519MLKEM768 Post-Quantum Tunnel"
         ),
         _ => (
             "WHY: Band 4 Catabolic SWR Recovery (M_ATP < 0.25, Critical Thermal/Memory Pressure) -> Trigger Emergency Kerr KV Eviction & 159.65Hz SWR Pagefile Compaction",
             "WHAT: Execute Tool 44 (/api/v1/neuro/amygdala_kerr_ravi) -> Tool 39 (/api/v1/logging/bitemporal_wal) -> Tool 48 (/api/v1/cloudflare/d1_vpc_shadow)",
-            "WHERE: Host L0 Ring + ORICO (E:) NVMe SSD Vault (neurons_v4000.npage 2,703,360B) + Cloudflare D1 Edge Snapshot",
+            String::from("WHERE: Host L0 Ring + ORICO (E:) NVMe SSD Vault (neurons_v4000.npage 2,703,360B) + Cloudflare D1 Edge Snapshot"),
             "WHEN: Immediate Interrupt-Driven Recovery Barrier (< 1.8ms) + Sub-Epoch E8..E9 159.65Hz SWR Replay",
             "HOW: Evict Non-Salient KV Context Across Kerr r_+ Event Horizon + Flush Dirty .npage Records to E: SSD + 2000ms Cooldown"
         ),

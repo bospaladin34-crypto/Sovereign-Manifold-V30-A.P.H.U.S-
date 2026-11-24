@@ -434,9 +434,14 @@ pub fn v71_build_4domain_curriculum_corpus() -> Vec<V71CurriculumSample> {
         String::from("What is the role of the Sovereign Autopoietic Coordinator Bus and 5W1H ledger?"),
         String::from("Every tool execution across CHAIN 321 routes through execute_universal_tool_bus_and_writeback, publishing a 5W1H BusEnvelope (WHO, WHAT, WHEN 15.965 Hz theta and 159.65 Hz sharp-wave ripple, WHERE, WHY M_ATP, HOW) bound to a specific .npage neuron and Chair-44 column, with SHA-256 verified artifacts written to the E:\\ SSD Vault."),
     ));
+    let (live_d1_cnt_opt, _) = crate::v73_2_cloudflare_vpc_mesh_and_pgwire_hyperdrive::v73_2_read_live_d1_user_tables();
+    let d1_qa_label = match live_d1_cnt_opt {
+        Some(n) => format!("{}-user-table Cloudflare D1 vault", n),
+        None => String::from("Cloudflare D1 vault (UNMEASURED/OFFLINE)"),
+    };
     qa_pairs.push((
         String::from("How does the Cloudflare 6-Tier Zero-Downtime Edge Continuum protect the manifold?"),
-        String::from("The Cloudflare Edge Continuum combines a Named HTTP/2 Tunnel (act-omega-net.dev), SovereignContinuumDO SQLite Durable Object, 10-table Cloudflare D1 vault, R2 zero-egress object storage, Vectorize 32D E8^4 index, Workers AI fallback, and KV edge cache with an 80% token-bucket daily quota guard to ensure zero downtime."),
+        format!("The Cloudflare Edge Continuum combines a Named HTTP/2 Tunnel (act-omega-net.dev), SovereignContinuumDO SQLite Durable Object, {}, R2 zero-egress object storage, Vectorize 32D E8^4 index, Workers AI fallback, and KV edge cache with an 80% token-bucket daily quota guard to ensure zero downtime.", d1_qa_label),
     ));
     // Harvest live architectural metadata from MODEL_CARD.md if present
     let model_card_summary = if let Ok(mc_text) = fs::read_to_string("MODEL_CARD.md") {

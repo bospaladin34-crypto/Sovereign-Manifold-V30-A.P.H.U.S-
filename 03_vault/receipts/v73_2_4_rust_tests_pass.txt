@@ -1,0 +1,36 @@
+    Finished `release` profile [optimized] target(s) in 0.05s
+     Running tests\muse_v73_remediation_tests.rs (01_l0_rust\target_stage\release\deps\muse_v73_remediation_tests-50ce8a7ff6f437e6.exe)
+
+running 26 tests
+test test_e5_serde_json_gate_rejects_substring_spoofing ... ok
+test test_m1_item9_sync_matrix_json_bounds_and_negative_rejections ... ok
+test test_m1_item11_cors_6_origin_allowlist_and_negative_origins ... ok
+test test_m2_item4_sft_5gram_shingles_and_determinism_receipt ... ok
+test test_e3_plucker_and_track_ab_reject_keyword_stuffing_and_missing_stack ... ok
+test test_m2_v61_escape_clean_all_ascii_controls_and_json_roundtrip ... ok
+test test_m1_item8_live_ota_metadata_and_source_invariants ... ok
+test test_m2_item2_moe_per_step_curve_and_weights_manifest_provenance ... ok
+test test_m3_item6_live_lean4_1010_threshold_and_1009_negative_fixture ... ok
+test test_m2_item3_week3_ablation_flags_and_7stage_ledger_distinctness ... ok
+test test_r2_r3_r4_r8_l0_security_gates_health_ingest_tao_and_source_invariants ... ok
+test test_v73_2_4_m1_security_gates_v44_poc_and_query_key_parity ... ok
+test test_e7_research_kernels_report_self_test_and_fail_on_bad_inputs ... ok
+test test_v73_2_4_m2_item8_live_d1_11_table_parser_and_rs_clean ... ok
+test test_v73_2_4_m2_item7_live_apk_version_code_extraction ... ok
+test test_m4_item13_hmac_signed_lean_receipt_positive_and_fail_closed_negatives ... ok
+test test_c2_and_e10_corrupt_speculative_acceptance_fails_kl_gate ... ok
+test test_d2_answer_seeding_detection_and_pure_neural_converse ... ok
+test test_e4_converse_quality_gate_rejects_bad_or_truncated_output ... ok
+test test_m2_t341_repeated_rng_json_serialization_and_kl_receipt_stability ... ok
+test test_v73_2_4_m3_item10_persistent_monotonic_sh_xi_turn_counters ... ok
+test test_d3_active_d_perturbation_changes_d64_cell_loss ... ok
+test test_m2_item1_disk_corpus_guard_and_base_curve_meta_parity has been running for over 60 seconds
+test test_m4_item10_dynamic_version_no_pixel_serials_and_android_parity has been running for over 60 seconds
+test test_m4_item16_t383_curvetq_ce_scope_and_v71_2_narrow_172_support_label has been running for over 60 seconds
+test test_r1_item7_tool368_live_tools_count_and_zero_brackets has been running for over 60 seconds
+test test_r1_item7_tool368_live_tools_count_and_zero_brackets ... ok
+test test_m4_item10_dynamic_version_no_pixel_serials_and_android_parity ... ok
+test test_m2_item1_disk_corpus_guard_and_base_curve_meta_parity ... ok
+test test_m4_item16_t383_curvetq_ce_scope_and_v71_2_narrow_172_support_label ... ok
+
+test result: ok. 26 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 92.90s

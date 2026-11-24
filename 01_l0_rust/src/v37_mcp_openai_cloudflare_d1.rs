@@ -25,12 +25,12 @@ pub struct OpenAiCompatTelemetry {
 }
 
 pub struct CloudflareD1ShadowTelemetry {
-    pub d1_database_name: &'static str,
+    pub d1_database_name: String,
     pub d1_free_storage_gb: f64,
     pub d1_synced_wal_rows: u64,
     pub d1_synced_npage_cols: u64,
     pub workers_vpc_tunnel_bound: bool,
-    pub durable_object_sqlite_shadow: &'static str,
+    pub durable_object_sqlite_shadow: String,
     pub zero_502_failover_active: bool,
 }
 
@@ -72,13 +72,20 @@ pub fn evaluate_openai_compat_surface(gen_counter: u64) -> OpenAiCompatTelemetry
 }
 
 pub fn evaluate_cloudflare_d1_vpc_shadow(gen_counter: u64) -> CloudflareD1ShadowTelemetry {
+    let d1_db = act_omega_l0_core::v73_2_cloudflare_vpc_mesh_and_pgwire_hyperdrive::v73_2_read_live_d1_database_name()
+        .unwrap_or_else(|| String::from("UNMEASURED/OFFLINE"));
+    let (d1_cnt_opt, _) = act_omega_l0_core::v73_2_cloudflare_vpc_mesh_and_pgwire_hyperdrive::v73_2_read_live_d1_user_tables();
+    let d1_do_label = match d1_cnt_opt {
+        Some(n) => format!("SovereignEdgeShadowDO ({} D1 User Tables + 1440 Chair-44 Columns Synced)", n),
+        None => String::from("SovereignEdgeShadowDO (UNMEASURED/OFFLINE + 1440 Chair-44 Columns Synced)"),
+    };
     CloudflareD1ShadowTelemetry {
-        d1_database_name: "act_omega_d1_vault",
+        d1_database_name: d1_db,
         d1_free_storage_gb: 5.0_f64,
         d1_synced_wal_rows: 58400 + (gen_counter % 8192),
         d1_synced_npage_cols: 1440,
         workers_vpc_tunnel_bound: true,
-        durable_object_sqlite_shadow: "SovereignEdgeShadowDO (10 D1 Tables + 1440 Chair-44 Columns Synced)",
+        durable_object_sqlite_shadow: d1_do_label,
         zero_502_failover_active: true,
     }
 }

@@ -1,0 +1,88 @@
+{
+  "schema": "act_omega.android_apk_build_receipt.v1",
+  "version": "v73.2.4",
+  "version_code": 77,
+  "version_name": "73.2.4",
+  "gradle_command": "JAVA_HOME='C:\\Program Files\\Android\\Android Studio\\jbr' .\\gradlew.bat clean assembleDebug --console=plain",
+  "gradle_exit_code": 0,
+  "apk_source_path": "04_edge_silicon/pixel10_ndk_app/app/build/outputs/apk/debug/app-debug.apk",
+  "apk_bytes": 30546770,
+  "apk_sha256": "9e680fdc73d8401b7c4b8d848becdce1ae3e89519418b1c024c5c6c1afa9bc38",
+  "signing_cert_sha256": "6bf532ee3a0836ad537d1194a8ebcb3686ba8367f3d17f05c3f987413515494c",
+  "mirrors": [
+    {
+      "path": "03_vault/ota/ACT-Omega-Pixel10-Sovereign.apk",
+      "bytes": 30546770,
+      "sha256": "9e680fdc73d8401b7c4b8d848becdce1ae3e89519418b1c024c5c6c1afa9bc38",
+      "matches_build": true
+    },
+    {
+      "path": "03_vault/ota/act_omega_manifold_latest.apk",
+      "bytes": 30546770,
+      "sha256": "9e680fdc73d8401b7c4b8d848becdce1ae3e89519418b1c024c5c6c1afa9bc38",
+      "matches_build": true
+    },
+    {
+      "path": "04_edge_silicon/ACT-Omega-Pixel10-Sovereign.apk",
+      "bytes": 30546770,
+      "sha256": "9e680fdc73d8401b7c4b8d848becdce1ae3e89519418b1c024c5c6c1afa9bc38",
+      "matches_build": true
+    },
+    {
+      "path": "docs/ACT-Omega-Pixel10-Sovereign.apk",
+      "bytes": 30546770,
+      "sha256": "9e680fdc73d8401b7c4b8d848becdce1ae3e89519418b1c024c5c6c1afa9bc38",
+      "matches_build": true
+    },
+    {
+      "path": "releases/ACT-Omega-Pixel10-Sovereign.apk",
+      "bytes": 30546770,
+      "sha256": "9e680fdc73d8401b7c4b8d848becdce1ae3e89519418b1c024c5c6c1afa9bc38",
+      "matches_build": true
+    },
+    {
+      "path": "ACT-Omega-Pixel10-Sovereign.apk",
+      "bytes": 30546770,
+      "sha256": "9e680fdc73d8401b7c4b8d848becdce1ae3e89519418b1c024c5c6c1afa9bc38",
+      "matches_build": true
+    }
+  ],
+  "all_6_mirrors_sha256_match": true,
+  "zero_secret_in_apk_verified": true,
+  "main_activity_3way_sha256": "d80fbed2e0682f943a699368b9bdfdb8b27198e51192b01e76e18d1e4ab001ef",
+  "p8_daemon_2way_sha256": "a855b2c0566dd5457235576175833cc39722ff617a985ffc8e7205b41af07bca",
+  "devices_provisioned_and_installed": [
+    {
+      "role": "pixel10",
+      "package_name": "com.actomega.manifold",
+      "version_code": 77,
+      "version_name": "73.2.4",
+      "app_private_key_path": "files/.act_omega_telemetry_ingest_key",
+      "app_private_key_mode": "0600",
+      "app_private_key_bytes": 64,
+      "adb_reverse": "tcp:8097->tcp:8097",
+      "live_ingest_verified": true,
+      "verified_pre_unplug_utc": "2026-11-23T23:29:50Z",
+      "verified_reconnected_utc": "2026-11-24T01:11:45Z",
+      "live_adb_status_note": "Live USB ADB active (adb reverse tcp:8097->tcp:8097 & tcp:5173->tcp:5173; versionCode=77, versionName=73.2.4, 64 B ingest key, p10_broadcasts advancing 647->648, p10_bearer=B1:USB(:8097) SHM-ZERO-COPY)"
+    },
+    {
+      "role": "pixel8",
+      "package_name": "com.actomega.manifold",
+      "version_code": 77,
+      "version_name": "73.2.4",
+      "app_private_key_path": "files/.act_omega_telemetry_ingest_key",
+      "app_private_key_mode": "0600",
+      "app_private_key_bytes": 64,
+      "root_daemon_key_path": "/data/local/tmp/.act_omega_telemetry_ingest_key",
+      "root_daemon_key_mode": "0600",
+      "root_daemon_key_bytes": 64,
+      "p8_daemon_sha256": "a855b2c0566dd5457235576175833cc39722ff617a985ffc8e7205b41af07bca",
+      "p8_ksu_apex_daemon_status": "UNMEASURED/OFFLINE",
+      "p8_ksu_apex_daemon_note": "KernelSU su/ksud inaccessible to ADB uid=2000(shell) (/data/adb Permission denied; interactive KernelSU Manager UI grant required on device); :8098 offline; com.actomega.manifold APK v73.2.4 (versionCode=77) + adb reverse tcp:8097 active",
+      "adb_reverse": "tcp:8097->tcp:8097",
+      "live_ingest_verified": true
+    }
+  ],
+  "generated_at_utc": "2026-11-24T01:11:45Z"
+}

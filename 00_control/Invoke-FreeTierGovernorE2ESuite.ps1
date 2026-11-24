@@ -1294,7 +1294,7 @@ function Run-FreeTierTier4 {
         $sw = [System.Diagnostics.Stopwatch]::StartNew()
         $hostLive = $false
         try {
-            $hostRes = Invoke-WebRequest -Uri "$HostUri/api/v1/cloudflare/free_tier_governor" -TimeoutSec 3 -UseBasicParsing -ErrorAction SilentlyContinue
+            $hostRes = Invoke-WebRequest -Uri "$HostUri/api/v1/cloudflare/free_tier_governor" -Headers $authHeaders -TimeoutSec 3 -UseBasicParsing -ErrorAction SilentlyContinue
             if ($hostRes.StatusCode -eq 200) { $hostLive = $true }
         } catch {}
         $sw.Stop()

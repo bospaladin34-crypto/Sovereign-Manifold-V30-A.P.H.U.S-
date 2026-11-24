@@ -1,14 +1,14 @@
 {
-    "schema":  "ACT-Omega-SFT-Determinism-Receipt-v73.2.3",
-    "generated_at_utc":  "2026-11-23T06:24:33Z",
+    "schema":  "ACT-Omega-SFT-Determinism-Receipt-v73.2.4",
+    "generated_at_utc":  "2026-11-24T01:14:25Z",
     "generator_script":  "00_control/generate_sft_corpus.mjs",
     "committed_corpus_path":  "03_vault/corpus/sh_xi_sourced_multiturn_sft_v1.jsonl",
-    "committed_corpus_bytes":  242236,
-    "committed_corpus_sha256":  "d5ed7bb69c7fad78325930f9bcad3280018463eed89aa78a50dad2733b1bb01d",
-    "fresh_run_bytes":  242236,
-    "fresh_run_sha256":  "d5ed7bb69c7fad78325930f9bcad3280018463eed89aa78a50dad2733b1bb01d",
-    "fresh_run2_bytes":  242236,
-    "fresh_run2_sha256":  "d5ed7bb69c7fad78325930f9bcad3280018463eed89aa78a50dad2733b1bb01d",
+    "committed_corpus_bytes":  246087,
+    "committed_corpus_sha256":  "d958bc0ee76a56cbdeb21e88e42fcf6576370a7e825f373273029881a1df9b4e",
+    "fresh_run_bytes":  246087,
+    "fresh_run_sha256":  "d958bc0ee76a56cbdeb21e88e42fcf6576370a7e825f373273029881a1df9b4e",
+    "fresh_run2_bytes":  246087,
+    "fresh_run2_sha256":  "d958bc0ee76a56cbdeb21e88e42fcf6576370a7e825f373273029881a1df9b4e",
     "committed_vs_fresh_diff_bytes":  0,
     "committed_vs_fresh_exact_match":  true,
     "repeat_run_diff_bytes":  0,
@@ -21,8 +21,8 @@
                                        "target_source":  "crates/omega_sec_manifold/src/lib.rs",
                                        "perturbation_bytes":  1,
                                        "perturbation_description":  "1-byte comment header flip (byte[2] ! -\u003e ?) in isolated temp workspace",
-                                       "perturbed_output_bytes":  242236,
-                                       "perturbed_output_sha256":  "18259d441bc51605fc6bd442728a26a544981bd09a4a117cd1e96b8770036426",
+                                       "perturbed_output_bytes":  246087,
+                                       "perturbed_output_sha256":  "0dbd84a63efff2f8e2feb3abd6c036b0c1f448c29e6f26145394dd70267d0f53",
                                        "sha256_changed_vs_fresh":  true,
                                        "diff_bytes_vs_fresh":  228,
                                        "passed":  true
@@ -80,8 +80,8 @@
                                  },
                                  {
                                      "source_path":  "01_l0_rust/src/v70_0_exponential_worksteal_262144cl_bijection.rs",
-                                     "bytes":  42864,
-                                     "sha256":  "63a344d239631399d8d249ffe04afdae3d4e71e5a3747797c8acc83f51fc6f32"
+                                     "bytes":  43249,
+                                     "sha256":  "b0cd47117879b6a39c70ed4a360511172e615bae171c43ad62e89ac45898cfb0"
                                  },
                                  {
                                      "source_path":  "01_l0_rust/src/v73_0_unified_standalone_lab_bridge.rs",
@@ -95,8 +95,8 @@
                                  },
                                  {
                                      "source_path":  "01_l0_rust/src/v73_2_cloudflare_vpc_mesh_and_pgwire_hyperdrive.rs",
-                                     "bytes":  44951,
-                                     "sha256":  "986d66f4f428211ce5b31628fe3d46df3839cc0f31d4c03b3189e5f31d18f9d2"
+                                     "bytes":  66499,
+                                     "sha256":  "4ecca1cc8405b0cd3960d5c47d214a05aba6245cb0bfd33eb0c95533d92f40f5"
                                  },
                                  {
                                      "source_path":  "01_l0_rust/src/v57_aegis_autonomous_agent_harness.rs",

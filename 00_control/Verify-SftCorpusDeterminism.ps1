@@ -140,7 +140,7 @@ try {
     $overallPassed = $repeatExact -and $negPassed -and ($committedVsFreshExact -or $AllowCommittedDrift)
 
     $receipt = [ordered]@{
-        schema = 'ACT-Omega-SFT-Determinism-Receipt-v73.2.3'
+        schema = 'ACT-Omega-SFT-Determinism-Receipt-v73.2.4'
         generated_at_utc = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
         generator_script = $genScriptRel
         committed_corpus_path = $committedCorpusRel

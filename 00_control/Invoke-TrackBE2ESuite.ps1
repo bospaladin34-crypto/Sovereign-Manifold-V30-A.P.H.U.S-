@@ -1,4 +1,4 @@
-# 00_control\Invoke-TrackBE2ESuite.ps1
+﻿# 00_control\Invoke-TrackBE2ESuite.ps1
 # ACT-Omega Net Track B (v61.6-v61.14 / Handoff #3) Comprehensive E2E Test Suite
 # Requirements Derivation: ORIGINAL_REQUEST.md, PROJECT.md, SCOPE.md,
 # and ACT_OMEGA_v61_14_STRICT_1TO1_FORMALISM_SPEC_AND_ACCEPTABILITY_GATES.md
@@ -623,21 +623,47 @@ try {
 # Helper to probe HTTP endpoint safely
 function Test-HttpEndpointSafe {
     param([string]$Uri, [int]$Timeout = 3, [string]$Method = "GET", [string]$Body = "", [hashtable]$Headers = @{})
+    $effHeaders = if ($Headers.Count -gt 0) {
+        $Headers
+    } elseif ($Uri -match '/api/v1/(?:chain292|polytope7777|tools/t289|tools/t290|tools/t291|tools/t292|tools/t293)' -and $script:TrackBOpHeaders.Count -gt 0) {
+        $script:TrackBOpHeaders
+    } else {
+        $Headers
+    }
     $res = @{ Success = $false; StatusCode = 0; Content = ""; Json = $null; Error = "" }
     try {
         if ($Method -eq "GET") {
-            $resp = Invoke-RestMethod -Uri $Uri -TimeoutSec $Timeout -Headers $Headers -ErrorAction Stop
+            $resp = Invoke-RestMethod -Uri $Uri -TimeoutSec $Timeout -Headers $effHeaders -ErrorAction Stop
             $res.Success = ($null -ne $resp)
+            $res.StatusCode = 200
             $res.Json = $resp
         } else {
-            $resp = Invoke-RestMethod -Uri $Uri -Method $Method -Body $Body -ContentType "application/json" -TimeoutSec $Timeout -Headers $Headers -ErrorAction Stop
+            $resp = Invoke-RestMethod -Uri $Uri -Method $Method -Body $Body -ContentType "application/json" -TimeoutSec $Timeout -Headers $effHeaders -ErrorAction Stop
             $res.Success = ($null -ne $resp)
+            $res.StatusCode = 200
             $res.Json = $resp
         }
     } catch {
         $res.Error = $_.Exception.Message
+        try {
+            if ($_.Exception -is [System.Net.WebException] -and $_.Exception.Response) {
+                $res.StatusCode = [int]$_.Exception.Response.StatusCode
+            }
+        } catch {}
     }
     return $res
+}
+
+$script:TrackBOpHeaders = @{}
+$script:TrackBOpKeyVal = if ($env:ACT_OMEGA_OPERATOR_KEY) {
+    $env:ACT_OMEGA_OPERATOR_KEY.Trim()
+} elseif (Test-Path "C:\Users\Nbell\.act_omega_operator_vault_key") {
+    ([System.IO.File]::ReadAllText("C:\Users\Nbell\.act_omega_operator_vault_key")).Trim()
+} else {
+    ""
+}
+if ($script:TrackBOpKeyVal.Length -ge 24) {
+    $script:TrackBOpHeaders["X-Sovereign-Operator-Key"] = $script:TrackBOpKeyVal
 }
 
 # ==============================================================================
@@ -1557,7 +1583,8 @@ function Run-TrackBTier1 {
                 $opKey = (Get-Content $keyPath -Raw).Trim()
                 $qResp = Test-HttpEndpointSafe -Uri "$HostUri/api/v1/auth/operator_vault_gate?key=$opKey" -Timeout 3
                 $hResp = Test-HttpEndpointSafe -Uri "$HostUri/api/v1/auth/operator_vault_gate" -Timeout 3 -Headers @{ "X-Sovereign-Operator-Key" = $opKey }
-                $gatePass = ($qResp.Json.authorized -eq $false -and $hResp.Json.authorized -eq $true)
+                $qRejected = ($qResp.StatusCode -eq 403) -or ($qResp.Success -and $qResp.Json.authorized -eq $false)
+                $gatePass = ($qRejected -and $hResp.Success -and $hResp.Json.authorized -eq $true)
             }
         }
         $sw.Stop()
@@ -2974,13 +3001,17 @@ function Run-TrackBTier2 {
 
         # T2.F12.2
         $sw = [System.Diagnostics.Stopwatch]::StartNew()
-        # Operator gate rejects query param ?key=... with 401
-        $queryRejected = $true
+        # Operator gate rejects query param ?key=... with 403
+        $queryRejected = $false
         if (-not $DryRun.IsPresent) {
             $probe = Test-HttpEndpointSafe -Uri "$HostUri/api/v1/auth/operator_vault_gate?key=TESTKEY" -Timeout 3
-            if ($probe.Success -and $probe.Json) {
+            if ($probe.StatusCode -eq 403) {
+                $queryRejected = $true
+            } elseif ($probe.Success -and $probe.Json) {
                 $queryRejected = ($probe.Json.authorized -eq $false)
             }
+        } else {
+            $queryRejected = $true
         }
         $sw.Stop()
         Record-TrackBTest 2 "T2.F12.2_OperatorGateQueryParamUnauthorized" "Operator Gate Query Param Rejection" "M4" "F12" "Constitutional Invariant #7" $queryRejected $false "Query parameter ?key= correctly rejected with unauthorized" $sw.Elapsed.TotalMilliseconds @{ Rejected = $queryRejected }

@@ -4,7 +4,7 @@
 //   Tool 73: Multi-Turn Bitemporal Working Memory Ring (/api/v1/converse/multiturn_memory)
 //   Tool 74: 16-Domain Socratic Dialectical Debate Engine (/api/v1/converse/dialectical_debate)
 //   Tool 75: Whole-Architecture Self-Profiler & Healer (/api/v1/diagnostics/v44_self_profiler)
-//   Tool 76: v44.2.0 Unified 10-Table & 28,160-Neuron Snapshot (/api/v1/manifold/v44_omni_snapshot)
+//   Tool 76: v44.2.0 Unified Live-Table & 28,160-Neuron Snapshot (/api/v1/manifold/v44_omni_snapshot)
 // Muse Audit #3 Remediated: Self-Profiler computes genuine dynamic health grade (0..100)
 // from real disk byte sizes, thermal thresholds, and measured throughput (never always A+!).
 // ZERO SQUARE BRACKETS ENFORCED (0x5B / 0x5D FORBIDDEN IN SOURCE)

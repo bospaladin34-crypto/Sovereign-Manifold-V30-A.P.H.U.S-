@@ -59,6 +59,8 @@ pub struct WebGpuLeaseResult {
     pub cadence_jitter_us: f64,
     pub lease_ttl_ms: u64,
     pub active_leases_json: String,
+    pub rejected_bad_request: bool,
+    pub rejection_reason: String,
     pub diag: String,
 }
 
@@ -241,6 +243,111 @@ pub fn execute_tool77_p8_npage_shm_bridge(
     }
 }
 
+pub fn v44_constant_time_eq(a: &str, b: &str) -> bool {
+    let ab = a.as_bytes();
+    let bb = b.as_bytes();
+    let max_len = ab.len().max(bb.len()).max(64);
+    let mut diff: usize = ab.len() ^ bb.len();
+    for i in 0..max_len {
+        let x = ab.get(i).copied().unwrap_or(0) as usize;
+        let y = bb.get(i).copied().unwrap_or(0) as usize;
+        diff |= x ^ y;
+    }
+    diff == 0
+}
+
+pub fn v44_compute_expected_e8z_plucker_hashes() -> Option<(String, String)> {
+    let raw = std::fs::read("C:\\sovereign_manifold_v31\\00_control\\weights\\sovereign_harmonic_iv_v5000.e8z")
+        .or_else(|_| std::fs::read("00_control/weights/sovereign_harmonic_iv_v5000.e8z"))
+        .ok()?;
+    if raw.len() < 2080 * 64 {
+        return None;
+    }
+    let lines: usize = 2080;
+    let mut raw_energies: Vec<f64> = Vec::with_capacity(lines);
+    let mut min_e: f64 = f64::INFINITY;
+    let mut max_e: f64 = f64::NEG_INFINITY;
+    for idx in 0..lines {
+        let base_off = idx * 64;
+        let mut sum_sq: f64 = 0.0;
+        let mut sum_diff: f64 = 0.0;
+        for b in 0..64usize {
+            let cur_b = raw.get(base_off + b).copied()? as f64;
+            let centered = (cur_b - 127.5) / 127.5;
+            sum_sq += centered * centered;
+            if b > 0 {
+                let prev_b = raw.get(base_off + b - 1).copied()? as f64;
+                sum_diff += (cur_b - prev_b).abs() / 255.0;
+            }
+        }
+        let rms = (sum_sq / 64.0).sqrt();
+        let tv = sum_diff / 63.0;
+        let bm_a = raw.get(base_off + (idx % 64)).copied()?;
+        let bm_b = raw.get(base_off + ((idx * 7 + 13) % 64)).copied()?;
+        let byte_mix = ((bm_a ^ bm_b) as f64) / 255.0;
+        let energy = 0.45 * rms + 0.35 * tv + 0.20 * byte_mix;
+        raw_energies.push(energy);
+        if energy < min_e {
+            min_e = energy;
+        }
+        if energy > max_e {
+            max_e = energy;
+        }
+    }
+    let span = (max_e - min_e).max(1.0e-6);
+    let max_safe = max_e.max(1.0e-6);
+    let mut normalized: Vec<f64> = Vec::with_capacity(lines);
+    for idx in 0..lines {
+        let e = raw_energies.get(idx).copied()?;
+        let rel = (e - min_e) / span;
+        let base = 0.05 * (e / max_safe);
+        normalized.push(base.max(rel));
+    }
+    let mut crc: u32 = 0x5348345Au32;
+    for i in 0..704usize {
+        let idx_a = (i * 6) % 2080;
+        let idx_b = (idx_a + 44) % 2080;
+        let v_a0 = normalized.get(idx_a).copied()?;
+        let v_a1 = normalized.get((idx_a + 1) % 2080).copied()?;
+        let v_a2 = normalized.get((idx_a + 2) % 2080).copied()?;
+        let v_a3 = normalized.get((idx_a + 3) % 2080).copied()?;
+        let v_a4 = normalized.get((idx_a + 4) % 2080).copied()?;
+        let v_a5 = normalized.get((idx_a + 5) % 2080).copied()?;
+
+        let v_b0 = normalized.get(idx_b).copied()?;
+        let v_b1 = normalized.get((idx_b + 1) % 2080).copied()?;
+        let v_b2 = normalized.get((idx_b + 2) % 2080).copied()?;
+        let v_b3 = normalized.get((idx_b + 3) % 2080).copied()?;
+        let v_b4 = normalized.get((idx_b + 4) % 2080).copied()?;
+        let v_b5 = normalized.get((idx_b + 5) % 2080).copied()?;
+
+        if !(v_a0.is_finite() && v_a0 > 0.0)
+            || !(v_a1.is_finite() && v_a1 > 0.0)
+            || !(v_a2.is_finite() && v_a2 > 0.0)
+            || !(v_a3.is_finite() && v_a3 > 0.0)
+            || !(v_a4.is_finite() && v_a4 > 0.0)
+            || !(v_a5.is_finite() && v_a5 > 0.0)
+            || !(v_b0.is_finite() && v_b0 > 0.0)
+            || !(v_b1.is_finite() && v_b1 > 0.0)
+            || !(v_b2.is_finite() && v_b2 > 0.0)
+            || !(v_b3.is_finite() && v_b3 > 0.0)
+            || !(v_b4.is_finite() && v_b4 > 0.0)
+            || !(v_b5.is_finite() && v_b5 > 0.0)
+        {
+            return None;
+        }
+
+        let p_ab = v_a0 * v_b5 - v_a1 * v_b4 + v_a2 * v_b3 + v_a3 * v_b2 - v_a4 * v_b1 + v_a5 * v_b0;
+        let p_i32_u32 = ((p_ab * 10000.0) as i32) as u32;
+        crc = (crc ^ p_i32_u32).wrapping_mul(0x01000193u32);
+    }
+    let crc24 = crc & 0x00FF_FFFFu32;
+    Some((
+        format!("0x{:06X}_PLUCKER_POS_QED", crc24),
+        format!("0x{:06X}_CPU_E8_PLUCKER_6D_INNER_MEASURED", crc24),
+    ))
+}
+
 pub fn execute_tool78_webgpu_compute_lease(
     leases: &mut Vec<WebGpuLeaseSlot>,
     action_raw: &str,
@@ -272,27 +379,71 @@ pub fn execute_tool78_webgpu_compute_lease(
         adapter_raw.trim().replace('"', "").replace('\'', "")
     };
 
-    let req_kops = kops_req.unwrap_or(420.0).max(50.0).min(850.0);
-
-    // Verify Kasami-CRC24 / Plucker Positivity Proof-of-Compute
-    let mut crc: u32 = 0x5348345A;
-    for b in worker_id.bytes() {
-        crc = (crc ^ (b as u32)).wrapping_mul(0x01000193);
-    }
-    let poc_hash = if poc_raw.trim().is_empty() {
-        format!("0x{:06X}_PLUCKER_POS_QED", crc & 0xFFFFFF)
-    } else {
-        poc_raw.trim().replace('"', "")
-    };
+    let poc_hash = poc_raw.trim().replace('"', "");
 
     let mut lease_active = false;
-    let mut assigned_col_start: u32 = 480;
-    let mut assigned_col_end: u32 = 495;
+    let mut assigned_col_start: u32 = 0;
+    let mut assigned_col_end: u32 = 0;
     let mut worker_leased_kops: f64 = 0.0;
     let mut worker_batches: u64 = 0;
+    let mut poc_verified = false;
+
+    let make_rejected = |reason: &str,
+                         leases_snapshot: &Vec<WebGpuLeaseSlot>,
+                         base_kops: f64,
+                         act: String,
+                         wid: String,
+                         adp: String,
+                         poc: String,
+                         now_ms: u64|
+     -> WebGpuLeaseResult {
+        let (active_cnt, total_leased_kops, _total_batches, leases_json) =
+            compute_active_webgpu_leased_kops(leases_snapshot);
+        let total_elastic = base_kops + total_leased_kops;
+        let (measured_jitter_us, _veenstra_r_tc) = measure_veenstra_37unit_time_crystal_jitter(now_ms);
+        let diag = format!(
+            "TOOL 78 WEBGPU COMPUTE LEASE REJECTED (Reason='{}' | Action='{}' | Worker='{}' | Measured Veenstra 37-Unit Jitter={:.4} us): Fail-closed HTTP 400 — zero state or lease mutation.",
+            reason, act, wid, measured_jitter_us
+        );
+        WebGpuLeaseResult {
+            action: act,
+            worker_id: wid,
+            gpu_adapter: adp,
+            lease_active: false,
+            assigned_col_start: 0,
+            assigned_col_end: 0,
+            worker_leased_kops: 0.0,
+            worker_batches: 0,
+            poc_verified: false,
+            poc_hash: poc,
+            active_leases_count: active_cnt,
+            total_webgpu_leased_kops: total_leased_kops,
+            total_elastic_cluster_kops: total_elastic,
+            cadence_jitter_us: measured_jitter_us,
+            lease_ttl_ms: 15000,
+            active_leases_json: leases_json,
+            rejected_bad_request: true,
+            rejection_reason: String::from(reason),
+            diag,
+        }
+    };
 
     if action == "release" {
+        for slot in leases.iter() {
+            if slot.worker_id == worker_id {
+                assigned_col_start = slot.col_start;
+                assigned_col_end = slot.col_end;
+                break;
+            }
+        }
         leases.retain(|slot| slot.worker_id != worker_id);
+        if !poc_hash.is_empty() {
+            if let Some((exp_gpu, exp_simd)) = v44_compute_expected_e8z_plucker_hashes() {
+                let m_gpu = v44_constant_time_eq(&poc_hash, &exp_gpu);
+                let m_simd = v44_constant_time_eq(&poc_hash, &exp_simd);
+                poc_verified = m_gpu || m_simd;
+            }
+        }
     } else if action == "status" {
         for slot in leases.iter() {
             if slot.worker_id == worker_id {
@@ -303,8 +454,65 @@ pub fn execute_tool78_webgpu_compute_lease(
                 worker_batches = slot.batches_completed;
             }
         }
-    } else {
-        // acquire, heartbeat, or submit
+    } else if action == "acquire" || action == "heartbeat" || action == "submit" {
+        let req_kops = match kops_req {
+            Some(v) if v.is_finite() && (50.0..=850.0).contains(&v) => v,
+            _ => {
+                return make_rejected(
+                    "INVALID_OR_MISSING_KOPS",
+                    leases,
+                    base_trisilicon_kops,
+                    action,
+                    worker_id,
+                    gpu_adapter,
+                    poc_hash,
+                    now,
+                );
+            }
+        };
+        if poc_hash.is_empty() {
+            return make_rejected(
+                "MISSING_POC_HASH",
+                leases,
+                base_trisilicon_kops,
+                action,
+                worker_id,
+                gpu_adapter,
+                poc_hash,
+                now,
+            );
+        }
+        let (exp_gpu, exp_simd) = match v44_compute_expected_e8z_plucker_hashes() {
+            Some(pair) => pair,
+            None => {
+                return make_rejected(
+                    "UNMEASURED_E8Z_OFFLINE",
+                    leases,
+                    base_trisilicon_kops,
+                    action,
+                    worker_id,
+                    gpu_adapter,
+                    poc_hash,
+                    now,
+                );
+            }
+        };
+        let m_gpu = v44_constant_time_eq(&poc_hash, &exp_gpu);
+        let m_simd = v44_constant_time_eq(&poc_hash, &exp_simd);
+        if !(m_gpu || m_simd) {
+            return make_rejected(
+                "INVALID_POC_HASH_E8Z_PLUCKER_MISMATCH",
+                leases,
+                base_trisilicon_kops,
+                action,
+                worker_id,
+                gpu_adapter,
+                poc_hash,
+                now,
+            );
+        }
+        poc_verified = true;
+
         let mut found = false;
         for slot in leases.iter_mut() {
             if slot.worker_id == worker_id {
@@ -314,9 +522,7 @@ pub fn execute_tool78_webgpu_compute_lease(
                 if !adapter_raw.trim().is_empty() {
                     slot.gpu_adapter = gpu_adapter.clone();
                 }
-                if action == "submit" || action == "acquire" || action == "heartbeat" {
-                    slot.batches_completed += 1;
-                }
+                slot.batches_completed += 1;
                 lease_active = true;
                 assigned_col_start = slot.col_start;
                 assigned_col_end = slot.col_end;
@@ -345,6 +551,17 @@ pub fn execute_tool78_webgpu_compute_lease(
                 last_heartbeat_ms: now,
             });
         }
+    } else {
+        return make_rejected(
+            "INVALID_ACTION",
+            leases,
+            base_trisilicon_kops,
+            action,
+            worker_id,
+            gpu_adapter,
+            poc_hash,
+            now,
+        );
     }
 
     let (active_cnt, total_leased_kops, _total_batches, leases_json) = compute_active_webgpu_leased_kops(leases);
@@ -365,7 +582,7 @@ pub fn execute_tool78_webgpu_compute_lease(
             assigned_col_end,
             worker_leased_kops,
             worker_batches,
-            poc_verified: true,
+            poc_verified,
             poc_hash,
             active_leases_count: active_cnt,
             total_webgpu_leased_kops: total_leased_kops,
@@ -373,6 +590,8 @@ pub fn execute_tool78_webgpu_compute_lease(
             cadence_jitter_us: measured_jitter_us,
             lease_ttl_ms: 15000,
             active_leases_json: leases_json,
+            rejected_bad_request: false,
+            rejection_reason: String::new(),
             diag,
         };
     }
@@ -418,7 +637,7 @@ pub fn execute_tool78_webgpu_compute_lease(
         assigned_col_end,
         worker_leased_kops,
         worker_batches,
-        poc_verified: true,
+        poc_verified,
         poc_hash,
         active_leases_count: active_cnt,
         total_webgpu_leased_kops: total_leased_kops,
@@ -426,6 +645,8 @@ pub fn execute_tool78_webgpu_compute_lease(
         cadence_jitter_us: measured_jitter_us,
         lease_ttl_ms: 15000,
         active_leases_json: leases_json,
+        rejected_bad_request: false,
+        rejection_reason: String::new(),
         diag,
     }
 }

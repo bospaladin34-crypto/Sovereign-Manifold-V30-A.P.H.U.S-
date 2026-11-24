@@ -152,6 +152,9 @@ object VesperShellPrefs {
     private const val KEY_MODE = "act_omega_vesper_shell_mode"
     private const val KEY_CLS_OPEN = "act_omega_vesper_cls_open"
     private const val KEY_FAB_ENABLED = "act_omega_vesper_fab_enabled"
+    private const val KEY_SH_XI_SESSION_ID = "act_omega_sh_xi_session_id"
+    private const val KEY_SH_XI_TURN_SEQ = "act_omega_sh_xi_turn_seq"
+    private const val KEY_SH_XI_GLOBAL_TURN_SEQ = "act_omega_sh_xi_global_turn_seq"
 
     fun loadMode(context: Context): VesperShellMode {
         val sp = context.getSharedPreferences(PREF_FILE, Context.MODE_PRIVATE)
@@ -182,6 +185,48 @@ object VesperShellPrefs {
         context.getSharedPreferences(PREF_FILE, Context.MODE_PRIVATE)
             .edit()
             .putBoolean(KEY_FAB_ENABLED, enabled)
+            .apply()
+    }
+
+    fun loadSessionId(context: Context, isP8: Boolean): String {
+        val sp = context.getSharedPreferences(PREF_FILE, Context.MODE_PRIVATE)
+        val saved = sp.getString(KEY_SH_XI_SESSION_ID, null)
+        if (!saved.isNullOrBlank()) {
+            return saved
+        }
+        val initial = if (isP8) "mobile_p8_sh_xi" else "mobile_p10_sh_xi"
+        sp.edit().putString(KEY_SH_XI_SESSION_ID, initial).apply()
+        return initial
+    }
+
+    fun saveSessionId(context: Context, sessionId: String) {
+        context.getSharedPreferences(PREF_FILE, Context.MODE_PRIVATE)
+            .edit()
+            .putString(KEY_SH_XI_SESSION_ID, sessionId)
+            .apply()
+    }
+
+    fun loadSessionTurnSeq(context: Context): Int =
+        context.getSharedPreferences(PREF_FILE, Context.MODE_PRIVATE)
+            .getInt(KEY_SH_XI_TURN_SEQ, 0)
+            .coerceAtLeast(0)
+
+    fun saveSessionTurnSeq(context: Context, turnSeq: Int) {
+        context.getSharedPreferences(PREF_FILE, Context.MODE_PRIVATE)
+            .edit()
+            .putInt(KEY_SH_XI_TURN_SEQ, turnSeq.coerceAtLeast(0))
+            .apply()
+    }
+
+    fun loadGlobalTurnSeq(context: Context): Int =
+        context.getSharedPreferences(PREF_FILE, Context.MODE_PRIVATE)
+            .getInt(KEY_SH_XI_GLOBAL_TURN_SEQ, 0)
+            .coerceAtLeast(0)
+
+    fun saveGlobalTurnSeq(context: Context, globalSeq: Int) {
+        context.getSharedPreferences(PREF_FILE, Context.MODE_PRIVATE)
+            .edit()
+            .putInt(KEY_SH_XI_GLOBAL_TURN_SEQ, globalSeq.coerceAtLeast(0))
             .apply()
     }
 }
@@ -218,13 +263,22 @@ class VesperShellState(
     private val appContext: Context,
     initialMode: VesperShellMode,
     initialClsOpen: Boolean,
-    initialFabEnabled: Boolean
+    initialFabEnabled: Boolean,
+    initialSessionId: String,
+    initialSessionTurns: Int,
+    initialGlobalTurnSeq: Int
 ) {
     var vesperMode by mutableStateOf(initialMode)
         private set
     var vesperClsBarOpen by mutableStateOf(initialClsOpen)
         private set
     var vesperFabEnabled by mutableStateOf(initialFabEnabled)
+        private set
+    var vesperSessionId by mutableStateOf(initialSessionId)
+        private set
+    var vesperSessionTurns by mutableStateOf(initialSessionTurns)
+        private set
+    var vesperGlobalTurnSeq by mutableStateOf(initialGlobalTurnSeq)
         private set
     var vesperShowSkeleton by mutableStateOf(false)
     var vesperSimOldMode by mutableStateOf(false)
@@ -275,17 +329,55 @@ class VesperShellState(
         vesperFabEnabled = enabled
         VesperShellPrefs.saveFabEnabled(appContext, enabled)
     }
+
+    fun updateSessionTurn(sessionId: String, turnCount: Int, globalSeq: Int) {
+        val cleanSid = sessionId.trim().ifBlank { vesperSessionId }
+        vesperSessionId = cleanSid
+        vesperSessionTurns = turnCount.coerceAtLeast(0)
+        VesperShellPrefs.saveSessionId(appContext, cleanSid)
+        VesperShellPrefs.saveSessionTurnSeq(appContext, vesperSessionTurns)
+        if (globalSeq > 0) {
+            vesperGlobalTurnSeq = globalSeq
+            VesperShellPrefs.saveGlobalTurnSeq(appContext, globalSeq)
+        }
+    }
+
+    fun resetShXiSession(isP8: Boolean) {
+        val prefix = if (isP8) "mobile_p8_sh_xi" else "mobile_p10_sh_xi"
+        val nextSid = "${prefix}_${java.lang.Long.toString(System.currentTimeMillis(), 36)}"
+        vesperSessionId = nextSid
+        vesperSessionTurns = 0
+        VesperShellPrefs.saveSessionId(appContext, nextSid)
+        VesperShellPrefs.saveSessionTurnSeq(appContext, 0)
+        chatTurns.clear()
+        chatTurns.add(
+            VesperChatTurn(
+                id = SystemClock.elapsedRealtime(),
+                role = "assistant",
+                text = "Multi-turn Sovereign Harmonic XI episodic session reset ($nextSid). Next prompt begins Turn #1 while Global Seq (#$vesperGlobalTurnSeq) continues monotonically.",
+                statusBadge = "LOCAL SHM",
+                endpointUsed = "Local Android Hardware + SHM Bus",
+                receiptSummary = "Session reset locally ($nextSid)",
+                measuredRttMs = 0.0,
+                hostVerified = false
+            )
+        )
+    }
 }
 
 @Composable
 fun rememberVesperShellState(context: Context): VesperShellState {
     val appCtx = context.applicationContext
+    val isP8 = SovereignLiveBus.isPixel8ComputeNode
     return remember(appCtx) {
         VesperShellState(
             appContext = appCtx,
             initialMode = VesperShellPrefs.loadMode(appCtx),
             initialClsOpen = VesperShellPrefs.loadClsOpen(appCtx),
-            initialFabEnabled = VesperShellPrefs.loadFabEnabled(appCtx)
+            initialFabEnabled = VesperShellPrefs.loadFabEnabled(appCtx),
+            initialSessionId = VesperShellPrefs.loadSessionId(appCtx, isP8),
+            initialSessionTurns = VesperShellPrefs.loadSessionTurnSeq(appCtx),
+            initialGlobalTurnSeq = VesperShellPrefs.loadGlobalTurnSeq(appCtx)
         )
     }
 }
@@ -1929,13 +2021,13 @@ fun VesperMobileCalmView(
         }
 
         val qEnc = URLEncoder.encode(clean, "UTF-8")
-        val mobileSessionId = if (isP8) "mobile_p8_sh_xi" else "mobile_p10_sh_xi"
+        val mobileSessionEnc = URLEncoder.encode(shellState.vesperSessionId, "UTF-8")
         val targetPath = when (modeKind) {
             "prove" -> "/api/v1/sovereign_harmonic/week4/rlvf_grpo_compiler_in_the_loop?prompt=$qEnc"
             "ambiguity" -> "/api/v1/sovereign_harmonic/week3/human_ambiguity_and_metaphor_gauntlet?q=$qEnc"
             "build" -> "/api/v1/sovereign_harmonic/week4/medusa_eagle_dendritic_tree_speculative_k8?prompt=$qEnc"
             "vault" -> "/api/v1/v70/bijected_262144_cacheline_manifold"
-            else -> "/api/v1/sovereign_harmonic/converse?prompt=$qEnc&session_id=$mobileSessionId"
+            else -> "/api/v1/sovereign_harmonic/converse?prompt=$qEnc&session_id=$mobileSessionEnc&reset_session=false"
         }
 
         scope.launch {
@@ -2022,16 +2114,20 @@ fun VesperMobileCalmView(
                         val exp1 = ms?.optString("shell2_top1_expert", "E0") ?: "E0"
                         val exp2 = ms?.optString("shell2_top2_expert", "E1") ?: "E1"
                         val ragSrc = ms?.optString("rag_top_source", "workspace") ?: "workspace"
-                        val turnNo = j.optInt("session_turn_count", 1)
+                        val turnNo = j.optInt("session_turn_count", shellState.vesperSessionTurns + 1)
+                        val globalSeq = j.optInt("global_turn_seq", 0)
+                        val resolvedSid = j.optString("session_id", shellState.vesperSessionId).ifBlank { shellState.vesperSessionId }
+                        shellState.updateSessionTurn(resolvedSid, turnNo, globalSeq)
+                        val globalTag = if (globalSeq > 0) " \u00B7 Global #$globalSeq" else ""
                         val colA = cc?.optInt("primary_chair44_col", 0) ?: 0
                         val colB = cc?.optInt("secondary_chair44_col", 0) ?: 0
                         val pluckerRes = gp?.optDouble("plucker_incidence_residual", 0.0) ?: 0.0
                         val e8Bytes = gp?.optInt("e8z_bytes_sampled", 12) ?: 12
                         Pair(
-                            "$synth\n\n[SH-XI 384D/768D + Top-2 MoE ($exp1, $exp2) \u00B7 Turn #$turnNo \u00B7 RAG: $ragSrc \u00B7 Col #$colA\u2192#$colB \u00B7 $rttLabel]",
+                            "$synth\n\n[SH-XI 384D/768D + Top-2 MoE ($exp1, $exp2) \u00B7 Turn #$turnNo$globalTag \u00B7 RAG: $ragSrc \u00B7 Col #$colA\u2192#$colB \u00B7 $rttLabel]",
                             listOf(
                                 "Endpoint \u00B7 /api/v1/sovereign_harmonic/converse (SH-XI T361/T364)",
-                                "Bearer & RTT \u00B7 ${res.bearerUsed} \u00B7 $rttLabel (Turn #$turnNo)",
+                                "Bearer & RTT \u00B7 ${res.bearerUsed} \u00B7 $rttLabel (Turn #$turnNo$globalTag)",
                                 "3-Shell MoE \u00B7 384D Mobile \u2282 768D Host + Top-2 ($exp1, $exp2 / 16)",
                                 "Grounded RAG & Pl\u00FCcker \u00B7 $ragSrc \u00B7 Res=$pluckerRes ($e8Bytes/12 B)",
                                 "Bus Seq #$wbSeq \u00B7 E:\\ SHA-256 $wbSha"
@@ -2145,11 +2241,12 @@ fun VesperMobileCalmView(
         ) {
             VesperSpiderBadge(sizeDp = 34)
             Column(modifier = Modifier.weight(1f)) {
+                val globalBannerTag = if (shellState.vesperGlobalTurnSeq > 0) " \u00B7 G#${shellState.vesperGlobalTurnSeq}" else ""
                 Text(
                     text = if (isP8) {
-                        "Vesper is here \u00B7 Pixel 8 Tensor G3 P8-APEX (S64..S79)"
+                        "Vesper \u00B7 P8-APEX (S64..S79) \u00B7 Turn #${shellState.vesperSessionTurns}$globalBannerTag"
                     } else {
-                        "Vesper is here \u00B7 Pixel 10 Tensor G5 (S48..S63)"
+                        "Vesper \u00B7 Pixel 10 G5 (S48..S63) \u00B7 Turn #${shellState.vesperSessionTurns}$globalBannerTag"
                     },
                     color = VesperText,
                     fontSize = 13.sp,
@@ -2252,6 +2349,24 @@ fun VesperMobileCalmView(
                             fontWeight = FontWeight.SemiBold
                         )
                     }
+                }
+                Box(
+                    modifier = Modifier
+                        .height(34.dp)
+                        .background(VesperCard, RoundedCornerShape(99.dp))
+                        .border(1.dp, VesperLine, RoundedCornerShape(99.dp))
+                        .clickable(enabled = !shellState.isDispatching) {
+                            shellState.resetShXiSession(isP8)
+                        }
+                        .padding(horizontal = 13.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "\u21BA Reset Session",
+                        color = VesperMuted,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
                 }
             }
         }

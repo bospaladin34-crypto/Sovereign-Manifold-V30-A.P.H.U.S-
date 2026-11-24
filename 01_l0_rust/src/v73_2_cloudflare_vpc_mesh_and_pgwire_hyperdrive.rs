@@ -1112,3 +1112,638 @@ pub fn v73_2_dispatch_tool(tool_id: u64, payload: &str) -> String {
         _ => format!("{{\"ok\":false,\"status\":\"UNKNOWN_V73_2_TOOL\",\"tool_id\":{}}}", tool_id),
     }
 }
+
+fn v73_2_read_u16_le(buf: &Vec<u8>, off: usize) -> Option<u16> {
+    let b0 = *buf.get(off)? as u16;
+    let b1 = *buf.get(off.checked_add(1)?)? as u16;
+    Some(b0 | (b1 << 8))
+}
+
+fn v73_2_read_u32_le(buf: &Vec<u8>, off: usize) -> Option<u32> {
+    let b0 = *buf.get(off)? as u32;
+    let b1 = *buf.get(off.checked_add(1)?)? as u32;
+    let b2 = *buf.get(off.checked_add(2)?)? as u32;
+    let b3 = *buf.get(off.checked_add(3)?)? as u32;
+    Some(b0 | (b1 << 8) | (b2 << 16) | (b3 << 24))
+}
+
+fn v73_2_read_u64_le(buf: &Vec<u8>, off: usize) -> Option<u64> {
+    let lo = v73_2_read_u32_le(buf, off)? as u64;
+    let hi = v73_2_read_u32_le(buf, off.checked_add(4)?)? as u64;
+    Some(lo | (hi << 32))
+}
+
+struct V732DeflateBitReader<'a> {
+    src: &'a Vec<u8>,
+    byte_pos: usize,
+    bit_buf: u32,
+    bit_cnt: u8,
+}
+
+impl<'a> V732DeflateBitReader<'a> {
+    fn new(src: &'a Vec<u8>) -> Self {
+        Self {
+            src,
+            byte_pos: 0,
+            bit_buf: 0,
+            bit_cnt: 0,
+        }
+    }
+
+    fn ensure_bits(&mut self, n: u8) -> Option<()> {
+        while self.bit_cnt < n {
+            let b = *self.src.get(self.byte_pos)? as u32;
+            self.byte_pos += 1;
+            self.bit_buf |= b << self.bit_cnt;
+            self.bit_cnt += 8;
+        }
+        Some(())
+    }
+
+    fn read_bits(&mut self, n: u8) -> Option<u32> {
+        if n == 0 {
+            return Some(0);
+        }
+        self.ensure_bits(n)?;
+        let mask = (1u32 << n) - 1;
+        let val = self.bit_buf & mask;
+        self.bit_buf >>= n;
+        self.bit_cnt -= n;
+        Some(val)
+    }
+
+    fn align_to_byte(&mut self) {
+        let rem = self.bit_cnt % 8;
+        if rem > 0 {
+            self.bit_buf >>= rem;
+            self.bit_cnt -= rem;
+        }
+    }
+
+    fn read_aligned_u16_le(&mut self) -> Option<u16> {
+        self.align_to_byte();
+        let b0 = self.read_bits(8)? as u16;
+        let b1 = self.read_bits(8)? as u16;
+        Some(b0 | (b1 << 8))
+    }
+}
+
+struct V732HuffTree {
+    counts: Vec<u16>,
+    symbols: Vec<u16>,
+}
+
+impl V732HuffTree {
+    fn build(code_lengths: &Vec<u8>) -> Option<Self> {
+        let mut counts: Vec<u16> = Vec::new();
+        counts.resize(16, 0);
+        for &len in code_lengths {
+            let l = len as usize;
+            if l > 15 {
+                return None;
+            }
+            if l > 0 {
+                let slot = counts.get_mut(l)?;
+                *slot = slot.checked_add(1)?;
+            }
+        }
+        let mut left: i32 = 1;
+        let mut bits: usize = 1;
+        while bits <= 15 {
+            left <<= 1;
+            left -= *counts.get(bits)? as i32;
+            if left < 0 {
+                return None;
+            }
+            bits += 1;
+        }
+        let mut offsets: Vec<u16> = Vec::new();
+        offsets.resize(16, 0);
+        let mut total: u16 = 0;
+        let mut b: usize = 1;
+        while b <= 15 {
+            if let Some(o) = offsets.get_mut(b) {
+                *o = total;
+            }
+            total = total.checked_add(*counts.get(b)?)?;
+            b += 1;
+        }
+        let mut symbols: Vec<u16> = Vec::new();
+        symbols.resize(total as usize, 0);
+        let mut sym_idx: usize = 0;
+        for &len in code_lengths {
+            let l = len as usize;
+            if l > 0 {
+                let wp_slot = offsets.get_mut(l)?;
+                let wp = *wp_slot as usize;
+                *wp_slot = wp_slot.checked_add(1)?;
+                if let Some(dst) = symbols.get_mut(wp) {
+                    *dst = sym_idx as u16;
+                }
+            }
+            sym_idx += 1;
+        }
+        Some(Self { counts, symbols })
+    }
+
+    fn decode(&self, reader: &mut V732DeflateBitReader) -> Option<u16> {
+        let mut code: i32 = 0;
+        let mut first: i32 = 0;
+        let mut index: i32 = 0;
+        let mut len: usize = 1;
+        while len <= 15 {
+            code |= reader.read_bits(1)? as i32;
+            let count = *self.counts.get(len)? as i32;
+            if code - count < first {
+                let sym_pos = (index + (code - first)) as usize;
+                return self.symbols.get(sym_pos).copied();
+            }
+            index += count;
+            first += count;
+            first <<= 1;
+            code <<= 1;
+            len += 1;
+        }
+        None
+    }
+}
+
+fn v73_2_deflate_cl_order(idx: usize) -> Option<usize> {
+    match idx {
+        0 => Some(16),
+        1 => Some(17),
+        2 => Some(18),
+        3 => Some(0),
+        4 => Some(8),
+        5 => Some(7),
+        6 => Some(9),
+        7 => Some(6),
+        8 => Some(10),
+        9 => Some(5),
+        10 => Some(11),
+        11 => Some(4),
+        12 => Some(12),
+        13 => Some(3),
+        14 => Some(13),
+        15 => Some(2),
+        16 => Some(14),
+        17 => Some(1),
+        18 => Some(15),
+        _ => None,
+    }
+}
+
+fn v73_2_deflate_len_base_extra(sym: u16) -> Option<(usize, u8)> {
+    match sym {
+        257 => Some((3, 0)),
+        258 => Some((4, 0)),
+        259 => Some((5, 0)),
+        260 => Some((6, 0)),
+        261 => Some((7, 0)),
+        262 => Some((8, 0)),
+        263 => Some((9, 0)),
+        264 => Some((10, 0)),
+        265 => Some((11, 1)),
+        266 => Some((13, 1)),
+        267 => Some((15, 1)),
+        268 => Some((17, 1)),
+        269 => Some((19, 2)),
+        270 => Some((23, 2)),
+        271 => Some((27, 2)),
+        272 => Some((31, 2)),
+        273 => Some((35, 3)),
+        274 => Some((43, 3)),
+        275 => Some((51, 3)),
+        276 => Some((59, 3)),
+        277 => Some((67, 4)),
+        278 => Some((83, 4)),
+        279 => Some((99, 4)),
+        280 => Some((115, 4)),
+        281 => Some((131, 5)),
+        282 => Some((163, 5)),
+        283 => Some((195, 5)),
+        284 => Some((227, 5)),
+        285 => Some((258, 0)),
+        _ => None,
+    }
+}
+
+fn v73_2_deflate_dist_base_extra(sym: u16) -> Option<(usize, u8)> {
+    if sym <= 3 {
+        Some((sym as usize + 1, 0))
+    } else if sym <= 29 {
+        let extra = ((sym - 2) / 2) as u8;
+        let base = 1usize + ((2usize + ((sym as usize) & 1usize)) << (extra as usize));
+        Some((base, extra))
+    } else {
+        None
+    }
+}
+
+fn v73_2_build_fixed_trees() -> Option<(V732HuffTree, V732HuffTree)> {
+    let mut lit_lens: Vec<u8> = Vec::new();
+    lit_lens.resize(288, 0);
+    let mut i: usize = 0;
+    while i < 288 {
+        let val = if i <= 143 {
+            8u8
+        } else if i <= 255 {
+            9u8
+        } else if i <= 279 {
+            7u8
+        } else {
+            8u8
+        };
+        if let Some(slot) = lit_lens.get_mut(i) {
+            *slot = val;
+        }
+        i += 1;
+    }
+    let mut dist_lens: Vec<u8> = Vec::new();
+    dist_lens.resize(32, 5);
+    Some((V732HuffTree::build(&lit_lens)?, V732HuffTree::build(&dist_lens)?))
+}
+
+fn v73_2_build_dynamic_trees(reader: &mut V732DeflateBitReader) -> Option<(V732HuffTree, V732HuffTree)> {
+    let hlit = (reader.read_bits(5)? as usize).checked_add(257)?;
+    let hdist = (reader.read_bits(5)? as usize).checked_add(1)?;
+    let hclen = (reader.read_bits(4)? as usize).checked_add(4)?;
+    if hlit > 286 || hdist > 30 || hclen > 19 {
+        return None;
+    }
+    let mut cl_lens: Vec<u8> = Vec::new();
+    cl_lens.resize(19, 0);
+    let mut i: usize = 0;
+    while i < hclen {
+        let ord = v73_2_deflate_cl_order(i)?;
+        let v = reader.read_bits(3)? as u8;
+        if let Some(slot) = cl_lens.get_mut(ord) {
+            *slot = v;
+        }
+        i += 1;
+    }
+    let cl_tree = V732HuffTree::build(&cl_lens)?;
+    let total_codes = hlit + hdist;
+    let mut all_lens: Vec<u8> = Vec::with_capacity(total_codes);
+    while all_lens.len() < total_codes {
+        let sym = cl_tree.decode(reader)?;
+        if sym < 16 {
+            all_lens.push(sym as u8);
+        } else if sym == 16 {
+            let prev = *all_lens.last()?;
+            let rep = (reader.read_bits(2)? as usize) + 3;
+            if all_lens.len() + rep > total_codes {
+                return None;
+            }
+            for _ in 0..rep {
+                all_lens.push(prev);
+            }
+        } else if sym == 17 {
+            let rep = (reader.read_bits(3)? as usize) + 3;
+            if all_lens.len() + rep > total_codes {
+                return None;
+            }
+            for _ in 0..rep {
+                all_lens.push(0);
+            }
+        } else if sym == 18 {
+            let rep = (reader.read_bits(7)? as usize) + 11;
+            if all_lens.len() + rep > total_codes {
+                return None;
+            }
+            for _ in 0..rep {
+                all_lens.push(0);
+            }
+        } else {
+            return None;
+        }
+    }
+    let lit_lens = all_lens.get(0..hlit)?.to_vec();
+    let dist_lens = all_lens.get(hlit..total_codes)?.to_vec();
+    Some((V732HuffTree::build(&lit_lens)?, V732HuffTree::build(&dist_lens)?))
+}
+
+fn v73_2_inflate_raw_deflate(comp: &Vec<u8>, expected_len: usize) -> Option<Vec<u8>> {
+    if expected_len == 0 || expected_len > 16 * 1024 * 1024 {
+        return None;
+    }
+    let mut reader = V732DeflateBitReader::new(comp);
+    let mut out: Vec<u8> = Vec::with_capacity(expected_len);
+    loop {
+        let bfinal = reader.read_bits(1)?;
+        let btype = reader.read_bits(2)?;
+        if btype == 0 {
+            let len = reader.read_aligned_u16_le()? as usize;
+            let nlen = reader.read_aligned_u16_le()?;
+            if (len as u16) ^ 0xFFFF != nlen {
+                return None;
+            }
+            if out.len().checked_add(len)? > expected_len {
+                return None;
+            }
+            for _ in 0..len {
+                out.push(reader.read_bits(8)? as u8);
+            }
+        } else if btype == 1 || btype == 2 {
+            let (lit_tree, dist_tree) = if btype == 1 {
+                v73_2_build_fixed_trees()?
+            } else {
+                v73_2_build_dynamic_trees(&mut reader)?
+            };
+            loop {
+                let sym = lit_tree.decode(&mut reader)?;
+                if sym < 256 {
+                    if out.len() >= expected_len {
+                        return None;
+                    }
+                    out.push(sym as u8);
+                } else if sym == 256 {
+                    break;
+                } else {
+                    let (len_base, len_extra) = v73_2_deflate_len_base_extra(sym)?;
+                    let length = len_base + (reader.read_bits(len_extra)? as usize);
+                    let dist_sym = dist_tree.decode(&mut reader)?;
+                    let (dist_base, dist_extra) = v73_2_deflate_dist_base_extra(dist_sym)?;
+                    let dist = dist_base + (reader.read_bits(dist_extra)? as usize);
+                    if dist == 0 || dist > out.len() || out.len().checked_add(length)? > expected_len {
+                        return None;
+                    }
+                    for _ in 0..length {
+                        let copy_idx = out.len() - dist;
+                        let b = *out.get(copy_idx)?;
+                        out.push(b);
+                    }
+                }
+            }
+        } else {
+            return None;
+        }
+        if bfinal == 1 {
+            break;
+        }
+    }
+    if out.len() != expected_len {
+        return None;
+    }
+    Some(out)
+}
+
+fn v73_2_parse_axml_version_code(axml: &Vec<u8>) -> Option<u32> {
+    if axml.len() < 8 {
+        return None;
+    }
+    let root_type = v73_2_read_u16_le(axml, 0)?;
+    let root_hdr_sz = v73_2_read_u16_le(axml, 2)? as usize;
+    let root_total_sz = v73_2_read_u32_le(axml, 4)? as usize;
+    if root_type != 0x0003 || root_hdr_sz < 8 || root_total_sz > axml.len() || root_hdr_sz > root_total_sz {
+        return None;
+    }
+
+    let mut pos = root_hdr_sz;
+    let mut ver_code_res_idx: Option<i32> = None;
+
+    while pos.checked_add(8)? <= root_total_sz {
+        let c_type = v73_2_read_u16_le(axml, pos)?;
+        let c_hdr_sz = v73_2_read_u16_le(axml, pos + 2)? as usize;
+        let c_sz = v73_2_read_u32_le(axml, pos + 4)? as usize;
+        if c_sz < 8 || c_hdr_sz < 8 || c_hdr_sz > c_sz || pos.checked_add(c_sz)? > root_total_sz {
+            return None;
+        }
+
+        if c_type == 0x0180 {
+            let map_start = pos.checked_add(c_hdr_sz)?;
+            let map_end = pos.checked_add(c_sz)?;
+            let mut r_pos = map_start;
+            let mut r_idx: i32 = 0;
+            while r_pos.checked_add(4)? <= map_end {
+                let res_id = v73_2_read_u32_le(axml, r_pos)?;
+                if res_id == 0x0101_021B {
+                    ver_code_res_idx = Some(r_idx);
+                    break;
+                }
+                r_pos += 4;
+                r_idx += 1;
+            }
+        } else if c_type == 0x0102 {
+            let ext_base = pos.checked_add(c_hdr_sz)?;
+            let chunk_end = pos.checked_add(c_sz)?;
+            if ext_base.checked_add(20)? > chunk_end {
+                return None;
+            }
+            let attr_start = v73_2_read_u16_le(axml, ext_base + 8)? as usize;
+            let attr_size = v73_2_read_u16_le(axml, ext_base + 10)? as usize;
+            let attr_count = v73_2_read_u16_le(axml, ext_base + 12)? as usize;
+            if let Some(target_idx) = ver_code_res_idx {
+                if attr_size >= 20 {
+                    let attrs_base = ext_base.checked_add(attr_start)?;
+                    for ai in 0..attr_count {
+                        let a_off = attrs_base.checked_add(ai.checked_mul(attr_size)?)?;
+                        if a_off.checked_add(20)? > chunk_end {
+                            return None;
+                        }
+                        let name_idx = v73_2_read_u32_le(axml, a_off + 4)? as i32;
+                        let val_type = *axml.get(a_off + 15)?;
+                        let val_data = v73_2_read_u32_le(axml, a_off + 16)?;
+                        if name_idx == target_idx && (val_type == 0x10 || val_type == 0x11) {
+                            return Some(val_data);
+                        }
+                    }
+                }
+            }
+            return None;
+        }
+        pos = pos.checked_add(c_sz)?;
+    }
+    None
+}
+
+pub fn v73_2_extract_apk_version_code(apk_bytes: &Vec<u8>) -> Option<u32> {
+    if apk_bytes.len() < 22 {
+        return None;
+    }
+    let min_eocd = apk_bytes.len().saturating_sub(22 + 65_535);
+    let mut eocd_pos_opt: Option<usize> = None;
+    let mut scan = apk_bytes.len() - 22;
+    loop {
+        if v73_2_read_u32_le(apk_bytes, scan) == Some(0x0605_4B50) {
+            let cmt_len = v73_2_read_u16_le(apk_bytes, scan + 20)? as usize;
+            if scan + 22 + cmt_len == apk_bytes.len() {
+                eocd_pos_opt = Some(scan);
+                break;
+            }
+        }
+        if scan == min_eocd {
+            break;
+        }
+        scan -= 1;
+    }
+    let eocd_pos = eocd_pos_opt?;
+    let mut total_entries = v73_2_read_u16_le(apk_bytes, eocd_pos + 10)? as usize;
+    let mut cd_size = v73_2_read_u32_le(apk_bytes, eocd_pos + 12)? as usize;
+    let mut cd_offset = v73_2_read_u32_le(apk_bytes, eocd_pos + 16)? as usize;
+
+    if total_entries == 0xFFFF || cd_size == 0xFFFF_FFFF || cd_offset == 0xFFFF_FFFF {
+        if eocd_pos < 20 {
+            return None;
+        }
+        let loc_pos = eocd_pos - 20;
+        if v73_2_read_u32_le(apk_bytes, loc_pos) != Some(0x0706_4B50) {
+            return None;
+        }
+        let z64_off = v73_2_read_u64_le(apk_bytes, loc_pos + 8)? as usize;
+        if z64_off.checked_add(56)? > loc_pos || v73_2_read_u32_le(apk_bytes, z64_off) != Some(0x0606_4B50) {
+            return None;
+        }
+        total_entries = v73_2_read_u64_le(apk_bytes, z64_off + 32)? as usize;
+        cd_size = v73_2_read_u64_le(apk_bytes, z64_off + 40)? as usize;
+        cd_offset = v73_2_read_u64_le(apk_bytes, z64_off + 48)? as usize;
+    }
+
+    let cd_end = cd_offset.checked_add(cd_size)?;
+    if cd_end > eocd_pos {
+        return None;
+    }
+
+    let mut pos = cd_offset;
+    for _ in 0..total_entries {
+        if pos.checked_add(46)? > cd_end {
+            return None;
+        }
+        if v73_2_read_u32_le(apk_bytes, pos) != Some(0x0201_4B50) {
+            return None;
+        }
+        let comp_method = v73_2_read_u16_le(apk_bytes, pos + 10)?;
+        let comp_size = v73_2_read_u32_le(apk_bytes, pos + 20)? as usize;
+        let uncomp_size = v73_2_read_u32_le(apk_bytes, pos + 24)? as usize;
+        let fname_len = v73_2_read_u16_le(apk_bytes, pos + 28)? as usize;
+        let extra_len = v73_2_read_u16_le(apk_bytes, pos + 30)? as usize;
+        let cmt_len = v73_2_read_u16_le(apk_bytes, pos + 32)? as usize;
+        let lfh_offset = v73_2_read_u32_le(apk_bytes, pos + 42)? as usize;
+
+        let name_start = pos.checked_add(46)?;
+        let name_end = name_start.checked_add(fname_len)?;
+        if name_end > cd_end {
+            return None;
+        }
+        if apk_bytes.get(name_start..name_end) == Some(b"AndroidManifest.xml") {
+            if lfh_offset.checked_add(30)? > cd_offset
+                || v73_2_read_u32_le(apk_bytes, lfh_offset) != Some(0x0403_4B50)
+            {
+                return None;
+            }
+            let lfh_fname_len = v73_2_read_u16_le(apk_bytes, lfh_offset + 26)? as usize;
+            let lfh_extra_len = v73_2_read_u16_le(apk_bytes, lfh_offset + 28)? as usize;
+            let data_start = lfh_offset
+                .checked_add(30)?
+                .checked_add(lfh_fname_len)?
+                .checked_add(lfh_extra_len)?;
+            let data_end = data_start.checked_add(comp_size)?;
+            if data_end > cd_offset {
+                return None;
+            }
+            let comp_vec = apk_bytes.get(data_start..data_end)?.to_vec();
+            let axml = if comp_method == 0 {
+                if comp_vec.len() != uncomp_size {
+                    return None;
+                }
+                comp_vec
+            } else if comp_method == 8 {
+                v73_2_inflate_raw_deflate(&comp_vec, uncomp_size)?
+            } else {
+                return None;
+            };
+            return v73_2_parse_axml_version_code(&axml);
+        }
+        pos = name_end.checked_add(extra_len)?.checked_add(cmt_len)?;
+    }
+    None
+}
+
+pub const V73_2_CF_LIVE_VERIFICATION_REL_PATH: &str = "03_vault/receipts/s6_cloudflare_live_wrangler_verification.txt";
+pub const V73_2_CF_LIVE_VERIFICATION_ABS_PATH: &str = "C:\\sovereign_manifold_v31\\03_vault\\receipts\\s6_cloudflare_live_wrangler_verification.txt";
+
+pub fn v73_2_read_live_d1_database_name() -> Option<String> {
+    let txt = fs::read_to_string(V73_2_CF_LIVE_VERIFICATION_REL_PATH)
+        .or_else(|_| fs::read_to_string(V73_2_CF_LIVE_VERIFICATION_ABS_PATH))
+        .ok()?;
+    for line in txt.lines() {
+        if let Some(rest) = line.trim_start().strip_prefix("d1_active_database:") {
+            let db = rest.trim();
+            if !db.is_empty() {
+                return Some(String::from(db));
+            }
+        }
+    }
+    None
+}
+
+pub fn v73_2_parse_d1_user_tables_from_receipt_str(txt: &str) -> (Option<usize>, Vec<String>) {
+    let marker = "SELECT name, type FROM sqlite_master";
+    let after_marker = match txt.find(marker) {
+        Some(pos) => match txt.get(pos..) {
+            Some(s) => s,
+            None => return (None, Vec::new()),
+        },
+        None => return (None, Vec::new()),
+    };
+    let after_cmd_line = match after_marker.find('\n') {
+        Some(nl) => match after_marker.get((nl + 1)..) {
+            Some(s) => s,
+            None => return (None, Vec::new()),
+        },
+        None => return (None, Vec::new()),
+    };
+    let section_end = after_cmd_line.find("\n=== ").unwrap_or(after_cmd_line.len());
+    let section_body = match after_cmd_line.get(..section_end) {
+        Some(s) => s,
+        None => return (None, Vec::new()),
+    };
+    let obj_start = match section_body.find('{') {
+        Some(i) => i,
+        None => return (None, Vec::new()),
+    };
+    let obj_slice = match section_body.get(obj_start..) {
+        Some(s) => s.trim_end().trim_end_matches(|c: char| c != '}'),
+        None => return (None, Vec::new()),
+    };
+    let parsed: serde_json::Value = match serde_json::from_str(obj_slice) {
+        Ok(v) => v,
+        Err(_) => return (None, Vec::new()),
+    };
+    if parsed.get("success").and_then(|b| b.as_bool()) != Some(true) {
+        return (None, Vec::new());
+    }
+    let rows = match parsed.get("results").and_then(|r| r.as_array()) {
+        Some(arr) => arr,
+        None => return (None, Vec::new()),
+    };
+    let mut user_tables: Vec<String> = Vec::new();
+    for row in rows {
+        let row_type = row.get("type").and_then(|t| t.as_str()).unwrap_or("");
+        let name = row.get("name").and_then(|n| n.as_str()).unwrap_or("").trim();
+        if row_type == "table"
+            && !name.is_empty()
+            && !name.starts_with("_cf_")
+            && !name.starts_with("sqlite_")
+        {
+            user_tables.push(String::from(name));
+        }
+    }
+    user_tables.sort();
+    user_tables.dedup();
+    if user_tables.is_empty() {
+        (None, Vec::new())
+    } else {
+        (Some(user_tables.len()), user_tables)
+    }
+}
+
+pub fn v73_2_read_live_d1_user_tables() -> (Option<usize>, Vec<String>) {
+    let txt = match fs::read_to_string(V73_2_CF_LIVE_VERIFICATION_REL_PATH)
+        .or_else(|_| fs::read_to_string(V73_2_CF_LIVE_VERIFICATION_ABS_PATH))
+    {
+        Ok(t) => t,
+        Err(_) => return (None, Vec::new()),
+    };
+    v73_2_parse_d1_user_tables_from_receipt_str(&txt)
+}

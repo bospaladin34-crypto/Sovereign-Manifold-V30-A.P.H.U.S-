@@ -101,6 +101,10 @@ pub const C_SH_XI_WEEK2_RECEIPT_PATH: &str =
     "03_vault/connectome/sh_xi_week2_master_receipt.json";
 pub const E_SH_XI_WEEK2_RECEIPT_PATH: &str =
     "E:\\Sovereign_Manifold_SSD_Vault\\connectome\\sh_xi_week2_master_receipt.json";
+pub const C_SH_XI_SESSION_COUNTERS_PATH: &str =
+    "03_vault/connectome/sh_xi_session_turn_counters.json";
+pub const E_SH_XI_SESSION_COUNTERS_PATH: &str =
+    "E:\\Sovereign_Manifold_SSD_Vault\\connectome\\sh_xi_session_turn_counters.json";
 
 fn v72_2_expert_domain_name(slot_id: usize) -> &'static str {
     match slot_id {
@@ -2153,7 +2157,7 @@ pub fn v72_2_train_or_get_moe_bank(force_rebuild: bool) -> (f64, f64, f64, f64, 
         .map(|b| v72_1_sha256_hex(&b))
         .unwrap_or_else(|_| String::from("UNMEASURED/OFFLINE"));
     let meta_json = format!(
-        "{{\"artifact_key\":\"sh_xi_moe_experts\",\"ssd_moe_bytes\":{},\"ssd_moe_sha256\":\"{}\",\"seed_init\":\"0x7220_E800\",\"trained_steps\":16,\"lr_moe\":{:.5},\"lr_wout\":{:.5},\"wd_moe\":{:.4},\"base_sh4z_sha256\":\"{}\",\"corpus_path\":\"03_vault/corpus/sh_rw_corpus_v7210.jsonl\",\"corpus_sha256\":\"{}\",\"loss_curve_csv\":\"03_vault/connectome/sh_xi_moe_training_curve.csv\",\"curve_footing_note\":\"Steps 0..15 evaluate pre-rebalance experts at global_alpha_moe=0.3000 (eval_footing=per_step_pre_rebalance_alpha_0.30); row 16 evaluates post-rebalance experts with held-in calibrated global_alpha_moe (eval_footing=post_rebalance_calibrated_alpha_eval).\",\"frozen_base_q8_0_eval_note\":\"val_bpb_384d and val_bpb_768d are intentionally constant across steps 0..16 because the Q8_0 384D/768D base model is frozen during Shell-2 sparse MoE training.\",\"active_experts_count\":{},\"experts_utilized\":{},\"load_balance_cv\":{:.6},\"global_alpha_moe\":{:.4},\"val_bpb_384d\":{:.6},\"val_bpb_768d\":{:.6},\"val_bpb_3shell\":{:.6},\"val_ppl_3shell\":{:.6},\"rtx3050_coexec_ms\":{:.4},\"cpu_12t_avx2_moe_us\":{}}}\n",
+        "{{\"artifact_key\":\"sh_xi_moe_experts\",\"ssd_moe_bytes\":{},\"ssd_moe_sha256\":\"{}\",\"seed_init\":\"0x7220_E800\",\"trained_steps\":16,\"lr_moe\":{:.5},\"lr_wout\":{:.5},\"wd_moe\":{:.4},\"base_sh4z_sha256\":\"{}\",\"corpus_path\":\"03_vault/corpus/sh_rw_corpus_v7210.jsonl\",\"corpus_sha256\":\"{}\",\"loss_curve_csv\":\"03_vault/connectome/sh_xi_moe_training_curve.csv\",\"curve_footing_note\":\"Steps 0..15 evaluate pre-rebalance experts at global_alpha_moe=0.3000 (eval_footing=per_step_pre_rebalance_alpha_0.30); row 16 evaluates post-rebalance experts with held-in calibrated global_alpha_moe (eval_footing=post_rebalance_calibrated_alpha_eval).\",\"frozen_base_q8_0_eval_note\":\"val_bpb_384d and val_bpb_768d are intentionally constant across steps 0..16 because the Q8_0 384D/768D base model is frozen during Shell-2 sparse MoE training.\",\"step16_jump_magnitude_explanation\":\"Steps 0..15 run analytical softmax-CE updates on 24 held-in train sequences at fixed global_alpha_moe=0.3000, reducing train_mean_ce_nats by avg -0.001085/step (3.539445->3.523165) and val_bpb_3shell by avg -0.000011/step (0.099870->0.099705). Between step 15 and row 16 (without an extra gradient step), v72_2_rebalance_and_measure_experts re-centers router_centroid_768 and balances biases for 16/16 expert utilization (load_balance_cv=0.648773), and held-in calib_slice (10 train seqs, 0% val overlap) searches alpha_grid (0.005..=0.50), scaling global_alpha_moe 1.667x from 0.3000 to 0.5000. Because v72_2_apply_shell2_moe_experts_to_logits scales the learned sparse w_out_vocab_sparse delta linearly by global_alpha_moe (eff_scale = global_alpha_moe * alpha_gate * gate_w * (1 + 0.15*swiglu_mod)), this 1.667x multiplier plus rebalanced Top-2 routing produces row 16's discrete step-change: -0.012583 train_mean_ce_nats (~11.6x per-step slope, to 3.510582) and -0.000118 val_bpb_3shell (~10.7x per-step slope, to 0.099587 / val_ppl_3shell 52.844190).\",\"active_experts_count\":{},\"experts_utilized\":{},\"load_balance_cv\":{:.6},\"global_alpha_moe\":{:.4},\"val_bpb_384d\":{:.6},\"val_bpb_768d\":{:.6},\"val_bpb_3shell\":{:.6},\"val_ppl_3shell\":{:.6},\"rtx3050_coexec_ms\":{:.4},\"cpu_12t_avx2_moe_us\":{}}}\n",
         ssd_bytes,
         ssd_sha,
         lr_moe,
@@ -2505,6 +2509,25 @@ impl Clone for V72_2SftReceipt {
 
 static SH_XI_SFT_RECEIPT_CACHE: Mutex<Option<V72_2SftReceipt>> = Mutex::new(None);
 static SESSION_HISTORY_STORE: Mutex<Option<HashMap<String, Vec<V72_2ChatTurn>>>> = Mutex::new(None);
+
+pub struct V72_2TurnCounterLedger {
+    pub global_turn_seq: usize,
+    pub historical_seeded_total: usize,
+    pub sessions: HashMap<String, usize>,
+}
+
+impl Clone for V72_2TurnCounterLedger {
+    fn clone(&self) -> Self {
+        Self {
+            global_turn_seq: self.global_turn_seq,
+            historical_seeded_total: self.historical_seeded_total,
+            sessions: self.sessions.clone(),
+        }
+    }
+}
+
+static SESSION_TURN_COUNTER_STORE: Mutex<Option<V72_2TurnCounterLedger>> = Mutex::new(None);
+static TEST_COUNTER_PATHS_OVERRIDE: Mutex<Option<(String, String)>> = Mutex::new(None);
 
 fn v72_2_build_masked_chatml_sequence(turns: &Vec<V72_2ChatTurn>) -> (Vec<u16>, Vec<u8>) {
     let mut seq_toks: Vec<u16> = Vec::with_capacity(256);
@@ -3344,6 +3367,287 @@ pub fn v72_2_append_session_exchange(session_id: &str, user_msg: &str, asst_msg:
             let drop_n = entry.len() - max_msgs;
             entry.drain(0..drop_n);
         }
+    }
+}
+
+fn v72_2_scan_tool_361_dir_into_ledger(
+    dir_path: &str,
+    seen_names: &mut HashSet<String>,
+    ledger: &mut V72_2TurnCounterLedger,
+) {
+    let entries = match fs::read_dir(dir_path) {
+        Ok(rd) => rd,
+        Err(_) => return,
+    };
+    for ent in entries.flatten() {
+        let fname = ent.file_name().to_string_lossy().to_string();
+        if !fname.starts_with("tool_361_") || !fname.ends_with(".json") {
+            continue;
+        }
+        if !seen_names.insert(fname) {
+            continue;
+        }
+        let raw = match fs::read_to_string(ent.path()) {
+            Ok(s) => s,
+            Err(_) => continue,
+        };
+        if !raw.contains("SH_XI_3SHELL_MATRYOSHKA_SPARSE_MOE_SFT_CONVERSE_ENGINE") {
+            continue;
+        }
+        let parsed: serde_json::Value = match serde_json::from_str(&raw) {
+            Ok(v) => v,
+            Err(_) => continue,
+        };
+        let eng = parsed
+            .get("engine")
+            .and_then(|v| v.as_str())
+            .unwrap_or("");
+        if eng != "SH_XI_3SHELL_MATRYOSHKA_SPARSE_MOE_SFT_CONVERSE_ENGINE" {
+            continue;
+        }
+        ledger.global_turn_seq = ledger.global_turn_seq.saturating_add(1);
+        ledger.historical_seeded_total = ledger.historical_seeded_total.saturating_add(1);
+        if let Some(sid) = parsed.get("session_id").and_then(|v| v.as_str()) {
+            let trimmed = sid.trim();
+            if !trimmed.is_empty() && trimmed != "stateless" {
+                let cnt = ledger.sessions.entry(String::from(trimmed)).or_insert(0);
+                *cnt = cnt.saturating_add(1);
+            }
+        }
+    }
+}
+
+pub fn v72_2_seed_counters_from_historical_tool_361_at(
+    e_dir: &str,
+    c_dir: &str,
+) -> V72_2TurnCounterLedger {
+    let mut ledger = V72_2TurnCounterLedger {
+        global_turn_seq: 0,
+        historical_seeded_total: 0,
+        sessions: HashMap::new(),
+    };
+    let mut seen_names: HashSet<String> = HashSet::new();
+    v72_2_scan_tool_361_dir_into_ledger(e_dir, &mut seen_names, &mut ledger);
+    v72_2_scan_tool_361_dir_into_ledger(c_dir, &mut seen_names, &mut ledger);
+    ledger
+}
+
+pub fn v72_2_seed_counters_from_historical_tool_361() -> V72_2TurnCounterLedger {
+    v72_2_seed_counters_from_historical_tool_361_at(
+        "E:\\Sovereign_Manifold_SSD_Vault\\autopoietic_codegen\\tool_outputs",
+        "03_vault/connectome/tool_outputs",
+    )
+}
+
+fn v72_2_parse_counter_ledger_json(raw: &str) -> Option<V72_2TurnCounterLedger> {
+    let val: serde_json::Value = serde_json::from_str(raw).ok()?;
+    let obj = val.as_object()?;
+    let global_turn_seq = obj.get("global_turn_seq").and_then(|v| v.as_u64())? as usize;
+    let historical_seeded_total = obj
+        .get("historical_seeded_total")
+        .and_then(|v| v.as_u64())
+        .unwrap_or(0) as usize;
+    let mut sessions: HashMap<String, usize> = HashMap::new();
+    if let Some(s_obj) = obj.get("sessions").and_then(|v| v.as_object()) {
+        for (k, v) in s_obj.iter() {
+            if let Some(cnt) = v.as_u64() {
+                sessions.insert(k.clone(), cnt as usize);
+            }
+        }
+    }
+    Some(V72_2TurnCounterLedger {
+        global_turn_seq,
+        historical_seeded_total,
+        sessions,
+    })
+}
+
+fn v72_2_atomic_write_text(path_str: &str, content: &str) {
+    let path = Path::new(path_str);
+    if let Some(parent) = path.parent() {
+        if !parent.as_os_str().is_empty() {
+            let _ = fs::create_dir_all(parent);
+        }
+    }
+    let tmp_str = format!("{}.tmp", path_str);
+    if fs::write(&tmp_str, content.as_bytes()).is_ok() {
+        if fs::rename(&tmp_str, path).is_err() {
+            let _ = fs::remove_file(&tmp_str);
+            let _ = fs::write(path, content.as_bytes());
+        }
+    } else {
+        let _ = fs::write(path, content.as_bytes());
+    }
+}
+
+pub fn v72_2_save_counter_ledger_to_paths(
+    ledger: &V72_2TurnCounterLedger,
+    c_path: &str,
+    e_path: &str,
+) {
+    let mut sorted_keys: Vec<String> = ledger.sessions.keys().cloned().collect();
+    sorted_keys.sort();
+    let mut sessions_map = serde_json::Map::new();
+    for k in sorted_keys.into_iter() {
+        if let Some(v) = ledger.sessions.get(&k) {
+            sessions_map.insert(k, serde_json::Value::from(*v as u64));
+        }
+    }
+    let mut root_map = serde_json::Map::new();
+    root_map.insert(
+        String::from("schema"),
+        serde_json::Value::String(String::from("act_omega.sh_xi_session_turn_counters.v1")),
+    );
+    root_map.insert(
+        String::from("global_turn_seq"),
+        serde_json::Value::from(ledger.global_turn_seq as u64),
+    );
+    root_map.insert(
+        String::from("historical_seeded_total"),
+        serde_json::Value::from(ledger.historical_seeded_total as u64),
+    );
+    root_map.insert(
+        String::from("session_count"),
+        serde_json::Value::from(sessions_map.len() as u64),
+    );
+    root_map.insert(
+        String::from("sessions"),
+        serde_json::Value::Object(sessions_map),
+    );
+    let mut out = serde_json::to_string_pretty(&serde_json::Value::Object(root_map))
+        .unwrap_or_else(|_| String::from("{}"));
+    out.push('\n');
+    if !c_path.is_empty() {
+        v72_2_atomic_write_text(c_path, &out);
+    }
+    if !e_path.is_empty() && Path::new("E:\\").exists() {
+        v72_2_atomic_write_text(e_path, &out);
+    }
+}
+
+pub fn v72_2_load_counter_ledger_from_paths(c_path: &str, e_path: &str) -> V72_2TurnCounterLedger {
+    let c_opt = if !c_path.is_empty() {
+        fs::read_to_string(c_path)
+            .ok()
+            .and_then(|s| v72_2_parse_counter_ledger_json(&s))
+    } else {
+        None
+    };
+    if let Some(ledger) = c_opt {
+        if !e_path.is_empty() && Path::new("E:\\").exists() && !Path::new(e_path).exists() {
+            v72_2_save_counter_ledger_to_paths(&ledger, "", e_path);
+        }
+        return ledger;
+    }
+    let e_opt = if !e_path.is_empty() && Path::new("E:\\").exists() {
+        fs::read_to_string(e_path)
+            .ok()
+            .and_then(|s| v72_2_parse_counter_ledger_json(&s))
+    } else {
+        None
+    };
+    if let Some(ledger) = e_opt {
+        if !c_path.is_empty() {
+            v72_2_save_counter_ledger_to_paths(&ledger, c_path, "");
+        }
+        return ledger;
+    }
+    let seeded = v72_2_seed_counters_from_historical_tool_361();
+    v72_2_save_counter_ledger_to_paths(&seeded, c_path, e_path);
+    seeded
+}
+
+fn v72_2_effective_counter_paths() -> (String, String) {
+    let p_guard = match TEST_COUNTER_PATHS_OVERRIDE.lock() {
+        Ok(g) => g,
+        Err(p) => p.into_inner(),
+    };
+    match *p_guard {
+        Some((ref c_p, ref e_p)) => (c_p.clone(), e_p.clone()),
+        None => (
+            String::from(C_SH_XI_SESSION_COUNTERS_PATH),
+            String::from(E_SH_XI_SESSION_COUNTERS_PATH),
+        ),
+    }
+}
+
+pub fn v72_2_set_test_counter_paths_override(paths: Option<(String, String)>) {
+    let mut p_guard = match TEST_COUNTER_PATHS_OVERRIDE.lock() {
+        Ok(g) => g,
+        Err(p) => p.into_inner(),
+    };
+    *p_guard = paths;
+    drop(p_guard);
+    v72_2_reload_turn_counters_from_disk_for_test();
+}
+
+pub fn v72_2_advance_turn_counters(
+    session_id: &str,
+    reset_session: bool,
+    has_explicit_messages: bool,
+    explicit_prior_turns_len: usize,
+) -> (usize, usize) {
+    let (c_path, e_path) = v72_2_effective_counter_paths();
+    let mut guard = match SESSION_TURN_COUNTER_STORE.lock() {
+        Ok(g) => g,
+        Err(p) => p.into_inner(),
+    };
+    if guard.is_none() {
+        *guard = Some(v72_2_load_counter_ledger_from_paths(&c_path, &e_path));
+    }
+    if let Some(ref mut ledger) = *guard {
+        ledger.global_turn_seq = ledger.global_turn_seq.saturating_add(1);
+        let session_turn_count = if !session_id.is_empty() {
+            if reset_session {
+                ledger.sessions.insert(String::from(session_id), 0);
+            }
+            let prev = *ledger.sessions.get(session_id).unwrap_or(&0);
+            let next_s = prev.saturating_add(1);
+            ledger.sessions.insert(String::from(session_id), next_s);
+            next_s
+        } else if has_explicit_messages {
+            (explicit_prior_turns_len / 2) + 1
+        } else {
+            1
+        };
+        v72_2_save_counter_ledger_to_paths(ledger, &c_path, &e_path);
+        return (session_turn_count, ledger.global_turn_seq);
+    }
+    (1, 1)
+}
+
+pub fn v72_2_reload_turn_counters_from_disk_for_test() {
+    let mut guard = match SESSION_TURN_COUNTER_STORE.lock() {
+        Ok(g) => g,
+        Err(p) => p.into_inner(),
+    };
+    *guard = None;
+}
+
+pub fn v72_2_clear_session_history_for_test() {
+    let mut guard = match SESSION_HISTORY_STORE.lock() {
+        Ok(g) => g,
+        Err(p) => p.into_inner(),
+    };
+    *guard = None;
+}
+
+pub fn v72_2_get_turn_counters_snapshot() -> (usize, usize, HashMap<String, usize>) {
+    let (c_path, e_path) = v72_2_effective_counter_paths();
+    let mut guard = match SESSION_TURN_COUNTER_STORE.lock() {
+        Ok(g) => g,
+        Err(p) => p.into_inner(),
+    };
+    if guard.is_none() {
+        *guard = Some(v72_2_load_counter_ledger_from_paths(&c_path, &e_path));
+    }
+    match *guard {
+        Some(ref ledger) => (
+            ledger.global_turn_seq,
+            ledger.historical_seeded_total,
+            ledger.sessions.clone(),
+        ),
+        None => (0, 0, HashMap::new()),
     }
 }
 
@@ -4542,6 +4846,7 @@ pub struct V72_2ConverseResult {
     pub trisilicon_grounded: bool,
     pub session_id: String,
     pub session_turn_count: usize,
+    pub global_turn_seq: usize,
     pub rag_top_source: String,
     pub rag_top_cosine_384d: f64,
     pub top1_expert_id: usize,
@@ -4660,6 +4965,7 @@ fn v72_2_offline_weights_not_loaded_result(
             session_id_str.to_string()
         },
         session_turn_count: 0,
+        global_turn_seq: 0,
         rag_top_source: String::from("NONE"),
         rag_top_cosine_384d: 0.0,
         top1_expert_id: 0,
@@ -5242,15 +5548,17 @@ pub fn v72_2_converse_execute_full_with_params(
         String::from("SH_XI_3SHELL_MOE_AUTOREGRESSIVE_DECODE")
     };
 
-    // Persist turn exchange into stateful `SESSION_HISTORY_STORE` when `session_id` is supplied
-    let final_turn_count = if !session_id_str.is_empty() {
+    // Persist sliding ChatML context window (`SESSION_HISTORY_STORE`, max 8 exchanges)
+    // decoupled from durable monotonic per-session & global turn counters (`SESSION_TURN_COUNTER_STORE`).
+    if !session_id_str.is_empty() {
         v72_2_append_session_exchange(&session_id_str, &prompt, &synthesized_answer, reset_session);
-        v72_2_get_session_turns(&session_id_str).len() / 2
-    } else if !explicit_messages.is_empty() {
-        (prior_turns.len() / 2) + 1
-    } else {
-        1
-    };
+    }
+    let (final_turn_count, global_turn_seq) = v72_2_advance_turn_counters(
+        &session_id_str,
+        reset_session,
+        !explicit_messages.is_empty(),
+        prior_turns.len(),
+    );
 
     let mean_ent2 = if step > 0 { sum_ent2 / (step as f64) } else { 0.0 };
     // E4: Independent generation-quality gate over actual emitted tokens & neural entropy (never gated on Plucker identity)
@@ -5288,6 +5596,7 @@ pub fn v72_2_converse_execute_full_with_params(
             session_id_str
         },
         session_turn_count: final_turn_count,
+        global_turn_seq,
         rag_top_source,
         rag_top_cosine_384d: rag_top_cos,
         top1_expert_id: last_top1_expert_id,
@@ -5352,7 +5661,7 @@ pub fn v72_2_dispatch_converse_route(payload: &str) -> String {
     let esc_prompt = v61_escape_clean(&res.prompt);
 
     format!(
-        "{{\"status\":\"{}\",\"tool_id\":361,\"version\":\"{}\",\"engine\":\"SH_XI_3SHELL_MATRYOSHKA_SPARSE_MOE_SFT_CONVERSE_ENGINE\",\"measurement_latency_us\":{},\"standalone_mode\":true,\"external_llm_calls\":0,\"memorized_prompt_tables\":0,\"seed_tokens_injected\":{},\"quality_gate\":{{\"passed\":{},\"check\":\"min_2_tokens_4_distinct_chars_nonrepetitive_finite_entropy_grammar_valid\",\"reason\":\"{}\"}},\"active_mode\":\"{}\",\"abstained_unmeasured\":{},\"trisilicon_grounded\":{},\"session_id\":\"{}\",\"session_turn_count\":{},\"output_text\":\"{}\",\"nl_synthesis\":\"{}\",\"matryoshka_shells\":{{\"shell0_dim\":384,\"shell1_dim\":768,\"shell2_active_experts\":16,\"shell2_top1_expert_id\":{},\"shell2_top1_expert\":\"{}\",\"shell2_top2_expert_id\":{},\"shell2_top2_expert\":\"{}\",\"shell0_entropy_bits\":{:.4},\"shell1_entropy_bits\":{:.4},\"shell2_entropy_bits\":{:.4},\"shell0_vs_shell1_top8_agreement\":{:.4},\"residual_delta_logit_l2_norm\":{:.4},\"rag_top_source\":\"{}\",\"rag_top_cosine_384d\":{:.4},\"retrieved_corpus_doc_id\":{},\"retrieved_cosine_768d\":{:.4}}},\"compositional_generation\":{{\"prompt\":\"{}\",\"primary_clause_tokens\":{},\"secondary_clause_tokens\":{},\"total_generated_tokens\":{},\"mean_token_probability\":{:.4},\"synthesized_text\":\"{}\"}},\"generation\":{{\"prompt\":\"{}\",\"generation_mode\":\"SH_XI_3SHELL_MOE_CHATML_SFT\",\"prompt_token_count\":{},\"generated_token_count\":{},\"mean_token_probability\":{:.4},\"mean_step_entropy_bits\":{:.4},\"generated_text\":\"{}\"}},\"cortical_coalition\":{{\"primary_branch_id\":{},\"secondary_branch_id\":{},\"primary_track_id\":{},\"secondary_track_id\":{},\"primary_track_name\":\"{}\",\"secondary_track_name\":\"{}\",\"primary_chair44_col\":{},\"secondary_chair44_col\":{},\"cross_branch_cosine_sim\":{:.4}}},\"grassmann_plucker_g24\":{{\"e8z_bytes_sampled\":{},\"p01\":{},\"p23\":{},\"p02\":{},\"p31\":{},\"p03\":{},\"p12\":{},\"plucker_incidence_residual\":{},\"isotropic_verified\":{}}},\"rtx3050_cuda_ptx\":{{\"ptx_active\":{},\"gpu_temp_c\":{},\"vram_used_mb\":{},\"gpu_wall_us\":{}}},\"lean4_theorems_verified\":\"thm_v72_2_981..995\",\"proof\":\"{} | Mode={} | Top2=({},{}) | Turn={} | Quality={}\"}}",
+        "{{\"status\":\"{}\",\"tool_id\":361,\"version\":\"{}\",\"engine\":\"SH_XI_3SHELL_MATRYOSHKA_SPARSE_MOE_SFT_CONVERSE_ENGINE\",\"measurement_latency_us\":{},\"standalone_mode\":true,\"external_llm_calls\":0,\"memorized_prompt_tables\":0,\"seed_tokens_injected\":{},\"quality_gate\":{{\"passed\":{},\"check\":\"min_2_tokens_4_distinct_chars_nonrepetitive_finite_entropy_grammar_valid\",\"reason\":\"{}\"}},\"active_mode\":\"{}\",\"abstained_unmeasured\":{},\"trisilicon_grounded\":{},\"session_id\":\"{}\",\"session_turn_count\":{},\"global_turn_seq\":{},\"output_text\":\"{}\",\"nl_synthesis\":\"{}\",\"matryoshka_shells\":{{\"shell0_dim\":384,\"shell1_dim\":768,\"shell2_active_experts\":16,\"shell2_top1_expert_id\":{},\"shell2_top1_expert\":\"{}\",\"shell2_top2_expert_id\":{},\"shell2_top2_expert\":\"{}\",\"shell0_entropy_bits\":{:.4},\"shell1_entropy_bits\":{:.4},\"shell2_entropy_bits\":{:.4},\"shell0_vs_shell1_top8_agreement\":{:.4},\"residual_delta_logit_l2_norm\":{:.4},\"rag_top_source\":\"{}\",\"rag_top_cosine_384d\":{:.4},\"retrieved_corpus_doc_id\":{},\"retrieved_cosine_768d\":{:.4}}},\"compositional_generation\":{{\"prompt\":\"{}\",\"primary_clause_tokens\":{},\"secondary_clause_tokens\":{},\"total_generated_tokens\":{},\"mean_token_probability\":{:.4},\"synthesized_text\":\"{}\"}},\"generation\":{{\"prompt\":\"{}\",\"generation_mode\":\"SH_XI_3SHELL_MOE_CHATML_SFT\",\"prompt_token_count\":{},\"generated_token_count\":{},\"mean_token_probability\":{:.4},\"mean_step_entropy_bits\":{:.4},\"generated_text\":\"{}\"}},\"cortical_coalition\":{{\"primary_branch_id\":{},\"secondary_branch_id\":{},\"primary_track_id\":{},\"secondary_track_id\":{},\"primary_track_name\":\"{}\",\"secondary_track_name\":\"{}\",\"primary_chair44_col\":{},\"secondary_chair44_col\":{},\"cross_branch_cosine_sim\":{:.4}}},\"grassmann_plucker_g24\":{{\"e8z_bytes_sampled\":{},\"p01\":{},\"p23\":{},\"p02\":{},\"p31\":{},\"p03\":{},\"p12\":{},\"plucker_incidence_residual\":{},\"isotropic_verified\":{}}},\"rtx3050_cuda_ptx\":{{\"ptx_active\":{},\"gpu_temp_c\":{},\"vram_used_mb\":{},\"gpu_wall_us\":{}}},\"lean4_theorems_verified\":\"thm_v72_2_981..995\",\"proof\":\"{} | Mode={} | Top2=({},{}) | Turn={} | GlobalSeq={} | Quality={}\"}}",
         res.status,
         v61_escape_clean(&live_ver),
         res.elapsed_us,
@@ -5364,6 +5673,7 @@ pub fn v72_2_dispatch_converse_route(payload: &str) -> String {
         res.trisilicon_grounded,
         v61_escape_clean(&res.session_id),
         res.session_turn_count,
+        res.global_turn_seq,
         esc_out,
         esc_out,
         res.top1_expert_id,
@@ -5418,6 +5728,7 @@ pub fn v72_2_dispatch_converse_route(payload: &str) -> String {
         res.top1_expert_id,
         res.top2_expert_id,
         res.session_turn_count,
+        res.global_turn_seq,
         v61_escape_clean(&res.quality_gate_reason)
     )
 }
@@ -5478,10 +5789,13 @@ pub fn v72_2_build_sse_chat_completion_stream(payload: &str) -> Result<String, S
     }
 
     sse.push_str(&format!(
-        "data: {{\"id\":\"chatcmpl-shxi-v7220\",\"object\":\"chat.completion.chunk\",\"created\":{},\"model\":\"sovereign-harmonic-xi-3shell-moe\",\"choices\":\x5b{{\"index\":0,\"delta\":{{}},\"finish_reason\":\"stop\"}}\x5d,\"top1_expert\":\"{}\",\"session_turn\":{}}}\n\ndata: \x5bDONE\x5d\n\n",
+        "data: {{\"id\":\"chatcmpl-shxi-v7220\",\"object\":\"chat.completion.chunk\",\"created\":{},\"model\":\"sovereign-harmonic-xi-3shell-moe\",\"choices\":\x5b{{\"index\":0,\"delta\":{{}},\"finish_reason\":\"stop\"}}\x5d,\"top1_expert\":\"{}\",\"session_id\":\"{}\",\"session_turn\":{},\"session_turn_count\":{},\"global_turn_seq\":{}}}\n\ndata: \x5bDONE\x5d\n\n",
         created_sec,
         v61_escape_clean(&res.top1_expert_name),
-        res.session_turn_count
+        v61_escape_clean(&res.session_id),
+        res.session_turn_count,
+        res.session_turn_count,
+        res.global_turn_seq
     ));
     Ok(sse)
 }

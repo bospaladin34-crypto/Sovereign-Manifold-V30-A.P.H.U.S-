@@ -198,9 +198,11 @@ $endpoints = [ordered]@{
     "v44_perf_blitz_t80_live.json"                = "http://127.0.0.1:8097/api/v1/diagnostics/v44_perf_blitz"
     "l0_core_41_modules_live.json"                = "http://127.0.0.1:8097/api/v1/l0_core/execute_41_modules"
 }
+$OpKeyVal = if ($env:ACT_OMEGA_OPERATOR_KEY) { $env:ACT_OMEGA_OPERATOR_KEY.Trim() } elseif (Test-Path "C:\Users\Nbell\.act_omega_operator_vault_key") { ([System.IO.File]::ReadAllText("C:\Users\Nbell\.act_omega_operator_vault_key")).Trim() } else { "" }
+$OpHeaders = if ($OpKeyVal.Length -ge 24) { @{ "X-Sovereign-Operator-Key" = $OpKeyVal } } else { @{} }
 foreach ($kv in $endpoints.GetEnumerator()) {
     try {
-        $resp = Invoke-WebRequest -Uri $kv.Value -UseBasicParsing -TimeoutSec 10
+        $resp = Invoke-WebRequest -Uri $kv.Value -Headers $OpHeaders -UseBasicParsing -TimeoutSec 10
         $formatted = ($resp.Content | ConvertFrom-Json | ConvertTo-Json -Depth 8)
         [System.IO.File]::WriteAllText((Join-Path $dirLiveSwarm $kv.Key), $formatted, [System.Text.UTF8Encoding]::new($false))
     } catch {

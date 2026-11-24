@@ -1,0 +1,196 @@
+{
+    "schema":  "act_omega.sh_xi_turn_counter_verification_receipt.v1",
+    "version":  "v73.2.4",
+    "milestone":  "M3_ITEM_10",
+    "primary_session_id":  "m3_iter2_verify_1795480129",
+    "isolated_reset_session_id":  "m3_iter2_iso_reset_1795480129",
+    "historical_seeded_total":  280,
+    "final_global_turn_seq":  649,
+    "c_ledger_path":  "03_vault/connectome/sh_xi_session_turn_counters.json",
+    "e_ledger_path":  "E:\\Sovereign_Manifold_SSD_Vault\\connectome\\sh_xi_session_turn_counters.json",
+    "ledger_c_e_sha256_match":  true,
+    "ledger_sha256":  "732b6754e761ef3f7bcc3336b20e6d7abdec95c650f1f4355fadb3b7d15d60c3",
+    "openai_compat_operator_gate_probes":  [
+                                               {
+                                                   "target":  "host",
+                                                   "endpoint":  "/v1/chat/completions",
+                                                   "unauth_status":  403,
+                                                   "header_plus_pctkey_status":  403,
+                                                   "auth_status":  200
+                                               },
+                                               {
+                                                   "target":  "host",
+                                                   "endpoint":  "/api/v1/openai/compat",
+                                                   "unauth_status":  403,
+                                                   "header_plus_pctkey_status":  403,
+                                                   "auth_status":  200
+                                               },
+                                               {
+                                                   "target":  "edge",
+                                                   "endpoint":  "/v1/chat/completions",
+                                                   "unauth_status":  403,
+                                                   "header_plus_pctkey_status":  403,
+                                                   "auth_status":  200
+                                               },
+                                               {
+                                                   "target":  "edge",
+                                                   "endpoint":  "/api/v1/openai/compat",
+                                                   "unauth_status":  403,
+                                                   "header_plus_pctkey_status":  403,
+                                                   "auth_status":  200
+                                               }
+                                           ],
+    "turns_1_to_12_pre_hotswap":  [
+                                      {
+                                          "turn":  1,
+                                          "session_id":  "m3_iter2_verify_1795480129",
+                                          "session_turn_count":  1,
+                                          "global_turn_seq":  632,
+                                          "status":  "MEASURED",
+                                          "quality_gate_passed":  null
+                                      },
+                                      {
+                                          "turn":  2,
+                                          "session_id":  "m3_iter2_verify_1795480129",
+                                          "session_turn_count":  2,
+                                          "global_turn_seq":  633,
+                                          "status":  "MEASURED",
+                                          "quality_gate_passed":  null
+                                      },
+                                      {
+                                          "turn":  3,
+                                          "session_id":  "m3_iter2_verify_1795480129",
+                                          "session_turn_count":  3,
+                                          "global_turn_seq":  634,
+                                          "status":  "MEASURED",
+                                          "quality_gate_passed":  null
+                                      },
+                                      {
+                                          "turn":  4,
+                                          "session_id":  "m3_iter2_verify_1795480129",
+                                          "session_turn_count":  4,
+                                          "global_turn_seq":  635,
+                                          "status":  "MEASURED",
+                                          "quality_gate_passed":  null
+                                      },
+                                      {
+                                          "turn":  5,
+                                          "session_id":  "m3_iter2_verify_1795480129",
+                                          "session_turn_count":  5,
+                                          "global_turn_seq":  636,
+                                          "status":  "MEASURED",
+                                          "quality_gate_passed":  null
+                                      },
+                                      {
+                                          "turn":  6,
+                                          "session_id":  "m3_iter2_verify_1795480129",
+                                          "session_turn_count":  6,
+                                          "global_turn_seq":  637,
+                                          "status":  "MEASURED",
+                                          "quality_gate_passed":  null
+                                      },
+                                      {
+                                          "turn":  7,
+                                          "session_id":  "m3_iter2_verify_1795480129",
+                                          "session_turn_count":  7,
+                                          "global_turn_seq":  638,
+                                          "status":  "MEASURED",
+                                          "quality_gate_passed":  null
+                                      },
+                                      {
+                                          "turn":  8,
+                                          "session_id":  "m3_iter2_verify_1795480129",
+                                          "session_turn_count":  8,
+                                          "global_turn_seq":  639,
+                                          "status":  "MEASURED",
+                                          "quality_gate_passed":  null
+                                      },
+                                      {
+                                          "turn":  9,
+                                          "session_id":  "m3_iter2_verify_1795480129",
+                                          "session_turn_count":  9,
+                                          "global_turn_seq":  640,
+                                          "status":  "MEASURED",
+                                          "quality_gate_passed":  null
+                                      },
+                                      {
+                                          "turn":  10,
+                                          "session_id":  "m3_iter2_verify_1795480129",
+                                          "session_turn_count":  10,
+                                          "global_turn_seq":  641,
+                                          "status":  "MEASURED",
+                                          "quality_gate_passed":  null
+                                      },
+                                      {
+                                          "turn":  11,
+                                          "session_id":  "m3_iter2_verify_1795480129",
+                                          "session_turn_count":  11,
+                                          "global_turn_seq":  642,
+                                          "status":  "MEASURED",
+                                          "quality_gate_passed":  null
+                                      },
+                                      {
+                                          "turn":  12,
+                                          "session_id":  "m3_iter2_verify_1795480129",
+                                          "session_turn_count":  12,
+                                          "global_turn_seq":  643,
+                                          "status":  "MEASURED",
+                                          "quality_gate_passed":  null
+                                      }
+                                  ],
+    "hotswap_executed_between_turn_12_and_13":  true,
+    "turns_13_to_14_post_hotswap":  [
+                                        {
+                                            "turn":  13,
+                                            "session_id":  "m3_iter2_verify_1795480129",
+                                            "session_turn_count":  13,
+                                            "global_turn_seq":  644,
+                                            "status":  "MEASURED",
+                                            "quality_gate_passed":  null
+                                        },
+                                        {
+                                            "turn":  14,
+                                            "session_id":  "m3_iter2_verify_1795480129",
+                                            "session_turn_count":  14,
+                                            "global_turn_seq":  645,
+                                            "status":  "MEASURED",
+                                            "quality_gate_passed":  null
+                                        }
+                                    ],
+    "isolated_reset_probes":  [
+                                  {
+                                      "step":  1,
+                                      "reset_session":  true,
+                                      "session_id":  "m3_iter2_iso_reset_1795480129",
+                                      "session_turn_count":  1,
+                                      "global_turn_seq":  646
+                                  },
+                                  {
+                                      "step":  2,
+                                      "reset_session":  false,
+                                      "session_id":  "m3_iter2_iso_reset_1795480129",
+                                      "session_turn_count":  2,
+                                      "global_turn_seq":  647
+                                  },
+                                  {
+                                      "step":  3,
+                                      "reset_session":  true,
+                                      "session_id":  "m3_iter2_iso_reset_1795480129",
+                                      "session_turn_count":  1,
+                                      "global_turn_seq":  648
+                                  }
+                              ],
+    "openai_compat_turn_15":  {
+                                  "endpoint":  "/v1/chat/completions",
+                                  "authenticated_with_header":  true,
+                                  "session_id":  "m3_iter2_verify_1795480129",
+                                  "session_turn_count":  15,
+                                  "global_turn_seq":  649
+                              },
+    "historical_sessions_preserved":  {
+                                          "vesper_hud_mwofzb59":  13,
+                                          "mobile_p10_sh_xi":  5,
+                                          "ps_w2_refactor_test":  6
+                                      },
+    "generated_at_utc":  "2026-11-24T00:29:34Z"
+}

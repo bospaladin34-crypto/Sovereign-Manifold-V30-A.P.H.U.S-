@@ -32,8 +32,12 @@ use act_omega_l0_core::v72_1_sh_xi_matryoshka_384_768_cuda_pretrainer::{
     v72_1_try_load_verified_disk_corpus,
 };
 use act_omega_l0_core::v72_2_sh_xi_sparse_moe_chatml_sft_and_rag::{
+    C_SH_XI_SESSION_COUNTERS_PATH,
+    E_SH_XI_SESSION_COUNTERS_PATH,
+    v72_2_clear_session_history_for_test,
     v72_2_contains_seed_prefix_artifact,
     v72_2_converse_execute_full_with_params,
+    v72_2_dispatch_converse_route,
     v72_2_dispatch_tool_363_shell2_cpu_ssd_sparse_moe_bank,
     v72_2_dispatch_tool_364_chatml_masked_sft_trainer,
     v72_2_dispatch_tool_365_igpu_grounded_rag_and_telemetry,
@@ -41,6 +45,11 @@ use act_omega_l0_core::v72_2_sh_xi_sparse_moe_chatml_sft_and_rag::{
     v72_2_eval_tool_368_subjson_gates,
     v72_2_evaluate_converse_output_quality_gate,
     v72_2_extract_word_5gram_shingles,
+    v72_2_get_session_turns,
+    v72_2_get_turn_counters_snapshot,
+    v72_2_reload_turn_counters_from_disk_for_test,
+    v72_2_seed_counters_from_historical_tool_361_at,
+    v72_2_set_test_counter_paths_override,
     v72_2_validate_json_object_fsm,
 };
 use act_omega_l0_core::v73_1_nov12_15_research_kernels::{
@@ -64,10 +73,14 @@ use act_omega_l0_core::v73_2_cloudflare_vpc_mesh_and_pgwire_hyperdrive::{
     v73_2_constant_time_compare_key,
     v73_2_count_live_lean_theorems,
     v73_2_dispatch_chain404_master_certification,
+    v73_2_extract_apk_version_code,
     v73_2_has_query_key_param,
     v73_2_has_telemetry_write_query_param,
+    v73_2_parse_d1_user_tables_from_receipt_str,
     v73_2_parse_sync_matrix_json,
     v73_2_percent_decode_ascii,
+    v73_2_read_live_d1_database_name,
+    v73_2_read_live_d1_user_tables,
     v73_2_read_live_ota_metadata,
     v73_2_read_live_release_version,
     v73_2_resolve_allowed_l0_cors_origin,
@@ -87,6 +100,8 @@ fn ensure_repo_root_cwd() {
 fn test_d2_answer_seeding_detection_and_pure_neural_converse() {
     ensure_repo_root_cwd();
     let _rw_guard = RW_EVAL500_GUARD.lock().unwrap_or_else(|e| e.into_inner());
+    let _turn_guard = SH_XI_TURN_COUNTER_GUARD.lock().unwrap_or_else(|e| e.into_inner());
+    let _turn_reload_on_drop = ShXiTurnCounterReloadGuard::new("d2");
     let _rw_restore = guard_paths(&[
         "03_vault/connectome/sh_xi_rw_eval_500_sealed.jsonl",
         "E:\\Sovereign_Manifold_SSD_Vault\\connectome\\sh_xi_rw_eval_500_sealed.jsonl",
@@ -119,6 +134,8 @@ fn test_d2_answer_seeding_detection_and_pure_neural_converse() {
 fn test_e4_converse_quality_gate_rejects_bad_or_truncated_output() {
     ensure_repo_root_cwd();
     let _rw_guard = RW_EVAL500_GUARD.lock().unwrap_or_else(|e| e.into_inner());
+    let _turn_guard = SH_XI_TURN_COUNTER_GUARD.lock().unwrap_or_else(|e| e.into_inner());
+    let _turn_reload_on_drop = ShXiTurnCounterReloadGuard::new("e4");
     let _rw_restore = guard_paths(&[
         "03_vault/connectome/sh_xi_rw_eval_500_sealed.jsonl",
         "E:\\Sovereign_Manifold_SSD_Vault\\connectome\\sh_xi_rw_eval_500_sealed.jsonl",
@@ -319,6 +336,53 @@ static T339_ABLATION_GUARD: std::sync::Mutex<()> = std::sync::Mutex::new(());
 static CURVETQ_RECEIPT_GUARD: std::sync::Mutex<()> = std::sync::Mutex::new(());
 static LEAN_RECEIPT_GUARD: std::sync::Mutex<()> = std::sync::Mutex::new(());
 static RW_EVAL500_GUARD: std::sync::Mutex<()> = std::sync::Mutex::new(());
+static SH_XI_TURN_COUNTER_GUARD: std::sync::Mutex<()> = std::sync::Mutex::new(());
+
+struct ShXiTurnCounterReloadGuard {
+    tmp_dir: std::path::PathBuf,
+    c_path: String,
+    e_path: String,
+}
+
+impl ShXiTurnCounterReloadGuard {
+    fn new(tag: &str) -> Self {
+        let nanos = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map(|d| d.as_nanos())
+            .unwrap_or(0);
+        let tmp_dir = std::env::temp_dir().join(format!(
+            "act_omega_sh_xi_counters_{}_{}_{}",
+            tag,
+            std::process::id(),
+            nanos
+        ));
+        let _ = std::fs::remove_dir_all(&tmp_dir);
+        std::fs::create_dir_all(&tmp_dir).expect("create isolated sh_xi counter test dir");
+        let c_path = tmp_dir
+            .join("c_sh_xi_session_turn_counters.json")
+            .to_string_lossy()
+            .to_string();
+        let e_path = tmp_dir
+            .join("e_sh_xi_session_turn_counters.json")
+            .to_string_lossy()
+            .to_string();
+        v72_2_set_test_counter_paths_override(Some((c_path.clone(), e_path.clone())));
+        v72_2_clear_session_history_for_test();
+        Self {
+            tmp_dir,
+            c_path,
+            e_path,
+        }
+    }
+}
+
+impl Drop for ShXiTurnCounterReloadGuard {
+    fn drop(&mut self) {
+        v72_2_set_test_counter_paths_override(None);
+        v72_2_clear_session_history_for_test();
+        let _ = std::fs::remove_dir_all(&self.tmp_dir);
+    }
+}
 
 #[test]
 fn test_c2_and_e10_corrupt_speculative_acceptance_fails_kl_gate() {
@@ -564,6 +628,8 @@ fn test_m1_item8_live_ota_metadata_and_source_invariants() {
 fn test_m2_item1_disk_corpus_guard_and_base_curve_meta_parity() {
     ensure_repo_root_cwd();
     let _rw_guard = RW_EVAL500_GUARD.lock().unwrap_or_else(|e| e.into_inner());
+    let _turn_guard = SH_XI_TURN_COUNTER_GUARD.lock().unwrap_or_else(|e| e.into_inner());
+    let _turn_reload_on_drop = ShXiTurnCounterReloadGuard::new("m2_item1");
     let _rw_restore = guard_paths(&[
         "03_vault/connectome/sh_xi_rw_eval_500_sealed.jsonl",
         "E:\\Sovereign_Manifold_SSD_Vault\\connectome\\sh_xi_rw_eval_500_sealed.jsonl",
@@ -665,6 +731,14 @@ fn test_m2_item1_disk_corpus_guard_and_base_curve_meta_parity() {
     assert!(s10k_live_n768.is_finite() && s10k_live_bpb768.is_finite());
     let sampling_note = meta.get("curve_sampling_note").and_then(|v| v.as_str()).unwrap_or("");
     assert!(!sampling_note.is_empty(), "curve_sampling_note must be non-empty");
+    for req_key in [
+        "phase_a_non_monotonic_rise_explanation",
+        "shell0_step6000_freeze_mechanism",
+        "phase_b_non_monotonic_rise_explanation",
+    ] {
+        let expl = meta.get(req_key).and_then(|v| v.as_str()).unwrap_or("");
+        assert!(!expl.is_empty(), "{} must be non-empty in sh_xi_base_train_meta.json", req_key);
+    }
     let grad_rec_path = meta.get("layer_grad_l2_norms_receipt").and_then(|v| v.as_str()).expect("layer_grad_l2_norms_receipt");
     assert_eq!(grad_rec_path, "03_vault/connectome/sh_xi_base_step_grad_norms_receipt.json");
     let grad_rec_str = std::fs::read_to_string(grad_rec_path).expect("sh_xi_base_step_grad_norms_receipt.json");
@@ -744,6 +818,14 @@ fn test_m2_item2_moe_per_step_curve_and_weights_manifest_provenance() {
     assert!((moe_meta.get("global_alpha_moe").and_then(|v| v.as_f64()).unwrap_or(0.0) - s16_alpha).abs() < 1e-4);
     assert!(!moe_meta.get("curve_footing_note").and_then(|v| v.as_str()).unwrap_or("").is_empty());
     assert!(!moe_meta.get("frozen_base_q8_0_eval_note").and_then(|v| v.as_str()).unwrap_or("").is_empty());
+    assert!(
+        !moe_meta
+            .get("step16_jump_magnitude_explanation")
+            .and_then(|v| v.as_str())
+            .unwrap_or("")
+            .is_empty(),
+        "step16_jump_magnitude_explanation must be non-empty in sh_xi_moe_train_meta.json"
+    );
 
     let man_str = std::fs::read_to_string("00_control/weights/sovereign_harmonic_weights_manifest.json")
         .expect("sovereign_harmonic_weights_manifest.json");
@@ -1444,6 +1526,8 @@ fn test_m4_item16_t383_curvetq_ce_scope_and_v71_2_narrow_172_support_label() {
 fn test_r1_item7_tool368_live_tools_count_and_zero_brackets() {
     ensure_repo_root_cwd();
     let _rw_guard = RW_EVAL500_GUARD.lock().unwrap_or_else(|e| e.into_inner());
+    let _turn_guard = SH_XI_TURN_COUNTER_GUARD.lock().unwrap_or_else(|e| e.into_inner());
+    let _turn_reload_on_drop = ShXiTurnCounterReloadGuard::new("r1_item7");
     let _restore = guard_paths(&[
         "03_vault/connectome/sh_xi_rw_eval_500_sealed.jsonl",
         "E:\\Sovereign_Manifold_SSD_Vault\\connectome\\sh_xi_rw_eval_500_sealed.jsonl",
@@ -1696,4 +1780,667 @@ fn test_r2_r3_r4_r8_l0_security_gates_health_ingest_tao_and_source_invariants() 
             "C: and E:\\weights sh_xi_base_train_meta.json MUST be SHA-256 identical"
         );
     }
+}
+
+mod v44_test_harness {
+    #![allow(dead_code)]
+    fn unix_ms() -> u64 {
+        1_763_900_000_000
+    }
+    struct DummyTok;
+    fn encode_and_detokenize_65k(_s: &str) -> DummyTok {
+        DummyTok
+    }
+    include!("../src/v44_worksteal_npage_shm_webgpu_lease.rs");
+}
+
+#[test]
+fn test_v73_2_4_m1_security_gates_v44_poc_and_query_key_parity() {
+    ensure_repo_root_cwd();
+    let _lease_restore = guard_paths(&[
+        "03_vault/connectome/webgpu_active_leases_v4400.jsonl",
+        "E:\\Sovereign_Manifold_SSD_Vault\\connectome\\webgpu_active_leases_v4400.jsonl",
+    ]);
+
+    // 1. Item #4: v44 zero square brackets + independent .e8z Plucker FNV-1a parity (including negative P_ab two's complement)
+    let v44_src = std::fs::read_to_string("01_l0_rust/src/v44_worksteal_npage_shm_webgpu_lease.rs")
+        .expect("read v44_worksteal_npage_shm_webgpu_lease.rs");
+    assert!(
+        !v44_src.contains('[') && !v44_src.contains(']'),
+        "v44_worksteal_npage_shm_webgpu_lease.rs MUST contain strictly zero square brackets"
+    );
+
+    let (exp_gpu, exp_simd) = v44_test_harness::v44_compute_expected_e8z_plucker_hashes()
+        .expect("sovereign_harmonic_iv_v5000.e8z must yield expected Plucker hashes");
+    assert!(exp_gpu.starts_with("0x") && exp_gpu.ends_with("_PLUCKER_POS_QED"));
+    assert!(exp_simd.starts_with("0x") && exp_simd.ends_with("_CPU_E8_PLUCKER_6D_INNER_MEASURED"));
+    assert_eq!(&exp_gpu[..8], &exp_simd[..8]);
+
+    // Reference check on negative P_ab two's-complement truncation parity with JS `(P_ab * 10000) | 0`
+    let neg_pab: f64 = -0.123456;
+    assert_eq!(((neg_pab * 10000.0) as i32) as u32, (-1234_i32) as u32);
+    assert!(v44_test_harness::v44_constant_time_eq(&exp_gpu, &exp_gpu));
+    assert!(!v44_test_harness::v44_constant_time_eq(&exp_gpu, "0xDEAD00_PLUCKER_POS_QED"));
+    assert!(!v44_test_harness::v44_constant_time_eq(&exp_gpu, ""));
+
+    // Fail-closed negative checks on v44 execute_tool78_webgpu_compute_lease
+    let mut leases: Vec<v44_test_harness::WebGpuLeaseSlot> = Vec::new();
+    let ssd = "E:/Sovereign_Manifold_SSD_Vault";
+    for (act, kops, poc, label) in [
+        ("acquire", Some(420.0), "", "empty poc_hash"),
+        ("acquire", Some(420.0), "0xDEAD00_PLUCKER_POS_QED", "forged poc_hash"),
+        ("acquire", None, exp_gpu.as_str(), "missing kops"),
+        ("acquire", Some(f64::NAN), exp_gpu.as_str(), "NaN kops"),
+        ("acquire", Some(f64::INFINITY), exp_gpu.as_str(), "Inf kops"),
+        ("acquire", Some(49.9), exp_gpu.as_str(), "kops < 50"),
+        ("acquire", Some(850.1), exp_gpu.as_str(), "kops > 850"),
+        ("bogus", Some(420.0), exp_gpu.as_str(), "unknown action"),
+    ] {
+        let res = v44_test_harness::execute_tool78_webgpu_compute_lease(
+            &mut leases,
+            act,
+            "unit-test-worker",
+            "UnitTest-WGSL",
+            kops,
+            poc,
+            4500.0,
+            ssd,
+        );
+        assert!(res.rejected_bad_request, "MUST reject bad request: {}", label);
+        assert!(!res.poc_verified, "poc_verified MUST be false on rejection: {}", label);
+        assert!(!res.lease_active, "lease_active MUST be false on rejection: {}", label);
+        assert!(leases.is_empty(), "leases MUST remain unmutated on rejection: {}", label);
+    }
+
+    // Positive checks for both WebGPU & SIMD PoC hashes + release
+    let acq_gpu = v44_test_harness::execute_tool78_webgpu_compute_lease(
+        &mut leases,
+        "acquire",
+        "unit-test-worker",
+        "Chrome-WebGPU-WGSL-Stiefel-FNO-64T",
+        Some(420.0),
+        &exp_gpu,
+        4500.0,
+        ssd,
+    );
+    assert!(!acq_gpu.rejected_bad_request && acq_gpu.poc_verified && acq_gpu.lease_active);
+    assert_eq!(leases.len(), 1);
+
+    let sub_simd = v44_test_harness::execute_tool78_webgpu_compute_lease(
+        &mut leases,
+        "submit",
+        "unit-test-worker",
+        "Chrome-SIMD-Float64-Fallback-64T",
+        Some(210.0),
+        &exp_simd,
+        4500.0,
+        ssd,
+    );
+    assert!(!sub_simd.rejected_bad_request && sub_simd.poc_verified && sub_simd.lease_active);
+    assert_eq!(sub_simd.worker_batches, 2);
+
+    let rel_res = v44_test_harness::execute_tool78_webgpu_compute_lease(
+        &mut leases,
+        "release",
+        "unit-test-worker",
+        "",
+        None,
+        "",
+        4500.0,
+        ssd,
+    );
+    assert!(!rel_res.rejected_bad_request && !rel_res.lease_active && !rel_res.poc_verified);
+    assert!(leases.is_empty());
+
+    // 2. Item #5: Percent-encoded & case-variant ?key= detection parity
+    for enc in [
+        "/api/v1/auth/operator_vault_gate?key=test",
+        "/api/v1/auth/operator_vault_gate?%6bey=test",
+        "/api/v1/auth/operator_vault_gate?%4Bey=test",
+        "/api/v1/router/distributed_5w1h_dispatch?who=a&%256bey=test",
+    ] {
+        assert!(v73_2_has_query_key_param(enc), "MUST detect encoded query key in {}", enc);
+    }
+    assert!(!v73_2_has_query_key_param("/api/v1/auth/operator_vault_gate?format=json"));
+
+    // 3. Items #2, #3, #4, #5: L0 v31_swarm.rs mirror parity & source gate checks
+    let bin_src = std::fs::read_to_string("01_l0_rust/src/bin/v31_swarm.rs").expect("bin/v31_swarm.rs");
+    let lib_src = std::fs::read_to_string("01_l0_rust/src/v31_swarm.rs").expect("src/v31_swarm.rs");
+    assert_eq!(bin_src, lib_src, "bin/v31_swarm.rs and src/v31_swarm.rs MUST remain 100% identical");
+    assert!(
+        !bin_src.contains("extract_query_param(raw_target, \"key\")"),
+        "0 occurrences of extract_query_param(raw_target, \"key\") allowed in v31_swarm.rs"
+    );
+
+    let norm_src = bin_src.replace("\r\n", "\n");
+    for marker in [
+        "id == 78",
+        "(id >= 275 && id <= 280)",
+        "fn is_chain135_json_route(",
+        "if is_chain135_json_route(clean_path, raw_target, &post_body) {\n            if !enforce_operator_gate_403",
+        "if clean_path.starts_with(\"/api/v1/unified/\") {\n            if !enforce_operator_gate_403",
+        "|| clean_path == \"/api/v1/tool/275\"\n        {\n            if !enforce_operator_gate_403",
+        "if !is_known_legacy {",
+        "if clean_path == \"/api/v1/worksteal/webgpu_lease\"\n            || clean_path == \"/api/v1/tools/t78\"\n            || clean_path == \"/api/v1/tool/78\"\n        {\n            if !enforce_operator_gate_403",
+        "if clean_path == \"/api/v1/openai/compat\" || clean_path == \"/v1/chat/completions\" {\n            if !enforce_operator_gate_403",
+        "|| (287..=368).contains(&id);",
+    ] {
+        assert!(norm_src.contains(marker), "Missing v73.2.4 M1 gate marker:\n{}", marker);
+    }
+    assert!(
+        !norm_src.contains("|| (316..=368).contains(&id);"),
+        "is_chain135_json_route MUST NOT leave /api/v1/tool/308..315 ungated via (316..=368)"
+    );
+    let fn_start = norm_src.find("fn is_chain135_json_route(").expect("is_chain135_json_route fn");
+    let fn_end = norm_src[fn_start..].find("fn extract_r4_route_or_execute_tool_id(").expect("fn end") + fn_start;
+    let route_fn = &norm_src[fn_start..fn_end];
+    let tool_branch_start = route_fn.find("clean_path.strip_prefix(\"/api/v1/tool/\")").expect("/api/v1/tool/ branch");
+    let tool_branch = &route_fn[tool_branch_start..];
+    for check_tid in [308usize, 313usize] {
+        let covered = tool_branch.contains("(287..=368).contains(&id)") && (287..=368).contains(&check_tid);
+        assert!(covered, "/api/v1/tool/{} MUST be gated in is_chain135_json_route", check_tid);
+    }
+
+    // 4. Item #3 & #4 Edge Worker gating markers
+    let worker_js = std::fs::read_to_string("00_control/cloudflare_edge/worker_vpc_shadow_v3700.js")
+        .expect("worker_vpc_shadow_v3700.js");
+    for edge_marker in [
+        "lowerPath.startsWith(\"/api/v1/sovereign_harmonic/\")",
+        "lowerPath.startsWith(\"/api/v1/worksteal/\")",
+        "lowerPath === \"/v1/chat/completions\"",
+        "lowerPath === \"/api/v1/openai/compat\"",
+        "(lowerPath.startsWith(\"/api/v1/unified/\") && lowerPath !== \"/api/v1/unified/catalog\")",
+        "(parsedToolNum >= 1 && parsedToolNum <= 404)",
+    ] {
+        assert!(worker_js.contains(edge_marker), "Missing Edge gate marker: {}", edge_marker);
+    }
+}
+
+fn build_synthetic_axml_bytes(include_version_code: bool, val_type: u8, val_data: u32) -> Vec<u8> {
+    let mut chunks: Vec<u8> = Vec::new();
+    // 0x0180 RES_XML_RESOURCE_MAP_TYPE chunk
+    let res_ids: Vec<u32> = if include_version_code {
+        vec![0x0101_0001, 0x0101_021B]
+    } else {
+        vec![0x0101_0001]
+    };
+    let map_sz = (8 + res_ids.len() * 4) as u32;
+    chunks.extend_from_slice(&0x0180u16.to_le_bytes());
+    chunks.extend_from_slice(&8u16.to_le_bytes());
+    chunks.extend_from_slice(&map_sz.to_le_bytes());
+    for rid in res_ids {
+        chunks.extend_from_slice(&rid.to_le_bytes());
+    }
+    // 0x0102 RES_XML_START_ELEMENT_TYPE chunk: hdr(16) + ext(20) + 1 attr(20) = 56 bytes
+    chunks.extend_from_slice(&0x0102u16.to_le_bytes());
+    chunks.extend_from_slice(&16u16.to_le_bytes());
+    chunks.extend_from_slice(&56u32.to_le_bytes());
+    chunks.extend_from_slice(&1u32.to_le_bytes()); // lineNumber
+    chunks.extend_from_slice(&0xFFFF_FFFFu32.to_le_bytes()); // comment
+    // ext_base (20 bytes): ns(4), name(4), attrStart(2=20), attrSize(2=20), attrCount(2=1), idIdx(2), classIdx(2), styleIdx(2)
+    chunks.extend_from_slice(&0xFFFF_FFFFu32.to_le_bytes());
+    chunks.extend_from_slice(&0u32.to_le_bytes());
+    chunks.extend_from_slice(&20u16.to_le_bytes());
+    chunks.extend_from_slice(&20u16.to_le_bytes());
+    chunks.extend_from_slice(&1u16.to_le_bytes());
+    chunks.extend_from_slice(&0u16.to_le_bytes());
+    chunks.extend_from_slice(&0u16.to_le_bytes());
+    chunks.extend_from_slice(&0u16.to_le_bytes());
+    // attr[0] (20 bytes): ns(4), nameIdx(4), rawVal(4), size(2=8), res0(1=0), valType(1), valData(4)
+    chunks.extend_from_slice(&0xFFFF_FFFFu32.to_le_bytes());
+    let name_idx: u32 = if include_version_code { 1 } else { 0 };
+    chunks.extend_from_slice(&name_idx.to_le_bytes());
+    chunks.extend_from_slice(&0xFFFF_FFFFu32.to_le_bytes());
+    chunks.extend_from_slice(&8u16.to_le_bytes());
+    chunks.push(0);
+    chunks.push(val_type);
+    chunks.extend_from_slice(&val_data.to_le_bytes());
+
+    let total_sz = (8 + chunks.len()) as u32;
+    let mut axml = Vec::with_capacity(total_sz as usize);
+    axml.extend_from_slice(&0x0003u16.to_le_bytes());
+    axml.extend_from_slice(&8u16.to_le_bytes());
+    axml.extend_from_slice(&total_sz.to_le_bytes());
+    axml.extend_from_slice(&chunks);
+    axml
+}
+
+fn deflate_fixed_huffman_encode(raw: &[u8]) -> Vec<u8> {
+    fn push_bits_lsb(out: &mut Vec<u8>, bit_buf: &mut u32, bit_cnt: &mut u8, val: u32, n: u8) {
+        *bit_buf |= val << *bit_cnt;
+        *bit_cnt += n;
+        while *bit_cnt >= 8 {
+            out.push((*bit_buf & 0xFF) as u8);
+            *bit_buf >>= 8;
+            *bit_cnt -= 8;
+        }
+    }
+    fn push_huff_msb(out: &mut Vec<u8>, bit_buf: &mut u32, bit_cnt: &mut u8, code: u32, len: u8) {
+        for i in (0..len).rev() {
+            push_bits_lsb(out, bit_buf, bit_cnt, (code >> i) & 1, 1);
+        }
+    }
+    let mut out: Vec<u8> = Vec::new();
+    let mut bit_buf: u32 = 0;
+    let mut bit_cnt: u8 = 0;
+    push_bits_lsb(&mut out, &mut bit_buf, &mut bit_cnt, 1, 1); // BFINAL = 1
+    push_bits_lsb(&mut out, &mut bit_buf, &mut bit_cnt, 1, 2); // BTYPE = 1 (fixed Huffman)
+    for &b in raw {
+        if b <= 143 {
+            push_huff_msb(&mut out, &mut bit_buf, &mut bit_cnt, 0x30 + (b as u32), 8);
+        } else {
+            push_huff_msb(&mut out, &mut bit_buf, &mut bit_cnt, 0x190 + ((b as u32) - 144), 9);
+        }
+    }
+    push_huff_msb(&mut out, &mut bit_buf, &mut bit_cnt, 0, 7); // EOB 256
+    if bit_cnt > 0 {
+        out.push((bit_buf & 0xFF) as u8);
+    }
+    out
+}
+
+fn build_synthetic_zip(entry_name: &[u8], comp_method: u16, comp_data: &[u8], uncomp_size: u32) -> Vec<u8> {
+    let mut zip: Vec<u8> = Vec::new();
+    let lfh_offset = 0u32;
+    // LFH (30 bytes + name)
+    zip.extend_from_slice(&0x0403_4B50u32.to_le_bytes());
+    zip.extend_from_slice(&20u16.to_le_bytes());
+    zip.extend_from_slice(&0u16.to_le_bytes());
+    zip.extend_from_slice(&comp_method.to_le_bytes());
+    zip.extend_from_slice(&0u16.to_le_bytes());
+    zip.extend_from_slice(&0u16.to_le_bytes());
+    zip.extend_from_slice(&0u32.to_le_bytes());
+    zip.extend_from_slice(&(comp_data.len() as u32).to_le_bytes());
+    zip.extend_from_slice(&uncomp_size.to_le_bytes());
+    zip.extend_from_slice(&(entry_name.len() as u16).to_le_bytes());
+    zip.extend_from_slice(&0u16.to_le_bytes());
+    zip.extend_from_slice(entry_name);
+    zip.extend_from_slice(comp_data);
+
+    let cd_offset = zip.len() as u32;
+    // CDH (46 bytes + name)
+    zip.extend_from_slice(&0x0201_4B50u32.to_le_bytes());
+    zip.extend_from_slice(&20u16.to_le_bytes());
+    zip.extend_from_slice(&20u16.to_le_bytes());
+    zip.extend_from_slice(&0u16.to_le_bytes());
+    zip.extend_from_slice(&comp_method.to_le_bytes());
+    zip.extend_from_slice(&0u16.to_le_bytes());
+    zip.extend_from_slice(&0u16.to_le_bytes());
+    zip.extend_from_slice(&0u32.to_le_bytes());
+    zip.extend_from_slice(&(comp_data.len() as u32).to_le_bytes());
+    zip.extend_from_slice(&uncomp_size.to_le_bytes());
+    zip.extend_from_slice(&(entry_name.len() as u16).to_le_bytes());
+    zip.extend_from_slice(&0u16.to_le_bytes());
+    zip.extend_from_slice(&0u16.to_le_bytes());
+    zip.extend_from_slice(&0u16.to_le_bytes());
+    zip.extend_from_slice(&0u16.to_le_bytes());
+    zip.extend_from_slice(&0u32.to_le_bytes());
+    zip.extend_from_slice(&lfh_offset.to_le_bytes());
+    zip.extend_from_slice(entry_name);
+
+    let cd_size = (zip.len() as u32) - cd_offset;
+    // EOCD (22 bytes)
+    zip.extend_from_slice(&0x0605_4B50u32.to_le_bytes());
+    zip.extend_from_slice(&0u16.to_le_bytes());
+    zip.extend_from_slice(&0u16.to_le_bytes());
+    zip.extend_from_slice(&1u16.to_le_bytes());
+    zip.extend_from_slice(&1u16.to_le_bytes());
+    zip.extend_from_slice(&cd_size.to_le_bytes());
+    zip.extend_from_slice(&cd_offset.to_le_bytes());
+    zip.extend_from_slice(&0u16.to_le_bytes());
+    zip
+}
+
+#[test]
+fn test_v73_2_4_m2_item7_live_apk_version_code_extraction() {
+    ensure_repo_root_cwd();
+
+    // 1. Live shipped APK extraction vs build.gradle.kts (dynamic, zero hardcoded versionCode literal)
+    let apk_bytes = std::fs::read("04_edge_silicon/ACT-Omega-Pixel10-Sovereign.apk")
+        .expect("04_edge_silicon/ACT-Omega-Pixel10-Sovereign.apk");
+    let extracted_vc = v73_2_extract_apk_version_code(&apk_bytes)
+        .expect("MUST extract live versionCode from shipped APK");
+    assert!(extracted_vc > 0);
+
+    let gradle_src = std::fs::read_to_string("04_edge_silicon/pixel10_ndk_app/app/build.gradle.kts")
+        .expect("build.gradle.kts");
+    let gradle_vc = gradle_src
+        .lines()
+        .find_map(|l| {
+            let t = l.trim();
+            t.strip_prefix("versionCode")
+                .and_then(|rest| rest.trim().strip_prefix('='))
+                .and_then(|num| num.trim().parse::<u32>().ok())
+        })
+        .expect("versionCode in build.gradle.kts");
+    assert_eq!(extracted_vc, gradle_vc, "Extracted APK versionCode must match build.gradle.kts");
+
+    let debug_apk_bytes = std::fs::read("04_edge_silicon/pixel10_ndk_app/app/build/outputs/apk/debug/app-debug.apk")
+        .expect("app-debug.apk");
+    assert_eq!(v73_2_extract_apk_version_code(&debug_apk_bytes), Some(extracted_vc));
+
+    // 2. Synthetic Stored (comp_method=0), DEFLATE BTYPE=0, and DEFLATE BTYPE=1 (valType 0x10 and 0x11)
+    let axml_dec = build_synthetic_axml_bytes(true, 0x10, 912);
+    let zip_stored = build_synthetic_zip(b"AndroidManifest.xml", 0, &axml_dec, axml_dec.len() as u32);
+    assert_eq!(v73_2_extract_apk_version_code(&zip_stored), Some(912));
+
+    let mut deflate_b0: Vec<u8> = Vec::new();
+    let len_u16 = axml_dec.len() as u16;
+    deflate_b0.push(0x01); // BFINAL=1, BTYPE=0
+    deflate_b0.extend_from_slice(&len_u16.to_le_bytes());
+    deflate_b0.extend_from_slice(&(!len_u16).to_le_bytes());
+    deflate_b0.extend_from_slice(&axml_dec);
+    let zip_b0 = build_synthetic_zip(b"AndroidManifest.xml", 8, &deflate_b0, axml_dec.len() as u32);
+    assert_eq!(v73_2_extract_apk_version_code(&zip_b0), Some(912));
+
+    let axml_hex = build_synthetic_axml_bytes(true, 0x11, 1337);
+    let deflate_b1 = deflate_fixed_huffman_encode(&axml_hex);
+    let zip_b1 = build_synthetic_zip(b"AndroidManifest.xml", 8, &deflate_b1, axml_hex.len() as u32);
+    assert_eq!(v73_2_extract_apk_version_code(&zip_b1), Some(1337));
+
+    // 3. Fail-closed negative cases (must return None)
+    assert_eq!(v73_2_extract_apk_version_code(&Vec::new()), None);
+    assert_eq!(v73_2_extract_apk_version_code(&b"NOT_A_ZIP_FILE_AT_ALL_12345".to_vec()), None);
+    let trunc = apk_bytes[..apk_bytes.len() / 2].to_vec();
+    assert_eq!(v73_2_extract_apk_version_code(&trunc), None);
+    let zip_no_manifest = build_synthetic_zip(b"classes.dex", 0, &axml_dec, axml_dec.len() as u32);
+    assert_eq!(v73_2_extract_apk_version_code(&zip_no_manifest), None);
+    let corrupt_deflate = vec![0x07u8, 0xFF, 0x00]; // BTYPE=3 reserved
+    let zip_bad_deflate = build_synthetic_zip(b"AndroidManifest.xml", 8, &corrupt_deflate, axml_dec.len() as u32);
+    assert_eq!(v73_2_extract_apk_version_code(&zip_bad_deflate), None);
+    let axml_no_vc = build_synthetic_axml_bytes(false, 0x10, 42);
+    let zip_no_vc = build_synthetic_zip(b"AndroidManifest.xml", 0, &axml_no_vc, axml_no_vc.len() as u32);
+    assert_eq!(v73_2_extract_apk_version_code(&zip_no_vc), None);
+
+    // 4. Source invariants
+    let bin_src = std::fs::read_to_string("01_l0_rust/src/bin/v31_swarm.rs").expect("bin/v31_swarm.rs");
+    let lib_src = std::fs::read_to_string("01_l0_rust/src/v31_swarm.rs").expect("src/v31_swarm.rs");
+    assert_eq!(bin_src, lib_src);
+    assert!(!bin_src.contains("\"version_code\":75"), "Hardcoded version_code 75 MUST be purged");
+    assert!(bin_src.contains("v73_2_extract_apk_version_code"));
+    let v73_2_src = std::fs::read_to_string("01_l0_rust/src/v73_2_cloudflare_vpc_mesh_and_pgwire_hyperdrive.rs")
+        .expect("v73_2 source");
+    assert!(!v73_2_src.contains('[') && !v73_2_src.contains(']'), "v73_2 MUST remain strictly zero-bracket");
+}
+
+#[test]
+fn test_v73_2_4_m2_item8_live_d1_11_table_parser_and_rs_clean() {
+    ensure_repo_root_cwd();
+
+    // 1. Live wrangler verification receipt parsing
+    assert_eq!(
+        v73_2_read_live_d1_database_name().as_deref(),
+        Some("act_omega_d1_vault_v7322")
+    );
+    let (cnt_opt, tables) = v73_2_read_live_d1_user_tables();
+    assert_eq!(cnt_opt, Some(11));
+    assert_eq!(
+        tables,
+        vec![
+            "edge_cluster_metadata",
+            "harness_5w1h_audit_log",
+            "npage_tier_snapshots",
+            "v40_qat_training_sessions",
+            "v40_shard_registry",
+            "v41_measured_sha256_audit",
+            "v42_5w1h_distributed_routes",
+            "v43_antigravity_agent_roster",
+            "v44_multiturn_working_memory_ring",
+            "v44_visiting_llm_agent_ledger",
+            "wal_merkle_checkpoints",
+        ]
+    );
+    assert!(!tables.iter().any(|t| t.starts_with("_cf_") || t.starts_with("sqlite_")));
+
+    // 2. Fail-closed parsing on empty, corrupt, success=false, or system-only inputs
+    assert_eq!(v73_2_parse_d1_user_tables_from_receipt_str(""), (None, Vec::new()));
+    assert_eq!(
+        v73_2_parse_d1_user_tables_from_receipt_str("SELECT name, type FROM sqlite_master\nnot_json\n"),
+        (None, Vec::new())
+    );
+    assert_eq!(
+        v73_2_parse_d1_user_tables_from_receipt_str(
+            "SELECT name, type FROM sqlite_master\n[{\"results\":[{\"name\":\"harness_5w1h_audit_log\",\"type\":\"table\"}],\"success\":false}]\n"
+        ),
+        (None, Vec::new())
+    );
+    assert_eq!(
+        v73_2_parse_d1_user_tables_from_receipt_str(
+            "SELECT name, type FROM sqlite_master\n[{\"results\":[{\"name\":\"_cf_KV\",\"type\":\"table\"},{\"name\":\"sqlite_sequence\",\"type\":\"table\"}],\"success\":true}]\n"
+        ),
+        (None, Vec::new())
+    );
+
+    // 3. Strict MCP resources/read D1 URI matching (reject retired act_omega_d1_vault & arbitrary URIs)
+    let (retired_mime, retired_body) = act_omega_l0_core::v61_gemma4_multimodal_ple_speculative_cascade_and_mcp_suite::v61_read_resource_metadata(
+        "manifold://d1/act_omega_d1_vault",
+    );
+    assert_eq!(retired_mime, "application/json");
+    assert!(
+        retired_body.contains("\"status\":\"NOT_FOUND\""),
+        "Retired manifold://d1/act_omega_d1_vault MUST return NOT_FOUND: {}",
+        retired_body
+    );
+    assert!(
+        !retired_body.contains("LIVE_MEASURED") && !retired_body.contains("act_omega_d1_vault_v7322"),
+        "Retired D1 URI must not return LIVE_MEASURED or leak live DB metadata: {}",
+        retired_body
+    );
+
+    let (arb_mime, arb_body) = act_omega_l0_core::v61_gemma4_multimodal_ple_speculative_cascade_and_mcp_suite::v61_read_resource_metadata(
+        "manifold://d1/arbitrary_db",
+    );
+    assert_eq!(arb_mime, "application/json");
+    assert!(arb_body.contains("\"status\":\"NOT_FOUND\""));
+
+    let (live_mime, live_body) = act_omega_l0_core::v61_gemma4_multimodal_ple_speculative_cascade_and_mcp_suite::v61_read_resource_metadata(
+        "manifold://d1/act_omega_d1_vault_v7322",
+    );
+    assert_eq!(live_mime, "application/json");
+    assert!(
+        live_body.contains("\"status\":\"LIVE_MEASURED\"")
+            && live_body.contains("\"database_name\":\"act_omega_d1_vault_v7322\"")
+            && live_body.contains("\"tables_count\":11"),
+        "Live manifold://d1/act_omega_d1_vault_v7322 MUST return LIVE_MEASURED with tables_count=11: {}",
+        live_body
+    );
+}
+
+#[test]
+fn test_v73_2_4_m3_item10_persistent_monotonic_sh_xi_turn_counters() {
+    ensure_repo_root_cwd();
+    let _rw_guard = RW_EVAL500_GUARD.lock().unwrap_or_else(|e| e.into_inner());
+    let _turn_guard = SH_XI_TURN_COUNTER_GUARD.lock().unwrap_or_else(|e| e.into_inner());
+    let turn_reload_on_drop = ShXiTurnCounterReloadGuard::new("m3_item10");
+    let _restore = guard_paths(&[
+        "03_vault/connectome/sh_xi_rw_eval_500_sealed.jsonl",
+        "E:\\Sovereign_Manifold_SSD_Vault\\connectome\\sh_xi_rw_eval_500_sealed.jsonl",
+    ]);
+
+    let live_c_before = std::fs::read(C_SH_XI_SESSION_COUNTERS_PATH).ok();
+    let live_e_before = if std::path::Path::new("E:\\").exists() {
+        std::fs::read(E_SH_XI_SESSION_COUNTERS_PATH).ok()
+    } else {
+        None
+    };
+
+    v72_2_reload_turn_counters_from_disk_for_test();
+    v72_2_clear_session_history_for_test();
+
+    // 1. Dynamic disk seeding helper: missing dirs -> 0 / empty, real tool_361_* JSONs -> exact count
+    let tmp_seed = std::env::temp_dir().join(format!("act_omega_m3_seed_test_{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&tmp_seed);
+    let empty_seed = v72_2_seed_counters_from_historical_tool_361_at(
+        &tmp_seed.join("nonexistent_e").to_string_lossy(),
+        &tmp_seed.join("nonexistent_c").to_string_lossy(),
+    );
+    assert_eq!(empty_seed.global_turn_seq, 0);
+    assert_eq!(empty_seed.historical_seeded_total, 0);
+    assert!(empty_seed.sessions.is_empty());
+
+    let seed_e = tmp_seed.join("e_out");
+    let seed_c = tmp_seed.join("c_out");
+    std::fs::create_dir_all(&seed_e).expect("seed_e dir");
+    std::fs::create_dir_all(&seed_c).expect("seed_c dir");
+    std::fs::write(
+        seed_e.join("tool_361_1.json"),
+        r#"{"engine":"SH_XI_3SHELL_MATRYOSHKA_SPARSE_MOE_SFT_CONVERSE_ENGINE","session_id":"sess_alpha","session_turn_count":1}"#,
+    ).expect("write seed 1");
+    std::fs::write(
+        seed_e.join("tool_361_2.json"),
+        r#"{"engine":"SH_XI_3SHELL_MATRYOSHKA_SPARSE_MOE_SFT_CONVERSE_ENGINE","session_id":"stateless","session_turn_count":1}"#,
+    ).expect("write seed 2");
+    std::fs::write(
+        seed_c.join("tool_361_3.json"),
+        r#"{"engine":"OTHER_ENGINE","session_id":"sess_alpha","session_turn_count":99}"#,
+    ).expect("write seed 3");
+    let pop_seed = v72_2_seed_counters_from_historical_tool_361_at(
+        &seed_e.to_string_lossy(),
+        &seed_c.to_string_lossy(),
+    );
+    assert_eq!(pop_seed.global_turn_seq, 2);
+    assert_eq!(pop_seed.historical_seeded_total, 2);
+    assert_eq!(pop_seed.sessions.get("sess_alpha").copied(), Some(1));
+    assert!(!pop_seed.sessions.contains_key("stateless"));
+    let _ = std::fs::remove_dir_all(&tmp_seed);
+
+    // 2. Sequential 12-turn progression crossing #8 -> 9, 10, 11, 12 while ChatML sliding window stays capped at 16 msgs
+    let sid = "test_m3_item10_primary_session";
+    let (init_global, _, _) = v72_2_get_turn_counters_snapshot();
+    let mut prev_global = init_global;
+
+    for turn_idx in 1..=12usize {
+        let reset = turn_idx == 1;
+        let res = v72_2_converse_execute_full_with_params(
+            &format!("Turn {} query on E8 lattice and 84480 neurons.", turn_idx),
+            None,
+            Some(sid),
+            &Vec::new(),
+            reset,
+            Some(12),
+            Some(0.0),
+        );
+        assert_eq!(res.session_id, sid);
+        assert_eq!(
+            res.session_turn_count, turn_idx,
+            "Turn {} MUST have monotonic session_turn_count == {} (no #8 cap!)",
+            turn_idx, turn_idx
+        );
+        assert_eq!(
+            res.global_turn_seq,
+            prev_global + 1,
+            "global_turn_seq must advance strictly by +1 on turn {}",
+            turn_idx
+        );
+        prev_global = res.global_turn_seq;
+    }
+
+    // Sliding window remains capped at V72_2_MULTITURN_MAX_TURNS * 2 = 16 messages (thm_v72_2_987)
+    let hist = v72_2_get_session_turns(sid);
+    assert_eq!(
+        hist.len(),
+        16,
+        "ChatML sliding window MUST stay capped at 16 messages (8 exchanges) after 12 turns"
+    );
+
+    // 3. Simulated daemon restart / hot-swap persistence: clear both RAM stores and continue with Turns 13, 14
+    let c_bytes_before = std::fs::read(&turn_reload_on_drop.c_path).expect("read isolated C ledger");
+    if std::path::Path::new("E:\\").exists() {
+        let e_bytes_before = std::fs::read(&turn_reload_on_drop.e_path).expect("read isolated E ledger");
+        assert_eq!(c_bytes_before, e_bytes_before, "Isolated C: and E: ledger JSONs must match identically");
+    }
+    if let Some(ref before) = live_c_before {
+        let live_c_after = std::fs::read(C_SH_XI_SESSION_COUNTERS_PATH).ok();
+        assert_eq!(Some(before), live_c_after.as_ref(), "cargo test MUST NOT mutate live C: counter ledger");
+    }
+    if let Some(ref before_e) = live_e_before {
+        let live_e_after = std::fs::read(E_SH_XI_SESSION_COUNTERS_PATH).ok();
+        assert_eq!(Some(before_e), live_e_after.as_ref(), "cargo test MUST NOT mutate live E: counter ledger");
+    }
+
+    v72_2_reload_turn_counters_from_disk_for_test();
+    v72_2_clear_session_history_for_test();
+
+    for turn_idx in 13..=14usize {
+        let route_raw = v72_2_dispatch_converse_route(&format!(
+            "{{\"prompt\":\"Post-restart turn {} on sovereign manifold.\",\"session_id\":\"{}\",\"reset_session\":false,\"max_tokens\":12,\"temperature\":0.0}}",
+            turn_idx, sid
+        ));
+        let val: serde_json::Value = serde_json::from_str(&route_raw).expect("valid converse JSON");
+        assert_eq!(val.get("session_id").and_then(|v| v.as_str()), Some(sid));
+        assert_eq!(
+            val.get("session_turn_count").and_then(|v| v.as_u64()),
+            Some(turn_idx as u64),
+            "Post-reload turn {} MUST NOT reset to #1/#2!",
+            turn_idx
+        );
+        assert_eq!(
+            val.get("global_turn_seq").and_then(|v| v.as_u64()),
+            Some((prev_global + 1) as u64),
+            "Post-reload global_turn_seq must continue monotonically"
+        );
+        prev_global += 1;
+    }
+
+    // 4. Isolated reset_session=true resets ONLY the target session while primary session & global_turn_seq persist
+    let iso_sid = "test_m3_item10_isolated_reset";
+    let iso1 = v72_2_converse_execute_full_with_params(
+        "Isolated reset turn 1.",
+        None,
+        Some(iso_sid),
+        &Vec::new(),
+        true,
+        Some(12),
+        Some(0.0),
+    );
+    assert_eq!(iso1.session_turn_count, 1);
+    assert_eq!(iso1.global_turn_seq, prev_global + 1);
+    prev_global = iso1.global_turn_seq;
+
+    let iso2 = v72_2_converse_execute_full_with_params(
+        "Isolated reset turn 2.",
+        None,
+        Some(iso_sid),
+        &Vec::new(),
+        false,
+        Some(12),
+        Some(0.0),
+    );
+    assert_eq!(iso2.session_turn_count, 2);
+    assert_eq!(iso2.global_turn_seq, prev_global + 1);
+    prev_global = iso2.global_turn_seq;
+
+    let iso3_reset = v72_2_converse_execute_full_with_params(
+        "Isolated explicit reset to turn 1.",
+        None,
+        Some(iso_sid),
+        &Vec::new(),
+        true,
+        Some(12),
+        Some(0.0),
+    );
+    assert_eq!(iso3_reset.session_turn_count, 1);
+    assert_eq!(iso3_reset.global_turn_seq, prev_global + 1);
+    prev_global = iso3_reset.global_turn_seq;
+
+    // Primary session continues cleanly at 15 (unaffected by isolated reset)
+    let pri15 = v72_2_converse_execute_full_with_params(
+        "Primary session turn 15 after isolated reset.",
+        None,
+        Some(sid),
+        &Vec::new(),
+        false,
+        Some(12),
+        Some(0.0),
+    );
+    assert_eq!(pri15.session_turn_count, 15);
+    assert_eq!(pri15.global_turn_seq, prev_global + 1);
+
+    // 5. Source invariants: 0 square brackets in v72_2 and bin/v31_swarm.rs === src/v31_swarm.rs
+    let v72_2_src = std::fs::read_to_string("01_l0_rust/src/v72_2_sh_xi_sparse_moe_chatml_sft_and_rag.rs")
+        .expect("read v72_2");
+    assert!(!v72_2_src.contains('[') && !v72_2_src.contains(']'), "v72_2 MUST have 0 square brackets");
+    let bin_src = std::fs::read_to_string("01_l0_rust/src/bin/v31_swarm.rs").expect("bin/v31_swarm.rs");
+    let lib_src = std::fs::read_to_string("01_l0_rust/src/v31_swarm.rs").expect("src/v31_swarm.rs");
+    assert_eq!(bin_src, lib_src, "bin/v31_swarm.rs and src/v31_swarm.rs MUST be identical");
 }

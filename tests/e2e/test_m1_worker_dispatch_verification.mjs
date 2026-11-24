@@ -308,4 +308,168 @@ const env = {
   console.log("PASS: S2-S5 & E1 edge security gates verified.");
 }
 
+// Test v73.2.4 M1 (Items #2, #3, #4): Expanded Edge Pre-Proxy 403 Gating & Public Route Preservation
+{
+  console.log("Testing v73.2.4 M1: Expanded isEdgeGatedBeforeOrigin 403 checks and public route preservation...");
+  const m1GatedRoutes = [
+    "/api/v1/worksteal/webgpu_lease?action=status",
+    "/api/v1/tools/t78",
+    "/api/v1/tool/78",
+    "/api/v1/tools/t275",
+    "/api/v1/tools/t276",
+    "/api/v1/tools/t280",
+    "/api/v1/tools/t341",
+    "/api/v1/sovereign_harmonic/converse",
+    "/api/v1/sovereign_harmonic/week3/k4_speculative_cascade",
+    "/api/v1/sh_xi/converse",
+    "/converse",
+    "/api/v1/unified/lattice_algebra_proofs",
+    "/api/v1/stiefel",
+    "/api/v1/acoustic",
+    "/api/v1/wgsl",
+    "/api/v1/compute",
+    "/api/v1/debate",
+    "/api/v1/hotpatch",
+    "/api/v1/codegen",
+    "/api/v1/polytope7777/crt_pfa",
+    "/api/v1/omegalang/v16_primary_tlv_compiler",
+    "/api/v1/v70/bijected_262144_cacheline_manifold",
+    "/api/v1/batch2/suite",
+    "/api/v1/ota/pixel_manifest",
+    "/api/v1/ota/pixel_apk",
+    "/api/v1/tools/t284",
+    "/api/v1/tool/284",
+    "/api/v1/tools/t284?edge_direct=1",
+    "/api/v1/tool/284?edge_direct=1"
+  ];
+  for (const r of m1GatedRoutes) {
+    const resUnauth = await worker.fetch(new Request("https://act-omega-net.dev" + r), env);
+    assert.equal(resUnauth.status, 403, `Unauthenticated ${r} MUST fail closed with 403 at Edge`);
+    const sep = r.includes("?") ? "&" : "?";
+    const resQueryKey = await worker.fetch(new Request(`https://act-omega-net.dev${r}${sep}%6bey=${validOpKey}`, {
+      headers: { "X-Sovereign-Operator-Key": validOpKey }
+    }), env);
+    assert.equal(resQueryKey.status, 403, `Encoded ?%6bey= with valid header on ${r} MUST return 403 at Edge`);
+  }
+
+  // Verify /api/v1/ota/pixel_manifest routes origin-first and fails over to D1 on origin outage
+  {
+    const origFetch = globalThis.fetch;
+    try {
+      let originProxyCalls = 0;
+      globalThis.fetch = async () => {
+        originProxyCalls++;
+        return new Response(JSON.stringify({
+          status: "MEASURED_PIXEL_OTA_MANIFEST_READY",
+          version_code: 76,
+          apk_bytes: 30530390
+        }), { status: 200, headers: { "Content-Type": "application/json" } });
+      };
+      const resOrigin = await worker.fetch(new Request("https://act-omega-net.dev/api/v1/ota/pixel_manifest", {
+        headers: { "X-Sovereign-Operator-Key": validOpKey }
+      }), env);
+      assert.equal(resOrigin.status, 200, "Origin-proxied /api/v1/ota/pixel_manifest MUST return 200");
+      assert.equal(originProxyCalls, 1, "/api/v1/ota/pixel_manifest MUST proxy to origin tunnel first");
+      const originJson = await resOrigin.json();
+      assert.equal(originJson.version_code, 76);
+
+      // Origin tunnel outage (530) with no D1 binding -> fail closed 503 OTA_MANIFEST_UNSYNCED
+      globalThis.fetch = async () => new Response("Origin Error 1033", { status: 530 });
+      const resFailClosed = await worker.fetch(new Request("https://act-omega-net.dev/api/v1/ota/pixel_manifest", {
+        headers: { "X-Sovereign-Operator-Key": validOpKey }
+      }), env);
+      assert.equal(resFailClosed.status, 503, "Origin outage without D1 binding MUST fail closed with 503");
+
+      // Direct edge mode (?edge_direct=1) on t284 & tool/284 MUST route to OTA manifest handler (never generic tail)
+      for (const edgeOtaPath of ["/api/v1/tools/t284?edge_direct=1", "/api/v1/tool/284?edge_direct=1"]) {
+        const resEdgeNoD1 = await worker.fetch(new Request(`https://act-omega-net.dev${edgeOtaPath}`, {
+          headers: { "X-Sovereign-Operator-Key": validOpKey }
+        }), env);
+        assert.equal(resEdgeNoD1.status, 503, `${edgeOtaPath} without D1 binding MUST fail closed with 503 (never generic ONLINE tail)`);
+        const jsonEdgeNoD1 = await resEdgeNoD1.json();
+        assert.equal(jsonEdgeNoD1.status, "OTA_MANIFEST_UNSYNCED");
+        assert.equal(jsonEdgeNoD1.tool_id, 284);
+      }
+
+      // Mock D1 returning synced v73.2.4 metadata + APK audit row -> verify t284?edge_direct=1 & tool/284?edge_direct=1 return OTA manifest
+      const envWithSyncedD1 = {
+        ...env,
+        ACT_OMEGA_D1: {
+          prepare: (sql) => ({
+            _sql: sql,
+            bind: () => ({ _sql: sql })
+          }),
+          batch: async (stmts) => {
+            return stmts.map((st) => {
+              if (st._sql.includes("edge_cluster_metadata")) {
+                return {
+                  results: [{
+                    version_name: "v73.2.4",
+                    tlv_version: 7321,
+                    chain_milestone: "CHAIN 404",
+                    lean4_qed_count: 1010,
+                    tools_total: 404,
+                    apk_version_code: 77,
+                    updated_at_ms: 1795488000000
+                  }]
+                };
+              }
+              if (st._sql.includes("npage_tier_snapshots")) {
+                return {
+                  results: [{
+                    snapshot_id: 13,
+                    schema_version: "SH4Z_v7321_TLV",
+                    total_neurons: 84480,
+                    total_bytes: 10813440,
+                    active_synapses: 4055040,
+                    metabolic_atp_score: 0.74,
+                    rtx3050_temp_c: 53.0,
+                    recorded_at_ms: 1795488000000
+                  }]
+                };
+              }
+              if (st._sql.includes("v41_measured_sha256_audit")) {
+                return {
+                  results: [{
+                    artifact_name: "com.actomega.manifold.apk",
+                    byte_length: 30546770,
+                    sha256_digest: "9e680fdc73d8401b7c4b8d848becdce1ae3e89519418b1c024c5c6c1afa9bc38",
+                    measured_shards: 77,
+                    measured_neurons: 84480
+                  }]
+                };
+              }
+              return { results: [] };
+            });
+          }
+        }
+      };
+
+      for (const edgeOtaPath of ["/api/v1/tools/t284?edge_direct=1", "/api/v1/tool/284?edge_direct=1", "/api/v1/ota/pixel_manifest?edge_direct=1"]) {
+        const resEdgeD1 = await worker.fetch(new Request(`https://act-omega-net.dev${edgeOtaPath}`, {
+          headers: { "X-Sovereign-Operator-Key": validOpKey }
+        }), envWithSyncedD1);
+        assert.equal(resEdgeD1.status, 200, `${edgeOtaPath} with synced D1 MUST return 200`);
+        const jsonEdgeD1 = await resEdgeD1.json();
+        assert.equal(jsonEdgeD1.status, "MEASURED_PIXEL_OTA_MANIFEST_READY");
+        assert.equal(jsonEdgeD1.version_name, "v73.2.4");
+        assert.equal(jsonEdgeD1.version_code, 77);
+        assert.equal(jsonEdgeD1.apk_bytes, 30546770);
+        assert.equal(jsonEdgeD1.tool_id, 284);
+      }
+    } finally {
+      globalThis.fetch = origFetch;
+    }
+  }
+
+  // Positive/public checks: GSC certificate, Turnstile verify, and HTML root stay outside isEdgeGatedBeforeOrigin
+  const gscRes = await worker.fetch(new Request("https://act-omega-net.dev/google6edc0affb12d0455.html"), env);
+  assert.equal(gscRes.status, 200, "GSC certificate MUST remain publicly accessible (200)");
+  assert.equal(await gscRes.text(), "google-site-verification: google6edc0affb12d0455.html");
+
+  const rootRes = await worker.fetch(new Request("https://act-omega-net.dev/"), env);
+  assert.equal(rootRes.status, 200, "Root HUD HTML MUST remain publicly accessible (200)");
+  console.log("PASS: v73.2.4 M1 Edge pre-proxy gating & public route preservation verified.");
+}
+
 console.log("\n>>> ALL M1 WORKER DISPATCH VERIFICATIONS PASSED SUCCESSFULLY! <<<");

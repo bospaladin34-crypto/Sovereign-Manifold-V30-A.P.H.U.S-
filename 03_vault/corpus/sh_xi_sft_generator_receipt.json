@@ -2,11 +2,11 @@
   "schema": "ACT-Omega-SFT-Corpus-Receipt-v73.2.1",
   "generator_script": "00_control/generate_sft_corpus.mjs",
   "output_jsonl_path": "03_vault/corpus/sh_xi_sourced_multiturn_sft_v1.jsonl",
-  "output_jsonl_bytes": 242236,
-  "output_jsonl_sha256": "d5ed7bb69c7fad78325930f9bcad3280018463eed89aa78a50dad2733b1bb01d",
+  "output_jsonl_bytes": 246087,
+  "output_jsonl_sha256": "d958bc0ee76a56cbdeb21e88e42fcf6576370a7e825f373273029881a1df9b4e",
   "corpus_nature": "Deterministic workspace-harvested code & formal-proof Q/A pairs extracted via fs.readFileSync from real repository source files",
   "license": "CC-BY-4.0 / MIT (First-Party ACT-Omega Sovereign Manifold Workspace)",
-  "raw_candidate_items_extracted": 1017,
+  "raw_candidate_items_extracted": 1032,
   "dialogues_emitted": 64,
   "unique_turns_emitted": 288,
   "min_turns": 1,
@@ -22,12 +22,12 @@
     "zero_bracket_l0": 7,
     "lab_bridge_l0": 2,
     "research_l0": 5,
-    "edge_mesh_l0": 4,
-    "lean4_proof": 13,
+    "edge_mesh_l0": 6,
+    "lean4_proof": 15,
     "algebraic_haskell": 3,
     "lattice_stem": 3,
     "std_rust": 12,
-    "edge_worker_rust": 9
+    "edge_worker_rust": 5
   },
   "sources": [
     {
@@ -102,8 +102,8 @@
     },
     {
       "source_path": "01_l0_rust/src/v70_0_exponential_worksteal_262144cl_bijection.rs",
-      "bytes": 42864,
-      "sha256": "63a344d239631399d8d249ffe04afdae3d4e71e5a3747797c8acc83f51fc6f32",
+      "bytes": 43249,
+      "sha256": "b0cd47117879b6a39c70ed4a360511172e615bae171c43ad62e89ac45898cfb0",
       "license": "CC-BY-4.0 / MIT (ACT-Omega First-Party Workspace)",
       "extracted_items": 4
     },
@@ -123,10 +123,10 @@
     },
     {
       "source_path": "01_l0_rust/src/v73_2_cloudflare_vpc_mesh_and_pgwire_hyperdrive.rs",
-      "bytes": 44951,
-      "sha256": "986d66f4f428211ce5b31628fe3d46df3839cc0f31d4c03b3189e5f31d18f9d2",
+      "bytes": 66499,
+      "sha256": "4ecca1cc8405b0cd3960d5c47d214a05aba6245cb0bfd33eb0c95533d92f40f5",
       "license": "CC-BY-4.0 / MIT (ACT-Omega First-Party Workspace)",
-      "extracted_items": 25
+      "extracted_items": 40
     },
     {
       "source_path": "01_l0_rust/src/v57_aegis_autonomous_agent_harness.rs",

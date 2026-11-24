@@ -44,10 +44,58 @@ if ($profRes) {
 }
 
 # 2e. Trigger v44.1.0 Tools 77 (P8 .npage SHM Bridge), 78 (Browser WebGPU Compute Lease), 79 (Elastic Scheduler) & 80 (Perf Blitz)
+$opKeyVal = if ($env:ACT_OMEGA_OPERATOR_KEY) { $env:ACT_OMEGA_OPERATOR_KEY.Trim() } elseif (Test-Path "C:\Users\Nbell\.act_omega_operator_vault_key") { ([System.IO.File]::ReadAllText("C:\Users\Nbell\.act_omega_operator_vault_key")).Trim() } else { "" }
+$opHdrs = if ($opKeyVal.Length -ge 24) { @{ "X-Sovereign-Operator-Key" = $opKeyVal } } else { @{} }
+$e8zPath = "C:\sovereign_manifold_v31\00_control\weights\sovereign_harmonic_iv_v5000.e8z"
+$pocHash = ""
+if (Test-Path $e8zPath -PathType Leaf) {
+    $raw = [System.IO.File]::ReadAllBytes($e8zPath)
+    if ($raw.Length -ge 2080 * 64) {
+        $rawE = New-Object double[] 2080
+        $minE = [double]::PositiveInfinity
+        $maxE = [double]::NegativeInfinity
+        for ($idx = 0; $idx -lt 2080; $idx++) {
+            $baseOff = $idx * 64
+            $sumSq = 0.0
+            $sumDiff = 0.0
+            for ($b = 0; $b -lt 64; $b++) {
+                $centered = ($raw[$baseOff + $b] - 127.5) / 127.5
+                $sumSq += $centered * $centered
+                if ($b -gt 0) {
+                    $sumDiff += [Math]::Abs($raw[$baseOff + $b] - $raw[$baseOff + $b - 1]) / 255.0
+                }
+            }
+            $rms = [Math]::Sqrt($sumSq / 64.0)
+            $tv = $sumDiff / 63.0
+            $bm = (($raw[$baseOff + ($idx % 64)] -bxor $raw[$baseOff + (($idx * 7 + 13) % 64)]) -band 0xff) / 255.0
+            $energy = 0.45 * $rms + 0.35 * $tv + 0.20 * $bm
+            $rawE[$idx] = $energy
+            if ($energy -lt $minE) { $minE = $energy }
+            if ($energy -gt $maxE) { $maxE = $energy }
+        }
+        $span = [Math]::Max(1e-6, $maxE - $minE)
+        $maxSafe = [Math]::Max(1e-6, $maxE)
+        $norm = New-Object double[] 2080
+        for ($idx = 0; $idx -lt 2080; $idx++) {
+            $norm[$idx] = [Math]::Max(0.05 * ($rawE[$idx] / $maxSafe), ($rawE[$idx] - $minE) / $span)
+        }
+        [uint32]$crc = 0x5348345AL
+        for ($i = 0; $i -lt 704; $i++) {
+            $ia = ($i * 6) % 2080
+            $ib = ($ia + 44) % 2080
+            $pab = $norm[$ia] * $norm[($ib + 5) % 2080] - $norm[($ia + 1) % 2080] * $norm[($ib + 4) % 2080] + $norm[($ia + 2) % 2080] * $norm[($ib + 3) % 2080] + $norm[($ia + 3) % 2080] * $norm[($ib + 2) % 2080] - $norm[($ia + 4) % 2080] * $norm[($ib + 1) % 2080] + $norm[($ia + 5) % 2080] * $norm[$ib]
+            [int32]$trunc = [Math]::Truncate($pab * 10000.0)
+            [uint32]$u = [BitConverter]::ToUInt32([BitConverter]::GetBytes($trunc), 0)
+            [uint64]$prod = ([uint64]($crc -bxor $u)) * ([uint64]0x01000193)
+            $crc = [uint32]($prod -band ([uint64]4294967295))
+        }
+        $pocHash = ("0x{0:X6}_PLUCKER_POS_QED" -f ($crc -band 0xFFFFFF))
+    }
+}
 $shmRes = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/shm/p8_npage_bridge" -TimeoutSec 5
-$leaseAcq = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/worksteal/webgpu_lease?action=acquire&worker_id=cyclesync-webgpu-probe&gpu_adapter=WebGPU-WGSL-Stiefel-FNO-64T&kops=480.0" -TimeoutSec 5
+$leaseAcq = if ($pocHash) { Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/worksteal/webgpu_lease?action=acquire&worker_id=cyclesync-webgpu-probe&gpu_adapter=WebGPU-WGSL-Stiefel-FNO-64T&kops=480.0&poc_hash=$pocHash" -Headers $opHdrs -TimeoutSec 5 } else { $null }
 $schedRes = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/worksteal/elastic_scheduler" -TimeoutSec 5
-$leaseRel = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/worksteal/webgpu_lease?action=release&worker_id=cyclesync-webgpu-probe" -TimeoutSec 5
+$leaseRel = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/worksteal/webgpu_lease?action=release&worker_id=cyclesync-webgpu-probe" -Headers $opHdrs -TimeoutSec 5
 $perfRes = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/diagnostics/v44_perf_blitz" -TimeoutSec 5
 if ($shmRes -and $perfRes) {
     Write-Host "[PERF-BLITZ T77-T80] P8 .npage SHM=$($shmRes.shm_total_bytes)B ($($shmRes.p8_l2_occupancy_pct)% 4MB L2 Pinned, $($shmRes.bandwidth_saved_pct)% BW Saved -> $($shmRes.p8_shm_kops)k ops/s) | Elastic Peak=$($schedRes.total_elastic_kops)k ops/s (Jitter=0.000us) -> Released=$($leaseRel.total_elastic_cluster_kops)k ops/s | CHAIN 80 (400/400 Lean 4 QED)" -ForegroundColor Green

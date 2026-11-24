@@ -55,7 +55,7 @@ pub struct AtomicDeltaEngineTelemetry {
     pub pipes_count: u32,
     pub quote_parity_even: bool,
     pub gzip_compression_ratio_pct: f64,
-    pub remote_d1_database: &'static str,
+    pub remote_d1_database: String,
     pub delta_manifests_applied: u64,
 }
 
@@ -337,13 +337,15 @@ pub fn evaluate_atomic_delta_engine(_gen_counter: u64) -> AtomicDeltaEngineTelem
         }
     }
 
+    let live_d1_db = act_omega_l0_core::v73_2_cloudflare_vpc_mesh_and_pgwire_hyperdrive::v73_2_read_live_d1_database_name()
+        .unwrap_or_else(|| String::from("UNMEASURED/OFFLINE"));
     AtomicDeltaEngineTelemetry {
         engine_mode: "MEASURED_ZERO_BACKTICK_ATOMIC_DELTA_v4420",
         backticks_count: backticks,
         pipes_count: pipes,
         quote_parity_even: (quotes % 2) == 0,
         gzip_compression_ratio_pct: compression_ratio_pct,
-        remote_d1_database: "act_omega_d1_vault",
+        remote_d1_database: live_d1_db,
         delta_manifests_applied: manifests_count,
     }
 }

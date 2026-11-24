@@ -438,53 +438,112 @@ public static class SovereignBatchShaMatcher {
     return ,$pxViolations
 }
 
+function Get-GitPathsNullDelimited {
+    param(
+        [Parameter(Mandatory = $true)][string]$RootPath,
+        [string[]]$GitArgs
+    )
+    $psi = New-Object System.Diagnostics.ProcessStartInfo
+    $psi.FileName = "git"
+    $psi.Arguments = "-c core.quotepath=false -C `"$RootPath`" " + ($GitArgs -join " ")
+    $psi.UseShellExecute = $false
+    $psi.RedirectStandardOutput = $true
+    $psi.RedirectStandardError = $true
+    $psi.CreateNoWindow = $true
+    $proc = [System.Diagnostics.Process]::Start($psi)
+    try {
+        $ms = New-Object System.IO.MemoryStream
+        $proc.StandardOutput.BaseStream.CopyTo($ms)
+        $proc.WaitForExit()
+        if ($proc.ExitCode -ne 0) {
+            return @()
+        }
+        $rawBytes = $ms.ToArray()
+        $utf8 = [System.Text.UTF8Encoding]::new($false)
+        $paths = New-Object System.Collections.Generic.List[string]
+        $start = 0
+        for ($i = 0; $i -lt $rawBytes.Length; $i++) {
+            if ($rawBytes[$i] -eq 0) {
+                if ($i -gt $start) {
+                    $paths.Add($utf8.GetString($rawBytes, $start, $i - $start))
+                }
+                $start = $i + 1
+            }
+        }
+        if ($start -lt $rawBytes.Length) {
+            $paths.Add($utf8.GetString($rawBytes, $start, $rawBytes.Length - $start))
+        }
+        return $paths.ToArray()
+    } finally {
+        $proc.Dispose()
+    }
+}
+
 function Test-SovereignKeyLeakScan {
     param(
         [string]$RootPath,
         [string[]]$ExtraFiles = @(),
         [string]$OperatorKeyOverridePath = "",
-        [string]$TelemetryKeyOverridePath = ""
+        [string]$TelemetryKeyOverridePath = "",
+        [string]$SyntheticOperatorKeyForSelfTest = "",
+        [string]$SyntheticTelemetryKeyForSelfTest = ""
     )
     $secViolations = New-Object System.Collections.Generic.List[string]
     $retiredLiteral = "SOVEREIGN" + "-LOQ15-4200"
 
-    $opKeyPath = if ($OperatorKeyOverridePath) {
-        $OperatorKeyOverridePath
-    } elseif (Test-Path "C:\Users\Nbell\.act_omega_operator_vault_key") {
-        "C:\Users\Nbell\.act_omega_operator_vault_key"
-    } elseif ($env:USERPROFILE -and (Test-Path "$env:USERPROFILE\.act_omega_operator_vault_key")) {
-        "$env:USERPROFILE\.act_omega_operator_vault_key"
-    } else {
-        ""
-    }
     $opKey = ""
-    if (-not $opKeyPath -or -not (Test-Path $opKeyPath -PathType Leaf)) {
-        $secViolations.Add("OPERATOR_KEY_MISSING: External operator vault key file not found")
+    if (-not [string]::IsNullOrEmpty($SyntheticOperatorKeyForSelfTest)) {
+        if ($SyntheticOperatorKeyForSelfTest.Trim().Length -lt 24) {
+            $secViolations.Add("OPERATOR_KEY_MISSING: Synthetic operator test key is shorter than 24 characters")
+        } else {
+            $opKey = $SyntheticOperatorKeyForSelfTest.Trim()
+        }
     } else {
-        $opKey = ([System.IO.File]::ReadAllText($opKeyPath)).Trim()
-        if ($opKey.Length -lt 24) {
-            $secViolations.Add("OPERATOR_KEY_MISSING: External operator vault key is shorter than 24 characters")
-            $opKey = ""
+        $opKeyPath = if ($OperatorKeyOverridePath) {
+            $OperatorKeyOverridePath
+        } elseif (Test-Path "C:\Users\Nbell\.act_omega_operator_vault_key") {
+            "C:\Users\Nbell\.act_omega_operator_vault_key"
+        } elseif ($env:USERPROFILE -and (Test-Path "$env:USERPROFILE\.act_omega_operator_vault_key")) {
+            "$env:USERPROFILE\.act_omega_operator_vault_key"
+        } else {
+            ""
+        }
+        if (-not $opKeyPath -or -not (Test-Path $opKeyPath -PathType Leaf)) {
+            $secViolations.Add("OPERATOR_KEY_MISSING: External operator vault key file not found")
+        } else {
+            $opKey = ([System.IO.File]::ReadAllText($opKeyPath)).Trim()
+            if ($opKey.Length -lt 24) {
+                $secViolations.Add("OPERATOR_KEY_MISSING: External operator vault key is shorter than 24 characters")
+                $opKey = ""
+            }
         }
     }
 
-    $telKeyPath = if ($TelemetryKeyOverridePath) {
-        $TelemetryKeyOverridePath
-    } elseif (Test-Path "C:\Users\Nbell\.act_omega_telemetry_ingest_key") {
-        "C:\Users\Nbell\.act_omega_telemetry_ingest_key"
-    } elseif ($env:USERPROFILE -and (Test-Path "$env:USERPROFILE\.act_omega_telemetry_ingest_key")) {
-        "$env:USERPROFILE\.act_omega_telemetry_ingest_key"
-    } else {
-        ""
-    }
     $telKey = ""
-    if (-not $telKeyPath -or -not (Test-Path $telKeyPath -PathType Leaf)) {
-        $secViolations.Add("TELEMETRY_KEY_MISSING: External telemetry ingest key file not found")
+    if (-not [string]::IsNullOrEmpty($SyntheticTelemetryKeyForSelfTest)) {
+        if ($SyntheticTelemetryKeyForSelfTest.Trim().Length -lt 24) {
+            $secViolations.Add("TELEMETRY_KEY_MISSING: Synthetic telemetry test key is shorter than 24 characters")
+        } else {
+            $telKey = $SyntheticTelemetryKeyForSelfTest.Trim()
+        }
     } else {
-        $telKey = ([System.IO.File]::ReadAllText($telKeyPath)).Trim()
-        if ($telKey.Length -lt 24) {
-            $secViolations.Add("TELEMETRY_KEY_MISSING: External telemetry ingest key is shorter than 24 characters")
-            $telKey = ""
+        $telKeyPath = if ($TelemetryKeyOverridePath) {
+            $TelemetryKeyOverridePath
+        } elseif (Test-Path "C:\Users\Nbell\.act_omega_telemetry_ingest_key") {
+            "C:\Users\Nbell\.act_omega_telemetry_ingest_key"
+        } elseif ($env:USERPROFILE -and (Test-Path "$env:USERPROFILE\.act_omega_telemetry_ingest_key")) {
+            "$env:USERPROFILE\.act_omega_telemetry_ingest_key"
+        } else {
+            ""
+        }
+        if (-not $telKeyPath -or -not (Test-Path $telKeyPath -PathType Leaf)) {
+            $secViolations.Add("TELEMETRY_KEY_MISSING: External telemetry ingest key file not found")
+        } else {
+            $telKey = ([System.IO.File]::ReadAllText($telKeyPath)).Trim()
+            if ($telKey.Length -lt 24) {
+                $secViolations.Add("TELEMETRY_KEY_MISSING: External telemetry ingest key is shorter than 24 characters")
+                $telKey = ""
+            }
         }
     }
 
@@ -507,35 +566,35 @@ function Test-SovereignKeyLeakScan {
         $secretSpecs.Add([pscustomobject]@{ Code = "SECRET_LEAK_YUBIKEY_SLOT2"; Label = "YubiKey Slot-2 shared secret"; Value = $slot2SecretHex; IgnoreCase = $true })
     }
 
-    # 1. Scan ALL tracked files (including binary APKs/EXEs via -a) using git grep
-    $trackedCheck = @(git -C $RootPath ls-files 2>$null)
-    if ($LASTEXITCODE -ne 0 -or $trackedCheck.Count -eq 0) {
-        $secViolations.Add("SECRET_SCAN_GIT_LS_FILES_FAILED: Could not enumerate git ls-files at $RootPath")
+    # 1. Enumerate tracked & untracked files via git ls-files -z (ZERO secrets in CLI args!)
+    $trackedRel = @(Get-GitPathsNullDelimited -RootPath $RootPath -GitArgs @("ls-files", "-z"))
+    if ($trackedRel.Count -eq 0) {
+        $secViolations.Add("SECRET_SCAN_GIT_LS_FILES_FAILED: Could not enumerate git ls-files -z at $RootPath")
         return ,$secViolations
     }
+    $untrackedRel = @(Get-GitPathsNullDelimited -RootPath $RootPath -GitArgs @("ls-files", "--others", "--exclude-standard", "-z"))
 
-    foreach ($spec in $secretSpecs) {
-        $matchedFiles = if ($spec.IgnoreCase) {
-            @(git -C $RootPath grep -a -l -i -F -- $spec.Value 2>$null)
-        } else {
-            @(git -C $RootPath grep -a -l -F -- $spec.Value 2>$null)
-        }
-        $gExit = $LASTEXITCODE
-        if ($gExit -eq 0 -and $matchedFiles.Count -gt 0) {
-            foreach ($mf in $matchedFiles) {
-                $secViolations.Add("$($spec.Code): $($spec.Label) found in tracked file '$mf'")
-            }
-        } elseif ($gExit -gt 1) {
-            $secViolations.Add("SECRET_SCAN_GIT_GREP_ERROR: git grep exited with code $gExit while scanning $($spec.Code)")
+    $scanPathsList = New-Object System.Collections.Generic.List[string]
+    $scanLabelsList = New-Object System.Collections.Generic.List[string]
+    $seenPaths = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+
+    $addScanCandidate = {
+        param([string]$FullPath, [string]$DisplayLabel)
+        if ([string]::IsNullOrWhiteSpace($FullPath)) { return }
+        if (-not [System.IO.File]::Exists($FullPath)) { return }
+        if ($seenPaths.Add($FullPath)) {
+            $scanPathsList.Add($FullPath)
+            $scanLabelsList.Add($DisplayLabel)
         }
     }
 
-    # 2. Scan untracked non-ignored files <= 20MB, built dist/docs/assets bundles, and ExtraFiles
-    $candidatePaths = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
-    $untrackedFiles = @(git -C $RootPath ls-files --others --exclude-standard 2>$null)
-    foreach ($ufRel in $untrackedFiles) {
-        $ufFull = Join-Path $RootPath ($ufRel -replace '/', '\')
-        if (Test-Path $ufFull -PathType Leaf) { [void]$candidatePaths.Add($ufFull) }
+    foreach ($rfRel in $trackedRel) {
+        $full = Join-Path $RootPath ($rfRel -replace '/', '\')
+        & $addScanCandidate $full "tracked file '$rfRel'"
+    }
+    foreach ($ufRel in $untrackedRel) {
+        $full = Join-Path $RootPath ($ufRel -replace '/', '\')
+        & $addScanCandidate $full $full
     }
     foreach ($bundleDir in @(
         "$RootPath\05_hud_cockpit\dist",
@@ -546,25 +605,136 @@ function Test-SovereignKeyLeakScan {
         if (Test-Path $bundleDir) {
             Get-ChildItem -Path $bundleDir -Recurse -File -ErrorAction SilentlyContinue | ForEach-Object {
                 if ($_.Extension -notin @('.apk', '.exe', '.png', '.jpg', '.ico', '.woff2')) {
-                    [void]$candidatePaths.Add($_.FullName)
+                    & $addScanCandidate $_.FullName $_.FullName
                 }
             }
         }
     }
     foreach ($ef in $ExtraFiles) {
-        if ($ef -and (Test-Path $ef -PathType Leaf)) { [void]$candidatePaths.Add($ef) }
+        if ($ef -and [System.IO.File]::Exists($ef)) {
+            & $addScanCandidate $ef $ef
+        }
     }
 
-    foreach ($cp in $candidatePaths) {
-        $item = Get-Item $cp -ErrorAction SilentlyContinue
-        if (-not $item -or $item.Length -gt 20MB) { continue }
-        $content = [System.IO.File]::ReadAllText($cp)
-        foreach ($spec in $secretSpecs) {
-            $cmp = if ($spec.IgnoreCase) { [System.StringComparison]::OrdinalIgnoreCase } else { [System.StringComparison]::Ordinal }
-            if ($content.IndexOf($spec.Value, $cmp) -ge 0) {
-                $secViolations.Add("$($spec.Code): $($spec.Label) found in $cp")
+    # 2. Scan all enumerated files 100% in-process via chunked FileStream byte scanner
+    if (-not ('SovereignByteStreamScanner' -as [type])) {
+        Add-Type -TypeDefinition @"
+using System;
+using System.Collections.Generic;
+using System.IO;
+public static class SovereignByteStreamScanner {
+    private static int IndexOfBytes(byte[] haystack, int haystackLen, byte[] needle) {
+        int nLen = needle.Length;
+        if (nLen == 0 || haystackLen < nLen) return -1;
+        byte first = needle[0];
+        int limit = haystackLen - nLen;
+        for (int i = 0; i <= limit; i++) {
+            if (haystack[i] != first) continue;
+            bool match = true;
+            for (int j = 1; j < nLen; j++) {
+                if (haystack[i + j] != needle[j]) { match = false; break; }
+            }
+            if (match) return i;
+        }
+        return -1;
+    }
+
+    public static List<string> ScanFiles(
+        string[] filePaths,
+        string[] displayLabels,
+        byte[][] needlesExact,
+        byte[][] needlesLower,
+        bool[] ignoreCaseAscii,
+        string[] codes,
+        string[] labels
+    ) {
+        var hits = new List<string>();
+        int specCount = needlesExact.Length;
+        if (specCount == 0 || filePaths.Length == 0) return hits;
+
+        int maxLen = 0;
+        bool needLower = false;
+        for (int k = 0; k < specCount; k++) {
+            if (needlesExact[k].Length > maxLen) maxLen = needlesExact[k].Length;
+            if (ignoreCaseAscii[k]) needLower = true;
+        }
+        int overlap = Math.Max(0, maxLen - 1);
+        const int ChunkSize = 65536;
+        byte[] buf = new byte[overlap + ChunkSize];
+        byte[] lowerBuf = needLower ? new byte[overlap + ChunkSize] : null;
+
+        for (int fIdx = 0; fIdx < filePaths.Length; fIdx++) {
+            string path = filePaths[fIdx];
+            string disp = displayLabels[fIdx];
+            bool[] matchedSpec = new bool[specCount];
+            try {
+                using (var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, ChunkSize)) {
+                    int carry = 0;
+                    while (true) {
+                        int bytesRead = fs.Read(buf, carry, ChunkSize);
+                        if (bytesRead <= 0) break;
+                        int validLen = carry + bytesRead;
+                        if (needLower) {
+                            for (int i = 0; i < validLen; i++) {
+                                byte b = buf[i];
+                                lowerBuf[i] = (b >= 0x41 && b <= 0x5A) ? (byte)(b + 0x20) : b;
+                            }
+                        }
+                        for (int k = 0; k < specCount; k++) {
+                            if (matchedSpec[k]) continue;
+                            byte[] targetBuf = ignoreCaseAscii[k] ? lowerBuf : buf;
+                            byte[] needle = ignoreCaseAscii[k] ? needlesLower[k] : needlesExact[k];
+                            if (IndexOfBytes(targetBuf, validLen, needle) >= 0) {
+                                matchedSpec[k] = true;
+                                hits.Add(codes[k] + ": " + labels[k] + " found in " + disp);
+                            }
+                        }
+                        if (overlap > 0 && validLen > overlap) {
+                            Buffer.BlockCopy(buf, validLen - overlap, buf, 0, overlap);
+                            carry = overlap;
+                        } else if (overlap > 0) {
+                            carry = validLen;
+                        } else {
+                            carry = 0;
+                        }
+                    }
+                }
+            } catch (Exception ex) {
+                hits.Add("SECRET_SCAN_READ_ERROR: Could not read " + disp + " (" + ex.Message + ")");
             }
         }
+        return hits;
+    }
+}
+"@ -Language CSharp -IgnoreWarnings
+    }
+
+    $utf8NoBom = [System.Text.UTF8Encoding]::new($false)
+    $needlesExact = New-Object 'byte[][]' $secretSpecs.Count
+    $needlesLower = New-Object 'byte[][]' $secretSpecs.Count
+    $ignoreCaseArr = New-Object 'bool[]' $secretSpecs.Count
+    $codesArr = New-Object 'string[]' $secretSpecs.Count
+    $labelsArr = New-Object 'string[]' $secretSpecs.Count
+    for ($k = 0; $k -lt $secretSpecs.Count; $k++) {
+        $sp = $secretSpecs[$k]
+        $needlesExact[$k] = $utf8NoBom.GetBytes([string]$sp.Value)
+        $needlesLower[$k] = $utf8NoBom.GetBytes(([string]$sp.Value).ToLowerInvariant())
+        $ignoreCaseArr[$k] = [bool]$sp.IgnoreCase
+        $codesArr[$k] = [string]$sp.Code
+        $labelsArr[$k] = [string]$sp.Label
+    }
+
+    $scanHits = [SovereignByteStreamScanner]::ScanFiles(
+        [string[]]$scanPathsList.ToArray(),
+        [string[]]$scanLabelsList.ToArray(),
+        $needlesExact,
+        $needlesLower,
+        $ignoreCaseArr,
+        $codesArr,
+        $labelsArr
+    )
+    foreach ($sh in $scanHits) {
+        $secViolations.Add($sh)
     }
 
     return ,$secViolations
@@ -653,7 +823,7 @@ function Run-StaticGatekeeperChecks {
     }
 
     $staleDisplayPattern = '\b(?:\d{1,4}|\d{1,3},\d{3})\s*/\s*1,?010\b|(?<!\d)/1,?010\b|\b1,?010\s+(?:Lean\s+4\s+|Formal\s+)?(?:QED|Theorems)\b|CHAIN\s+368'
-    $staleD1TablePattern = '10[- ]Table|10\s+TABLES|10/10\s+D1\s+Tables|10\s+D1\s+Tables'
+    $staleD1TablePattern = '(?i)(?:\b10[- ]tables?\b|\b10/10\s+D1\s+Tables?\b|\b10\s+D1\s+Tables?\b|\\?"?(?:tables_count|d1_tables_synced|cloudflare_d1_tables)\\?"?\s*:\s*10\b|v44_operationalized_research_shards|v44_multiturn_discourse_memory|(?<!\w)act_omega_d1_vault(?!_v7322(?!\w)))'
     $staleScanFiles = New-Object System.Collections.Generic.List[string]
     $staleScanSet = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
     foreach ($sf in @(
@@ -746,19 +916,27 @@ function Run-StaticGatekeeperChecks {
         }
     }
 
-    foreach ($rsPath in @(
+    $allRustSrcFiles = @(Get-ChildItem -Path "$RepoRoot\01_l0_rust\src" -Filter "*.rs" -Recurse -File | Sort-Object FullName)
+    $displayAuditSet = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+    foreach ($dp in @(
         "$RepoRoot\01_l0_rust\src\bin\v31_swarm.rs",
         "$RepoRoot\01_l0_rust\src\v31_swarm.rs",
         "$RepoRoot\01_l0_rust\src\v72_2_sh_xi_sparse_moe_chatml_sft_and_rag.rs"
-    )) {
-        if (Test-Path $rsPath -PathType Leaf) {
-            $rsRaw = [System.IO.File]::ReadAllText($rsPath)
-            # Strip // comment lines so historical M1 comments do not trigger false positives on active code/strings
-            $rsCodeOnly = [regex]::Replace($rsRaw, '(?m)^\s*//.*$', '')
+    )) { [void]$displayAuditSet.Add($dp) }
+
+    foreach ($rsFile in $allRustSrcFiles) {
+        $rsRaw = [System.IO.File]::ReadAllText($rsFile.FullName)
+        # Strip // comment lines so historical comments do not trigger false positives on active code/strings
+        $rsCodeOnly = [regex]::Replace($rsRaw, '(?m)^\s*//.*$', '')
+        if ($displayAuditSet.Contains($rsFile.FullName)) {
             $rm = [regex]::Match($rsCodeOnly, $staleDisplayPattern)
             if ($rm.Success) {
-                $failures.Add("L0_RUST_STALE_DISPLAY_STAMP: Matched '$($rm.Value)' in active Rust code of $rsPath")
+                $failures.Add("L0_RUST_STALE_DISPLAY_STAMP: Matched '$($rm.Value)' in active Rust code of $($rsFile.FullName)")
             }
+        }
+        $dmRs = [regex]::Match($rsCodeOnly, $staleD1TablePattern)
+        if ($dmRs.Success) {
+            $failures.Add("L0_RUST_STALE_D1_TABLE_COUNT: Matched '$($dmRs.Value)' in active Rust code of $($rsFile.FullName)")
         }
     }
 
@@ -1208,40 +1386,51 @@ if ($TestNegativeTelemetryKeyInjection) {
         Write-Host "  [KEY-NEG 1/5 CLEAN]      [FAIL] Repo already has key leak / missing key violation: $($cleanSec -join '; ')" -ForegroundColor Red
         exit 1
     }
-    Write-Host "  [KEY-NEG 1/5 CLEAN]      [PASS] Repo-wide git ls-files + dist/docs secret scan = 0 leaks" -ForegroundColor Green
+    Write-Host "  [KEY-NEG 1/5 CLEAN]      [PASS] Repo-wide git ls-files -z + in-process stream scan = 0 leaks" -ForegroundColor Green
 
     $tmpKeyDir = Join-Path ([System.IO.Path]::GetTempPath()) "act_omega_m4_keyneg_$([System.Diagnostics.Process]::GetCurrentProcess().Id)"
     New-Item -ItemType Directory -Force -Path $tmpKeyDir | Out-Null
+    $synTelKey = ""
+    $synOpKey = ""
+    $liveOpKey = ""
+    $liveTelKey = ""
+    $liveSlot2 = ""
     try {
-        $telKeyVal = ([System.IO.File]::ReadAllText("C:\Users\Nbell\.act_omega_telemetry_ingest_key")).Trim()
-        $opKeyVal = ([System.IO.File]::ReadAllText("C:\Users\Nbell\.act_omega_operator_vault_key")).Trim()
+        $rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
+        $randBytes1 = New-Object byte[] 16
+        $randBytes2 = New-Object byte[] 16
+        $rng.GetBytes($randBytes1)
+        $rng.GetBytes($randBytes2)
+        $rng.Dispose()
+        $synTelKey = "SYNTH_TEL_DISPOSABLE_" + ([BitConverter]::ToString($randBytes1)).Replace("-", "")
+        $synOpKey = "SYNTH_OP_DISPOSABLE_" + ([BitConverter]::ToString($randBytes2)).Replace("-", "")
 
-        # Test 2: Inject active telemetry ingest key into temp fixture -> MUST FAIL
+        # Test 2: Inject disposable synthetic telemetry key into temp fixture -> MUST FAIL
         $fTel = Join-Path $tmpKeyDir "injected_telemetry_key.txt"
-        [System.IO.File]::WriteAllText($fTel, "X-Sovereign-Telemetry-Key=$telKeyVal`n")
-        $vTel = Test-SovereignKeyLeakScan -RootPath $RepoRoot -ExtraFiles @($fTel)
+        [System.IO.File]::WriteAllText($fTel, "X-Sovereign-Telemetry-Key=$synTelKey`n")
+        $vTel = Test-SovereignKeyLeakScan -RootPath $RepoRoot -ExtraFiles @($fTel) -SyntheticOperatorKeyForSelfTest $synOpKey -SyntheticTelemetryKeyForSelfTest $synTelKey
         if ($vTel.Count -gt 0 -and ($vTel -join " ") -match "SECRET_LEAK_TELEMETRY_KEY") {
-            Write-Host "  [KEY-NEG 2/5 TELEMETRY]  [PASS] Scanner caught injected telemetry ingest key ($($vTel[0]))" -ForegroundColor Green
+            Write-Host "  [KEY-NEG 2/5 TELEMETRY]  [PASS] Scanner caught synthetic telemetry key ($($vTel[0]))" -ForegroundColor Green
         } else {
-            Write-Host "  [KEY-NEG 2/5 TELEMETRY]  [FAIL] Scanner missed injected telemetry ingest key" -ForegroundColor Red
+            Write-Host "  [KEY-NEG 2/5 TELEMETRY]  [FAIL] Scanner missed synthetic telemetry key" -ForegroundColor Red
             $secNegFailures++
         }
 
-        # Test 3: Inject active operator vault key into temp fixture -> MUST FAIL
+        # Test 3: Inject disposable synthetic operator key into temp fixture -> MUST FAIL
         $fOp = Join-Path $tmpKeyDir "injected_operator_key.txt"
-        [System.IO.File]::WriteAllText($fOp, "X-Sovereign-Operator-Key=$opKeyVal`n")
-        $vOp = Test-SovereignKeyLeakScan -RootPath $RepoRoot -ExtraFiles @($fOp)
+        [System.IO.File]::WriteAllText($fOp, "X-Sovereign-Operator-Key=$synOpKey`n")
+        $vOp = Test-SovereignKeyLeakScan -RootPath $RepoRoot -ExtraFiles @($fOp) -SyntheticOperatorKeyForSelfTest $synOpKey -SyntheticTelemetryKeyForSelfTest $synTelKey
         if ($vOp.Count -gt 0 -and ($vOp -join " ") -match "SECRET_LEAK_ACTIVE") {
-            Write-Host "  [KEY-NEG 3/5 OPERATOR]   [PASS] Scanner caught injected operator vault key ($($vOp[0]))" -ForegroundColor Green
+            Write-Host "  [KEY-NEG 3/5 OPERATOR]   [PASS] Scanner caught synthetic operator key ($($vOp[0]))" -ForegroundColor Green
         } else {
-            Write-Host "  [KEY-NEG 3/5 OPERATOR]   [FAIL] Scanner missed injected operator vault key" -ForegroundColor Red
+            Write-Host "  [KEY-NEG 3/5 OPERATOR]   [FAIL] Scanner missed synthetic operator key" -ForegroundColor Red
             $secNegFailures++
         }
 
         # Test 4: Inject retired passkey literal into temp fixture -> MUST FAIL
         $fRet = Join-Path $tmpKeyDir "injected_retired_passkey.txt"
         [System.IO.File]::WriteAllText($fRet, "legacy=" + "SOVEREIGN" + "-LOQ15-4200`n")
-        $vRet = Test-SovereignKeyLeakScan -RootPath $RepoRoot -ExtraFiles @($fRet)
+        $vRet = Test-SovereignKeyLeakScan -RootPath $RepoRoot -ExtraFiles @($fRet) -SyntheticOperatorKeyForSelfTest $synOpKey -SyntheticTelemetryKeyForSelfTest $synTelKey
         if ($vRet.Count -gt 0 -and ($vRet -join " ") -match "SECRET_LEAK_RETIRED") {
             Write-Host "  [KEY-NEG 4/5 RETIRED]    [PASS] Scanner caught injected retired passkey ($($vRet[0]))" -ForegroundColor Green
         } else {
@@ -1250,16 +1439,69 @@ if ($TestNegativeTelemetryKeyInjection) {
         }
 
         # Test 5: Missing telemetry key path -> MUST FAIL CLOSED
-        $vMiss = Test-SovereignKeyLeakScan -RootPath $RepoRoot -TelemetryKeyOverridePath (Join-Path $tmpKeyDir "nonexistent_telemetry_key")
+        $vMiss = Test-SovereignKeyLeakScan -RootPath $RepoRoot -TelemetryKeyOverridePath (Join-Path $tmpKeyDir "nonexistent_telemetry_key") -SyntheticOperatorKeyForSelfTest $synOpKey
         if ($vMiss.Count -gt 0 -and ($vMiss -join " ") -match "TELEMETRY_KEY_MISSING") {
             Write-Host "  [KEY-NEG 5/5 FAIL-CLOSE] [PASS] Scanner failed closed when telemetry key file missing ($($vMiss[0]))" -ForegroundColor Green
         } else {
             Write-Host "  [KEY-NEG 5/5 FAIL-CLOSE] [FAIL] Scanner did not fail closed on missing telemetry key" -ForegroundColor Red
             $secNegFailures++
         }
+
+        # Live Hygiene Assertion: Verify ZERO live key bytes in Win32_Process.CommandLine or %TEMP%
+        if (Test-Path "C:\Users\Nbell\.act_omega_operator_vault_key") {
+            $liveOpKey = ([System.IO.File]::ReadAllText("C:\Users\Nbell\.act_omega_operator_vault_key")).Trim()
+        }
+        if (Test-Path "C:\Users\Nbell\.act_omega_telemetry_ingest_key") {
+            $liveTelKey = ([System.IO.File]::ReadAllText("C:\Users\Nbell\.act_omega_telemetry_ingest_key")).Trim()
+        }
+        $slot2Path = "F:\ACT_OMEGA_IMMUTABLE_EPOCH_ARCHIVES\YUBIKEY_ROOT_OF_TRUST_BACKUP\SLOT2_HMAC_SHARED_SECRET_FOR_KEY2_CLONING.txt"
+        if (Test-Path $slot2Path) {
+            $sm = [regex]::Match((Get-Content $slot2Path -Raw), '(?m)^[0-9a-fA-F]{40}\r?$')
+            if ($sm.Success) { $liveSlot2 = $sm.Value.Trim() }
+        }
+
+        $procLeaks = 0
+        $procs = Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Select-Object ProcessId, Name, CommandLine
+        foreach ($pr in $procs) {
+            $cmd = [string]$pr.CommandLine
+            if ([string]::IsNullOrEmpty($cmd)) { continue }
+            if (($liveOpKey.Length -ge 24 -and $cmd.IndexOf($liveOpKey, [System.StringComparison]::Ordinal) -ge 0) -or
+                ($liveTelKey.Length -ge 24 -and $cmd.IndexOf($liveTelKey, [System.StringComparison]::Ordinal) -ge 0) -or
+                ($liveSlot2.Length -eq 40 -and $cmd.IndexOf($liveSlot2, [System.StringComparison]::OrdinalIgnoreCase) -ge 0)) {
+                $procLeaks++
+            }
+        }
+
+        $tempLeaks = 0
+        $tempRoot = [System.IO.Path]::GetTempPath()
+        $tempCandidates = @()
+        if (Test-Path $tmpKeyDir) {
+            $tempCandidates += @(Get-ChildItem -Path $tmpKeyDir -Recurse -File -ErrorAction SilentlyContinue)
+        }
+        $tempCandidates += @(Get-ChildItem -Path $tempRoot -Filter "act_omega_*" -Recurse -File -ErrorAction SilentlyContinue)
+        foreach ($tf in $tempCandidates) {
+            try {
+                $txt = [System.IO.File]::ReadAllText($tf.FullName)
+                if (($liveOpKey.Length -ge 24 -and $txt.IndexOf($liveOpKey, [System.StringComparison]::Ordinal) -ge 0) -or
+                    ($liveTelKey.Length -ge 24 -and $txt.IndexOf($liveTelKey, [System.StringComparison]::Ordinal) -ge 0) -or
+                    ($liveSlot2.Length -eq 40 -and $txt.IndexOf($liveSlot2, [System.StringComparison]::OrdinalIgnoreCase) -ge 0)) {
+                    $tempLeaks++
+                }
+            } catch {}
+        }
+
+        if ($procLeaks -eq 0 -and $tempLeaks -eq 0) {
+            Write-Host "  [KEY-NEG HYGIENE]        [PASS] 0 live key bytes in Win32_Process.CommandLine and %TEMP%" -ForegroundColor Green
+        } else {
+            Write-Host "  [KEY-NEG HYGIENE]        [FAIL] procLeaks=$procLeaks tempLeaks=$tempLeaks" -ForegroundColor Red
+            $secNegFailures++
+        }
     } finally {
-        $telKeyVal = ""
-        $opKeyVal = ""
+        $synTelKey = ""
+        $synOpKey = ""
+        $liveOpKey = ""
+        $liveTelKey = ""
+        $liveSlot2 = ""
         Remove-Item $tmpKeyDir -Recurse -Force -ErrorAction SilentlyContinue
     }
 
@@ -1267,7 +1509,7 @@ if ($TestNegativeTelemetryKeyInjection) {
         Write-Host "  [KEY NEGATIVE-INJECTION SUITE: FAILED ($secNegFailures)]" -ForegroundColor Red
         exit 1
     }
-    Write-Host "  [KEY NEGATIVE-INJECTION SUITE: PASSED (5/5)]" -ForegroundColor Green
+    Write-Host "  [KEY NEGATIVE-INJECTION SUITE: PASSED (5/5 + HYGIENE)]" -ForegroundColor Green
     exit 0
 }
 
@@ -1341,9 +1583,22 @@ if ($FullAudit) {
         Write-Host "  [7 PLUCKER 12/12 .E8Z]  [FAIL] $_" -ForegroundColor Red
     }
 
+    # Load external operator key once for authenticated -FullAudit probes
+    $auditOpKey = if ($env:ACT_OMEGA_OPERATOR_KEY) {
+        $env:ACT_OMEGA_OPERATOR_KEY.Trim()
+    } elseif (Test-Path "C:\Users\Nbell\.act_omega_operator_vault_key") {
+        ([System.IO.File]::ReadAllText("C:\Users\Nbell\.act_omega_operator_vault_key")).Trim()
+    } else {
+        ""
+    }
+    $auditOpHdrs = @{}
+    if ($auditOpKey.Length -ge 24) {
+        $auditOpHdrs["X-Sovereign-Operator-Key"] = $auditOpKey
+    }
+
     # 8. Live v44 Lease Release Jitter Probe
     try {
-        $v44 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/worksteal/webgpu_lease?action=release&worker_id=gatekeeper_audit" -TimeoutSec 5
+        $v44 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/worksteal/webgpu_lease?action=release&worker_id=gatekeeper_audit" -Headers $auditOpHdrs -TimeoutSec 5
         if ([double]$v44.cadence_jitter_us -gt 0.0) {
             Write-Host "  [8 V44 RELEASE JITTER]  [PASS] Measured Release Jitter=$($v44.cadence_jitter_us) us (> 0.0)" -ForegroundColor Green
         } else {
@@ -1355,16 +1610,31 @@ if ($FullAudit) {
         Write-Host "  [8 V44 RELEASE JITTER]  [FAIL] $_" -ForegroundColor Red
     }
 
-    # 9. Live Operator Header Gate & ?key= Rejection Probe
+    # 9. Live Operator Header Gate & ?key= Rejection Probe (HTTP 403 on ?key= / ?%6bey=)
     try {
-        $opKey = (Get-Content "C:\Users\Nbell\.act_omega_operator_vault_key" -Raw).Trim()
-        $qResp = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/auth/operator_vault_gate?key=$opKey" -TimeoutSec 5
-        $hResp = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/auth/operator_vault_gate" -Headers @{ "X-Sovereign-Operator-Key" = $opKey } -TimeoutSec 5
-        if ($qResp.authorized -eq $false -and $hResp.authorized -eq $true) {
-            Write-Host "  [9 OPERATOR AUTH GATE]  [PASS] QueryParam(?key=)=REJECTED | Header(X-Sovereign-Operator-Key)=AUTHORIZED" -ForegroundColor Green
+        if ($auditOpKey.Length -lt 24) {
+            throw "Operator key missing (< 24 chars)"
+        }
+        $qStatus = 0
+        try {
+            $qWeb = Invoke-WebRequest -Uri "http://127.0.0.1:8097/api/v1/auth/operator_vault_gate?key=$auditOpKey" -UseBasicParsing -TimeoutSec 5
+            $qStatus = [int]$qWeb.StatusCode
+        } catch [System.Net.WebException] {
+            if ($_.Exception.Response) { $qStatus = [int]$_.Exception.Response.StatusCode }
+        }
+        $qEncStatus = 0
+        try {
+            $qEncWeb = Invoke-WebRequest -Uri "http://127.0.0.1:8097/api/v1/auth/operator_vault_gate?%6bey=test" -Headers $auditOpHdrs -UseBasicParsing -TimeoutSec 5
+            $qEncStatus = [int]$qEncWeb.StatusCode
+        } catch [System.Net.WebException] {
+            if ($_.Exception.Response) { $qEncStatus = [int]$_.Exception.Response.StatusCode }
+        }
+        $hResp = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/auth/operator_vault_gate" -Headers $auditOpHdrs -TimeoutSec 5
+        if ($qStatus -eq 403 -and $qEncStatus -eq 403 -and $hResp.authorized -eq $true) {
+            Write-Host "  [9 OPERATOR AUTH GATE]  [PASS] QueryParam(?key= & ?%6bey=)=403 | Header(X-Sovereign-Operator-Key)=AUTHORIZED" -ForegroundColor Green
         } else {
-            $failures.Add("AUTH_GATE_FAIL: QueryAuthorized=$($qResp.authorized) HeaderAuthorized=$($hResp.authorized)")
-            Write-Host "  [9 OPERATOR AUTH GATE]  [FAIL] Auth gate check failed" -ForegroundColor Red
+            $failures.Add("AUTH_GATE_FAIL: QueryStatus=$qStatus EncQueryStatus=$qEncStatus HeaderAuthorized=$($hResp.authorized)")
+            Write-Host "  [9 OPERATOR AUTH GATE]  [FAIL] QueryStatus=$qStatus EncQueryStatus=$qEncStatus HeaderAuthorized=$($hResp.authorized)" -ForegroundColor Red
         }
     } catch {
         $failures.Add("AUTH_PROBE_ERR: $_")
@@ -1450,12 +1720,12 @@ if ($FullAudit) {
             $okVal = (Get-Content "C:\Users\Nbell\.act_omega_operator_vault_key" -Raw).Trim()
             if ($okVal.Length -ge 24) { $opHdrs["X-Sovereign-Operator-Key"] = $okVal }
         }
-        $c292 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/chain292/master_certification" -TimeoutSec 20
-        $c300 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/chain300/master_certification" -TimeoutSec 20
-        $c308 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/chain308/master_certification" -TimeoutSec 20
-        $c312 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/chain312/master_certification" -TimeoutSec 20
-        $c316 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/chain316/master_certification" -TimeoutSec 20
-        $c350 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/chain350/master_certification" -TimeoutSec 120
+        $c292 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/chain292/master_certification" -Headers $opHdrs -TimeoutSec 20
+        $c300 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/chain300/master_certification" -Headers $opHdrs -TimeoutSec 20
+        $c308 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/chain308/master_certification" -Headers $opHdrs -TimeoutSec 20
+        $c312 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/chain312/master_certification" -Headers $opHdrs -TimeoutSec 20
+        $c316 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/chain316/master_certification" -Headers $opHdrs -TimeoutSec 20
+        $c350 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/chain350/master_certification" -Headers $opHdrs -TimeoutSec 120
         $c362 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/chain362/master_certification" -Method Post -Body '{}' -ContentType 'application/json' -Headers $opHdrs -TimeoutSec 180
         $c368 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/chain368/master_certification" -Method Post -Body '{}' -ContentType 'application/json' -Headers $opHdrs -TimeoutSec 240
         $toolsCount = if ($c300.tools_verified) { $c300.tools_verified } else { $c300.total_chain_tools }

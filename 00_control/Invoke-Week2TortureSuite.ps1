@@ -10,12 +10,15 @@ Write-Host "====================================================================
 Write-Host "  ACT-OMEGA v71.2.0 -- WEEK 2 13-TEST TORTURE, STRESS & ABLATION SUITE (W2-1..13)" -ForegroundColor Cyan
 Write-Host "===============================================================================" -ForegroundColor Cyan
 
+$OpKeyVal = if ($env:ACT_OMEGA_OPERATOR_KEY) { $env:ACT_OMEGA_OPERATOR_KEY.Trim() } elseif (Test-Path "C:\Users\Nbell\.act_omega_operator_vault_key") { ([System.IO.File]::ReadAllText("C:\Users\Nbell\.act_omega_operator_vault_key")).Trim() } else { "" }
+$OpHeaders = if ($OpKeyVal.Length -ge 24) { @{ "X-Sovereign-Operator-Key" = $OpKeyVal } } else { @{} }
+
 function Invoke-SovereignJson($endpoint, $method = "POST", $body = "{}") {
     $uri = "$baseUrl$endpoint"
     if ($method -eq "GET") {
-        $resp = Invoke-RestMethod -Uri $uri -Method Get -TimeoutSec 120
+        $resp = Invoke-RestMethod -Uri $uri -Method Get -Headers $OpHeaders -TimeoutSec 120
     } else {
-        $resp = Invoke-RestMethod -Uri $uri -Method Post -Body $body -ContentType "application/json" -TimeoutSec 120
+        $resp = Invoke-RestMethod -Uri $uri -Method Post -Body $body -ContentType "application/json" -Headers $OpHeaders -TimeoutSec 120
     }
     return $resp
 }

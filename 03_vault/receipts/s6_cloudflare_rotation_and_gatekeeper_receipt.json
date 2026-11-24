@@ -1,10 +1,10 @@
 {
   "receipt_id": "s6_cloudflare_rotation_and_gatekeeper_receipt",
-  "version": "v73.2.3",
-  "item": "Item #6 (Cloudflare 11-Table Reconciliation, Live Wrangler Rotation Proof & account_id PARTIAL Controls; prior v73.2.2 Item #5)",
-  "recorded_at_utc": "2026-11-23T04:10:15Z",
+  "version": "v73.2.4",
+  "item": "Item #8 (v73.2.4 Gate 3: Cloudflare D1 11-User-Table Rust/Gatekeeper Cleanup & Permanent account_id Non-Migration Decision)",
+  "recorded_at_utc": "2026-11-23T20:15:00Z",
   "overall_status": "PARTIAL",
-  "reason_for_partial": "D1 database, Hyperdrive config, and KV namespace were rotated to fresh instances and old exposed instances were permanently deleted (verified live via wrangler); Cloudflare tenant account_id is immutable in-place without migrating to a separate Cloudflare tenant account.",
+  "reason_for_partial": "D1 database, Hyperdrive config, and KV namespace were rotated to fresh instances and old exposed instances were permanently deleted (verified live via wrangler); Cloudflare tenant account_id is immutable in-place without migrating to a separate Cloudflare tenant account, and Donevin Frownfelter permanently decided NOT to migrate to a new account.",
   "external_credentials_store": "C:\\Users\\Nbell\\.act_omega_cloudflare_ids.json",
   "rotated_resources": {
     "d1_database": {
@@ -51,10 +51,14 @@
       "new_id_sha256": "7dffc307ff4cb8582f58076f39fa3804c5fb8317fd4fab503bec0490db644a15"
     },
     "account_id": {
+      "decision": "PERMANENTLY_EXPOSED_NO_ACCOUNT_MIGRATION",
+      "decision_author": "Donevin Frownfelter (@bospaladin34-crypto)",
       "status": "PARTIAL",
       "immutable_in_place": true,
+      "migrated": false,
+      "rotated": false,
       "id_sha256": "8e6a8f04e18e666debd249a7e2664148277a909320ec58bf1051e8453767fe1e",
-      "note": "Cloudflare tenant account_id cannot be rotated in-place without migrating the entire account, zone, tunnel, and VPC mesh to a separate Cloudflare tenant account.",
+      "note": "Cloudflare tenant account_id is a platform-immutable 32-char path identifier (Update Account API only renames); Donevin Frownfelter permanently decided NOT to migrate zone, tunnel, and VPC mesh to a new Cloudflare account, and account_id is NOT rotated.",
       "compensating_controls": {
         "externalized_config_only": true,
         "external_store": "C:\\Users\\Nbell\\.act_omega_cloudflare_ids.json",
@@ -62,8 +66,21 @@
         "api_auth_isolation": "Cloudflare OAuth / scoped API tokens stored exclusively outside git; Deploy-CloudflareEdge.ps1 and Verify-CloudflareRotationLive.ps1 strip CLOUDFLARE_API_TOKEN and render ephemeral configs in $env:TEMP.",
         "zero_trust_and_operator_auth_enforced": true,
         "edge_auth_layers": "Cloudflare Access RS256 JWT + encrypted SOVEREIGN_OPERATOR_KEY secret (X-Sovereign-Operator-Key header, ?key= rejected) + pre-proxy 403 gate in worker_vpc_shadow_v3700.js.",
-        "repo_wide_leak_gatekeeper": "00_control/Invoke-BrutalAgentGatekeeper.ps1 :: Test-CloudflareIdLeakScan",
+        "repo_wide_leak_gatekeeper": "00_control/Invoke-BrutalAgentGatekeeper.ps1 :: Test-CloudflareIdLeakScan & Test-SovereignKeyLeakScan",
         "live_wrangler_verification_receipt": "03_vault/receipts/s6_cloudflare_live_wrangler_verification.txt",
+        "gate2_v73_2_4_controls": [
+          "Item #2: /api/v1/l0_core/execute_41_modules, /api/v1/l0_core/sheaf_engine, /api/v1/tools/t275..t280, and /api/v1/tool/275..280 gated pre-lock via enforce_operator_gate_403 at L0 and pre-proxy at Cloudflare Edge (parsedToolNum 1..=404).",
+          "Item #3: Full chain135_json (including t341 and /api/v1/tool/308..315), SSE /api/v1/sovereign_harmonic/converse, mutating /api/v1/unified/*, and 7 legacy /api/v1/{stiefel,acoustic,wgsl,compute,debate,hotpatch,codegen} routes gated pre-lock at L0; isEdgeGatedBeforeOrigin expanded in worker_vpc_shadow_v3700.js; App.tsx attaches X-Sovereign-Operator-Key via getOperatorHeaders().",
+          "Item #4: /api/v1/worksteal/webgpu_lease, /api/v1/tools/t78, and /api/v1/tool/78 gated at L0 + Edge; self-computing CRC fallback and kops 420.0/NaN collapse deleted in v44; poc_hash independently verified over real 2,080-cacheline .e8z 6D Plucker FNV-1a and kops bounded 50.0..=850.0 (400 Bad Request fail-closed).",
+          "Item #5: All 9 remaining extract_query_param(raw_target, \"key\") checks replaced with 4-pass percent-decoding v73_2_has_query_key_param returning 403 on ?key=, ?%6bey=, and ?%4Bey= even with valid operator header.",
+          "Item #6: Test-SovereignKeyLeakScan refactored to git ls-files -z + in-memory .NET SovereignByteStreamScanner (zero secret CLI args) and -TestNegativeTelemetryKeyInjection refactored to ephemeral in-memory synthetic keys (zero %TEMP% live keys)."
+        ],
+        "gate3_v73_2_4_controls": [
+          "Item #8 L0 D1 11-User-Table Sync: v73_2_read_live_d1_user_tables() and v73_2_read_live_d1_database_name() parse sqlite_master results live from s6_cloudflare_live_wrangler_verification.txt (act_omega_d1_vault_v7322, 11 user tables, fail-closed UNMEASURED/OFFLINE / null), eliminating all active L0 Rust \"10 Tables\", \"10-Table\", \"10 TABLES\", \"tables_count\":10, v44_operationalized_research_shards, v44_multiturn_discourse_memory, and stale act_omega_d1_vault literals.",
+          "Item #8 Strict MCP resources/read URI & Edge Tables Count: v61_read_resource_metadata() in L0 Rust and resources/read in worker_vpc_shadow_v3700.js require exact live URI match (manifold://d1/act_omega_d1_vault_v7322), return NOT_FOUND on retired manifold://d1/act_omega_d1_vault or arbitrary D1 URIs, and include live sqlite_master tables_count (11) on Edge resources/read.",
+          "Item #8 Gatekeeper Expansion: Invoke-BrutalAgentGatekeeper.ps1 expanded across all 01_l0_rust/src/**/*.rs (// comment-stripped) with upgraded $staleD1TablePattern including (?<!\\w)act_omega_d1_vault(?!_v7322(?!\\w)) and 7/7 negative/control tests in tests/e2e/test_m3_gatekeeper_negative.ps1.",
+          "Item #7 Live APK Manifest: v73_2_extract_apk_version_code() extracts android:versionCode (0x0101021B) directly from shipped APK ZIP+DEFLATE+AXML bytes in /api/v1/ota/pixel_manifest and /api/v1/tools/t284 (fail-closed null / UNMEASURED/OFFLINE)."
+        ],
         "residual_risk": "Historical account_id values remain in prior git commits (e9804bf2 and earlier); account_id cannot rotate in-place without migrating zone, tunnel, and VPC mesh to a new Cloudflare account."
       }
     }

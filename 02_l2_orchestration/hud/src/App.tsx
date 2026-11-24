@@ -724,6 +724,7 @@ export interface VesperArachneHudShimejiProps {
   lean4TheoremsQed?: number | null;
   lean4Qed?: boolean;
   toolsCount?: number | null;
+  operatorPasskey?: string;
 }
 
 interface VesperSwarmClone {
@@ -755,8 +756,13 @@ export function VesperArachneHudShimeji({
   telemetrySource = "UNMEASURED/OFFLINE",
   lean4TheoremsQed = null,
   lean4Qed = false,
-  toolsCount = null
+  toolsCount = null,
+  operatorPasskey = ""
 }: VesperArachneHudShimejiProps) {
+  const opKeyRef = useRef<string>(operatorPasskey);
+  useEffect(() => {
+    opKeyRef.current = operatorPasskey;
+  }, [operatorPasskey]);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const hitTargetRef = useRef<HTMLDivElement | null>(null);
   const speechBubbleRef = useRef<HTMLDivElement | null>(null);
@@ -876,8 +882,11 @@ export function VesperArachneHudShimeji({
       ];
       for (const cu of companionUrls) {
         try {
+          const k = opKeyRef.current.trim();
+          const hdrs: Record<string, string> = k ? { "X-Sovereign-Operator-Key": k } : {};
           const resp = await fetch(cu, {
             cache: "no-store",
+            headers: hdrs,
             signal: AbortSignal.timeout(1800)
           });
           if (!mounted) return;
@@ -920,9 +929,12 @@ export function VesperArachneHudShimeji({
       timer: 240
     });
     try {
+      const k = opKeyRef.current.trim();
+      const mcpHeaders: Record<string, string> = { "Content-Type": "application/json" };
+      if (k) mcpHeaders["X-Sovereign-Operator-Key"] = k;
       const resp = await fetch("/mcp", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: mcpHeaders,
         body: JSON.stringify({
           jsonrpc: "2.0",
           id: Date.now(),
@@ -3563,6 +3575,7 @@ export function VesperCalmView({
   speculativeToksPerStep,
   sessionId,
   sessionTurnCount,
+  globalTurnSeq = 0,
   onResetSession,
   onSelectMode,
   p10TempC,
@@ -3590,6 +3603,7 @@ export function VesperCalmView({
   speculativeToksPerStep: number;
   sessionId: string;
   sessionTurnCount: number;
+  globalTurnSeq?: number;
   onResetSession: () => void;
   onSelectMode: (mode: VesperShellMode, rail: VesperRailLabel) => void;
   p10TempC: number;
@@ -3716,7 +3730,7 @@ export function VesperCalmView({
         </span>
         <div style={{ minWidth: 0, flex: 1 }}>
           <div style={{ fontSize: 14, fontWeight: 700, color: "var(--vesper-text)" }}>
-            Vesper · SH-XI (384D Mobile · 768D Host · 16/256 MoE · Turn #{sessionTurnCount})
+            Vesper · SH-XI (384D Mobile · 768D Host · 16/256 MoE · Turn #{sessionTurnCount}{globalTurnSeq > 0 ? ` · Global #${globalTurnSeq}` : ""})
           </div>
           <div
             style={{
@@ -5245,8 +5259,67 @@ export function App() {
   const [vesperVoiceActive, setVesperVoiceActive] = useState<boolean>(false);
   const [vesperCalmLoading, setVesperCalmLoading] = useState<boolean>(false);
   const [vesperProofOpenRow, setVesperProofOpenRow] = useState<number | null>(0);
-  const [vesperSessionId, setVesperSessionId] = useState<string>(() => `vesper_hud_${Date.now().toString(36)}`);
-  const [vesperSessionTurns, setVesperSessionTurns] = useState<number>(0);
+  const [vesperSessionId, setVesperSessionId] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = window.localStorage.getItem("act_omega_vesper_session_id");
+        if (saved && saved.trim().length > 0) {
+          return saved.trim();
+        }
+        const initialSid = `vesper_hud_${Date.now().toString(36)}`;
+        window.localStorage.setItem("act_omega_vesper_session_id", initialSid);
+        return initialSid;
+      } catch {
+        // ignore storage errors
+      }
+    }
+    return `vesper_hud_${Date.now().toString(36)}`;
+  });
+  const [vesperSessionTurns, setVesperSessionTurns] = useState<number>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const raw = window.localStorage.getItem("act_omega_vesper_session_turns");
+        if (raw !== null) {
+          const parsed = Number.parseInt(raw, 10);
+          if (Number.isFinite(parsed) && parsed >= 0) {
+            return parsed;
+          }
+        }
+      } catch {
+        // ignore storage errors
+      }
+    }
+    return 0;
+  });
+  const [vesperGlobalTurnSeq, setVesperGlobalTurnSeq] = useState<number>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const raw = window.localStorage.getItem("act_omega_vesper_global_turn_seq");
+        if (raw !== null) {
+          const parsed = Number.parseInt(raw, 10);
+          if (Number.isFinite(parsed) && parsed >= 0) {
+            return parsed;
+          }
+        }
+      } catch {
+        // ignore storage errors
+      }
+    }
+    return 0;
+  });
+  const persistVesperSessionState = useCallback((sid: string, turns: number, globalSeq?: number) => {
+    if (typeof window !== "undefined") {
+      try {
+        window.localStorage.setItem("act_omega_vesper_session_id", sid);
+        window.localStorage.setItem("act_omega_vesper_session_turns", String(Math.max(0, Math.floor(turns))));
+        if (typeof globalSeq === "number" && Number.isFinite(globalSeq) && globalSeq >= 0) {
+          window.localStorage.setItem("act_omega_vesper_global_turn_seq", String(Math.floor(globalSeq)));
+        }
+      } catch {
+        // ignore storage errors
+      }
+    }
+  }, []);
   const [vesperCalmMessages, setVesperCalmMessages] = useState<VesperCalmMessage[]>([
     {
       id: "vesper-init-user",
@@ -5289,6 +5362,18 @@ export function App() {
   const [operatorVaultOpen, setOperatorVaultOpen] = useState<boolean>(false);
   const [operatorPasskey, setOperatorPasskey] = useState<string>("");
   const [operatorUnlocked, setOperatorUnlocked] = useState<boolean>(false);
+  const operatorPasskeyRef = useRef<string>("");
+  useEffect(() => {
+    operatorPasskeyRef.current = operatorPasskey;
+  }, [operatorPasskey]);
+  const getOperatorHeaders = (extra?: Record<string, string>): Record<string, string> => {
+    const h: Record<string, string> = { ...(extra || {}) };
+    const k = operatorPasskeyRef.current.trim();
+    if (k.length > 0) {
+      h["X-Sovereign-Operator-Key"] = k;
+    }
+    return h;
+  };
   const [helpSidebarOpen, setHelpSidebarOpen] = useState<boolean>(false);
   const [helpSection, setHelpSection] = useState<string>("QUICKSTART");
   const [helpSearch, setHelpSearch] = useState<string>("");
@@ -6286,7 +6371,7 @@ export function App() {
         try {
           const r = await fetch(
             `${b}/api/v1/worksteal/webgpu_lease?action=release&worker_id=${encodeURIComponent(webgpuWorkerId)}`,
-            { cache: "no-store", keepalive: true }
+            { cache: "no-store", keepalive: true, headers: getOperatorHeaders() }
           );
           if (r.ok) {
             const d = await r.json();
@@ -6315,15 +6400,17 @@ export function App() {
       setWebgpuStatusDiag("UNMEASURED/OFFLINE: .e8z Cacheline Norms absent or zero — no measured Plücker value computed.");
       return;
     }
-    setWebgpuLeaseActive(true);
+    let leaseOk = false;
     for (const b of baseUrls) {
       try {
         const r = await fetch(
           `${b}/api/v1/worksteal/webgpu_lease?action=acquire&worker_id=${encodeURIComponent(webgpuWorkerId)}&gpu_adapter=${encodeURIComponent(adapter)}&kops=${kops.toFixed(1)}&poc_hash=${encodeURIComponent(poc)}`,
-          { cache: "no-store" }
+          { cache: "no-store", headers: getOperatorHeaders() }
         );
         if (r.ok) {
           const d = await r.json();
+          setWebgpuLeaseActive(true);
+          leaseOk = true;
           setWebgpuActiveWorkers(d.active_leases_count ?? 1);
           setWebgpuLeasedKops(d.total_webgpu_leased_kops ?? kops);
           setWebgpuBatchesCount(d.worker_batches ?? 1);
@@ -6338,6 +6425,11 @@ export function App() {
       } catch {
         // try next
       }
+    }
+    if (!leaseOk) {
+      setWebgpuLeaseActive(false);
+      setWebgpuLeasedKops(0);
+      setWebgpuStatusDiag("WebGPU Lease Rejected (HTTP 400/403 or L0 Offline).");
     }
   };
 
@@ -6362,7 +6454,7 @@ export function App() {
         try {
           const r = await fetch(
             `${b}/api/v1/worksteal/webgpu_lease?action=submit&worker_id=${encodeURIComponent(webgpuWorkerId)}&gpu_adapter=${encodeURIComponent(adapter)}&kops=${kops.toFixed(1)}&poc_hash=${encodeURIComponent(poc)}`,
-            { cache: "no-store" }
+            { cache: "no-store", headers: getOperatorHeaders() }
           );
           if (r.ok) {
             const d = await r.json();
@@ -6386,6 +6478,15 @@ export function App() {
       if (unloadSent) return;
       unloadSent = true;
       const relUrl = `/api/v1/worksteal/webgpu_lease?action=release&worker_id=${encodeURIComponent(webgpuWorkerId)}`;
+      const opHdrs = getOperatorHeaders();
+      if (Object.keys(opHdrs).length > 0) {
+        try {
+          fetch(relUrl, { keepalive: true, headers: opHdrs, cache: "no-store" });
+          return;
+        } catch {
+          // fall through
+        }
+      }
       if (navigator.sendBeacon) {
         navigator.sendBeacon(relUrl);
         return;
@@ -6954,7 +7055,7 @@ export function App() {
         : ["", "http://127.0.0.1:8097"];
     for (const b of bases) {
       try {
-        const r = await fetch(b + path, { cache: "no-store" });
+        const r = await fetch(b + path, { cache: "no-store", headers: getOperatorHeaders() });
         if (r.ok) {
           const txt = await r.text();
           let displayMsg = txt.replace(/\s+/g, " ").slice(0, 420);
@@ -7024,7 +7125,7 @@ export function App() {
           : ["", "http://127.0.0.1:8097"];
       for (const b of bases) {
         try {
-          const res = await fetch(`${b}/api/v1/cloudflare/free_tier_governor`, { cache: "no-store" });
+          const res = await fetch(`${b}/api/v1/cloudflare/free_tier_governor`, { cache: "no-store", headers: getOperatorHeaders() });
           if (res.ok) {
             const data: CloudflareGovernorPayload = await res.json();
             setCfGovernor(data);
@@ -7392,7 +7493,7 @@ export function App() {
     const bases = ["", "http://127.0.0.1:8097"];
     for (const b of bases) {
       try {
-        const r = await fetch(`${b}/api/v1/v50/avx2_rayon_tlv_crystallizer`, { cache: "no-store" });
+        const r = await fetch(`${b}/api/v1/v50/avx2_rayon_tlv_crystallizer`, { cache: "no-store", headers: getOperatorHeaders() });
         if (r.ok) {
           const d = await r.json();
           setV50CrystallizerState({
@@ -7425,7 +7526,7 @@ export function App() {
     const bases = ["", "http://127.0.0.1:8097"];
     for (const b of bases) {
       try {
-        const r = await fetch(`${b}/api/v1/v50/neural_prosodic_speech?q=${encodeURIComponent(text)}`, { cache: "no-store" });
+        const r = await fetch(`${b}/api/v1/v50/neural_prosodic_speech?q=${encodeURIComponent(text)}`, { cache: "no-store", headers: getOperatorHeaders() });
         if (r.ok) {
           const d = await r.json();
           const jacNorm = Math.sqrt(tel.mag_x * tel.mag_x + tel.mag_y * tel.mag_y + tel.mag_z * tel.mag_z);
@@ -7465,36 +7566,20 @@ export function App() {
     }
   };
 
-  const resetVesperCalmSession = async () => {
+  const resetVesperCalmSession = () => {
     const nextSid = `vesper_hud_${Date.now().toString(36)}`;
     setVesperSessionId(nextSid);
     setVesperSessionTurns(0);
+    persistVesperSessionState(nextSid, 0, vesperGlobalTurnSeq);
     setVesperCalmMessages([
       {
         id: `vesper-reset-${Date.now()}`,
         role: "assistant",
-        text: `Multi-turn Sovereign Harmonic XI episodic session reset (${nextSid}). Ready for fresh 384D WGSL RAG + 768D Host + 16/256 Sparse MoE converse.`,
+        text: `Multi-turn Sovereign Harmonic XI episodic session reset (${nextSid}). Next prompt begins Turn #1 while Global Seq (#${vesperGlobalTurnSeq}) continues monotonically.`,
         receipt: false
       }
     ]);
     triggerVesperToast(`Reset SH-XI Session -> ${nextSid}`);
-    const baseUrls =
-      typeof window !== "undefined" && window.location.protocol === "https:"
-        ? ["", "https://api.act-omega-net.dev", "http://127.0.0.1:8097"]
-        : ["", "http://127.0.0.1:8097"];
-    for (const b of baseUrls) {
-      try {
-        const r = await fetch(`${b}/api/v1/sovereign_harmonic/converse`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ prompt: "Session initialized", session_id: nextSid, reset_session: true }),
-          cache: "no-store"
-        });
-        if (r.ok) break;
-      } catch {
-        // ignore offline reset
-      }
-    }
   };
 
   const sendVesperCalmMessage = async (
@@ -7551,7 +7636,7 @@ export function App() {
           modeKind === "chat"
             ? await fetch(`${b}${targetPath}`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: getOperatorHeaders({ "Content-Type": "application/json" }),
                 body: JSON.stringify({
                   prompt: clean,
                   session_id: vesperSessionId,
@@ -7559,7 +7644,7 @@ export function App() {
                 }),
                 cache: "no-store"
               })
-            : await fetch(`${b}${targetPath}`, { cache: "no-store" });
+            : await fetch(`${b}${targetPath}`, { cache: "no-store", headers: getOperatorHeaders() });
         if (!res.ok) continue;
         const j = await res.json();
         setVesperTelemetrySource("LIVE_L0_SWARM");
@@ -7643,10 +7728,14 @@ export function App() {
         } else {
           const ms = j.matryoshka_shells || {};
           const nextTurn = typeof j.session_turn_count === "number" ? j.session_turn_count : vesperSessionTurns + 1;
+          const resolvedSid = typeof j.session_id === "string" && j.session_id.length > 0 ? j.session_id : vesperSessionId;
+          const nextGlobal = typeof j.global_turn_seq === "number" ? j.global_turn_seq : vesperGlobalTurnSeq;
           setVesperSessionTurns(nextTurn);
-          if (typeof j.session_id === "string" && j.session_id.length > 0) {
-            setVesperSessionId(j.session_id);
+          setVesperSessionId(resolvedSid);
+          if (typeof j.global_turn_seq === "number") {
+            setVesperGlobalTurnSeq(nextGlobal);
           }
+          persistVesperSessionState(resolvedSid, nextTurn, nextGlobal);
           const synth =
             j.output_text ||
             j.compositional_generation?.synthesized_text ||
@@ -7657,9 +7746,10 @@ export function App() {
           const ragSrc = ms.rag_top_source || "WORKSPACE_CHUNK";
           const ragCos = typeof ms.rag_top_cosine_384d === "number" ? ms.rag_top_cosine_384d.toFixed(4) : "MEASURED";
           const agree = typeof ms.shell0_vs_shell1_top8_agreement === "number" ? `${(ms.shell0_vs_shell1_top8_agreement * 100).toFixed(1)}%` : "MEASURED";
-          answerProse = `${synth}\n\n[SH-XI Turn #${nextTurn} · Shell 0 (${ms.shell0_mobile_dim ?? 384}D) + Shell 1 (${ms.shell1_host_dim ?? 768}D, Top-8 Agree ${agree}) + Shell 2 MoE (#${top1Exp}, #${top2Exp}) · RAG: ${ragSrc} (cos=${ragCos}) · 0 external cloud calls]`;
+          const globalTag = nextGlobal > 0 ? ` · Global #${nextGlobal}` : "";
+          answerProse = `${synth}\n\n[SH-XI Turn #${nextTurn}${globalTag} · Shell 0 (${ms.shell0_mobile_dim ?? 384}D) + Shell 1 (${ms.shell1_host_dim ?? 768}D, Top-8 Agree ${agree}) + Shell 2 MoE (#${top1Exp}, #${top2Exp}) · RAG: ${ragSrc} (cos=${ragCos}) · 0 external cloud calls]`;
           receiptLines = [
-            `Endpoint · POST /api/v1/sovereign_harmonic/converse (Tool ${j.tool_id ?? 361} · Session ${j.session_id ?? vesperSessionId} Turn #${nextTurn})`,
+            `Endpoint · POST /api/v1/sovereign_harmonic/converse (Tool ${j.tool_id ?? 361} · Session ${resolvedSid} Turn #${nextTurn}${globalTag})`,
             `3-Shell Matryoshka · 384D Mobile + 768D Host (Top-8 Agree ${agree}) + 16/256 MoE Experts #${top1Exp}, #${top2Exp}`,
             `384D WGSL Grounded RAG · Source ${ragSrc} · Cosine ${ragCos}`,
             `Measured Latency · ${latencyLabel} · Prompt/Gen Tokens = ${ms.prompt_tokens ?? 0}/${ms.generated_tokens ?? 0}`,
@@ -7719,7 +7809,7 @@ export function App() {
     const bases = ["", "http://127.0.0.1:8097"];
     for (const b of bases) {
       try {
-        const r = await fetch(`${b}/api/v1/v50/drawer1_2_bridge?action=${encodeURIComponent(action)}`, { cache: "no-store" });
+        const r = await fetch(`${b}/api/v1/v50/drawer1_2_bridge?action=${encodeURIComponent(action)}`, { cache: "no-store", headers: getOperatorHeaders() });
         if (r.ok) {
           const d = await r.json();
           const wb = typeof d.workbench_state === "string" ? JSON.parse(d.workbench_state) : (d.workbench_state ?? {});
@@ -7750,7 +7840,7 @@ export function App() {
     const bases = ["", "http://127.0.0.1:8097"];
     for (const b of bases) {
       try {
-        const r = await fetch(`${b}/api/v1/v50/physics_simulator?regime=${encodeURIComponent(regime)}&steps=100&dt=0.005`, { cache: "no-store" });
+        const r = await fetch(`${b}/api/v1/v50/physics_simulator?regime=${encodeURIComponent(regime)}&steps=100&dt=0.005`, { cache: "no-store", headers: getOperatorHeaders() });
         if (r.ok) {
           const d = await r.json();
           if (regime === "all") {
@@ -7975,7 +8065,7 @@ export function App() {
       try {
         const r = await fetch(`${b}/api/v1/gemma4/chat`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: getOperatorHeaders({ "Content-Type": "application/json" }),
           body: JSON.stringify({
             prompt: pText,
             mode: mUse,
@@ -8038,7 +8128,7 @@ export function App() {
         try {
           const r = await fetch(`${b}/api/v1/sovereign_harmonic/tokenize`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: getOperatorHeaders({ "Content-Type": "application/json" }),
             body: JSON.stringify({ text: cleanText, force: forceRebuild })
           });
           if (r.ok) {
@@ -8079,7 +8169,7 @@ export function App() {
         try {
           const r = await fetch(`${b}/api/v1/sovereign_harmonic/train_curriculum`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: getOperatorHeaders({ "Content-Type": "application/json" }),
             body: JSON.stringify({
               epochs: epCount,
               gemma4_teacher: sh9TeacherDistill,
@@ -8155,7 +8245,7 @@ export function App() {
         try {
           const r = await fetch(`${b}/api/v1/sovereign_harmonic/generate`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: getOperatorHeaders({ "Content-Type": "application/json" }),
             body: JSON.stringify({ prompt: pText, max_tokens: sh9MaxTokens })
           });
           if (r.ok) {
@@ -8203,7 +8293,7 @@ export function App() {
         try {
           const r = await fetch(`${b}/api/v1/sovereign_harmonic/compositional_reasoner`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: getOperatorHeaders({ "Content-Type": "application/json" }),
             body: JSON.stringify({ prompt: pText, max_tokens: sh9MaxTokens })
           });
           if (r.ok) {
@@ -8258,7 +8348,7 @@ export function App() {
           }
           const r = await fetch(`${b}/api/v1/sovereign_harmonic/holdout_eval`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: getOperatorHeaders({ "Content-Type": "application/json" }),
             body: JSON.stringify(payload)
           });
           if (r.ok) {
@@ -8311,7 +8401,7 @@ export function App() {
         try {
           const r = await fetch(`${b}/api/v1/sovereign_harmonic/multi_turn_session`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: getOperatorHeaders({ "Content-Type": "application/json" }),
             body: JSON.stringify({ prompt: pText, max_tokens: sh9MaxTokens, reset_session: resetSession })
           });
           if (r.ok) {
@@ -8359,7 +8449,7 @@ export function App() {
         try {
           const r = await fetch(`${b}/api/v1/sovereign_harmonic/self_play_expand`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: getOperatorHeaders({ "Content-Type": "application/json" }),
             body: JSON.stringify({ epochs: epochsOverride })
           });
           if (r.ok) {
@@ -8408,7 +8498,7 @@ export function App() {
         try {
           const r = await fetch(`${b}/api/v1/sovereign_harmonic/dendritic_speculative_decode`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: getOperatorHeaders({ "Content-Type": "application/json" }),
             body: JSON.stringify({ prompt: pText, max_tokens: sh9MaxTokens, draft_k: draftK })
           });
           if (r.ok) {
@@ -8456,7 +8546,7 @@ export function App() {
         try {
           const r = await fetch(`${b}/api/v1/sovereign_harmonic/chinchilla_corpus_harvester`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: getOperatorHeaders({ "Content-Type": "application/json" }),
             body: JSON.stringify({ epochs: epochsOverride })
           });
           if (r.ok) {
@@ -8509,7 +8599,7 @@ export function App() {
         try {
           const r = await fetch(`${b}/api/v1/sovereign_harmonic/tri_silicon_co_execute`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: getOperatorHeaders({ "Content-Type": "application/json" }),
             body: JSON.stringify({ prompt: pText, max_tokens: sh9MaxTokens })
           });
           if (r.ok) {
@@ -8794,6 +8884,7 @@ export function App() {
                 speculativeToksPerStep={sh9State.speculative_toks_per_step}
                 sessionId={vesperSessionId}
                 sessionTurnCount={vesperSessionTurns}
+                globalTurnSeq={vesperGlobalTurnSeq}
                 onResetSession={resetVesperCalmSession}
                 onSelectMode={selectVesperMode}
                 p10TempC={tel.p10_temp_c}
@@ -10221,10 +10312,11 @@ export function App() {
                         cache: "no-store",
                         headers: { "X-Sovereign-Operator-Key": operatorPasskey.trim() }
                       });
-                      if (r.ok) {
-                        const j = await r.json();
-                        setOperatorUnlocked(Boolean(j && j.authorized));
-                        setIdeConsoleLog(j && j.authorized ? "[OPERATOR VAULT UNLOCKED] Authenticated via X-Sovereign-Operator-Key header." : "[OPERATOR VAULT DENIED] Invalid or missing X-Sovereign-Operator-Key header.");
+                      if (r.ok || r.status === 401 || r.status === 403) {
+                        const j = await r.json().catch(() => ({}));
+                        const authOk = Boolean(r.ok && j && j.authorized);
+                        setOperatorUnlocked(authOk);
+                        setIdeConsoleLog(authOk ? "[OPERATOR VAULT UNLOCKED] Authenticated via X-Sovereign-Operator-Key header." : "[OPERATOR VAULT DENIED] Invalid or missing X-Sovereign-Operator-Key header.");
                       }
                     } catch {
                       setOperatorUnlocked(false);
@@ -12821,6 +12913,7 @@ export function App() {
         lean4TheoremsQed={tel.lean4_theorems_qed}
         lean4Qed={tel.lean4_qed}
         toolsCount={tel.tools_count}
+        operatorPasskey={operatorPasskey}
       />
     </div>
   );

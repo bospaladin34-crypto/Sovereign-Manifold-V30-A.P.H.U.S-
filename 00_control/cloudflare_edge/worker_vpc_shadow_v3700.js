@@ -932,7 +932,6 @@ export default {
       lowerPath === "/api/v1/cloudflare/hyperdrive_query" ||
       lowerPath === "/api/v1/continuum/handover" ||
       lowerPath === "/api/v1/edge_continuum/status" ||
-      lowerPath === "/api/v1/ota/pixel_manifest" ||
       lowerPath === "/api/v1/vectorize/query" ||
       lowerPath.startsWith("/api/v1/r2/vault/") ||
       lowerPath === "/api/v1/ai/embed" ||
@@ -982,9 +981,11 @@ export default {
       lowerPath.startsWith("/api/v1/lab/") ||
       lowerPath.startsWith("/api/v1/research/") ||
       lowerPath.startsWith("/api/v1/pgwire/") ||
+      lowerPath.startsWith("/api/v1/ota/") ||
       (lowerPath.startsWith("/api/v1/cloudflare/") && lowerPath !== "/api/v1/cloudflare/turnstile_verify") ||
       lowerPath.startsWith("/api/v1/vesper_arachne/") ||
       lowerPath.startsWith("/api/v1/chain") ||
+      lowerPath.startsWith("/api/v1/batch") ||
       lowerPath.startsWith("/api/v1/cert/") ||
       lowerPath.startsWith("/api/v1/synthesis/bleeding_edge_") ||
       lowerPath.startsWith("/api/v1/bleeding_edge/synthesis_") ||
@@ -992,18 +993,65 @@ export default {
       lowerPath.startsWith("/api/v1/aegis/") ||
       lowerPath.startsWith("/api/v1/harness/") ||
       lowerPath.startsWith("/api/v1/gemma4/") ||
-      lowerPath === "/api/v1/connectome/spage_3m_synapses" ||
+      lowerPath.startsWith("/api/v1/connectome/") ||
       lowerPath === "/api/v1/telemetry/ingest" ||
       lowerPath.startsWith("/api/v1/l0_core/") ||
       lowerPath === "/api/v1/tool/execute" ||
-      (parsedToolNum >= 185 && parsedToolNum <= 204) ||
-      parsedToolNum === 212 ||
-      (parsedToolNum >= 258 && parsedToolNum <= 260) ||
-      (parsedToolNum >= 271 && parsedToolNum <= 275) ||
-      (parsedToolNum >= 281 && parsedToolNum <= 288) ||
-      parsedToolNum === 292 ||
-      parsedToolNum === 316 ||
-      (parsedToolNum >= 369 && parsedToolNum <= 404);
+      lowerPath.startsWith("/api/v1/sovereign_harmonic/") ||
+      lowerPath.startsWith("/api/v1/sh_xi") ||
+      lowerPath === "/converse" ||
+      lowerPath.startsWith("/api/v1/worksteal/") ||
+      lowerPath.startsWith("/api/v1/vesper_os/") ||
+      lowerPath === "/api/v1/weights/verify" ||
+      lowerPath.startsWith("/api/v1/gpu/") ||
+      lowerPath.startsWith("/api/v1/v70/") ||
+      lowerPath.startsWith("/api/v1/v69_5/") ||
+      lowerPath.startsWith("/api/v1/v68/") ||
+      lowerPath.startsWith("/api/v1/v63/") ||
+      lowerPath.startsWith("/api/v1/polytope7777/") ||
+      lowerPath.startsWith("/api/v1/fluency/") ||
+      lowerPath.startsWith("/api/v1/omegalang/") ||
+      lowerPath.startsWith("/api/v1/audit/") ||
+      lowerPath.startsWith("/api/v1/mit_pipeline/") ||
+      (lowerPath.startsWith("/api/v1/unified/") && lowerPath !== "/api/v1/unified/catalog") ||
+      lowerPath.startsWith("/api/v1/monograph/") ||
+      lowerPath.startsWith("/api/v1/rosetta/") ||
+      lowerPath.startsWith("/api/v1/bio/") ||
+      lowerPath.startsWith("/api/v1/astro/") ||
+      lowerPath.startsWith("/api/v1/algebra/") ||
+      lowerPath.startsWith("/api/v1/mesh/") ||
+      lowerPath.startsWith("/api/v1/quantum/") ||
+      lowerPath.startsWith("/api/v1/logic/") ||
+      lowerPath.startsWith("/api/v1/physics/") ||
+      lowerPath.startsWith("/api/v1/geometry/") ||
+      lowerPath.startsWith("/api/v1/v50/") ||
+      lowerPath.startsWith("/api/v1/v51/") ||
+      lowerPath.startsWith("/api/v1/v52/") ||
+      lowerPath.startsWith("/api/v1/v52_1/") ||
+      lowerPath.startsWith("/api/v1/compiler/") ||
+      lowerPath.startsWith("/api/v1/security/") ||
+      lowerPath.startsWith("/api/v1/interp/") ||
+      lowerPath.startsWith("/api/v1/spatial/") ||
+      lowerPath.startsWith("/api/v1/vortex/") ||
+      lowerPath.startsWith("/api/v1/brain/") ||
+      lowerPath.startsWith("/api/v1/toolchain/") ||
+      lowerPath.startsWith("/api/v1/apr/") ||
+      lowerPath.startsWith("/api/v1/attention/") ||
+      lowerPath.startsWith("/api/v1/graph/") ||
+      lowerPath.startsWith("/api/v1/number/") ||
+      lowerPath.startsWith("/api/v1/p8_apex/") ||
+      lowerPath.startsWith("/api/v1/polyglot/") ||
+      lowerPath.startsWith("/api/v1/topology/") ||
+      lowerPath === "/api/v1/stiefel" ||
+      lowerPath === "/api/v1/acoustic" ||
+      lowerPath === "/api/v1/wgsl" ||
+      lowerPath === "/api/v1/compute" ||
+      lowerPath === "/api/v1/debate" ||
+      lowerPath === "/api/v1/hotpatch" ||
+      lowerPath === "/api/v1/codegen" ||
+      lowerPath === "/v1/chat/completions" ||
+      lowerPath === "/api/v1/openai/compat" ||
+      (parsedToolNum >= 1 && parsedToolNum <= 404);
 
     if (isEdgeGatedBeforeOrigin) {
       const preAuth = await verifyZeroTrustAndOperatorHeaders(request, env);
@@ -1189,8 +1237,10 @@ export default {
 
         if (rpcMethod === "resources/read") {
           const uri = reqBody.params?.uri || "";
+          const liveD1Name = (env && env.ACT_OMEGA_D1_DATABASE_NAME) ? env.ACT_OMEGA_D1_DATABASE_NAME : "act_omega_d1_vault_v7322";
+          const liveD1Uri = `manifold://d1/${liveD1Name}`;
           const synced = await getSyncedEdgeMetadata(env);
-          let payloadObj = { uri, status: synced.synced ? "LIVE_D1_SYNCED" : "UNMEASURED/UNSYNCED", database: "act_omega_d1_vault_v7322" };
+          let payloadObj = { uri, status: "NOT_FOUND", error: "Unknown resource URI" };
           if (env && env.ACT_OMEGA_D1) {
             try {
               const targetName = uri.split("/").pop() || uri;
@@ -1216,11 +1266,25 @@ export default {
                   chair44_columns: synced.chair44_columns,
                   active_synapses: synced.active_synapses
                 };
-              } else if (uri.includes("d1")) {
+              } else if (uri === liveD1Uri) {
+                let d1TablesCount = null;
+                let d1UserTables = [];
+                try {
+                  const tablesRes = await env.ACT_OMEGA_D1.prepare(D1_USER_TABLES_SQL).all();
+                  const extracted = extractD1UserTables(tablesRes);
+                  if (extracted !== null) {
+                    d1TablesCount = extracted.length;
+                    d1UserTables = extracted;
+                  }
+                } catch {
+                  gWorkerSqliteErrCount++;
+                }
                 payloadObj = {
                   uri,
-                  status: synced.synced ? "LIVE_D1_SNAPSHOT" : "UNMEASURED/UNSYNCED",
-                  database: "act_omega_d1_vault_v7322",
+                  status: (synced.synced && d1TablesCount !== null) ? "LIVE_D1_SNAPSHOT" : "UNMEASURED/UNSYNCED",
+                  database: liveD1Name,
+                  tables_count: d1TablesCount,
+                  user_tables: d1UserTables,
                   version: synced.version,
                   chain_milestone: synced.chain_milestone,
                   lean4_theorems_qed: synced.lean4_qed_label,
@@ -1230,6 +1294,13 @@ export default {
             } catch {
               gWorkerSqliteErrCount++;
             }
+          } else if (uri === liveD1Uri) {
+            payloadObj = {
+              uri,
+              status: "UNMEASURED/OFFLINE",
+              database: liveD1Name,
+              tables_count: null
+            };
           }
           return Response.json({
             jsonrpc: "2.0",
@@ -1660,7 +1731,11 @@ export default {
     }
 
     // Tool 284: Authenticated Dynamic Checksummed Pixel OTA Manifest (Fail-Closed 503 if Unsynced; No Device Serials per E9)
-    if (lowerPath === "/api/v1/ota/pixel_manifest") {
+    if (
+      lowerPath === "/api/v1/ota/pixel_manifest" ||
+      lowerPath === "/api/v1/tools/t284" ||
+      lowerPath === "/api/v1/tool/284"
+    ) {
       const auth = await verifyZeroTrustAndOperatorHeaders(request, env);
       if (!auth.authorized) {
         return Response.json(
@@ -3597,7 +3672,7 @@ export default {
       response_sha256: statusSig,
       timestamp_ms: t0
     }, {
-      headers: { "Cache-Control": "public, max-age=30" }
+      headers: { "Cache-Control": lowerPath.startsWith("/api/") ? "no-store" : "public, max-age=30" }
     });
   }
 };

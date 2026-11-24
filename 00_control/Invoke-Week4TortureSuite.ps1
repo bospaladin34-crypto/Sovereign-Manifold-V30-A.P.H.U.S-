@@ -146,15 +146,17 @@ $ShxRelPath = [string]$WeightManifest.artifacts.week4_rlvf_sae.relative_path
 $ShxDiskPath = Join-Path $RepoRoot ($ShxRelPath -replace '/', '\')
 $ExpectedShxBytes = [int64]$WeightManifest.artifacts.week4_rlvf_sae.expected_bytes
 $ActualShxDiskBytes = if (Test-Path $ShxDiskPath) { (Get-Item $ShxDiskPath).Length } else { -1L }
+$OpKeyVal = if ($env:ACT_OMEGA_OPERATOR_KEY) { $env:ACT_OMEGA_OPERATOR_KEY.Trim() } elseif (Test-Path "C:\Users\Nbell\.act_omega_operator_vault_key") { ([System.IO.File]::ReadAllText("C:\Users\Nbell\.act_omega_operator_vault_key")).Trim() } else { "" }
+$OpHeaders = if ($OpKeyVal.Length -ge 24) { @{ "X-Sovereign-Operator-Key" = $OpKeyVal } } else { @{} }
 
 if ($TestPerturbationFail) {
     Write-Host "==========================================================================" -ForegroundColor Cyan
     Write-Host "   WEEK 4 TORTURE SUITE: PERTURBATION FAILURE-PROOF MODE (3/3)           " -ForegroundColor Cyan
     Write-Host "==========================================================================" -ForegroundColor Cyan
     $pertFailures = 0
-    $t351Live = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/sovereign_harmonic/week4/rlvf_grpo_compiler_in_the_loop" -TimeoutSec 120
-    $t352Live = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/sovereign_harmonic/week4/medusa_eagle_dendritic_tree_speculative_k8" -TimeoutSec 60
-    $rtPoisonLive = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/sovereign_harmonic/week4/medusa_eagle_dendritic_tree_speculative_k8" -Method Post -ContentType "application/json" -Body '{"poison_draft_tree":true}' -TimeoutSec 60
+    $t351Live = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/sovereign_harmonic/week4/rlvf_grpo_compiler_in_the_loop" -Headers $OpHeaders -TimeoutSec 120
+    $t352Live = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/sovereign_harmonic/week4/medusa_eagle_dendritic_tree_speculative_k8" -Headers $OpHeaders -TimeoutSec 60
+    $rtPoisonLive = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/sovereign_harmonic/week4/medusa_eagle_dendritic_tree_speculative_k8" -Method Post -ContentType "application/json" -Headers $OpHeaders -Body '{"poison_draft_tree":true}' -TimeoutSec 60
 
     $baseChk = Test-Week4StageAssertions -T351 $t351Live -T352 $t352Live -RtPoisonTree $rtPoisonLive -ExpectedShxBytes $ExpectedShxBytes -ActualShxDiskBytes $ActualShxDiskBytes
     if ($baseChk.stage2_ok -and $baseChk.stage3_ok -and $baseChk.stage8_tree_ok) {
@@ -239,37 +241,37 @@ if ($brackets -eq 0 -and -not $hasStaticW4Claims) {
 }
 
 # Stage 2 & Stage 3 live calls
-$t351 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/sovereign_harmonic/week4/rlvf_grpo_compiler_in_the_loop" -TimeoutSec 120
-$t352 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/sovereign_harmonic/week4/medusa_eagle_dendritic_tree_speculative_k8" -TimeoutSec 60
+$t351 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/sovereign_harmonic/week4/rlvf_grpo_compiler_in_the_loop" -Headers $OpHeaders -TimeoutSec 120
+$t352 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/sovereign_harmonic/week4/medusa_eagle_dendritic_tree_speculative_k8" -Headers $OpHeaders -TimeoutSec 60
 
 # Stage 4: Tool 353 — Top-K (K=8) Sparse Autoencoder (Unclamped L2 & Bidirectional Causal Steering)
-$t353 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/sovereign_harmonic/week4/sae_monosemantic_feature_circuit_explorer" -TimeoutSec 60
+$t353 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/sovereign_harmonic/week4/sae_monosemantic_feature_circuit_explorer" -Headers $OpHeaders -TimeoutSec 60
 
 # Stage 5: Tool 354 — SH-Eval-256 Compiler-in-the-Loop & Adversarial Corruption Penalty
-$t354 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/sovereign_harmonic/week4/sh_eval_256_compiler_pass_at_k_gauntlet" -TimeoutSec 180
+$t354 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/sovereign_harmonic/week4/sh_eval_256_compiler_pass_at_k_gauntlet" -Headers $OpHeaders -TimeoutSec 180
 $prog = $t354.sh_eval_256_perplexity_progression
 $hg0 = $t354.hard_gate_0_frozen_holdout_v2
 
 # Stage 6: Tool 355 — Week 4 12-Test Torture, Stress & Ablation Gauntlet (W4-1..W4-12)
-$t355 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/sovereign_harmonic/week4/torture_and_ablation_12test_gauntlet" -TimeoutSec 180
+$t355 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/sovereign_harmonic/week4/torture_and_ablation_12test_gauntlet" -Headers $OpHeaders -TimeoutSec 180
 
 # Stage 7: Tool 356 — Sovereign Harmonic X Master Certification Shape & Live Lean 4 QED Count
 $leanVaultPath = "$RepoRoot\03_vault\lean4\SovereignManifoldTheorems.lean"
 $liveLeanCount = if (Test-Path $leanVaultPath) { ([regex]::Matches([System.IO.File]::ReadAllText($leanVaultPath), '(?m)^\s*theorem\s+')).Count } else { 0 }
-$t356 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/chain356/master_certification" -TimeoutSec 240
+$t356 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/chain356/master_certification" -Headers $OpHeaders -TimeoutSec 240
 
 # Stage 8: Negative Failure-Injection & Adversarial Red-Team Gauntlet (RT-W4-1..RT-W4-7)
 $rtBody0 = '{"custom_candidate": "theorem bad_sorry (n : Nat) : n = n + 1 := by sorry"}'
-$rtSorry = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/sovereign_harmonic/week4/rlvf_grpo_compiler_in_the_loop" -Method Post -ContentType "application/json" -Body $rtBody0 -TimeoutSec 60
+$rtSorry = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/sovereign_harmonic/week4/rlvf_grpo_compiler_in_the_loop" -Method Post -ContentType "application/json" -Headers $OpHeaders -Body $rtBody0 -TimeoutSec 60
 $rtBody1 = '{"custom_candidate": ") ( } { pub fn dyck_bypass(x: u64) -> u64 { x }"}'
-$rtDyck = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/sovereign_harmonic/week4/rlvf_grpo_compiler_in_the_loop" -Method Post -ContentType "application/json" -Body $rtBody1 -TimeoutSec 60
+$rtDyck = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/sovereign_harmonic/week4/rlvf_grpo_compiler_in_the_loop" -Method Post -ContentType "application/json" -Headers $OpHeaders -Body $rtBody1 -TimeoutSec 60
 $rtBody2 = '{"custom_candidate": "// pub fn comment_only_stub(x: u64) -> u64 { x }"}'
-$rtComment = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/sovereign_harmonic/week4/rlvf_grpo_compiler_in_the_loop" -Method Post -ContentType "application/json" -Body $rtBody2 -TimeoutSec 60
+$rtComment = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/sovereign_harmonic/week4/rlvf_grpo_compiler_in_the_loop" -Method Post -ContentType "application/json" -Headers $OpHeaders -Body $rtBody2 -TimeoutSec 60
 $rtBody3 = '{"custom_candidate": "theorem trivial_pad : 1 = 1 := by rfl"}'
-$rtTrivial = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/sovereign_harmonic/week4/rlvf_grpo_compiler_in_the_loop" -Method Post -ContentType "application/json" -Body $rtBody3 -TimeoutSec 60
-$rtPoisonTree = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/sovereign_harmonic/week4/medusa_eagle_dendritic_tree_speculative_k8" -Method Post -ContentType "application/json" -Body '{"poison_draft_tree":true}' -TimeoutSec 60
-$rtUnrejectedTree = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/sovereign_harmonic/week4/medusa_eagle_dendritic_tree_speculative_k8" -Method Post -ContentType "application/json" -Body '{"corrupt_accept_without_rejection":true}' -TimeoutSec 60
-$rtMetaphor = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/tools/t320" -Method Post -ContentType "application/json" -Body '{"prompt":"We need the model to grade its own homework with a formal compiler referee and use a branching crystal ball plus a brain microscope sparse autoencoder"}' -TimeoutSec 30
+$rtTrivial = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/sovereign_harmonic/week4/rlvf_grpo_compiler_in_the_loop" -Method Post -ContentType "application/json" -Headers $OpHeaders -Body $rtBody3 -TimeoutSec 60
+$rtPoisonTree = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/sovereign_harmonic/week4/medusa_eagle_dendritic_tree_speculative_k8" -Method Post -ContentType "application/json" -Headers $OpHeaders -Body '{"poison_draft_tree":true}' -TimeoutSec 60
+$rtUnrejectedTree = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/sovereign_harmonic/week4/medusa_eagle_dendritic_tree_speculative_k8" -Method Post -ContentType "application/json" -Headers $OpHeaders -Body '{"corrupt_accept_without_rejection":true}' -TimeoutSec 60
+$rtMetaphor = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/tools/t320" -Method Post -ContentType "application/json" -Headers $OpHeaders -Body '{"prompt":"We need the model to grade its own homework with a formal compiler referee and use a branching crystal ball plus a brain microscope sparse autoencoder"}' -TimeoutSec 30
 $metText = [string]$rtMetaphor.generation.generated_text
 $metGroundedOk = ($metText -match "MetaphorGrounded") -and ($metText -match "Week 4") -and ($metText -notmatch '5\.9612|5\.08x|R\^2\s*>=\s*0\.95')
 

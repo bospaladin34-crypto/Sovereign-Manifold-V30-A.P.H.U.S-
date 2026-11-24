@@ -1,7 +1,7 @@
 {
     "schema":  "ACT_OMEGA_V73_FETCH_LIST_AND_NEGATIVE_TEST_AUDIT_V1",
     "version":  "v73.2.4",
-    "generated_at_utc":  "2026-11-24T05:36:28Z",
+    "generated_at_utc":  "2026-11-24T06:20:59Z",
     "author":  "Donevin Frownfelter (@bospaladin34-crypto)",
     "disposition":  "9 FIXED / 1 PARTIAL",
     "v73_http_429_fetch_list_closure":  {
@@ -48,8 +48,8 @@
                                                           {
                                                               "path":  "00_control/Invoke-BrutalAgentGatekeeper.ps1",
                                                               "lines":  1977,
-                                                              "bytes":  100969,
-                                                              "sha256":  "dc96128ea75e07ad83eec967213efedbf05d9a6cd388e8cae6edb2d5c1b03eed",
+                                                              "bytes":  100975,
+                                                              "sha256":  "a9d9706a8cf0320865327c00f57a5502db90339907bc0fbf4fcc035d3bfec1d9",
                                                               "run_command":  "powershell -NoProfile -ExecutionPolicy Bypass -File 00_control\\Invoke-BrutalAgentGatekeeper.ps1 -FullAudit (+ 3 negative injection flags)",
                                                               "exit_code":  0,
                                                               "summary":  "Passed Brutal Gatekeeper -FullAudit plus CF/Lean-1009 (5/5), Pixel ADB serial (4/4), and in-memory telemetry key (5/5) negative injections; 0 tracked/dist leaks and 0 live secrets in CLI args or %TEMP%."
@@ -716,12 +716,12 @@
                                                                             },
                                                                             {
                                                                                 "name":  "v73_2_4_gatekeeper_lifecycle_pass.txt",
-                                                                                "bytes":  9325,
-                                                                                "sha256":  "3002b9c17696f6f03101e868df406c1ce6c714c4cfb919078f7c934418adae7d",
-                                                                                "git_blob_sha1":  "3b3ea5afecfa2903d8caecae3cfd4ffa09cba312",
+                                                                                "bytes":  7490,
+                                                                                "sha256":  "607d9a7cd50db5b91feac51d4c8a4835e4b5887597c72126d9a3db2b64279d88",
+                                                                                "git_blob_sha1":  "3df592c65f584a47a0b10e826212c2678197457c",
                                                                                 "encoding":  "utf-8-no-bom",
                                                                                 "line_ending":  "LF",
-                                                                                "last_write_utc":  "2026-11-24T05:36:20Z",
+                                                                                "last_write_utc":  "2026-11-24T06:15:37Z",
                                                                                 "volatile_on_suite_rerun":  true,
                                                                                 "volatility_reason":  "Invoke-BrutalAgentGatekeeper.ps1 -FullAudit and Sovereign-Lifecycle.ps1 -Action verify record live cluster throughput, bus sequences, and probe timings on every run."
                                                                             },
@@ -738,12 +738,12 @@
                                                                             },
                                                                             {
                                                                                 "name":  "v73_2_4_node_e2e_pass.txt",
-                                                                                "bytes":  4447,
-                                                                                "sha256":  "01958fdd182ceda943ce3b411473c3d8fbc93d883ceae7fc712bcc7fe6d7edfa",
-                                                                                "git_blob_sha1":  "cf6f45200b33c74f4515a4c2afc5fa7a3940acfd",
+                                                                                "bytes":  4451,
+                                                                                "sha256":  "6c76c12f962f3de94d9910c3310c6dae7cfd9fb4dc781a3cefcf69fbbb1bab6d",
+                                                                                "git_blob_sha1":  "e7a8ec377bb885981b52118b6d7fbe6743a9ce28",
                                                                                 "encoding":  "utf-8-no-bom",
                                                                                 "line_ending":  "LF",
-                                                                                "last_write_utc":  "2026-11-24T05:36:20Z",
+                                                                                "last_write_utc":  "2026-11-24T06:19:20Z",
                                                                                 "volatile_on_suite_rerun":  true,
                                                                                 "volatility_reason":  "Node worker/DO E2E tests (m1_worker_do_unit.mjs, test_m1_worker_dispatch_verification.mjs) and test_m3_gatekeeper_negative.ps1 record live test runner timings on every run."
                                                                             },

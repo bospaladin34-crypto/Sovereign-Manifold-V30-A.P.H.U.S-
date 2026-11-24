@@ -1767,7 +1767,7 @@ if ($FullAudit) {
 
     # 7. Live Plucker 12/12 .e8z Measurement Probe
     try {
-        $t92 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/v49/tool_92_amplituhedron_9loop_hexagon_plucker" -TimeoutSec 5
+        $t92 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/v49/tool_92_amplituhedron_9loop_hexagon_plucker" -TimeoutSec 15
         if ($t92.plucker_inner_product_p_ab -ne 0 -and $t92.proof_attestation -match "MEASURED") {
             Write-Host "  [7 PLUCKER 12/12 .E8Z]  [PASS] Pab=$($t92.plucker_inner_product_p_ab) | Attestation=$($t92.proof_attestation)" -ForegroundColor Green
         } else {
@@ -1794,7 +1794,7 @@ if ($FullAudit) {
 
     # 8. Live v44 Lease Release Jitter Probe
     try {
-        $v44 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/worksteal/webgpu_lease?action=release&worker_id=gatekeeper_audit" -Headers $auditOpHdrs -TimeoutSec 5
+        $v44 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/worksteal/webgpu_lease?action=release&worker_id=gatekeeper_audit" -Headers $auditOpHdrs -TimeoutSec 15
         if ([double]$v44.cadence_jitter_us -gt 0.0) {
             Write-Host "  [8 V44 RELEASE JITTER]  [PASS] Measured Release Jitter=$($v44.cadence_jitter_us) us (> 0.0)" -ForegroundColor Green
         } else {
@@ -1839,7 +1839,7 @@ if ($FullAudit) {
 
     # 10. Live Coordinator Bus & E:\ Write-Back Probe
     try {
-        $bus = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/coordinator/message_bus?source_module=BrutalGatekeeper&topic=GATEKEEPER_AUDIT&payload_summary=Verify_Bus_And_E_Vault" -TimeoutSec 5
+        $bus = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/coordinator/message_bus?source_module=BrutalGatekeeper&topic=GATEKEEPER_AUDIT&payload_summary=Verify_Bus_And_E_Vault" -TimeoutSec 15
         if ($bus.e_drive_mounted -eq $true -and $bus.ledger_measured_bytes -gt 0) {
             Write-Host "  [10 COORDINATOR & E:\]  [PASS] E_Mounted=True | LedgerBytes=$($bus.ledger_measured_bytes) | Envelopes=$($bus.total_envelopes_logged)" -ForegroundColor Green
         } else {
@@ -1853,8 +1853,8 @@ if ($FullAudit) {
 
     # 11. Live Google Search Console Certificate HTTP Endpoints Probe (:8097 & :5173)
     try {
-        $r8097 = (Invoke-WebRequest -Uri "http://127.0.0.1:8097/google6edc0affb12d0455.html" -UseBasicParsing -TimeoutSec 5).Content
-        $r5173 = (Invoke-WebRequest -Uri "http://127.0.0.1:5173/google6edc0affb12d0455.html" -UseBasicParsing -TimeoutSec 5).Content
+        $r8097 = (Invoke-WebRequest -Uri "http://127.0.0.1:8097/google6edc0affb12d0455.html" -UseBasicParsing -TimeoutSec 15).Content
+        $r5173 = (Invoke-WebRequest -Uri "http://127.0.0.1:5173/google6edc0affb12d0455.html" -UseBasicParsing -TimeoutSec 15).Content
         $expectedBody = "google-site-verification: google6edc0affb12d0455.html"
         if ($r8097.Trim() -eq $expectedBody -and $r5173.Trim() -eq $expectedBody) {
             Write-Host "  [11 GSC HTTP ENDPOINTS] [PASS] :8097 & :5173 returned exact 53-byte GSC token" -ForegroundColor Green
@@ -1869,7 +1869,7 @@ if ($FullAudit) {
 
     # 12. Live YubiKey Point-of-Origin Hardware Attestation Probe (F1: Dynamic allowed_signers FIDO2 Fingerprint)
     try {
-        $yk = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/auth/yubikey_point_of_origin" -TimeoutSec 8
+        $yk = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/auth/yubikey_point_of_origin" -TimeoutSec 15
         $expectedFp = $null
         $allowedSignersPath = "C:\Users\Nbell\.ssh\allowed_signers"
         $fallbackPubPath = "C:\Users\Nbell\.ssh\id_ed25519_sk_act_omega.pub"

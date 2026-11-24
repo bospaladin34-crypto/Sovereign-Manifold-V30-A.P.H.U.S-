@@ -1,20 +1,20 @@
-=== Invoke-BrutalAgentGatekeeper.ps1 -FullAudit (exit=0) ===
+=== Invoke-BrutalAgentGatekeeper.ps1 -FullAudit (exit=0, elapsed_ms=233594) ===
 ==========================================================================
    ACT-OMEGA BRUTAL AGENT GATEKEEPER: 13-POINT ARCHITECTURAL AUDIT        
 ==========================================================================
   [1-10 STATIC INVARIANTS][PASS] Zero-Bracket(v33..v73+)=0 | Lean4=1010(>=1010, HMAC=OK) | HUD/Mobile/Agent Mirrors=LOCKED | Secrets/CF/PixelSerials=0 | SSR & Bundles=VERIFIED | GSC 7-Mirror=LOCKED
   [6 LEAN 4 COMPILER]     [PASS] lean.exe verified 03_vault/lean4/SovereignManifoldTheorems.lean (EXIT:0)
   [7 PLUCKER 12/12 .E8Z]  [PASS] Pab=0.564108 | Attestation=0x977780_CPU_E8_PLUCKER_6D_INNER_MEASURED
-  [8 V44 RELEASE JITTER]  [PASS] Measured Release Jitter=3.400 us (> 0.0)
+  [8 V44 RELEASE JITTER]  [PASS] Measured Release Jitter=5.300 us (> 0.0)
   [9 OPERATOR AUTH GATE]  [PASS] QueryParam(?key= & ?%6bey=)=403 | Header(X-Sovereign-Operator-Key)=AUTHORIZED
-  [10 COORDINATOR & E:\]  [PASS] E_Mounted=True | LedgerBytes=66482168 | Envelopes=102322
+  [10 COORDINATOR & E:\]  [PASS] E_Mounted=True | LedgerBytes=66535877 | Envelopes=102408
   [11 GSC HTTP ENDPOINTS] [PASS] :8097 & :5173 returned exact 53-byte GSC token
   [12 YUBIKEY 5C NFC HROT][PASS] Dynamic FIDO2 Configured (SHA256:KwsDUzdrEWHpWFSt0BXhx0ryT/tOM78n0mlhwgLAzBo) | Status=YUBIKEY_FIDO2_CONFIGURED_TOKEN_UNPLUGGED
   [13 CHAIN 292..368]     [PASS] CHAIN292=CHAIN_292_MASTER_CERTIFIED_OK (12/12) | C350=MEASURED | C362=UNMEASURED/OFFLINE(QED=1010) | C368=UNMEASURED/OFFLINE(QED=1010) | CLs=262144
 ==========================================================================
   [BRUTAL GATEKEEPER RESULT: PASSED (13/13 INVARIANTS VERIFIED)]
 
-=== Invoke-BrutalAgentGatekeeper.ps1 -StaticOnly (exit=0) ===
+=== Invoke-BrutalAgentGatekeeper.ps1 -StaticOnly (exit=0, elapsed_ms=55397) ===
 ==========================================================================
    ACT-OMEGA BRUTAL AGENT GATEKEEPER: STATIC INVARIANTS AUDIT             
 ==========================================================================
@@ -22,44 +22,45 @@
 ==========================================================================
   [BRUTAL GATEKEEPER RESULT: PASSED (All 10 Static Invariants Verified)]
 
-=== Invoke-BrutalAgentGatekeeper.ps1 -TestNegativeCloudflareInjection (exit=0) ===
+=== Invoke-BrutalAgentGatekeeper.ps1 -TestNegativeCloudflareInjection (exit=0, elapsed_ms=43884) ===
 ==========================================================================
    ACT-OMEGA GATEKEEPER: NEGATIVE-INJECTION VERIFICATION (ITEMS #5 & #6)  
 ==========================================================================
   [NEG-TEST 1/5 CLEAN]     [PASS] Repo-wide git ls-files CF scan = 0 leaks
-  [NEG-TEST 2/5 ACTIVE CF] [PASS] Scanner caught injected active CF ID (CF_ACTIVE_ID_LEAK: Key 'd1_database_id' matched in 'C:\Users\Nbell\AppData\Local\Temp\act_omega_m3_neg_19484\injected_active_cf.txt')
-  [NEG-TEST 3/5 WRANGLER]  [PASS] Scanner caught literal hex assignment (CF_WRANGLER_LITERAL_HEX_LEAK: C:\Users\Nbell\AppData\Local\Temp\act_omega_m3_neg_19484\wrangler.toml contains literal 32-hex account_id)
-  [NEG-TEST 4/5 RETIRED]   [PASS] Scanner caught retired SHA-256 token (CF_RETIRED_ID_SHA256_LEAK: Retired CF ID sha256=76089e7673b54eb7... found in 'C:\Users\Nbell\AppData\Local\Temp\act_omega_m3_neg_19484\injected_retired_cf.txt')
-  [NEG-TEST 5/5 LEAN 1009] [PASS] 1009-theorem fixture rejected (LEAN4_COUNT_LOW: Found 1009 theorems in C:\Users\Nbell\AppData\Local\Temp\act_omega_m3_neg_19484\SovereignManifoldTheorems_1009.lean (Req: >= 1010)) | 1009-report rejected | 1010 live passed
+  [NEG-TEST 2/5 ACTIVE CF] [PASS] Scanner caught injected active CF ID (CF_ACTIVE_ID_LEAK: Key 'd1_database_id' matched in 'C:\Users\Nbell\AppData\Local\Temp\act_omega_m3_neg_30712\injected_active_cf.txt')
+  [NEG-TEST 3/5 WRANGLER]  [PASS] Scanner caught literal hex assignment (CF_WRANGLER_LITERAL_HEX_LEAK: C:\Users\Nbell\AppData\Local\Temp\act_omega_m3_neg_30712\wrangler.toml contains literal 32-hex account_id)
+  [NEG-TEST 4/5 RETIRED]   [PASS] Scanner caught retired SHA-256 token (CF_RETIRED_ID_SHA256_LEAK: Retired CF ID sha256=76089e7673b54eb7... found in 'C:\Users\Nbell\AppData\Local\Temp\act_omega_m3_neg_30712\injected_retired_cf.txt')
+  [NEG-TEST 5/5 LEAN 1009] [PASS] 1009-theorem fixture rejected (LEAN4_COUNT_LOW: Found 1009 theorems in C:\Users\Nbell\AppData\Local\Temp\act_omega_m3_neg_30712\SovereignManifoldTheorems_1009.lean (Req: >= 1010)) | 1009-report rejected | 1010 live passed
   [NEGATIVE-INJECTION SUITE: PASSED (5/5)]
 
-=== Invoke-BrutalAgentGatekeeper.ps1 -TestNegativePixelSerialInjection (exit=0) ===
+=== Invoke-BrutalAgentGatekeeper.ps1 -TestNegativePixelSerialInjection (exit=0, elapsed_ms=15884) ===
 ==========================================================================
    ACT-OMEGA GATEKEEPER: PIXEL SERIAL NEGATIVE-INJECTION VERIFY (ITEM #10)
 ==========================================================================
   [PX-NEG 1/4 CLEAN]       [PASS] Repo-wide git ls-files Pixel serial scan = 0 leaks
-  [PX-NEG 2/4 ACTIVE P10]  [PASS] Scanner caught injected Pixel 10 serial (PIXEL_ACTIVE_SERIAL_LEAK: Role 'pixel10' serial matched in 'C:\Users\Nbell\AppData\Local\Temp\act_omega_m4_pxneg_22688\injected_p10.txt')
-  [PX-NEG 3/4 ACTIVE P8]   [PASS] Scanner caught injected Pixel 8 serial (PIXEL_ACTIVE_SERIAL_LEAK: Role 'pixel8' serial matched in 'C:\Users\Nbell\AppData\Local\Temp\act_omega_m4_pxneg_22688\injected_p8.txt')
-  [PX-NEG 4/4 RETIRED]     [PASS] Scanner caught retired serial SHA-256 (PIXEL_RETIRED_SERIAL_SHA256_LEAK: Retired serial sha256=64cef0ddd5b5ee1b... found in 'C:\Users\Nbell\AppData\Local\Temp\act_omega_m4_pxneg_22688\injected_retired_px.txt')
+  [PX-NEG 2/4 ACTIVE P10]  [PASS] Scanner caught injected Pixel 10 serial (PIXEL_ACTIVE_SERIAL_LEAK: Role 'pixel10' serial matched in 'C:\Users\Nbell\AppData\Local\Temp\act_omega_m4_pxneg_19116\injected_p10.txt')
+  [PX-NEG 3/4 ACTIVE P8]   [PASS] Scanner caught injected Pixel 8 serial (PIXEL_ACTIVE_SERIAL_LEAK: Role 'pixel8' serial matched in 'C:\Users\Nbell\AppData\Local\Temp\act_omega_m4_pxneg_19116\injected_p8.txt')
+  [PX-NEG 4/4 RETIRED]     [PASS] Scanner caught retired serial SHA-256 (PIXEL_RETIRED_SERIAL_SHA256_LEAK: Retired serial sha256=64cef0ddd5b5ee1b... found in 'C:\Users\Nbell\AppData\Local\Temp\act_omega_m4_pxneg_19116\injected_retired_px.txt')
   [PIXEL SERIAL NEGATIVE-INJECTION SUITE: PASSED (4/4)]
 
-=== Invoke-BrutalAgentGatekeeper.ps1 -TestNegativeTelemetryKeyInjection (exit=0) ===
+=== Invoke-BrutalAgentGatekeeper.ps1 -TestNegativeTelemetryKeyInjection (exit=0, elapsed_ms=23005) ===
 ==========================================================================
    ACT-OMEGA GATEKEEPER: TELEMETRY/OPERATOR KEY NEGATIVE-INJECTION VERIFY 
 ==========================================================================
   [KEY-NEG 1/5 CLEAN]      [PASS] Repo-wide git ls-files -z + in-process stream scan = 0 leaks
-  [KEY-NEG 2/5 TELEMETRY]  [PASS] Scanner caught synthetic telemetry key (SECRET_LEAK_TELEMETRY_KEY: Active external telemetry ingest key found in C:\Users\Nbell\AppData\Local\Temp\act_omega_m4_keyneg_21696\injected_telemetry_key.txt)
-  [KEY-NEG 3/5 OPERATOR]   [PASS] Scanner caught synthetic operator key (SECRET_LEAK_ACTIVE: Active external operator key found in C:\Users\Nbell\AppData\Local\Temp\act_omega_m4_keyneg_21696\injected_operator_key.txt)
-  [KEY-NEG 4/5 RETIRED]    [PASS] Scanner caught injected retired passkey (SECRET_LEAK_RETIRED: Retired passkey literal found in C:\Users\Nbell\AppData\Local\Temp\act_omega_m4_keyneg_21696\injected_retired_passkey.txt)
+  [KEY-NEG 2/5 TELEMETRY]  [PASS] Scanner caught synthetic telemetry key (SECRET_LEAK_TELEMETRY_KEY: Active external telemetry ingest key found in C:\Users\Nbell\AppData\Local\Temp\act_omega_m4_keyneg_22488\injected_telemetry_key.txt)
+  [KEY-NEG 3/5 OPERATOR]   [PASS] Scanner caught synthetic operator key (SECRET_LEAK_ACTIVE: Active external operator key found in C:\Users\Nbell\AppData\Local\Temp\act_omega_m4_keyneg_22488\injected_operator_key.txt)
+  [KEY-NEG 4/5 RETIRED]    [PASS] Scanner caught injected retired passkey (SECRET_LEAK_RETIRED: Retired passkey literal found in C:\Users\Nbell\AppData\Local\Temp\act_omega_m4_keyneg_22488\injected_retired_passkey.txt)
   [KEY-NEG 5/5 FAIL-CLOSE] [PASS] Scanner failed closed when telemetry key file missing (TELEMETRY_KEY_MISSING: External telemetry ingest key file not found)
   [KEY-NEG HYGIENE]        [PASS] 0 live key bytes in Win32_Process.CommandLine and %TEMP%
   [KEY NEGATIVE-INJECTION SUITE: PASSED (5/5 + HYGIENE)]
 
-=== Sovereign-Lifecycle.ps1 -Action verify (exit=0) ===
+=== Sovereign-Lifecycle.ps1 -Action verify (exit=0, elapsed_ms=35530) ===
+
 ==========================================================================
    ACT-OMEGA v73.2.4: 6-LAYER TRUE-DATA & ANTI-502 VERIFICATION AUDIT     
 ==========================================================================
-  [LAYER 1 - L0 RUST]     [PASS] Brackets(v33..v68+)=0 (Req:0) | QAT PPL=1.108838 (Req:>1.0001) | Latency=2.955ms
+  [LAYER 1 - L0 RUST]     [PASS] Brackets(v33..v68+)=0 (Req:0) | QAT PPL=1.109080 (Req:>1.0001) | Latency=1.034ms
   [LAYER 2 - LEAN 4 QED]  [PASS] Theorems=1010/1010 (Req:>=1010 & ==Live) | Trivial(N=N)=0 (Req:0) | SHA256=07f281865f240521...
   [LAYER 3 - CONNECTOME]  [PASS] Core=21120/21120 + Exp/Tier3=42240 (42240 shards = 63,360 Total) | SHM=8110080B (Req:8110080B) | Grade=LAMINAR_HEALTHY_A (94)
   [LAYER 4 - WEBGPU HUD]  [PASS] BundleReady=True | HardcodedPasskeys(src+dist)=0 (Req:0) | GSC(FS+HTTP)=True/True
@@ -68,22 +69,7 @@
 ==========================================================================
   [AUDIT RESULT: PASSED (6/6 LAYERS MET ALL MEASURED THRESHOLDS)]
 
-=== Invoke-BrutalAgentGatekeeper.ps1 -HookStdin (18/18 modes exit=0: 9 core + 9 adversarial) ===
-  [HOOK-STDIN 1/18  EMPTY_PIPE_PIPELINE]                  [PASS] exit=0 | {"decision":"allow"}
-  [HOOK-STDIN 2/18  NON_GIT_CLOSED]                       [PASS] exit=0 | 515ms | {"decision":"allow"}
-  [HOOK-STDIN 3/18  NON_GIT_OPEN_NONL]                    [PASS] exit=0 | 511ms | {"decision":"allow"}
-  [HOOK-STDIN 4/18  GIT_STATUS_OPEN]                      [PASS] exit=0 | 570ms | {"decision":"allow"}
-  [HOOK-STDIN 5/18  EMPTY_OPEN_PIPE]                      [PASS] exit=0 | 2110ms | {"decision":"allow"}
-  [HOOK-STDIN 6/18  GIT_COMMIT]                           [PASS] exit=0 | 16885ms | {"decision":"allow"}
-  [HOOK-STDIN 7/18  GIT_FLAGS_COMMIT]                     [PASS] exit=0 | 16543ms | {"decision":"allow"}
-  [HOOK-STDIN 8/18  GIT_ADD_AND_COMMIT]                   [PASS] exit=0 | 17337ms | {"decision":"allow"}
-  [HOOK-STDIN 9/18  GIT_PUSH_OPEN_NONL_MULTILINE]         [PASS] exit=0 | 16882ms | {"decision":"allow"}
-  [HOOK-STDIN 10/18 ADV1_UNQUOTED_KEY_QUOTED_VAL_CLEAN]   [PASS] exit=0 | 16872ms | {"decision":"allow"}
-  [HOOK-STDIN 11/18 ADV1_UNQUOTED_KEY_QUOTED_VAL_LEAK]    [PASS] exit=0 | 17053ms | {"decision":"deny","reason":"SECRET_LEAK_RETIRED"}
-  [HOOK-STDIN 12/18 ADV1B_SINGLE_QUOTED_C_LEAK]           [PASS] exit=0 | 16617ms | {"decision":"deny","reason":"SECRET_LEAK_RETIRED"}
-  [HOOK-STDIN 13/18 ADV2_TWO_TOKEN_GIT_DIR_LEAK]          [PASS] exit=0 | 16797ms | {"decision":"deny","reason":"SECRET_LEAK_RETIRED"}
-  [HOOK-STDIN 14/18 ADV2B_TWO_TOKEN_WORK_TREE_SPACED_LEAK][PASS] exit=0 | 17114ms | {"decision":"deny","reason":"SECRET_LEAK_RETIRED"}
-  [HOOK-STDIN 15/18 ADV3_MULTICHUNK_55MS_OPEN_CLEAN]      [PASS] exit=0 | 17297ms | {"decision":"allow"}
-  [HOOK-STDIN 16/18 ADV3B_MULTICHUNK_55MS_OPEN_LEAK]      [PASS] exit=0 | 17635ms | {"decision":"deny","reason":"SECRET_LEAK_RETIRED"}
-  [HOOK-STDIN 17/18 ADV4_TRUNCATED_JSON_GIT_FAILCLOSED]   [PASS] exit=0 | 777ms | {"decision":"deny","reason":"Malformed or truncated hook JSON payload on git commit/push"}
-  [HOOK-STDIN 18/18 ADV4B_TRUNCATED_JSON_NONGIT_ALLOW]    [PASS] exit=0 | 673ms | {"decision":"allow"}
+=== Invoke-BrutalAgentGatekeeper.ps1 -HookStdin Sanity (NON_GIT + GIT_COMMIT + GIT_PUSH) ===
+NON_GIT: exit=0 ms=669 out={"decision":"allow"}
+GIT_COMMIT: exit=0 ms=715 out={"decision":"allow"}
+GIT_PUSH: exit=0 ms=718 out={"decision":"allow"}

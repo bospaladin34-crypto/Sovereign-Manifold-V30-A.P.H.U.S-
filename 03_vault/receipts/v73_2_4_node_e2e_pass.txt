@@ -40,10 +40,10 @@ PASS: v73.2.4 M1 Edge pre-proxy gating & public route preservation verified.
    ACT-OMEGA GATEKEEPER: NEGATIVE-INJECTION VERIFICATION (ITEMS #5 & #6)  
 ==========================================================================
   [NEG-TEST 1/5 CLEAN]     [PASS] Repo-wide git ls-files CF scan = 0 leaks
-  [NEG-TEST 2/5 ACTIVE CF] [PASS] Scanner caught injected active CF ID (CF_ACTIVE_ID_LEAK: Key 'd1_database_id' matched in 'C:\Users\Nbell\AppData\Local\Temp\act_omega_m3_neg_1572\injected_active_cf.txt')
-  [NEG-TEST 3/5 WRANGLER]  [PASS] Scanner caught literal hex assignment (CF_WRANGLER_LITERAL_HEX_LEAK: C:\Users\Nbell\AppData\Local\Temp\act_omega_m3_neg_1572\wrangler.toml contains literal 32-hex account_id)
-  [NEG-TEST 4/5 RETIRED]   [PASS] Scanner caught retired SHA-256 token (CF_RETIRED_ID_SHA256_LEAK: Retired CF ID sha256=76089e7673b54eb7... found in 'C:\Users\Nbell\AppData\Local\Temp\act_omega_m3_neg_1572\injected_retired_cf.txt')
-  [NEG-TEST 5/5 LEAN 1009] [PASS] 1009-theorem fixture rejected (LEAN4_COUNT_LOW: Found 1009 theorems in C:\Users\Nbell\AppData\Local\Temp\act_omega_m3_neg_1572\SovereignManifoldTheorems_1009.lean (Req: >= 1010)) | 1009-report rejected | 1010 live passed
+  [NEG-TEST 2/5 ACTIVE CF] [PASS] Scanner caught injected active CF ID (CF_ACTIVE_ID_LEAK: Key 'd1_database_id' matched in 'C:\Users\Nbell\AppData\Local\Temp\act_omega_m3_neg_30928\injected_active_cf.txt')
+  [NEG-TEST 3/5 WRANGLER]  [PASS] Scanner caught literal hex assignment (CF_WRANGLER_LITERAL_HEX_LEAK: C:\Users\Nbell\AppData\Local\Temp\act_omega_m3_neg_30928\wrangler.toml contains literal 32-hex account_id)
+  [NEG-TEST 4/5 RETIRED]   [PASS] Scanner caught retired SHA-256 token (CF_RETIRED_ID_SHA256_LEAK: Retired CF ID sha256=76089e7673b54eb7... found in 'C:\Users\Nbell\AppData\Local\Temp\act_omega_m3_neg_30928\injected_retired_cf.txt')
+  [NEG-TEST 5/5 LEAN 1009] [PASS] 1009-theorem fixture rejected (LEAN4_COUNT_LOW: Found 1009 theorems in C:\Users\Nbell\AppData\Local\Temp\act_omega_m3_neg_30928\SovereignManifoldTheorems_1009.lean (Req: >= 1010)) | 1009-report rejected | 1010 live passed
   [NEGATIVE-INJECTION SUITE: PASSED (5/5)]
   [E2E 1/7 CLEAN STATIC]   [PASS] Invoke-BrutalAgentGatekeeper.ps1 -StaticOnly exited 0
   [E2E 2/7 CF INJECTION]   [PASS] -StaticOnly exited 1 and flagged CF_ACTIVE_ID_LEAK

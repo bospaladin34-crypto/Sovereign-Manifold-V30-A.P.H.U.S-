@@ -1262,6 +1262,41 @@ public static class SovereignHookStdinReader {
         IntPtr lpBytesLeftThisMessage
     );
 
+    private static bool IsIncompleteJsonObject(MemoryStream ms) {
+        if (ms.Length == 0) return false;
+        string s = Encoding.UTF8.GetString(ms.ToArray());
+        if (s.Length > 0 && s[0] == '\uFEFF') {
+            s = s.Substring(1);
+        }
+        s = s.Trim();
+        if (s.Length == 0 || s[0] != '{') return false;
+        if (!s.EndsWith("}")) return true;
+        int depth = 0;
+        bool inStr = false;
+        bool esc = false;
+        for (int i = 0; i < s.Length; i++) {
+            char c = s[i];
+            if (inStr) {
+                if (esc) {
+                    esc = false;
+                } else if (c == '\\') {
+                    esc = true;
+                } else if (c == '"') {
+                    inStr = false;
+                }
+            } else {
+                if (c == '"') {
+                    inStr = true;
+                } else if (c == '{') {
+                    depth++;
+                } else if (c == '}') {
+                    depth--;
+                }
+            }
+        }
+        return inStr || depth != 0;
+    }
+
     public static string ReadHookStdin(int timeoutMs) {
         if (!Console.IsInputRedirected) return "";
         IntPtr hIn = GetStdHandle(STD_INPUT_HANDLE);
@@ -1278,6 +1313,8 @@ public static class SovereignHookStdinReader {
         Stream stdin = Console.OpenStandardInput();
         byte[] buf = new byte[65536];
         var sw = Stopwatch.StartNew();
+        long lastDataMs = 0;
+        const int incompleteIdleSettleMs = 150;
         while (true) {
             uint avail = 0;
             bool ok = PeekNamedPipe(hIn, IntPtr.Zero, 0, IntPtr.Zero, out avail, IntPtr.Zero);
@@ -1286,6 +1323,7 @@ public static class SovereignHookStdinReader {
                 int n = stdin.Read(buf, 0, toRead);
                 if (n > 0) {
                     ms.Write(buf, 0, n);
+                    lastDataMs = sw.ElapsedMilliseconds;
                 }
                 continue;
             }
@@ -1293,6 +1331,13 @@ public static class SovereignHookStdinReader {
                 break;
             }
             if (ms.Length > 0) {
+                if (IsIncompleteJsonObject(ms)) {
+                    if (sw.ElapsedMilliseconds >= timeoutMs || (sw.ElapsedMilliseconds - lastDataMs) >= incompleteIdleSettleMs) {
+                        break;
+                    }
+                    Thread.Sleep(20);
+                    continue;
+                }
                 Thread.Sleep(30);
                 uint availAfter = 0;
                 bool okAfter = PeekNamedPipe(hIn, IntPtr.Zero, 0, IntPtr.Zero, out availAfter, IntPtr.Zero);
@@ -1333,13 +1378,21 @@ public static class SovereignHookStdinReader {
     }
 
     if ($null -eq $payload) {
+        if ($rawInput -match '(?s)\bgit(?:\.exe)?\b.*\b(commit|push)\b') {
+            $errObj = @{
+                decision = "deny"
+                reason   = "BRUTAL GATEKEEPER BLOCKED: Malformed or truncated hook JSON payload on git commit/push."
+            } | ConvertTo-Json -Compress
+            Write-Output $errObj
+            exit 0
+        }
         Write-Output '{"decision":"allow"}'
         exit 0
     }
 
     $toolName = if ($payload.toolCall) { [string]$payload.toolCall.name } else { "" }
     $cmdLine = if ($payload.toolCall -and $payload.toolCall.args) { [string]$payload.toolCall.args.CommandLine } else { "" }
-    if ($toolName -eq "run_command" -and $cmdLine -match '\bgit(?:\.exe)?(?:\s+(?:-[Cc]\s+(?:"[^"]+"|\S+)|--\S+|-\S+))*\s+(commit|push)\b') {
+    if ($toolName -eq "run_command" -and $cmdLine -match '\bgit(?:\.exe)?(?:\s+(?:(?:-[Cc]|--git-dir|--work-tree|--namespace|--super-prefix|--config-env)(?:\s+(?:"[^"]*"|''[^'']*''|[^\s"''])+|=(?:"[^"]*"|''[^'']*''|[^\s"''])+)|--(?!(?:git-dir|work-tree|namespace|super-prefix|config-env)(?:\s|=))(?:"[^"]*"|''[^'']*''|[^\s"''])+|-(?![Cc](?:\s|=)|-)(?:"[^"]*"|''[^'']*''|[^\s"''])+))*\s+(commit|push)\b') {
         try {
             $violations = Run-StaticGatekeeperChecks
             if ($violations.Count -gt 0) {
@@ -1760,19 +1813,19 @@ if ($FullAudit) {
         }
         $qStatus = 0
         try {
-            $qWeb = Invoke-WebRequest -Uri "http://127.0.0.1:8097/api/v1/auth/operator_vault_gate?key=$auditOpKey" -UseBasicParsing -TimeoutSec 5
+            $qWeb = Invoke-WebRequest -Uri "http://127.0.0.1:8097/api/v1/auth/operator_vault_gate?key=$auditOpKey" -UseBasicParsing -TimeoutSec 15
             $qStatus = [int]$qWeb.StatusCode
         } catch [System.Net.WebException] {
             if ($_.Exception.Response) { $qStatus = [int]$_.Exception.Response.StatusCode }
         }
         $qEncStatus = 0
         try {
-            $qEncWeb = Invoke-WebRequest -Uri "http://127.0.0.1:8097/api/v1/auth/operator_vault_gate?%6bey=test" -Headers $auditOpHdrs -UseBasicParsing -TimeoutSec 5
+            $qEncWeb = Invoke-WebRequest -Uri "http://127.0.0.1:8097/api/v1/auth/operator_vault_gate?%6bey=test" -Headers $auditOpHdrs -UseBasicParsing -TimeoutSec 15
             $qEncStatus = [int]$qEncWeb.StatusCode
         } catch [System.Net.WebException] {
             if ($_.Exception.Response) { $qEncStatus = [int]$_.Exception.Response.StatusCode }
         }
-        $hResp = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/auth/operator_vault_gate" -Headers $auditOpHdrs -TimeoutSec 5
+        $hResp = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/auth/operator_vault_gate" -Headers $auditOpHdrs -TimeoutSec 15
         if ($qStatus -eq 403 -and $qEncStatus -eq 403 -and $hResp.authorized -eq $true) {
             Write-Host "  [9 OPERATOR AUTH GATE]  [PASS] QueryParam(?key= & ?%6bey=)=403 | Header(X-Sovereign-Operator-Key)=AUTHORIZED" -ForegroundColor Green
         } else {

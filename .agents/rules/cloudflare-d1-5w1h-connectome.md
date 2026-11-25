@@ -1,6 +1,6 @@
 ---
 trigger: model_decision
-description: "Apply whenever working with the 5W1H Metabolic Harness, 84,480-Neuron Connectome (.npage), 262,144 Bijected Cachelines, MIT Cold-to-Hot Ingestion Pipeline (F: to E:), Cloudflare Durable Objects (worker_vpc_shadow_v3700.js), Named Tunnel, or Cloudflare D1 10-table database synchronization."
+description: "Apply whenever working with the 5W1H Metabolic Harness, 84,480-Neuron Connectome (.npage), 262,144 Bijected Cachelines, MIT Cold-to-Hot Ingestion Pipeline (F: to E:), Cloudflare Durable Objects (worker_vpc_shadow_v3700.js), Named Tunnel, or Cloudflare D1 11-user-table (+ 2 system tables) database synchronization."
 ---
 # 5W1H Harness, 84,480-Neuron Connectome (`4,055,040` Synapses, `262,144` CLs), MIT `F:\` $\rightarrow$ `E:\` Vault, Cloudflare DO & D1 Rules (`v70.0.0` | `CHAIN 316` | `840/840 QED`)
 
@@ -16,5 +16,5 @@ description: "Apply whenever working with the 5W1H Metabolic Harness, 84,480-Neu
    - Active Cloudflare Worker entrypoint in `wrangler.toml` is `00_control/cloudflare_edge/worker_vpc_shadow_v3700.js` (`SovereignEdgeShadowDO` synced 1:1 to `00_control/cloudflare_edge/worker_continuum_do.js` and root `worker_vpc_shadow_v3700.js`). Whenever `worker_vpc_shadow_v3700.js` is modified locally, mirror it to both copies AND run `npx wrangler deploy` (preserving the `/google6edc0affb12d0455.html` `53 B` route).
    - `00_control/cloudflare_named_config.yml` enforces `protocol: http2` and tunnel UUID `9cdea4c4-831d-4ccc-983d-5f7587a98206` routing `act-omega-net.dev` -> `127.0.0.1:5173` and `api.act-omega-net.dev` / `mcp.act-omega-net.dev` -> `127.0.0.1:8097`.
 
-4. **Remote Cloudflare D1 (`act_omega_d1_vault`, 10 Tables)**:
-   - Synchronize all 10 tables in `act_omega_d1_vault` (`<EXTERNAL_D1_DATABASE_ID>`) with real measured SHA-256 digests, real byte counts, and real hardware timestamps.
+4. **Remote Cloudflare D1 (`act_omega_d1_vault_v7322`, `11` User Tables + `2` SQLite/CF System Tables)**:
+   - Synchronize all `11` user tables in `act_omega_d1_vault_v7322` (`<EXTERNAL_D1_DATABASE_ID>`) with real measured SHA-256 digests, real byte counts, and real hardware timestamps.

@@ -305,6 +305,7 @@ class VesperShellState(
     var lastWritebackSeq by mutableStateOf(0L)
     var lastWritebackSha256 by mutableStateOf("UNMEASURED/OFFLINE")
     var lastWritebackPath by mutableStateOf("E:\\Sovereign_Manifold_SSD_Vault\\autopoietic_codegen")
+    var lastD1TablesCount by mutableStateOf<Int?>(null)
     var lastTermOut by mutableStateOf("Awaiting live CHAIN 404 dispatch over USB / Wi-Fi 6 / Cloudflare...")
     var cfGovernor by mutableStateOf<VesperCloudflareGovernorSummary?>(null)
     var cfGovernorLoading by mutableStateOf(false)
@@ -1928,7 +1929,7 @@ object VesperMobileBackendClient {
         val ae = tiers?.optJSONObject("analytics_engine")
         val summary = VesperCloudflareGovernorSummary(
             globalStatus = j.optString("global_status", j.optString("status", "UNMEASURED/OFFLINE")),
-            d1Database = j.optString("d1_database", "act_omega_d1_vault"),
+            d1Database = j.optString("d1_database", "").takeIf { it.isNotBlank() && it != "null" } ?: "UNMEASURED/OFFLINE",
             vectorizePct = vec?.optDouble("usage_pct", 0.0) ?: 0.0,
             r2Pct = r2?.optDouble("usage_pct", 0.0) ?: 0.0,
             workersAiUsed = wai?.optLong("daily_neurons_used", 0L) ?: 0L,
@@ -1959,11 +1960,33 @@ private fun applyResultToShellState(
         if (res.writebackPath != "UNMEASURED/OFFLINE") {
             shellState.lastWritebackPath = res.writebackPath
         }
+        val jObj = res.json
+        if (jObj != null) {
+            val hasCfD1 = jObj.has("cloudflare_d1_tables")
+            val hasSyncD1 = jObj.has("d1_tables_synced")
+            val parsedD1 = when {
+                hasCfD1 && !jObj.isNull("cloudflare_d1_tables") ->
+                    jObj.optInt("cloudflare_d1_tables", -1).takeIf { it > 0 }
+                hasSyncD1 && !jObj.isNull("d1_tables_synced") ->
+                    jObj.optInt("d1_tables_synced", -1).takeIf { it > 0 }
+                else -> null
+            }
+            if (parsedD1 != null) {
+                shellState.lastD1TablesCount = parsedD1
+            } else if (hasCfD1 || hasSyncD1) {
+                shellState.lastD1TablesCount = null
+            }
+        }
         val compactBody = res.rawBody.replace('\n', ' ').take(340)
         shellState.lastTermOut =
             "[$label \u00B7 ${res.bearerUsed} \u00B7 ${String.format(Locale.US, "%.1f", res.rttMs)} ms]: $compactBody"
         SovereignLiveBus.hostLastTermOut = shellState.lastTermOut
     } else {
+        if (res.endpointPath == "/api/v1/manifold/v44_omni_snapshot" ||
+            res.endpointPath == "/api/v1/cloudflare/d1_vpc_shadow"
+        ) {
+            shellState.lastD1TablesCount = null
+        }
         shellState.lastTermOut =
             "[$label \u00B7 UNMEASURED/OFFLINE]: ${res.rawBody} (HTTP ${res.httpCode})"
         SovereignLiveBus.hostLastTermOut = shellState.lastTermOut
@@ -3081,19 +3104,22 @@ fun VesperMobileVaultView(
                         fontWeight = FontWeight.Bold
                     )
                 }
+                val liveD1Cnt = if (!isOffline) (snap.d1TablesCount ?: shellState.lastD1TablesCount)?.takeIf { it > 0 } else null
+                val d1ActionLabel = if (liveD1Cnt != null) "VAULT: SYNC ${liveD1Cnt}-TABLE CLOUDFLARE D1" else "VAULT: SYNC CLOUDFLARE D1"
+                val d1ButtonLabel = if (liveD1Cnt != null) "Sync ${liveD1Cnt}-Table D1 (T76)" else "Sync Cloudflare D1 (T76)"
                 Box(
                     modifier = Modifier
                         .height(34.dp)
                         .background(VesperBg, RoundedCornerShape(99.dp))
                         .border(1.dp, VesperLine, RoundedCornerShape(99.dp))
                         .clickable(enabled = !shellState.isDispatching) {
-                            runVaultEndpoint("/api/v1/manifold/v44_omni_snapshot", "VAULT: SYNC 10-TABLE CLOUDFLARE D1")
+                            runVaultEndpoint("/api/v1/manifold/v44_omni_snapshot", d1ActionLabel)
                         }
                         .padding(horizontal = 13.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "Sync 10-Table D1 (T76)",
+                        text = d1ButtonLabel,
                         color = VesperText,
                         fontSize = 11.5.sp,
                         fontWeight = FontWeight.Bold
@@ -4122,7 +4148,8 @@ data class SovereignSnap(
     val localE8zAssetBytes: Long = 0L,
     val localNpageBytes: Long = 0L,
     val localNpageSource: String = "UNMEASURED/OFFLINE",
-    val codeInspectorLine: String = "UNMEASURED/OFFLINE"
+    val codeInspectorLine: String = "UNMEASURED/OFFLINE",
+    val d1TablesCount: Int? = null
 )
 
 object SovereignLiveBus : SensorEventListener {
@@ -4203,6 +4230,7 @@ object SovereignLiveBus : SensorEventListener {
     @Volatile var hostLastTermOut = "Awaiting live CHAIN 404 execution over USB / WiFi6 / Cloudflare..."
     @Volatile var hostLeanTheoremsCount = 0
     @Volatile var hostToolsCount = 0
+    @Volatile private var hostD1TablesCount: Int? = null
     @Volatile var hostYubikeyConfigured = false
     @Volatile var hostP8L2FreePct = 0.0f
     @Volatile var hostLaplacianFace = "UNMEASURED/OFFLINE"
@@ -4579,6 +4607,7 @@ object SovereignLiveBus : SensorEventListener {
                             hostLeanVerifyMs = extractJsonFloat(body, "lean4_verify_ms", hostLeanVerifyMs)
                             hostLeanTheoremsCount = extractJsonInt(body, "lean4_theorems_qed", extractJsonInt(body, "lean4_base_theorems", hostLeanTheoremsCount))
                             hostToolsCount = extractJsonInt(body, "tools_count", hostToolsCount)
+                            hostD1TablesCount = extractJsonInt(body, "d1_tables_synced", -1).takeIf { it > 0 }
                             hostYubikeyConfigured = body.contains("\"yubikey_5c_nfc_configured\":true")
                             hostP8L2FreePct = extractJsonFloat(body, "pixel8_l2_free_pct", 0.0f)
                             hostAcousticSnr = extractJsonFloat(body, "acoustic_snr_db", hostAcousticSnr)
@@ -4919,7 +4948,8 @@ object SovereignLiveBus : SensorEventListener {
                 "SH4Z $SOVEREIGN_TLV_VERSION TLV | CHAIN ${if (hostToolsCount > 0) hostToolsCount else SOVEREIGN_CHAIN_TOOLS} | ${if (hostLeanTheoremsCount > 0) "${hostLeanTheoremsCount}/${hostLeanTheoremsCount} Lean4 QED" else "UNMEASURED/OFFLINE"} | 84,480N / 4,055,040S / 262,144 CLs"
             } else {
                 "UNMEASURED/OFFLINE (Local APK .e8z=$localE8zBytes B | .npage=$localNpageBytes B)"
-            }
+            },
+            d1TablesCount = if (synced) hostD1TablesCount else null
         )
     }
 

@@ -1,7 +1,7 @@
 # =============================================================================
 # 00_control/cloudflare_edge/d1_live_measured_sync_v4100.ps1
 # Computes real SHA-256 digests and executes wrangler d1 execute --remote
-# across all 10 tables in <EXTERNAL_D1_DATABASE_NAME> (<EXTERNAL_D1_DATABASE_ID>)
+# across the 11-user-table schema (+ 2 SQLite/CF system tables) in <EXTERNAL_D1_DATABASE_NAME> (<EXTERNAL_D1_DATABASE_ID>; historical v43 seed SQL note)
 # =============================================================================
 $ErrorActionPreference = 'Continue'
 $Root = 'C:\sovereign_manifold_v31'

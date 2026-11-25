@@ -1,4 +1,4 @@
-# =============================================================================
+﻿# =============================================================================
 # ACT-OMEGA NET — COMPLETION REPORT CITATION & DRIVE PARITY VERIFIER (v73.2.4)
 # Verifies every path:line(-end) citation, cited symbols/routes, disposition
 # honesty (9 FIXED / 1 PARTIAL, 0 'Total Remediation'/'Complete' claims in
@@ -8,7 +8,8 @@
 [CmdletBinding()]
 param(
     [string]$RepoRoot = "",
-    [switch]$VerifyDrive
+    [switch]$VerifyDrive,
+    [switch]$RequireV7325
 )
 
 $ErrorActionPreference = "Stop"
@@ -32,12 +33,42 @@ function Get-Sha256Hex {
     }
 }
 
-$ReportFiles = @(
+$ReportFiles = New-Object System.Collections.Generic.List[string]
+foreach ($rfBase in @(
     "COMPLETION_REPORT_V73_MUSE.md",
     "COMPLETION_REPORT_V73_FOLLOWUP_MUSE.md",
     "COMPLETION_REPORT_V73_2_3_MUSE.md",
     "COMPLETION_REPORT_V73_2_4_MUSE.md"
+)) {
+    $ReportFiles.Add($rfBase)
+}
+$v7325ReportName = "COMPLETION_REPORT_V73_2_5_MUSE.md"
+$v7325ReportPath = Join-Path $RepoRoot $v7325ReportName
+if ((Test-Path -LiteralPath $v7325ReportPath -PathType Leaf) -or $RequireV7325) {
+    $ReportFiles.Add($v7325ReportName)
+}
+
+$HistoricalPrefixAllowedReports = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+[void]$HistoricalPrefixAllowedReports.Add("COMPLETION_REPORT_V73_MUSE.md")
+[void]$HistoricalPrefixAllowedReports.Add("COMPLETION_REPORT_V73_FOLLOWUP_MUSE.md")
+[void]$HistoricalPrefixAllowedReports.Add("COMPLETION_REPORT_V73_2_3_MUSE.md")
+
+# Index all Rust fn test_* functions across 01_l0_rust/tests/*.rs and 01_l0_rust/src/**/*.rs
+$allRustTestFuncs = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::Ordinal)
+$rustTestScanDirs = @(
+    (Join-Path $RepoRoot "01_l0_rust\tests"),
+    (Join-Path $RepoRoot "01_l0_rust\src")
 )
+foreach ($rDir in $rustTestScanDirs) {
+    if (Test-Path -LiteralPath $rDir -PathType Container) {
+        Get-ChildItem -LiteralPath $rDir -Filter "*.rs" -Recurse -File | ForEach-Object {
+            $rText = $Utf8NoBomStrict.GetString([System.IO.File]::ReadAllBytes($_.FullName))
+            foreach ($tm in [regex]::Matches($rText, '(?m)^\s*(?:pub\s+)?(?:async\s+)?fn\s+(test_[A-Za-z0-9_]+)\b')) {
+                [void]$allRustTestFuncs.Add($tm.Groups[1].Value)
+            }
+        }
+    }
+}
 
 $failures = New-Object System.Collections.Generic.List[string]
 $fileLinesCache = @{}
@@ -83,25 +114,28 @@ foreach ($repName in $ReportFiles) {
     $repText = $Utf8NoBomStrict.GetString($rawBytes)
     $repLines = $repText -split "`r?`n"
 
-    # Prohibited wording checks on v73.2.4 report and disposition honesty
-    if ($repName -eq "COMPLETION_REPORT_V73_2_4_MUSE.md") {
-        if ($repText -notmatch '9 FIXED / 1 PARTIAL') {
+    # Prohibited wording checks on v73.2.4 and v73.2.5 reports
+    if ($repName -eq "COMPLETION_REPORT_V73_2_4_MUSE.md" -or $repName -eq "COMPLETION_REPORT_V73_2_5_MUSE.md") {
+        if ($repName -eq "COMPLETION_REPORT_V73_2_4_MUSE.md" -and $repText -notmatch '9 FIXED / 1 PARTIAL') {
             $failures.Add("V73_2_4_MISSING_DISPOSITION: $repName must explicitly state '9 FIXED / 1 PARTIAL'")
         }
         if ($repText -match '(?i)Total\s+Remediation') {
-            $failures.Add("V73_2_4_FORBIDDEN_CLAIM: $repName contains forbidden 'Total Remediation'")
+            $failures.Add("REPORT_FORBIDDEN_CLAIM: $repName contains forbidden 'Total Remediation'")
         }
-        if ($repText -match '(?i)(?:^|\W)(?:10/10\s+FIXED|10\s+of\s+10\s+FIXED|Remediation\s+Complete|Complete\s+Remediation|Status:\s*Complete)(?:\W|$)') {
-            $failures.Add("V73_2_4_FORBIDDEN_CLAIM: $repName contains forbidden 'Complete' remediation claim")
+        if ($repText -match '(?i)(?:^|\W)(?:10/10\s+FIXED|10\s+of\s+10\s+FIXED|12/12\s+FIXED|12\s+of\s+12\s+FIXED|Remediation\s+Complete|Complete\s+Remediation|Status:\s*Complete)(?:\W|$)') {
+            $failures.Add("REPORT_FORBIDDEN_CLAIM: $repName contains forbidden 'Complete' remediation claim")
         }
         # Reject standalone capitalized "Complete" in headings or status badges
         for ($lnIdx = 0; $lnIdx -lt $repLines.Count; $lnIdx++) {
             $lnText = $repLines[$lnIdx]
             if ($lnText -match '^#{1,6}\s+.*\bComplete\b' -or $lnText -match 'Disposition.*\bComplete\b') {
-                $failures.Add("V73_2_4_FORBIDDEN_COMPLETE_HEADING: ${repName}:$($lnIdx+1) contains 'Complete'")
+                $failures.Add("REPORT_FORBIDDEN_COMPLETE_HEADING: ${repName}:$($lnIdx+1) contains 'Complete'")
             }
         }
     }
+
+    $allowPrefixMatch = $HistoricalPrefixAllowedReports.Contains($repName)
+    $TestBacktickRegex = [regex]'`(test_[A-Za-z0-9_]+)`'
 
     for ($i = 0; $i -lt $repLines.Count; $i++) {
         $lineNum = $i + 1
@@ -110,6 +144,24 @@ foreach ($repName in $ReportFiles) {
         # Explicit stale-citation guard
         if ($line -match 'Invoke-Week4TortureSuite\.ps1:60\b') {
             $failures.Add("STALE_TORTURE_LINE_60: ${repName}:$lineNum cites Invoke-Week4TortureSuite.ps1:60 (must be :85)")
+        }
+
+        # Verify EVERY backticked `(test_*)` identifier across ALL lines (even without file:line)
+        foreach ($tmBt in $TestBacktickRegex.Matches($line)) {
+            $testSym = $tmBt.Groups[1].Value
+            $totalSymbolsChecked++
+            if (-not $allRustTestFuncs.Contains($testSym)) {
+                $prefixResolved = $false
+                if ($allowPrefixMatch) {
+                    $prefMatches = @($allRustTestFuncs | Where-Object { $_.StartsWith($testSym, [System.StringComparison]::Ordinal) })
+                    if ($prefMatches.Count -eq 1) {
+                        $prefixResolved = $true
+                    }
+                }
+                if (-not $prefixResolved) {
+                    $failures.Add("MISSING_RUST_TEST_IDENTIFIER: ${repName}:$lineNum cites nonexistent Rust test '$testSym'")
+                }
+            }
         }
 
         $matches = $CitationRegex.Matches($line)
@@ -135,7 +187,7 @@ foreach ($repName in $ReportFiles) {
             $ctxStart = [Math]::Max(0, $m.Index - 20)
             $ctxEnd = [Math]::Min($line.Length, $m.Index + $m.Length + 60)
             $localCtx = $line.Substring($ctxStart, $ctxEnd - $ctxStart)
-            if ($localCtx -match '(?:at\s+(?:338264c5|e9804bf2|c90c1491|b99559e8)|pre-v73\.2\.[0-9]+|historical\s+v73\.2)') {
+            if ($localCtx -match '(?:at\s+`?(?:338264c5|e9804bf2|c90c1491|b99559e8|6c9e3c6a)`?|pre-v73\.2\.[0-9]+|historical\s+v73\.2)') {
                 continue
             }
 
@@ -150,8 +202,8 @@ foreach ($repName in $ReportFiles) {
                 continue
             }
 
-            # For COMPLETION_REPORT_V73_2_4_MUSE.md, verify any symbol in immediate citation context exists in target file near cited range (+-15 lines)
-            if ($repName -eq "COMPLETION_REPORT_V73_2_4_MUSE.md") {
+            # For COMPLETION_REPORT_V73_2_4_MUSE.md and COMPLETION_REPORT_V73_2_5_MUSE.md, verify any symbol in immediate citation context exists in target file near cited range (+-15 lines)
+            if ($repName -eq "COMPLETION_REPORT_V73_2_4_MUSE.md" -or $repName -eq "COMPLETION_REPORT_V73_2_5_MUSE.md") {
                 $afterStart = $m.Index + $m.Length
                 $afterLen = [Math]::Min(120, $line.Length - $afterStart)
                 $beforeStart = [Math]::Max(0, $m.Index - 90)
@@ -175,6 +227,9 @@ foreach ($repName in $ReportFiles) {
                             if (-not $foundNear) {
                                 $failures.Add("SYMBOL_LINE_DRIFT: ${repName}:$lineNum cites '$sym' near '${relTarget}:${startLine}-${endLine}' but '$sym' is not within +-15 lines of ${startLine}-${endLine}")
                             }
+                        } elseif ($sym -cmatch '^test_') {
+                            $totalSymbolsChecked++
+                            $failures.Add("MISSING_CITED_TEST_SYMBOL: ${repName}:$lineNum cites '$sym' near '${relTarget}:${startLine}-${endLine}' but '$sym' does not exist in $relTarget")
                         }
                     }
                 }
@@ -216,7 +271,8 @@ if ($VerifyDrive) {
             if ($fi.id) { $folderIdSet[[string]$fi.id] = $true }
         }
         $driveFiles = @($searchItems | Where-Object { $folderIdSet.ContainsKey([string]$_.id) })
-        $v7324Text = $Utf8NoBomStrict.GetString([System.IO.File]::ReadAllBytes((Join-Path $RepoRoot "COMPLETION_REPORT_V73_2_4_MUSE.md")))
+        $idHostReport = if ($ReportFiles.Contains("COMPLETION_REPORT_V73_2_5_MUSE.md")) { "COMPLETION_REPORT_V73_2_5_MUSE.md" } else { "COMPLETION_REPORT_V73_2_4_MUSE.md" }
+        $idHostText = $Utf8NoBomStrict.GetString([System.IO.File]::ReadAllBytes((Join-Path $RepoRoot $idHostReport)))
 
         foreach ($repName in $ReportFiles) {
             $matchesForName = @($driveFiles | Where-Object { $_.name -eq $repName })
@@ -229,8 +285,8 @@ if ($VerifyDrive) {
                 continue
             }
             $fileId = [string]$matchesForName[0].id
-            if (-not $v7324Text.Contains($fileId)) {
-                $failures.Add("DRIVE_ID_NOT_EMBEDDED: COMPLETION_REPORT_V73_2_4_MUSE.md does not embed Drive File ID '$fileId' for $repName")
+            if (-not $idHostText.Contains($fileId)) {
+                $failures.Add("DRIVE_ID_NOT_EMBEDDED: $idHostReport does not embed Drive File ID '$fileId' for $repName")
             }
 
             $localReport = Join-Path $RepoRoot $repName

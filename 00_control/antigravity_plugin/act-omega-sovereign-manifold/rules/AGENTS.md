@@ -1,4 +1,4 @@
-# ACT-Omega Net v73.2.1 (SH4Z v7321 TLV | CHAIN 404 | 1,010/1,010 Lean 4 QED | 262,144 Bijected Cachelines | 4,055,040 Synapses | 59 Gemini MCP Tools) — Google Antigravity (Gemini 4 Argon) Master Constitutional Context (`GEMINI.md` / `AGENTS.md`)
+# ACT-Omega Net v73.2.5 (SH4Z v7321 TLV | CHAIN 404 | 1,010/1,010 Lean 4 QED | 262,144 Bijected Cachelines | 4,055,040 Synapses | 59 Gemini MCP Tools) — Google Antigravity (Gemini 4 Argon) Master Constitutional Context (`GEMINI.md` / `AGENTS.md`)
 
 - **Primary Author & Principal Systems Architect**: **Donevin Frownfelter** (`@bospaladin34-crypto`)
 - **Zenodo Permanent DOI**: `10.5281/zenodo.23651696` (https://doi.org/10.5281/zenodo.23651696)
@@ -10,7 +10,7 @@ You are operating inside **Google Antigravity** powered by **Gemini 4 Argon** on
 - **Edge-1 (Sensor & NPU Node)**: Google Pixel 10 (`Tensor G5`, runtime ADB discovery via `adb devices`, Sectors `S48..S63`, `49,152` CLs, 1Hz 24D Magnetometer/Barometer/IMU stream).
 - **Edge-2 (Rooted Speculative Drafter & Verifier)**: Google Pixel 8 (`Tensor G3 P8-APEX`, runtime ADB discovery via `adb devices`, Sectors `S64..S79`, `32,768` CLs, KernelSU Root `u:r:ksu:s0` Slot A + `p8_ksu_apex_daemon` `:8098`, `4.00 MB` Mali-G715 L2 Cache Pinning, $k=4$ speculative drafter).
 - **Layer 1.5 (Algebraic & Columnar Analytical Layer)**: GHC 9.8.2 Pure Algebraic Haskell (`06_algebraic_haskell\bin\sovereign_algebra_hs.exe`) + Native DuckDB v1.5.6 Analytical Engine (`00_control\foss_bin\duckdb.exe`).
-- **Edge Cloud & Multi-Tier Vault**: Cloudflare Named Tunnel (`act-omega-net.dev` -> `:5173`, `api.act-omega-net.dev` / `mcp.act-omega-net.dev` -> `:8097`, HTTP/2 pinned) + 5-Service `sovereign-vpc-mesh` QUIC + TLS PGWire `:5439` -> DuckDB + Externalized Hyperdrive (`<EXTERNAL_HYPERDRIVE_ID>`) + Cloudflare Durable Object (`SovereignContinuumDO` in `worker_vpc_shadow_v3700.js`) + Remote 5 GB Cloudflare D1 SQLite (`act_omega_d1_vault`, UUID `<EXTERNAL_D1_DATABASE_ID>`, 10 Tables) + External SSD Tier-2 Autopoietic Vault (`E:\Sovereign_Manifold_SSD_Vault`) + Google Drive Bridge (`G:\My Drive\ACT_OMEGA_GEMINI_BRIDGE`).
+- **Edge Cloud & Multi-Tier Vault**: Cloudflare Named Tunnel (`act-omega-net.dev` -> `:5173`, `api.act-omega-net.dev` / `mcp.act-omega-net.dev` -> `:8097`, HTTP/2 pinned) + 5-Service `sovereign-vpc-mesh` QUIC + TLS PGWire `:5439` -> DuckDB + Externalized Hyperdrive (`<EXTERNAL_HYPERDRIVE_ID>`) + Cloudflare Durable Object (`SovereignContinuumDO` in `worker_vpc_shadow_v3700.js`) + Remote 5 GB Cloudflare D1 SQLite (`act_omega_d1_vault_v7322`, UUID `<EXTERNAL_D1_DATABASE_ID>`, 11 User Tables + 2 SQLite/CF System Tables) + External SSD Tier-2 Autopoietic Vault (`E:\Sovereign_Manifold_SSD_Vault`) + Google Drive Bridge (`G:\My Drive\ACT_OMEGA_GEMINI_BRIDGE`).
 
 ## 8 Hard Constitutional Invariants (Non-Negotiable Across Parent Agent & All 10 Specialist/Gatekeeper Agents)
 

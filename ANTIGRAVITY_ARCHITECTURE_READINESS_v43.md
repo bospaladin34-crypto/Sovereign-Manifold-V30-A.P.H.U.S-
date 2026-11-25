@@ -1,3 +1,5 @@
+> **Historical `v43.0.0` Archive Notice**: Preserves the `v43.0.0` pre-`v73.2.2` architecture snapshot (`act_omega_d1_vault`, `8` tables). In `v73.2.2+`, Cloudflare D1 rotated to `act_omega_d1_vault_v7322` (`11` user tables + `2` SQLite/CF system tables).
+
 # Antigravity Architecture Readiness Artifact — ACT-Omega Net v43.0.0 (`SH4Z v4300 TLV`)
 
 > [!IMPORTANT]

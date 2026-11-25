@@ -1,11 +1,11 @@
 =================================================================
-  ACT-Omega Net v73.2.4 -- Milestone M2 Full Verification Gauntlet
+  ACT-Omega Net v73.2.5 -- Milestone M2 Full Verification Gauntlet
 =================================================================
 Using binary: c:\sovereign_manifold_v31\01_l0_rust\target_stage\release\v31_swarm.exe
 
 --- Test 0: Live /api/v1/health JSON Structure & Negative Probe Check ---
-  Live GET /api/v1/health #1 JSON: {"status":"LAMINAR_V73_2_DECADIC_15965HZ_LOCKSTEP","endpoint":"/api/v1/health","read_only":true,"version":"ACT-Omega Net v73.2.4 (SH4Z v7321 TLV | CHAIN 404 | 1010/1010 QED)","release_version":"v73.2.4","generation":814348,"timestamp_ms":1795483944257,"decadic_sub_epoch":8,"carrier_clock_hz":15.965,"tools_count":404,"lean4_theorems_qed":1010,"lean4_qed":true,"combined_shards":84480,"total_synapses":4055040,"bijected_cachelines":262144,"official_domain":"https://act-omega-net.dev"}
-  Live GET /api/v1/health #2 JSON: {"status":"LAMINAR_V73_2_DECADIC_15965HZ_LOCKSTEP","endpoint":"/api/v1/health","read_only":true,"version":"ACT-Omega Net v73.2.4 (SH4Z v7321 TLV | CHAIN 404 | 1010/1010 QED)","release_version":"v73.2.4","generation":814349,"timestamp_ms":1795483944270,"decadic_sub_epoch":8,"carrier_clock_hz":15.965,"tools_count":404,"lean4_theorems_qed":1010,"lean4_qed":true,"combined_shards":84480,"total_synapses":4055040,"bijected_cachelines":262144,"official_domain":"https://act-omega-net.dev"}
+  Live GET /api/v1/health #1 JSON: {"status":"LAMINAR_V73_2_DECADIC_15965HZ_LOCKSTEP","endpoint":"/api/v1/health","read_only":true,"version":"ACT-Omega Net v73.2.5 (SH4Z v7321 TLV | CHAIN 404 | 1010/1010 QED)","release_version":"v73.2.5","generation":819665,"timestamp_ms":1795593835501,"decadic_sub_epoch":8,"carrier_clock_hz":15.965,"tools_count":404,"lean4_theorems_qed":1010,"lean4_qed":true,"combined_shards":84480,"total_synapses":4055040,"bijected_cachelines":262144,"official_domain":"https://act-omega-net.dev"}
+  Live GET /api/v1/health #2 JSON: {"status":"LAMINAR_V73_2_DECADIC_15965HZ_LOCKSTEP","endpoint":"/api/v1/health","read_only":true,"version":"ACT-Omega Net v73.2.5 (SH4Z v7321 TLV | CHAIN 404 | 1010/1010 QED)","release_version":"v73.2.5","generation":819666,"timestamp_ms":1795593835520,"decadic_sub_epoch":8,"carrier_clock_hz":15.965,"tools_count":404,"lean4_theorems_qed":1010,"lean4_qed":true,"combined_shards":84480,"total_synapses":4055040,"bijected_cachelines":262144,"official_domain":"https://act-omega-net.dev"}
 >>> Test 0 PASS: /api/v1/health JSON valid & generation monotonic; 404 & HTTP-200 non-JSON probes rejected.
 
 --- Test 1: Full-Manifest CLI Verification (v31_swarm.exe --verify-weights) ---

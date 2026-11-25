@@ -3584,8 +3584,8 @@ pub fn v72_2_set_test_counter_paths_override(paths: Option<(String, String)>) {
 pub fn v72_2_advance_turn_counters(
     session_id: &str,
     reset_session: bool,
-    has_explicit_messages: bool,
-    explicit_prior_turns_len: usize,
+    _has_explicit_messages: bool,
+    _explicit_prior_turns_len: usize,
 ) -> (usize, usize) {
     let (c_path, e_path) = v72_2_effective_counter_paths();
     let mut guard = match SESSION_TURN_COUNTER_STORE.lock() {
@@ -3597,21 +3597,20 @@ pub fn v72_2_advance_turn_counters(
     }
     if let Some(ref mut ledger) = *guard {
         ledger.global_turn_seq = ledger.global_turn_seq.saturating_add(1);
-        let session_turn_count = if !session_id.is_empty() {
-            if reset_session {
-                ledger.sessions.insert(String::from(session_id), 0);
-            }
-            let prev = *ledger.sessions.get(session_id).unwrap_or(&0);
-            let next_s = prev.saturating_add(1);
-            ledger.sessions.insert(String::from(session_id), next_s);
-            next_s
-        } else if has_explicit_messages {
-            (explicit_prior_turns_len / 2) + 1
+        let trimmed_sid = session_id.trim();
+        let effective_sid = if trimmed_sid.is_empty() {
+            "__stateless_default__"
         } else {
-            1
+            trimmed_sid
         };
+        if reset_session {
+            ledger.sessions.insert(String::from(effective_sid), 0);
+        }
+        let prev = *ledger.sessions.get(effective_sid).unwrap_or(&0);
+        let next_s = prev.saturating_add(1);
+        ledger.sessions.insert(String::from(effective_sid), next_s);
         v72_2_save_counter_ledger_to_paths(ledger, &c_path, &e_path);
-        return (session_turn_count, ledger.global_turn_seq);
+        return (next_s, ledger.global_turn_seq);
     }
     (1, 1)
 }

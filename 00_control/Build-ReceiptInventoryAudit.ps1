@@ -1,8 +1,9 @@
-﻿# =============================================================================
-# ACT-OMEGA NET — RECEIPT NORMALIZER & INVENTORY AUDIT BUILDER (v73.2.4)
+# =============================================================================
+# ACT-OMEGA NET — RECEIPT NORMALIZER & INVENTORY AUDIT BUILDER (v73.2.5)
 # Normalizes 03_vault/receipts/* to UTF-8 (no BOM) LF, enforces zero BOM/CR/NUL,
-# generates v73_fetch_list_and_negative_test_audit.json LAST, and verifies
-# 100% SHA-256 parity against working-tree bytes and git cat-file blob HEAD.
+# enforces SH-XI turn-counter ledger/receipt parity, generates
+# v73_fetch_list_and_negative_test_audit.json LAST, and verifies 100% SHA-256
+# parity against working-tree bytes and git cat-file blob HEAD.
 # Primary Author & Principal Systems Architect: Donevin Frownfelter (@bospaladin34-crypto)
 # =============================================================================
 [CmdletBinding()]
@@ -10,7 +11,8 @@ param(
     [string]$RepoRoot = "",
     [switch]$NormalizeReceipts,
     [switch]$VerifyOnly,
-    [switch]$VerifyAgainstGitHead
+    [switch]$VerifyAgainstGitHead,
+    [switch]$RequireV7325Receipts
 )
 
 $ErrorActionPreference = "Stop"
@@ -126,6 +128,50 @@ function Get-GitBlobSha1 {
     return ([string]$out).Trim().ToLowerInvariant()
 }
 
+function Test-ShXiTurnCounterReceiptParity {
+    param(
+        [string]$Repo,
+        [string]$ReceiptsDirectory,
+        [switch]$CheckGitHead
+    )
+    $cLedgerPath = Join-Path $Repo "03_vault\connectome\sh_xi_session_turn_counters.json"
+    $eLedgerPath = "E:\Sovereign_Manifold_SSD_Vault\connectome\sh_xi_session_turn_counters.json"
+    $tcReceiptPath = Join-Path $ReceiptsDirectory "v73_2_4_sh_xi_turn_counter_receipt.json"
+    if (-not (Test-Path -LiteralPath $cLedgerPath -PathType Leaf)) {
+        throw "SH_XI_LEDGER_MISSING: $cLedgerPath not found"
+    }
+    if (-not (Test-Path -LiteralPath $tcReceiptPath -PathType Leaf)) {
+        throw "SH_XI_RECEIPT_MISSING: $tcReceiptPath not found"
+    }
+    $cBytes = [System.IO.File]::ReadAllBytes($cLedgerPath)
+    $cSha = Get-Sha256Hex -Bytes $cBytes
+    $cObj = ($Utf8NoBomStrict.GetString($cBytes)) | ConvertFrom-Json
+    $cGlobalSeq = [int64]$cObj.global_turn_seq
+
+    $tcBytes = [System.IO.File]::ReadAllBytes($tcReceiptPath)
+    $tcObj = ($Utf8NoBomStrict.GetString($tcBytes)) | ConvertFrom-Json
+    $tcSha = ([string]$tcObj.ledger_sha256).Trim().ToLowerInvariant()
+    $tcGlobalSeq = [int64]$tcObj.final_global_turn_seq
+
+    if ($tcSha -ne $cSha -or $tcGlobalSeq -ne $cGlobalSeq) {
+        throw "SH_XI_RECEIPT_LEDGER_MISMATCH: v73_2_4_sh_xi_turn_counter_receipt.json (seq=$tcGlobalSeq, sha=$tcSha) != 03_vault/connectome/sh_xi_session_turn_counters.json (seq=$cGlobalSeq, sha=$cSha). Run 00_control\Verify-ShXiTurnCountersReceipt.ps1 LAST."
+    }
+    if (Test-Path -LiteralPath $eLedgerPath -PathType Leaf) {
+        $eSha = Get-Sha256Hex -Bytes ([System.IO.File]::ReadAllBytes($eLedgerPath))
+        if ($eSha -ne $cSha) {
+            throw "SH_XI_LEDGER_E_DRIFT: C: ($cSha) != E: ($eSha)"
+        }
+    }
+    if ($CheckGitHead) {
+        $headLedgerBytes = Get-GitBlobBytes -Repo $Repo -Spec "HEAD:03_vault/connectome/sh_xi_session_turn_counters.json"
+        $headLedgerSha = Get-Sha256Hex -Bytes $headLedgerBytes
+        $headLedgerObj = ($Utf8NoBomStrict.GetString($headLedgerBytes)) | ConvertFrom-Json
+        if ($headLedgerSha -ne $cSha -or [int64]$headLedgerObj.global_turn_seq -ne $cGlobalSeq) {
+            throw "SH_XI_LEDGER_HEAD_MISMATCH: HEAD (seq=$($headLedgerObj.global_turn_seq), sha=$headLedgerSha) != WT/receipt (seq=$cGlobalSeq, sha=$cSha)"
+        }
+    }
+}
+
 $VolatilityMap = [ordered]@{
     "d1_sft_generator_run_and_diff_receipt.json" = "Verify-SftCorpusDeterminism.ps1 overwrites generated_at_utc and fresh run timing measurements on every run."
     "e13_test_m2_live_server_pass.txt" = "Test-M2-FailureInjection.ps1 embeds live GET /api/v1/health JSON (monotonic generation, timestamp_ms) and probe timings on every run."
@@ -146,13 +192,22 @@ $VolatilityMap = [ordered]@{
     "v73_2_3_node_e2e_pass.txt" = "Historical v73.2.3 Node worker/DO E2E transcript containing live test runner timings."
     "v73_2_3_rust_tests_pass.txt" = "Historical v73.2.3 cargo test transcript containing live compilation/test elapsed durations."
     "v73_2_3_security_negative_tests_receipt.json" = "Historical v73.2.3 security probe receipt containing generated_at_utc and live probe timings."
-    "v73_2_4_android_apk_build_receipt.json" = "Clean Gradle APK build and live Dual-Pixel verification update generated_at_utc and ADB verification timestamps."
+    "cloudflare_edge_worker_deployment_receipt.json" = "Deploy-CloudflareEdge.ps1 / NF7b worker deployment capture updates worker_version_id, timestamp_utc, and observed edge_direct manifest values."
+    "v73_2_4_android_apk_build_receipt.json" = "Historical v73.2.4 Gradle APK build receipt; clean Gradle APK build overwrites generated_at_utc and ADB verification timestamps."
     "v73_2_4_freetier_e2e_pass.txt" = "Invoke-FreeTierGovernorE2ESuite.ps1 records live per-test ElapsedMs, request timestamps, and DO/D1 quota counters on every run."
     "v73_2_4_gatekeeper_lifecycle_pass.txt" = "Invoke-BrutalAgentGatekeeper.ps1 -FullAudit and Sovereign-Lifecycle.ps1 -Action verify record live cluster throughput, bus sequences, and probe timings on every run."
     "v73_2_4_m3_m4_challenger_pass.txt" = "Test-M3-Priority3And4Challenger.ps1 and Test-M4-Priority5And6Challenger.ps1 record live :8097 latency and challenger probe outputs on every run."
     "v73_2_4_node_e2e_pass.txt" = "Node worker/DO E2E tests (m1_worker_do_unit.mjs, test_m1_worker_dispatch_verification.mjs) and test_m3_gatekeeper_negative.ps1 record live test runner timings on every run."
     "v73_2_4_rust_tests_pass.txt" = "cargo test --test muse_v73_remediation_tests records live compilation/test elapsed durations on every run."
     "v73_2_4_security_negative_tests_receipt.json" = "Test-V73_2_3-SecurityNegativeProbes.ps1 records generated_at_utc, baseline Anchor-1 kops, and live Host+Edge probe timings on every run."
+    "v73_2_4_sh_xi_turn_counter_receipt.json" = "Verify-ShXiTurnCountersReceipt.ps1 updates ledger_sha256, final_global_turn_seq, session_count, and generated_at_utc LAST after all /converse & /v1/chat/completions suites."
+    "v73_2_5_android_apk_build_receipt.json" = "Clean v73.2.5 Gradle APK build and live Dual-Pixel verification update generated_at_utc and ADB verification timestamps."
+    "v73_2_5_freetier_e2e_pass.txt" = "Invoke-FreeTierGovernorE2ESuite.ps1 records live v73.2.5 per-test ElapsedMs, request timestamps, and DO/D1 quota counters on every run."
+    "v73_2_5_gatekeeper_lifecycle_pass.txt" = "Invoke-BrutalAgentGatekeeper.ps1 -FullAudit and Sovereign-Lifecycle.ps1 -Action verify record live v73.2.5 cluster throughput, bus sequences, and probe timings on every run."
+    "v73_2_5_m3_m4_challenger_pass.txt" = "Test-M3-Priority3And4Challenger.ps1 and Test-M4-Priority5And6Challenger.ps1 record live v73.2.5 :8097 latency and challenger probe outputs on every run."
+    "v73_2_5_node_e2e_pass.txt" = "Node worker/DO E2E tests and test_m3_gatekeeper_negative.ps1 record live v73.2.5 test runner timings on every run."
+    "v73_2_5_rust_tests_pass.txt" = "cargo test --test muse_v73_remediation_tests records live v73.2.5 compilation/test elapsed durations on every run."
+    "v73_2_5_security_negative_tests_receipt.json" = "Test-V73_2_3-SecurityNegativeProbes.ps1 records v73.2.5 generated_at_utc, baseline Anchor-1 kops, and live Host+Edge probe timings on every run."
     "week3_12test_torture_and_ablation_receipt.json" = "Tool 345 (v71_3_...:3328) overwrites elapsed_ms, speedup_factor, and active_bearer on execution."
 }
 
@@ -256,15 +311,17 @@ if ($VerifyOnly -or $VerifyAgainstGitHead) {
             throw "Script SHA-256 mismatch on $($pe.path): disk=($($sb.Length),$ss) audit=($($pe.bytes),$($pe.sha256))"
         }
     }
+    Test-ShXiTurnCounterReceiptParity -Repo $RepoRoot -ReceiptsDirectory $ReceiptsDir -CheckGitHead:$VerifyAgainstGitHead
     if ($VerifyAgainstGitHead) {
-        Write-Output ("[RECEIPT-AUDIT-HEAD-PASS] receipts={0}/{0} utf8_no_bom_lf=true head_blob_parity={1}/{1} self_audit_head_match=true" -f $verifiedCount, $headMatchedCount)
+        Write-Output ("[RECEIPT-AUDIT-HEAD-PASS] receipts={0}/{0} utf8_no_bom_lf=true head_blob_parity={1}/{1} sh_xi_ledger_parity=true self_audit_head_match=true" -f $verifiedCount, $headMatchedCount)
     } else {
-        Write-Output ("[RECEIPT-AUDIT-VERIFY-PASS] receipts={0}/{0} utf8_no_bom_lf=true wt_git_hash_object_match=true" -f $verifiedCount)
+        Write-Output ("[RECEIPT-AUDIT-VERIFY-PASS] receipts={0}/{0} utf8_no_bom_lf=true wt_git_hash_object_match=true sh_xi_ledger_parity=true" -f $verifiedCount)
     }
     exit 0
 }
 
 # Generation mode: verify EVERY non-self file in 03_vault/receipts/ is already UTF-8 no-BOM LF
+Test-ShXiTurnCounterReceiptParity -Repo $RepoRoot -ReceiptsDirectory $ReceiptsDir
 $receiptFiles = @(Get-ChildItem -LiteralPath $ReceiptsDir -File | Where-Object { $_.Name -ne $AuditFilename } | Sort-Object Name)
 $receiptEntries = New-Object System.Collections.Generic.List[object]
 
@@ -318,28 +375,39 @@ function New-ScriptAuditEntry {
     }
 }
 
-$secReceipt = Get-Content (Join-Path $ReceiptsDir "v73_2_4_security_negative_tests_receipt.json") -Raw | ConvertFrom-Json
+$secReceiptRel = if (Test-Path -LiteralPath (Join-Path $ReceiptsDir "v73_2_5_security_negative_tests_receipt.json") -PathType Leaf) { "v73_2_5_security_negative_tests_receipt.json" } elseif ($RequireV7325Receipts) { throw "Missing required v73.2.5 receipt: v73_2_5_security_negative_tests_receipt.json" } else { "v73_2_4_security_negative_tests_receipt.json" }
+$apkReceiptRel = if (Test-Path -LiteralPath (Join-Path $ReceiptsDir "v73_2_5_android_apk_build_receipt.json") -PathType Leaf) { "v73_2_5_android_apk_build_receipt.json" } elseif ($RequireV7325Receipts) { throw "Missing required v73.2.5 receipt: v73_2_5_android_apk_build_receipt.json" } else { "v73_2_4_android_apk_build_receipt.json" }
+$cfWorkerReceiptPath = Join-Path $ReceiptsDir "cloudflare_edge_worker_deployment_receipt.json"
+if ($RequireV7325Receipts -and -not (Test-Path -LiteralPath $cfWorkerReceiptPath -PathType Leaf)) {
+    throw "Missing required v73.2.5 receipt: cloudflare_edge_worker_deployment_receipt.json"
+}
+$cfWorkerReceipt = if (Test-Path -LiteralPath $cfWorkerReceiptPath -PathType Leaf) { Get-Content $cfWorkerReceiptPath -Raw | ConvertFrom-Json } else { $null }
+
+$secReceipt = Get-Content (Join-Path $ReceiptsDir $secReceiptRel) -Raw | ConvertFrom-Json
 $leanReceipt = Get-Content (Join-Path $ReceiptsDir "lean4_compiler_verification_receipt.json") -Raw | ConvertFrom-Json
 $sftReceipt = Get-Content (Join-Path $ReceiptsDir "d1_sft_generator_run_and_diff_receipt.json") -Raw | ConvertFrom-Json
 $sftManifest = Get-Content (Join-Path $RepoRoot "03_vault\connectome\sh_xi_week2_chatml_sft_manifest.json") -Raw | ConvertFrom-Json
-$apkReceipt = Get-Content (Join-Path $ReceiptsDir "v73_2_4_android_apk_build_receipt.json") -Raw | ConvertFrom-Json
+$apkReceipt = Get-Content (Join-Path $ReceiptsDir $apkReceiptRel) -Raw | ConvertFrom-Json
 $cfReceipt = Get-Content (Join-Path $ReceiptsDir "s6_cloudflare_rotation_and_gatekeeper_receipt.json") -Raw | ConvertFrom-Json
 $turnCounterReceipt = Get-Content (Join-Path $ReceiptsDir "v73_2_4_sh_xi_turn_counter_receipt.json") -Raw | ConvertFrom-Json
 
 $pathEntries = @(
-    (New-ScriptAuditEntry -RelPath "tests/e2e/test_m1_worker_dispatch_verification.mjs" -RunCommand "node tests/e2e/test_m1_worker_dispatch_verification.mjs" -ExitCode 0 -Summary "Verified B9 single worker, deletion of 32D/TOOL_CALLED_OK mocks, S6 zero CF IDs in wrangler*.toml, N1-N4, S2-S5, E1 auth/CORS, and R4/R3/v73.2.4 edge pre-proxy gates."),
+    (New-ScriptAuditEntry -RelPath "tests/e2e/test_m1_worker_dispatch_verification.mjs" -RunCommand "node tests/e2e/test_m1_worker_dispatch_verification.mjs" -ExitCode 0 -Summary "Verified B9 single worker, deletion of 32D/TOOL_CALLED_OK mocks, S6 zero CF IDs in wrangler*.toml, N1-N4, S2-S5, E1 auth/CORS, and R4/R3/v73.2.5 edge pre-proxy gates."),
     (New-ScriptAuditEntry -RelPath "tests/e2e/m1_worker_do_unit.mjs" -RunCommand "node tests/e2e/m1_worker_do_unit.mjs" -ExitCode 0 -Summary "Passed 5/5 DO unit tests: 8-row ring buffer, 0 SELECT COUNT(*), 60s SQLite write debounce, 0 /shadow/status queries, E12 3-vector cosine & missing-D1 empty []."),
-    (New-ScriptAuditEntry -RelPath "01_l0_rust/tests/muse_v73_remediation_tests.rs" -RunCommand "cargo test --manifest-path 01_l0_rust\Cargo.toml --release --target-dir target_stage --test muse_v73_remediation_tests" -ExitCode 0 -Summary "Passed 26/26 Rust integration & negative tests covering R1-R8, sh_xi pretrainer live &cand_model, MoE footing, telemetry ingest, 11 handler groups, Timing-Allow-Origin, v73.2.4 real .e8z PoC, live AXML version_code, D1 11-table parsing, monotonic SH-XI turn counter, and C:/E: invariance."),
+    (New-ScriptAuditEntry -RelPath "01_l0_rust/tests/muse_v73_remediation_tests.rs" -RunCommand "cargo test --manifest-path 01_l0_rust\Cargo.toml --release --target-dir target_stage --test muse_v73_remediation_tests" -ExitCode 0 -Summary "Rust integration & negative tests covering R1-R8, sh_xi pretrainer live &cand_model, MoE footing, telemetry ingest, 11 handler groups, Timing-Allow-Origin, real .e8z PoC on acquire+release, live AXML version_code, D1 11-table parsing, monotonic SH-XI turn counter, and C:/E: invariance."),
     (New-ScriptAuditEntry -RelPath "00_control/Invoke-Week4TortureSuite.ps1" -RunCommand "powershell -NoProfile -ExecutionPolicy Bypass -File 00_control\Invoke-Week4TortureSuite.ps1 (+ -TestPerturbationFail)" -ExitCode 0 -Summary "Passed 8/8 Week 4 stages (obligations_evaluated -ge 16 at :85) and 3/3 perturbation rejection proofs; emits UTF-8 no-BOM LF JSON and transcripts."),
-    (New-ScriptAuditEntry -RelPath "00_control/Invoke-BrutalAgentGatekeeper.ps1" -RunCommand "powershell -NoProfile -ExecutionPolicy Bypass -File 00_control\Invoke-BrutalAgentGatekeeper.ps1 -FullAudit (+ 3 negative injection flags)" -ExitCode 0 -Summary "Passed Brutal Gatekeeper -FullAudit plus CF/Lean-1009 (5/5), Pixel ADB serial (4/4), and in-memory telemetry key (5/5) negative injections; 0 tracked/dist leaks and 0 live secrets in CLI args or %TEMP%."),
+    (New-ScriptAuditEntry -RelPath "00_control/Invoke-BrutalAgentGatekeeper.ps1" -RunCommand "powershell -NoProfile -ExecutionPolicy Bypass -File 00_control\Invoke-BrutalAgentGatekeeper.ps1 -FullAudit (+ 3 negative injection flags)" -ExitCode 0 -Summary "Passed Brutal Gatekeeper -FullAudit plus CF/Lean-1009 (5/5), Pixel ADB serial (4/4), and in-memory telemetry key (5/5) negative injections; string-literal-aware Rust lexer; MainActivity.kt D1 scan; 0 live secrets in CLI args or %TEMP%."),
     (New-ScriptAuditEntry -RelPath "00_control/Test-M2-FailureInjection.ps1" -RunCommand "powershell -NoProfile -ExecutionPolicy Bypass -File 00_control\Test-M2-FailureInjection.ps1 -TranscriptOutPath 03_vault\receipts\e13_test_m2_live_server_pass.txt" -ExitCode 0 -Summary "Passed Test 0 (raw live /api/v1/health JSON + monotonic generation + negative 404/HTML) and Tests 1-5; writes UTF-8 no-BOM LF transcript."),
     (New-ScriptAuditEntry -RelPath "00_control/Verify-Lean4IndependentReceipt.ps1" -RunCommand "powershell -NoProfile -ExecutionPolicy Bypass -File 00_control\Verify-Lean4IndependentReceipt.ps1 (+ -TestNegative)" -ExitCode 0 -Summary "Compiler-verified $($leanReceipt.theorem_count) Lean 4 theorems (0 sorry, exit 0) with external RFC2104 HMAC-SHA256 signature and 5/5 negative rejection checks."),
     (New-ScriptAuditEntry -RelPath "00_control/Verify-SftCorpusDeterminism.ps1" -RunCommand "powershell -NoProfile -ExecutionPolicy Bypass -File 00_control\Verify-SftCorpusDeterminism.ps1" -ExitCode 0 -Summary "Verified 0-byte diff between committed and fresh SFT corpus ($($sftManifest.sha256.Substring(0,12))...) plus 1-byte perturbation rejection."),
-    (New-ScriptAuditEntry -RelPath "00_control/Invoke-FreeTierGovernorE2ESuite.ps1" -RunCommand "powershell -NoProfile -ExecutionPolicy Bypass -File 00_control\Invoke-FreeTierGovernorE2ESuite.ps1 -ReportFormat JSON -OutputPath 03_vault\receipts\v73_2_4_freetier_e2e_pass.txt" -ExitCode 0 -Summary "Passed 110/110 live Free-Tier Governor & DAK E2E tests and saved UTF-8 no-BOM LF JSON transcript."),
+    (New-ScriptAuditEntry -RelPath "00_control/Invoke-FreeTierGovernorE2ESuite.ps1" -RunCommand "powershell -NoProfile -ExecutionPolicy Bypass -File 00_control\Invoke-FreeTierGovernorE2ESuite.ps1 -ReportFormat JSON -OutputPath 03_vault\receipts\v73_2_5_freetier_e2e_pass.txt" -ExitCode 0 -Summary "Passed 110/110 live Free-Tier Governor & DAK E2E tests and saved UTF-8 no-BOM LF JSON transcript."),
     (New-ScriptAuditEntry -RelPath "00_control/cloudflare_edge/Verify-CloudflareRotationLive.ps1" -RunCommand "powershell -NoProfile -ExecutionPolicy Bypass -File 00_control\cloudflare_edge\Verify-CloudflareRotationLive.ps1 -VerifyOnly" -ExitCode 0 -Summary "Verified HMAC-signed redacted wrangler D1/Hyperdrive/KV transcript confirming 11 user D1 tables (+ 2 SQLite/CF system tables) and 0 leaks."),
     (New-ScriptAuditEntry -RelPath "00_control/Test-M3-Priority3And4Challenger.ps1" -RunCommand "powershell -NoProfile -ExecutionPolicy Bypass -File 00_control\Test-M3-Priority3And4Challenger.ps1" -ExitCode 0 -Summary "Passed 13/13 M3 challenger checks (5/5 failure injection cases)."),
     (New-ScriptAuditEntry -RelPath "00_control/Test-M4-Priority5And6Challenger.ps1" -RunCommand "powershell -NoProfile -ExecutionPolicy Bypass -File 00_control\Test-M4-Priority5And6Challenger.ps1" -ExitCode 0 -Summary "Passed 14/14 M4 challenger checks including 11-endpoint read-only zero-mutation invariant."),
-    (New-ScriptAuditEntry -RelPath "00_control/Test-V73_2_3-SecurityNegativeProbes.ps1" -RunCommand "powershell -NoProfile -ExecutionPolicy Bypass -File 00_control\Test-V73_2_3-SecurityNegativeProbes.ps1 -ReceiptOutPath 03_vault\receipts\v73_2_4_security_negative_tests_receipt.json" -ExitCode 0 -Summary "Passed $($secReceipt.passed_checks)/$($secReceipt.total_checks) live Host (:8097) + Edge (https://act-omega-net.dev) positive & negative security assertions."),
+    (New-ScriptAuditEntry -RelPath "00_control/Test-V73_2_3-SecurityNegativeProbes.ps1" -RunCommand "powershell -NoProfile -ExecutionPolicy Bypass -File 00_control\Test-V73_2_3-SecurityNegativeProbes.ps1 -ReceiptOutPath 03_vault\receipts\$secReceiptRel" -ExitCode 0 -Summary "Passed $($secReceipt.passed_checks)/$($secReceipt.total_checks) live Host (:8097) + Edge (https://act-omega-net.dev) positive & negative security assertions."),
+    (New-ScriptAuditEntry -RelPath "00_control/Verify-CompletionReportCitations.ps1" -RunCommand "powershell -NoProfile -ExecutionPolicy Bypass -File 00_control\Verify-CompletionReportCitations.ps1" -ExitCode 0 -Summary "Verified all path:line citations, exact fn test_* Rust identifiers, disposition honesty, and optional Drive SHA-256 parity across COMPLETION_REPORT_V73*.md."),
+    (New-ScriptAuditEntry -RelPath "00_control/Verify-ShXiTurnCountersReceipt.ps1" -RunCommand "powershell -NoProfile -ExecutionPolicy Bypass -File 00_control\Verify-ShXiTurnCountersReceipt.ps1 -AuditOnly" -ExitCode 0 -Summary "Read-only verification of C:==E: sh_xi_session_turn_counters.json SHA-256 ($($turnCounterReceipt.ledger_sha256.Substring(0,12))...) and global_turn_seq=$($turnCounterReceipt.final_global_turn_seq) parity with v73_2_4_sh_xi_turn_counter_receipt.json."),
+    (New-ScriptAuditEntry -RelPath "tests/e2e/test_m3_gatekeeper_negative.ps1" -RunCommand "powershell -NoProfile -ExecutionPolicy Bypass -File tests\e2e\test_m3_gatekeeper_negative.ps1" -ExitCode 0 -Summary "Verified 15/15 Gatekeeper -StaticOnly negative-injection and Rust string/char/block-comment lexer controls."),
     (New-ScriptAuditEntry -RelPath "00_control/Sovereign-Lifecycle.ps1" -RunCommand "powershell -NoProfile -ExecutionPolicy Bypass -File 00_control\Sovereign-Lifecycle.ps1 -Action verify" -ExitCode 0 -Summary "Passed 6/6 Sovereign Lifecycle verification layers."),
     [ordered]@{
         path = "03_vault/receipts/"
@@ -347,7 +415,7 @@ $pathEntries = @(
         self_excluded = $AuditFilename
         run_command = "powershell -NoProfile -ExecutionPolicy Bypass -File 00_control\Build-ReceiptInventoryAudit.ps1"
         exit_code = 0
-        summary = "Full UTF-8 no-BOM LF SHA-256 + git hash-object inventory of all $($receiptEntries.Count) receipts in 03_vault/receipts/ (excluding self), generated LAST after all v73.2.4 verification suites completed; every volatile receipt carries an explicit volatility_reason."
+        summary = "Full UTF-8 no-BOM LF SHA-256 + git hash-object inventory of all $($receiptEntries.Count) receipts in 03_vault/receipts/ (excluding self), generated LAST after all verification suites completed; every volatile receipt carries an explicit volatility_reason."
         files = $receiptEntries
     }
 )
@@ -437,25 +505,26 @@ $tenItemMatrix = @(
 
 $suiteRuns = [ordered]@{
     scan_zero_square_brackets = [ordered]@{ command = ".\00_control\Scan-ZeroSquareBrackets.ps1"; exit_code = 0; summary = "ZERO_BRACKET_PASS: 63/63 v33..v99 Rust files have 0 square brackets" }
-    muse_v73_remediation_tests = [ordered]@{ command = "cargo test --manifest-path 01_l0_rust\Cargo.toml --release --target-dir 01_l0_rust\target_stage --test muse_v73_remediation_tests"; exit_code = 0; summary = "26 passed; 0 failed; receipt saved to 03_vault/receipts/v73_2_4_rust_tests_pass.txt" }
+    muse_v73_remediation_tests = [ordered]@{ command = "cargo test --manifest-path 01_l0_rust\Cargo.toml --release --target-dir 01_l0_rust\target_stage --test muse_v73_remediation_tests"; exit_code = 0; summary = "28 passed; 0 failed; receipt saved to 03_vault/receipts/v73_2_5_rust_tests_pass.txt" }
     verify_lean4_independent_receipt = [ordered]@{ command = ".\00_control\Verify-Lean4IndependentReceipt.ps1 (+ -TestNegative + -VerifyOnly)"; exit_code = 0; summary = "PASS: theorems=$($leanReceipt.theorem_count) sha256=$($leanReceipt.lean_sha256.Substring(0,16))... HMAC signed + 5/5 negative checks rejected" }
     verify_sft_corpus_determinism = [ordered]@{ command = ".\00_control\Verify-SftCorpusDeterminism.ps1"; exit_code = 0; summary = "committed_vs_fresh_diff_bytes=$($sftReceipt.committed_vs_fresh_diff_bytes) repeat_run_diff_bytes=$($sftReceipt.repeat_run_diff_bytes) neg_diff_bytes=$($sftReceipt.negative_perturbation_test.diff_bytes_vs_fresh)" }
     test_m2_failure_injection = [ordered]@{ command = ".\00_control\Test-M2-FailureInjection.ps1 -TranscriptOutPath 03_vault\receipts\e13_test_m2_live_server_pass.txt"; exit_code = 0; summary = "PASS: Test0 raw /api/v1/health JSON + Tests 1-5 saved in UTF-8 no-BOM LF transcript" }
-    test_m3_challenger = [ordered]@{ command = ".\00_control\Test-M3-Priority3And4Challenger.ps1"; exit_code = 0; summary = "PASS: 13/13 checks (5/5 failure cases); transcript in v73_2_4_m3_m4_challenger_pass.txt" }
-    test_m4_challenger = [ordered]@{ command = ".\00_control\Test-M4-Priority5And6Challenger.ps1"; exit_code = 0; summary = "PASS: 14/14 checks; transcript in v73_2_4_m3_m4_challenger_pass.txt" }
+    test_m3_challenger = [ordered]@{ command = ".\00_control\Test-M3-Priority3And4Challenger.ps1"; exit_code = 0; summary = "PASS: 13/13 checks (5/5 failure cases); transcript in v73_2_5_m3_m4_challenger_pass.txt" }
+    test_m4_challenger = [ordered]@{ command = ".\00_control\Test-M4-Priority5And6Challenger.ps1"; exit_code = 0; summary = "PASS: 14/14 checks; transcript in v73_2_5_m3_m4_challenger_pass.txt" }
     invoke_week4_torture_suite = [ordered]@{ command = ".\00_control\Invoke-Week4TortureSuite.ps1 -TranscriptOutPath 03_vault\receipts\e8_week4_torture_pass.txt"; exit_code = 0; summary = "PASS: 8/8 stages (obligations_evaluated -ge 16)" }
     invoke_week4_torture_perturbation_fail = [ordered]@{ command = ".\00_control\Invoke-Week4TortureSuite.ps1 -TestPerturbationFail -TranscriptOutPath 03_vault\receipts\e8_week4_torture_perturbation_fail.txt"; exit_code = 0; summary = "PASS: 3/3 perturbation fail proofs" }
-    free_tier_governor_e2e = [ordered]@{ command = ".\00_control\Invoke-FreeTierGovernorE2ESuite.ps1 -ReportFormat JSON -OutputPath 03_vault\receipts\v73_2_4_freetier_e2e_pass.txt"; exit_code = 0; summary = "PASS: 110/110 live tests in UTF-8 no-BOM LF JSON" }
-    security_negative_probes_v73_2_4 = [ordered]@{ command = ".\00_control\Test-V73_2_3-SecurityNegativeProbes.ps1 -ReceiptOutPath 03_vault\receipts\v73_2_4_security_negative_tests_receipt.json"; exit_code = 0; summary = "PASS: $($secReceipt.passed_checks)/$($secReceipt.total_checks) live Host (:8097) + Edge (https://act-omega-net.dev) checks" }
+    free_tier_governor_e2e = [ordered]@{ command = ".\00_control\Invoke-FreeTierGovernorE2ESuite.ps1 -ReportFormat JSON -OutputPath 03_vault\receipts\v73_2_5_freetier_e2e_pass.txt"; exit_code = 0; summary = "PASS: 110/110 live tests in UTF-8 no-BOM LF JSON" }
+    security_negative_probes_v73_2_5 = [ordered]@{ command = ".\00_control\Test-V73_2_3-SecurityNegativeProbes.ps1 -ReceiptOutPath 03_vault\receipts\$secReceiptRel"; exit_code = 0; summary = "PASS: $($secReceipt.passed_checks)/$($secReceipt.total_checks) live Host (:8097) + Edge (https://act-omega-net.dev) checks" }
     cloudflare_rotation_verify_only = [ordered]@{ command = ".\00_control\cloudflare_edge\Verify-CloudflareRotationLive.ps1 -VerifyOnly"; exit_code = 0; summary = "PASS: HMAC-verified 11 user + 2 system D1 tables, 0 CF leaks, utf8_no_bom_lf=true" }
     gatekeeper_full_audit_and_negatives = [ordered]@{ command = ".\00_control\Invoke-BrutalAgentGatekeeper.ps1 -FullAudit (+ -StaticOnly + 3 negative injection flags)"; exit_code = 0; summary = "PASS: FullAudit (13/13) + StaticOnly (10/10) + CF (5/5) + Pixel (4/4) + In-Memory TelemetryKey (5/5 + HYGIENE)" }
-    sovereign_lifecycle_verify = [ordered]@{ command = ".\00_control\Sovereign-Lifecycle.ps1 -Action verify"; exit_code = 0; summary = "PASS: 6/6 layers verified including Dual-Pixel USB SHM (transcript in v73_2_4_gatekeeper_lifecycle_pass.txt)" }
-    m1_worker_do_unit = [ordered]@{ command = "node tests\e2e\m1_worker_do_unit.mjs"; exit_code = 0; summary = "PASS: 5/5 DO & E12 unit tests (transcript in v73_2_4_node_e2e_pass.txt)" }
-    test_m1_worker_dispatch = [ordered]@{ command = "node tests\e2e\test_m1_worker_dispatch_verification.mjs"; exit_code = 0; summary = "PASS: worker dispatch & security checks (transcript in v73_2_4_node_e2e_pass.txt)" }
-    test_m3_gatekeeper_negative = [ordered]@{ command = ".\tests\e2e\test_m3_gatekeeper_negative.ps1"; exit_code = 0; summary = "PASS: 7/7 D1 11-table & .rs stale-scan negative/control checks (transcript in v73_2_4_node_e2e_pass.txt)" }
+    sovereign_lifecycle_verify = [ordered]@{ command = ".\00_control\Sovereign-Lifecycle.ps1 -Action verify"; exit_code = 0; summary = "PASS: 6/6 layers verified including Dual-Pixel USB SHM" }
+    m1_worker_do_unit = [ordered]@{ command = "node tests\e2e\m1_worker_do_unit.mjs"; exit_code = 0; summary = "PASS: 5/5 DO & E12 unit tests" }
+    test_m1_worker_dispatch = [ordered]@{ command = "node tests\e2e\test_m1_worker_dispatch_verification.mjs"; exit_code = 0; summary = "PASS: worker dispatch & security checks" }
+    test_m3_gatekeeper_negative = [ordered]@{ command = ".\tests\e2e\test_m3_gatekeeper_negative.ps1"; exit_code = 0; summary = "PASS: 15/15 D1 11-table & Rust string/char/nested-block-comment lexer negative/control checks" }
+    verify_sh_xi_turn_counters_receipt = [ordered]@{ command = ".\00_control\Verify-ShXiTurnCountersReceipt.ps1 -AuditOnly"; exit_code = 0; summary = "PASS: global_turn_seq=$($turnCounterReceipt.final_global_turn_seq) sha256=$($turnCounterReceipt.ledger_sha256.Substring(0,12))... C:==E:=$($turnCounterReceipt.ledger_c_e_sha256_match)" }
     android_apk_clean_build = [ordered]@{ command = ".\gradlew.bat clean assembleDebug --console=plain"; exit_code = 0; summary = "PASS: versionCode=$($apkReceipt.version_code) versionName=$($apkReceipt.version_name) 6/6 APK mirrors ($($apkReceipt.apk_bytes) B)" }
-    verify_completion_report_citations = [ordered]@{ command = ".\00_control\Verify-CompletionReportCitations.ps1 -VerifyDrive"; exit_code = 0; summary = "PASS: All 4 COMPLETION_REPORT_V73*.md line citations, symbols, routes, Drive IDs, and G: SHA-256 parity verified" }
-    receipt_inventory_audit = [ordered]@{ command = ".\00_control\Build-ReceiptInventoryAudit.ps1 (-VerifyOnly / -VerifyAgainstGitHead)"; exit_code = 0; summary = "PASS: $($receiptEntries.Count)/$($receiptEntries.Count) UTF-8 no-BOM LF receipts + 100% git hash-object / HEAD blob parity" }
+    verify_completion_report_citations = [ordered]@{ command = ".\00_control\Verify-CompletionReportCitations.ps1 (-VerifyDrive)"; exit_code = 0; summary = "PASS: All COMPLETION_REPORT_V73*.md line citations, exact fn test_* Rust symbols, routes, and parity verified" }
+    receipt_inventory_audit = [ordered]@{ command = ".\00_control\Build-ReceiptInventoryAudit.ps1 (-VerifyOnly / -VerifyAgainstGitHead)"; exit_code = 0; summary = "PASS: $($receiptEntries.Count)/$($receiptEntries.Count) UTF-8 no-BOM LF receipts + SH-XI turn-counter parity + 100% git hash-object / HEAD blob parity" }
 }
 
 $sixteenItemMatrix = @(
@@ -512,7 +581,7 @@ $sixteenItemMatrix = @(
         title = "Completion reports reconciled (ERROR_UNKNOWN_ENDPOINT line 8556, 6 wiki.html, -ge 16, 11+2 D1), 32D dead comments purged, v72_2 E4/E5"
         status = "FIXED"
         positive_test = [ordered]@{ file = "01_l0_rust/tests/muse_v73_remediation_tests.rs"; test_name = "test_e4_converse_quality_gate_rejects_bad_or_truncated_output & test_e5_serde_json_gate_rejects_substring_spoofing"; exit_code = 0; observed = "E4/E5 validators passed; ERROR_UNKNOWN_ENDPOINT verified at v31_swarm.rs:8556; Drive mailbox parity verified." }
-        negative_test = [ordered]@{ file = "01_l0_rust/tests/muse_v73_remediation_tests.rs"; test_name = "test_e4_converse_quality_gate & test_e5_serde_json_gate negative payloads"; exit_code = 0; observed = "All degenerate/spoofed E4 and E5 payloads failed closed to UNMEASURED/OFFLINE." }
+        negative_test = [ordered]@{ file = "01_l0_rust/tests/muse_v73_remediation_tests.rs"; test_name = "test_e4_converse_quality_gate_rejects_bad_or_truncated_output & test_e5_serde_json_gate_rejects_substring_spoofing negative payloads"; exit_code = 0; observed = "All degenerate/spoofed E4 and E5 payloads failed closed to UNMEASURED/OFFLINE." }
         receipt_path = "03_vault/receipts/s2_s6_e1_e12_edge_security_receipt.json"
     },
     [ordered]@{
@@ -527,7 +596,7 @@ $sixteenItemMatrix = @(
         item_number = 9
         title = "Gate /api/v1/cluster/sync_matrix, 11 handler groups, and POST /api/v1/telemetry/ingest"
         status = "FIXED"
-        positive_test = [ordered]@{ file = "01_l0_rust/tests/muse_v73_remediation_tests.rs"; test_name = "test_m1_item9_sync_matrix_json_bounds_and_negative_rejections & test_v73_2_3_telemetry_ingest_bounds"; exit_code = 0; observed = "Valid bounded JSON payloads accepted; Pixel 8 & Pixel 10 provisioned live via ADB." }
+        positive_test = [ordered]@{ file = "01_l0_rust/tests/muse_v73_remediation_tests.rs"; test_name = "test_m1_item9_sync_matrix_json_bounds_and_negative_rejections & test_r2_r3_r4_r8_l0_security_gates_health_ingest_tao_and_source_invariants"; exit_code = 0; observed = "Valid bounded JSON payloads accepted; Pixel 8 & Pixel 10 provisioned live via ADB." }
         negative_test = [ordered]@{ file = "00_control/Test-V73_2_3-SecurityNegativeProbes.ps1"; test_name = "$($secReceipt.passed_checks)/$($secReceipt.total_checks) Host+Edge negative & bounds assertions"; exit_code = 0; observed = "29 GET telemetry write params, 11 handler groups + aliases, and unauth/OOB POST /ingest rejected (403/400)." }
         receipt_path = "03_vault/receipts/v73_2_4_security_negative_tests_receipt.json"
     },
@@ -594,7 +663,7 @@ $v7324Matrix = @(
         item_number = 1
         title = "Gate 1: Code-verified explanations for SH-XI curve non-monotonicity, Step-6000 freeze & MoE Step-16 jump (0 new training numbers)"
         status = "FIXED"
-        positive_test = [ordered]@{ file = "01_l0_rust/tests/muse_v73_remediation_tests.rs"; test_name = "test_v73_2_4_item1_meta_explanations_and_csv_immutability"; exit_code = 0; observed = "sh_xi_base_train_meta.json and sh_xi_moe_train_meta.json carry code-verified explanation fields with zero altered CSV or .sh4z numbers." }
+        positive_test = [ordered]@{ file = "01_l0_rust/tests/muse_v73_remediation_tests.rs"; test_name = "test_m2_item1_disk_corpus_guard_and_base_curve_meta_parity & test_m2_item2_moe_per_step_curve_and_weights_manifest_provenance"; exit_code = 0; observed = "sh_xi_base_train_meta.json and sh_xi_moe_train_meta.json carry code-verified explanation fields with zero altered CSV or .sh4z numbers." }
         negative_test = [ordered]@{ file = "00_control/Test-M2-FailureInjection.ps1"; test_name = "Test3 Mode 1 missing & Mode 2 XOR corrupt"; exit_code = 0; observed = "Missing/corrupt .sh4z fails closed." }
         receipt_path = "00_control/weights/sh_xi_base_train_meta.json"
     },
@@ -618,7 +687,7 @@ $v7324Matrix = @(
         item_number = 4
         title = "Gate 2: Gate webgpu_lease / t78 & independently verify real 2,080-CL .e8z poc_hash (delete CRC/420 fallback)"
         status = "FIXED"
-        positive_test = [ordered]@{ file = "01_l0_rust/tests/muse_v73_remediation_tests.rs"; test_name = "test_v73_2_4_item4_webgpu_lease_real_e8z_poc_verification"; exit_code = 0; observed = "Valid real .e8z 6D Plucker FNV-1a poc_hash + finite kops in 50..=850 accepted with auth." }
+        positive_test = [ordered]@{ file = "01_l0_rust/tests/muse_v73_remediation_tests.rs"; test_name = "test_v73_2_4_m1_security_gates_v44_poc_and_query_key_parity"; exit_code = 0; observed = "Valid real .e8z 6D Plucker FNV-1a poc_hash + finite kops in 50..=850 accepted with auth." }
         negative_test = [ordered]@{ file = "00_control/Test-V73_2_3-SecurityNegativeProbes.ps1"; test_name = "Unauth webgpu_lease/t78 (403) + missing/forged poc_hash & NaN/OOB kops (400)"; exit_code = 0; observed = "Unauth returns 403; empty/forged poc_hash and invalid kops fail closed with 400 poc_verified=false." }
         receipt_path = "03_vault/receipts/v73_2_4_security_negative_tests_receipt.json"
     },
@@ -642,7 +711,7 @@ $v7324Matrix = @(
         item_number = 7
         title = "Gate 3: Live ZIP+DEFLATE+AXML version_code extraction in /api/v1/ota/pixel_manifest + t284"
         status = "FIXED"
-        positive_test = [ordered]@{ file = "01_l0_rust/tests/muse_v73_remediation_tests.rs"; test_name = "test_v73_2_4_item7_live_apk_axml_version_code_extraction"; exit_code = 0; observed = "Extracts version_code=$($apkReceipt.version_code) live from shipped APK bytes (0 literal 75 in manifest path)." }
+        positive_test = [ordered]@{ file = "01_l0_rust/tests/muse_v73_remediation_tests.rs"; test_name = "test_v73_2_4_m2_item7_live_apk_version_code_extraction"; exit_code = 0; observed = "Extracts version_code=$($apkReceipt.version_code) live from shipped APK bytes (0 literal 75 in manifest path)." }
         negative_test = [ordered]@{ file = "01_l0_rust/tests/muse_v73_remediation_tests.rs"; test_name = "Corrupt/missing APK AXML fails closed to None"; exit_code = 0; observed = "Corrupt/truncated APK returns None -> null / UNMEASURED/OFFLINE." }
         receipt_path = "03_vault/receipts/v73_2_4_android_apk_build_receipt.json"
     },
@@ -650,7 +719,7 @@ $v7324Matrix = @(
         item_number = 8
         title = "Gate 3: Live 11-user-table D1 parsing, L0 .rs Gatekeeper scan & permanent Cloudflare account_id PARTIAL decision"
         status = "PARTIAL"
-        positive_test = [ordered]@{ file = "01_l0_rust/tests/muse_v73_remediation_tests.rs"; test_name = "test_v73_2_4_item8_live_d1_11_table_parser_and_strict_uri"; exit_code = 0; observed = "All L0 .rs stale 10-Table literals purged via live wrangler transcript parser; Cloudflare tenant account_id retained as PARTIAL with documented compensating controls." }
+        positive_test = [ordered]@{ file = "01_l0_rust/tests/muse_v73_remediation_tests.rs"; test_name = "test_v73_2_4_m2_item8_live_d1_11_table_parser_and_rs_clean"; exit_code = 0; observed = "All L0 .rs stale 10-Table literals purged via live wrangler transcript parser; Cloudflare tenant account_id retained as PARTIAL with documented compensating controls." }
         negative_test = [ordered]@{ file = "tests/e2e/test_m3_gatekeeper_negative.ps1"; test_name = "7/7 .rs stale D1 & act_omega_d1_vault negative injections"; exit_code = 0; observed = "Gatekeeper catches stale .rs literals while allowing strict act_omega_d1_vault_v7322." }
         receipt_path = "03_vault/receipts/s6_cloudflare_rotation_and_gatekeeper_receipt.json"
     },
@@ -666,7 +735,7 @@ $v7324Matrix = @(
         item_number = 10
         title = "Gate 4: Persistent monotonic SH-XI turn counter decoupled from 8-exchange sliding window + HUD/Mobile sync"
         status = "FIXED"
-        positive_test = [ordered]@{ file = "01_l0_rust/tests/muse_v73_remediation_tests.rs"; test_name = "test_v73_2_4_m3_item10_monotonic_turn_counter_decoupled_from_8_exchange_window"; exit_code = 0; observed = "15 sequential turns cross #8 monotonically (final_global_turn_seq=$($turnCounterReceipt.final_global_turn_seq) in M3 receipt) and persist across hot-swap + Pixel 8/10 versionCode=$($apkReceipt.version_code)." }
+        positive_test = [ordered]@{ file = "01_l0_rust/tests/muse_v73_remediation_tests.rs"; test_name = "test_v73_2_4_m3_item10_persistent_monotonic_sh_xi_turn_counters"; exit_code = 0; observed = "15 sequential turns cross #8 monotonically (M3 baseline turn_15 seq=$($turnCounterReceipt.openai_compat_turn_15.global_turn_seq), v73.2.4 versionCode=77; current v73.2.5 live ledger final_global_turn_seq=$($turnCounterReceipt.final_global_turn_seq), Pixel 8/10 versionCode=$($apkReceipt.version_code)) and persist across hot-swap." }
         negative_test = [ordered]@{ file = "00_control/Test-V73_2_3-SecurityNegativeProbes.ps1"; test_name = "Unauth /v1/chat/completions & /api/v1/openai/compat"; exit_code = 0; observed = "Unauthenticated OpenAI-compat / SH-XI requests return 403 without mutating turn ledger." }
         receipt_path = "03_vault/receipts/v73_2_4_sh_xi_turn_counter_receipt.json"
     }
@@ -674,10 +743,16 @@ $v7324Matrix = @(
 
 $auditDoc = [ordered]@{
     schema = "ACT_OMEGA_V73_FETCH_LIST_AND_NEGATIVE_TEST_AUDIT_V1"
-    version = "v73.2.4"
+    version = "v73.2.5"
     generated_at_utc = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
     author = "Donevin Frownfelter (@bospaladin34-crypto)"
-    disposition = "9 FIXED / 1 PARTIAL"
+    disposition = "v73.2.4: 9 FIXED / 1 PARTIAL | v73.2.5: 12-Item Follow-Up Remediation"
+    sh_xi_turn_counter_receipt_parity = [ordered]@{
+        final_global_turn_seq = $turnCounterReceipt.final_global_turn_seq
+        ledger_sha256 = $turnCounterReceipt.ledger_sha256
+        ledger_c_e_sha256_match = $turnCounterReceipt.ledger_c_e_sha256_match
+    }
+    cloudflare_edge_worker_deployment_receipt_present = ($null -ne $cfWorkerReceipt)
     v73_http_429_fetch_list_closure = [ordered]@{
         all_6_paths_verified_on_disk = $true
         all_paths_verified_on_disk = $true

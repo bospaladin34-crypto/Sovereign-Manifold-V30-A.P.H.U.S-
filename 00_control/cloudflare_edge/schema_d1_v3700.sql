@@ -1,3 +1,4 @@
+-- HISTORICAL PRE-v73.2.2 SCHEMA ARCHIVE (HISTORICAL_PRE_V7322): superseded in v73.2.2+ by act_omega_d1_vault_v7322 (11 user tables + 2 SQLite/CF system tables).
 -- ACT-Omega Net v37.0.0 Cloudflare D1 Serverless SQLite Schema (act_omega_d1_vault)
 -- Account ID: <EXTERNAL_CF_ACCOUNT_ID> -- Free Tier: 5 GB Storage, 5M Reads/Day, 100k Writes/Day
 

@@ -1,3 +1,4 @@
+-- HISTORICAL PRE-v73.2.2 SCHEMA ARCHIVE (HISTORICAL_PRE_V7322): superseded in v73.2.2+ by act_omega_d1_vault_v7322 (11 user tables + 2 SQLite/CF system tables).
 -- =============================================================================
 -- ACT-OMEGA NET v47.0.0 (SH4Z v4700 TLV) - FULL 10-TABLE CLOUDFLARE D1 SYNC
 -- Synchronizes all 10 tables in act_omega_d1_vault (<EXTERNAL_D1_DATABASE_ID>):

@@ -1,3 +1,5 @@
+> **Historical `v43.0.0` Cutover Archive Notice**: Preserves the `v43.0.0` pre-`v73.2.2` cutover plan (`sync_d1_v4300_all8tables.sql`, `act_omega_d1_vault`, `8` tables). In `v73.2.2+`, Cloudflare D1 rotated to `act_omega_d1_vault_v7322` (`11` user tables + `2` SQLite/CF system tables).
+
 # ACT-Omega Net v43.0.0 (`SH4Z v4300 TLV`) — Master Google Antigravity (`Gemini 4 Argon`) Multi-Agent Cutover Plan & 5W1H-Neuron Connectome Blueprint
 
 ## 1. Executive Diagnostic: Why the `v42.0.0` Changes Did Not Visually Take Yet (And How `v43.0.0` Fixes All 3 Layers)

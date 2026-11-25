@@ -1,3 +1,5 @@
+> **Historical `v61.5` Archive Notice**: Preserves the `v61.5` pre-`v73.2.2` Cloudflare D1 baseline (`act-omega-shadow-d1`, 10-table schema). In `v73.2.2+`, Cloudflare D1 rotated to `act_omega_d1_vault_v7322` (`11` user tables + `2` SQLite/CF system tables).
+
 # **Antigravity Handoff \#5 — ACT\_OMEGA\_v61\_5\_NOV2\_TO\_NOV4\_SYNTHESIS\_YUBIKEY\_HROT\_AND\_DO\_HIBERNATION.md**
 
 **Target Workspace**: `C:\sovereign_manifold_v31` (`GARLOCK00` — Lenovo LOQ 15IAX9 Model `83GS`, 12th Gen Intel Core `i5-12450HX` 8C/12T \+ `NVIDIA GeForce RTX 3050 6GB Laptop GPU` (`6,144 MiB` GDDR6, Compute Cap `8.6`) \+ `12GB DDR5` RAM \+ `1TB` External SSD Vault `E:\Sovereign_Manifold_SSD_Vault` \+ `3TB` HDD Cold Vault `F:\` \+ Google Drive Bridge `G:\My Drive\ACT_OMEGA_GEMINI_BRIDGE`)

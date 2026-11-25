@@ -72,7 +72,7 @@ pub fn tool_59_omni_wiring_audit_json() -> String {
 
 pub fn tool_60_d1_auto_trigger_pipeline_json() -> String {
     let t0 = std::time::Instant::now();
-    let sql_bytes = std::fs::metadata("00_control/cloudflare_edge/sync_d1_v4400_all10tables.sql")
+    let sql_bytes = std::fs::metadata("00_control/cloudflare_edge/sync_d1_v4400_all10tables.sql") // HISTORICAL_PRE_V7322: probes archived v44 seed file
         .or_else(|_| std::fs::metadata("00_control/seed_d1_v40_tables_only.sql"))
         .map(|m| m.len())
         .unwrap_or(0);

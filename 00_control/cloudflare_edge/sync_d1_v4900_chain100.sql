@@ -1,3 +1,4 @@
+-- HISTORICAL PRE-v73.2.2 SCHEMA ARCHIVE (HISTORICAL_PRE_V7322): superseded in v73.2.2+ by act_omega_d1_vault_v7322 (11 user tables + 2 SQLite/CF system tables).
 INSERT OR REPLACE INTO npage_tier_snapshots (snapshot_id, schema_version, total_neurons, total_bytes, active_synapses, swr_sub_epochs, swr_compression_ratio, metabolic_atp_score, rtx3050_temp_c, recorded_at_ms) VALUES
 (11, 'SH4Z_v4700_CONNECTOME_42240_NEURONS', 42240, 5406720, 337920, 10, 24.0, 0.9554, 49.0, 1761248400000),
 (12, 'SH4Z_v4900_CHAIN100_42240_NEURONS', 42240, 5406720, 337920, 10, 24.0, 0.9562, 51.0, 1792919694142),

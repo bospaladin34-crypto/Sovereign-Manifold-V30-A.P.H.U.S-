@@ -1,3 +1,5 @@
+> **Historical `v31.0 / v43.0` Verbatim Source Archive**: Preserves verbatim pre-`v73.2.2` milestone notes (`act_omega_d1_vault`, `8` D1 tables). In `v73.2.2+`, Cloudflare D1 rotated to `act_omega_d1_vault_v7322` (`11` user tables + `2` SQLite/CF system tables).
+
 # **ACT-Omega Net v31.0 (Sovereign Harmonic IV): Verbatim Source Code Mirror & Continuous Codebase**
 
 * **Workspace Root:** `C:\sovereign_manifold_v31\`  

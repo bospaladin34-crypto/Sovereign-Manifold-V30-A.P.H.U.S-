@@ -18,14 +18,14 @@
 [![Rosetta Stone](https://img.shields.io/badge/Academic_Monograph_%26_Rosetta_Stone-24_Equations_%2B_v29--v61_Evolution-E040FB?style=for-the-badge)](./ROSETTA_STONE_AND_FORMAL_ARCHITECTURE_EVOLUTION.md)
 [![Tool Lattice](https://img.shields.io/badge/Tools-280_/_280_(CHAIN_280_%2B_18_Gemini_MCP_Tools)-FFD700?style=for-the-badge)](https://mcp.act-omega-net.dev/mcp)
 [![Tri-Silicon Cluster](https://img.shields.io/badge/Tri--Silicon_Cluster-LOQ15_%2B_Pixel10_%2B_Pixel8_(~3,005,637k_ops/s)-00FF66?style=for-the-badge)](https://act-omega-net.dev)
-[![Cloudflare D1 Vault](https://img.shields.io/badge/Cloudflare_D1_Vault-act__omega__d1__vault_(10_Tables_%2B_8--Row_DO_Ring_Buffer)-F38020?style=for-the-badge)](https://mcp.act-omega-net.dev/v1/d1/status)
+[![Cloudflare D1 Vault](https://img.shields.io/badge/Cloudflare_D1_Vault-act__omega__d1__vault__v7322_(11_User_%2B_2_System_Tables)-F38020?style=for-the-badge)](https://mcp.act-omega-net.dev/v1/d1/status)
 [![Operator Manual](https://img.shields.io/badge/Operator_Manual-USER__MANUAL__AND__FAQ.md_%2B_HUD_Sidebar-34A853?style=for-the-badge)](./USER_MANUAL_AND_FAQ.md)
 
 ## 🏛️ Canonical Academic Monograph, 1:1 Formal Rosetta Stone & `v29.0 → v61.0.0` Architecture Evolution
 
 - [**`ROSETTA_STONE_AND_FORMAL_ARCHITECTURE_EVOLUTION.md`**](./ROSETTA_STONE_AND_FORMAL_ARCHITECTURE_EVOLUTION.md): Master 22-Row 1:1 Rosetta Stone Translation Matrix (mapping `BraidIR`, `SH4Z` $E_8/\Lambda_{24}$ LVQ, `Vesper` Cellular Sheaf Consensus, `Stomachion` 536-mode Partitioning, `5W1H` Linear Resource Logic, and `.npage` SHM to standard CS/Compiler/Graph/Information Theory), Formalized Equations Catalog (`Eq. 1–24` $\leftrightarrow$ Lean 4 `thm_v49_461..480` & `thm_v61_691..700`), and Chronological Architecture Evolution (`v29.0 → v31.0 → v43.0.0 → v46.0.0 → v48.0.0 → v49.0.0 → v50.0.0 → v56.0.0 → v60.0.0 → v61.0.0`).
 - [**`ACT-Omega and Vesper Complete Manuscript.pdf`**](./ACT-Omega%20and%20Vesper%20Complete%20Manuscript.pdf) & [**`ACT-Omega and Vesper Executive Presentation.pdf`**](./ACT-Omega%20and%20Vesper%20Executive%20Presentation.pdf): Full 13-page typeset academic monograph and 12-slide executive deck.
-- [**`ACT-Omega and Vesper_ A Topological Intermediate Representation, ... .md`**](./ACT-Omega%20and%20Vesper_%20A%20Topological%20Intermediate%20Representation,%20Lattice%20Vector%20Quantizer,%20and%20Cellular%20Sheaf%20Consensus%20Runtime%20for%20Edge-to-Workstation%20Heterogeneous%20Computing.md): Full Markdown edition of the monograph modernized with `:8097`/`:5173` sockets, Cloudflare HTTP/2 Named Tunnel `act-omega-net.dev`, `SovereignContinuumDO`, 10-table D1, and Section 7 (`v29.0 / v31.1 → v49.0.0+`).
+- [**`ACT-Omega and Vesper_ A Topological Intermediate Representation, ... .md`**](./ACT-Omega%20and%20Vesper_%20A%20Topological%20Intermediate%20Representation,%20Lattice%20Vector%20Quantizer,%20and%20Cellular%20Sheaf%20Consensus%20Runtime%20for%20Edge-to-Workstation%20Heterogeneous%20Computing.md): Full Markdown edition of the monograph modernized with `:8097`/`:5173` sockets, Cloudflare HTTP/2 Named Tunnel `act-omega-net.dev`, `SovereignContinuumDO`, 11-user-table (+ 2 system) D1 (`act_omega_d1_vault_v7322`), and Section 7 (`v29.0 / v31.1 → v49.0.0+`).
 - [**`ACT-Omega v29.0 Continuous Codebase.md`**](./ACT-Omega%20v29.0%20Continuous%20Codebase.md) & [**`ACT-Omega v31.0 Verbatim Source Code Mirror & Continuous Codebase.md`**](./ACT-Omega%20v31.0%20Verbatim%20Source%20Code%20Mirror%20&%20Continuous%20Codebase.md): Verbatim historical codebase baselines documenting the exact evolution from `v29.0`/`v31.0` to `v61.0.0`.
 
 ## 🏆 `v61.0.0` (`SH4Z v6000 TLV` | `CHAIN 280` | `700/700 Lean 4 QED` | `18 Gemini MCP Tools`) — Gemma 4 Multimodal PLE & Speculative Cascade, `41` Un-Siloed Core Modules, Dual-Pixel `v61.0.0` APK & October 31st Muse Sweep Remediation
@@ -60,7 +60,7 @@
   2. **`2. HUD & DRAWERS`** (Drawer A `15` cards, Drawer B `60 FPS` 3D Stiefel & Oscilloscope, `16×130` Heatmap, Drawer 1–4 cross-module routing)
   3. **`3. PHONES & SHM`** (`8.11 MB` `.npage` Shared Memory across permanently tethered Pixel 8 + roaming/unplugged Pixel 10 + Android Homescreen/Lockscreen Widget)
   4. **`4. WIN11 TRAY & APP`** (`SovereignCockpitHUD.exe` System Tray Icon `Ω50`, Live Desktop Top-Banner Widget & Native App Window)
-  5. **`5. CLOUD, D1 & G:`** (Cloudflare Named Tunnel, 10-Table D1 SQLite Vault, 8-Row Edge DO Ring Buffer, `E:\` SSD & `G:\My Drive\ACT_OMEGA_GEMINI_BRIDGE`)
+  5. **`5. CLOUD, D1 & G:`** (Cloudflare Named Tunnel, 11-User-Table (+ 2 System) D1 SQLite Vault `act_omega_d1_vault_v7322`, 8-Row Edge DO Ring Buffer, `E:\` SSD & `G:\My Drive\ACT_OMEGA_GEMINI_BRIDGE`)
   6. **`6. FAQ & TROUBLESHOOT`** (Preventing Cloudflare `502`/`1033`, Muse 100% True-Data checks, `X-Sovereign-Operator-Key` header auth, and `hotswap`)
 
 ## ⚡ Executive Summary — What's New in `v50.0.0` (`SH4Z v5000 TLV` | `CHAIN 135`)
@@ -71,7 +71,7 @@
 | **Shard & Neuron Parity** | `42,240` Neurons (`960 × Chair-44`, `5,406,720 B`) | **`63,360` Neurons == `63,360` Shards (`8,110,080 B / 8.11 MB` in `neurons_v5000_63360.npage`, `1,440 × Chair-44` columns, `1,013,760` dual-shell BDH/KAN synapses across 36 Macro-Domains)** |
 | **262K BPE & Lean 4 Proofs** | `131,072` Vocab / `480` Proofs | **`262,144`-Token (18-Bit) 144-Subdomain Open-Vocabulary BPE (`0 <UNK>`) + `564 / 564` Universally Quantified (`∀`) Lean 4 Proofs QED (`0 sorry`, `0 True : Prop`) + Layer 1.5 Haskell (`GHC 9.8.2`) / `DuckDB 1.5.6`** |
 | **Edge Silicon NDK & Win11 Native** | System Tray Icon (`Ω49`), Tethered/Unplugged roaming | **Dual-Pixel Edge Silicon: Pixel 10 (Tensor G5) 1Hz 24D sensor telemetry + Pixel 8 (Tensor G3 P8-APEX) speculative drafter with `8.11 MB` `.npage` local cache + Native Windows 11 System Tray Icon (`Ω50`), Desktop Top-Banner Widget & App-Mode HUD (`SovereignCockpitHUD.exe`)** |
-| **10-Table D1, Zero-Scan DO & Tunnel** | 10 D1 tables, 8-row DO buffer | **10 Live Cloudflare D1 Tables (`act_omega_d1_vault`) + In-Memory DO Cache + HTTP/2 Named Tunnel with 3-tier TCP Reset exponential backoff & loopback fallback** |
+| **11-User-Table (+ 2 System) D1, Zero-Scan DO & Tunnel** | Pre-v73.2.2 D1 (`10` legacy user tables, `8`-row DO buffer) | **11 User + 2 SQLite/CF System Live Cloudflare D1 Tables (`act_omega_d1_vault_v7322`) + In-Memory DO Cache + HTTP/2 Named Tunnel with 3-tier TCP Reset exponential backoff & loopback fallback** |
 
 
 ## 🛠️ Symbiotic FOSS IDE & Autonomous Agent Stack (`Zero-Paywall / $0 Cost`)
@@ -84,7 +84,7 @@
   * **Interactive Architecture Wiki:** [`https://act-omega-net.dev/wiki.html`](https://act-omega-net.dev/wiki.html)
   * **A2A v1.0 Agent Discovery Card:** [`https://act-omega-net.dev/.well-known/agent.json`](https://act-omega-net.dev/.well-known/agent.json) (Local: `http://127.0.0.1:8080/.well-known/agent.json`)
   * **Streamable HTTP MCP & OpenAI `/v1` Gateway:** [`https://mcp.act-omega-net.dev/mcp`](https://mcp.act-omega-net.dev/mcp) | [`https://mcp.act-omega-net.dev/v1/models`](https://mcp.act-omega-net.dev/v1/models) | [`https://mcp.act-omega-net.dev/v1/d1/status`](https://mcp.act-omega-net.dev/v1/d1/status)
-  * **Cloudflare D1 Edge Vault (`act_omega_d1_vault`):** Account `<EXTERNAL_CF_ACCOUNT_ID>` | Database UUID `<EXTERNAL_D1_DATABASE_ID>`
+  * **Cloudflare D1 Edge Vault (`act_omega_d1_vault_v7322`, `11` User Tables + `2` SQLite/CF System Tables):** Account `<EXTERNAL_CF_ACCOUNT_ID>` | Database UUID `<EXTERNAL_D1_DATABASE_ID>`
 
 ---
 
@@ -141,7 +141,7 @@ ACT-Omega Net v43.0.0 locks the physical-to-topological transducer to **`15.965 
 - **Tool 45 (`/api/v1/harness/metabolic_5w1h` & `/harness` / `/5w1h`):** **Sovereign Metabolic Autopoietic Harness & `5W1H` Executive Coordinator Table (`03_vault\connectome\harness_5w1h_coordinator.json`)** tied directly to active `i5-12450HX` CPU threads (`12` threads), free system RAM, `RTX 3050` 6GB free VRAM, and tri-silicon thermal headroom (`M_ATP = 0.8842`).
 - **Tool 46 (`/api/v1/mcp/rpc` & `/mcp`):** Native JSON-RPC 2.0 **Model Context Protocol (`MCP 2026-07-28`) Server** exposing all `48` native tools and `8` sovereign resources for **Cloudflare Zero Trust MCP Server Portal** and external AI clients.
 - **Tool 47 (`/v1/chat/completions`, `/v1/models` & `/api/v1/openai/compat`):** Drop-In **OpenAI-Compatible `/v1` API Surface** exposing `model: "sovereign-harmonic-v4300"`.
-- **Tool 48 (`/api/v1/cloudflare/d1_vpc_shadow` & `/cloudflare_d1`):** **Cloudflare D1 Serverless SQLite (`act_omega_d1_vault`) + Workers VPC + SQLite Durable Object Edge Shadow Node** (`00_control\cloudflare_edge\schema_d1_v4300.sql` & `worker_vpc_shadow_v4300.js`).
+- **Tool 48 (`/api/v1/cloudflare/d1_vpc_shadow` & `/cloudflare_d1`):** **Cloudflare D1 Serverless SQLite (historical v43 `act_omega_d1_vault`, rotated in `v73.2.2+` to `act_omega_d1_vault_v7322` with `11` user + `2` system tables) + Workers VPC + SQLite Durable Object Edge Shadow Node** (`00_control\cloudflare_edge\schema_d1_v4300.sql` & `worker_vpc_shadow_v4300.js`).
 - **354 Base + 10 Runtime = 300 Lean 4 CIC Proofs QED (`0 sorry`):** Theorems `249..272` + Runtime Checks `273..276`.
 
 
@@ -149,7 +149,7 @@ ACT-Omega Net v43.0.0 locks the physical-to-topological transducer to **`15.965 
 - **Recursive Cache-Line Architecture Optimization (`+6.42%` to `3,420.0k ops/s`, `58` Sectors / `133,120 B` `sovereign_harmonic_v4300.e8z`):** Aligns 3-compartment dendritic + `5W1H` evaluation to `64 B` cache lines (`2,080 × 64 B`, Mask `0xFFFFFFFFFFFFFFFFFF`), elevating cluster throughput to `3,420.0k ops/s` (`1,468.0k` LOQ15 + `424.6k` Pixel 10 + `426.4k` Pixel 8 `P8-APEX`) and cutting 4-wave `CHAIN 72` DAG latency from `16.4 ms` to `14.8 ms`.
 - **Dynamic 4-Band `5W1H` Load-Shift Stress Engine (`/api/v1/harness/metabolic_5w1h?load=sweep4` & `/stress_5w1h`):** Deterministically sweeps and logs transitions across `BAND_1_ANABOLIC_SURPLUS` (`M_ATP = 0.8920`), `BAND_2_HOMEOSTATIC_LAMINAR` (`M_ATP = 0.6140`), `BAND_3_THERMAL_CONSERVATION_OFFLOAD` (`M_ATP = 0.3680`), and `BAND_4_CATABOLIC_SWR_RECOVERY` (`M_ATP = 0.1840`) into `03_vault\connectome\harness_5w1h_load_shifts.jsonl`.
 - **Interactive JSON-RPC 2.0 MCP Method Dispatcher (`Tool 46`) & OpenAI SDK `choices[]` Surface (`Tool 47`):** Consumes `POST` `Content-Length` bodies on persistent `Keep-Alive` sockets, dispatches MCP `initialize`, `tools/list` (`50` tools), `tools/call`, and `resources/list` (`8` resources), and emits OpenAI-compliant `choices[]`, `usage`, and `/v1/models` responses for Cursor, Continue.dev, and external agents.
-- **Live Cloudflare D1 (`act_omega_d1_vault`, `5 GB` Tier) Provisioning & Zero Trust MCP Portal Configuration (`Tool 48`):** Stages `wrangler.toml`, `seed_d1_v4300.sql`, and `register_zero_trust_mcp_portal.ps1` and provisions local + remote D1 SQLite tables.
+- **Live Cloudflare D1 (historical v43 `act_omega_d1_vault`, rotated in `v73.2.2+` to `act_omega_d1_vault_v7322` with `11` user + `2` system tables, `5 GB` Tier) Provisioning & Zero Trust MCP Portal Configuration (`Tool 48`):** Stages `wrangler.toml`, `seed_d1_v4300.sql`, and `register_zero_trust_mcp_portal.ps1` and provisions local + remote D1 SQLite tables.
 - **Tool 49 (`/api/v1/speech/cymatic_formant_tts` & `/api/v1/speech/wav`):** Klatt/Rosenberg Glottal-Pulse ($f_0 = 127.72\text{ Hz} = 8 \times 15.965\text{ Hz}$) + 4-Formant Vocal Tract Cascade ($F_1..F_4$) + real `16 kHz` 16-bit PCM RIFF/WAVE binary streaming (`16,044 B`) coupled to HUD Web Audio + Speech prosody.
 - **Tool 50 (`/api/v1/training/cross_domain_compound_qat`):** 64-Epoch 6-Domain Compound Curriculum QAT across `21,120` 3-Compartment Dendritic Neurons (`neurons_v4300.npage`), converging Holdout PPL to `1.119476` (`86.08%` cross-domain compound transfer).
 - **354 Base + 10 Runtime = 300 Lean 4 CIC Proofs QED (`0 sorry`):** Theorems `273..278` + Runtime Checks `279..284`.

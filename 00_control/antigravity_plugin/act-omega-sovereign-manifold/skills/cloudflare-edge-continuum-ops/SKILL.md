@@ -3,8 +3,8 @@ name: cloudflare-edge-continuum-ops
 description: >-
   Audit, deploy, and synchronize the ACT-Omega Cloudflare Named Tunnel
   (act-omega-net.dev), SovereignEdgeShadowDO SQLite Durable Object
-  (worker_vpc_shadow_v3700.js), 10-Table Cloudflare D1 Vault
-  (act_omega_d1_vault), and 2026 Cloudflare Free-Tier developer services
+  (worker_vpc_shadow_v3700.js), 11-User-Table (+ 2 System Tables) Cloudflare D1 Vault
+  (act_omega_d1_vault_v7322), and 2026 Cloudflare Free-Tier developer services
   (Vectorize, R2, Workers AI, Workers KV, Turnstile, Zero Trust Access). Use
   whenever inspecting or upgrading the Cloudflare edge layer.
 ---

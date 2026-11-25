@@ -10,5 +10,6 @@
   "swr_sub_epochs_per_epoch": 8,
   "swr_compression_ratio": 20.0,
   "longterm_memory_file": "03_vault/connectome/episodic_longterm_memory_v3800.jsonl",
-  "remote_d1_uuid": "act_omega_d1_vault"
+  "remote_d1_uuid": "act_omega_d1_vault",
+  "historical_schema_note": "Frozen v38.0.0 connectome index preserving pre-v73.2.2 D1 binding name act_omega_d1_vault; rotated in v73.2.2+ to act_omega_d1_vault_v7322 (11 user + 2 SQLite/CF system tables)."
 }

@@ -72,7 +72,7 @@
       "measured_atp": 0.184,
       "who": "Emergency Kerr Event Horizon Evictor & Tier-2/Tier-3 Vault Sync",
       "what": "Evict Non-Salient KV Context + Flush Dirty neurons_v4000.npage & neurons_v4400_expansion.npage Records to E: SSD & Cloudflare D1",
-      "where": "Host L0 Ring + E:\\Sovereign_Manifold_SSD_Vault + Remote 5GB Cloudflare D1 (10 Tables)",
+      "where": "Host L0 Ring + E:\\Sovereign_Manifold_SSD_Vault + Remote 5GB Cloudflare D1 (act_omega_d1_vault_v7322, 11 User Tables + 2 System Tables)",
       "when": "Immediate Interrupt Barrier (<1.8ms) + 159.65 Hz SWR Replay (E8..E9)",
       "how": "Kerr r_+ Horizon Eviction + 32-Leaf Merkle Checkpoint + Wrangler D1 Edge Sync"
     }

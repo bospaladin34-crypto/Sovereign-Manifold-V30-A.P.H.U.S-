@@ -34,6 +34,7 @@ use act_omega_l0_core::v72_1_sh_xi_matryoshka_384_768_cuda_pretrainer::{
 use act_omega_l0_core::v72_2_sh_xi_sparse_moe_chatml_sft_and_rag::{
     C_SH_XI_SESSION_COUNTERS_PATH,
     E_SH_XI_SESSION_COUNTERS_PATH,
+    V72_2ChatTurn,
     v72_2_clear_session_history_for_test,
     v72_2_contains_seed_prefix_artifact,
     v72_2_converse_execute_full_with_params,
@@ -1879,18 +1880,63 @@ fn test_v73_2_4_m1_security_gates_v44_poc_and_query_key_parity() {
     assert!(!sub_simd.rejected_bad_request && sub_simd.poc_verified && sub_simd.lease_active);
     assert_eq!(sub_simd.worker_batches, 2);
 
+    // Negative release checks: missing or forged poc_hash MUST reject (HTTP 400) with zero lease mutation
+    for (bad_poc, expected_reason, label) in [
+        ("", "MISSING_POC_HASH", "release empty poc_hash"),
+        (
+            "0xDEAD00_PLUCKER_POS_QED",
+            "INVALID_POC_HASH_E8Z_PLUCKER_MISMATCH",
+            "release forged poc_hash",
+        ),
+    ] {
+        let rel_bad = v44_test_harness::execute_tool78_webgpu_compute_lease(
+            &mut leases,
+            "release",
+            "unit-test-worker",
+            "",
+            None,
+            bad_poc,
+            4500.0,
+            ssd,
+        );
+        assert!(rel_bad.rejected_bad_request, "MUST reject {}: {}", label, rel_bad.diag);
+        assert_eq!(rel_bad.rejection_reason, expected_reason);
+        assert!(!rel_bad.poc_verified);
+        assert!(!rel_bad.lease_active);
+        assert_eq!(leases.len(), 1, "leases MUST remain unmutated on rejected {}", label);
+        assert_eq!(rel_bad.active_leases_count, 1);
+    }
+
+    // Positive release check with real measured .e8z PoC hash
     let rel_res = v44_test_harness::execute_tool78_webgpu_compute_lease(
         &mut leases,
         "release",
         "unit-test-worker",
         "",
         None,
-        "",
+        &exp_gpu,
         4500.0,
         ssd,
     );
-    assert!(!rel_res.rejected_bad_request && !rel_res.lease_active && !rel_res.poc_verified);
+    assert!(!rel_res.rejected_bad_request && !rel_res.lease_active && rel_res.poc_verified);
+    assert_eq!(rel_res.assigned_col_start, 480);
+    assert_eq!(rel_res.assigned_col_end, 495);
     assert!(leases.is_empty());
+    assert_eq!(rel_res.active_leases_count, 0);
+
+    // Idempotent release on already-empty leases with valid SIMD PoC hash succeeds with poc_verified=true
+    let rel_empty = v44_test_harness::execute_tool78_webgpu_compute_lease(
+        &mut leases,
+        "release",
+        "unit-test-worker",
+        "",
+        None,
+        &exp_simd,
+        4500.0,
+        ssd,
+    );
+    assert!(!rel_empty.rejected_bad_request && !rel_empty.lease_active && rel_empty.poc_verified);
+    assert!(rel_empty.cadence_jitter_us > 0.0);
 
     // 2. Item #5: Percent-encoded & case-variant ?key= detection parity
     for enc in [
@@ -2443,4 +2489,214 @@ fn test_v73_2_4_m3_item10_persistent_monotonic_sh_xi_turn_counters() {
     let bin_src = std::fs::read_to_string("01_l0_rust/src/bin/v31_swarm.rs").expect("bin/v31_swarm.rs");
     let lib_src = std::fs::read_to_string("01_l0_rust/src/v31_swarm.rs").expect("src/v31_swarm.rs");
     assert_eq!(bin_src, lib_src, "bin/v31_swarm.rs and src/v31_swarm.rs MUST be identical");
+}
+
+#[test]
+fn test_v73_2_5_nf10b_stateless_monotonic_turn_counters() {
+    ensure_repo_root_cwd();
+    let _rw_guard = RW_EVAL500_GUARD.lock().unwrap_or_else(|e| e.into_inner());
+    let _turn_guard = SH_XI_TURN_COUNTER_GUARD.lock().unwrap_or_else(|e| e.into_inner());
+    let _turn_reload_on_drop = ShXiTurnCounterReloadGuard::new("nf10b_stateless");
+    let _restore = guard_paths(&[
+        "03_vault/connectome/sh_xi_rw_eval_500_sealed.jsonl",
+        "E:\\Sovereign_Manifold_SSD_Vault\\connectome\\sh_xi_rw_eval_500_sealed.jsonl",
+    ]);
+
+    let live_c_before = std::fs::read(C_SH_XI_SESSION_COUNTERS_PATH).ok();
+    let live_e_before = if std::path::Path::new("E:\\").exists() {
+        std::fs::read(E_SH_XI_SESSION_COUNTERS_PATH).ok()
+    } else {
+        None
+    };
+
+    v72_2_reload_turn_counters_from_disk_for_test();
+    v72_2_clear_session_history_for_test();
+
+    let (init_global, _, _) = v72_2_get_turn_counters_snapshot();
+    let mut prev_global = init_global;
+
+    // 1. 10 sequential stateless calls alternating None, Some(""), Some("   ") -> crosses >8 turns
+    let stateless_sids: [Option<&str>; 3] = [None, Some(""), Some("   ")];
+    for turn_idx in 1..=10usize {
+        let sid_opt = stateless_sids[(turn_idx - 1) % 3];
+        let res = v72_2_converse_execute_full_with_params(
+            &format!("Stateless turn {} query on E8 lattice.", turn_idx),
+            None,
+            sid_opt,
+            &Vec::new(),
+            false,
+            Some(12),
+            Some(0.0),
+        );
+        assert_eq!(res.session_id, "stateless");
+        assert_eq!(
+            res.session_turn_count, turn_idx,
+            "Stateless turn {} MUST increment monotonically without capping at 1 or 8",
+            turn_idx
+        );
+        assert_eq!(res.global_turn_seq, prev_global + 1);
+        prev_global = res.global_turn_seq;
+    }
+
+    // 2. Turns 11 & 12 with non-empty explicit_messages MUST ignore prior_turns.len() / 2 and continue 11, 12
+    let explicit_2 = vec![
+        V72_2ChatTurn {
+            role: String::from("user"),
+            content: String::from("Earlier question 1."),
+        },
+        V72_2ChatTurn {
+            role: String::from("assistant"),
+            content: String::from("Earlier answer 1."),
+        },
+        V72_2ChatTurn {
+            role: String::from("user"),
+            content: String::from("Turn 11 explicit stateless query."),
+        },
+    ];
+    let res11 = v72_2_converse_execute_full_with_params(
+        "",
+        None,
+        None,
+        &explicit_2,
+        false,
+        Some(12),
+        Some(0.0),
+    );
+    assert_eq!(res11.session_id, "stateless");
+    assert_eq!(res11.session_turn_count, 11);
+    assert_eq!(res11.global_turn_seq, prev_global + 1);
+    prev_global = res11.global_turn_seq;
+
+    let explicit_6 = vec![
+        V72_2ChatTurn { role: String::from("user"), content: String::from("U1") },
+        V72_2ChatTurn { role: String::from("assistant"), content: String::from("A1") },
+        V72_2ChatTurn { role: String::from("user"), content: String::from("U2") },
+        V72_2ChatTurn { role: String::from("assistant"), content: String::from("A2") },
+        V72_2ChatTurn { role: String::from("user"), content: String::from("U3") },
+        V72_2ChatTurn { role: String::from("assistant"), content: String::from("A3") },
+        V72_2ChatTurn { role: String::from("user"), content: String::from("Turn 12 explicit stateless query.") },
+    ];
+    let res12 = v72_2_converse_execute_full_with_params(
+        "",
+        None,
+        Some(""),
+        &explicit_6,
+        false,
+        Some(12),
+        Some(0.0),
+    );
+    assert_eq!(res12.session_id, "stateless");
+    assert_eq!(res12.session_turn_count, 12);
+    assert_eq!(res12.global_turn_seq, prev_global + 1);
+    prev_global = res12.global_turn_seq;
+
+    let (_, _, snap_sessions) = v72_2_get_turn_counters_snapshot();
+    assert_eq!(snap_sessions.get("__stateless_default__").copied(), Some(12));
+    assert!(!snap_sessions.contains_key("stateless"));
+    assert!(v72_2_get_session_turns("stateless").is_empty());
+    assert!(v72_2_get_session_turns("__stateless_default__").is_empty());
+
+    // 3. Reload from isolated disk and execute Turn 13 via dispatch route
+    v72_2_reload_turn_counters_from_disk_for_test();
+    v72_2_clear_session_history_for_test();
+    let route_raw = v72_2_dispatch_converse_route(
+        "{\"prompt\":\"Post-reload stateless turn 13.\",\"session_id\":\"\",\"max_tokens\":12,\"temperature\":0.0}",
+    );
+    let val: serde_json::Value = serde_json::from_str(&route_raw).expect("valid converse JSON");
+    assert_eq!(val.get("session_id").and_then(|v| v.as_str()), Some("stateless"));
+    assert_eq!(val.get("session_turn_count").and_then(|v| v.as_u64()), Some(13));
+    assert_eq!(val.get("global_turn_seq").and_then(|v| v.as_u64()), Some((prev_global + 1) as u64));
+    prev_global += 1;
+
+    // 4. reset_session=true resets __stateless_default__ to 1, then next turn advances to 2
+    let reset1 = v72_2_converse_execute_full_with_params(
+        "Reset stateless turn 1.",
+        None,
+        None,
+        &Vec::new(),
+        true,
+        Some(12),
+        Some(0.0),
+    );
+    assert_eq!(reset1.session_id, "stateless");
+    assert_eq!(reset1.session_turn_count, 1);
+    assert_eq!(reset1.global_turn_seq, prev_global + 1);
+    prev_global = reset1.global_turn_seq;
+
+    let next2 = v72_2_converse_execute_full_with_params(
+        "Post-reset stateless turn 2.",
+        None,
+        Some("   "),
+        &Vec::new(),
+        false,
+        Some(12),
+        Some(0.0),
+    );
+    assert_eq!(next2.session_id, "stateless");
+    assert_eq!(next2.session_turn_count, 2);
+    assert_eq!(next2.global_turn_seq, prev_global + 1);
+
+    if let Some(ref before) = live_c_before {
+        let live_c_after = std::fs::read(C_SH_XI_SESSION_COUNTERS_PATH).ok();
+        assert_eq!(Some(before), live_c_after.as_ref(), "cargo test MUST NOT mutate live C: counter ledger");
+    }
+    if let Some(ref before_e) = live_e_before {
+        let live_e_after = std::fs::read(E_SH_XI_SESSION_COUNTERS_PATH).ok();
+        assert_eq!(Some(before_e), live_e_after.as_ref(), "cargo test MUST NOT mutate live E: counter ledger");
+    }
+
+    let v72_2_src = std::fs::read_to_string("01_l0_rust/src/v72_2_sh_xi_sparse_moe_chatml_sft_and_rag.rs")
+        .expect("read v72_2");
+    assert!(!v72_2_src.contains('[') && !v72_2_src.contains(']'), "v72_2 MUST have 0 square brackets");
+    let fn_start = v72_2_src.find("pub fn v72_2_advance_turn_counters(").expect("advance fn");
+    let fn_end = v72_2_src[fn_start..].find("pub fn v72_2_reload_turn_counters_from_disk_for_test(").expect("advance fn end") + fn_start;
+    let advance_fn = &v72_2_src[fn_start..fn_end];
+    assert!(
+        !advance_fn.contains("/ 2") && !advance_fn.contains("/2"),
+        "v72_2_advance_turn_counters MUST NOT divide by 2"
+    );
+}
+
+#[test]
+fn test_v73_2_5_m1_tool287_telemetry_and_v40_markers() {
+    ensure_repo_root_cwd();
+    let bin_src = std::fs::read_to_string("01_l0_rust/src/bin/v31_swarm.rs").expect("bin/v31_swarm.rs");
+    let lib_src = std::fs::read_to_string("01_l0_rust/src/v31_swarm.rs").expect("src/v31_swarm.rs");
+    assert_eq!(bin_src, lib_src, "bin/v31_swarm.rs and src/v31_swarm.rs MUST remain 1:1 identical");
+
+    let norm = bin_src.replace("\r\n", "\n");
+    // Item #3: /api/v1/tool/287 routing + VESPER ARACHNE IK diag parity
+    assert!(
+        norm.contains("|| clean_path == \"/api/v1/tools/t287\"\n            || clean_path == \"/api/v1/tool/287\""),
+        "chain135 dispatch MUST route /api/v1/tool/287 to v62_measure_vesper_arachne_e8_ik_and_click_through"
+    );
+    assert!(
+        norm.contains("clean_path.contains(\"vesper_arachne\")\n                    || clean_path == \"/api/v1/tools/t287\"\n                    || clean_path == \"/api/v1/tool/287\""),
+        "last_card_diag MUST tag /api/v1/tools/t287 and /api/v1/tool/287 as VESPER ARACHNE IK"
+    );
+
+    // Item #8: /api/v1/telemetry emits release_version and d1_tables_synced dynamically
+    let telem_start = norm.find("if clean_path == \"/api/v1/telemetry\"").expect("telemetry branch");
+    let telem_end = norm[telem_start..].find("if clean_path == \"/api/v1/sector/inspect\"").expect("telemetry end") + telem_start;
+    let telem_block = &norm[telem_start..telem_end];
+    assert!(telem_block.contains("v73_2_read_live_d1_user_tables()"));
+    assert!(telem_block.contains("v73_2_read_live_release_version()"));
+    assert!(telem_block.contains("\\\"release_version\\\":\\\"{}\\\""));
+    assert!(telem_block.contains("\\\"d1_tables_synced\\\":{}"));
+
+    // Dynamic helpers sanity check
+    let live_ver = v73_2_read_live_release_version();
+    assert!(!live_ver.is_empty() && live_ver != "UNMEASURED/OFFLINE");
+    let (d1_cnt, d1_tables) = v73_2_read_live_d1_user_tables();
+    assert_eq!(d1_cnt, Some(d1_tables.len()));
+    assert!(d1_tables.len() >= 11);
+
+    // Item #9: v40 historical comment & zero brackets
+    let v40_src = std::fs::read_to_string("01_l0_rust/src/v40_omni_introspect_21120_shards_qat10.rs")
+        .expect("v40 source");
+    assert!(!v40_src.contains('[') && !v40_src.contains(']'), "v40 MUST have 0 square brackets");
+    assert!(
+        v40_src.contains("sync_d1_v4400_all10tables.sql\") // HISTORICAL_PRE_V7322:"),
+        "v40 line 75 MUST carry HISTORICAL_PRE_V7322 annotation"
+    );
 }

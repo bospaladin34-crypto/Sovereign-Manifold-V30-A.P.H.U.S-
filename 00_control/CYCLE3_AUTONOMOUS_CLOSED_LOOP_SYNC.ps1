@@ -1,5 +1,5 @@
 ﻿# ACT-Omega Net v44.0.0 (SH4Z v4400 TLV) — Autonomous Host-Edge-Cloud Closed-Loop Orchestrator (`CYCLE3_AUTONOMOUS_CLOSED_LOOP_SYNC.ps1`)
-# Synchronizes Host (LOQ 15 :8097) <-> Mobile Edge (Pixel 10 EDGE-1-PIXEL10-G5 & Pixel 8 EDGE-2-PIXEL8-SHIBA) <-> Cloudflare Worker/10-Table D1/DO <-> E:\ SSD & G:\ Drive
+# Synchronizes Host (LOQ 15 :8097) <-> Mobile Edge (Pixel 10 EDGE-1-PIXEL10-G5 & Pixel 8 EDGE-2-PIXEL8-SHIBA) <-> Cloudflare Worker/11-User-Table (+ 2 System) D1/DO <-> E:\ SSD & G:\ Drive
 
 $ErrorActionPreference = "SilentlyContinue"
 Write-Host "========================================================================" -ForegroundColor Cyan
@@ -95,10 +95,13 @@ if (Test-Path $e8zPath -PathType Leaf) {
 $shmRes = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/shm/p8_npage_bridge" -TimeoutSec 5
 $leaseAcq = if ($pocHash) { Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/worksteal/webgpu_lease?action=acquire&worker_id=cyclesync-webgpu-probe&gpu_adapter=WebGPU-WGSL-Stiefel-FNO-64T&kops=480.0&poc_hash=$pocHash" -Headers $opHdrs -TimeoutSec 5 } else { $null }
 $schedRes = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/worksteal/elastic_scheduler" -TimeoutSec 5
-$leaseRel = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/worksteal/webgpu_lease?action=release&worker_id=cyclesync-webgpu-probe" -Headers $opHdrs -TimeoutSec 5
+$leaseRel = if ($pocHash) { Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/worksteal/webgpu_lease?action=release&worker_id=cyclesync-webgpu-probe&poc_hash=$pocHash" -Headers $opHdrs -TimeoutSec 5 } else { $null }
 $perfRes = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/diagnostics/v44_perf_blitz" -TimeoutSec 5
 if ($shmRes -and $perfRes) {
-    Write-Host "[PERF-BLITZ T77-T80] P8 .npage SHM=$($shmRes.shm_total_bytes)B ($($shmRes.p8_l2_occupancy_pct)% 4MB L2 Pinned, $($shmRes.bandwidth_saved_pct)% BW Saved -> $($shmRes.p8_shm_kops)k ops/s) | Elastic Peak=$($schedRes.total_elastic_kops)k ops/s (Jitter=0.000us) -> Released=$($leaseRel.total_elastic_cluster_kops)k ops/s | CHAIN 80 (400/400 Lean 4 QED)" -ForegroundColor Green
+    $relJitter = if ($leaseRel -and $null -ne $leaseRel.cadence_jitter_us) { "$($leaseRel.cadence_jitter_us)us" } else { "UNMEASURED/OFFLINE" }
+    $relPocOk = if ($leaseRel -and $null -ne $leaseRel.poc_verified) { "$($leaseRel.poc_verified)" } else { "UNMEASURED/OFFLINE" }
+    $relClusterKops = if ($leaseRel -and $null -ne $leaseRel.total_elastic_cluster_kops) { "$($leaseRel.total_elastic_cluster_kops)k" } else { "UNMEASURED/OFFLINE" }
+    Write-Host "[PERF-BLITZ T77-T80] P8 .npage SHM=$($shmRes.shm_total_bytes)B ($($shmRes.p8_l2_occupancy_pct)% 4MB L2 Pinned, $($shmRes.bandwidth_saved_pct)% BW Saved -> $($shmRes.p8_shm_kops)k ops/s) | Elastic Peak=$($schedRes.total_elastic_kops)k ops/s (Jitter=$relJitter, poc_verified=$relPocOk) -> Released=$relClusterKops ops/s | CHAIN 80 (400/400 Lean 4 QED)" -ForegroundColor Green
 }
 
 # 3. Trigger Cycle-2 16-Domain Compound QAT & Pixel 8 Speculative Verifier + 28,160-Neuron Connectome
@@ -109,7 +112,7 @@ if ($qatRes) {
     Write-Host "[CYCLE-2 MODEL QAT] Epochs=$($qatRes.qat_total_epochs) | Bridged=16 Domains (256 Compounds) | Holdout PPL=$($qatRes.holdout_ppl) | Transfer=$($qatRes.compound_transfer_pct)% | P8 Speculative=$($cQatRes.p8_speculative_kops)k ops/s | Neurons=$($npageRes.combined_neurons) (640x Chair-44)" -ForegroundColor Magenta
 }
 
-# 4. Trigger Cloudflare Edge Worker Durable Object & 10-Table D1 Closed-Loop Sync with Live Measured Telemetry
+# 4. Trigger Cloudflare Edge Worker Durable Object & 11-User-Table (+ 2 System) D1 Closed-Loop Sync with Live Measured Telemetry
 $harnLive = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/harness/metabolic_5w1h" -TimeoutSec 4
 $liveAtp = if ($harnLive -and $harnLive.metabolic_atp_score) { $harnLive.metabolic_atp_score } else { 0.8920 }
 $liveRtx = if ($profRes -and $profRes.rtx3050_temp_c) { $profRes.rtx3050_temp_c } else { 57.0 }

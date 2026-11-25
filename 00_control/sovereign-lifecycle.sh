@@ -25,7 +25,7 @@ case "$cmd" in
     echo "=== ACT-OMEGA v44.5.0 .NPAGE SHM & CLOUDFLARE D1 SYNC ==="
     curl -sS --max-time 4 "${HOST_URL}/api/v1/shm/p8_npage_bridge"
     echo ""
-    curl -sS --max-time 6 "${HOST_URL}/api/v1/cloudflare/d1_sync_10tables"
+    curl -sS --max-time 6 "${HOST_URL}/api/v1/cloudflare/d1_vpc_shadow"
     echo ""
     ;;
   ollama-test)

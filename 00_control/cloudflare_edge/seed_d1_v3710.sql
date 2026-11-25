@@ -1,3 +1,4 @@
+-- HISTORICAL PRE-v73.2.2 SCHEMA ARCHIVE (HISTORICAL_PRE_V7322): superseded in v73.2.2+ by act_omega_d1_vault_v7322 (11 user tables + 2 SQLite/CF system tables).
 -- ACT-Omega Net v47.0.0 (SH4Z v4700 TLV) Seed Data for act_omega_d1_vault (5GB Free Tier)
 INSERT INTO npage_tier_snapshots (schema_version, total_neurons, total_bytes, active_synapses, swr_sub_epochs, swr_compression_ratio, metabolic_atp_score, rtx3050_temp_c, recorded_at_ms)
 VALUES ('SH4Z_v4700_TLV', 42240, 5406720, 337920, 10, 24.0, 0.9554, 48.5, 1760982000000);

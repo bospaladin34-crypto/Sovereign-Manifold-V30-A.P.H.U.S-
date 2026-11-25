@@ -429,6 +429,49 @@ pub fn execute_tool78_webgpu_compute_lease(
     };
 
     if action == "release" {
+        if poc_hash.is_empty() {
+            return make_rejected(
+                "MISSING_POC_HASH",
+                leases,
+                base_trisilicon_kops,
+                action,
+                worker_id,
+                gpu_adapter,
+                poc_hash,
+                now,
+            );
+        }
+        let (exp_gpu, exp_simd) = match v44_compute_expected_e8z_plucker_hashes() {
+            Some(pair) => pair,
+            None => {
+                return make_rejected(
+                    "UNMEASURED_E8Z_OFFLINE",
+                    leases,
+                    base_trisilicon_kops,
+                    action,
+                    worker_id,
+                    gpu_adapter,
+                    poc_hash,
+                    now,
+                );
+            }
+        };
+        let m_gpu = v44_constant_time_eq(&poc_hash, &exp_gpu);
+        let m_simd = v44_constant_time_eq(&poc_hash, &exp_simd);
+        if !(m_gpu || m_simd) {
+            return make_rejected(
+                "INVALID_POC_HASH_E8Z_PLUCKER_MISMATCH",
+                leases,
+                base_trisilicon_kops,
+                action,
+                worker_id,
+                gpu_adapter,
+                poc_hash,
+                now,
+            );
+        }
+        poc_verified = true;
+
         for slot in leases.iter() {
             if slot.worker_id == worker_id {
                 assigned_col_start = slot.col_start;
@@ -437,13 +480,6 @@ pub fn execute_tool78_webgpu_compute_lease(
             }
         }
         leases.retain(|slot| slot.worker_id != worker_id);
-        if !poc_hash.is_empty() {
-            if let Some((exp_gpu, exp_simd)) = v44_compute_expected_e8z_plucker_hashes() {
-                let m_gpu = v44_constant_time_eq(&poc_hash, &exp_gpu);
-                let m_simd = v44_constant_time_eq(&poc_hash, &exp_simd);
-                poc_verified = m_gpu || m_simd;
-            }
-        }
     } else if action == "status" {
         for slot in leases.iter() {
             if slot.worker_id == worker_id {

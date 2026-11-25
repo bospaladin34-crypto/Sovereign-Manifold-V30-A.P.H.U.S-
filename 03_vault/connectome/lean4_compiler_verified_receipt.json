@@ -1,6 +1,6 @@
 {
     "schema":  "ACT_OMEGA_LEAN4_COMPILER_VERIFICATION_RECEIPT_V2",
-    "version":  "v73.2.4",
+    "version":  "v73.2.5",
     "lean_file":  "03_vault/lean4/SovereignManifoldTheorems.lean",
     "lean_mirror":  "01_l0_rust/lean4/SovereignManifoldTheorems.lean",
     "lean_sha256":  "07f281865f2405216b79c5bc0218ea7a2ff4f6719c6a649494d56745fb51f445",
@@ -17,7 +17,7 @@
     "hmac_algorithm":  "RFC2104_HMAC_SHA256",
     "hmac_sha256":  "0d6fc7040098e464fdbac7430f132693cd2d6dd81df3e050680e91ab6182bebd",
     "trust_boundary":  "RFC2104_HMAC_SHA256 signed externally by 00_control/Verify-Lean4IndependentReceipt.ps1 using the local external operator key (ACT_OMEGA_OPERATOR_KEY / ~/.act_omega_operator_vault_key). Closes C1 in-process Rust self-writing and unsigned receipt spoofing; same-OS-user principal isolation would require an offline/FIDO2 asymmetric signature verified against a public key.",
-    "compiler_elapsed_ms":  40744,
-    "verify_elapsed_ms":  40744,
-    "verified_at_utc":  "2026-11-24T01:15:10Z"
+    "compiler_elapsed_ms":  61042,
+    "verify_elapsed_ms":  61042,
+    "verified_at_utc":  "2026-11-25T07:44:28Z"
 }

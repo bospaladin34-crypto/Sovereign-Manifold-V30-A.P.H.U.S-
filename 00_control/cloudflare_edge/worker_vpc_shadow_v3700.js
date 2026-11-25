@@ -917,8 +917,8 @@ export default {
       lowerPath === "/api/v1/mcp/rpc" ||
       lowerPath === "/api/v1/telemetry" ||
       lowerPath === "/api/v1/cloudflare/d1_vpc_shadow" ||
-      lowerPath === "/api/v1/cloudflare/d1_all8tables" ||
-      lowerPath === "/api/v1/cloudflare/d1_all10tables" ||
+      lowerPath === "/api/v1/cloudflare/d1_schema_tables" ||
+      lowerPath === "/api/v1/cloudflare/d1_vault_tables" ||
       lowerPath === "/api/v1/cloudflare/cron_sync" ||
       lowerPath === "/api/v1/cloudflare/shm_relay" ||
       lowerPath === "/api/v1/cloudflare/free_tier_governor" ||
@@ -1466,7 +1466,8 @@ export default {
     if (
       lowerPath === "/api/v1/vesper_arachne/ik_swarm_companion" ||
       lowerPath === "/api/v1/vesper_arachne/e8_ik" ||
-      lowerPath === "/api/v1/tools/t287"
+      lowerPath === "/api/v1/tools/t287" ||
+      lowerPath === "/api/v1/tool/287"
     ) {
       const auth = await verifyZeroTrustAndOperatorHeaders(request, env);
       if (!auth.authorized) {
@@ -1766,11 +1767,36 @@ export default {
           }
         });
       }
+      const hasValidVersionCode =
+        typeof synced.apk_version_code === "number" &&
+        Number.isFinite(synced.apk_version_code) &&
+        synced.apk_version_code > 0;
+      if (!hasValidVersionCode) {
+        return Response.json({
+          status: "UNMEASURED/OFFLINE",
+          package: "com.actomega.manifold",
+          version_name: synced.version,
+          version_code: null,
+          chain_milestone: synced.chain_milestone,
+          apk_sha256: apkRec.sha256_digest.toLowerCase(),
+          apk_bytes: Number(apkRec.byte_length),
+          tool_id: 284,
+          fail_closed: true,
+          error: "D1 edge_cluster_metadata.apk_version_code is missing or non-positive",
+          timestamp_ms: Date.now()
+        }, {
+          status: 503,
+          headers: {
+            "Content-Type": "application/json; charset=utf-8",
+            "Cache-Control": "no-store"
+          }
+        });
+      }
       return Response.json({
         status: "MEASURED_PIXEL_OTA_MANIFEST_READY",
         package: "com.actomega.manifold",
         version_name: synced.version,
-        version_code: synced.apk_version_code ?? Number(apkRec.measured_shards || 0),
+        version_code: synced.apk_version_code,
         chain_milestone: synced.chain_milestone,
         apk_sha256: apkRec.sha256_digest.toLowerCase(),
         apk_bytes: Number(apkRec.byte_length),
@@ -2190,8 +2216,8 @@ export default {
 
     if (
       lowerPath === "/api/v1/cloudflare/d1_vpc_shadow" ||
-      lowerPath === "/api/v1/cloudflare/d1_all8tables" ||
-      lowerPath === "/api/v1/cloudflare/d1_all10tables"
+      lowerPath === "/api/v1/cloudflare/d1_schema_tables" ||
+      lowerPath === "/api/v1/cloudflare/d1_vault_tables"
     ) {
       const auth = await verifyZeroTrustAndOperatorHeaders(request, env);
       if (!auth.authorized) {

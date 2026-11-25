@@ -251,8 +251,8 @@ const env = {
   console.log("Testing S2-S5 & E1: Hyperdrive SQL allowlist, D1 dumps, Vectorize/AI rate+fail-closed, MCP CORS/no-key-inject, and E1 status routes...");
   const gatedGetRoutes = [
     "/api/v1/cloudflare/d1_vpc_shadow",
-    "/api/v1/cloudflare/d1_all8tables",
-    "/api/v1/cloudflare/d1_all10tables",
+    "/api/v1/cloudflare/d1_schema_tables",
+    "/api/v1/cloudflare/d1_vault_tables",
     "/api/v1/cloudflare/free_tier_governor",
     "/api/v1/cloudflare/paid_tier_governor",
     "/api/v1/cloudflare/vpc_mesh_status",
@@ -261,11 +261,22 @@ const env = {
     "/api/v1/cert/chain404",
     "/api/v1/research/bleeding_edge_5_syntheses"
   ];
+  assert.equal(workerSource.includes("d1_all8tables"), false, "Legacy route d1_all8tables MUST NOT exist in worker source");
+  assert.equal(workerSource.includes("d1_all10tables"), false, "Legacy route d1_all10tables MUST NOT exist in worker source");
   for (const r of gatedGetRoutes) {
     const resUnauth = await worker.fetch(new Request("https://act-omega-net.dev" + r), env);
     assert.equal(resUnauth.status, 403, `Unauthenticated GET ${r} MUST return 403`);
     const resQueryKey = await worker.fetch(new Request(`https://act-omega-net.dev${r}?key=${validOpKey}`), env);
     assert.equal(resQueryKey.status, 403, `?key= query param on ${r} MUST return 403`);
+  }
+  for (const d1Route of ["/api/v1/cloudflare/d1_schema_tables", "/api/v1/cloudflare/d1_vault_tables"]) {
+    const resD1Auth = await worker.fetch(new Request(`https://act-omega-net.dev${d1Route}`, {
+      headers: { "X-Sovereign-Operator-Key": validOpKey }
+    }), env);
+    assert.equal(resD1Auth.status, 200, `Authenticated GET ${d1Route} MUST return 200`);
+    const jsonD1Auth = await resD1Auth.json();
+    assert.equal(jsonD1Auth.status, "UNMEASURED/UNSYNCED", `${d1Route} without D1 binding MUST report UNMEASURED/UNSYNCED`);
+    assert.equal(jsonD1Auth.d1_database, "act_omega_d1_vault_v7322");
   }
 
   // S2: /api/v1/cloudflare/hyperdrive_query rejects raw sql and unauthenticated calls
@@ -340,7 +351,10 @@ const env = {
     "/api/v1/tools/t284",
     "/api/v1/tool/284",
     "/api/v1/tools/t284?edge_direct=1",
-    "/api/v1/tool/284?edge_direct=1"
+    "/api/v1/tool/284?edge_direct=1",
+    "/api/v1/vesper_arachne/ik_swarm_companion",
+    "/api/v1/tools/t287",
+    "/api/v1/tool/287"
   ];
   for (const r of m1GatedRoutes) {
     const resUnauth = await worker.fetch(new Request("https://act-omega-net.dev" + r), env);
@@ -456,6 +470,121 @@ const env = {
         assert.equal(jsonEdgeD1.version_code, 77);
         assert.equal(jsonEdgeD1.apk_bytes, 30546770);
         assert.equal(jsonEdgeD1.tool_id, 284);
+      }
+
+      // NF7a: Zero measured_shards fallback in manifest handler block & fail-closed 503 when apk_version_code is null
+      const manifestBlockStart = workerSource.indexOf("// Tool 284:");
+      const manifestBlockEnd = workerSource.indexOf("// Continuum Telemetry", manifestBlockStart);
+      assert.ok(manifestBlockStart >= 0 && manifestBlockEnd > manifestBlockStart, "Tool 284 manifest block boundaries MUST exist");
+      const manifestBlock = workerSource.slice(manifestBlockStart, manifestBlockEnd);
+      assert.equal(manifestBlock.includes("measured_shards"), false, "Manifest handler block MUST have 0 occurrences of measured_shards");
+
+      const envWithNullApkVersionD1 = {
+        ...env,
+        ACT_OMEGA_D1: {
+          prepare: (sql) => ({
+            _sql: sql,
+            bind: () => ({ _sql: sql })
+          }),
+          batch: async (stmts) => {
+            return stmts.map((st) => {
+              if (st._sql.includes("edge_cluster_metadata")) {
+                return {
+                  results: [{
+                    version_name: "v73.2.5",
+                    tlv_version: 7321,
+                    chain_milestone: "CHAIN 404",
+                    lean4_qed_count: 1010,
+                    tools_total: 404,
+                    apk_version_code: null,
+                    updated_at_ms: 1795488000000
+                  }]
+                };
+              }
+              if (st._sql.includes("npage_tier_snapshots")) {
+                return {
+                  results: [{
+                    snapshot_id: 14,
+                    schema_version: "SH4Z_v7321_TLV",
+                    total_neurons: 84480,
+                    total_bytes: 10813440,
+                    active_synapses: 4055040,
+                    metabolic_atp_score: 0.74,
+                    rtx3050_temp_c: 53.0,
+                    recorded_at_ms: 1795488000000
+                  }]
+                };
+              }
+              if (st._sql.includes("v41_measured_sha256_audit")) {
+                return {
+                  results: [{
+                    artifact_name: "com.actomega.manifold.apk",
+                    byte_length: 30546770,
+                    sha256_digest: "9e680fdc73d8401b7c4b8d848becdce1ae3e89519418b1c024c5c6c1afa9bc38",
+                    measured_shards: 77,
+                    measured_neurons: 84480
+                  }]
+                };
+              }
+              return { results: [] };
+            });
+          }
+        }
+      };
+
+      const resResetNullCache = await worker.fetch(new Request("https://act-omega-net.dev/api/v1/cloudflare/cron_sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Sovereign-Operator-Key": validOpKey },
+        body: "{}"
+      }), envWithNullApkVersionD1);
+      assert.equal(resResetNullCache.status, 200, "cron_sync cache invalidation on envWithNullApkVersionD1 MUST succeed");
+
+      for (const edgeOtaPath of ["/api/v1/tools/t284?edge_direct=1", "/api/v1/tool/284?edge_direct=1", "/api/v1/ota/pixel_manifest?edge_direct=1"]) {
+        const resNullVer = await worker.fetch(new Request(`https://act-omega-net.dev${edgeOtaPath}`, {
+          headers: { "X-Sovereign-Operator-Key": validOpKey }
+        }), envWithNullApkVersionD1);
+        assert.equal(resNullVer.status, 503, `${edgeOtaPath} with null apk_version_code MUST fail closed with 503`);
+        const jsonNullVer = await resNullVer.json();
+        assert.equal(jsonNullVer.status, "UNMEASURED/OFFLINE");
+        assert.equal(jsonNullVer.version_code, null);
+        assert.equal(jsonNullVer.fail_closed, true);
+        assert.equal(jsonNullVer.tool_id, 284);
+      }
+
+      // Reset gEdgeMetaCache via cron_sync on envWithSyncedD1 so no forced-null state leaks
+      const resRestoreSyncedCache = await worker.fetch(new Request("https://act-omega-net.dev/api/v1/cloudflare/cron_sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Sovereign-Operator-Key": validOpKey },
+        body: "{}"
+      }), envWithSyncedD1);
+      assert.equal(resRestoreSyncedCache.status, 200, "cron_sync cache reset on envWithSyncedD1 MUST succeed");
+
+      // NF3a: Authenticated ?edge_direct=1 dispatch for Vesper-Arachne & Tool 287 routes
+      for (const ikPath of [
+        "/api/v1/vesper_arachne/ik_swarm_companion?edge_direct=1",
+        "/api/v1/tools/t287?edge_direct=1",
+        "/api/v1/tool/287?edge_direct=1"
+      ]) {
+        const resIk = await worker.fetch(new Request(`https://act-omega-net.dev${ikPath}`, {
+          headers: { "X-Sovereign-Operator-Key": validOpKey }
+        }), env);
+        assert.equal(resIk.status, 200, `Authenticated ${ikPath} MUST return 200`);
+        const jsonIk = await resIk.json();
+        assert.equal(jsonIk.status, "MEASURED_VESPER_ARACHNE_E8_IK_OK");
+        assert.equal(jsonIk.tool_id, 287);
+        assert.equal(jsonIk.stance_legs, 4);
+        assert.equal(jsonIk.swing_legs, 4);
+      }
+
+      // NF7c: Authenticated D1-backed 200 checks for renamed d1_schema_tables & d1_vault_tables routes
+      for (const d1Route of ["/api/v1/cloudflare/d1_schema_tables", "/api/v1/cloudflare/d1_vault_tables"]) {
+        const resD1Live = await worker.fetch(new Request(`https://act-omega-net.dev${d1Route}`, {
+          headers: { "X-Sovereign-Operator-Key": validOpKey }
+        }), envWithSyncedD1);
+        assert.equal(resD1Live.status, 200, `Authenticated D1-backed ${d1Route} MUST return 200`);
+        const jsonD1Live = await resD1Live.json();
+        assert.equal(jsonD1Live.status, "CLOUDFLARE_D1_VPC_EDGE_AND_CRON_ACTIVE");
+        assert.equal(jsonD1Live.d1_database, "act_omega_d1_vault_v7322");
       }
     } finally {
       globalThis.fetch = origFetch;

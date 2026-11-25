@@ -14,7 +14,10 @@ param(
     [switch]$SyncSecrets,
     [ValidateSet("edge_and_workflow", "edge", "workflow", "root", "all")]
     [string]$ConfigScope = "edge_and_workflow",
-    [string]$ExternalConfigPath = "C:\Users\Nbell\.act_omega_cloudflare_ids.json"
+    [string]$ExternalConfigPath = "C:\Users\Nbell\.act_omega_cloudflare_ids.json",
+    [string]$ReceiptOutPath = "",
+    [string]$EdgeBaseUri = "https://act-omega-net.dev",
+    [switch]$SkipDeploymentReceipt
 )
 
 $ErrorActionPreference = "Stop"
@@ -41,8 +44,125 @@ if (-not $accountId -or -not $d1DbId -or -not $hdId -or -not $kvId) {
     exit 1
 }
 
+$prevCfToken = $env:CLOUDFLARE_API_TOKEN
+$prevCfAccount = $env:CLOUDFLARE_ACCOUNT_ID
+
 # Use OAuth token unless caller explicitly provided a valid non-expired token
 Remove-Item Env:\CLOUDFLARE_API_TOKEN -ErrorAction SilentlyContinue
+$env:CLOUDFLARE_ACCOUNT_ID = $accountId
+
+function Invoke-WranglerCapture {
+    param([string[]]$WranglerArgs)
+    $prevEap = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
+    Push-Location $env:TEMP
+    try {
+        $lines = & npx --prefix $edgeDir wrangler @WranglerArgs 2>&1 | ForEach-Object { $_.ToString() }
+        $code = $LASTEXITCODE
+        return [pscustomobject]@{
+            ExitCode = $code
+            Output   = ($lines -join "`n")
+        }
+    } finally {
+        Pop-Location
+        $ErrorActionPreference = $prevEap
+    }
+}
+
+function Remove-AnsiSequences {
+    param([string]$Text)
+    if ([string]::IsNullOrEmpty($Text)) { return "" }
+    return [regex]::Replace($Text, '\x1b\[[0-9;]*[A-Za-z]', '')
+}
+
+function Get-RedactedDiagnosticSummary {
+    param([string]$Text)
+    $clean = Remove-AnsiSequences -Text $Text
+    foreach ($secretId in @($accountId, $d1DbId, $hdId, $kvId, $vpcAnchorId, $vpcDenoId, $vpcP10Id, $vpcP8Id)) {
+        if (-not [string]::IsNullOrWhiteSpace($secretId)) {
+            $clean = $clean.Replace([string]$secretId, "<REDACTED_CF_ID>")
+        }
+    }
+    return $clean
+}
+
+function Get-ExternalOperatorKeyPlaintext {
+    $raw = ""
+    if (-not [string]::IsNullOrWhiteSpace($env:ACT_OMEGA_OPERATOR_KEY)) {
+        $raw = $env:ACT_OMEGA_OPERATOR_KEY.Trim()
+    } else {
+        $candidates = @("C:\Users\Nbell\.act_omega_operator_vault_key")
+        if (-not [string]::IsNullOrWhiteSpace($env:USERPROFILE)) {
+            $candidates += (Join-Path $env:USERPROFILE ".act_omega_operator_vault_key")
+        }
+        foreach ($p in $candidates) {
+            if (Test-Path $p -PathType Leaf) {
+                $raw = ([System.IO.File]::ReadAllText($p)).Trim()
+                if ($raw.Length -ge 24) { break }
+            }
+        }
+    }
+    if ($raw.Length -lt 24) {
+        throw "FAIL_CLOSED_INVALID_OPERATOR_KEY: External operator key missing or < 24 chars."
+    }
+    return $raw
+}
+
+function Invoke-EdgeDirectJsonGet {
+    param(
+        [string]$Uri,
+        [string]$OperatorKey = ""
+    )
+    Add-Type -AssemblyName System.Net.Http
+    [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
+    $client = New-Object System.Net.Http.HttpClient
+    $client.Timeout = [TimeSpan]::FromSeconds(20)
+    try {
+        $req = New-Object System.Net.Http.HttpRequestMessage([System.Net.Http.HttpMethod]::Get, $Uri)
+        if (-not [string]::IsNullOrWhiteSpace($OperatorKey)) {
+            $req.Headers.TryAddWithoutValidation("X-Sovereign-Operator-Key", $OperatorKey) | Out-Null
+        }
+        $resp = $client.SendAsync($req).GetAwaiter().GetResult()
+        $statusCode = [int]$resp.StatusCode
+        $bodyText = $resp.Content.ReadAsStringAsync().GetAwaiter().GetResult()
+        $parsed = $null
+        try {
+            $parsed = $bodyText | ConvertFrom-Json
+        } catch {
+            $parsed = $null
+        }
+        return [pscustomobject]@{
+            StatusCode = $statusCode
+            BodyText   = $bodyText
+            Json       = $parsed
+        }
+    } finally {
+        $client.Dispose()
+    }
+}
+
+function Assert-NoSecretOrCfIdLeaks {
+    param(
+        [string]$PayloadText,
+        [string]$OperatorKey
+    )
+    if (-not [string]::IsNullOrWhiteSpace($OperatorKey) -and $PayloadText.Contains($OperatorKey)) {
+        throw "FAIL_CLOSED_SECRET_LEAK: Operator key detected in receipt payload."
+    }
+    foreach ($activeId in @($accountId, $d1DbId, $hdId, $kvId, $vpcAnchorId, $vpcDenoId, $vpcP10Id, $vpcP8Id)) {
+        if (-not [string]::IsNullOrWhiteSpace($activeId) -and $PayloadText.IndexOf([string]$activeId, [System.StringComparison]::OrdinalIgnoreCase) -ge 0) {
+            throw "FAIL_CLOSED_CF_ACTIVE_ID_LEAK: Active Cloudflare resource ID detected in receipt payload."
+        }
+    }
+    if ($cfg -and $cfg.retired_id_prefixes) {
+        foreach ($pfx in @($cfg.retired_id_prefixes)) {
+            $pfxStr = [string]$pfx
+            if ($pfxStr.Length -ge 8 -and $PayloadText.IndexOf($pfxStr, [System.StringComparison]::OrdinalIgnoreCase) -ge 0) {
+                throw "FAIL_CLOSED_CF_RETIRED_ID_LEAK: Retired Cloudflare ID prefix detected in receipt payload."
+            }
+        }
+    }
+}
 
 function Render-WranglerTemplate([string]$srcPath, [string]$dstPath, [string]$baseDir) {
     $raw = Get-Content -Raw -Path $srcPath
@@ -81,62 +201,231 @@ try {
     if ($DryRun) {
         Write-Host "DRY_RUN_OK: Rendered ephemeral wrangler configs ($ConfigScope) without repo plaintext IDs." -ForegroundColor Green
         if ($deployWorkflow) {
-            npx --prefix $edgeDir wrangler deploy --dry-run --config $tmpWf
-            if ($LASTEXITCODE -ne 0) { throw "wrangler workflow dry-run failed ($LASTEXITCODE)" }
+            $wfDry = Invoke-WranglerCapture -WranglerArgs @("deploy", "--dry-run", "--config", $tmpWf)
+            if ($wfDry.ExitCode -ne 0) {
+                throw ("wrangler workflow dry-run failed ({0}): {1}" -f $wfDry.ExitCode, (Get-RedactedDiagnosticSummary -Text $wfDry.Output))
+            }
+            Write-Host "DRY_RUN_WORKFLOW_VALIDATED: sovereign-paid-workflow (exit=0)" -ForegroundColor Green
         }
         if ($deployEdge) {
-            npx --prefix $edgeDir wrangler deploy --dry-run --config $tmpMain
-            if ($LASTEXITCODE -ne 0) { throw "wrangler main dry-run failed ($LASTEXITCODE)" }
+            $edgeDry = Invoke-WranglerCapture -WranglerArgs @("deploy", "--dry-run", "--config", $tmpMain)
+            if ($edgeDry.ExitCode -ne 0) {
+                throw ("wrangler main dry-run failed ({0}): {1}" -f $edgeDry.ExitCode, (Get-RedactedDiagnosticSummary -Text $edgeDry.Output))
+            }
+            Write-Host "DRY_RUN_EDGE_VALIDATED: sovereign-loq15-vpc-shadow (exit=0)" -ForegroundColor Green
         }
         if ($validateRoot) {
-            npx --prefix $edgeDir wrangler deploy --dry-run --config $tmpRoot
-            if ($LASTEXITCODE -ne 0) { throw "wrangler root dry-run failed ($LASTEXITCODE)" }
+            $rootDry = Invoke-WranglerCapture -WranglerArgs @("deploy", "--dry-run", "--config", $tmpRoot)
+            if ($rootDry.ExitCode -ne 0) {
+                throw ("wrangler root dry-run failed ({0}): {1}" -f $rootDry.ExitCode, (Get-RedactedDiagnosticSummary -Text $rootDry.Output))
+            }
+            Write-Host "DRY_RUN_ROOT_VALIDATED: root wrangler.toml (exit=0)" -ForegroundColor Green
         }
         exit 0
     }
 
     if ($SyncSecrets) {
-        $opKeyFile = "C:\Users\Nbell\.act_omega_operator_vault_key"
-        if (-not (Test-Path $opKeyFile)) {
-            throw "FAIL_CLOSED_MISSING_OPERATOR_KEY: $opKeyFile not found."
-        }
-        $opKeyVal = (Get-Content -Raw -Path $opKeyFile).Trim()
-        if ($opKeyVal.Length -lt 24) {
-            throw "FAIL_CLOSED_INVALID_OPERATOR_KEY_LENGTH"
-        }
+        $opKeyVal = Get-ExternalOperatorKeyPlaintext
         if ($deployWorkflow) {
-            $opKeyVal | npx --prefix $edgeDir wrangler secret put SOVEREIGN_OPERATOR_KEY --config $tmpWf
+            $opKeyVal | npx --prefix $edgeDir wrangler secret put SOVEREIGN_OPERATOR_KEY --config $tmpWf | Out-Null
             if ($LASTEXITCODE -ne 0) { throw "Failed provisioning SOVEREIGN_OPERATOR_KEY on workflow worker" }
         }
         if ($deployEdge) {
-            $opKeyVal | npx --prefix $edgeDir wrangler secret put SOVEREIGN_OPERATOR_KEY --config $tmpMain
+            $opKeyVal | npx --prefix $edgeDir wrangler secret put SOVEREIGN_OPERATOR_KEY --config $tmpMain | Out-Null
             if ($LASTEXITCODE -ne 0) { throw "Failed provisioning SOVEREIGN_OPERATOR_KEY on edge worker" }
         }
     }
 
     if ($deployWorkflow) {
         Write-Host "Deploying sovereign-paid-workflow..." -ForegroundColor Cyan
-        npx --prefix $edgeDir wrangler deploy --config $tmpWf
-        if ($LASTEXITCODE -ne 0) { throw "wrangler workflow deploy failed ($LASTEXITCODE)" }
+        $wfDeploy = Invoke-WranglerCapture -WranglerArgs @("deploy", "--config", $tmpWf)
+        if ($wfDeploy.ExitCode -ne 0) {
+            throw ("wrangler workflow deploy failed ({0}): {1}" -f $wfDeploy.ExitCode, (Get-RedactedDiagnosticSummary -Text $wfDeploy.Output))
+        }
+        Write-Host "DEPLOY_WORKFLOW_OK: sovereign-paid-workflow" -ForegroundColor Green
     }
 
     if ($deployEdge) {
         Write-Host "Deploying sovereign-loq15-vpc-shadow (edge)..." -ForegroundColor Cyan
-        npx --prefix $edgeDir wrangler deploy --config $tmpMain
-        if ($LASTEXITCODE -ne 0) { throw "wrangler edge deploy failed ($LASTEXITCODE)" }
+        $edgeDeploy = Invoke-WranglerCapture -WranglerArgs @("deploy", "--config", $tmpMain)
+        if ($edgeDeploy.ExitCode -ne 0) {
+            throw ("wrangler edge deploy failed ({0}): {1}" -f $edgeDeploy.ExitCode, (Get-RedactedDiagnosticSummary -Text $edgeDeploy.Output))
+        }
+
+        $cleanDeployOut = Remove-AnsiSequences -Text $edgeDeploy.Output
+        $stdoutVersionId = ""
+        $verMatch = [regex]::Match($cleanDeployOut, '(?im)Current Version ID:\s*([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})')
+        if ($verMatch.Success) {
+            $stdoutVersionId = $verMatch.Groups[1].Value.ToLowerInvariant()
+        }
+
+        $depListRes = Invoke-WranglerCapture -WranglerArgs @("deployments", "list", "--json", "--config", $tmpMain)
+        if ($depListRes.ExitCode -ne 0) {
+            throw ("wrangler deployments list failed ({0}): {1}" -f $depListRes.ExitCode, (Get-RedactedDiagnosticSummary -Text $depListRes.Output))
+        }
+        $cleanDepOut = Remove-AnsiSequences -Text $depListRes.Output
+        $arrMatch = [regex]::Match($cleanDepOut, '(?m)^\s*\[')
+        $jsonStart = if ($arrMatch.Success) { $arrMatch.Index } else { $cleanDepOut.IndexOf("[") }
+        if ($jsonStart -lt 0) {
+            throw "FAIL_CLOSED_DEPLOYMENTS_LIST_PARSE: Could not locate JSON array in wrangler deployments list output."
+        }
+        $parsedDep = $cleanDepOut.Substring($jsonStart) | ConvertFrom-Json
+        $depEntries = New-Object System.Collections.Generic.List[object]
+        if ($parsedDep -is [System.Array]) {
+            foreach ($item in $parsedDep) {
+                if ($null -ne $item -and -not [string]::IsNullOrWhiteSpace([string]$item.created_on)) {
+                    $depEntries.Add($item)
+                }
+            }
+        } elseif ($null -ne $parsedDep -and -not [string]::IsNullOrWhiteSpace([string]$parsedDep.created_on)) {
+            $depEntries.Add($parsedDep)
+        }
+        if ($depEntries.Count -eq 0) {
+            throw "FAIL_CLOSED_NO_DEPLOYMENTS_FOUND: wrangler deployments list returned empty array."
+        }
+        $latestDeploy = $depEntries | Sort-Object { [DateTimeOffset]::Parse([string]$_.created_on) } | Select-Object -Last 1
+        $deploymentId = ([string]$latestDeploy.id).ToLowerInvariant()
+        $deployedCreatedOn = [string]$latestDeploy.created_on
+        $listVersionId = if ($latestDeploy.versions -and $latestDeploy.versions.Count -gt 0) { ([string]$latestDeploy.versions[0].version_id).ToLowerInvariant() } else { "" }
+
+        if ($listVersionId -notmatch '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$') {
+            throw "FAIL_CLOSED_INVALID_VERSION_ID: deployments list returned invalid version_id."
+        }
+        if (-not [string]::IsNullOrWhiteSpace($stdoutVersionId) -and $stdoutVersionId -ne $listVersionId) {
+            throw "WORKER_VERSION_ID_MISMATCH: deploy stdout ($stdoutVersionId) != deployments list ($listVersionId)"
+        }
+        $workerVersionId = $listVersionId
+        Write-Host ("DEPLOY_EDGE_OK: worker_version_id={0} deployment_id={1}" -f $workerVersionId, $deploymentId) -ForegroundColor Green
+
+        if (-not $SkipDeploymentReceipt) {
+            $targetReceiptPath = if ([string]::IsNullOrWhiteSpace($ReceiptOutPath)) {
+                Join-Path $repoRoot "03_vault\receipts\cloudflare_edge_worker_deployment_receipt.json"
+            } else {
+                $ReceiptOutPath
+            }
+            $receiptParent = Split-Path -Parent $targetReceiptPath
+            if (-not [string]::IsNullOrWhiteSpace($receiptParent) -and -not (Test-Path $receiptParent)) {
+                New-Item -ItemType Directory -Path $receiptParent -Force | Out-Null
+            }
+
+            $opKey = Get-ExternalOperatorKeyPlaintext
+            $baseUri = $EdgeBaseUri.TrimEnd('/')
+            $manifestReqPath = "/api/v1/ota/pixel_manifest?edge_direct=1"
+            $t284ReqPath     = "/api/v1/tools/t284?edge_direct=1"
+            $healthReqPath   = "/api/v1/health?edge_direct=1"
+
+            $manifestProbe = Invoke-EdgeDirectJsonGet -Uri "$baseUri$manifestReqPath" -OperatorKey $opKey
+            if ($manifestProbe.StatusCode -ne 200 -or $null -eq $manifestProbe.Json) {
+                throw ("FAIL_CLOSED_EDGE_MANIFEST_PROBE: HTTP {0} on {1}" -f $manifestProbe.StatusCode, $manifestReqPath)
+            }
+            $m = $manifestProbe.Json
+            $mVersionCodeOk = ($null -ne $m.version_code) -and ($m.version_code -is [int] -or $m.version_code -is [long] -or $m.version_code -is [double]) -and ([int64]$m.version_code -gt 0)
+            $mApkBytesOk = ($null -ne $m.apk_bytes) -and ($m.apk_bytes -is [int] -or $m.apk_bytes -is [long] -or $m.apk_bytes -is [double]) -and ([int64]$m.apk_bytes -gt 0)
+            if ([string]$m.status -ne "MEASURED_PIXEL_OTA_MANIFEST_READY" -or
+                [string]::IsNullOrWhiteSpace([string]$m.version_name) -or
+                -not $mVersionCodeOk -or
+                -not $mApkBytesOk -or
+                ([string]$m.apk_sha256) -notmatch '^[0-9a-f]{64}$') {
+                throw "FAIL_CLOSED_EDGE_MANIFEST_INVALID: pixel_manifest?edge_direct=1 returned unmeasured or invalid payload."
+            }
+
+            $t284Probe = Invoke-EdgeDirectJsonGet -Uri "$baseUri$t284ReqPath" -OperatorKey $opKey
+            if ($t284Probe.StatusCode -ne 200 -or $null -eq $t284Probe.Json) {
+                throw ("FAIL_CLOSED_EDGE_T284_PROBE: HTTP {0} on {1}" -f $t284Probe.StatusCode, $t284ReqPath)
+            }
+            $t = $t284Probe.Json
+            if ([string]$t.status -ne "MEASURED_PIXEL_OTA_MANIFEST_READY" -or
+                [int]$t.version_code -ne [int]$m.version_code -or
+                [string]$t.version_name -ne [string]$m.version_name -or
+                [int64]$t.apk_bytes -ne [int64]$m.apk_bytes -or
+                ([string]$t.apk_sha256).ToLowerInvariant() -ne ([string]$m.apk_sha256).ToLowerInvariant()) {
+                throw "FAIL_CLOSED_EDGE_T284_PARITY: t284?edge_direct=1 did not match pixel_manifest?edge_direct=1."
+            }
+
+            $healthProbe = Invoke-EdgeDirectJsonGet -Uri "$baseUri$healthReqPath"
+            if ($healthProbe.StatusCode -ne 200 -or $null -eq $healthProbe.Json) {
+                throw ("FAIL_CLOSED_EDGE_HEALTH_PROBE: HTTP {0} on {1}" -f $healthProbe.StatusCode, $healthReqPath)
+            }
+            $h = $healthProbe.Json
+            if ([string]::IsNullOrWhiteSpace([string]$h.version) -or [string]::IsNullOrWhiteSpace([string]$h.status)) {
+                throw "FAIL_CLOSED_EDGE_HEALTH_INVALID: health?edge_direct=1 returned empty version or status."
+            }
+
+            $receiptObj = [ordered]@{
+                schema                = "act_omega.cloudflare_edge_worker_deployment_receipt.v1"
+                worker_name           = "sovereign-loq15-vpc-shadow"
+                config_scope          = $ConfigScope
+                worker_version_id     = $workerVersionId
+                deployment_id         = $deploymentId
+                deployment_created_on = $deployedCreatedOn
+                edge_base_uri         = $baseUri
+                version_code          = [int]$m.version_code
+                version_name          = [string]$m.version_name
+                apk_bytes             = [int64]$m.apk_bytes
+                apk_sha256            = ([string]$m.apk_sha256).ToLowerInvariant()
+                timestamp_utc         = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
+                request_paths         = @($manifestReqPath, $t284ReqPath, $healthReqPath)
+                probes                = [ordered]@{
+                    pixel_manifest = [ordered]@{
+                        http_status  = $manifestProbe.StatusCode
+                        request_path = $manifestReqPath
+                        status       = [string]$m.status
+                        version_name = [string]$m.version_name
+                        version_code = [int]$m.version_code
+                        apk_bytes    = [int64]$m.apk_bytes
+                        apk_sha256   = ([string]$m.apk_sha256).ToLowerInvariant()
+                        timestamp_ms = [int64]$m.timestamp_ms
+                    }
+                    t284 = [ordered]@{
+                        http_status  = $t284Probe.StatusCode
+                        request_path = $t284ReqPath
+                        status       = [string]$t.status
+                        version_name = [string]$t.version_name
+                        version_code = [int]$t.version_code
+                        apk_bytes    = [int64]$t.apk_bytes
+                        apk_sha256   = ([string]$t.apk_sha256).ToLowerInvariant()
+                        timestamp_ms = [int64]$t.timestamp_ms
+                    }
+                    health = [ordered]@{
+                        http_status        = $healthProbe.StatusCode
+                        request_path       = $healthReqPath
+                        status             = [string]$h.status
+                        version            = [string]$h.version
+                        chain_milestone    = [string]$h.chain_milestone
+                        lean4_theorems_qed = [string]$h.lean4_theorems_qed
+                        tools_total        = if ($null -ne $h.tools_total) { [int]$h.tools_total } else { $null }
+                    }
+                }
+            }
+
+            $jsonRaw = $receiptObj | ConvertTo-Json -Depth 8
+            $jsonLf = ($jsonRaw.Replace("`r`n", "`n").Replace("`r", "`n")).TrimEnd("`n") + "`n"
+            Assert-NoSecretOrCfIdLeaks -PayloadText $jsonLf -OperatorKey $opKey
+            $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+            [System.IO.File]::WriteAllText($targetReceiptPath, $jsonLf, $utf8NoBom)
+            Write-Host ("DEPLOYMENT_RECEIPT_WRITTEN: {0} (version_id={1}, version_code={2})" -f $targetReceiptPath, $workerVersionId, [int]$m.version_code) -ForegroundColor Green
+        }
     }
 
     if ($deployRoot) {
         Write-Host "Deploying sovereign-loq15-vpc-shadow (root wrangler.toml)..." -ForegroundColor Cyan
-        npx --prefix $edgeDir wrangler deploy --config $tmpRoot
-        if ($LASTEXITCODE -ne 0) { throw "wrangler root deploy failed ($LASTEXITCODE)" }
+        $rootDeploy = Invoke-WranglerCapture -WranglerArgs @("deploy", "--config", $tmpRoot)
+        if ($rootDeploy.ExitCode -ne 0) {
+            throw ("wrangler root deploy failed ({0}): {1}" -f $rootDeploy.ExitCode, (Get-RedactedDiagnosticSummary -Text $rootDeploy.Output))
+        }
+        Write-Host "DEPLOY_ROOT_OK: sovereign-loq15-vpc-shadow" -ForegroundColor Green
     } elseif ($ConfigScope -eq "all") {
         Write-Host "Validating root wrangler.toml dry-run (preserving edge Hyperdrive/VPC bindings)..." -ForegroundColor Cyan
-        npx --prefix $edgeDir wrangler deploy --dry-run --config $tmpRoot
-        if ($LASTEXITCODE -ne 0) { throw "wrangler root dry-run failed ($LASTEXITCODE)" }
+        $rootDryAll = Invoke-WranglerCapture -WranglerArgs @("deploy", "--dry-run", "--config", $tmpRoot)
+        if ($rootDryAll.ExitCode -ne 0) {
+            throw ("wrangler root dry-run failed ({0}): {1}" -f $rootDryAll.ExitCode, (Get-RedactedDiagnosticSummary -Text $rootDryAll.Output))
+        }
+        Write-Host "DRY_RUN_ROOT_VALIDATED: root wrangler.toml (exit=0)" -ForegroundColor Green
     }
 
     Write-Host "CLOUDFLARE_EDGE_DEPLOY_OK" -ForegroundColor Green
 } finally {
     Remove-Item -Path $tmpMain, $tmpWf, $tmpRoot -Force -ErrorAction SilentlyContinue
+    if ($null -ne $prevCfToken) { $env:CLOUDFLARE_API_TOKEN = $prevCfToken } else { Remove-Item Env:\CLOUDFLARE_API_TOKEN -ErrorAction SilentlyContinue }
+    if ($null -ne $prevCfAccount) { $env:CLOUDFLARE_ACCOUNT_ID = $prevCfAccount } else { Remove-Item Env:\CLOUDFLARE_ACCOUNT_ID -ErrorAction SilentlyContinue }
 }

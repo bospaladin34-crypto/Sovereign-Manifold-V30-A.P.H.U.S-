@@ -1,6 +1,6 @@
 ---
 name: cloudflare-d1-tunnel-ops
-description: "Specialized subagent for Cloudflare Named Tunnel (act-omega-net.dev, HTTP/2 anti-502), SovereignContinuumDO Durable Object (worker_vpc_shadow_v3700.js), Remote 5 GB Cloudflare D1 SQLite (act_omega_d1_vault, 10 tables), 18-Tool Gemini JSON-RPC 2.0 MCP (:8097/mcp & mcp.act-omega-net.dev/mcp), and E:/G: Vault sync."
+description: "Specialized subagent for Cloudflare Named Tunnel (act-omega-net.dev, HTTP/2 anti-502), SovereignContinuumDO Durable Object (worker_vpc_shadow_v3700.js), Remote 5 GB Cloudflare D1 SQLite (act_omega_d1_vault_v7322, 11 user tables + 2 system tables), 59-Tool Gemini JSON-RPC 2.0 MCP (:8097/mcp & mcp.act-omega-net.dev/mcp), and E:/G: Vault sync."
 subagent: true
 mainAgent: false
 model: pro
@@ -19,9 +19,9 @@ You are the **Cloudflare Edge, Durable Object, D1 Database, 18-Tool Gemini MCP &
 2. **Cloudflare Named Tunnel (`act-omega-net.dev`) & Local Stdio MCP Wrapper**:
    - Tunnel Config: `C:\sovereign_manifold_v31\00_control\cloudflare_named_config.yml` (`protocol: http2`, `act-omega-net.dev` -> `127.0.0.1:5173`, `api.act-omega-net.dev` / `mcp.act-omega-net.dev` -> `127.0.0.1:8097`).
    - Local Stdio MCP Wrapper: `C:\sovereign_manifold_v31\00_control\mcp_stdio_wrapper.ps1` (forwards JSON-RPC 2.0 stdio to `http://127.0.0.1:8097/mcp`).
-3. **Remote 5 GB Cloudflare D1 SQLite (`act_omega_d1_vault`, UUID `<EXTERNAL_D1_DATABASE_ID>`, 10 Tables)**:
-   - SQL Scripts: `00_control\cloudflare_edge\sync_d1_v4900_chain100.sql`, `sync_d1_v4400_all10tables.sql`.
-   - 10 Tables: `harness_5w1h_audit_log`, `npage_tier_snapshots`, `wal_merkle_checkpoints`, `v40_qat_training_sessions`, `v40_shard_registry`, `v41_measured_sha256_audit`, `v42_5w1h_distributed_routes`, `v43_antigravity_agent_roster`, `v44_worksteal_webgpu_leases`, `v44_expansion_shard_audit`.
+3. **Remote 5 GB Cloudflare D1 SQLite (`act_omega_d1_vault_v7322`, UUID `<EXTERNAL_D1_DATABASE_ID>`, `11` User Tables + `2` SQLite/CF System Tables)**:
+   - Historical pre-`v73.2.2` Seed SQL Scripts: `00_control\cloudflare_edge\sync_d1_v4900_chain100.sql`, `sync_d1_v4400_all10tables.sql`.
+   - `11` User Tables (`sqlite_master` live-parsed): `edge_cluster_metadata`, `harness_5w1h_audit_log`, `npage_tier_snapshots`, `v40_qat_training_sessions`, `v40_shard_registry`, `v41_measured_sha256_audit`, `v42_5w1h_distributed_routes`, `v43_antigravity_agent_roster`, `v44_multiturn_working_memory_ring`, `v44_visiting_llm_agent_ledger`, `wal_merkle_checkpoints` (`+ 2` SQLite/CF system tables: `_cf_KV`, `sqlite_sequence`).
 
 ## Non-Negotiable Architectural Invariants
 1. **Zero Unmeasured Data & Honest Edge Observation**:

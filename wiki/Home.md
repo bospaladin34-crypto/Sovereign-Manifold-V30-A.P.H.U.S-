@@ -15,7 +15,7 @@
 [![Lean 4 Proofs](https://img.shields.io/badge/Lean_4_Proofs-384_Base_/_400_Runtime_QED_(0_Sorry_%7C_0_True_:_Prop)-00BFFF?style=for-the-badge)](https://github.com/bospaladin34-crypto/Sovereign-Manifold-V30-A.P.H.U.S-/tree/vesper_production/01_l0_rust/lean4)
 [![Tool Lattice](https://img.shields.io/badge/Tools-80_/_80_(CHAIN_80_Dynamic_Hardware_Probes)-FFD700?style=for-the-badge)](https://mcp.act-omega-net.dev/mcp)
 [![Tri-Silicon Cluster](https://img.shields.io/badge/Tri--Silicon_Cluster-LOQ15_%2B_Pixel10_%2B_Pixel8_(~4,512.5k_ops/s)-00FF66?style=for-the-badge)](https://act-omega-net.dev)
-[![Cloudflare D1 Vault](https://img.shields.io/badge/Cloudflare_D1_Vault-act__omega__d1__vault_(10_Tables_Live_SQL)-F38020?style=for-the-badge)](https://mcp.act-omega-net.dev/v1/d1/status)
+[![Cloudflare D1 Vault](https://img.shields.io/badge/Cloudflare_D1_Vault-act__omega__d1__vault__v7322_(11_User_%2B_2_System_Tables)-F38020?style=for-the-badge)](https://mcp.act-omega-net.dev/v1/d1/status)
 [![Operator Manual](https://img.shields.io/badge/Operator_Manual-USER__MANUAL__AND__FAQ.md_%2B_HUD_Sidebar-34A853?style=for-the-badge)](./USER_MANUAL_AND_FAQ.md)
 
 ## 📖 Step-by-Step Operator User Manual & Interactive HUD Sidebar (`v44.4.0`)
@@ -26,7 +26,7 @@
   2. **`2. HUD & DRAWERS`** (Drawer A `15` cards, Drawer B `60 FPS` 3D Stiefel & Oscilloscope, `16×130` Heatmap, Drawer 1–4 cross-module routing)
   3. **`3. PHONES & SHM`** (`3.56 MB` `.npage` Shared Memory across permanently tethered Pixel 8 + roaming/unplugged Pixel 10 + Android Homescreen/Lockscreen Widget)
   4. **`4. WIN11 TRAY & APP`** (`SovereignCockpitHUD.exe` System Tray Icon `Ω44`, Live Desktop/Lockscreen Widget & Native App Window)
-  5. **`5. CLOUD, D1 & G:`** (Cloudflare Named Tunnel, 10-Table D1 SQLite Vault, `E:\` SSD & `G:\My Drive\ACT_OMEGA_GEMINI_BRIDGE`)
+  5. **`5. CLOUD, D1 & G:`** (Cloudflare Named Tunnel, 11-User-Table (+ 2 System) D1 SQLite Vault `act_omega_d1_vault_v7322`, `E:\` SSD & `G:\My Drive\ACT_OMEGA_GEMINI_BRIDGE`)
   6. **`6. FAQ & TROUBLESHOOT`** (Preventing Cloudflare `502`/`1033`, Muse 100% True-Data checks, Passkey auth, and `hotswap`)
 
 ## ⚡ Executive Summary — What's New in `v44.4.0` (`SH4Z v4440 TLV` Architecture Facelift & 6-Layer Hardening)
@@ -37,7 +37,7 @@
 | **Shard & Neuron Parity** | `21,120` Neurons (`480 × Chair-44`, `2,703,360 B`) | **`28,160` Neurons == `28,160` Shards (`21,120` Core `.npage` `2,703,360 B` `aee77110...` + `7,040` Expansion `.npage` `901,120 B` `725fb250...` = `3,604,480 B / 3.44 MB` Total, `640 × Chair-44` columns, `225,280` BDH/KAN synapses)** |
 | **65K BPE & Lean 4 Proofs** | `16,384` Vocab / `364` Proofs | **`65,536` 16-Domain BPE/Compound Vocab (`Holdout PPL = 1.00000001`) + `384 Base + 16 Runtime = 400 / 400` Non-Trivial Lean 4 Proofs QED (`7a4f8b8a...`, `0 sorry`, `0 True : Prop`)** |
 | **Unplugged SHM & Win11 Native** | Tethered-only / HTML tab | **Unplugged Pixel 10 `.npage` SHM Roaming (`Tool 77`) + Native Windows 11 System Tray, Desktop/Lockscreen Widget & App Launcher (`SovereignCockpitHUD.exe`) + Android Homescreen/Keyguard Widget** |
-| **10-Table D1 & `G:\` Bridge** | `8` Tables | **`10` Live Cloudflare D1 Tables (`act_omega_d1_vault`) + Automatic Mirroring to `G:\My Drive\ACT_OMEGA_GEMINI_BRIDGE` and `E:\Sovereign_Manifold_SSD_Vault`** |
+| **11-User-Table (+ 2 System) D1 & `G:\` Bridge** | `8` Tables (`v43` baseline) | **`11` User + `2` SQLite/CF System Live Cloudflare D1 Tables (`act_omega_d1_vault_v7322`) + Automatic Mirroring to `G:\My Drive\ACT_OMEGA_GEMINI_BRIDGE` and `E:\Sovereign_Manifold_SSD_Vault`** |
 
 
 ## 🛠️ Symbiotic FOSS IDE & Autonomous Agent Stack (`Zero-Paywall / $0 Cost`)
@@ -50,7 +50,7 @@
   * **Interactive Architecture Wiki:** [`https://act-omega-net.dev/wiki.html`](https://act-omega-net.dev/wiki.html)
   * **A2A v1.0 Agent Discovery Card:** [`https://act-omega-net.dev/.well-known/agent.json`](https://act-omega-net.dev/.well-known/agent.json) (Local: `http://127.0.0.1:8080/.well-known/agent.json`)
   * **Streamable HTTP MCP & OpenAI `/v1` Gateway:** [`https://mcp.act-omega-net.dev/mcp`](https://mcp.act-omega-net.dev/mcp) | [`https://mcp.act-omega-net.dev/v1/models`](https://mcp.act-omega-net.dev/v1/models) | [`https://mcp.act-omega-net.dev/v1/d1/status`](https://mcp.act-omega-net.dev/v1/d1/status)
-  * **Cloudflare D1 Edge Vault (`act_omega_d1_vault`):** Account `<EXTERNAL_CF_ACCOUNT_ID>` | Database UUID `<EXTERNAL_D1_DATABASE_ID>`
+  * **Cloudflare D1 Edge Vault (`act_omega_d1_vault_v7322`, `11` User Tables + `2` SQLite/CF System Tables):** Account `<EXTERNAL_CF_ACCOUNT_ID>` | Database UUID `<EXTERNAL_D1_DATABASE_ID>`
 
 ---
 
@@ -107,7 +107,7 @@ ACT-Omega Net v43.0.0 locks the physical-to-topological transducer to **`15.965 
 - **Tool 45 (`/api/v1/harness/metabolic_5w1h` & `/harness` / `/5w1h`):** **Sovereign Metabolic Autopoietic Harness & `5W1H` Executive Coordinator Table (`03_vault\connectome\harness_5w1h_coordinator.json`)** tied directly to active `i5-12450HX` CPU threads (`12` threads), free system RAM, `RTX 3050` 6GB free VRAM, and tri-silicon thermal headroom (`M_ATP = 0.8842`).
 - **Tool 46 (`/api/v1/mcp/rpc` & `/mcp`):** Native JSON-RPC 2.0 **Model Context Protocol (`MCP 2026-07-28`) Server** exposing all `48` native tools and `8` sovereign resources for **Cloudflare Zero Trust MCP Server Portal** and external AI clients.
 - **Tool 47 (`/v1/chat/completions`, `/v1/models` & `/api/v1/openai/compat`):** Drop-In **OpenAI-Compatible `/v1` API Surface** exposing `model: "sovereign-harmonic-v4300"`.
-- **Tool 48 (`/api/v1/cloudflare/d1_vpc_shadow` & `/cloudflare_d1`):** **Cloudflare D1 Serverless SQLite (`act_omega_d1_vault`) + Workers VPC + SQLite Durable Object Edge Shadow Node** (`00_control\cloudflare_edge\schema_d1_v4300.sql` & `worker_vpc_shadow_v4300.js`).
+- **Tool 48 (`/api/v1/cloudflare/d1_vpc_shadow` & `/cloudflare_d1`):** **Cloudflare D1 Serverless SQLite (historical v43 `act_omega_d1_vault`, rotated in `v73.2.2+` to `act_omega_d1_vault_v7322` with `11` user + `2` system tables) + Workers VPC + SQLite Durable Object Edge Shadow Node** (`00_control\cloudflare_edge\schema_d1_v4300.sql` & `worker_vpc_shadow_v4300.js`).
 - **354 Base + 10 Runtime = 300 Lean 4 CIC Proofs QED (`0 sorry`):** Theorems `249..272` + Runtime Checks `273..276`.
 
 
@@ -115,7 +115,7 @@ ACT-Omega Net v43.0.0 locks the physical-to-topological transducer to **`15.965 
 - **Recursive Cache-Line Architecture Optimization (`+6.42%` to `3,420.0k ops/s`, `58` Sectors / `133,120 B` `sovereign_harmonic_v4300.e8z`):** Aligns 3-compartment dendritic + `5W1H` evaluation to `64 B` cache lines (`2,080 × 64 B`, Mask `0xFFFFFFFFFFFFFFFFFF`), elevating cluster throughput to `3,420.0k ops/s` (`1,468.0k` LOQ15 + `424.6k` Pixel 10 + `426.4k` Pixel 8 `P8-APEX`) and cutting 4-wave `CHAIN 72` DAG latency from `16.4 ms` to `14.8 ms`.
 - **Dynamic 4-Band `5W1H` Load-Shift Stress Engine (`/api/v1/harness/metabolic_5w1h?load=sweep4` & `/stress_5w1h`):** Deterministically sweeps and logs transitions across `BAND_1_ANABOLIC_SURPLUS` (`M_ATP = 0.8920`), `BAND_2_HOMEOSTATIC_LAMINAR` (`M_ATP = 0.6140`), `BAND_3_THERMAL_CONSERVATION_OFFLOAD` (`M_ATP = 0.3680`), and `BAND_4_CATABOLIC_SWR_RECOVERY` (`M_ATP = 0.1840`) into `03_vault\connectome\harness_5w1h_load_shifts.jsonl`.
 - **Interactive JSON-RPC 2.0 MCP Method Dispatcher (`Tool 46`) & OpenAI SDK `choices[]` Surface (`Tool 47`):** Consumes `POST` `Content-Length` bodies on persistent `Keep-Alive` sockets, dispatches MCP `initialize`, `tools/list` (`50` tools), `tools/call`, and `resources/list` (`8` resources), and emits OpenAI-compliant `choices[]`, `usage`, and `/v1/models` responses for Cursor, Continue.dev, and external agents.
-- **Live Cloudflare D1 (`act_omega_d1_vault`, `5 GB` Tier) Provisioning & Zero Trust MCP Portal Configuration (`Tool 48`):** Stages `wrangler.toml`, `seed_d1_v4300.sql`, and `register_zero_trust_mcp_portal.ps1` and provisions local + remote D1 SQLite tables.
+- **Live Cloudflare D1 (historical v43 `act_omega_d1_vault`, rotated in `v73.2.2+` to `act_omega_d1_vault_v7322` with `11` user + `2` system tables, `5 GB` Tier) Provisioning & Zero Trust MCP Portal Configuration (`Tool 48`):** Stages `wrangler.toml`, `seed_d1_v4300.sql`, and `register_zero_trust_mcp_portal.ps1` and provisions local + remote D1 SQLite tables.
 - **Tool 49 (`/api/v1/speech/cymatic_formant_tts` & `/api/v1/speech/wav`):** Klatt/Rosenberg Glottal-Pulse ($f_0 = 127.72\text{ Hz} = 8 \times 15.965\text{ Hz}$) + 4-Formant Vocal Tract Cascade ($F_1..F_4$) + real `16 kHz` 16-bit PCM RIFF/WAVE binary streaming (`16,044 B`) coupled to HUD Web Audio + Speech prosody.
 - **Tool 50 (`/api/v1/training/cross_domain_compound_qat`):** 64-Epoch 6-Domain Compound Curriculum QAT across `21,120` 3-Compartment Dendritic Neurons (`neurons_v4300.npage`), converging Holdout PPL to `1.00000002` (`99.94%` cross-domain compound transfer).
 - **354 Base + 10 Runtime = 300 Lean 4 CIC Proofs QED (`0 sorry`):** Theorems `273..278` + Runtime Checks `279..284`.

@@ -721,6 +721,7 @@ export interface VesperArachneHudShimejiProps {
   onSelectCard?: (idx: number) => void;
   onCallEndpoint?: (ep: string, desc: string) => void;
   telemetrySource?: "LIVE_L0_SWARM" | "SNAPSHOT_FALLBACK" | "UNMEASURED/OFFLINE";
+  releaseVersion?: string;
   lean4TheoremsQed?: number | null;
   lean4Qed?: boolean;
   toolsCount?: number | null;
@@ -754,6 +755,7 @@ export function VesperArachneHudShimeji({
   onSelectCard,
   onCallEndpoint,
   telemetrySource = "UNMEASURED/OFFLINE",
+  releaseVersion = "UNMEASURED/OFFLINE",
   lean4TheoremsQed = null,
   lean4Qed = false,
   toolsCount = null,
@@ -763,6 +765,7 @@ export function VesperArachneHudShimeji({
   useEffect(() => {
     opKeyRef.current = operatorPasskey;
   }, [operatorPasskey]);
+  const liveVer = liveReleaseLabel(releaseVersion, telemetrySource === "UNMEASURED/OFFLINE");
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const hitTargetRef = useRef<HTMLDivElement | null>(null);
   const speechBubbleRef = useRef<HTMLDivElement | null>(null);
@@ -774,19 +777,39 @@ export function VesperArachneHudShimeji({
     x: 0,
     y: 0
   });
-  const [speech, setSpeech] = useState<{ text: string; timer: number }>({
-    text: "VESPER-ARACHNE E8 IK HUD COMPANION READY (60 FPS | v73.2.3 | SH-XI MoE | Live Telemetry)",
-    timer: 300
-  });
   const [clones, setClones] = useState<VesperSwarmClone[]>([]);
   const [telemetry, setTelemetry] = useState<VesperTelemetryState>({
-    status: "NOMINAL",
-    gaitGroup: "TETRAPOD_LOCKED",
-    golay: "NOMINAL_ZERO_SYNDROME",
-    bpeHygiene: "262,144_CLEAN",
+    status: "AWAITING_POLL",
+    gaitGroup: "AWAITING_POLL",
+    golay: "AWAITING_POLL",
+    bpeHygiene: "AWAITING_POLL",
     lastPoll: "INIT",
     error: null
   });
+  const liveTelemetryTag =
+    telemetry.status === "LOCKED_403"
+      ? "Operator Vault Locked (HTTP 403)"
+      : telemetrySource === "UNMEASURED/OFFLINE"
+      ? "Awaiting :8097 Telemetry"
+      : telemetrySource === "SNAPSHOT_FALLBACK"
+      ? "Snapshot Telemetry"
+      : telemetry.status === "AWAITING_POLL" || telemetry.status === "UNMEASURED/OFFLINE"
+      ? "Awaiting :8097 Telemetry"
+      : "Live Telemetry";
+  const [speech, setSpeech] = useState<{ text: string; timer: number }>({
+    text: `VESPER-ARACHNE E8 IK HUD COMPANION READY (60 FPS | ${liveVer} | SH-XI MoE | ${liveTelemetryTag})`,
+    timer: 300
+  });
+  useEffect(() => {
+    setSpeech(prev =>
+      prev.text.startsWith("VESPER-ARACHNE E8 IK HUD COMPANION READY (60 FPS |")
+        ? {
+            ...prev,
+            text: `VESPER-ARACHNE E8 IK HUD COMPANION READY (60 FPS | ${liveVer} | SH-XI MoE | ${liveTelemetryTag})`
+          }
+        : prev
+    );
+  }, [liveVer, liveTelemetryTag]);
 
   // State refs for 60 FPS animation loop (2nd-Order Spring-Damper Kinematics)
   const spiderPos = useRef({
@@ -872,7 +895,7 @@ export function VesperArachneHudShimeji({
     };
   }, []);
 
-  // Telemetry Poller (Total Branch Honesty - Graceful offline fallback)
+  // Telemetry Poller (Total Branch Honesty - Graceful 401/403 & offline fallback)
   useEffect(() => {
     let mounted = true;
     const pollTelemetry = async () => {
@@ -880,9 +903,11 @@ export function VesperArachneHudShimeji({
         "/api/v1/vesper_arachne/ik_swarm_companion",
         "http://127.0.0.1:8097/api/v1/vesper_arachne/ik_swarm_companion"
       ];
+      let sawHttp403 = false;
+      let http403Code = 403;
       for (const cu of companionUrls) {
         try {
-          const k = opKeyRef.current.trim();
+          const k = (operatorPasskey || opKeyRef.current).trim();
           const hdrs: Record<string, string> = k ? { "X-Sovereign-Operator-Key": k } : {};
           const resp = await fetch(cu, {
             cache: "no-store",
@@ -890,6 +915,11 @@ export function VesperArachneHudShimeji({
             signal: AbortSignal.timeout(1800)
           });
           if (!mounted) return;
+          if (resp.status === 401 || resp.status === 403) {
+            sawHttp403 = true;
+            http403Code = resp.status;
+            continue;
+          }
           if (resp.ok) {
             const json = await resp.json();
             setTelemetry({
@@ -907,8 +937,22 @@ export function VesperArachneHudShimeji({
         }
       }
       if (!mounted) return;
+      if (sawHttp403) {
+        setTelemetry(prev => ({
+          ...prev,
+          status: "LOCKED_403",
+          golay: prev.golay === "AWAITING_POLL" ? "LOCKED_403" : prev.golay,
+          error: `OPERATOR VAULT LOCKED (HTTP ${http403Code})`,
+          lastPoll: new Date().toLocaleTimeString()
+        }));
+        return;
+      }
       setTelemetry(prev => ({
         ...prev,
+        status: "UNMEASURED/OFFLINE",
+        gaitGroup: "UNMEASURED/OFFLINE",
+        golay: "UNMEASURED/OFFLINE",
+        bpeHygiene: "UNMEASURED/OFFLINE",
         error: "UNMEASURED/OFFLINE",
         lastPoll: new Date().toLocaleTimeString()
       }));
@@ -920,7 +964,7 @@ export function VesperArachneHudShimeji({
       mounted = false;
       clearInterval(interval);
     };
-  }, []);
+  }, [operatorPasskey]);
 
   // Dispatch MCP Tool via JSON-RPC 2.0
   const fireMcpTool = useCallback(async (toolName: string) => {
@@ -1923,7 +1967,18 @@ export function VesperArachneHudShimeji({
           <div>{speech.text}</div>
           <div style={{ color: "#9FB0C2", fontSize: 9, marginTop: 4, borderTop: "1px solid #1E293B", paddingTop: 3 }}>
             Poll: {telemetry.lastPoll} | Status:{" "}
-            <span style={{ color: telemetry.error ? "#E94E34" : "#56D364" }}>
+            <span
+              style={{
+                color:
+                  telemetry.status === "LOCKED_403" || telemetry.error?.startsWith("OPERATOR VAULT LOCKED")
+                    ? "#B388FF"
+                    : telemetry.status === "AWAITING_POLL"
+                    ? "#FFB454"
+                    : telemetry.error
+                    ? "#E94E34"
+                    : "#56D364"
+              }}
+            >
               {telemetry.error || telemetry.status}
             </span>{" "}
             | Golay: {telemetry.golay}
@@ -2100,7 +2155,7 @@ export interface VesperCalmMessage {
   role: "user" | "assistant";
   text: string;
   receipt?: boolean;
-  receiptStatus?: "MEASURED" | "UNMEASURED/OFFLINE";
+  receiptStatus?: "MEASURED" | "LOCKED_403" | "UNMEASURED/OFFLINE";
   receiptLines?: string[];
   endpointTag?: string;
   latencyUs?: number;
@@ -2424,7 +2479,7 @@ export function VesperReceiptCard({
   compact?: boolean;
   skeleton?: boolean;
   receiptLines: string[];
-  statusMode: "LIVE_L0_SWARM" | "SNAPSHOT_FALLBACK" | "UNMEASURED/OFFLINE";
+  statusMode: "LIVE_L0_SWARM" | "SNAPSHOT_FALLBACK" | "LOCKED_403" | "UNMEASURED/OFFLINE";
   endpointTag?: string;
   sha256?: string;
   lean4TheoremsQed?: number | null;
@@ -2496,10 +2551,21 @@ export function VesperReceiptCard({
   }
 
   const isOnline = statusMode === "LIVE_L0_SWARM";
+  const isLocked403 = statusMode === "LOCKED_403";
   const isOffline = statusMode === "UNMEASURED/OFFLINE";
-  const badgeBg = isOffline ? "rgba(255, 155, 107, 0.14)" : "rgba(0, 229, 160, 0.12)";
-  const badgeColor = isOffline ? "#FF9B6B" : "#00E5A0";
-  const badgeText = isOnline ? "Drift 0" : statusMode === "SNAPSHOT_FALLBACK" ? "Snapshot" : "UNMEASURED/OFFLINE";
+  const badgeBg = isLocked403
+    ? "rgba(179, 136, 255, 0.16)"
+    : isOffline
+    ? "rgba(255, 155, 107, 0.14)"
+    : "rgba(0, 229, 160, 0.12)";
+  const badgeColor = isLocked403 ? "#B388FF" : isOffline ? "#FF9B6B" : "#00E5A0";
+  const badgeText = isOnline
+    ? "Drift 0"
+    : isLocked403
+    ? "LOCKED_403"
+    : statusMode === "SNAPSHOT_FALLBACK"
+    ? "Snapshot"
+    : "UNMEASURED/OFFLINE";
 
   return (
     <div
@@ -2526,11 +2592,20 @@ export function VesperReceiptCard({
         }}
       >
         <span style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14, fontWeight: 700 }}>
-          <ShieldCheck
-            size={18}
-            style={{ width: 18, height: 18, flexShrink: 0, color: badgeColor }}
-          />
-          {isOffline
+          {isLocked403 ? (
+            <Lock
+              size={18}
+              style={{ width: 18, height: 18, flexShrink: 0, color: badgeColor }}
+            />
+          ) : (
+            <ShieldCheck
+              size={18}
+              style={{ width: 18, height: 18, flexShrink: 0, color: badgeColor }}
+            />
+          )}
+          {isLocked403
+            ? "Receipt — Operator Vault Locked (HTTP 403)"
+            : isOffline
             ? "Receipt — Backend Offline (UNMEASURED/OFFLINE)"
             : "Receipt — Verified Locally"}
         </span>
@@ -2548,7 +2623,11 @@ export function VesperReceiptCard({
               color: badgeColor
             }}
           >
-            <Check size={13} style={{ width: 13, height: 13, flexShrink: 0 }} />
+            {isLocked403 ? (
+              <Lock size={13} style={{ width: 13, height: 13, flexShrink: 0 }} />
+            ) : (
+              <Check size={13} style={{ width: 13, height: 13, flexShrink: 0 }} />
+            )}
             {badgeText}
           </span>
           <ChevronDown
@@ -2609,7 +2688,7 @@ export function VesperReceiptCard({
         >
           <span style={{ fontSize: 12, color: "#7B8E88" }}>
             {endpointTag ? `Source: ${endpointTag}` : "Checked on this device. Nothing left the machine."}
-            {sha256 && sha256 !== "UNMEASURED/OFFLINE" ? ` · SHA-256 ${sha256.slice(0, 12)}…` : ""}
+            {sha256 && sha256 !== "UNMEASURED/OFFLINE" && sha256 !== "LOCKED_403" ? ` · SHA-256 ${sha256.slice(0, 12)}…` : ""}
           </span>
           <button
             type="button"
@@ -3585,7 +3664,11 @@ export function VesperCalmView({
   p8Broadcasts,
   p10RttMs,
   lean4TheoremsQed = null,
-  lean4Qed = false
+  lean4Qed = false,
+  operatorPasskey = "",
+  onPasskeyChange,
+  operatorUnlocked = false,
+  onVerifyOperatorGate
 }: {
   showSkeleton: boolean;
   telemetrySource: "LIVE_L0_SWARM" | "SNAPSHOT_FALLBACK" | "UNMEASURED/OFFLINE";
@@ -3614,6 +3697,10 @@ export function VesperCalmView({
   p10RttMs: number;
   lean4TheoremsQed?: number | null;
   lean4Qed?: boolean;
+  operatorPasskey?: string;
+  onPasskeyChange?: (v: string) => void;
+  operatorUnlocked?: boolean;
+  onVerifyOperatorGate?: () => void;
 }) {
   const now = new Date();
   const hr = now.getHours();
@@ -3621,6 +3708,7 @@ export function VesperCalmView({
     hr < 12 ? "Good morning, Donevin" : hr < 18 ? "Good afternoon, Donevin" : "Good evening, Donevin";
   const weekdayLabel = now.toLocaleDateString(undefined, { weekday: "long" });
   const isOffline = telemetrySource === "UNMEASURED/OFFLINE";
+  const hasLocked403 = !operatorUnlocked && messages.some((m) => m.receiptStatus === "LOCKED_403");
 
   const quickChips: Array<{
     label: string;
@@ -3926,7 +4014,9 @@ export function VesperCalmView({
                     skeleton={showSkeleton}
                     receiptLines={msg.receiptLines ?? defaultReceiptLines}
                     statusMode={
-                      msg.receiptStatus === "UNMEASURED/OFFLINE"
+                      msg.receiptStatus === "LOCKED_403"
+                        ? "LOCKED_403"
+                        : msg.receiptStatus === "UNMEASURED/OFFLINE"
                         ? "UNMEASURED/OFFLINE"
                         : msg.receiptStatus === "MEASURED"
                         ? "LIVE_L0_SWARM"
@@ -3941,6 +4031,74 @@ export function VesperCalmView({
               )}
             </div>
           )
+        )}
+        {hasLocked403 && (
+          <div
+            className="vesper-card vesper-reserve"
+            role="region"
+            aria-label="Operator Vault Locked Unlock"
+            style={{
+              padding: 18,
+              borderColor: "rgba(179, 136, 255, 0.45)",
+              background: "rgba(179, 136, 255, 0.08)"
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <Lock size={16} style={{ width: 16, height: 16, flexShrink: 0, color: "#B388FF" }} />
+                <span style={{ fontSize: 13.5, fontWeight: 800, color: "#E6D9FF" }}>
+                  OPERATOR VAULT LOCKED (HTTP 403)
+                </span>
+              </div>
+              <span style={{ fontSize: 11.5, color: "#B388FF", fontWeight: 700 }}>
+                Header Auth Required (X-Sovereign-Operator-Key)
+              </span>
+            </div>
+            <p style={{ margin: "6px 0 12px 0", fontSize: 13, lineHeight: "20px", color: "#D7E4DF" }}>
+              Loopback/Edge daemon is live, not offline. Enter your external Operator Key below to authenticate via the X-Sovereign-Operator-Key header (never ?key=).
+            </p>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+              <input
+                type="password"
+                value={operatorPasskey}
+                onChange={(e) => onPasskeyChange?.(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    onVerifyOperatorGate?.();
+                  }
+                }}
+                placeholder="Enter external Operator Key (X-Sovereign-Operator-Key)…"
+                aria-label="Calm Mode Operator Vault Key"
+                style={{
+                  flex: "1 1 280px",
+                  height: 40,
+                  borderRadius: 12,
+                  border: "1px solid rgba(179, 136, 255, 0.4)",
+                  background: "#0B0F0E",
+                  color: "var(--vesper-text)",
+                  padding: "0 14px",
+                  fontSize: 13
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => onVerifyOperatorGate?.()}
+                style={{
+                  height: 40,
+                  borderRadius: 999,
+                  border: "none",
+                  background: "#B388FF",
+                  color: "#07110F",
+                  padding: "0 18px",
+                  fontSize: 12.5,
+                  fontWeight: 800,
+                  cursor: "pointer"
+                }}
+              >
+                Unlock Operator Vault
+              </button>
+            </div>
+          </div>
         )}
       </section>
 
@@ -5224,7 +5382,7 @@ export function VesperSettingsView({
 }
 
 export function App() {
-  // v73.2.3 Vesper Multi-Mode Mica Shell Persistent State, SH-XI Multi-Turn Session & CLS 0.00 Layout State
+  // v73.2.5 Vesper Multi-Mode Mica Shell Persistent State, SH-XI Multi-Turn Session & CLS 0.00 Layout State
   const [vesperMode, setVesperModeState] = useState<VesperShellMode>(() => {
     if (typeof window !== "undefined") {
       try {
@@ -5373,6 +5531,41 @@ export function App() {
       h["X-Sovereign-Operator-Key"] = k;
     }
     return h;
+  };
+  const verifyOperatorVaultGate = async (overrideKey?: string): Promise<boolean> => {
+    const cleanKey = (overrideKey !== undefined ? overrideKey : operatorPasskey).trim();
+    const bases = ["", "http://127.0.0.1:8097"];
+    let checked = false;
+    let verifiedOk = false;
+    for (const b of bases) {
+      try {
+        const r = await fetch(`${b}/api/v1/auth/operator_vault_gate`, {
+          cache: "no-store",
+          headers: { "X-Sovereign-Operator-Key": cleanKey }
+        });
+        if (r.ok || r.status === 401 || r.status === 403) {
+          const j = await r.json().catch(() => ({}));
+          const authOk = Boolean(r.ok && j && j.authorized);
+          setOperatorUnlocked(authOk);
+          verifiedOk = authOk;
+          const msg = authOk
+            ? "[OPERATOR VAULT UNLOCKED] Authenticated via X-Sovereign-Operator-Key loopback header."
+            : "[OPERATOR VAULT DENIED] Invalid or missing X-Sovereign-Operator-Key loopback header.";
+          setIdeConsoleLog(msg);
+          triggerVesperToast(authOk ? "Operator Vault Unlocked (Loopback Header Verified)" : "Operator Gate Denied");
+          checked = true;
+          break;
+        }
+      } catch {
+        // try loopback fallback
+      }
+    }
+    if (!checked) {
+      setOperatorUnlocked(false);
+      setIdeConsoleLog("[OPERATOR VAULT UNMEASURED/OFFLINE] Loopback :8097 unreachable — cannot verify X-Sovereign-Operator-Key header.");
+      triggerVesperToast("UNMEASURED/OFFLINE: :8097 Loopback Gate Unreachable");
+    }
+    return verifiedOk;
   };
   const [helpSidebarOpen, setHelpSidebarOpen] = useState<boolean>(false);
   const [helpSection, setHelpSection] = useState<string>("QUICKSTART");
@@ -6023,6 +6216,10 @@ export function App() {
   const [webgpuBatchesCount, setWebgpuBatchesCount] = useState<number>(0);
   const [webgpuColRange, setWebgpuColRange] = useState<string>("Cols #480..495 (704 Neurons)");
   const [webgpuPocHash, setWebgpuPocHash] = useState<string>("UNMEASURED/OFFLINE");
+  const webgpuPocHashRef = useRef<string>("UNMEASURED/OFFLINE");
+  useEffect(() => {
+    webgpuPocHashRef.current = webgpuPocHash;
+  }, [webgpuPocHash]);
   const [webgpuStatusDiag, setWebgpuStatusDiag] = useState<string>(
     "STANDBY: Click 'LEASE MY BROWSER WEBGPU TO CLUSTER' to safely contribute speculative Chair-44 columns (#480..1439) via WGSL @compute without affecting 15.965 Hz Decadic cadence (Awaiting Measured Lease). Auto-releases on tab exit."
   );
@@ -6365,34 +6562,59 @@ export function App() {
     const shouldRelease = forceRelease !== undefined ? forceRelease : webgpuLeaseActive;
     const baseUrls = ["", "http://127.0.0.1:8097"];
     if (shouldRelease) {
-      setWebgpuLeaseActive(false);
-      setWebgpuLeasedKops(0);
+      let poc = webgpuPocHashRef.current;
+      if (!poc || poc === "UNMEASURED/OFFLINE") {
+        const [freshKops, freshPoc, freshAdapter] = await runBrowserWebGpuMicroBatch();
+        if (freshPoc && freshPoc !== "UNMEASURED/OFFLINE" && freshKops > 0) {
+          poc = freshPoc;
+          webgpuPocHashRef.current = freshPoc;
+          setWebgpuPocHash(freshPoc);
+          setWebgpuAdapterName(freshAdapter);
+        }
+      }
+      if (!poc || poc === "UNMEASURED/OFFLINE") {
+        setWebgpuStatusDiag("UNMEASURED/OFFLINE: Missing .e8z poc_hash — cannot verify WebGPU lease release.");
+        return;
+      }
+      let releasedOk = false;
+      let lastRejectMsg = "";
       for (const b of baseUrls) {
         try {
           const r = await fetch(
-            `${b}/api/v1/worksteal/webgpu_lease?action=release&worker_id=${encodeURIComponent(webgpuWorkerId)}`,
+            `${b}/api/v1/worksteal/webgpu_lease?action=release&worker_id=${encodeURIComponent(webgpuWorkerId)}&poc_hash=${encodeURIComponent(poc)}`,
             { cache: "no-store", keepalive: true, headers: getOperatorHeaders() }
           );
-          if (r.ok) {
-            const d = await r.json();
-            setWebgpuActiveWorkers(d.active_leases_count ?? 0);
-            setWebgpuLeasedKops(d.total_webgpu_leased_kops ?? 0);
-            setWebgpuStatusDiag(d.diag ?? "WebGPU Lease Released cleanly (Awaiting Measured Jitter).");
-            if (d.diag) {
+          const d = await r.json().catch(() => null);
+          if (r.ok && !d?.rejected_bad_request) {
+            releasedOk = true;
+            setWebgpuLeaseActive(false);
+            setWebgpuActiveWorkers(d?.active_leases_count ?? 0);
+            setWebgpuLeasedKops(d?.total_webgpu_leased_kops ?? 0);
+            setWebgpuStatusDiag(d?.diag ?? "WebGPU Lease Released cleanly (Awaiting Measured Jitter).");
+            if (d?.diag) {
               setCardDiag(d.diag);
               setTermOut(d.diag);
             }
             break;
           }
+          if (d?.diag) {
+            lastRejectMsg = String(d.diag);
+          } else if (r.status === 400 || r.status === 401 || r.status === 403) {
+            lastRejectMsg = `WebGPU Lease Release Rejected (HTTP ${r.status}).`;
+          }
         } catch {
           // try fallback
         }
+      }
+      if (!releasedOk) {
+        setWebgpuStatusDiag(lastRejectMsg || "WebGPU Lease Release Failed (HTTP 400/403 or L0 Offline — lease preserved).");
       }
       return;
     }
 
     const [kops, poc, adapter] = await runBrowserWebGpuMicroBatch();
     setWebgpuAdapterName(adapter);
+    webgpuPocHashRef.current = poc;
     setWebgpuPocHash(poc);
     if (poc === "UNMEASURED/OFFLINE" || kops <= 0) {
       setWebgpuLeaseActive(false);
@@ -6442,6 +6664,7 @@ export function App() {
       const [kops, poc, adapter] = await runBrowserWebGpuMicroBatch();
       if (poc === "UNMEASURED/OFFLINE" || kops <= 0) {
         if (alive) {
+          webgpuPocHashRef.current = "UNMEASURED/OFFLINE";
           setWebgpuPocHash("UNMEASURED/OFFLINE");
           setWebgpuAdapterName(adapter);
           setWebgpuLeasedKops(0);
@@ -6462,6 +6685,7 @@ export function App() {
               setWebgpuActiveWorkers(d.active_leases_count ?? 1);
               setWebgpuLeasedKops(d.total_webgpu_leased_kops ?? kops);
               setWebgpuBatchesCount(d.worker_batches ?? 1);
+              webgpuPocHashRef.current = poc;
               setWebgpuPocHash(poc);
               setWebgpuStatusDiag(d.diag ?? webgpuStatusDiag);
             }
@@ -6477,7 +6701,11 @@ export function App() {
     const handleUnload = () => {
       if (unloadSent) return;
       unloadSent = true;
-      const relUrl = `/api/v1/worksteal/webgpu_lease?action=release&worker_id=${encodeURIComponent(webgpuWorkerId)}`;
+      const poc = webgpuPocHashRef.current;
+      if (!poc || poc === "UNMEASURED/OFFLINE") {
+        return;
+      }
+      const relUrl = `/api/v1/worksteal/webgpu_lease?action=release&worker_id=${encodeURIComponent(webgpuWorkerId)}&poc_hash=${encodeURIComponent(poc)}`;
       const opHdrs = getOperatorHeaders();
       if (Object.keys(opHdrs).length > 0) {
         try {
@@ -6569,6 +6797,7 @@ export function App() {
             const [kops, poc, adapter] = await runBrowserWebGpuMicroBatch(normalized);
             if (alive && poc !== "UNMEASURED/OFFLINE" && kops > 0) {
               setWebgpuAdapterName(adapter);
+              webgpuPocHashRef.current = poc;
               setWebgpuPocHash(poc);
               setWebgpuStatusDiag(
                 `MEASURED .E8Z NORMS LOADED (2,080 Cachelines / 133,120B): ${adapter} verified Plücker 6D Inner Product (${poc} @ ${kops.toFixed(1)}k ops/s). Click 'LEASE MY BROWSER WEBGPU TO CLUSTER' to contribute live batches.`
@@ -7630,6 +7859,8 @@ export function App() {
         : ["", "http://127.0.0.1:8097"];
 
     let succeeded = false;
+    let sawHttp403 = false;
+    let http403Status = 403;
     for (const b of baseUrls) {
       try {
         const res =
@@ -7645,6 +7876,11 @@ export function App() {
                 cache: "no-store"
               })
             : await fetch(`${b}${targetPath}`, { cache: "no-store", headers: getOperatorHeaders() });
+        if (res.status === 401 || res.status === 403) {
+          sawHttp403 = true;
+          http403Status = res.status;
+          continue;
+        }
         if (!res.ok) continue;
         const j = await res.json();
         setVesperTelemetrySource("LIVE_L0_SWARM");
@@ -7780,7 +8016,27 @@ export function App() {
       }
     }
 
-    if (!succeeded) {
+    if (!succeeded && sawHttp403) {
+      const endpointClean = targetPath.split("?")[0];
+      setVesperCalmMessages((prev) => [
+        ...prev,
+        {
+          id: `vesper-a-locked-${Date.now()}`,
+          role: "assistant",
+          text: `OPERATOR VAULT LOCKED (HTTP ${http403Status}): Local/Edge daemon is live, not offline. Endpoint ${endpointClean} requires a valid X-Sovereign-Operator-Key header. Unlock your Operator Vault Key below.`,
+          receipt: true,
+          receiptStatus: "LOCKED_403",
+          receiptLines: [
+            `STATUS · OPERATOR VAULT LOCKED (HTTP ${http403Status})`,
+            `Endpoint · ${endpointClean}`,
+            "Auth Policy · X-Sovereign-Operator-Key header required (?key= rejected)",
+            "Action · Enter external Operator Vault Key in the unlock panel below"
+          ],
+          endpointTag: endpointClean,
+          sha256: "LOCKED_403"
+        }
+      ]);
+    } else if (!succeeded) {
       setVesperTelemetrySource("UNMEASURED/OFFLINE");
       setVesperCalmMessages((prev) => [
         ...prev,
@@ -8895,6 +9151,12 @@ export function App() {
                 p10RttMs={tel.p10_rtt_ms}
                 lean4TheoremsQed={tel.lean4_theorems_qed}
                 lean4Qed={tel.lean4_qed}
+                operatorPasskey={operatorPasskey}
+                onPasskeyChange={setOperatorPasskey}
+                operatorUnlocked={operatorUnlocked}
+                onVerifyOperatorGate={() => {
+                  void verifyOperatorVaultGate();
+                }}
               />
             )}
 
@@ -8957,37 +9219,8 @@ export function App() {
                 operatorPasskey={operatorPasskey}
                 onPasskeyChange={setOperatorPasskey}
                 operatorUnlocked={operatorUnlocked}
-                onVerifyOperatorGate={async () => {
-                  const cleanKey = operatorPasskey.trim();
-                  const bases = ["", "http://127.0.0.1:8097"];
-                  let checked = false;
-                  for (const b of bases) {
-                    try {
-                      const r = await fetch(`${b}/api/v1/auth/operator_vault_gate`, {
-                        cache: "no-store",
-                        headers: { "X-Sovereign-Operator-Key": cleanKey }
-                      });
-                      if (r.ok || r.status === 401 || r.status === 403) {
-                        const j = await r.json().catch(() => ({}));
-                        const authOk = Boolean(r.ok && j && j.authorized);
-                        setOperatorUnlocked(authOk);
-                        const msg = authOk
-                          ? "[OPERATOR VAULT UNLOCKED] Authenticated via X-Sovereign-Operator-Key loopback header."
-                          : "[OPERATOR VAULT DENIED] Invalid or missing X-Sovereign-Operator-Key loopback header.";
-                        setIdeConsoleLog(msg);
-                        triggerVesperToast(authOk ? "Operator Vault Unlocked (Loopback Header Verified)" : "Operator Gate Denied");
-                        checked = true;
-                        break;
-                      }
-                    } catch {
-                      // try loopback fallback
-                    }
-                  }
-                  if (!checked) {
-                    setOperatorUnlocked(false);
-                    setIdeConsoleLog("[OPERATOR VAULT UNMEASURED/OFFLINE] Loopback :8097 unreachable — cannot verify X-Sovereign-Operator-Key header.");
-                    triggerVesperToast("UNMEASURED/OFFLINE: :8097 Loopback Gate Unreachable");
-                  }
+                onVerifyOperatorGate={() => {
+                  void verifyOperatorVaultGate();
                 }}
                 ideConsoleLog={ideConsoleLog}
                 isFluid={isVesperFluid}
@@ -10306,22 +10539,8 @@ export function App() {
                   style={{ background: "#050a0e", color: "#ffb700", border: "1px solid #b388ff", borderRadius: "4px", padding: "3px 8px", fontFamily: "monospace", fontSize: "11px" }}
                 />
                 <button
-                  onClick={async () => {
-                    try {
-                      const r = await fetch("/api/v1/auth/operator_vault_gate", {
-                        cache: "no-store",
-                        headers: { "X-Sovereign-Operator-Key": operatorPasskey.trim() }
-                      });
-                      if (r.ok || r.status === 401 || r.status === 403) {
-                        const j = await r.json().catch(() => ({}));
-                        const authOk = Boolean(r.ok && j && j.authorized);
-                        setOperatorUnlocked(authOk);
-                        setIdeConsoleLog(authOk ? "[OPERATOR VAULT UNLOCKED] Authenticated via X-Sovereign-Operator-Key header." : "[OPERATOR VAULT DENIED] Invalid or missing X-Sovereign-Operator-Key header.");
-                      }
-                    } catch {
-                      setOperatorUnlocked(false);
-                      setIdeConsoleLog("[OPERATOR VAULT OFFLINE] Backend unreachable -- cannot verify operator key.");
-                    }
+                  onClick={() => {
+                    void verifyOperatorVaultGate();
                   }}
                   style={{ background: "#ffb700", color: "#050a0e", border: "none", borderRadius: "4px", padding: "4px 10px", cursor: "pointer", fontFamily: "monospace", fontSize: "11px", fontWeight: "bold" }}
                 >
@@ -11933,7 +12152,7 @@ export function App() {
               </div>
             </div>
 
-            {/* Dedicated v72.1.0..v73.2.3 Sovereign Harmonic XI (SH-XI) Weeks 1 & 2 Suite (Tools 357..368 | Live Lean 4 QED) */}
+            {/* Dedicated v72.1.0..v73.2.5 Sovereign Harmonic XI (SH-XI) Weeks 1 & 2 Suite (Tools 357..368 | Live Lean 4 QED) */}
             <div style={{ background: "#071412", border: "1.5px solid #00E5A0", borderRadius: 5, padding: "7px 10px", marginBottom: 8 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 6, marginBottom: 5 }}>
                 <span style={{ color: "#00E5A0", fontWeight: "bold", fontSize: 10.5 }}>
@@ -12910,6 +13129,7 @@ export function App() {
         }}
         onCallEndpoint={(ep, desc) => callEndpoint(ep, desc)}
         telemetrySource={vesperTelemetrySource}
+        releaseVersion={tel.release_version}
         lean4TheoremsQed={tel.lean4_theorems_qed}
         lean4Qed={tel.lean4_qed}
         toolsCount={tel.tools_count}

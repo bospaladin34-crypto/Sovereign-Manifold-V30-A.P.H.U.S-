@@ -1,0 +1,50 @@
+{
+    "schema":  "act_omega.cloudflare_edge_worker_deployment_receipt.v1",
+    "worker_name":  "sovereign-loq15-vpc-shadow",
+    "config_scope":  "edge",
+    "worker_version_id":  "d96d9e51-2df9-4116-b4dd-e24644e0a324",
+    "deployment_id":  "653d4c6a-67b3-4386-8cca-8c924ada2f0a",
+    "deployment_created_on":  "2026-11-25T07:28:16.540759Z",
+    "edge_base_uri":  "https://act-omega-net.dev",
+    "version_code":  78,
+    "version_name":  "v73.2.5",
+    "apk_bytes":  30546770,
+    "apk_sha256":  "51cb494ecf45b623eacc46d1453333e6d16f509c5d5a45be7e15b33246609505",
+    "timestamp_utc":  "2026-11-25T07:28:24Z",
+    "request_paths":  [
+                          "/api/v1/ota/pixel_manifest?edge_direct=1",
+                          "/api/v1/tools/t284?edge_direct=1",
+                          "/api/v1/health?edge_direct=1"
+                      ],
+    "probes":  {
+                   "pixel_manifest":  {
+                                          "http_status":  200,
+                                          "request_path":  "/api/v1/ota/pixel_manifest?edge_direct=1",
+                                          "status":  "MEASURED_PIXEL_OTA_MANIFEST_READY",
+                                          "version_name":  "v73.2.5",
+                                          "version_code":  78,
+                                          "apk_bytes":  30546770,
+                                          "apk_sha256":  "51cb494ecf45b623eacc46d1453333e6d16f509c5d5a45be7e15b33246609505",
+                                          "timestamp_ms":  1795591704486
+                                      },
+                   "t284":  {
+                                "http_status":  200,
+                                "request_path":  "/api/v1/tools/t284?edge_direct=1",
+                                "status":  "MEASURED_PIXEL_OTA_MANIFEST_READY",
+                                "version_name":  "v73.2.5",
+                                "version_code":  78,
+                                "apk_bytes":  30546770,
+                                "apk_sha256":  "51cb494ecf45b623eacc46d1453333e6d16f509c5d5a45be7e15b33246609505",
+                                "timestamp_ms":  1795591704642
+                            },
+                   "health":  {
+                                  "http_status":  200,
+                                  "request_path":  "/api/v1/health?edge_direct=1",
+                                  "status":  "ONLINE",
+                                  "version":  "v73.2.5",
+                                  "chain_milestone":  "CHAIN 404",
+                                  "lean4_theorems_qed":  "1010/1010",
+                                  "tools_total":  404
+                              }
+               }
+}

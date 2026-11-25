@@ -1,9 +1,10 @@
 {
-  "global_turn_seq": 1013,
+  "global_turn_seq": 1861,
   "historical_seeded_total": 280,
   "schema": "act_omega.sh_xi_session_turn_counters.v1",
-  "session_count": 20,
+  "session_count": 22,
   "sessions": {
+    "__stateless_default__": 79,
     "challenger_12t_1795481197": 13,
     "challenger_iso_reset_1795481197": 1,
     "challenger_m3_get_1795477964": 2,
@@ -16,13 +17,14 @@
     "m3_live_verify_1795476723": 15,
     "mobile_p10_sh_xi": 5,
     "ps_w2_refactor_test": 6,
-    "secprobe_m3_openai_compat": 16,
+    "secprobe_m3_openai_compat": 24,
     "shxi_week2_gauntlet_8t": 8,
     "vesper_hud_mwginvx5": 1,
     "vesper_hud_mwlpe9ae": 2,
     "vesper_hud_mwlq21np": 2,
     "vesper_hud_mwm8knq7": 1,
     "vesper_hud_mwofzb59": 13,
-    "vesper_hud_mwsqz43n": 2
+    "vesper_hud_mwsqz43n": 2,
+    "vesper_hud_mwuedvs6": 1
   }
 }

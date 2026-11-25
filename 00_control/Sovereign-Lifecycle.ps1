@@ -1,5 +1,5 @@
 # C:\sovereign_manifold_v31\00_control\Sovereign-Lifecycle.ps1
-# ACT-Omega Net v73.2.4 (SH4Z v7321 TLV | CHAIN 404 | Live Lean 4 Formal QED) -- Unified Safe Cluster Start / Stop / Handover / Verify / Status Controller
+# ACT-Omega Net v73.2.5 (SH4Z v7321 TLV | CHAIN 404 | Live Lean 4 Formal QED) -- Unified Safe Cluster Start / Stop / Handover / Verify / Status Controller
 param(
     [ValidateSet("start", "stop", "stop-all", "restart", "status", "handover", "verify")]
     [string]$Action = "status",

@@ -788,6 +788,292 @@ public static class SovereignByteStreamScanner {
     return ,$secViolations
 }
 
+if (-not ('SovereignRustAuditLexer' -as [type])) {
+    Add-Type -TypeDefinition @"
+using System;
+using System.Text;
+public static class SovereignRustAuditLexer {
+    private static bool IsWordChar(char c) {
+        return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '_';
+    }
+    private static void AppendSpaceIfNeeded(StringBuilder sb, string rawText, int nextIdx, int contentEnd) {
+        if (sb.Length == 0) return;
+        char last = sb[sb.Length - 1];
+        if (last == ' ' || last == '\t') return;
+        if (nextIdx < contentEnd) {
+            char nxt = rawText[nextIdx];
+            if (nxt == ' ' || nxt == '\t') return;
+        }
+        sb.Append(' ');
+    }
+    public static string[] ComputeViews(string rawText) {
+        if (string.IsNullOrEmpty(rawText)) return new string[] { "", "" };
+        var displaySb = new StringBuilder(rawText.Length);
+        var d1Sb = new StringBuilder(rawText.Length);
+        var lineDisplay = new StringBuilder(256);
+        var lineD1 = new StringBuilder(256);
+        bool inString = false;
+        int rawHashes = -1;
+        int blockCommentDepth = 0;
+        int pos = 0;
+        int totalLen = rawText.Length;
+
+        while (pos <= totalLen) {
+            int lineEnd = rawText.IndexOf('\n', pos);
+            int nextPos;
+            int contentEnd;
+            if (lineEnd >= 0) {
+                contentEnd = (lineEnd > pos && rawText[lineEnd - 1] == '\r') ? lineEnd - 1 : lineEnd;
+                nextPos = lineEnd + 1;
+            } else {
+                contentEnd = totalLen;
+                nextPos = totalLen + 1;
+            }
+
+            lineDisplay.Clear();
+            lineD1.Clear();
+            bool hasNonWhitespaceCode = false;
+            int i = pos;
+
+            while (i < contentEnd) {
+                if (blockCommentDepth > 0) {
+                    int segStart = i;
+                    while (i < contentEnd && blockCommentDepth > 0) {
+                        if (i + 1 < contentEnd && rawText[i] == '/' && rawText[i + 1] == '*') {
+                            blockCommentDepth++;
+                            i += 2;
+                        } else if (i + 1 < contentEnd && rawText[i] == '*' && rawText[i + 1] == '/') {
+                            blockCommentDepth--;
+                            i += 2;
+                        } else {
+                            i++;
+                        }
+                    }
+                    int segLen = i - segStart;
+                    AppendSpaceIfNeeded(lineDisplay, rawText, i, contentEnd);
+                    string segStr = rawText.Substring(segStart, segLen);
+                    if (segStr.IndexOf("HISTORICAL_PRE_V7322", StringComparison.OrdinalIgnoreCase) >= 0) {
+                        AppendSpaceIfNeeded(lineD1, rawText, i, contentEnd);
+                    } else {
+                        lineD1.Append(rawText, segStart, segLen);
+                    }
+                    continue;
+                }
+
+                char ch = rawText[i];
+                if (rawHashes >= 0) {
+                    hasNonWhitespaceCode = true;
+                    if (ch == '"') {
+                        bool matched = (i + rawHashes) < contentEnd;
+                        if (matched) {
+                            for (int h = 1; h <= rawHashes; h++) {
+                                if (rawText[i + h] != '#') { matched = false; break; }
+                            }
+                        }
+                        if (matched) {
+                            int spanLen = 1 + rawHashes;
+                            lineDisplay.Append(rawText, i, spanLen);
+                            lineD1.Append(rawText, i, spanLen);
+                            i += spanLen;
+                            rawHashes = -1;
+                            continue;
+                        }
+                    }
+                    lineDisplay.Append(ch);
+                    lineD1.Append(ch);
+                    i++;
+                    continue;
+                }
+                if (inString) {
+                    hasNonWhitespaceCode = true;
+                    if (ch == '\\') {
+                        int spanLen = (i + 1 < contentEnd) ? 2 : 1;
+                        lineDisplay.Append(rawText, i, spanLen);
+                        lineD1.Append(rawText, i, spanLen);
+                        i += spanLen;
+                        continue;
+                    }
+                    if (ch == '"') {
+                        inString = false;
+                    }
+                    lineDisplay.Append(ch);
+                    lineD1.Append(ch);
+                    i++;
+                    continue;
+                }
+                if (ch == '/' && (i + 1 < contentEnd) && rawText[i + 1] == '/') {
+                    int cmtLen = contentEnd - i;
+                    string commentPart = rawText.Substring(i, cmtLen);
+                    if (commentPart.IndexOf("HISTORICAL_PRE_V7322", StringComparison.OrdinalIgnoreCase) < 0) {
+                        lineD1.Append(rawText, i, cmtLen);
+                    }
+                    break;
+                }
+                if (ch == '/' && (i + 1 < contentEnd) && rawText[i + 1] == '*') {
+                    int segStart = i;
+                    blockCommentDepth = 1;
+                    i += 2;
+                    while (i < contentEnd && blockCommentDepth > 0) {
+                        if (i + 1 < contentEnd && rawText[i] == '/' && rawText[i + 1] == '*') {
+                            blockCommentDepth++;
+                            i += 2;
+                        } else if (i + 1 < contentEnd && rawText[i] == '*' && rawText[i + 1] == '/') {
+                            blockCommentDepth--;
+                            i += 2;
+                        } else {
+                            i++;
+                        }
+                    }
+                    int segLen = i - segStart;
+                    AppendSpaceIfNeeded(lineDisplay, rawText, i, contentEnd);
+                    string segStr = rawText.Substring(segStart, segLen);
+                    if (segStr.IndexOf("HISTORICAL_PRE_V7322", StringComparison.OrdinalIgnoreCase) >= 0) {
+                        AppendSpaceIfNeeded(lineD1, rawText, i, contentEnd);
+                    } else {
+                        lineD1.Append(rawText, segStart, segLen);
+                    }
+                    continue;
+                }
+                if (ch == '\'') {
+                    if ((i + 2 < contentEnd) && rawText[i + 1] != '\\' && rawText[i + 1] != '\'' && rawText[i + 2] == '\'') {
+                        hasNonWhitespaceCode = true;
+                        lineDisplay.Append(rawText, i, 3);
+                        lineD1.Append(rawText, i, 3);
+                        i += 3;
+                        continue;
+                    }
+                    if ((i + 2 < contentEnd) && rawText[i + 1] == '\\') {
+                        int k = i + 3;
+                        int limit = Math.Min(contentEnd, i + 16);
+                        bool closed = false;
+                        while (k < limit) {
+                            char kc = rawText[k];
+                            if (kc == '\'') { closed = true; break; }
+                            if (kc == ' ' || kc == '\t' || kc == ';') { break; }
+                            k++;
+                        }
+                        if (closed) {
+                            hasNonWhitespaceCode = true;
+                            int spanLen = (k + 1) - i;
+                            lineDisplay.Append(rawText, i, spanLen);
+                            lineD1.Append(rawText, i, spanLen);
+                            i = k + 1;
+                            continue;
+                        }
+                    }
+                    hasNonWhitespaceCode = true;
+                    lineDisplay.Append(ch);
+                    lineD1.Append(ch);
+                    i++;
+                    continue;
+                }
+                if (ch == 'r' || ((ch == 'b' || ch == 'c') && (i + 1 < contentEnd) && rawText[i + 1] == 'r')) {
+                    bool prevWord = (i > pos) && IsWordChar(rawText[i - 1]);
+                    if (!prevWord) {
+                        int rPos = (ch == 'r') ? i : i + 1;
+                        int scan = rPos + 1;
+                        int hashes = 0;
+                        while (scan < contentEnd && rawText[scan] == '#') {
+                            hashes++;
+                            scan++;
+                        }
+                        if (scan < contentEnd && rawText[scan] == '"') {
+                            hasNonWhitespaceCode = true;
+                            int spanLen = (scan + 1) - i;
+                            lineDisplay.Append(rawText, i, spanLen);
+                            lineD1.Append(rawText, i, spanLen);
+                            rawHashes = hashes;
+                            i = scan + 1;
+                            continue;
+                        }
+                    }
+                }
+                if (ch == '"') {
+                    hasNonWhitespaceCode = true;
+                    inString = true;
+                    lineDisplay.Append(ch);
+                    lineD1.Append(ch);
+                    i++;
+                    continue;
+                }
+                if (ch != ' ' && ch != '\t') {
+                    hasNonWhitespaceCode = true;
+                }
+                lineDisplay.Append(ch);
+                lineD1.Append(ch);
+                i++;
+            }
+
+            if (hasNonWhitespaceCode) {
+                displaySb.Append(lineDisplay);
+                d1Sb.Append(lineD1);
+            }
+            displaySb.Append('\n');
+            d1Sb.Append('\n');
+            if (lineEnd < 0) break;
+            pos = nextPos;
+        }
+        return new string[] { displaySb.ToString(), d1Sb.ToString() };
+    }
+}
+"@ -Language CSharp -IgnoreWarnings
+}
+
+function Get-RustAuditTextViews {
+    param([string]$RawText)
+    $res = [SovereignRustAuditLexer]::ComputeViews($RawText)
+    return [PSCustomObject]@{
+        DisplayText = $res[0]
+        D1Text      = $res[1]
+    }
+}
+
+function Get-E8zPluckerPocHash {
+    param([string]$E8zPath)
+    if (-not (Test-Path -LiteralPath $E8zPath -PathType Leaf)) { return "" }
+    $rawE8z = [System.IO.File]::ReadAllBytes($E8zPath)
+    if ($rawE8z.Length -lt 2080 * 64) { return "" }
+    $rawEnergies = New-Object double[] 2080
+    $minE = [double]::PositiveInfinity
+    $maxE = [double]::NegativeInfinity
+    for ($idx = 0; $idx -lt 2080; $idx++) {
+        $baseOff = $idx * 64
+        $sumSq = 0.0
+        $sumDiff = 0.0
+        for ($b = 0; $b -lt 64; $b++) {
+            $centered = ($rawE8z[$baseOff + $b] - 127.5) / 127.5
+            $sumSq += $centered * $centered
+            if ($b -gt 0) {
+                $sumDiff += [Math]::Abs($rawE8z[$baseOff + $b] - $rawE8z[$baseOff + $b - 1]) / 255.0
+            }
+        }
+        $rms = [Math]::Sqrt($sumSq / 64.0)
+        $tv = $sumDiff / 63.0
+        $bm = (($rawE8z[$baseOff + ($idx % 64)] -bxor $rawE8z[$baseOff + (($idx * 7 + 13) % 64)]) -band 0xff) / 255.0
+        $energy = 0.45 * $rms + 0.35 * $tv + 0.20 * $bm
+        $rawEnergies[$idx] = $energy
+        if ($energy -lt $minE) { $minE = $energy }
+        if ($energy -gt $maxE) { $maxE = $energy }
+    }
+    $span = [Math]::Max(1e-6, $maxE - $minE)
+    $maxSafe = [Math]::Max(1e-6, $maxE)
+    $normE8z = New-Object double[] 2080
+    for ($idx = 0; $idx -lt 2080; $idx++) {
+        $normE8z[$idx] = [Math]::Max(0.05 * ($rawEnergies[$idx] / $maxSafe), ($rawEnergies[$idx] - $minE) / $span)
+    }
+    [uint32]$crc = 0x5348345AL
+    for ($i = 0; $i -lt 704; $i++) {
+        $ia = ($i * 6) % 2080
+        $ib = ($ia + 44) % 2080
+        $pab = $normE8z[$ia] * $normE8z[($ib + 5) % 2080] - $normE8z[($ia + 1) % 2080] * $normE8z[($ib + 4) % 2080] + $normE8z[($ia + 2) % 2080] * $normE8z[($ib + 3) % 2080] + $normE8z[($ia + 3) % 2080] * $normE8z[($ib + 2) % 2080] - $normE8z[($ia + 4) % 2080] * $normE8z[($ib + 1) % 2080] + $normE8z[($ia + 5) % 2080] * $normE8z[$ib]
+        [int32]$trunc = [Math]::Truncate($pab * 10000.0)
+        [uint32]$pluckerWord = [BitConverter]::ToUInt32([BitConverter]::GetBytes($trunc), 0)
+        [uint64]$prod = ([uint64]($crc -bxor $pluckerWord)) * ([uint64]0x01000193)
+        $crc = [uint32]($prod -band ([uint64]4294967295))
+    }
+    return ("0x{0:X6}_PLUCKER_POS_QED" -f ($crc -band 0xFFFFFF))
+}
+
 function Run-StaticGatekeeperChecks {
     $failures = New-Object System.Collections.Generic.List[string]
 
@@ -854,10 +1140,20 @@ function Run-StaticGatekeeperChecks {
             }
         }
     }
-    if (Test-Path $kt1) {
-        $ktTxt = [System.IO.File]::ReadAllText($kt1)
-        if ($ktTxt -match '/1010\b|1,010/1,010\s+(?:Lean\s+4\s+)?QED|CHAIN 368') {
-            $failures.Add("ANDROID_KOTLIN_STALE_STAMP: Static /1010, 1,010/1,010 QED, or CHAIN 368 literal in MainActivity.kt")
+    $staleDisplayPattern = '\b(?:\d{1,4}|\d{1,3},\d{3})\s*/\s*1,?010\b|(?<!\d)/1,?010\b|\b1,?010\s+(?:Lean\s+4\s+|Formal\s+)?(?:QED|Theorems)\b|CHAIN\s+368'
+    $staleD1TablePattern = '(?i)(?:\b10[- ]tables?\b|\b10/10\s+D1\s+Tables?\b|\b10\s+D1\s+Tables?\b|\\?"?(?:tables_count|d1_tables_synced|cloudflare_d1_tables)\\?"?\s*:\s*10\b|v44_operationalized_research_shards|v44_multiturn_discourse_memory|(?<!\w)act_omega_d1_vault(?!_v7322(?!\w)))'
+
+    foreach ($ktPath in @($ktRoot, $kt1, $kt2)) {
+        if ($ktPath -and (Test-Path $ktPath -PathType Leaf)) {
+            $ktTxt = [System.IO.File]::ReadAllText($ktPath)
+            $ktCode = [regex]::Replace($ktTxt, '(?m)^\s*//.*$', '')
+            if (($ktCode -match '/1010\b|1,010/1,010\s+(?:Lean\s+4\s+)?QED|CHAIN 368') -or ($ktCode -match $staleDisplayPattern)) {
+                $failures.Add("ANDROID_KOTLIN_STALE_STAMP: Static /1010, 1,010/1,010 QED, or CHAIN 368 literal in $ktPath")
+            }
+            $ktD1 = [regex]::Match($ktCode, $staleD1TablePattern)
+            if ($ktD1.Success) {
+                $failures.Add("ANDROID_KOTLIN_STALE_D1_TABLE: Matched '$($ktD1.Value)' in $ktPath")
+            }
         }
     }
 
@@ -870,8 +1166,6 @@ function Run-StaticGatekeeperChecks {
         $failures.Add("CSHARP_HUD_MIRROR_DRIFT: SovereignTrayAndHud.cs != SovereignCockpitHUD.cs")
     }
 
-    $staleDisplayPattern = '\b(?:\d{1,4}|\d{1,3},\d{3})\s*/\s*1,?010\b|(?<!\d)/1,?010\b|\b1,?010\s+(?:Lean\s+4\s+|Formal\s+)?(?:QED|Theorems)\b|CHAIN\s+368'
-    $staleD1TablePattern = '(?i)(?:\b10[- ]tables?\b|\b10/10\s+D1\s+Tables?\b|\b10\s+D1\s+Tables?\b|\\?"?(?:tables_count|d1_tables_synced|cloudflare_d1_tables)\\?"?\s*:\s*10\b|v44_operationalized_research_shards|v44_multiturn_discourse_memory|(?<!\w)act_omega_d1_vault(?!_v7322(?!\w)))'
     $staleScanFiles = New-Object System.Collections.Generic.List[string]
     $staleScanSet = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
     foreach ($sf in @(
@@ -952,13 +1246,18 @@ function Run-StaticGatekeeperChecks {
         }
         $scanTxt = [System.IO.File]::ReadAllText($scanPath)
         if ($scanPath.EndsWith('.rs', [System.StringComparison]::OrdinalIgnoreCase)) {
-            $scanTxt = [regex]::Replace($scanTxt, '(?m)^\s*//.*$', '')
+            $rvScan = Get-RustAuditTextViews -RawText $scanTxt
+            $displayTxt = $rvScan.DisplayText
+            $d1Txt = $rvScan.D1Text
+        } else {
+            $displayTxt = $scanTxt
+            $d1Txt = $scanTxt
         }
-        $sm = [regex]::Match($scanTxt, $staleDisplayPattern)
+        $sm = [regex]::Match($displayTxt, $staleDisplayPattern)
         if ($sm.Success) {
             $failures.Add("STALE_DISPLAY_STAMP: Matched '$($sm.Value)' in $scanPath")
         }
-        $dm = [regex]::Match($scanTxt, $staleD1TablePattern)
+        $dm = [regex]::Match($d1Txt, $staleD1TablePattern)
         if ($dm.Success) {
             $failures.Add("STALE_D1_TABLE_COUNT: Matched '$($dm.Value)' in $scanPath")
         }
@@ -974,15 +1273,15 @@ function Run-StaticGatekeeperChecks {
 
     foreach ($rsFile in $allRustSrcFiles) {
         $rsRaw = [System.IO.File]::ReadAllText($rsFile.FullName)
-        # Strip // comment lines so historical comments do not trigger false positives on active code/strings
-        $rsCodeOnly = [regex]::Replace($rsRaw, '(?m)^\s*//.*$', '')
+        # String-literal-aware line lexer: preserves "https://..." / \" while stripping inline // comments for DisplayText and retaining un-annotated inline // comments for D1Text
+        $rvRs = Get-RustAuditTextViews -RawText $rsRaw
         if ($displayAuditSet.Contains($rsFile.FullName)) {
-            $rm = [regex]::Match($rsCodeOnly, $staleDisplayPattern)
+            $rm = [regex]::Match($rvRs.DisplayText, $staleDisplayPattern)
             if ($rm.Success) {
                 $failures.Add("L0_RUST_STALE_DISPLAY_STAMP: Matched '$($rm.Value)' in active Rust code of $($rsFile.FullName)")
             }
         }
-        $dmRs = [regex]::Match($rsCodeOnly, $staleD1TablePattern)
+        $dmRs = [regex]::Match($rvRs.D1Text, $staleD1TablePattern)
         if ($dmRs.Success) {
             $failures.Add("L0_RUST_STALE_D1_TABLE_COUNT: Matched '$($dmRs.Value)' in active Rust code of $($rsFile.FullName)")
         }
@@ -1792,14 +2091,19 @@ if ($FullAudit) {
         $auditOpHdrs["X-Sovereign-Operator-Key"] = $auditOpKey
     }
 
-    # 8. Live v44 Lease Release Jitter Probe
+    # 8. Live v44 Lease Release Jitter & .e8z PoC Probe
     try {
-        $v44 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/worksteal/webgpu_lease?action=release&worker_id=gatekeeper_audit" -Headers $auditOpHdrs -TimeoutSec 15
-        if ([double]$v44.cadence_jitter_us -gt 0.0) {
-            Write-Host "  [8 V44 RELEASE JITTER]  [PASS] Measured Release Jitter=$($v44.cadence_jitter_us) us (> 0.0)" -ForegroundColor Green
+        $e8zPath = "$RepoRoot\00_control\weights\sovereign_harmonic_iv_v5000.e8z"
+        $pocHash = Get-E8zPluckerPocHash -E8zPath $e8zPath
+        if ([string]::IsNullOrWhiteSpace($pocHash)) {
+            throw "UNMEASURED/OFFLINE: Failed to compute 2,080-CL .e8z poc_hash from $e8zPath"
+        }
+        $v44 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/worksteal/webgpu_lease?action=release&worker_id=gatekeeper_audit&poc_hash=$pocHash" -Headers $auditOpHdrs -TimeoutSec 15
+        if (([double]$v44.cadence_jitter_us -gt 0.0) -and ($v44.poc_verified -eq $true)) {
+            Write-Host "  [8 V44 RELEASE JITTER]  [PASS] Measured Release Jitter=$($v44.cadence_jitter_us) us (> 0.0) | poc_verified=True" -ForegroundColor Green
         } else {
-            $failures.Add("V44_RELEASE_JITTER_ZERO: Release path returned 0.0")
-            Write-Host "  [8 V44 RELEASE JITTER]  [FAIL] Release path returned 0.0" -ForegroundColor Red
+            $failures.Add("V44_RELEASE_JITTER_OR_POC_FAIL: jitter=$($v44.cadence_jitter_us) poc_verified=$($v44.poc_verified)")
+            Write-Host "  [8 V44 RELEASE JITTER]  [FAIL] jitter=$($v44.cadence_jitter_us) poc_verified=$($v44.poc_verified)" -ForegroundColor Red
         }
     } catch {
         $failures.Add("V44_PROBE_ERR: $_")

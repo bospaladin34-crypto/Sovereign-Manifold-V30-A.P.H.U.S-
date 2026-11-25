@@ -1,3 +1,5 @@
+> **Historical `v61.0–v63.2` Roadmap Archive Notice**: Preserves the pre-`v73.2.2` Cloudflare D1 baseline (`act_omega_d1_vault`, `10` tables). In `v73.2.2+`, Cloudflare D1 rotated to `act_omega_d1_vault_v7322` (`11` user tables + `2` SQLite/CF system tables).
+
 # ACT-Omega & Vesper: Master Future Research, Handoff & 1:1 Formalism Registry (`v61.0.0` Baseline $\rightarrow$ `v61.1`..`v63.2`)
 
 - **Current Production Baseline:** **`ACT-Omega Net v61.0.0`** (`SH4Z v6000 TLV` | `CHAIN 280` | `700/700` Substantive Lean 4 QED | `63,360` Neurons / `3,041,280` Synapses / `132,960` Bijected Cachelines | `18` Live Gemini MCP Tools)

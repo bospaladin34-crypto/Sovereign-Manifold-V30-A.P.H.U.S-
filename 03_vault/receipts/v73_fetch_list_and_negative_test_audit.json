@@ -1,9 +1,15 @@
 {
     "schema":  "ACT_OMEGA_V73_FETCH_LIST_AND_NEGATIVE_TEST_AUDIT_V1",
-    "version":  "v73.2.4",
-    "generated_at_utc":  "2026-11-24T06:20:59Z",
+    "version":  "v73.2.5",
+    "generated_at_utc":  "2026-11-25T08:54:40Z",
     "author":  "Donevin Frownfelter (@bospaladin34-crypto)",
-    "disposition":  "9 FIXED / 1 PARTIAL",
+    "disposition":  "v73.2.4: 9 FIXED / 1 PARTIAL | v73.2.5: 12-Item Follow-Up Remediation",
+    "sh_xi_turn_counter_receipt_parity":  {
+                                              "final_global_turn_seq":  1861,
+                                              "ledger_sha256":  "e0ebc2bb97d195c29dda6beee2d214a766ba09a651e299694f988dad6704ab4e",
+                                              "ledger_c_e_sha256_match":  true
+                                          },
+    "cloudflare_edge_worker_deployment_receipt_present":  true,
     "v73_http_429_fetch_list_closure":  {
                                             "all_6_paths_verified_on_disk":  true,
                                             "all_paths_verified_on_disk":  true,
@@ -11,12 +17,12 @@
                                             "paths":  [
                                                           {
                                                               "path":  "tests/e2e/test_m1_worker_dispatch_verification.mjs",
-                                                              "lines":  475,
-                                                              "bytes":  22848,
-                                                              "sha256":  "d30e6fba76a5663ade302d225e9fb47c4591d52189916faf40faa9582d91c821",
+                                                              "lines":  604,
+                                                              "bytes":  29482,
+                                                              "sha256":  "6c89134da9bb8aac4c46134da013de932c338256c735a6be12da8333ca034753",
                                                               "run_command":  "node tests/e2e/test_m1_worker_dispatch_verification.mjs",
                                                               "exit_code":  0,
-                                                              "summary":  "Verified B9 single worker, deletion of 32D/TOOL_CALLED_OK mocks, S6 zero CF IDs in wrangler*.toml, N1-N4, S2-S5, E1 auth/CORS, and R4/R3/v73.2.4 edge pre-proxy gates."
+                                                              "summary":  "Verified B9 single worker, deletion of 32D/TOOL_CALLED_OK mocks, S6 zero CF IDs in wrangler*.toml, N1-N4, S2-S5, E1 auth/CORS, and R4/R3/v73.2.5 edge pre-proxy gates."
                                                           },
                                                           {
                                                               "path":  "tests/e2e/m1_worker_do_unit.mjs",
@@ -29,12 +35,12 @@
                                                           },
                                                           {
                                                               "path":  "01_l0_rust/tests/muse_v73_remediation_tests.rs",
-                                                              "lines":  2446,
-                                                              "bytes":  114444,
-                                                              "sha256":  "ae441090e9c5c6ddec6a413c9e969f1252995c2037416ef754bf132f74a76644",
+                                                              "lines":  2702,
+                                                              "bytes":  125573,
+                                                              "sha256":  "13beeb7bd21be937539443ace4bd943c32bd0cf9191df26364f63eb56d2257e1",
                                                               "run_command":  "cargo test --manifest-path 01_l0_rust\\Cargo.toml --release --target-dir target_stage --test muse_v73_remediation_tests",
                                                               "exit_code":  0,
-                                                              "summary":  "Passed 26/26 Rust integration \u0026 negative tests covering R1-R8, sh_xi pretrainer live \u0026cand_model, MoE footing, telemetry ingest, 11 handler groups, Timing-Allow-Origin, v73.2.4 real .e8z PoC, live AXML version_code, D1 11-table parsing, monotonic SH-XI turn counter, and C:/E: invariance."
+                                                              "summary":  "Rust integration \u0026 negative tests covering R1-R8, sh_xi pretrainer live \u0026cand_model, MoE footing, telemetry ingest, 11 handler groups, Timing-Allow-Origin, real .e8z PoC on acquire+release, live AXML version_code, D1 11-table parsing, monotonic SH-XI turn counter, and C:/E: invariance."
                                                           },
                                                           {
                                                               "path":  "00_control/Invoke-Week4TortureSuite.ps1",
@@ -47,12 +53,12 @@
                                                           },
                                                           {
                                                               "path":  "00_control/Invoke-BrutalAgentGatekeeper.ps1",
-                                                              "lines":  1977,
-                                                              "bytes":  100975,
-                                                              "sha256":  "a9d9706a8cf0320865327c00f57a5502db90339907bc0fbf4fcc035d3bfec1d9",
+                                                              "lines":  2281,
+                                                              "bytes":  114566,
+                                                              "sha256":  "9a66d73740f42ab9836009af4830e008e1d27202f88b9bf9142b8b9ed956fb92",
                                                               "run_command":  "powershell -NoProfile -ExecutionPolicy Bypass -File 00_control\\Invoke-BrutalAgentGatekeeper.ps1 -FullAudit (+ 3 negative injection flags)",
                                                               "exit_code":  0,
-                                                              "summary":  "Passed Brutal Gatekeeper -FullAudit plus CF/Lean-1009 (5/5), Pixel ADB serial (4/4), and in-memory telemetry key (5/5) negative injections; 0 tracked/dist leaks and 0 live secrets in CLI args or %TEMP%."
+                                                              "summary":  "Passed Brutal Gatekeeper -FullAudit plus CF/Lean-1009 (5/5), Pixel ADB serial (4/4), and in-memory telemetry key (5/5) negative injections; string-literal-aware Rust lexer; MainActivity.kt D1 scan; 0 live secrets in CLI args or %TEMP%."
                                                           },
                                                           {
                                                               "path":  "00_control/Test-M2-FailureInjection.ps1",
@@ -86,7 +92,7 @@
                                                               "lines":  1583,
                                                               "bytes":  105156,
                                                               "sha256":  "a0adb65cf6c94f8cc495e9c61498a897de7bb3061b2681c251a2254350b9acb1",
-                                                              "run_command":  "powershell -NoProfile -ExecutionPolicy Bypass -File 00_control\\Invoke-FreeTierGovernorE2ESuite.ps1 -ReportFormat JSON -OutputPath 03_vault\\receipts\\v73_2_4_freetier_e2e_pass.txt",
+                                                              "run_command":  "powershell -NoProfile -ExecutionPolicy Bypass -File 00_control\\Invoke-FreeTierGovernorE2ESuite.ps1 -ReportFormat JSON -OutputPath 03_vault\\receipts\\v73_2_5_freetier_e2e_pass.txt",
                                                               "exit_code":  0,
                                                               "summary":  "Passed 110/110 live Free-Tier Governor \u0026 DAK E2E tests and saved UTF-8 no-BOM LF JSON transcript."
                                                           },
@@ -119,29 +125,56 @@
                                                           },
                                                           {
                                                               "path":  "00_control/Test-V73_2_3-SecurityNegativeProbes.ps1",
-                                                              "lines":  1449,
-                                                              "bytes":  89035,
-                                                              "sha256":  "739ad74857b7c7d32d8e97dc797d0caa0870099e8001d4ddd3c8e6fa322e6bc6",
-                                                              "run_command":  "powershell -NoProfile -ExecutionPolicy Bypass -File 00_control\\Test-V73_2_3-SecurityNegativeProbes.ps1 -ReceiptOutPath 03_vault\\receipts\\v73_2_4_security_negative_tests_receipt.json",
+                                                              "lines":  1568,
+                                                              "bytes":  100469,
+                                                              "sha256":  "649b6c0b637c21c3016dd8adf0c1d2b394cb0376df3e2c5e883d68471a1be15a",
+                                                              "run_command":  "powershell -NoProfile -ExecutionPolicy Bypass -File 00_control\\Test-V73_2_3-SecurityNegativeProbes.ps1 -ReceiptOutPath 03_vault\\receipts\\v73_2_5_security_negative_tests_receipt.json",
                                                               "exit_code":  0,
-                                                              "summary":  "Passed 855/855 live Host (:8097) + Edge (https://act-omega-net.dev) positive \u0026 negative security assertions."
+                                                              "summary":  "Passed 907/907 live Host (:8097) + Edge (https://act-omega-net.dev) positive \u0026 negative security assertions."
+                                                          },
+                                                          {
+                                                              "path":  "00_control/Verify-CompletionReportCitations.ps1",
+                                                              "lines":  316,
+                                                              "bytes":  15569,
+                                                              "sha256":  "268e691b06319abac081bf7602ca7737ad54001a3a606682f8eeac8e9c1270d7",
+                                                              "run_command":  "powershell -NoProfile -ExecutionPolicy Bypass -File 00_control\\Verify-CompletionReportCitations.ps1",
+                                                              "exit_code":  0,
+                                                              "summary":  "Verified all path:line citations, exact fn test_* Rust identifiers, disposition honesty, and optional Drive SHA-256 parity across COMPLETION_REPORT_V73*.md."
+                                                          },
+                                                          {
+                                                              "path":  "00_control/Verify-ShXiTurnCountersReceipt.ps1",
+                                                              "lines":  221,
+                                                              "bytes":  9921,
+                                                              "sha256":  "2eb2b8735bcfbf29b3764d4d6f52927b2dc8253143bdadcd4f9eb0019c96c1c2",
+                                                              "run_command":  "powershell -NoProfile -ExecutionPolicy Bypass -File 00_control\\Verify-ShXiTurnCountersReceipt.ps1 -AuditOnly",
+                                                              "exit_code":  0,
+                                                              "summary":  "Read-only verification of C:==E: sh_xi_session_turn_counters.json SHA-256 (e0ebc2bb97d1...) and global_turn_seq=1861 parity with v73_2_4_sh_xi_turn_counter_receipt.json."
+                                                          },
+                                                          {
+                                                              "path":  "tests/e2e/test_m3_gatekeeper_negative.ps1",
+                                                              "lines":  205,
+                                                              "bytes":  14562,
+                                                              "sha256":  "d208b84feeebcfeb23013cbfb9ef70ee254101e37169f68e6e0c16b23bc0b0dc",
+                                                              "run_command":  "powershell -NoProfile -ExecutionPolicy Bypass -File tests\\e2e\\test_m3_gatekeeper_negative.ps1",
+                                                              "exit_code":  0,
+                                                              "summary":  "Verified 15/15 Gatekeeper -StaticOnly negative-injection and Rust string/char/block-comment lexer controls."
                                                           },
                                                           {
                                                               "path":  "00_control/Sovereign-Lifecycle.ps1",
                                                               "lines":  628,
                                                               "bytes":  35295,
-                                                              "sha256":  "34241b797a829b64de17141c853748a7771cec1ddbe0e28386680ee63f588ace",
+                                                              "sha256":  "1cf1fedac0d3dbe1bc9b57c453da6cef7bf6342fc18f23b6a5cbfb3b149b984d",
                                                               "run_command":  "powershell -NoProfile -ExecutionPolicy Bypass -File 00_control\\Sovereign-Lifecycle.ps1 -Action verify",
                                                               "exit_code":  0,
                                                               "summary":  "Passed 6/6 Sovereign Lifecycle verification layers."
                                                           },
                                                           {
                                                               "path":  "03_vault/receipts/",
-                                                              "existing_files_count":  62,
+                                                              "existing_files_count":  70,
                                                               "self_excluded":  "v73_fetch_list_and_negative_test_audit.json",
                                                               "run_command":  "powershell -NoProfile -ExecutionPolicy Bypass -File 00_control\\Build-ReceiptInventoryAudit.ps1",
                                                               "exit_code":  0,
-                                                              "summary":  "Full UTF-8 no-BOM LF SHA-256 + git hash-object inventory of all 62 receipts in 03_vault/receipts/ (excluding self), generated LAST after all v73.2.4 verification suites completed; every volatile receipt carries an explicit volatility_reason.",
+                                                              "summary":  "Full UTF-8 no-BOM LF SHA-256 + git hash-object inventory of all 70 receipts in 03_vault/receipts/ (excluding self), generated LAST after all verification suites completed; every volatile receipt carries an explicit volatility_reason.",
                                                               "files":  [
                                                                             {
                                                                                 "name":  "c1_chain399_404_pass_and_corrupt_fail.json",
@@ -164,13 +197,24 @@
                                                                                 "volatile_on_suite_rerun":  false
                                                                             },
                                                                             {
-                                                                                "name":  "d1_sft_generator_run_and_diff_receipt.json",
-                                                                                "bytes":  7486,
-                                                                                "sha256":  "1fd14e8f19d147fd273846fef884e6869546fbc707a3526d50a18452f47b48ec",
-                                                                                "git_blob_sha1":  "8130d67eb08754ee280aa12c6768760f4ea6e47d",
+                                                                                "name":  "cloudflare_edge_worker_deployment_receipt.json",
+                                                                                "bytes":  2751,
+                                                                                "sha256":  "899fe24ded9c5cd75e5ba55f3470e3ad0375e10dc91b2bff6bcaed1928cce5c3",
+                                                                                "git_blob_sha1":  "a39a160c6d199625631de7b49b0b5c5034a8f390",
                                                                                 "encoding":  "utf-8-no-bom",
                                                                                 "line_ending":  "LF",
-                                                                                "last_write_utc":  "2026-11-24T01:14:25Z",
+                                                                                "last_write_utc":  "2026-11-25T07:28:24Z",
+                                                                                "volatile_on_suite_rerun":  true,
+                                                                                "volatility_reason":  "Deploy-CloudflareEdge.ps1 / NF7b worker deployment capture updates worker_version_id, timestamp_utc, and observed edge_direct manifest values."
+                                                                            },
+                                                                            {
+                                                                                "name":  "d1_sft_generator_run_and_diff_receipt.json",
+                                                                                "bytes":  7486,
+                                                                                "sha256":  "f87347db19309d11c374de489495fd9dc8b67752272927616f5784e10af1af27",
+                                                                                "git_blob_sha1":  "cf7e7fcf3b6ef86f6d2f952c95f9e85713cb9075",
+                                                                                "encoding":  "utf-8-no-bom",
+                                                                                "line_ending":  "LF",
+                                                                                "last_write_utc":  "2026-11-25T07:43:12Z",
                                                                                 "volatile_on_suite_rerun":  true,
                                                                                 "volatility_reason":  "Verify-SftCorpusDeterminism.ps1 overwrites generated_at_utc and fresh run timing measurements on every run."
                                                                             },
@@ -207,11 +251,11 @@
                                                                             {
                                                                                 "name":  "e13_test_m2_live_server_pass.txt",
                                                                                 "bytes":  5414,
-                                                                                "sha256":  "793be7524bd6073b0a72ceb3b27488c82972685f2af262efe9ebe08bc82eefed",
-                                                                                "git_blob_sha1":  "61ff19892efec59c9f149e300ec9c112d63d2a41",
+                                                                                "sha256":  "7eb0d55cc60ec8c5e63153571f8101e1ff50d8de732cedae2008286c1dbdb6b9",
+                                                                                "git_blob_sha1":  "88303af4bdedc2e6fce278757b99ce922ac95571",
                                                                                 "encoding":  "utf-8-no-bom",
                                                                                 "line_ending":  "LF",
-                                                                                "last_write_utc":  "2026-11-24T01:32:56Z",
+                                                                                "last_write_utc":  "2026-11-25T08:04:25Z",
                                                                                 "volatile_on_suite_rerun":  true,
                                                                                 "volatility_reason":  "Test-M2-FailureInjection.ps1 embeds live GET /api/v1/health JSON (monotonic generation, timestamp_ms) and probe timings on every run."
                                                                             },
@@ -228,11 +272,11 @@
                                                                             {
                                                                                 "name":  "e8_week4_torture_pass.txt",
                                                                                 "bytes":  1715,
-                                                                                "sha256":  "ba0b3602e175e462bc9231ceaa4489db3855d8b5a49ad8a39a466625881ed96d",
-                                                                                "git_blob_sha1":  "017f800d779703676ae0a166d671a529b3328e71",
+                                                                                "sha256":  "c219e3f4091b7ae166deae3247c6fd50d86079a691fd1e26277069b5f92ade7a",
+                                                                                "git_blob_sha1":  "fdaa84bd6c1ba51746ae109dd7ab370ca9478340",
                                                                                 "encoding":  "utf-8-no-bom",
                                                                                 "line_ending":  "LF",
-                                                                                "last_write_utc":  "2026-11-24T01:32:12Z",
+                                                                                "last_write_utc":  "2026-11-25T08:03:35Z",
                                                                                 "volatile_on_suite_rerun":  true,
                                                                                 "volatility_reason":  "Invoke-Week4TortureSuite.ps1 logs live Stage 2..8 latencies, bus sequence numbers, and Pixel 8 RTTs on every run."
                                                                             },
@@ -243,18 +287,18 @@
                                                                                 "git_blob_sha1":  "19ab64da2ab238c10eef3cdefd438dec52fc11ab",
                                                                                 "encoding":  "utf-8-no-bom",
                                                                                 "line_ending":  "LF",
-                                                                                "last_write_utc":  "2026-11-24T01:32:22Z",
+                                                                                "last_write_utc":  "2026-11-25T08:03:54Z",
                                                                                 "volatile_on_suite_rerun":  true,
                                                                                 "volatility_reason":  "Invoke-Week4TortureSuite.ps1 -TestPerturbationFail evaluates live /api/v1/sovereign_harmonic/week4 endpoints on every run."
                                                                             },
                                                                             {
                                                                                 "name":  "lean4_compiler_verification_receipt.json",
                                                                                 "bytes":  1592,
-                                                                                "sha256":  "200c0903eb0291764079367f749f42d04e7d508aa3fa64db62a81375974a564b",
-                                                                                "git_blob_sha1":  "daebddc602f3399c8e52e203a4bb6fbf2e2c5de0",
+                                                                                "sha256":  "53464dab5b63151aae301cf07b1dc3dff1b2e982715c85014a94fca7f06b87e1",
+                                                                                "git_blob_sha1":  "2e68297c75bddb905632add75cd57bbfef0d3d9c",
                                                                                 "encoding":  "utf-8-no-bom",
                                                                                 "line_ending":  "LF",
-                                                                                "last_write_utc":  "2026-11-24T01:15:10Z",
+                                                                                "last_write_utc":  "2026-11-25T07:44:28Z",
                                                                                 "volatile_on_suite_rerun":  true,
                                                                                 "volatility_reason":  "Verify-Lean4IndependentReceipt.ps1 overwrites verified_at_utc, compiler_elapsed_ms, verify_elapsed_ms, and HMAC payload timestamps on non-VerifyOnly re-sign runs."
                                                                             },
@@ -600,18 +644,18 @@
                                                                                 "git_blob_sha1":  "b6d56a3ca914de55da24900d21469aeae6aa08ae",
                                                                                 "encoding":  "utf-8-no-bom",
                                                                                 "line_ending":  "LF",
-                                                                                "last_write_utc":  "2026-11-24T03:39:10Z",
+                                                                                "last_write_utc":  "2026-11-25T08:47:22Z",
                                                                                 "volatile_on_suite_rerun":  true,
                                                                                 "volatility_reason":  "Tool 339 (v71_2_sovereign_harmonic_week2_chinchilla_16k_bpe_leech.rs:2955) overwrites elapsed_ms and wireless_p8_rtt_ms on execution."
                                                                             },
                                                                             {
                                                                                 "name":  "v72_0_week4_shx_torture_benchmark_receipt.json",
-                                                                                "bytes":  19772,
-                                                                                "sha256":  "bb67a1ee0dd356ac8247648a483b29c6fde296169d8f2f44281899b27e723f76",
-                                                                                "git_blob_sha1":  "c2dc92285ed2cb273c07b6177681ddfd07153db6",
+                                                                                "bytes":  19774,
+                                                                                "sha256":  "3b6e0140a41b34e4de345877c5cf0ccc49e1a7417dc9d759f1bf292b2db5ccb5",
+                                                                                "git_blob_sha1":  "0ee56d4ec1bfb799aab61d296d7b988ff94503dc",
                                                                                 "encoding":  "utf-8-no-bom",
                                                                                 "line_ending":  "LF",
-                                                                                "last_write_utc":  "2026-11-24T01:32:12Z",
+                                                                                "last_write_utc":  "2026-11-25T08:03:35Z",
                                                                                 "volatile_on_suite_rerun":  true,
                                                                                 "volatility_reason":  "Invoke-Week4TortureSuite.ps1 overwrites recorded_at_utc, elapsed_ms, autopoietic_bus_seq, e_vault_writeback_sha256, and live kernel latencies on every run."
                                                                             },
@@ -701,7 +745,7 @@
                                                                                 "line_ending":  "LF",
                                                                                 "last_write_utc":  "2026-11-24T01:12:08Z",
                                                                                 "volatile_on_suite_rerun":  true,
-                                                                                "volatility_reason":  "Clean Gradle APK build and live Dual-Pixel verification update generated_at_utc and ADB verification timestamps."
+                                                                                "volatility_reason":  "Historical v73.2.4 Gradle APK build receipt; clean Gradle APK build overwrites generated_at_utc and ADB verification timestamps."
                                                                             },
                                                                             {
                                                                                 "name":  "v73_2_4_freetier_e2e_pass.txt",
@@ -771,13 +815,91 @@
                                                                             },
                                                                             {
                                                                                 "name":  "v73_2_4_sh_xi_turn_counter_receipt.json",
-                                                                                "bytes":  11823,
-                                                                                "sha256":  "2d22dd9c920d46157058a0b05311541b904dd074a28b0d1a938cc09f3d623fcc",
-                                                                                "git_blob_sha1":  "4a64b46f3bd5f41b659a99c905e70e2707654543",
+                                                                                "bytes":  11850,
+                                                                                "sha256":  "a6655339e5e845c6331ab48b8e16bd5e1e11886714c13574552e275ad5418177",
+                                                                                "git_blob_sha1":  "7b52e03d5e45283f75d7f05c1275e3219f9be853",
                                                                                 "encoding":  "utf-8-no-bom",
                                                                                 "line_ending":  "LF",
-                                                                                "last_write_utc":  "2026-11-24T00:29:34Z",
-                                                                                "volatile_on_suite_rerun":  false
+                                                                                "last_write_utc":  "2026-11-25T08:20:47Z",
+                                                                                "volatile_on_suite_rerun":  true,
+                                                                                "volatility_reason":  "Verify-ShXiTurnCountersReceipt.ps1 updates ledger_sha256, final_global_turn_seq, session_count, and generated_at_utc LAST after all /converse \u0026 /v1/chat/completions suites."
+                                                                            },
+                                                                            {
+                                                                                "name":  "v73_2_5_android_apk_build_receipt.json",
+                                                                                "bytes":  3920,
+                                                                                "sha256":  "eb14aeb39e4845a9798cae620bffb45e8b7e313d3fb88456a15e94919835784c",
+                                                                                "git_blob_sha1":  "221407ae5d35de424f383bad40768e827a82446e",
+                                                                                "encoding":  "utf-8-no-bom",
+                                                                                "line_ending":  "LF",
+                                                                                "last_write_utc":  "2026-11-25T06:07:47Z",
+                                                                                "volatile_on_suite_rerun":  true,
+                                                                                "volatility_reason":  "Clean v73.2.5 Gradle APK build and live Dual-Pixel verification update generated_at_utc and ADB verification timestamps."
+                                                                            },
+                                                                            {
+                                                                                "name":  "v73_2_5_freetier_e2e_pass.txt",
+                                                                                "bytes":  64726,
+                                                                                "sha256":  "aaccea91dc083bc95de0cca154cf27ee9542b3202d416be2a86e7a0818cfc5d4",
+                                                                                "git_blob_sha1":  "8d770f66c68805081eef0ede4e604e9a22bf4bc5",
+                                                                                "encoding":  "utf-8-no-bom",
+                                                                                "line_ending":  "LF",
+                                                                                "last_write_utc":  "2026-11-25T08:09:41Z",
+                                                                                "volatile_on_suite_rerun":  true,
+                                                                                "volatility_reason":  "Invoke-FreeTierGovernorE2ESuite.ps1 records live v73.2.5 per-test ElapsedMs, request timestamps, and DO/D1 quota counters on every run."
+                                                                            },
+                                                                            {
+                                                                                "name":  "v73_2_5_gatekeeper_lifecycle_pass.txt",
+                                                                                "bytes":  7535,
+                                                                                "sha256":  "9ff5318a034878f3f9addd1d2454e1c252d75802672cf0390113585fe3a33937",
+                                                                                "git_blob_sha1":  "fbe08e1b7f57944a9a32d7bcd18dde64c1f9f942",
+                                                                                "encoding":  "utf-8-no-bom",
+                                                                                "line_ending":  "LF",
+                                                                                "last_write_utc":  "2026-11-25T08:20:27Z",
+                                                                                "volatile_on_suite_rerun":  true,
+                                                                                "volatility_reason":  "Invoke-BrutalAgentGatekeeper.ps1 -FullAudit and Sovereign-Lifecycle.ps1 -Action verify record live v73.2.5 cluster throughput, bus sequences, and probe timings on every run."
+                                                                            },
+                                                                            {
+                                                                                "name":  "v73_2_5_m3_m4_challenger_pass.txt",
+                                                                                "bytes":  5903,
+                                                                                "sha256":  "e1ad2511400a753f2240bfbb2e631fbc5ed876bad9775c398abde5c863e0ebe4",
+                                                                                "git_blob_sha1":  "aec44af67f0e749d31b9233d6fa19d523244e30f",
+                                                                                "encoding":  "utf-8-no-bom",
+                                                                                "line_ending":  "LF",
+                                                                                "last_write_utc":  "2026-11-25T08:09:09Z",
+                                                                                "volatile_on_suite_rerun":  true,
+                                                                                "volatility_reason":  "Test-M3-Priority3And4Challenger.ps1 and Test-M4-Priority5And6Challenger.ps1 record live v73.2.5 :8097 latency and challenger probe outputs on every run."
+                                                                            },
+                                                                            {
+                                                                                "name":  "v73_2_5_node_e2e_pass.txt",
+                                                                                "bytes":  5364,
+                                                                                "sha256":  "4ad972546e36ba5ee398c812679d1b98a1476b1806b3480a631a88dd9cd135c7",
+                                                                                "git_blob_sha1":  "4b27b000c62237c37442557add2aeed7ac1ed04d",
+                                                                                "encoding":  "utf-8-no-bom",
+                                                                                "line_ending":  "LF",
+                                                                                "last_write_utc":  "2026-11-25T07:57:58Z",
+                                                                                "volatile_on_suite_rerun":  true,
+                                                                                "volatility_reason":  "Node worker/DO E2E tests and test_m3_gatekeeper_negative.ps1 record live v73.2.5 test runner timings on every run."
+                                                                            },
+                                                                            {
+                                                                                "name":  "v73_2_5_rust_tests_pass.txt",
+                                                                                "bytes":  2550,
+                                                                                "sha256":  "0ae4afdf49386c8d2b3eb1126778981c6f0add2b2fbaaf797b29d2c65deb7bb0",
+                                                                                "git_blob_sha1":  "184de32220dec3f1681b45175fc6c30092a34b1d",
+                                                                                "encoding":  "utf-8-no-bom",
+                                                                                "line_ending":  "LF",
+                                                                                "last_write_utc":  "2026-11-25T07:49:22Z",
+                                                                                "volatile_on_suite_rerun":  true,
+                                                                                "volatility_reason":  "cargo test --test muse_v73_remediation_tests records live v73.2.5 compilation/test elapsed durations on every run."
+                                                                            },
+                                                                            {
+                                                                                "name":  "v73_2_5_security_negative_tests_receipt.json",
+                                                                                "bytes":  464605,
+                                                                                "sha256":  "e9219ff7211d8a1461789b28bb7cf94e29563c77bc13ac249baec7f7ebb15413",
+                                                                                "git_blob_sha1":  "39e14303eb7a93d2889ad442c2cd40a400af814f",
+                                                                                "encoding":  "utf-8-no-bom",
+                                                                                "line_ending":  "LF",
+                                                                                "last_write_utc":  "2026-11-25T08:10:55Z",
+                                                                                "volatile_on_suite_rerun":  true,
+                                                                                "volatility_reason":  "Test-V73_2_3-SecurityNegativeProbes.ps1 records v73.2.5 generated_at_utc, baseline Anchor-1 kops, and live Host+Edge probe timings on every run."
                                                                             },
                                                                             {
                                                                                 "name":  "week3_12test_torture_and_ablation_receipt.json",
@@ -915,7 +1037,7 @@
                                                                     },
                                                   "negative_test":  {
                                                                         "file":  "01_l0_rust/tests/muse_v73_remediation_tests.rs",
-                                                                        "test_name":  "test_e4_converse_quality_gate \u0026 test_e5_serde_json_gate negative payloads",
+                                                                        "test_name":  "test_e4_converse_quality_gate_rejects_bad_or_truncated_output \u0026 test_e5_serde_json_gate_rejects_substring_spoofing negative payloads",
                                                                         "exit_code":  0,
                                                                         "observed":  "All degenerate/spoofed E4 and E5 payloads failed closed to UNMEASURED/OFFLINE."
                                                                     },
@@ -945,13 +1067,13 @@
                                                   "status":  "FIXED",
                                                   "positive_test":  {
                                                                         "file":  "01_l0_rust/tests/muse_v73_remediation_tests.rs",
-                                                                        "test_name":  "test_m1_item9_sync_matrix_json_bounds_and_negative_rejections \u0026 test_v73_2_3_telemetry_ingest_bounds",
+                                                                        "test_name":  "test_m1_item9_sync_matrix_json_bounds_and_negative_rejections \u0026 test_r2_r3_r4_r8_l0_security_gates_health_ingest_tao_and_source_invariants",
                                                                         "exit_code":  0,
                                                                         "observed":  "Valid bounded JSON payloads accepted; Pixel 8 \u0026 Pixel 10 provisioned live via ADB."
                                                                     },
                                                   "negative_test":  {
                                                                         "file":  "00_control/Test-V73_2_3-SecurityNegativeProbes.ps1",
-                                                                        "test_name":  "855/855 Host+Edge negative \u0026 bounds assertions",
+                                                                        "test_name":  "907/907 Host+Edge negative \u0026 bounds assertions",
                                                                         "exit_code":  0,
                                                                         "observed":  "29 GET telemetry write params, 11 handler groups + aliases, and unauth/OOB POST /ingest rejected (403/400)."
                                                                     },
@@ -965,7 +1087,7 @@
                                                                         "file":  "01_l0_rust/tests/muse_v73_remediation_tests.rs",
                                                                         "test_name":  "test_m4_item10_dynamic_version_no_pixel_serials_and_android_parity",
                                                                         "exit_code":  0,
-                                                                        "observed":  "3x MainActivity.kt parity, versionCode=77 versionName=73.2.4, 6/6 APK mirrors, 0 static display stamps across HUD/C#/Haskell/L0."
+                                                                        "observed":  "3x MainActivity.kt parity, versionCode=78 versionName=73.2.5, 6/6 APK mirrors, 0 static display stamps across HUD/C#/Haskell/L0."
                                                                     },
                                                   "negative_test":  {
                                                                         "file":  "00_control/Invoke-BrutalAgentGatekeeper.ps1",
@@ -999,9 +1121,9 @@
                                                   "status":  "FIXED",
                                                   "positive_test":  {
                                                                         "file":  "00_control/Build-ReceiptInventoryAudit.ps1",
-                                                                        "test_name":  "-VerifyOnly \u0026 -VerifyAgainstGitHead across 62 receipts",
+                                                                        "test_name":  "-VerifyOnly \u0026 -VerifyAgainstGitHead across 70 receipts",
                                                                         "exit_code":  0,
-                                                                        "observed":  "All 62/62 receipts UTF-8 no-BOM LF with 0 HEAD blob mismatches and explicit volatility_reason on volatile receipts."
+                                                                        "observed":  "All 70/70 receipts UTF-8 no-BOM LF with 0 HEAD blob mismatches and explicit volatility_reason on volatile receipts."
                                                                     },
                                                   "negative_test":  {
                                                                         "file":  "00_control/Invoke-BrutalAgentGatekeeper.ps1",
@@ -1111,7 +1233,7 @@
                                                                "file":  "00_control/Build-ReceiptInventoryAudit.ps1",
                                                                "test_name":  "-VerifyOnly \u0026 -VerifyAgainstGitHead",
                                                                "exit_code":  0,
-                                                               "observed":  "All 62 non-self receipts and audit JSON verified UTF-8 no-BOM LF (0 BOM, 0 CR, 0 NUL) with 100% git hash-object / HEAD blob parity and explicit volatility_reason on all volatile entries."
+                                                               "observed":  "All 70 non-self receipts and audit JSON verified UTF-8 no-BOM LF (0 BOM, 0 CR, 0 NUL) with 100% git hash-object / HEAD blob parity and explicit volatility_reason on all volatile entries."
                                                            },
                                          "negative_test":  {
                                                                "file":  "00_control/Build-ReceiptInventoryAudit.ps1",
@@ -1153,7 +1275,7 @@
                                                                "file":  "00_control/Test-V73_2_3-SecurityNegativeProbes.ps1",
                                                                "test_name":  "R4 16 routes + 10 tool-ID aliases + POST /api/v1/tool/execute + ?key=/?%6bey= smuggling (Host+Edge)",
                                                                "exit_code":  0,
-                                                               "observed":  "All 855/855 live Host (:8097) + Edge (https://act-omega-net.dev) probes returned HTTP 403 before state lock/origin proxy."
+                                                               "observed":  "All 907/907 live Host (:8097) + Edge (https://act-omega-net.dev) probes returned HTTP 403 before state lock/origin proxy."
                                                            },
                                          "receipt_path":  "03_vault/receipts/v73_2_4_security_negative_tests_receipt.json"
                                      },
@@ -1201,7 +1323,7 @@
                                                                "file":  "00_control/Invoke-BrutalAgentGatekeeper.ps1",
                                                                "test_name":  "-FullAudit + Vite/C#/Haskell/Gradle APK builds",
                                                                "exit_code":  0,
-                                                               "observed":  "All static display stamps purged across App.tsx, C# Tray/HUD/Overlay, Haskell, HTML/llms/manifest/wiki, and L0; clean Gradle APK versionCode=77 (30546770 B) 6/6 mirrored."
+                                                               "observed":  "All static display stamps purged across App.tsx, C# Tray/HUD/Overlay, Haskell, HTML/llms/manifest/wiki, and L0; clean Gradle APK versionCode=78 (30546770 B) 6/6 mirrored."
                                                            },
                                          "negative_test":  {
                                                                "file":  "00_control/Invoke-BrutalAgentGatekeeper.ps1",
@@ -1273,7 +1395,7 @@
                                                  "status":  "FIXED",
                                                  "positive_test":  {
                                                                        "file":  "01_l0_rust/tests/muse_v73_remediation_tests.rs",
-                                                                       "test_name":  "test_v73_2_4_item1_meta_explanations_and_csv_immutability",
+                                                                       "test_name":  "test_m2_item1_disk_corpus_guard_and_base_curve_meta_parity \u0026 test_m2_item2_moe_per_step_curve_and_weights_manifest_provenance",
                                                                        "exit_code":  0,
                                                                        "observed":  "sh_xi_base_train_meta.json and sh_xi_moe_train_meta.json carry code-verified explanation fields with zero altered CSV or .sh4z numbers."
                                                                    },
@@ -1327,7 +1449,7 @@
                                                  "status":  "FIXED",
                                                  "positive_test":  {
                                                                        "file":  "01_l0_rust/tests/muse_v73_remediation_tests.rs",
-                                                                       "test_name":  "test_v73_2_4_item4_webgpu_lease_real_e8z_poc_verification",
+                                                                       "test_name":  "test_v73_2_4_m1_security_gates_v44_poc_and_query_key_parity",
                                                                        "exit_code":  0,
                                                                        "observed":  "Valid real .e8z 6D Plucker FNV-1a poc_hash + finite kops in 50..=850 accepted with auth."
                                                                    },
@@ -1381,9 +1503,9 @@
                                                  "status":  "FIXED",
                                                  "positive_test":  {
                                                                        "file":  "01_l0_rust/tests/muse_v73_remediation_tests.rs",
-                                                                       "test_name":  "test_v73_2_4_item7_live_apk_axml_version_code_extraction",
+                                                                       "test_name":  "test_v73_2_4_m2_item7_live_apk_version_code_extraction",
                                                                        "exit_code":  0,
-                                                                       "observed":  "Extracts version_code=77 live from shipped APK bytes (0 literal 75 in manifest path)."
+                                                                       "observed":  "Extracts version_code=78 live from shipped APK bytes (0 literal 75 in manifest path)."
                                                                    },
                                                  "negative_test":  {
                                                                        "file":  "01_l0_rust/tests/muse_v73_remediation_tests.rs",
@@ -1399,7 +1521,7 @@
                                                  "status":  "PARTIAL",
                                                  "positive_test":  {
                                                                        "file":  "01_l0_rust/tests/muse_v73_remediation_tests.rs",
-                                                                       "test_name":  "test_v73_2_4_item8_live_d1_11_table_parser_and_strict_uri",
+                                                                       "test_name":  "test_v73_2_4_m2_item8_live_d1_11_table_parser_and_rs_clean",
                                                                        "exit_code":  0,
                                                                        "observed":  "All L0 .rs stale 10-Table literals purged via live wrangler transcript parser; Cloudflare tenant account_id retained as PARTIAL with documented compensating controls."
                                                                    },
@@ -1435,9 +1557,9 @@
                                                  "status":  "FIXED",
                                                  "positive_test":  {
                                                                        "file":  "01_l0_rust/tests/muse_v73_remediation_tests.rs",
-                                                                       "test_name":  "test_v73_2_4_m3_item10_monotonic_turn_counter_decoupled_from_8_exchange_window",
+                                                                       "test_name":  "test_v73_2_4_m3_item10_persistent_monotonic_sh_xi_turn_counters",
                                                                        "exit_code":  0,
-                                                                       "observed":  "15 sequential turns cross #8 monotonically (final_global_turn_seq=649 in M3 receipt) and persist across hot-swap + Pixel 8/10 versionCode=77."
+                                                                       "observed":  "15 sequential turns cross #8 monotonically (M3 baseline turn_15 seq=649, v73.2.4 versionCode=77; current v73.2.5 live ledger final_global_turn_seq=1861, Pixel 8/10 versionCode=78) and persist across hot-swap."
                                                                    },
                                                  "negative_test":  {
                                                                        "file":  "00_control/Test-V73_2_3-SecurityNegativeProbes.ps1",
@@ -1457,7 +1579,7 @@
                        "muse_v73_remediation_tests":  {
                                                           "command":  "cargo test --manifest-path 01_l0_rust\\Cargo.toml --release --target-dir 01_l0_rust\\target_stage --test muse_v73_remediation_tests",
                                                           "exit_code":  0,
-                                                          "summary":  "26 passed; 0 failed; receipt saved to 03_vault/receipts/v73_2_4_rust_tests_pass.txt"
+                                                          "summary":  "28 passed; 0 failed; receipt saved to 03_vault/receipts/v73_2_5_rust_tests_pass.txt"
                                                       },
                        "verify_lean4_independent_receipt":  {
                                                                 "command":  ".\\00_control\\Verify-Lean4IndependentReceipt.ps1 (+ -TestNegative + -VerifyOnly)",
@@ -1477,12 +1599,12 @@
                        "test_m3_challenger":  {
                                                   "command":  ".\\00_control\\Test-M3-Priority3And4Challenger.ps1",
                                                   "exit_code":  0,
-                                                  "summary":  "PASS: 13/13 checks (5/5 failure cases); transcript in v73_2_4_m3_m4_challenger_pass.txt"
+                                                  "summary":  "PASS: 13/13 checks (5/5 failure cases); transcript in v73_2_5_m3_m4_challenger_pass.txt"
                                               },
                        "test_m4_challenger":  {
                                                   "command":  ".\\00_control\\Test-M4-Priority5And6Challenger.ps1",
                                                   "exit_code":  0,
-                                                  "summary":  "PASS: 14/14 checks; transcript in v73_2_4_m3_m4_challenger_pass.txt"
+                                                  "summary":  "PASS: 14/14 checks; transcript in v73_2_5_m3_m4_challenger_pass.txt"
                                               },
                        "invoke_week4_torture_suite":  {
                                                           "command":  ".\\00_control\\Invoke-Week4TortureSuite.ps1 -TranscriptOutPath 03_vault\\receipts\\e8_week4_torture_pass.txt",
@@ -1495,14 +1617,14 @@
                                                                       "summary":  "PASS: 3/3 perturbation fail proofs"
                                                                   },
                        "free_tier_governor_e2e":  {
-                                                      "command":  ".\\00_control\\Invoke-FreeTierGovernorE2ESuite.ps1 -ReportFormat JSON -OutputPath 03_vault\\receipts\\v73_2_4_freetier_e2e_pass.txt",
+                                                      "command":  ".\\00_control\\Invoke-FreeTierGovernorE2ESuite.ps1 -ReportFormat JSON -OutputPath 03_vault\\receipts\\v73_2_5_freetier_e2e_pass.txt",
                                                       "exit_code":  0,
                                                       "summary":  "PASS: 110/110 live tests in UTF-8 no-BOM LF JSON"
                                                   },
-                       "security_negative_probes_v73_2_4":  {
-                                                                "command":  ".\\00_control\\Test-V73_2_3-SecurityNegativeProbes.ps1 -ReceiptOutPath 03_vault\\receipts\\v73_2_4_security_negative_tests_receipt.json",
+                       "security_negative_probes_v73_2_5":  {
+                                                                "command":  ".\\00_control\\Test-V73_2_3-SecurityNegativeProbes.ps1 -ReceiptOutPath 03_vault\\receipts\\v73_2_5_security_negative_tests_receipt.json",
                                                                 "exit_code":  0,
-                                                                "summary":  "PASS: 855/855 live Host (:8097) + Edge (https://act-omega-net.dev) checks"
+                                                                "summary":  "PASS: 907/907 live Host (:8097) + Edge (https://act-omega-net.dev) checks"
                                                             },
                        "cloudflare_rotation_verify_only":  {
                                                                "command":  ".\\00_control\\cloudflare_edge\\Verify-CloudflareRotationLive.ps1 -VerifyOnly",
@@ -1517,37 +1639,42 @@
                        "sovereign_lifecycle_verify":  {
                                                           "command":  ".\\00_control\\Sovereign-Lifecycle.ps1 -Action verify",
                                                           "exit_code":  0,
-                                                          "summary":  "PASS: 6/6 layers verified including Dual-Pixel USB SHM (transcript in v73_2_4_gatekeeper_lifecycle_pass.txt)"
+                                                          "summary":  "PASS: 6/6 layers verified including Dual-Pixel USB SHM"
                                                       },
                        "m1_worker_do_unit":  {
                                                  "command":  "node tests\\e2e\\m1_worker_do_unit.mjs",
                                                  "exit_code":  0,
-                                                 "summary":  "PASS: 5/5 DO \u0026 E12 unit tests (transcript in v73_2_4_node_e2e_pass.txt)"
+                                                 "summary":  "PASS: 5/5 DO \u0026 E12 unit tests"
                                              },
                        "test_m1_worker_dispatch":  {
                                                        "command":  "node tests\\e2e\\test_m1_worker_dispatch_verification.mjs",
                                                        "exit_code":  0,
-                                                       "summary":  "PASS: worker dispatch \u0026 security checks (transcript in v73_2_4_node_e2e_pass.txt)"
+                                                       "summary":  "PASS: worker dispatch \u0026 security checks"
                                                    },
                        "test_m3_gatekeeper_negative":  {
                                                            "command":  ".\\tests\\e2e\\test_m3_gatekeeper_negative.ps1",
                                                            "exit_code":  0,
-                                                           "summary":  "PASS: 7/7 D1 11-table \u0026 .rs stale-scan negative/control checks (transcript in v73_2_4_node_e2e_pass.txt)"
+                                                           "summary":  "PASS: 15/15 D1 11-table \u0026 Rust string/char/nested-block-comment lexer negative/control checks"
                                                        },
+                       "verify_sh_xi_turn_counters_receipt":  {
+                                                                  "command":  ".\\00_control\\Verify-ShXiTurnCountersReceipt.ps1 -AuditOnly",
+                                                                  "exit_code":  0,
+                                                                  "summary":  "PASS: global_turn_seq=1861 sha256=e0ebc2bb97d1... C:==E:=True"
+                                                              },
                        "android_apk_clean_build":  {
                                                        "command":  ".\\gradlew.bat clean assembleDebug --console=plain",
                                                        "exit_code":  0,
-                                                       "summary":  "PASS: versionCode=77 versionName=73.2.4 6/6 APK mirrors (30546770 B)"
+                                                       "summary":  "PASS: versionCode=78 versionName=73.2.5 6/6 APK mirrors (30546770 B)"
                                                    },
                        "verify_completion_report_citations":  {
-                                                                  "command":  ".\\00_control\\Verify-CompletionReportCitations.ps1 -VerifyDrive",
+                                                                  "command":  ".\\00_control\\Verify-CompletionReportCitations.ps1 (-VerifyDrive)",
                                                                   "exit_code":  0,
-                                                                  "summary":  "PASS: All 4 COMPLETION_REPORT_V73*.md line citations, symbols, routes, Drive IDs, and G: SHA-256 parity verified"
+                                                                  "summary":  "PASS: All COMPLETION_REPORT_V73*.md line citations, exact fn test_* Rust symbols, routes, and parity verified"
                                                               },
                        "receipt_inventory_audit":  {
                                                        "command":  ".\\00_control\\Build-ReceiptInventoryAudit.ps1 (-VerifyOnly / -VerifyAgainstGitHead)",
                                                        "exit_code":  0,
-                                                       "summary":  "PASS: 62/62 UTF-8 no-BOM LF receipts + 100% git hash-object / HEAD blob parity"
+                                                       "summary":  "PASS: 70/70 UTF-8 no-BOM LF receipts + SH-XI turn-counter parity + 100% git hash-object / HEAD blob parity"
                                                    }
                    }
 }

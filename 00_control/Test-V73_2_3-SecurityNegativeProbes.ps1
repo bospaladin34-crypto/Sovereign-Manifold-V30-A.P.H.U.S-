@@ -1,5 +1,5 @@
-﻿# =============================================================================
-# ACT-Omega Net — Security Negative & Positive Probe Suite (R3, R4, R8)
+# =============================================================================
+# ACT-Omega Net -- Security Negative & Positive Probe Suite (R3, R4, R8)
 # Covers:
 #   Section 1 (R3): Bare read-only GET, POST /api/v1/health 405, 29-param write
 #                   query-param 403 + zero mutation, POST /api/v1/telemetry/ingest
@@ -87,6 +87,7 @@ $sectionCounts = [ordered]@{
     item3_chain135_edge  = [ordered]@{ passed = 0; failed = 0 }
     item4_webgpu_poc     = [ordered]@{ passed = 0; failed = 0 }
     item5_query_key_9gates = [ordered]@{ passed = 0; failed = 0 }
+    item10_d1_routes     = [ordered]@{ passed = 0; failed = 0 }
     runtime              = [ordered]@{ passed = 0; failed = 0 }
 }
 
@@ -113,7 +114,7 @@ function Protect-RedactedText {
         $escapedUrlTel = [regex]::Escape([uri]::EscapeDataString($TelSecret))
         $out = [regex]::Replace($out, $escapedUrlTel, "<REDACTED>")
     }
-    $out = [regex]::Replace($out, '(?i)([?&](?:k|%6b)(?:e|%65)(?:y|%79)=)[^&\s"'']+', '${1}<REDACTED>')
+    $out = [regex]::Replace($out, '(?i)([?&](?:k|%4b|%6b)(?:e|%45|%65)(?:y|%59|%79)=)[^&\s"'']+', '${1}<REDACTED>')
     return $out
 }
 
@@ -418,7 +419,7 @@ function Assert-HttpStatus {
 }
 
 Write-Host "==========================================================================" -ForegroundColor Cyan
-Write-Host "  ACT-Omega Net $liveVersion — Security Negative & Positive Probe Suite   " -ForegroundColor Cyan
+Write-Host "  ACT-Omega Net $liveVersion -- Security Negative & Positive Probe Suite   " -ForegroundColor Cyan
 Write-Host "==========================================================================" -ForegroundColor Cyan
 Write-Host "  HostUri       : $HostUri"
 Write-Host "  EdgeWorkerUri : $(if ($SkipEdge) { '<SKIPPED>' } else { $EdgeWorkerUri })"
@@ -455,7 +456,7 @@ try {
     }
 
     # =========================================================================
-    # SECTION 1 — R3 Telemetry Ingest & Pure Read-Only GET
+    # SECTION 1 -- R3 Telemetry Ingest & Pure Read-Only GET
     # =========================================================================
     Write-Host "`n[Section 1] R3 Telemetry Ingest & Pure Read-Only GET..." -ForegroundColor Yellow
 
@@ -743,7 +744,7 @@ try {
     }
 
     # =========================================================================
-    # SECTION 2 — R4 11 Handler Groups (16 Routes) & .spage SHA-256 Invariance
+    # SECTION 2 -- R4 11 Handler Groups (16 Routes) & .spage SHA-256 Invariance
     # =========================================================================
     Write-Host "`n[Section 2] R4 11 Handler Groups (16 Routes) & .spage Invariance..." -ForegroundColor Yellow
 
@@ -952,7 +953,7 @@ try {
     }
 
     # =========================================================================
-    # SECTION 3 — R8 Timing-Allow-Origin 6-Origin Allowlist
+    # SECTION 3 -- R8 Timing-Allow-Origin 6-Origin Allowlist
     # =========================================================================
     Write-Host "`n[Section 3] R8 Timing-Allow-Origin 6-Origin Allowlist..." -ForegroundColor Yellow
 
@@ -1007,7 +1008,7 @@ try {
     }
 
     # =========================================================================
-    # SECTION 4 — Item #2 (Gate l0_core/* & t275..t280 at L0 & Edge)
+    # SECTION 4 -- Item #2 (Gate l0_core/* & t275..t280 at L0 & Edge)
     # =========================================================================
     Write-Host "`n[Section 4] Item #2 (l0_core/* & t275..t280 L0 & Edge Gating)..." -ForegroundColor Yellow
 
@@ -1079,7 +1080,7 @@ try {
     }
 
     # =========================================================================
-    # SECTION 5 — Item #3 (t341, SSE converse, chain135_json, unified, legacy)
+    # SECTION 5 -- Item #3 (t341, SSE converse, chain135_json, unified, legacy)
     # =========================================================================
     Write-Host "`n[Section 5] Item #3 (chain135_json, SSE converse, unified/*, legacy)..." -ForegroundColor Yellow
 
@@ -1087,11 +1088,17 @@ try {
     $item3PreLedger = Get-FileSnapshot -FullPath (Join-Path $RepoRoot "03_vault\connectome\message_bus_ledger_v4800.jsonl")
     $item3PreManifest = Get-FileSnapshot -FullPath (Join-Path $RepoRoot "03_vault\connectome\codegen_integration_manifest_v4800.jsonl")
     $item3PreCounters = Get-FileSnapshot -FullPath (Join-Path $RepoRoot "03_vault\connectome\sh_xi_session_turn_counters.json")
+    $eVaultLedgerPath = "E:\Sovereign_Manifold_SSD_Vault\coordinator_bus\message_bus_ledger_v4800.jsonl"
+    $eVaultLedgerPresent = Test-Path $eVaultLedgerPath -PathType Leaf
+    $item3PreELedger = if ($eVaultLedgerPresent) { Get-FileSnapshot -FullPath $eVaultLedgerPath } else { $null }
 
     $item3Routes = @(
         @{ path = "/api/v1/sovereign_harmonic/week3/k4_speculative_cascade"; postBody = '{}' },
         @{ path = "/api/v1/tools/t341"; postBody = '{}' },
         @{ path = "/api/v1/tool/341"; postBody = '{}' },
+        @{ path = "/api/v1/vesper_arachne/ik_swarm_companion"; postBody = '{}' },
+        @{ path = "/api/v1/tools/t287"; postBody = '{}' },
+        @{ path = "/api/v1/tool/287"; postBody = '{}' },
         @{ path = "/api/v1/sovereign_harmonic/converse"; postBody = '{"prompt":"probe","stream":true}' },
         @{ path = "/api/v1/sh_xi/converse"; postBody = '{"prompt":"probe"}' },
         @{ path = "/converse"; postBody = '{"prompt":"probe"}' },
@@ -1155,7 +1162,7 @@ try {
         $rCat = Invoke-HttpProbe -Client $client -Method "GET" -Url $uCat
         $null = Assert-HttpStatus -Section "item3_chain135_edge" -Id "Item3_$($tgt.Label)_Public_GET_unified_catalog" -Method "GET" -TargetUrl $uCat -ExpectedStatus 200 -Resp $rCat
 
-        # Valid X-Sovereign-Operator-Key + encoded ?%6bey= / ?%4Bey= MUST return 403 on OpenAI compat routes
+        # Valid X-Sovereign-Operator-Key + encoded ?%6bey= / ?%4Bey= MUST return 403 on OpenAI compat & Vesper/t287 routes
         if ($opKeyInfo.Found) {
             $opHdr = @{ "X-Sovereign-Operator-Key" = $opKey }
             foreach ($oaiPath in @("/v1/chat/completions", "/api/v1/openai/compat")) {
@@ -1167,6 +1174,15 @@ try {
                     $null = Assert-HttpStatus -Section "item3_chain135_edge" -Id "Item3_$($tgt.Label)_HeaderPlus_${encSlug}_POST_$oaiSlug" -Method "POST" -TargetUrl $uOaiQ -ExpectedStatus 403 -Resp $rOaiQ
                 }
             }
+            foreach ($t287Path in @("/api/v1/vesper_arachne/ik_swarm_companion", "/api/v1/tools/t287", "/api/v1/tool/287")) {
+                $t287Slug = $t287Path.TrimStart('/').Replace('/', '_')
+                foreach ($encParam in @("%6bey", "%4Bey")) {
+                    $encSlug = $encParam.Replace("%", "pct")
+                    $uT287Q = "$($tgt.BaseUri)${t287Path}?${encParam}=test"
+                    $rT287Q = Invoke-HttpProbe -Client $client -Method "POST" -Url $uT287Q -Headers $opHdr -Body '{}'
+                    $null = Assert-HttpStatus -Section "item3_chain135_edge" -Id "Item3_$($tgt.Label)_HeaderPlus_${encSlug}_POST_$t287Slug" -Method "POST" -TargetUrl $uT287Q -ExpectedStatus 403 -Resp $rT287Q
+                }
+            }
         }
     }
 
@@ -1174,14 +1190,26 @@ try {
     $item3PostLedger = Get-FileSnapshot -FullPath (Join-Path $RepoRoot "03_vault\connectome\message_bus_ledger_v4800.jsonl")
     $item3PostManifest = Get-FileSnapshot -FullPath (Join-Path $RepoRoot "03_vault\connectome\codegen_integration_manifest_v4800.jsonl")
     $item3PostCounters = Get-FileSnapshot -FullPath (Join-Path $RepoRoot "03_vault\connectome\sh_xi_session_turn_counters.json")
-    $item3InvOk = ($item3PreKl.Sha256 -eq $item3PostKl.Sha256) -and ($item3PreLedger.Sha256 -eq $item3PostLedger.Sha256) -and ($item3PreManifest.Sha256 -eq $item3PostManifest.Sha256) -and ($item3PreCounters.Sha256 -eq $item3PostCounters.Sha256)
-    Add-CheckResult -Section "item3_chain135_edge" -Id "Item3_Negative_ZeroMutation_Invariance" -Passed $item3InvOk -Target "t341_kl_receipt & bus_ledger & manifest & turn_counters" -Detail "kl_eq=$($item3PreKl.Sha256 -eq $item3PostKl.Sha256) ledger_eq=$($item3PreLedger.Sha256 -eq $item3PostLedger.Sha256) manifest_eq=$($item3PreManifest.Sha256 -eq $item3PostManifest.Sha256) counters_eq=$($item3PreCounters.Sha256 -eq $item3PostCounters.Sha256)"
+    $item3PostELedger = if ($eVaultLedgerPresent) { Get-FileSnapshot -FullPath $eVaultLedgerPath } else { $null }
+    $ledgerLenEq = ($item3PreLedger.Length -eq $item3PostLedger.Length)
+    $ledgerShaEq = ($item3PreLedger.Sha256 -eq $item3PostLedger.Sha256)
+    $countersLenEq = ($item3PreCounters.Length -eq $item3PostCounters.Length)
+    $countersShaEq = ($item3PreCounters.Sha256 -eq $item3PostCounters.Sha256)
+    $eLedgerEq = if ($eVaultLedgerPresent) { ($item3PreELedger.Length -eq $item3PostELedger.Length) -and ($item3PreELedger.Sha256 -eq $item3PostELedger.Sha256) } else { $true }
+    $item3InvOk = ($item3PreKl.Sha256 -eq $item3PostKl.Sha256) -and $ledgerLenEq -and $ledgerShaEq -and ($item3PreManifest.Sha256 -eq $item3PostManifest.Sha256) -and $countersLenEq -and $countersShaEq -and $eLedgerEq
+    Add-CheckResult -Section "item3_chain135_edge" -Id "Item3_Negative_ZeroMutation_Invariance" -Passed $item3InvOk -Target "t341_kl_receipt & bus_ledger & manifest & turn_counters" -Detail "kl_eq=$($item3PreKl.Sha256 -eq $item3PostKl.Sha256) ledger_len_eq=$ledgerLenEq ledger_sha_eq=$ledgerShaEq manifest_eq=$($item3PreManifest.Sha256 -eq $item3PostManifest.Sha256) counters_len_eq=$countersLenEq counters_sha_eq=$countersShaEq e_ledger_present=$eVaultLedgerPresent e_ledger_eq=$eLedgerEq"
 
     if ($opKeyInfo.Found) {
         $opHdr = @{ "X-Sovereign-Operator-Key" = $opKey }
         foreach ($tgt in $targetsList) {
             $r341 = Invoke-HttpProbe -Client $client -Method "POST" -Url "$($tgt.BaseUri)/api/v1/tools/t341" -Headers $opHdr -Body '{}'
             $null = Assert-HttpStatus -Section "item3_chain135_edge" -Id "Item3_$($tgt.Label)_Auth_POST_t341" -Method "POST" -TargetUrl "$($tgt.BaseUri)/api/v1/tools/t341" -ExpectedStatus 200 -Resp $r341
+
+            foreach ($t287PosPath in @("/api/v1/vesper_arachne/ik_swarm_companion", "/api/v1/tools/t287", "/api/v1/tool/287")) {
+                $t287PosSlug = $t287PosPath.TrimStart('/').Replace('/', '_')
+                $rT287Pos = Invoke-HttpProbe -Client $client -Method "POST" -Url "$($tgt.BaseUri)$t287PosPath" -Headers $opHdr -Body '{}'
+                $null = Assert-HttpStatus -Section "item3_chain135_edge" -Id "Item3_$($tgt.Label)_Auth_POST_$t287PosSlug" -Method "POST" -TargetUrl "$($tgt.BaseUri)$t287PosPath" -ExpectedStatus 200 -Resp $rT287Pos
+            }
 
             $rSse = Invoke-HttpProbe -Client $client -Method "POST" -Url "$($tgt.BaseUri)/api/v1/sovereign_harmonic/converse" -Headers $opHdr -Body '{"prompt":"ping","max_tokens":4,"stream":true}'
             $null = Assert-HttpStatus -Section "item3_chain135_edge" -Id "Item3_$($tgt.Label)_Auth_POST_converse_SSE" -Method "POST" -TargetUrl "$($tgt.BaseUri)/api/v1/sovereign_harmonic/converse" -ExpectedStatus 200 -Resp $rSse
@@ -1204,7 +1232,7 @@ try {
     }
 
     # =========================================================================
-    # SECTION 6 — Item #4 (webgpu_lease / t78 Auth + Real .e8z PoC Verification)
+    # SECTION 6 -- Item #4 (webgpu_lease / t78 Auth + Real .e8z PoC Verification)
     # =========================================================================
     Write-Host "`n[Section 6] Item #4 (webgpu_lease / t78 Auth & Real .e8z PoC Verification)..." -ForegroundColor Yellow
 
@@ -1277,15 +1305,17 @@ try {
             $rPct = Invoke-HttpProbe -Client $client -Method "GET" -Url "$($tgt.BaseUri)/api/v1/worksteal/webgpu_lease?action=status&%6bey=test" -Headers $opHdr
             $null = Assert-HttpStatus -Section "item4_webgpu_poc" -Id "Item4_$($tgt.Label)_HeaderPlusPctKey_webgpu_lease" -Method "GET" -TargetUrl "$($tgt.BaseUri)/api/v1/worksteal/webgpu_lease?action=status&%6bey=test" -ExpectedStatus 403 -Resp $rPct
 
-            # Negative 400 checks (empty poc_hash, forged poc_hash, missing kops, NaN kops, out-of-range kops, bogus action)
+            # Negative 400 checks (empty poc_hash, forged poc_hash, missing kops, NaN kops, out-of-range kops, bogus action, release without/forged poc_hash)
             $badCases = @(
-                @{ id = "EmptyPoc";     q = "action=acquire&worker_id=probe_neg1&kops=400.0" },
-                @{ id = "ForgedPoc";    q = "action=acquire&worker_id=probe_neg2&kops=400.0&poc_hash=0xDEAD00_PLUCKER_POS_QED" },
-                @{ id = "MissingKops";  q = "action=acquire&worker_id=probe_neg3&poc_hash=$realPocHash" },
-                @{ id = "NaNKops";      q = "action=acquire&worker_id=probe_neg4&kops=NaN&poc_hash=$realPocHash" },
-                @{ id = "LowKops";      q = "action=acquire&worker_id=probe_neg5&kops=49.9&poc_hash=$realPocHash" },
-                @{ id = "HighKops";     q = "action=acquire&worker_id=probe_neg6&kops=850.1&poc_hash=$realPocHash" },
-                @{ id = "BogusAction";  q = "action=bogus&worker_id=probe_neg7&kops=400.0&poc_hash=$realPocHash" }
+                @{ id = "EmptyPoc";         q = "action=acquire&worker_id=probe_neg1&kops=400.0" },
+                @{ id = "ForgedPoc";        q = "action=acquire&worker_id=probe_neg2&kops=400.0&poc_hash=0xDEAD00_PLUCKER_POS_QED" },
+                @{ id = "MissingKops";      q = "action=acquire&worker_id=probe_neg3&poc_hash=$realPocHash" },
+                @{ id = "NaNKops";          q = "action=acquire&worker_id=probe_neg4&kops=NaN&poc_hash=$realPocHash" },
+                @{ id = "LowKops";          q = "action=acquire&worker_id=probe_neg5&kops=49.9&poc_hash=$realPocHash" },
+                @{ id = "HighKops";         q = "action=acquire&worker_id=probe_neg6&kops=850.1&poc_hash=$realPocHash" },
+                @{ id = "BogusAction";      q = "action=bogus&worker_id=probe_neg7&kops=400.0&poc_hash=$realPocHash" },
+                @{ id = "ReleaseEmptyPoc";  q = "action=release&worker_id=probe_neg8" },
+                @{ id = "ReleaseForgedPoc"; q = "action=release&worker_id=probe_neg9&poc_hash=0xDEAD00_PLUCKER_POS_QED" }
             )
             foreach ($bc in $badCases) {
                 $bu = "$($tgt.BaseUri)/api/v1/worksteal/webgpu_lease?$($bc.q)"
@@ -1305,24 +1335,46 @@ try {
     if ($opKeyInfo.Found -and $pocReady) {
         $opHdr = @{ "X-Sovereign-Operator-Key" = $opKey }
         foreach ($tgt in $targetsList) {
-            $acqUrl = "$($tgt.BaseUri)/api/v1/worksteal/webgpu_lease?action=acquire&worker_id=secprobe_v7324&kops=420.0&poc_hash=$realPocHash"
+            $probeWorker = "secprobe_v7324_$($tgt.Label)"
+            $acqUrl = "$($tgt.BaseUri)/api/v1/worksteal/webgpu_lease?action=acquire&worker_id=$probeWorker&kops=420.0&poc_hash=$realPocHash"
             $rAcq = Invoke-HttpProbe -Client $client -Method "GET" -Url $acqUrl -Headers $opHdr
             $aObj = $null
             try { $aObj = $rAcq.Body | ConvertFrom-Json } catch {}
             $acqOk = ($rAcq.StatusCode -eq 200) -and ($null -ne $aObj) -and ($aObj.poc_verified -eq $true) -and ($aObj.lease_active -eq $true)
-            Add-CheckResult -Section "item4_webgpu_poc" -Id "Item4_$($tgt.Label)_Positive_Acquire" -Passed $acqOk -Method "GET" -Target $acqUrl -ExpectedStatus 200 -ActualStatus $rAcq.StatusCode -Detail "poc_verified=$($aObj.poc_verified) lease_active=$($aObj.lease_active)"
+            $acqColStart = if ($null -ne $aObj -and (Test-HasNonNullProperty $aObj "assigned_col_start")) { [int](ConvertTo-Int64Safe $aObj.assigned_col_start) } else { -1 }
+            $acqCount = if ($null -ne $aObj -and (Test-HasNonNullProperty $aObj "active_leases_count")) { [int](ConvertTo-Int64Safe $aObj.active_leases_count) } else { -1 }
+            Add-CheckResult -Section "item4_webgpu_poc" -Id "Item4_$($tgt.Label)_Positive_Acquire" -Passed $acqOk -Method "GET" -Target $acqUrl -ExpectedStatus 200 -ActualStatus $rAcq.StatusCode -Detail "poc_verified=$($aObj.poc_verified) lease_active=$($aObj.lease_active) col_start=$acqColStart active_leases_count=$acqCount"
 
-            $relUrl = "$($tgt.BaseUri)/api/v1/worksteal/webgpu_lease?action=release&worker_id=secprobe_v7324"
+            # Prove active lease rejects empty and forged poc_hash on release without mutating the lease
+            $relEmptyUrl = "$($tgt.BaseUri)/api/v1/worksteal/webgpu_lease?action=release&worker_id=$probeWorker"
+            $rRelEmpty = Invoke-HttpProbe -Client $client -Method "GET" -Url $relEmptyUrl -Headers $opHdr
+            $relEmptyObj = ConvertFrom-JsonSafe -Text $rRelEmpty.Body
+            $relEmptyOk = ($rRelEmpty.StatusCode -eq 400) -and ($null -ne $relEmptyObj) -and ($relEmptyObj.poc_verified -eq $false) -and ($relEmptyObj.lease_active -eq $false) -and ($acqCount -ge 1) -and ((ConvertTo-Int64Safe $relEmptyObj.active_leases_count) -eq $acqCount)
+            Add-CheckResult -Section "item4_webgpu_poc" -Id "Item4_$($tgt.Label)_ActiveLease_ReleaseEmptyPoc_400" -Passed $relEmptyOk -Method "GET" -Target $relEmptyUrl -ExpectedStatus 400 -ActualStatus $rRelEmpty.StatusCode -Detail "poc_verified=$($relEmptyObj.poc_verified) lease_active=$($relEmptyObj.lease_active) count=$($relEmptyObj.active_leases_count) expected_count=$acqCount"
+
+            $relForgedUrl = "$($tgt.BaseUri)/api/v1/worksteal/webgpu_lease?action=release&worker_id=$probeWorker&poc_hash=0xDEAD00_PLUCKER_POS_QED"
+            $rRelForged = Invoke-HttpProbe -Client $client -Method "GET" -Url $relForgedUrl -Headers $opHdr
+            $relForgedObj = ConvertFrom-JsonSafe -Text $rRelForged.Body
+            $relForgedOk = ($rRelForged.StatusCode -eq 400) -and ($null -ne $relForgedObj) -and ($relForgedObj.poc_verified -eq $false) -and ($relForgedObj.lease_active -eq $false) -and ($acqCount -ge 1) -and ((ConvertTo-Int64Safe $relForgedObj.active_leases_count) -eq $acqCount)
+            Add-CheckResult -Section "item4_webgpu_poc" -Id "Item4_$($tgt.Label)_ActiveLease_ReleaseForgedPoc_400" -Passed $relForgedOk -Method "GET" -Target $relForgedUrl -ExpectedStatus 400 -ActualStatus $rRelForged.StatusCode -Detail "poc_verified=$($relForgedObj.poc_verified) lease_active=$($relForgedObj.lease_active) count=$($relForgedObj.active_leases_count) expected_count=$acqCount"
+
+            $statusUrl = "$($tgt.BaseUri)/api/v1/worksteal/webgpu_lease?action=status&worker_id=$probeWorker"
+            $rStatus = Invoke-HttpProbe -Client $client -Method "GET" -Url $statusUrl -Headers $opHdr
+            $stObj = ConvertFrom-JsonSafe -Text $rStatus.Body
+            $statusOk = ($rStatus.StatusCode -eq 200) -and ($null -ne $stObj) -and ($stObj.lease_active -eq $true) -and ($acqColStart -ge 0) -and ((ConvertTo-Int64Safe $stObj.assigned_col_start) -eq $acqColStart) -and ($acqCount -ge 1) -and ((ConvertTo-Int64Safe $stObj.active_leases_count) -eq $acqCount)
+            Add-CheckResult -Section "item4_webgpu_poc" -Id "Item4_$($tgt.Label)_ActiveLease_ZeroMutation_Status" -Passed $statusOk -Method "GET" -Target $statusUrl -ExpectedStatus 200 -ActualStatus $rStatus.StatusCode -Detail "lease_active=$($stObj.lease_active) col_start=$($stObj.assigned_col_start) expected_col=$acqColStart count=$($stObj.active_leases_count) expected_count=$acqCount"
+
+            $relUrl = "$($tgt.BaseUri)/api/v1/worksteal/webgpu_lease?action=release&worker_id=$probeWorker&poc_hash=$realPocHash"
             $rRel = Invoke-HttpProbe -Client $client -Method "GET" -Url $relUrl -Headers $opHdr
             $relObj = $null
             try { $relObj = $rRel.Body | ConvertFrom-Json } catch {}
-            $relOk = ($rRel.StatusCode -eq 200) -and ($null -ne $relObj) -and ($relObj.lease_active -eq $false)
-            Add-CheckResult -Section "item4_webgpu_poc" -Id "Item4_$($tgt.Label)_Positive_Release" -Passed $relOk -Method "GET" -Target $relUrl -ExpectedStatus 200 -ActualStatus $rRel.StatusCode -Detail "lease_active=$($relObj.lease_active)"
+            $relOk = ($rRel.StatusCode -eq 200) -and ($null -ne $relObj) -and ($relObj.poc_verified -eq $true) -and ($relObj.lease_active -eq $false)
+            Add-CheckResult -Section "item4_webgpu_poc" -Id "Item4_$($tgt.Label)_Positive_Release" -Passed $relOk -Method "GET" -Target $relUrl -ExpectedStatus 200 -ActualStatus $rRel.StatusCode -Detail "poc_verified=$($relObj.poc_verified) lease_active=$($relObj.lease_active)"
         }
     }
 
     # =========================================================================
-    # SECTION 7 — Item #5 (All 9 Converted ?key= Gates Reject Encoded ?%6bey= / ?%4Bey= with 403 Even With Valid Header)
+    # SECTION 7 -- Item #5 (All 9 Converted ?key= Gates Reject Encoded ?%6bey= / ?%4Bey= with 403 Even With Valid Header)
     # =========================================================================
     Write-Host "`n[Section 7] Item #5 (All 9 Converted ?key= Gates -> 403 on ?%6bey= & ?%4Bey= With Valid Header)..." -ForegroundColor Yellow
 
@@ -1350,6 +1402,20 @@ try {
         }
 
         if (-not $SkipEdge) {
+            $expectedApkVersionCode = $null
+            $gradlePath = Join-Path $RepoRoot "04_edge_silicon\pixel10_ndk_app\app\build.gradle.kts"
+            if (Test-Path $gradlePath -PathType Leaf) {
+                $gradleText = [System.IO.File]::ReadAllText($gradlePath)
+                if ($gradleText -match '(?m)^\s*versionCode\s*=\s*(\d+)\s*$') {
+                    $expectedApkVersionCode = ConvertTo-Int64Safe $Matches[1]
+                }
+            }
+            $expectedApkBytes = $null
+            $apkFilePath = Join-Path $RepoRoot "docs\ACT-Omega-Pixel10-Sovereign.apk"
+            if (Test-Path $apkFilePath -PathType Leaf) {
+                $expectedApkBytes = [int64](Get-Item -LiteralPath $apkFilePath).Length
+            }
+
             foreach ($edgeOtaPath in @("/api/v1/tools/t284", "/api/v1/tool/284", "/api/v1/ota/pixel_manifest")) {
                 $eSlug = $edgeOtaPath.TrimStart('/').Replace('/', '_')
                 $uUnauth = "$EdgeWorkerUri${edgeOtaPath}?edge_direct=1"
@@ -1363,8 +1429,8 @@ try {
                 $uPos = "$EdgeWorkerUri${edgeOtaPath}?edge_direct=1"
                 $rPos = Invoke-HttpProbe -Client $client -Method "GET" -Url $uPos -Headers $opHdr
                 $posJson = ConvertFrom-JsonSafe -Text $rPos.Body
-                $posOk = ($null -eq $rPos.TransportError) -and ($rPos.StatusCode -eq 200) -and ($null -ne $posJson) -and ([string]$posJson.version_name -eq $liveVersion) -and ((ConvertTo-Int64Safe $posJson.version_code) -eq 77) -and ((ConvertTo-Int64Safe $posJson.apk_bytes) -eq 30546770) -and ([string]$posJson.status -eq "MEASURED_PIXEL_OTA_MANIFEST_READY")
-                Add-CheckResult -Section "item5_query_key_9gates" -Id "Item5_EdgeDirect_OtaParity_$eSlug" -Passed $posOk -Method "GET" -Target $uPos -ExpectedStatus 200 -ActualStatus $rPos.StatusCode -Detail "version_name=$($posJson.version_name) version_code=$($posJson.version_code) apk_bytes=$($posJson.apk_bytes) status=$($posJson.status)"
+                $posOk = ($null -eq $rPos.TransportError) -and ($rPos.StatusCode -eq 200) -and ($null -ne $posJson) -and ([string]$posJson.version_name -eq $liveVersion) -and ($null -ne $expectedApkVersionCode) -and ($expectedApkVersionCode -gt 0) -and ((ConvertTo-Int64Safe $posJson.version_code) -eq $expectedApkVersionCode) -and ($null -ne $expectedApkBytes) -and ($expectedApkBytes -gt 0) -and ((ConvertTo-Int64Safe $posJson.apk_bytes) -eq $expectedApkBytes) -and ([string]$posJson.status -eq "MEASURED_PIXEL_OTA_MANIFEST_READY")
+                Add-CheckResult -Section "item5_query_key_9gates" -Id "Item5_EdgeDirect_OtaParity_$eSlug" -Passed $posOk -Method "GET" -Target $uPos -ExpectedStatus 200 -ActualStatus $rPos.StatusCode -Detail "version_name=$($posJson.version_name) version_code=$($posJson.version_code) expected_vc=$expectedApkVersionCode apk_bytes=$($posJson.apk_bytes) expected_bytes=$expectedApkBytes status=$($posJson.status)"
             }
 
             $uEdgeHealth = "$EdgeWorkerUri/api/v1/health?edge_direct=1"
@@ -1375,6 +1441,59 @@ try {
         }
     } else {
         Add-CheckResult -Section "item5_query_key_9gates" -Id "Item5_OperatorKey_Available" -Passed $false -Detail "Operator key missing"
+    }
+
+    # =========================================================================
+    # SECTION 8 -- Item #10 (NF7c Count-Neutral D1 Schema/Vault Routes & Retired Names)
+    # =========================================================================
+    Write-Host "`n[Section 8] Item #10 (NF7c D1 Schema/Vault Routes & Retired Names)..." -ForegroundColor Yellow
+
+    if ($opKeyInfo.Found) {
+        $opHdr = @{ "X-Sovereign-Operator-Key" = $opKey }
+        foreach ($retPath in @("/api/v1/cloudflare/d1_all8tables", "/api/v1/cloudflare/d1_all10tables")) {
+            $retSlug = $retPath.TrimStart('/').Replace('/', '_')
+            $uHostRet = "$HostUri$retPath"
+            $rHostRet = Invoke-HttpProbe -Client $client -Method "GET" -Url $uHostRet -Headers $opHdr
+            $null = Assert-HttpStatus -Section "item10_d1_routes" -Id "Item10_Host_Auth_Retired404_$retSlug" -Method "GET" -TargetUrl $uHostRet -ExpectedStatus 404 -Resp $rHostRet
+        }
+    } else {
+        Add-CheckResult -Section "item10_d1_routes" -Id "Item10_OperatorKey_Available" -Passed $false -Detail "Operator key missing"
+    }
+
+    if (-not $SkipEdge) {
+        foreach ($d1Path in @("/api/v1/cloudflare/d1_schema_tables", "/api/v1/cloudflare/d1_vault_tables")) {
+            $d1Slug = $d1Path.TrimStart('/').Replace('/', '_')
+            $uD1Unauth = "$EdgeWorkerUri$d1Path"
+            $rD1Unauth = Invoke-HttpProbe -Client $client -Method "GET" -Url $uD1Unauth
+            $null = Assert-HttpStatus -Section "item10_d1_routes" -Id "Item10_Edge_Unauth_403_$d1Slug" -Method "GET" -TargetUrl $uD1Unauth -ExpectedStatus 403 -Resp $rD1Unauth
+
+            if ($opKeyInfo.Found) {
+                $opHdr = @{ "X-Sovereign-Operator-Key" = $opKey }
+                $uD1Pct = "$EdgeWorkerUri${d1Path}?%6bey=test"
+                $rD1Pct = Invoke-HttpProbe -Client $client -Method "GET" -Url $uD1Pct -Headers $opHdr
+                $null = Assert-HttpStatus -Section "item10_d1_routes" -Id "Item10_Edge_HeaderPlusPctKey_403_$d1Slug" -Method "GET" -TargetUrl $uD1Pct -ExpectedStatus 403 -Resp $rD1Pct
+
+                $uD1Pos = "$EdgeWorkerUri$d1Path"
+                $rD1Pos = Invoke-HttpProbe -Client $client -Method "GET" -Url $uD1Pos -Headers $opHdr
+                $d1Json = ConvertFrom-JsonSafe -Text $rD1Pos.Body
+                $d1LiveConnected = if (Test-HasNonNullProperty $d1Json "d1_live") { $d1Json.d1_live.live_d1_connected } else { $null }
+                $d1PosOk = ($null -eq $rD1Pos.TransportError) -and ($rD1Pos.StatusCode -eq 200) -and ($null -ne $d1Json) -and (Test-HasNonNullProperty $d1Json "d1_database") -and (Test-HasNonNullProperty $d1Json "d1_live") -and ($d1Json.d1_live.live_d1_connected -eq $true) -and ((ConvertTo-Int64Safe $d1Json.d1_tables_count) -ge 11)
+                Add-CheckResult -Section "item10_d1_routes" -Id "Item10_Edge_Auth_200_$d1Slug" -Passed $d1PosOk -Method "GET" -Target $uD1Pos -ExpectedStatus 200 -ActualStatus $rD1Pos.StatusCode -Detail "d1_database=$($d1Json.d1_database) live_d1_connected=$d1LiveConnected d1_tables_count=$($d1Json.d1_tables_count) status=$($d1Json.status)"
+            }
+        }
+
+        foreach ($retPath in @("/api/v1/cloudflare/d1_all8tables", "/api/v1/cloudflare/d1_all10tables")) {
+            $retSlug = $retPath.TrimStart('/').Replace('/', '_')
+            $uEdgeRetUnauth = "$EdgeWorkerUri$retPath"
+            $rEdgeRetUnauth = Invoke-HttpProbe -Client $client -Method "GET" -Url $uEdgeRetUnauth
+            $null = Assert-HttpStatus -Section "item10_d1_routes" -Id "Item10_Edge_Retired_Unauth_403_$retSlug" -Method "GET" -TargetUrl $uEdgeRetUnauth -ExpectedStatus 403 -Resp $rEdgeRetUnauth
+
+            if ($opKeyInfo.Found) {
+                $opHdr = @{ "X-Sovereign-Operator-Key" = $opKey }
+                $rEdgeRetAuth = Invoke-HttpProbe -Client $client -Method "GET" -Url $uEdgeRetUnauth -Headers $opHdr
+                $null = Assert-HttpStatus -Section "item10_d1_routes" -Id "Item10_Edge_Retired_Auth_404_$retSlug" -Method "GET" -TargetUrl $uEdgeRetUnauth -ExpectedStatus 404 -Resp $rEdgeRetAuth
+            }
+        }
     }
 } catch {
     Add-CheckResult -Section "runtime" -Id "Unhandled_Suite_Exception" -Passed $false -Detail "Unhandled exception: $($_.Exception.Message)"

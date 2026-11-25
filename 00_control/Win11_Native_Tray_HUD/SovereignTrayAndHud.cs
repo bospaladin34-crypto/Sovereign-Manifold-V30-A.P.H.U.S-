@@ -156,7 +156,7 @@ namespace SovereignManifoldDesktop
             _onRunAction = onRunAction;
             _onLaunchVesperIk = onLaunchVesperIk;
 
-            this.Text = "ACT-Omega v73.2.3 Live Desktop Widget (SH4Z v7321 | Unified Lab + VPC Mesh | SH-XI MoE | Live Telemetry)";
+            this.Text = "ACT-Omega v73.2.5 Desktop Widget (SH4Z v7321 | Unified Lab + VPC Mesh | SH-XI MoE | Awaiting :8097 Telemetry)";
             this.FormBorderStyle = FormBorderStyle.None;
             this.StartPosition = FormStartPosition.Manual;
             this.Size = new Size(430, 295);
@@ -186,6 +186,7 @@ namespace SovereignManifoldDesktop
         public void UpdateTelemetry(TelemetryData t)
         {
             _tel = t;
+            this.Text = "ACT-Omega " + (t.Online ? t.FormatReleaseVersion() + " Desktop Widget (SH4Z v7321 | Unified Lab + VPC Mesh | SH-XI MoE | Live Telemetry)" : "v73.2.5 Desktop Widget (SH4Z v7321 | Unified Lab + VPC Mesh | SH-XI MoE | UNMEASURED/OFFLINE)");
             if (this.Visible)
             {
                 this.Invalidate();
@@ -323,14 +324,17 @@ namespace SovereignManifoldDesktop
                     {
                         g.FillRectangle(bBg, badgeRect);
                         g.DrawRectangle(pB, badgeRect);
-                        g.DrawString("\u03A973.2.3", fBdg, brAmber, 9, 10);
+                        string badgeVer = _tel.Online && _tel.FormatReleaseVersion().StartsWith("v")
+                            ? "\u03A9" + _tel.FormatReleaseVersion().Substring(1)
+                            : "\u03A973.2.5";
+                        g.DrawString(badgeVer, fBdg, brAmber, 9, 10);
                     }
 
                     // Status ticker
                     string line1 = _tel.Online
                         ? string.Format("ACT-OMEGA {0} (UNIFIED LAB + VPC MESH | SH-XI MoE | {1} | {2})",
                             _tel.FormatReleaseVersion(), _tel.FormatChainLabel(), _tel.FormatLeanBadge(false))
-                        : "ACT-OMEGA v73.2.3 (UNIFIED LAB + VPC MESH | SH-XI MoE | UNMEASURED/OFFLINE)";
+                        : "ACT-OMEGA v73.2.5 (UNIFIED LAB + VPC MESH | SH-XI MoE | UNMEASURED/OFFLINE)";
                     string line2 = _tel.Online
                         ? string.Format("{0:0.0}k ops | RTX {1:0}C | P10 {2:0}C | P8 {3:0}C | FNO={4:0.0000}",
                             _tel.ClusterKops, _tel.RtxTemp, _tel.P10Temp, _tel.P8Temp, _tel.FnoL2Err)
@@ -353,7 +357,10 @@ namespace SovereignManifoldDesktop
                         g.DrawRectangle(borderPen, 1, 1, this.Width - 3, this.Height - 3);
                     }
 
-                    g.DrawString("ACT-OMEGA v73.2.3 (SH-XI v7321 | LIVE TELEMETRY) [MINI-HUD]", fTitle, brAmber, 12, 10);
+                    string miniHudHeader = _tel.Online
+                        ? string.Format("ACT-OMEGA {0} (SH-XI v7321 | LIVE TELEMETRY) [MINI-HUD]", _tel.FormatReleaseVersion())
+                        : "ACT-OMEGA v73.2.5 (SH-XI v7321 | UNMEASURED/OFFLINE) [MINI-HUD]";
+                    g.DrawString(miniHudHeader, fTitle, brAmber, 12, 10);
 
                     Brush statusBr = _tel.Online ? brGreen : brRed;
                     string statusTxt = _tel.Online
@@ -463,14 +470,14 @@ namespace SovereignManifoldDesktop
             }
 
             ContextMenu menu = new ContextMenu();
-            _miStatus = new MenuItem("ACT-Omega v73.2.3 | Awaiting :8097 Telemetry...");
+            _miStatus = new MenuItem("ACT-Omega v73.2.5 | Awaiting :8097 Telemetry...");
             _miStatus.Enabled = false;
             menu.MenuItems.Add(_miStatus);
             menu.MenuItems.Add("-");
 
-            // Feature 11: 8 Unified Functional Domains Submenu + v73.2.3 Unified Lab / VPC Mesh / SH-XI Suite
-            MenuItem miShXi = new MenuItem("ACT-Omega v73.2.3 (Unified Lab, VPC Mesh & SH-XI MoE — T357..T404)");
-            miShXi.MenuItems.Add(new MenuItem("SH-XI 3-Shell + 16/256 MoE Converse (T361)", (s, e) => ExecuteClusterAction("/api/v1/sovereign_harmonic/xi/week2/converse?prompt=Verify+SH-XI+v73.2.3+status", "SH-XI CONVERSE T361")));
+            // Feature 11: 8 Unified Functional Domains Submenu + v73.2.5 Unified Lab / VPC Mesh / SH-XI Suite
+            MenuItem miShXi = new MenuItem("ACT-Omega v73.2.5 (Unified Lab, VPC Mesh & SH-XI MoE — T357..T404)");
+            miShXi.MenuItems.Add(new MenuItem("SH-XI 3-Shell + 16/256 MoE Converse (T361)", (s, e) => ExecuteClusterAction("/api/v1/sovereign_harmonic/xi/week2/converse?prompt=Verify+SH-XI+v73.2.5+status", "SH-XI CONVERSE T361")));
             miShXi.MenuItems.Add(new MenuItem("SH-XI Shell 2 Disk-Backed 16/256 Sparse MoE (T363)", (s, e) => ExecuteClusterAction("/api/v1/sovereign_harmonic/xi/week2/shell2_sparse_moe", "SH-XI 16/256 MOE T363")));
             miShXi.MenuItems.Add(new MenuItem("SH-XI ChatML Masked Assistant SFT (T364)", (s, e) => ExecuteClusterAction("/api/v1/sovereign_harmonic/xi/week2/chatml_masked_sft", "SH-XI MASKED SFT T364")));
             miShXi.MenuItems.Add(new MenuItem("SH-XI 384D Intel UHD WebGPU WGSL Grounded RAG (T365)", (s, e) => ExecuteClusterAction("/api/v1/sovereign_harmonic/xi/week2/igpu_grounded_rag?q=Leech+lattice+bijection", "SH-XI 384D WGSL RAG T365")));
@@ -531,7 +538,7 @@ namespace SovereignManifoldDesktop
             menu.MenuItems.Add("-");
             menu.MenuItems.Add(new MenuItem("Zenodo DOI: 10.5281/zenodo.23651696", (s, e) => Process.Start("https://doi.org/10.5281/zenodo.23651696")));
             menu.MenuItems.Add(new MenuItem("OSF DOI: 10.17605/OSF.IO/2XQ5Z", (s, e) => Process.Start("https://osf.io/2xq5z/overview")));
-            menu.MenuItems.Add(new MenuItem("Architecture Specifications (v73.2.3)", (s, e) =>
+            menu.MenuItems.Add(new MenuItem("Architecture Specifications (v73.2.5)", (s, e) =>
             {
                 string liveVer = _tel.FormatReleaseVersion();
                 string liveChain = _tel.FormatChainLabel();
@@ -573,7 +580,7 @@ namespace SovereignManifoldDesktop
 
             _trayIcon = new NotifyIcon();
             _trayIcon.Icon = BuildDynamicSovereignIcon(false);
-            _trayIcon.Text = "ACT-Omega v73.2.3 | Connecting to :8097...";
+            _trayIcon.Text = "ACT-Omega v73.2.5 | Connecting to :8097...";
             _trayIcon.ContextMenu = menu;
             _trayIcon.Visible = true;
             _trayIcon.DoubleClick += (s, e) => LaunchNativeDesktopHudWindow();
@@ -745,7 +752,8 @@ namespace SovereignManifoldDesktop
             if (endpointOrCmd == "HANDOVER_PHONES")
             {
                 RunLifecycleScript("handover");
-                _trayIcon.ShowBalloonTip(2000, "ACT-Omega v73.2.3 Continuum Handover", "16.00MiB Bijected .npage+.spage+.e8z SHM & 6-Layer state handed over to Pixel 8, Pixel 10 & Cloudflare DO.", ToolTipIcon.Info);
+                string handoverVer = _tel.Online ? _tel.FormatReleaseVersion() : "v73.2.5";
+                _trayIcon.ShowBalloonTip(2000, "ACT-Omega " + handoverVer + " Continuum Handover", "16.00MiB Bijected .npage+.spage+.e8z SHM & 6-Layer state handed over to Pixel 8, Pixel 10 & Cloudflare DO.", ToolTipIcon.Info);
                 return;
             }
             ThreadPool.QueueUserWorkItem(_ =>
@@ -866,16 +874,18 @@ namespace SovereignManifoldDesktop
                         _widgetForm.BeginInvoke((MethodInvoker)delegate
                         {
                             _widgetForm.UpdateTelemetry(_tel);
+                            string tipVer = _tel.FormatReleaseVersion();
+                            string tipBadge = tipVer.StartsWith("v") ? "\u03A9" + tipVer.Substring(1) : "\u03A973.2.5";
                             string tip = _tel.Online
-                                ? string.Format("\u03A973.2.3 | {0:0}k ops | FNO L2={1:0.0000} Re={2:0} | RTX {3:0}C",
-                                    _tel.ClusterKops, _tel.FnoL2Err, _tel.NavierReynolds, _tel.RtxTemp)
-                                : "\u03A973.2.3 | UNMEASURED/OFFLINE (:8097)";
+                                ? string.Format("{0} | {1:0}k ops | FNO L2={2:0.0000} Re={3:0} | RTX {4:0}C",
+                                    tipBadge, _tel.ClusterKops, _tel.FnoL2Err, _tel.NavierReynolds, _tel.RtxTemp)
+                                : "\u03A973.2.5 | UNMEASURED/OFFLINE (:8097)";
                             if (tip.Length > 63) tip = tip.Substring(0, 63);
                             _trayIcon.Text = tip;
                             _miStatus.Text = _tel.Online
                                 ? string.Format("ACT-Omega {0} | {1:0.0}k ops/s | {2} | {3}",
                                     _tel.FormatReleaseVersion(), _tel.ClusterKops, _tel.FormatLeanBadge(false), _tel.FormatToolsLabel())
-                                : "ACT-Omega v73.2.3 | UNMEASURED/OFFLINE (:8097)";
+                                : "ACT-Omega v73.2.5 | UNMEASURED/OFFLINE (:8097)";
                         });
                     }
                 }

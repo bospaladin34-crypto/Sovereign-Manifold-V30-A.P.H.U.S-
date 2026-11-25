@@ -1,3 +1,5 @@
+> **Historical `v43.0.0` Release Notes Archive**: Preserves pre-`v73.2.2` D1 references (`act_omega_d1_vault`, `8` tables). In `v73.2.2+`, Cloudflare D1 rotated to `act_omega_d1_vault_v7322` (`11` user tables + `2` SQLite/CF system tables).
+
 # ACT-Omega Net v43.0.0 (SH4Z v4300 TLV — Live v31_swarm.exe Hot-Swap, 5W1H-Neuron Connectome Coupling & Google Antigravity Gemini 4 Argon Multi-Agent Cutover)
 
 * **Live `v31_swarm.exe` Atomic Recompile & Hot-Swap + `05_hud_cockpit` Vite Build + Dual-Phone APK Takeover (`Track 43.1`)**: Recompiles `01_l0_rust\src\bin\v31_swarm.rs` (`0` warnings, `0` square brackets in included modules), rebuilds `05_hud_cockpit\dist` (`npm run build`), atomically hot-swaps `v31_swarm.exe` on `:8097` and `:5173` (`act-omega-net.dev`), and flashes `app-debug.apk` to Pixel 10 (`<DYNAMIC_ADB_SERIAL>`) & Pixel 8 (`<DYNAMIC_ADB_SERIAL>`) with all 15 Telemetry Cards, 3D Stiefel Scope, 16x130 Heatmap, and `Tools 01–72` (`CHAIN 72`).

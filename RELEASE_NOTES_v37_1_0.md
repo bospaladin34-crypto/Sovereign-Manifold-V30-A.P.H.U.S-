@@ -1,3 +1,5 @@
+> **Historical `v37.1.0` Release Notes Archive**: Preserves pre-`v73.2.2` D1 references (`act_omega_d1_vault`). In `v73.2.2+`, Cloudflare D1 rotated to `act_omega_d1_vault_v7322` (`11` user tables + `2` SQLite/CF system tables).
+
 # ACT-Omega Net v37.1.0 — Recursive Optimizer, Dynamic 5W1H Load-Shift, Live Cloudflare D1 5GB, Formant Speech WAV & 64-Epoch Compound QAT (SH4Z v3710 TLV)
 
 

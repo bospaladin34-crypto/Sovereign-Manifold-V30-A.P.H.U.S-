@@ -30,12 +30,14 @@ const rootWranglerToml = fs.readFileSync(path.join(repoRoot, "wrangler.toml"), "
 assert.equal(/account_id\s*=\s*"[0-9a-f]{32}"/i.test(edgeWranglerToml), false, "edge wrangler.toml MUST NOT commit hex account_id");
 assert.equal(/database_id\s*=\s*"[0-9a-f-]{36}"/i.test(edgeWranglerToml), false, "edge wrangler.toml MUST NOT commit UUID database_id");
 assert.equal(/id\s*=\s*"[0-9a-f]{32}"/i.test(edgeWranglerToml), false, "edge wrangler.toml MUST NOT commit hex hyperdrive/kv id");
+assert.equal(/app_id\s*=\s*"[0-9a-f-]{36}"/i.test(edgeWranglerToml), false, "edge wrangler.toml MUST NOT commit UUID flagship app_id");
 assert.equal(/account_id\s*=\s*"[0-9a-f]{32}"/i.test(wfWranglerToml), false, "wrangler.workflow.toml MUST NOT commit hex account_id");
 assert.equal(/database_id\s*=\s*"[0-9a-f-]{36}"/i.test(wfWranglerToml), false, "wrangler.workflow.toml MUST NOT commit UUID database_id");
 assert.equal(/workers_dev\s*=\s*false/.test(wfWranglerToml), true, "wrangler.workflow.toml MUST keep workers_dev = false");
 assert.equal(/\broutes?\s*=/.test(wfWranglerToml), false, "wrangler.workflow.toml MUST NOT attach public routes");
 assert.equal(/account_id\s*=\s*"[0-9a-f]{32}"/i.test(rootWranglerToml), false, "root wrangler.toml MUST NOT commit hex account_id");
 assert.equal(/database_id\s*=\s*"[0-9a-f-]{36}"/i.test(rootWranglerToml), false, "root wrangler.toml MUST NOT commit UUID database_id");
+assert.equal(/app_id\s*=\s*"[0-9a-f-]{36}"/i.test(rootWranglerToml), false, "root wrangler.toml MUST NOT commit UUID flagship app_id");
 console.log("PASS: Zero plaintext cloud resource IDs across worker and all wrangler*.toml files.");
 
 console.log("=== [4] Verifying Deletion of TOOL_CALLED_OK Mocks ===");
@@ -257,6 +259,8 @@ const env = {
     "/api/v1/cloudflare/paid_tier_governor",
     "/api/v1/cloudflare/vpc_mesh_status",
     "/api/v1/cloudflare/vpc_probe",
+    "/api/v1/cloudflare/flagship_flags",
+    "/api/v1/cloudflare/ai_gateway_status",
     "/api/v1/vesper_arachne/ik_swarm_companion",
     "/api/v1/cert/chain404",
     "/api/v1/research/bleeding_edge_5_syntheses"
@@ -607,6 +611,71 @@ const env = {
   const rootRes = await worker.fetch(new Request("https://act-omega-net.dev/"), env);
   assert.equal(rootRes.status, 200, "Root HUD HTML MUST remain publicly accessible (200)");
   console.log("PASS: v73.2.4 M1 Edge pre-proxy gating & public route preservation verified.");
+
+  // Flagship fail-closed (503 when unbound) & positive evaluation (200 when bound) + DLQ queue consumer drain
+  {
+    const resFlagsUnbound = await worker.fetch(new Request("https://act-omega-net.dev/api/v1/cloudflare/flagship_flags", {
+      headers: { "X-Sovereign-Operator-Key": validOpKey }
+    }), env);
+    assert.equal(resFlagsUnbound.status, 503, "Unbound ACT_OMEGA_FLAGS MUST fail closed with 503");
+    const jsonFlagsUnbound = await resFlagsUnbound.json();
+    assert.equal(jsonFlagsUnbound.status, "UNMEASURED/OFFLINE");
+
+    const envWithFlagsAndAi = {
+      ...env,
+      AI: { run: async () => ({ data: [[0.125, -0.25, 0.5]] }) },
+      ACT_OMEGA_FLAGS: {
+        getBooleanDetails: async (key, defVal) => {
+          const map = {
+            stage_b_v7400_scaleup_active: false,
+            edge_continuum_failover_enabled: true,
+            ai_gateway_caching_enabled: true,
+            observability_low_sample_mode: true
+          };
+          const v = Object.prototype.hasOwnProperty.call(map, key) ? map[key] : defVal;
+          return { flagKey: key, value: v, variant: v ? "on" : "off", reason: "STATIC" };
+        }
+      }
+    };
+
+    const resFlagsBound = await worker.fetch(new Request("https://act-omega-net.dev/api/v1/cloudflare/flagship_flags", {
+      headers: { "X-Sovereign-Operator-Key": validOpKey }
+    }), envWithFlagsAndAi);
+    assert.equal(resFlagsBound.status, 200, "Bound ACT_OMEGA_FLAGS MUST return 200");
+    const jsonFlagsBound = await resFlagsBound.json();
+    assert.equal(jsonFlagsBound.status, "MEASURED_FLAGSHIP_EVALUATED");
+    assert.equal(jsonFlagsBound.flags.stage_b_v7400_scaleup_active, false);
+    assert.equal(jsonFlagsBound.flags.edge_continuum_failover_enabled, true);
+
+    const resAiGw = await worker.fetch(new Request("https://act-omega-net.dev/api/v1/cloudflare/ai_gateway_status", {
+      headers: { "X-Sovereign-Operator-Key": validOpKey }
+    }), envWithFlagsAndAi);
+    assert.equal(resAiGw.status, 200, "Bound AI + Flagship ai_gateway_status MUST return 200");
+    const jsonAiGw = await resAiGw.json();
+    assert.equal(jsonAiGw.status, "MEASURED_AI_EDGE_SURFACE_ONLINE");
+    assert.equal(jsonAiGw.observability.head_sampling_rate, 0.1);
+
+    let dlqAcked = 0;
+    let dlqSqlSeen = "";
+    const mockDlqEnv = {
+      ACT_OMEGA_D1: {
+        prepare: (sql) => ({
+          bind: () => ({ _sql: sql })
+        }),
+        batch: async (stmts) => {
+          dlqSqlSeen = stmts[0]._sql;
+          return [];
+        }
+      }
+    };
+    await worker.queue({
+      queue: "act-omega-dlq",
+      messages: [{ id: "dlq-1", body: { chain_level: "CHAIN_418", why_motivation: "test_poison" }, ack: () => { dlqAcked++; }, retry: () => {} }]
+    }, mockDlqEnv, {});
+    assert.equal(dlqAcked, 1, "act-omega-dlq consumer MUST ack drained poison message");
+    assert.ok(dlqSqlSeen.includes("BAND_QUEUE_DLQ_DRAIN"), "act-omega-dlq consumer MUST log BAND_QUEUE_DLQ_DRAIN to D1");
+    console.log("PASS: v74.0.0 Flagship runtime evaluation, AI Gateway status, and DLQ active consumer verified.");
+  }
 }
 
 console.log("\n>>> ALL M1 WORKER DISPATCH VERIFICATIONS PASSED SUCCESSFULLY! <<<");

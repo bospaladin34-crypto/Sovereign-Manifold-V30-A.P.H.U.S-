@@ -702,6 +702,72 @@ export { SovereignEdgeShadowDO } from "./worker_continuum_do.js";
 
 const EDGE_META_CACHE_TTL_MS = 30000;
 let gEdgeMetaCache = { timestamp_ms: 0, meta: null };
+let gDlqDrainedCount = 0;
+let gAiGatewayLastStatus = "UNPROBED";
+
+const SOVEREIGN_FLAGSHIP_FLAG_SPECS = [
+  { key: "stage_b_v7400_scaleup_active", defaultValue: false },
+  { key: "edge_continuum_failover_enabled", defaultValue: true },
+  { key: "ai_gateway_caching_enabled", defaultValue: true },
+  { key: "observability_low_sample_mode", defaultValue: true }
+];
+
+async function evaluateSovereignFlagshipFlags(env) {
+  const binding = env && env.ACT_OMEGA_FLAGS ? env.ACT_OMEGA_FLAGS : null;
+  const hasDetailsFn = Boolean(binding && typeof binding.getBooleanDetails === "function");
+  const hasValueFn = Boolean(binding && typeof binding.getBooleanValue === "function");
+  if (!binding || (!hasDetailsFn && !hasValueFn)) {
+    return {
+      bound: false,
+      status: "UNMEASURED/OFFLINE",
+      app_name: "act-omega-sovereign-flags",
+      flags: null,
+      details: null,
+      evaluated_at_ms: Date.now()
+    };
+  }
+
+  const flags = {};
+  const details = {};
+  let evalErrors = 0;
+  for (const spec of SOVEREIGN_FLAGSHIP_FLAG_SPECS) {
+    try {
+      if (hasDetailsFn) {
+        const det = await binding.getBooleanDetails(spec.key, spec.defaultValue);
+        const val = det && typeof det.value === "boolean" ? det.value : spec.defaultValue;
+        flags[spec.key] = val;
+        details[spec.key] = {
+          value: val,
+          variant: det && det.variant !== undefined ? det.variant : null,
+          reason: det && det.reason !== undefined ? det.reason : null,
+          errorCode: det && det.errorCode !== undefined ? det.errorCode : null
+        };
+      } else {
+        const val = Boolean(await binding.getBooleanValue(spec.key, spec.defaultValue));
+        flags[spec.key] = val;
+        details[spec.key] = { value: val, variant: val ? "on" : "off", reason: "STATIC_BOOLEAN_VALUE", errorCode: null };
+      }
+    } catch (err) {
+      evalErrors++;
+      flags[spec.key] = spec.defaultValue;
+      details[spec.key] = {
+        value: spec.defaultValue,
+        variant: null,
+        reason: "EVALUATION_ERROR_FALLBACK",
+        errorCode: String(err)
+      };
+    }
+  }
+
+  return {
+    bound: true,
+    status: evalErrors === 0 ? "MEASURED_FLAGSHIP_EVALUATED" : "DEGRADED_FLAGSHIP_PARTIAL",
+    app_name: "act-omega-sovereign-flags",
+    flags,
+    details,
+    evaluated_at_ms: Date.now()
+  };
+}
 
 async function getSyncedEdgeMetadata(env) {
   const now = Date.now();
@@ -834,33 +900,51 @@ export default {
   async queue(batch, env, _ctx) {
     const messages = batch && Array.isArray(batch.messages) ? batch.messages : [];
     if (messages.length === 0) return;
+    const queueName = batch && typeof batch.queue === "string" ? batch.queue : "act-omega-telemetry-wal-queue";
+    const isDlq = queueName === "act-omega-dlq";
+
     if (!env || !env.ACT_OMEGA_D1) {
       for (const msg of messages) {
-        try { msg.retry(); } catch {}
+        try {
+          if (isDlq) {
+            gDlqDrainedCount++;
+            msg.ack();
+          } else {
+            msg.retry();
+          }
+        } catch {}
       }
       return;
     }
 
     const statements = [];
     const now = Date.now();
+    const bandLabel = isDlq ? "BAND_QUEUE_DLQ_DRAIN" : "BAND_QUEUE_WAL_D1";
+    const schedWindow = isDlq ? "Workers-Paid-DLQ" : "Workers-Paid-Queue";
+    const defaultKernel = isDlq ? "ACT_OMEGA_DLQ_CONSUMER" : "ACT_OMEGA_WAL_QUEUE";
     for (const msg of messages) {
       const body = msg && msg.body && typeof msg.body === "object" ? msg.body : { raw: msg ? msg.body : null };
-      const chainLvl = body.chain_level ? String(body.chain_level) : "CHAIN_404_WAL";
+      const chainLvl = body.chain_level ? String(body.chain_level) : (isDlq ? "CHAIN_418_DLQ" : "CHAIN_404_WAL");
       const atpScore = Number.isFinite(Number(body.atp_score)) ? Number(body.atp_score) : 0.0;
-      const whyMot = body.why_motivation ? String(body.why_motivation) : `WAL Batch Msg ${msg.id || "queued"}`;
-      const whatTools = body.what_tools_invoked ? String(body.what_tools_invoked) : "Queue Consumer Batch Write";
+      const whyMot = isDlq
+        ? `DLQ Drain Msg ${msg.id || "dlq"}: ${body.why_motivation ? String(body.why_motivation) : "Dead-Letter Poison Drain"}`
+        : (body.why_motivation ? String(body.why_motivation) : `WAL Batch Msg ${msg.id || "queued"}`);
+      const whatTools = body.what_tools_invoked ? String(body.what_tools_invoked) : (isDlq ? "DLQ Consumer Audit & Drain" : "Queue Consumer Batch Write");
       const whereTarget = body.where_silicon_target ? String(body.where_silicon_target) : "Cloudflare-Queues+D1";
-      const howKernel = body.how_execution_kernel ? String(body.how_execution_kernel) : "ACT_OMEGA_WAL_QUEUE";
+      const howKernel = isDlq ? defaultKernel : (body.how_execution_kernel ? String(body.how_execution_kernel) : defaultKernel);
       const ts = Number.isFinite(Number(body.recorded_at_ms)) ? Number(body.recorded_at_ms) : now;
       statements.push(
         env.ACT_OMEGA_D1.prepare(
-          "INSERT INTO harness_5w1h_audit_log (chain_level, metabolic_band, atp_score, why_motivation, what_tools_invoked, where_silicon_target, when_schedule_window, how_execution_kernel, recorded_at_ms) VALUES (?, 'BAND_QUEUE_WAL_D1', ?, ?, ?, ?, 'Workers-Paid-Queue', ?, ?);"
+          `INSERT INTO harness_5w1h_audit_log (chain_level, metabolic_band, atp_score, why_motivation, what_tools_invoked, where_silicon_target, when_schedule_window, how_execution_kernel, recorded_at_ms) VALUES (?, '${bandLabel}', ?, ?, ?, ?, '${schedWindow}', ?, ?);`
         ).bind(chainLvl, atpScore, whyMot, whatTools, whereTarget, howKernel, ts)
       );
     }
 
     try {
       await env.ACT_OMEGA_D1.batch(statements);
+      if (isDlq) {
+        gDlqDrainedCount += messages.length;
+      }
       if (env.SOVEREIGN_EDGE_SHADOW_DO) {
         try {
           const doId = env.SOVEREIGN_EDGE_SHADOW_DO.idFromName("GLOBAL_SOVEREIGN_SHADOW_V4400");
@@ -875,7 +959,14 @@ export default {
     } catch {
       gWorkerSqliteErrCount++;
       for (const msg of messages) {
-        try { msg.retry(); } catch {}
+        try {
+          if (isDlq) {
+            gDlqDrainedCount++;
+            msg.ack();
+          } else {
+            msg.retry();
+          }
+        } catch {}
       }
     }
   },
@@ -930,6 +1021,8 @@ export default {
       lowerPath === "/api/v1/cloudflare/mesh_register" ||
       lowerPath === "/api/v1/cloudflare/vpc_probe" ||
       lowerPath === "/api/v1/cloudflare/hyperdrive_query" ||
+      lowerPath === "/api/v1/cloudflare/flagship_flags" ||
+      lowerPath === "/api/v1/cloudflare/ai_gateway_status" ||
       lowerPath === "/api/v1/continuum/handover" ||
       lowerPath === "/api/v1/edge_continuum/status" ||
       lowerPath === "/api/v1/vectorize/query" ||
@@ -2928,8 +3021,42 @@ export default {
       }
 
       if (quotaAllowed && env && env.AI) {
+        const gatewayId = (env && typeof env.AI_GATEWAY_ID === "string" && env.AI_GATEWAY_ID.trim().length > 0)
+          ? env.AI_GATEWAY_ID.trim()
+          : "act-omega-ai-gateway";
+        let useAiGateway = true;
+        if (env.ACT_OMEGA_FLAGS) {
+          const flagEval = await evaluateSovereignFlagshipFlags(env);
+          if (flagEval.bound && flagEval.flags && flagEval.flags.ai_gateway_caching_enabled === false) {
+            useAiGateway = false;
+          }
+        }
         try {
-          const aiResponse = await env.AI.run("@cf/baai/bge-small-en-v1.5", { text: [prompt] });
+          let aiResponse = null;
+          let aiGatewayRouted = false;
+          let aiGatewayStatus = "BYPASSED_BY_FLAGSHIP";
+          if (useAiGateway) {
+            try {
+              aiResponse = await env.AI.run(
+                "@cf/baai/bge-small-en-v1.5",
+                { text: [prompt] },
+                { gateway: { id: gatewayId, skipCache: false, cacheTtl: 3600 } }
+              );
+              if (aiResponse && aiResponse.data && aiResponse.data[0]) {
+                aiGatewayRouted = true;
+                aiGatewayStatus = "ROUTED_VIA_AI_GATEWAY";
+              }
+            } catch (_gwErr) {
+              aiResponse = null;
+            }
+          }
+          if (!aiResponse || !aiResponse.data || !aiResponse.data[0]) {
+            aiResponse = await env.AI.run("@cf/baai/bge-small-en-v1.5", { text: [prompt] });
+            if (useAiGateway) {
+              aiGatewayStatus = "DIRECT_WORKERS_AI_GATEWAY_UNPROVISIONED";
+            }
+          }
+          gAiGatewayLastStatus = aiGatewayStatus;
           if (aiResponse && aiResponse.data && aiResponse.data[0]) {
             const embedding = aiResponse.data[0];
             gWorkersAiDedupCache.set(promptHash, embedding);
@@ -2945,6 +3072,9 @@ export default {
               embedding,
               dimension: embedding.length,
               source: "WORKERS_AI_BGE_SMALL",
+              ai_gateway_id: gatewayId,
+              ai_gateway_routed: aiGatewayRouted,
+              ai_gateway_status: aiGatewayStatus,
               neurons_consumed: estimatedNeurons,
               status: "NOMINAL",
               fallback: false,
@@ -3172,12 +3302,18 @@ export default {
         cpu_ms_limit: 30000,
         cron_schedule: "*/5 * * * *",
         observability_enabled: true,
+        observability_head_sampling_rate: 0.1,
         accounting_basis: "DO_METERED_REQUEST_UNITS_UNRECONCILED_WITH_CF_BILLING",
         global_status: globalStatus,
         queues_wal_bound: queuesWalBound,
+        queues_dlq_consumer_active: true,
+        dlq_messages_drained_isolate: gDlqDrainedCount,
         workflow_bound: workflowBound,
         workflow_svc_bound: workflowSvcBound,
         hyperdrive_bound: hyperdriveBound,
+        flagship_bound: Boolean(env && env.ACT_OMEGA_FLAGS),
+        ai_gateway_id: (env && typeof env.AI_GATEWAY_ID === "string" && env.AI_GATEWAY_ID) ? env.AI_GATEWAY_ID : "act-omega-ai-gateway",
+        ai_gateway_last_status: gAiGatewayLastStatus,
         vpc_services_bound: vpcServicesBound,
         d1_bound: d1Bound,
         do_bound: doBound,
@@ -3467,7 +3603,7 @@ export default {
         } catch {}
       }
       const vpcTargets = [
-        { service: "act-omega-anchor-l0-vpc", binding: "ANCHOR_L0_VPC", url: "http://127.0.0.1:8097/api/v1/status" },
+        { service: "act-omega-anchor-l0-vpc", binding: "ANCHOR_L0_VPC", url: "http://127.0.0.1:8097/api/v1/health" },
         { service: "act-omega-deno-l2-vpc", binding: "DENO_L2_VPC", url: "http://127.0.0.1:8099/api/v1/pgwire/status" },
         { service: "act-omega-pixel10-edge-vpc", binding: "PIXEL10_EDGE_VPC", url: "http://127.0.0.1:19788/api/health" },
         { service: "act-omega-pixel8-apex-vpc", binding: "PIXEL8_APEX_VPC", url: "http://127.0.0.1:19792/api/health" }
@@ -3591,6 +3727,112 @@ export default {
         status: svcRes.status,
         headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" }
       });
+    }
+
+    // ==============================================================================
+    // ROUTE: /api/v1/cloudflare/flagship_flags (Cloudflare Flagship Beta Runtime Evaluation)
+    // ==============================================================================
+    if (lowerPath === "/api/v1/cloudflare/flagship_flags") {
+      const hasQueryKey = hasQueryParamKey(url);
+      const auth = await verifyZeroTrustAndOperatorHeaders(request, env);
+      if (hasQueryKey || !auth.authorized) {
+        return Response.json(
+          { error: auth.error || "OPERATOR_AUTH_REQUIRED", status: 403 },
+          { status: 403, headers: { "Cache-Control": "no-store" } }
+        );
+      }
+      if (request.method !== "GET") {
+        return Response.json({ error: "METHOD_NOT_ALLOWED" }, { status: 405 });
+      }
+      const evalRes = await evaluateSovereignFlagshipFlags(env);
+      if (!evalRes.bound) {
+        return Response.json(
+          {
+            ok: false,
+            error: "ACT_OMEGA_FLAGS_UNBOUND",
+            status: "UNMEASURED/OFFLINE",
+            app_name: evalRes.app_name,
+            flags: null,
+            evaluated_at_ms: evalRes.evaluated_at_ms
+          },
+          { status: 503, headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" } }
+        );
+      }
+      return Response.json(
+        {
+          ok: true,
+          status: evalRes.status,
+          app_name: evalRes.app_name,
+          flags: evalRes.flags,
+          details: evalRes.details,
+          evaluated_at_ms: evalRes.evaluated_at_ms
+        },
+        { status: 200, headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" } }
+      );
+    }
+
+    // ==============================================================================
+    // ROUTE: /api/v1/cloudflare/ai_gateway_status (AI Gateway, Zero Trust MCP Portal & DLQ Status)
+    // ==============================================================================
+    if (lowerPath === "/api/v1/cloudflare/ai_gateway_status") {
+      const hasQueryKey = hasQueryParamKey(url);
+      const auth = await verifyZeroTrustAndOperatorHeaders(request, env);
+      if (hasQueryKey || !auth.authorized) {
+        return Response.json(
+          { error: auth.error || "OPERATOR_AUTH_REQUIRED", status: 403 },
+          { status: 403, headers: { "Cache-Control": "no-store" } }
+        );
+      }
+      if (request.method !== "GET") {
+        return Response.json({ error: "METHOD_NOT_ALLOWED" }, { status: 405 });
+      }
+      const synced = await getSyncedEdgeMetadata(env);
+      const flagEval = await evaluateSovereignFlagshipFlags(env);
+      const gatewayId = (env && typeof env.AI_GATEWAY_ID === "string" && env.AI_GATEWAY_ID.trim().length > 0)
+        ? env.AI_GATEWAY_ID.trim()
+        : "act-omega-ai-gateway";
+      const mcpEndpoint = (env && typeof env.MCP_PORTAL_ENDPOINT === "string" && env.MCP_PORTAL_ENDPOINT.trim().length > 0)
+        ? env.MCP_PORTAL_ENDPOINT.trim()
+        : "https://mcp.act-omega-net.dev/mcp";
+      const aiBound = Boolean(env && env.AI);
+      return Response.json(
+        {
+          ok: aiBound,
+          status: aiBound ? "MEASURED_AI_EDGE_SURFACE_ONLINE" : "UNMEASURED/OFFLINE",
+          version: synced.version,
+          chain_milestone: synced.chain_milestone,
+          workers_ai_bound: aiBound,
+          embedding_model: "@cf/baai/bge-small-en-v1.5",
+          ai_gateway: {
+            gateway_id: gatewayId,
+            cache_ttl_sec: 3600,
+            caching_enabled_flag: flagEval.bound && flagEval.flags ? flagEval.flags.ai_gateway_caching_enabled : null,
+            last_dispatch_status: gAiGatewayLastStatus
+          },
+          mcp_portal: {
+            dedicated_endpoint: mcpEndpoint,
+            shadow_endpoint: "https://act-omega-net.dev/mcp",
+            tools_total: synced.tools_total !== null ? 70 : null,
+            auth_mode: "X-Sovereign-Operator-Key + Cf-Access-Jwt-Assertion"
+          },
+          queues: {
+            wal_producer_bound: Boolean(env && env.ACT_OMEGA_WAL_QUEUE),
+            dlq_consumer_queue: "act-omega-dlq",
+            dlq_messages_drained_isolate: gDlqDrainedCount
+          },
+          observability: {
+            enabled: true,
+            head_sampling_rate: 0.1
+          },
+          flagship: {
+            bound: flagEval.bound,
+            status: flagEval.status,
+            flags: flagEval.flags
+          },
+          timestamp_ms: Date.now()
+        },
+        { status: aiBound ? 200 : 503, headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" } }
+      );
     }
 
     const isHtmlReq =

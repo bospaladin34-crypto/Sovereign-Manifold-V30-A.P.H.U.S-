@@ -34,10 +34,11 @@ $d1DbName    = if ($env:ACT_OMEGA_D1_DATABASE_NAME) { $env:ACT_OMEGA_D1_DATABASE
 $d1DbId      = if ($env:ACT_OMEGA_D1_DATABASE_ID) { $env:ACT_OMEGA_D1_DATABASE_ID } elseif ($cfg) { $cfg.d1_database_id } else { "" }
 $hdId        = if ($env:ACT_OMEGA_HYPERDRIVE_ID) { $env:ACT_OMEGA_HYPERDRIVE_ID } elseif ($cfg) { $cfg.hyperdrive_id } else { "" }
 $kvId        = if ($env:ACT_OMEGA_KV_ID) { $env:ACT_OMEGA_KV_ID } elseif ($cfg) { $cfg.kv_id } else { "" }
-$vpcAnchorId = if ($cfg -and $cfg.vpc_anchor_id) { $cfg.vpc_anchor_id } else { "" }
-$vpcDenoId   = if ($cfg -and $cfg.vpc_deno_id)   { $cfg.vpc_deno_id }   else { "" }
-$vpcP10Id    = if ($cfg -and $cfg.vpc_p10_id)    { $cfg.vpc_p10_id }    else { "" }
-$vpcP8Id     = if ($cfg -and $cfg.vpc_p8_id)     { $cfg.vpc_p8_id }     else { "" }
+$vpcAnchorId   = if ($cfg -and $cfg.vpc_anchor_id)   { $cfg.vpc_anchor_id }   else { "" }
+$vpcDenoId     = if ($cfg -and $cfg.vpc_deno_id)     { $cfg.vpc_deno_id }     else { "" }
+$vpcP10Id      = if ($cfg -and $cfg.vpc_p10_id)      { $cfg.vpc_p10_id }      else { "" }
+$vpcP8Id       = if ($cfg -and $cfg.vpc_p8_id)       { $cfg.vpc_p8_id }       else { "" }
+$flagshipAppId = if ($env:ACT_OMEGA_FLAGSHIP_APP_ID) { $env:ACT_OMEGA_FLAGSHIP_APP_ID } elseif ($cfg -and $cfg.flagship_app_id) { $cfg.flagship_app_id } else { "" }
 
 if (-not $accountId -or -not $d1DbId -or -not $hdId -or -not $kvId) {
     Write-Error "FAIL_CLOSED_MISSING_EXTERNAL_CLOUDFLARE_IDS: Required external IDs (account_id, d1_database_id, hyperdrive_id, kv_id) missing from $ExternalConfigPath and environment."
@@ -78,7 +79,7 @@ function Remove-AnsiSequences {
 function Get-RedactedDiagnosticSummary {
     param([string]$Text)
     $clean = Remove-AnsiSequences -Text $Text
-    foreach ($secretId in @($accountId, $d1DbId, $hdId, $kvId, $vpcAnchorId, $vpcDenoId, $vpcP10Id, $vpcP8Id)) {
+    foreach ($secretId in @($accountId, $d1DbId, $hdId, $kvId, $vpcAnchorId, $vpcDenoId, $vpcP10Id, $vpcP8Id, $flagshipAppId)) {
         if (-not [string]::IsNullOrWhiteSpace($secretId)) {
             $clean = $clean.Replace([string]$secretId, "<REDACTED_CF_ID>")
         }
@@ -149,7 +150,7 @@ function Assert-NoSecretOrCfIdLeaks {
     if (-not [string]::IsNullOrWhiteSpace($OperatorKey) -and $PayloadText.Contains($OperatorKey)) {
         throw "FAIL_CLOSED_SECRET_LEAK: Operator key detected in receipt payload."
     }
-    foreach ($activeId in @($accountId, $d1DbId, $hdId, $kvId, $vpcAnchorId, $vpcDenoId, $vpcP10Id, $vpcP8Id)) {
+    foreach ($activeId in @($accountId, $d1DbId, $hdId, $kvId, $vpcAnchorId, $vpcDenoId, $vpcP10Id, $vpcP8Id, $flagshipAppId)) {
         if (-not [string]::IsNullOrWhiteSpace($activeId) -and $PayloadText.IndexOf([string]$activeId, [System.StringComparison]::OrdinalIgnoreCase) -ge 0) {
             throw "FAIL_CLOSED_CF_ACTIVE_ID_LEAK: Active Cloudflare resource ID detected in receipt payload."
         }
@@ -174,7 +175,8 @@ function Render-WranglerTemplate([string]$srcPath, [string]$dstPath, [string]$ba
                      Replace("<EXTERNAL_VPC_ANCHOR_ID>", $vpcAnchorId).
                      Replace("<EXTERNAL_VPC_DENO_ID>", $vpcDenoId).
                      Replace("<EXTERNAL_VPC_P10_ID>", $vpcP10Id).
-                     Replace("<EXTERNAL_VPC_P8_ID>", $vpcP8Id)
+                     Replace("<EXTERNAL_VPC_P8_ID>", $vpcP8Id).
+                     Replace("<EXTERNAL_FLAGSHIP_APP_ID>", $flagshipAppId)
     # Rewrite relative main path to absolute path so temp config outside repo resolves cleanly
     $rendered = [regex]::Replace($rendered, 'main\s*=\s*"([^"]+)"', {
         param($m)

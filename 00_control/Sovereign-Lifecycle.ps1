@@ -16,9 +16,20 @@ $pauseFile       = "C:\sovereign_manifold_v31\00_control\daemon.paused"
 $swarmExe        = "C:\sovereign_manifold_v31\01_l0_rust\target\release\v31_swarm.exe"
 $cfExe           = "C:\sovereign_manifold_v31\00_control\cloudflared.exe"
 $cfCfg           = "C:\sovereign_manifold_v31\00_control\cloudflare_named_config.yml"
+$cfVpcCfg        = "C:\sovereign_manifold_v31\00_control\cloudflare_vpc_mesh_quic.yml"
+$denoExe         = "C:\Users\Nbell\.deno\bin\deno.exe"
+$denoDir         = "C:\sovereign_manifold_v31\02_gateway_deno"
+$denoServerTs    = "C:\sovereign_manifold_v31\02_gateway_deno\server.ts"
 $trayHudExe      = "C:\sovereign_manifold_v31\SovereignCockpitHUD.exe"
 $shmPath         = "C:\sovereign_manifold_v31\00_control\weights\neurons_v5000_63360.npage"
 $capsulePath     = "C:\sovereign_manifold_v31\03_vault\connectome\continuum_handover_capsule.json"
+
+function Get-CloudflaredTunnelProc {
+    param([string]$ConfigMarker)
+    $procs = Get-CimInstance Win32_Process -Filter "Name = 'cloudflared.exe'" -ErrorAction SilentlyContinue
+    if (-not $procs) { return $null }
+    return ($procs | Where-Object { $_.CommandLine -match [regex]::Escape($ConfigMarker) } | Select-Object -First 1)
+}
 function Get-SovereignCitationVersion {
     $cff = Join-Path $root "CITATION.cff"
     if (Test-Path $cff) {
@@ -43,6 +54,11 @@ function Resolve-SovereignAdbTarget {
         } catch {}
     }
     $lines = adb devices -l 2>$null
+    if (($lines -join "`n") -match "\boffline\b") {
+        adb reconnect offline 2>$null | Out-Null
+        Start-Sleep -Milliseconds 1500
+        $lines = adb devices -l 2>$null
+    }
     if ($cfgSerial) {
         foreach ($l in $lines) {
             if ($l -match "^$([regex]::Escape($cfgSerial))\s+device\b") {
@@ -81,8 +97,16 @@ function Ensure-PhoneUnpluggedShm {
 
     adb -s $Serial reverse tcp:8097 tcp:8097 | Out-Null
     adb -s $Serial reverse tcp:5173 tcp:5173 | Out-Null
+    if ($Serial -eq $p10Serial) {
+        adb -s $Serial forward tcp:19788 tcp:19788 | Out-Null
+        adb -s $Serial forward tcp:19789 tcp:19789 | Out-Null
+        adb -s $Serial forward tcp:22222 tcp:2222  | Out-Null
+    }
     if ($Serial -eq $p8Serial) {
-        adb -s $Serial forward tcp:8098 tcp:8098 | Out-Null
+        adb -s $Serial forward tcp:8098  tcp:8098  | Out-Null
+        adb -s $Serial forward tcp:19792 tcp:19792 | Out-Null
+        adb -s $Serial forward tcp:19793 tcp:19793 | Out-Null
+        adb -s $Serial forward tcp:22223 tcp:2222  | Out-Null
     }
 
     $tmpCheck = (adb -s $Serial shell "ls -l /data/local/tmp/neurons_v5000_63360.npage 2>/dev/null") -join " "
@@ -262,12 +286,23 @@ function Show-SovereignStatus {
         Write-Host "  [2] HOST L0 SWARM     : OFFLINE (Edge Continuum Mode Active on Phones + Cloudflare DO)" -ForegroundColor Yellow
     }
 
-    $cfProc = Get-Process -Name "cloudflared" -ErrorAction SilentlyContinue
-    if ($cfProc) {
-        $cfPid = $cfProc[0].Id
-        Write-Host "  [3] CLOUDFLARE TUNNEL : ONLINE (PID $cfPid -- WMI Detached -- act-omega-net.dev)" -ForegroundColor Green
+    $cfNamedProc = Get-CloudflaredTunnelProc -ConfigMarker "cloudflare_named_config.yml"
+    if ($cfNamedProc) {
+        Write-Host "  [3] CLOUDFLARE TUNNEL : ONLINE (PID $($cfNamedProc.ProcessId) -- HTTP/2 Named Tunnel -- act-omega-net.dev)" -ForegroundColor Green
     } else {
-        Write-Host "  [3] CLOUDFLARE TUNNEL : OFFLINE" -ForegroundColor Red
+        Write-Host "  [3] CLOUDFLARE TUNNEL : OFFLINE (act-omega-net.dev)" -ForegroundColor Red
+    }
+
+    $cfVpcProc = Get-CloudflaredTunnelProc -ConfigMarker "cloudflare_vpc_mesh_quic.yml"
+    $port5439 = Get-NetTCPConnection -LocalPort 5439 -State Listen -ErrorAction SilentlyContinue
+    $port8099 = Get-NetTCPConnection -LocalPort 8099 -State Listen -ErrorAction SilentlyContinue
+    if ($cfVpcProc -and $port5439 -and $port8099) {
+        Write-Host "  [3b] VPC MESH & PGWIRE: ONLINE (QUIC PID $($cfVpcProc.ProcessId) sovereign-vpc-mesh + :5439 TLS DuckDB + :8099 Deno L2)" -ForegroundColor Green
+    } else {
+        $vpcStr = if ($cfVpcProc) { "QUIC=PID:$($cfVpcProc.ProcessId)" } else { "QUIC=OFFLINE" }
+        $pgStr  = if ($port5439)  { "PGWire(:5439)=ONLINE" } else { "PGWire(:5439)=OFFLINE" }
+        $dnStr  = if ($port8099)  { "Deno(:8099)=ONLINE" }   else { "Deno(:8099)=OFFLINE" }
+        Write-Host "  [3b] VPC MESH & PGWIRE: DEGRADED/OFFLINE ($vpcStr | $pgStr | $dnStr)" -ForegroundColor Yellow
     }
 
     $adbRaw = (adb devices) -join " "
@@ -513,11 +548,12 @@ function Stop-SovereignClusterSafely {
         Write-Host "  [Host Stop 2/3] Pixel 8 & Pixel 10 handed over to Autonomous Edge Continuum (B5:CF-EDGE-DO)..." -ForegroundColor Cyan
     }
 
-    # 5. Stop cloudflared and v31_swarm
+    # 5. Stop Deno L2/PGWire, cloudflared tunnels, and v31_swarm
+    Get-CimInstance Win32_Process -Filter "Name = 'deno.exe'" -ErrorAction SilentlyContinue | Where-Object { $_.CommandLine -match "02_gateway_deno" } | Invoke-CimMethod -MethodName Terminate -ErrorAction SilentlyContinue | Out-Null
     Get-Process -Name "cloudflared" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
     Get-Process -Name "v31_swarm", "v31_swarm_prev" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
     Start-Sleep -Milliseconds 600
-    Write-Host "  [Host Stop 3/3] Stopped Host v31_swarm.exe (:8097/:5173) and cloudflared.exe tunnel." -ForegroundColor Green
+    Write-Host "  [Host Stop 3/3] Stopped Host v31_swarm.exe (:8097/:5173), Deno L2/PGWire (:8099/:5439), and cloudflared.exe tunnels." -ForegroundColor Green
     Show-SovereignStatus
 }
 
@@ -551,8 +587,8 @@ function Start-SovereignClusterSafely {
         Write-Host "  [2/6] v31_swarm.exe already running (PID $swPid)..." -ForegroundColor Green
     }
 
-    $cfProc = Get-Process -Name "cloudflared" -ErrorAction SilentlyContinue
-    if (-not $cfProc) {
+    $cfNamedProc = Get-CloudflaredTunnelProc -ConfigMarker "cloudflare_named_config.yml"
+    if (-not $cfNamedProc) {
         if ((Test-Path $cfExe) -and (Test-Path $cfCfg)) {
             $startup = New-CimInstance -ClassName Win32_ProcessStartup -ClientOnly
             $startup.ShowWindow = [uint16]0
@@ -562,14 +598,50 @@ function Start-SovereignClusterSafely {
                 CurrentDirectory = $root
                 ProcessStartupInformation = $startup
             }
-            Start-Sleep -Seconds 3
-            Write-Host "  [3/6] Launched Cloudflare Named Tunnel via WMI Service Host (9cdea4c4 -> act-omega-net.dev :5173, api/mcp :8097)..." -ForegroundColor Green
+            Start-Sleep -Seconds 2
+            Write-Host "  [3a/6] Launched Cloudflare Named Tunnel via WMI Service Host (act-omega-net.dev :5173, api/mcp :8097)..." -ForegroundColor Green
         } else {
-            Write-Host "  [3/6] WARNING: cloudflared.exe or config not found!" -ForegroundColor Yellow
+            Write-Host "  [3a/6] WARNING: cloudflared.exe or named config not found!" -ForegroundColor Yellow
         }
     } else {
-        $cfPid = $cfProc[0].Id
-        Write-Host "  [3/6] Cloudflare Named Tunnel already running (PID $cfPid)..." -ForegroundColor Green
+        Write-Host "  [3a/6] Cloudflare Named Tunnel already running (PID $($cfNamedProc.ProcessId))..." -ForegroundColor Green
+    }
+
+    $port5439 = Get-NetTCPConnection -LocalPort 5439 -State Listen -ErrorAction SilentlyContinue
+    $port8099 = Get-NetTCPConnection -LocalPort 8099 -State Listen -ErrorAction SilentlyContinue
+    if ((-not $port5439 -or -not $port8099) -and (Test-Path $denoExe) -and (Test-Path $denoServerTs)) {
+        $startupDeno = New-CimInstance -ClassName Win32_ProcessStartup -ClientOnly
+        $startupDeno.ShowWindow = [uint16]0
+        $denoCmd = "`"$denoExe`" run --allow-net --allow-read --allow-run --allow-env --allow-ffi --unstable-ffi `"$denoServerTs`""
+        $null = Invoke-CimMethod -ClassName Win32_Process -MethodName Create -Arguments @{
+            CommandLine = $denoCmd
+            CurrentDirectory = $denoDir
+            ProcessStartupInformation = $startupDeno
+        }
+        Start-Sleep -Seconds 2
+        Write-Host "  [3b/6] Launched Deno L2 Gateway (:8099) + TLS PGWire v3 DuckDB Bridge (:5439)..." -ForegroundColor Green
+    } else {
+        Write-Host "  [3b/6] Deno L2 Gateway (:8099) + TLS PGWire DuckDB (:5439) active..." -ForegroundColor Green
+    }
+
+    $cfVpcProc = Get-CloudflaredTunnelProc -ConfigMarker "cloudflare_vpc_mesh_quic.yml"
+    if (-not $cfVpcProc) {
+        if ((Test-Path $cfExe) -and (Test-Path $cfVpcCfg)) {
+            $startupVpc = New-CimInstance -ClassName Win32_ProcessStartup -ClientOnly
+            $startupVpc.ShowWindow = [uint16]0
+            $vpcCmd = "`"$cfExe`" tunnel --config `"$cfVpcCfg`" --logfile `"C:\sovereign_manifold_v31\00_control\cloudflared_vpc_mesh.log`" run"
+            $null = Invoke-CimMethod -ClassName Win32_Process -MethodName Create -Arguments @{
+                CommandLine = $vpcCmd
+                CurrentDirectory = $root
+                ProcessStartupInformation = $startupVpc
+            }
+            Start-Sleep -Seconds 3
+            Write-Host "  [3c/6] Launched Cloudflare VPC Mesh QUIC Tunnel (sovereign-vpc-mesh -> 5 Workers VPC services)..." -ForegroundColor Green
+        } else {
+            Write-Host "  [3c/6] WARNING: cloudflared.exe or cloudflare_vpc_mesh_quic.yml not found!" -ForegroundColor Yellow
+        }
+    } else {
+        Write-Host "  [3c/6] Cloudflare VPC Mesh QUIC Tunnel already running (PID $($cfVpcProc.ProcessId))..." -ForegroundColor Green
     }
 
     $adbRaw = (adb devices) -join " "

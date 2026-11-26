@@ -1,12 +1,12 @@
 {
     "schema":  "ACT_OMEGA_V73_FETCH_LIST_AND_NEGATIVE_TEST_AUDIT_V1",
     "version":  "v74.0.0",
-    "generated_at_utc":  "2026-11-26T06:02:08Z",
+    "generated_at_utc":  "2026-11-26T15:11:39Z",
     "author":  "Donevin Frownfelter (@bospaladin34-crypto)",
     "disposition":  "v73.2.5 Certified FULL ALL CLEAR -\u003e v74.0.0 Stage A (SH4Z v7400 + 15-Station Labs CHAIN 418; Gate 5 honestly UNMEASURED/OFFLINE pending Stage B)",
     "sh_xi_turn_counter_receipt_parity":  {
-                                              "final_global_turn_seq":  1947,
-                                              "ledger_sha256":  "915fbb7babf815046af035410e046e9c36f962cab47a4763a902668e8f0b859f",
+                                              "final_global_turn_seq":  2029,
+                                              "ledger_sha256":  "ac4183b0887f2820a5586531c7cd75c3b36556cf795a03bb0a4c802d1827cc7e",
                                               "ledger_c_e_sha256_match":  true
                                           },
     "cloudflare_edge_worker_deployment_receipt_present":  true,
@@ -17,9 +17,9 @@
                                             "paths":  [
                                                           {
                                                               "path":  "tests/e2e/test_m1_worker_dispatch_verification.mjs",
-                                                              "lines":  612,
-                                                              "bytes":  29748,
-                                                              "sha256":  "0397a8b588ac54239805608f502174831ffc86abcb240c4c0f8e0af8f2707dcf",
+                                                              "lines":  681,
+                                                              "bytes":  33167,
+                                                              "sha256":  "172b2abe431b8cdf3222c82f0883fa140ab63c0bfdb809d1a4f86567d86b7b8d",
                                                               "run_command":  "node tests/e2e/test_m1_worker_dispatch_verification.mjs",
                                                               "exit_code":  0,
                                                               "summary":  "Verified B9 single worker, deletion of 32D/TOOL_CALLED_OK mocks, S6 zero CF IDs in wrangler*.toml, N1-N4, S2-S5, E1 auth/CORS, and R4/R3/v73.2.5 edge pre-proxy gates."
@@ -148,7 +148,7 @@
                                                               "sha256":  "2eb2b8735bcfbf29b3764d4d6f52927b2dc8253143bdadcd4f9eb0019c96c1c2",
                                                               "run_command":  "powershell -NoProfile -ExecutionPolicy Bypass -File 00_control\\Verify-ShXiTurnCountersReceipt.ps1 -AuditOnly",
                                                               "exit_code":  0,
-                                                              "summary":  "Read-only verification of C:==E: sh_xi_session_turn_counters.json SHA-256 (915fbb7babf8...) and global_turn_seq=1947 parity with v73_2_4_sh_xi_turn_counter_receipt.json."
+                                                              "summary":  "Read-only verification of C:==E: sh_xi_session_turn_counters.json SHA-256 (ac4183b0887f...) and global_turn_seq=2029 parity with v73_2_4_sh_xi_turn_counter_receipt.json."
                                                           },
                                                           {
                                                               "path":  "tests/e2e/test_m3_gatekeeper_negative.ps1",
@@ -161,9 +161,9 @@
                                                           },
                                                           {
                                                               "path":  "00_control/Sovereign-Lifecycle.ps1",
-                                                              "lines":  628,
-                                                              "bytes":  35295,
-                                                              "sha256":  "91633a52a9e13347ccb10b1988e988175d67f08f14dfe0d86bf3b727216fbd6a",
+                                                              "lines":  700,
+                                                              "bytes":  40021,
+                                                              "sha256":  "7c978818892dd375cb9487497dab4dfb920e35c0b523d74240e49c4af9f2bf64",
                                                               "run_command":  "powershell -NoProfile -ExecutionPolicy Bypass -File 00_control\\Sovereign-Lifecycle.ps1 -Action verify",
                                                               "exit_code":  0,
                                                               "summary":  "Passed 6/6 Sovereign Lifecycle verification layers."
@@ -198,12 +198,12 @@
                                                                             },
                                                                             {
                                                                                 "name":  "cloudflare_edge_worker_deployment_receipt.json",
-                                                                                "bytes":  2751,
-                                                                                "sha256":  "22cf2bd76585e0196ec8d128d896fc7658790c64d90de65046f759053e1e5f3a",
-                                                                                "git_blob_sha1":  "3486fde7e2383a7f7d50f9df395d2f323bf29e83",
+                                                                                "bytes":  2764,
+                                                                                "sha256":  "59264fdbd1a56523e99714d54026e2ba95fba6e14973b5e24a72ba3dcecb2eea",
+                                                                                "git_blob_sha1":  "475a71f574bc880716a193464567b7900a6d7a1e",
                                                                                 "encoding":  "utf-8-no-bom",
                                                                                 "line_ending":  "LF",
-                                                                                "last_write_utc":  "2026-11-26T05:17:50Z",
+                                                                                "last_write_utc":  "2026-11-26T15:00:41Z",
                                                                                 "volatile_on_suite_rerun":  true,
                                                                                 "volatility_reason":  "Deploy-CloudflareEdge.ps1 / NF7b worker deployment capture updates worker_version_id, timestamp_utc, and observed edge_direct manifest values."
                                                                             },
@@ -816,11 +816,11 @@
                                                                             {
                                                                                 "name":  "v73_2_4_sh_xi_turn_counter_receipt.json",
                                                                                 "bytes":  11850,
-                                                                                "sha256":  "3f6f20fa55358c5b5f1dfbab4a825c2e1b3349a303e5984b98153c8a06cee577",
-                                                                                "git_blob_sha1":  "55398cfd0ce93f5ba7e19fd7fb674a13781a023c",
+                                                                                "sha256":  "87a59498f5628e4e3731b04b96e16bafebf3f586d5fb11c04cdbe8d876bb3a9a",
+                                                                                "git_blob_sha1":  "31b9fba561ee26bb3e5db713f21a5b8b46aad752",
                                                                                 "encoding":  "utf-8-no-bom",
                                                                                 "line_ending":  "LF",
-                                                                                "last_write_utc":  "2026-11-26T06:01:59Z",
+                                                                                "last_write_utc":  "2026-11-26T15:11:28Z",
                                                                                 "volatile_on_suite_rerun":  true,
                                                                                 "volatility_reason":  "Verify-ShXiTurnCountersReceipt.ps1 updates ledger_sha256, final_global_turn_seq, session_count, and generated_at_utc LAST after all /converse \u0026 /v1/chat/completions suites."
                                                                             },
@@ -914,12 +914,12 @@
                                                                             },
                                                                             {
                                                                                 "name":  "v74_0_0_freetier_e2e_pass.txt",
-                                                                                "bytes":  64606,
-                                                                                "sha256":  "a69f499521bb5d0e9b456891e4a822ffd6e3fb254d2ff16c5e92a72a24a0bc19",
-                                                                                "git_blob_sha1":  "ae3b4a50621feb9d7fca740128395f56d06983e8",
+                                                                                "bytes":  64710,
+                                                                                "sha256":  "313fe402e8accae38ee41c27e004a00e12e44952006662f69f6c17158c2b00e5",
+                                                                                "git_blob_sha1":  "789146107e7a84f0f3ddc1070e3af940058d0345",
                                                                                 "encoding":  "utf-8-no-bom",
                                                                                 "line_ending":  "LF",
-                                                                                "last_write_utc":  "2026-11-26T05:49:52Z",
+                                                                                "last_write_utc":  "2026-11-26T15:03:04Z",
                                                                                 "volatile_on_suite_rerun":  true,
                                                                                 "volatility_reason":  "Invoke-FreeTierGovernorE2ESuite.ps1 records live v74.0.0 per-test ElapsedMs, request timestamps, and DO/D1 quota counters on every run."
                                                                             },
@@ -936,12 +936,12 @@
                                                                             },
                                                                             {
                                                                                 "name":  "v74_0_0_security_negative_tests_receipt.json",
-                                                                                "bytes":  514671,
-                                                                                "sha256":  "2ff4d72f69a244731530a54b0f9652993cf0de5530a575dc6a112ebc7720948e",
-                                                                                "git_blob_sha1":  "b9fc12477346d23d3dbd1ce7a19283202b356460",
+                                                                                "bytes":  514675,
+                                                                                "sha256":  "b391e23a4a108172fc7e966ad7b62b1fd115edf831f1ee8c7ab80b8eb939536b",
+                                                                                "git_blob_sha1":  "d4884dd481bda79a85cde808fdfc23ecfe5f7cfc",
                                                                                 "encoding":  "utf-8-no-bom",
                                                                                 "line_ending":  "LF",
-                                                                                "last_write_utc":  "2026-11-26T05:53:02Z",
+                                                                                "last_write_utc":  "2026-11-26T15:05:01Z",
                                                                                 "volatile_on_suite_rerun":  true,
                                                                                 "volatility_reason":  "Test-V73_2_3-SecurityNegativeProbes.ps1 records v74.0.0 generated_at_utc, baseline Anchor-1 kops, and live Host+Edge probe timings across T01..T418 on every run."
                                                                             },
@@ -1603,7 +1603,7 @@
                                                                        "file":  "01_l0_rust/tests/muse_v73_remediation_tests.rs",
                                                                        "test_name":  "test_v73_2_4_m3_item10_persistent_monotonic_sh_xi_turn_counters",
                                                                        "exit_code":  0,
-                                                                       "observed":  "15 sequential turns cross #8 monotonically (M3 baseline turn_15 seq=649, v73.2.4 versionCode=77; current v73.2.5 live ledger final_global_turn_seq=1947, Pixel 8/10 versionCode=79) and persist across hot-swap."
+                                                                       "observed":  "15 sequential turns cross #8 monotonically (M3 baseline turn_15 seq=649, v73.2.4 versionCode=77; current v73.2.5 live ledger final_global_turn_seq=2029, Pixel 8/10 versionCode=79) and persist across hot-swap."
                                                                    },
                                                  "negative_test":  {
                                                                        "file":  "00_control/Test-V73_2_3-SecurityNegativeProbes.ps1",
@@ -1703,7 +1703,7 @@
                        "verify_sh_xi_turn_counters_receipt":  {
                                                                   "command":  ".\\00_control\\Verify-ShXiTurnCountersReceipt.ps1 -AuditOnly",
                                                                   "exit_code":  0,
-                                                                  "summary":  "PASS: global_turn_seq=1947 sha256=915fbb7babf8... C:==E:=True"
+                                                                  "summary":  "PASS: global_turn_seq=2029 sha256=ac4183b0887f... C:==E:=True"
                                                               },
                        "android_apk_clean_build":  {
                                                        "command":  ".\\gradlew.bat clean assembleDebug --console=plain",

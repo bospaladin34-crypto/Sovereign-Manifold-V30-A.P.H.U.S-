@@ -13,7 +13,7 @@ cpu_ms = 30000
 
 [observability]
 enabled = true
-head_sampling_rate = 1.0
+head_sampling_rate = 0.1
 
 # --- Cloudflare Tier 4: Zero Trust & Turnstile Variables ---
 # NOTE: Production TURNSTILE_SITE_KEY and TURNSTILE_SECRET_KEY as well as SOVEREIGN_OPERATOR_KEY
@@ -22,6 +22,8 @@ head_sampling_rate = 1.0
 [vars]
 CF_ACCESS_TEAM_DOMAIN = "act-omega-net.cloudflareaccess.com"
 CF_ACCESS_AUD = "act-omega-zero-trust-aud"
+AI_GATEWAY_ID = "act-omega-ai-gateway"
+MCP_PORTAL_ENDPOINT = "https://mcp.act-omega-net.dev/mcp"
 
 # --- Cloudflare Tier 3: Workers AI (bge-small-en-v1.5) ---
 [ai]
@@ -74,6 +76,17 @@ max_batch_size = 25
 max_batch_timeout = 5
 max_retries = 3
 dead_letter_queue = "act-omega-dlq"
+
+[[queues.consumers]]
+queue = "act-omega-dlq"
+max_batch_size = 10
+max_batch_timeout = 10
+max_retries = 2
+
+# --- Cloudflare Flagship (Beta): Runtime Feature Flags ---
+[[flagship]]
+binding = "ACT_OMEGA_FLAGS"
+app_id = "<EXTERNAL_FLAGSHIP_APP_ID>"
 
 # --- Cloudflare Workers Paid: Cross-Script Workflow Binding ---
 [[workflows]]

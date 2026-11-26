@@ -5,12 +5,12 @@
     "primary_session_id":  "m3_iter2_verify_1795480129",
     "isolated_reset_session_id":  "m3_iter2_iso_reset_1795480129",
     "historical_seeded_total":  280,
-    "final_global_turn_seq":  1947,
+    "final_global_turn_seq":  2029,
     "session_count":  23,
     "c_ledger_path":  "03_vault/connectome/sh_xi_session_turn_counters.json",
     "e_ledger_path":  "E:\\Sovereign_Manifold_SSD_Vault\\connectome\\sh_xi_session_turn_counters.json",
     "ledger_c_e_sha256_match":  true,
-    "ledger_sha256":  "915fbb7babf815046af035410e046e9c36f962cab47a4763a902668e8f0b859f",
+    "ledger_sha256":  "ac4183b0887f2820a5586531c7cd75c3b36556cf795a03bb0a4c802d1827cc7e",
     "openai_compat_operator_gate_probes":  [
                                                {
                                                    "target":  "host",
@@ -193,5 +193,5 @@
                                           "mobile_p10_sh_xi":  5,
                                           "ps_w2_refactor_test":  6
                                       },
-    "generated_at_utc":  "2026-11-26T06:01:58Z"
+    "generated_at_utc":  "2026-11-26T15:11:28Z"
 }

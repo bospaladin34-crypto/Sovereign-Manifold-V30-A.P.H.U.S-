@@ -10,7 +10,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "ADC credentials verified at APPDATA\\gcloud",
-        "ElapsedMs":  7.2643,
+        "ElapsedMs":  8.9578,
         "MeasuredData":  {
                              "AdcSourceExists":  true,
                              "AdcTargetExists":  true
@@ -27,7 +27,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "DAK config.json verified for vspr-01 (us-central1)",
-        "ElapsedMs":  79.8446,
+        "ElapsedMs":  89.156,
         "MeasuredData":  {
                              "Valid":  true,
                              "Exists":  true
@@ -44,7 +44,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "DAK telemetry config verified (enableTelemetry: false)",
-        "ElapsedMs":  11.9009,
+        "ElapsedMs":  17.503500000000003,
         "MeasuredData":  {
                              "Valid":  true,
                              "Exists":  true
@@ -61,7 +61,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "dak-setup.js script syntax verified clean",
-        "ElapsedMs":  1037.288,
+        "ElapsedMs":  1034.0452,
         "MeasuredData":  {
                              "NodeSyntaxClean":  true,
                              "Exists":  true
@@ -78,7 +78,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "DAK MCP tool catalog definitions verified",
-        "ElapsedMs":  1.8760000000000001,
+        "ElapsedMs":  1.8820000000000001,
         "MeasuredData":  {
                              "ToolsFound":  true
                          }
@@ -94,7 +94,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Vectorize ACT_OMEGA_VECTORIZE binding verified across wrangler mirrors",
-        "ElapsedMs":  4.5264000000000006,
+        "ElapsedMs":  7.0285,
         "MeasuredData":  {
                              "EdgeBound":  true,
                              "RootBound":  true
@@ -111,7 +111,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Vectorize isolate LRU cache (5-min TTL) verified in worker script",
-        "ElapsedMs":  43.1252,
+        "ElapsedMs":  45.2036,
         "MeasuredData":  {
                              "LruTtlFound":  true
                          }
@@ -127,7 +127,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Vectorize monthly dims counter (24M soft cap) verified in DO SQLite schema",
-        "ElapsedMs":  0.11750000000000001,
+        "ElapsedMs":  0.11270000000000001,
         "MeasuredData":  {
                              "DimsCounterFound":  true
                          }
@@ -143,7 +143,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Vectorize 80% quota threshold warning transitions verified via formal verifier",
-        "ElapsedMs":  4.2968,
+        "ElapsedMs":  5.3136,
         "MeasuredData":  {
                              "Under80":  "NOMINAL",
                              "At80":  "QUOTA_WARNING_80_PERCENT",
@@ -161,7 +161,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "D1 cosine similarity fallback calculation verified mathematically",
-        "ElapsedMs":  16.377200000000002,
+        "ElapsedMs":  25.424,
         "MeasuredData":  {
                              "CosineCodePresent":  true,
                              "SimOrtho":  0,
@@ -179,7 +179,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "R2 bucket binding ACT_OMEGA_R2_VAULT verified in wrangler.toml",
-        "ElapsedMs":  1.1596,
+        "ElapsedMs":  1.3466,
         "MeasuredData":  {
                              "R2Bound":  true
                          }
@@ -195,7 +195,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "R2 Class B edge cache API integration (300s TTL) verified",
-        "ElapsedMs":  3.4076,
+        "ElapsedMs":  4.6447,
         "MeasuredData":  {
                              "CacheApiPresent":  true
                          }
@@ -211,7 +211,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "HTTP 206 Partial Content range slicing parser verified (0..1023)",
-        "ElapsedMs":  17.0916,
+        "ElapsedMs":  25.9113,
         "MeasuredData":  {
                              "RangeValid":  true,
                              "End":  1023,
@@ -229,7 +229,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "R2 Class A (800k) and Class B (8M) soft caps tracking verified",
-        "ElapsedMs":  5.4779,
+        "ElapsedMs":  27.984,
         "MeasuredData":  {
                              "OpCountersPresent":  true
                          }
@@ -245,7 +245,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "R2 multi-tier fallback chain (D1 / DO / Origin) verified",
-        "ElapsedMs":  1.2242,
+        "ElapsedMs":  1.2042000000000002,
         "MeasuredData":  {
                              "FallbackChainPresent":  true
                          }
@@ -261,7 +261,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Workers AI [ai] binding verified in wrangler.toml",
-        "ElapsedMs":  1.1857,
+        "ElapsedMs":  1.7544000000000002,
         "MeasuredData":  {
                              "AiBound":  true
                          }
@@ -277,7 +277,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Primary embedding model @cf/baai/bge-small-en-v1.5 verified in edge worker",
-        "ElapsedMs":  2.4754,
+        "ElapsedMs":  39.6271,
         "MeasuredData":  {
                              "ModelFound":  true
                          }
@@ -293,7 +293,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Daily neuron budget governor (8,500 cap) verified",
-        "ElapsedMs":  4.6766000000000005,
+        "ElapsedMs":  6.2474000000000007,
         "MeasuredData":  {
                              "UnderBudget":  "NOMINAL",
                              "BudgetGovPresent":  true,
@@ -311,7 +311,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Prompt SHA-256 deduplication hashing verified",
-        "ElapsedMs":  8.4196,
+        "ElapsedMs":  12.838600000000001,
         "MeasuredData":  {
                              "HashConsistent":  true,
                              "Hash":  "3d56c9338b7ccde808ba15d5d22caee4b11a6b950c28ffa74af541b830cab752"
@@ -328,7 +328,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Workers AI fail-closed 503 unavailability + EDGE_FALLBACK_QUOTA_SHIELDED verified (zero synthetic 32D fallback)",
-        "ElapsedMs":  0.394,
+        "ElapsedMs":  0.5827,
         "MeasuredData":  {
                              "FallbackTagFound":  true,
                              "FailClosed503":  true
@@ -345,7 +345,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Turnstile site/secret key vars verified in wrangler.toml",
-        "ElapsedMs":  1.6083,
+        "ElapsedMs":  1.3212000000000002,
         "MeasuredData":  {
                              "TurnstileVarsPresent":  true
                          }
@@ -361,7 +361,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Turnstile verification endpoint handler verified in edge worker",
-        "ElapsedMs":  22.6383,
+        "ElapsedMs":  4.7719000000000005,
         "MeasuredData":  {
                              "VerifyEndpointPresent":  true
                          }
@@ -377,7 +377,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Cloudflare Zero Trust Cf-Access-Jwt-Assertion header verification verified",
-        "ElapsedMs":  0.077800000000000008,
+        "ElapsedMs":  0.1526,
         "MeasuredData":  {
                              "JwtCheckPresent":  true
                          }
@@ -393,7 +393,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Operator key header enforcement verified (rejecting query parameter ?key=)",
-        "ElapsedMs":  1.1386,
+        "ElapsedMs":  1.7636,
         "MeasuredData":  {
                              "OperatorKeyHeaderEnforced":  true
                          }
@@ -409,7 +409,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Short-lived isolate cache for verified Turnstile/ZeroTrust tokens verified",
-        "ElapsedMs":  0.1966,
+        "ElapsedMs":  0.3029,
         "MeasuredData":  {
                              "TokenCachePresent":  true
                          }
@@ -425,7 +425,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Workers KV binding ACT_OMEGA_KV verified in wrangler.toml",
-        "ElapsedMs":  1.4942,
+        "ElapsedMs":  1.929,
         "MeasuredData":  {
                              "KvBound":  true
                          }
@@ -441,7 +441,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Workers KV 60-second in-memory Worker isolate read cache verified",
-        "ElapsedMs":  2.3205,
+        "ElapsedMs":  2.7622,
         "MeasuredData":  {
                              "KvTtlPresent":  true
                          }
@@ -457,7 +457,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Edge Cache API acceleration in front of env.ACT_OMEGA_KV.get verified",
-        "ElapsedMs":  5.7434,
+        "ElapsedMs":  5.7241,
         "MeasuredData":  {
                              "EdgeCacheKvPresent":  true
                          }
@@ -473,7 +473,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "KV 120-second write debouncer verified (KV_MIN_WRITE_INTERVAL_MS = 120000)",
-        "ElapsedMs":  7.2427,
+        "ElapsedMs":  7.6354000000000006,
         "MeasuredData":  {
                              "DebounceAccepted":  true,
                              "CodePresent":  true,
@@ -491,7 +491,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "KV maximum 720 writes/day soft cap verified in DO SQLite",
-        "ElapsedMs":  0.17370000000000002,
+        "ElapsedMs":  0.1741,
         "MeasuredData":  {
                              "Daily720CapPresent":  true
                          }
@@ -507,7 +507,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Analytics Engine ACT_OMEGA_ANALYTICS binding verified in wrangler.toml",
-        "ElapsedMs":  1.1666,
+        "ElapsedMs":  1.5136,
         "MeasuredData":  {
                              "AnalyticsBound":  true
                          }
@@ -523,7 +523,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Non-blocking writeDataPoint invocation verified in worker script",
-        "ElapsedMs":  2.0873,
+        "ElapsedMs":  2.8777,
         "MeasuredData":  {
                              "WriteDataPointPresent":  true
                          }
@@ -539,7 +539,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Analytics Engine telemetry schema (blobs \u0026 doubles) verified",
-        "ElapsedMs":  0.67270000000000008,
+        "ElapsedMs":  0.6037,
         "MeasuredData":  {
                              "SchemaPresent":  true
                          }
@@ -555,7 +555,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "D1 cloudflare_quota_governor_log time-series rollup table verified",
-        "ElapsedMs":  0.0471,
+        "ElapsedMs":  0.046200000000000005,
         "MeasuredData":  {
                              "D1LogTablePresent":  true
                          }
@@ -571,7 +571,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Telemetry batch buffering and scheduled flush verified",
-        "ElapsedMs":  0.21330000000000002,
+        "ElapsedMs":  0.2215,
         "MeasuredData":  {
                              "BufferingPresent":  true
                          }
@@ -587,7 +587,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Tool 317 /api/v1/cloudflare/free_tier_governor registered in v31_swarm.rs",
-        "ElapsedMs":  23.038,
+        "ElapsedMs":  45.2483,
         "MeasuredData":  {
                              "Tool317Declared":  true
                          }
@@ -603,7 +603,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Tool 317 routes through execute_universal_tool_bus_and_writeback in v48",
-        "ElapsedMs":  0.1835,
+        "ElapsedMs":  0.2366,
         "MeasuredData":  {
                              "BusRoutingPresent":  true
                          }
@@ -619,7 +619,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Artifact writeback to E:\\ vault autopoietic_codegen\\tool_outputs verified",
-        "ElapsedMs":  1.5547,
+        "ElapsedMs":  31.616100000000003,
         "MeasuredData":  {
                              "VaultWritebackPresent":  true
                          }
@@ -635,7 +635,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Zero-square-bracket rule verified across all 64 L0 Rust modules (total brackets: 0)",
-        "ElapsedMs":  138.6232,
+        "ElapsedMs":  1465.2379,
         "MeasuredData":  {
                              "TotalBrackets":  0,
                              "CheckedModules":  64
@@ -652,7 +652,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "5W1H BusEnvelope publishing with 15.965Hz SWR timestamp verified",
-        "ElapsedMs":  0.1628,
+        "ElapsedMs":  0.2303,
         "MeasuredData":  {
                              "BusEnvelopePresent":  true
                          }
@@ -668,7 +668,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Boundary at exactly 24,000,000 dims triggers QUOTA_EXHAUSTED",
-        "ElapsedMs":  0.0193,
+        "ElapsedMs":  0.014400000000000001,
         "MeasuredData":  {
                              "StatusAtCap":  "QUOTA_EXHAUSTED"
                          }
@@ -684,7 +684,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Transition at exactly 19,200,000 dims triggers 80% warning",
-        "ElapsedMs":  0.0187,
+        "ElapsedMs":  0.0161,
         "MeasuredData":  {
                              "Below80":  "NOMINAL",
                              "At80":  "QUOTA_WARNING_80_PERCENT"
@@ -701,7 +701,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Batch dimension sum computed accurately (100x768 = 76,800 dims)",
-        "ElapsedMs":  0.9937,
+        "ElapsedMs":  1.0854000000000001,
         "MeasuredData":  {
                              "TotalBatchDims":  76800
                          }
@@ -717,7 +717,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Zero and negative dimension edge cases handled safely without counter overflow",
-        "ElapsedMs":  1.5217,
+        "ElapsedMs":  1.6332,
         "MeasuredData":  {
                              "NegativeStatus":  "NOMINAL",
                              "ZeroStatus":  "NOMINAL"
@@ -734,7 +734,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Monthly calendar rollover string boundary validated",
-        "ElapsedMs":  0.0111,
+        "ElapsedMs":  0.013600000000000001,
         "MeasuredData":  {
                              "RolloverDetected":  true
                          }
@@ -750,7 +750,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "R2 Class A soft cap boundary locked at 800,000 operations",
-        "ElapsedMs":  0.0077,
+        "ElapsedMs":  0.0066,
         "MeasuredData":  {
                              "ClassACap":  800000
                          }
@@ -766,7 +766,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "R2 Class B soft cap boundary locked at 8,000,000 operations",
-        "ElapsedMs":  0.0044,
+        "ElapsedMs":  0.0034000000000000002,
         "MeasuredData":  {
                              "ClassBCap":  8000000
                          }
@@ -782,7 +782,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Zero-byte range boundary bytes=0-0 parsed as exactly 1 byte",
-        "ElapsedMs":  0.0483,
+        "ElapsedMs":  0.054400000000000004,
         "MeasuredData":  {
                              "Valid":  true,
                              "End":  0,
@@ -800,7 +800,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Inverted and invalid range headers successfully rejected",
-        "ElapsedMs":  0.0236,
+        "ElapsedMs":  0.026600000000000002,
         "MeasuredData":  {
                              "BadHeaderRejected":  true,
                              "InvertedRejected":  true,
@@ -818,7 +818,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Range slice beyond EOF clamped to totalLength - 1 (999)",
-        "ElapsedMs":  0.014100000000000001,
+        "ElapsedMs":  0.020300000000000002,
         "MeasuredData":  {
                              "Start":  500,
                              "ClampedEnd":  999
@@ -835,7 +835,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Neuron budget boundary at 8,500 neurons halts remote inference",
-        "ElapsedMs":  0.0091,
+        "ElapsedMs":  0.0279,
         "MeasuredData":  {
                              "At8499":  "DAILY_BUDGET_WARNING_80_PERCENT",
                              "At8500":  "DAILY_BUDGET_EXHAUSTED"
@@ -852,7 +852,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "UTC midnight date string rollover detected accurately",
-        "ElapsedMs":  7.6873000000000005,
+        "ElapsedMs":  12.6064,
         "MeasuredData":  {
                              "TodayUtc":  "2026-11-26",
                              "TomorrowUtc":  "2026-11-27"
@@ -869,7 +869,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Empty string prompt hash matches canonical empty SHA-256 standard",
-        "ElapsedMs":  0.3683,
+        "ElapsedMs":  0.2104,
         "MeasuredData":  {
                              "ComputedHash":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
                          }
@@ -885,7 +885,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Oversized batch prompt exceeding remaining budget rejected to fallback",
-        "ElapsedMs":  0.0179,
+        "ElapsedMs":  0.0129,
         "MeasuredData":  {
                              "Status":  "DAILY_BUDGET_EXHAUSTED"
                          }
@@ -901,7 +901,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Unicode surrogate pairs and special chars hashed deterministically",
-        "ElapsedMs":  1.8325,
+        "ElapsedMs":  1.804,
         "MeasuredData":  {
                              "Hash":  "f2c44fe857d81045f2bd6e94b3313b438c34b320e0bb76549a3f1d2ccc431c28"
                          }
@@ -917,7 +917,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Write at t = 120,000ms accepted exactly at debounce window boundary",
-        "ElapsedMs":  0.061900000000000004,
+        "ElapsedMs":  0.0432,
         "MeasuredData":  {
                              "Allowed":  true
                          }
@@ -933,7 +933,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Write at t = 60,000ms rejected with exactly 60,000ms remaining wait",
-        "ElapsedMs":  0.0587,
+        "ElapsedMs":  0.0159,
         "MeasuredData":  {
                              "RemainingWaitMs":  60000,
                              "Rejected":  true
@@ -950,7 +950,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Write at t = 121,000ms (\u003e 120,000ms) accepted cleanly",
-        "ElapsedMs":  0.0236,
+        "ElapsedMs":  0.0078000000000000005,
         "MeasuredData":  {
                              "Allowed":  true
                          }
@@ -966,7 +966,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "KV maximum 720 daily writes soft cap verified (720 * 120s = 86,400s)",
-        "ElapsedMs":  0.0085,
+        "ElapsedMs":  0.0054,
         "MeasuredData":  {
                              "MaxDailyWrites":  720
                          }
@@ -982,7 +982,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "KV key length (512B) and value size (25MB) limits verified",
-        "ElapsedMs":  0.0086,
+        "ElapsedMs":  0.0048000000000000004,
         "MeasuredData":  {
                              "MaxKey":  512,
                              "MaxValue":  26214400
@@ -999,7 +999,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Missing ADC path detected cleanly without unhandled exception",
-        "ElapsedMs":  0.5905,
+        "ElapsedMs":  0.5762,
         "MeasuredData":  {
                              "PathMissing":  true
                          }
@@ -1015,7 +1015,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Null/undefined ACT_OMEGA_VECTORIZE binding fallback to D1 verified",
-        "ElapsedMs":  36.4185,
+        "ElapsedMs":  6.9622,
         "MeasuredData":  {
                              "NullCheckPresent":  true
                          }
@@ -1031,7 +1031,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Null/undefined AI binding fallback handling verified",
-        "ElapsedMs":  2.3402000000000003,
+        "ElapsedMs":  0.998,
         "MeasuredData":  {
                              "NullCheckPresent":  true
                          }
@@ -1047,7 +1047,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Missing TURNSTILE_SECRET_KEY fail-closed handling verified",
-        "ElapsedMs":  5.0735,
+        "ElapsedMs":  3.027,
         "MeasuredData":  {
                              "CheckPresent":  true
                          }
@@ -1063,7 +1063,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Privileged endpoint rejection for invalid operator key verified (HTTP 403)",
-        "ElapsedMs":  0.2175,
+        "ElapsedMs":  0.2194,
         "MeasuredData":  {
                              "AuthCheckPresent":  true
                          }
@@ -1079,7 +1079,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Fallback cosine similarity results from D1 cached in Workers KV",
-        "ElapsedMs":  11.728900000000001,
+        "ElapsedMs":  9.5188,
         "MeasuredData":  {
                              "KvCachingPresent":  true
                          }
@@ -1095,7 +1095,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "KV cache hit bypasses secondary D1 table scans",
-        "ElapsedMs":  6.3221000000000007,
+        "ElapsedMs":  6.013,
         "MeasuredData":  {
                              "BypassPresent":  true
                          }
@@ -1111,7 +1111,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Restoration of Vectorize service invalidates stale fallback cache tags",
-        "ElapsedMs":  0.1516,
+        "ElapsedMs":  0.14350000000000002,
         "MeasuredData":  {
                              "InvalidatePresent":  true
                          }
@@ -1127,7 +1127,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Zero-downtime try/catch fallback wrapper verified for Vectorize",
-        "ElapsedMs":  1.0255,
+        "ElapsedMs":  1.016,
         "MeasuredData":  {
                              "ZeroDowntimePresent":  true
                          }
@@ -1143,7 +1143,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "D1 result delivered successfully even if KV cache write throws",
-        "ElapsedMs":  7.3249,
+        "ElapsedMs":  7.2360000000000007,
         "MeasuredData":  {
                              "ResilientDeliveryPresent":  true
                          }
@@ -1159,7 +1159,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Deterministic 32D Polytonic E8 fallback triggers Analytics Engine logging",
-        "ElapsedMs":  2.4944,
+        "ElapsedMs":  3.6207000000000003,
         "MeasuredData":  {
                              "FallbackAnalyticsPresent":  true
                          }
@@ -1175,7 +1175,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Analytics Engine failure is non-blocking to embedding response delivery",
-        "ElapsedMs":  0.73730000000000007,
+        "ElapsedMs":  0.7179,
         "MeasuredData":  {
                              "NonBlockingPresent":  true
                          }
@@ -1191,7 +1191,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Neuron consumption logged accurately in Analytics Engine doubles field",
-        "ElapsedMs":  0.8202,
+        "ElapsedMs":  0.8235,
         "MeasuredData":  {
                              "NeuronLoggingPresent":  true
                          }
@@ -1207,7 +1207,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Batch embeddings emit aggregated single-rollup analytics data point",
-        "ElapsedMs":  0.62030000000000007,
+        "ElapsedMs":  0.6104,
         "MeasuredData":  {
                              "BatchRollupPresent":  true
                          }
@@ -1223,7 +1223,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "D1 cloudflare_quota_governor_log mirrors Analytics Engine telemetry count",
-        "ElapsedMs":  0.8418,
+        "ElapsedMs":  0.8254,
         "MeasuredData":  {
                              "D1InsertPresent":  true
                          }
@@ -1239,7 +1239,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Edge Cache API keys partial content by URL and Range header",
-        "ElapsedMs":  2.8617000000000004,
+        "ElapsedMs":  2.9853,
         "MeasuredData":  {
                              "RangeCacheKeyPresent":  true
                          }
@@ -1255,7 +1255,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Subsequent range requests return CF-Cache-Status: HIT without consuming Class B op",
-        "ElapsedMs":  2.4285,
+        "ElapsedMs":  2.5238,
         "MeasuredData":  {
                              "CacheMatchPresent":  true
                          }
@@ -1271,7 +1271,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Different range slice produces cache MISS and reads from R2 bucket",
-        "ElapsedMs":  5.9408,
+        "ElapsedMs":  6.1377000000000006,
         "MeasuredData":  {
                              "CachePutPresent":  true
                          }
@@ -1287,7 +1287,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "300s TTL header ensures expired cache entries re-validate against R2",
-        "ElapsedMs":  0.3317,
+        "ElapsedMs":  0.3235,
         "MeasuredData":  {
                              "TtlHeaderPresent":  true
                          }
@@ -1303,7 +1303,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "R2 offline gracefully serves range slices from Edge Cache or D1 BLOB mirror",
-        "ElapsedMs":  0.89030000000000009,
+        "ElapsedMs":  0.9373,
         "MeasuredData":  {
                              "D1BlobFallbackPresent":  true
                          }
@@ -1319,7 +1319,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Verified Turnstile / Operator session permits elevated KV quota and bypasses debounce",
-        "ElapsedMs":  3.3933,
+        "ElapsedMs":  19.5368,
         "MeasuredData":  {
                              "BypassPresent":  true
                          }
@@ -1335,7 +1335,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Anonymous clients without verification strictly enforced by 120s write debounce",
-        "ElapsedMs":  4.4504,
+        "ElapsedMs":  4.4449000000000005,
         "MeasuredData":  {
                              "AnonDebouncePresent":  true
                          }
@@ -1351,7 +1351,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Zero Trust Cf-Access-Jwt-Assertion takes precedence over Turnstile captcha",
-        "ElapsedMs":  0.057800000000000004,
+        "ElapsedMs":  0.037200000000000004,
         "MeasuredData":  {
                              "JwtPrecedencePresent":  true
                          }
@@ -1367,7 +1367,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Turnstile isolate cache prevents redundant remote siteverify calls within 60s",
-        "ElapsedMs":  0.25930000000000003,
+        "ElapsedMs":  0.2611,
         "MeasuredData":  {
                              "TokenDedupePresent":  true
                          }
@@ -1383,7 +1383,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Expired or revoked JWT assertion prompts user for Turnstile challenge fallback",
-        "ElapsedMs":  0.27490000000000003,
+        "ElapsedMs":  0.2129,
         "MeasuredData":  {
                              "FallbackChallengePresent":  true
                          }
@@ -1399,7 +1399,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Edge Worker free_tier_governor endpoint reports status ONLINE",
-        "ElapsedMs":  376.2481,
+        "ElapsedMs":  579.8683,
         "MeasuredData":  {
                              "EdgeOnline":  true
                          }
@@ -1415,7 +1415,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Vector query flow returns nearest neighbor results and increments dims",
-        "ElapsedMs":  240.23350000000002,
+        "ElapsedMs":  374.79150000000004,
         "MeasuredData":  {
                              "VectorizeFlowOk":  true
                          }
@@ -1431,7 +1431,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "KV read-through retrieves item and populates isolate cache",
-        "ElapsedMs":  251.1708,
+        "ElapsedMs":  206.27970000000002,
         "MeasuredData":  {
                              "KvFlowOk":  true
                          }
@@ -1447,7 +1447,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "R2 range streaming retrieves multi-part slices and reassembles payload",
-        "ElapsedMs":  390.9064,
+        "ElapsedMs":  794.9111,
         "MeasuredData":  {
                              "R2StreamOk":  true
                          }
@@ -1463,7 +1463,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Workers AI embedding flow executes with honest quota accounting / fail-closed status",
-        "ElapsedMs":  491.0928,
+        "ElapsedMs":  908.2704,
         "MeasuredData":  {
                              "AiFlowOk":  true
                          }
@@ -1479,7 +1479,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Governor enters shielded mode when caps are exceeded",
-        "ElapsedMs":  0.010100000000000001,
+        "ElapsedMs":  0.018000000000000002,
         "MeasuredData":  {
                              "TriggerStatus":  "DAILY_BUDGET_EXHAUSTED"
                          }
@@ -1495,7 +1495,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Zero HTTP 500 errors observed during live governor endpoint evaluation",
-        "ElapsedMs":  57.0814,
+        "ElapsedMs":  132.2622,
         "MeasuredData":  {
                              "GovLiveCheck":  true
                          }
@@ -1511,7 +1511,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Honest EDGE_FALLBACK_QUOTA_SHIELDED badge verified with zero synthetic 32D fallback",
-        "ElapsedMs":  2.2781000000000002,
+        "ElapsedMs":  2.3743000000000003,
         "MeasuredData":  {
                              "BadgeVerified":  true
                          }
@@ -1527,7 +1527,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "D1 mirror tables maintain referential integrity under fallback queries",
-        "ElapsedMs":  2.4821,
+        "ElapsedMs":  2.5399000000000003,
         "MeasuredData":  {
                              "D1IntegrityOk":  true
                          }
@@ -1543,7 +1543,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Governor self-heals and clears fallback shield when quota resets to 0",
-        "ElapsedMs":  0.0094,
+        "ElapsedMs":  0.0114,
         "MeasuredData":  {
                              "ResetStatus":  "NOMINAL"
                          }
@@ -1559,7 +1559,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Host L0 swarm port :8097 responds to Tool 317 dispatch",
-        "ElapsedMs":  573.5134,
+        "ElapsedMs":  662.413,
         "MeasuredData":  {
                              "HostLive":  true
                          }
@@ -1575,7 +1575,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Coordinator bus envelope recorded with 15.965Hz SWR timestamp and neuron ID",
-        "ElapsedMs":  15.0937,
+        "ElapsedMs":  1.9175,
         "MeasuredData":  {
                              "BusEnvelopeLogged":  true
                          }
@@ -1591,7 +1591,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Artifact writeback directory verified on E:\\ SSD Tier-2 Autopoietic Vault",
-        "ElapsedMs":  0.6129,
+        "ElapsedMs":  0.613,
         "MeasuredData":  {
                              "VaultDirExists":  true
                          }
@@ -1607,7 +1607,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "HTTP response header and payload SHA-256 match perfectly",
-        "ElapsedMs":  0.2088,
+        "ElapsedMs":  0.2147,
         "MeasuredData":  {
                              "Sha256":  "8f74206dba6e85acab832412622f4130089efe830366d16e8dc9aee786321d2c"
                          }
@@ -1623,7 +1623,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "L0 Rust codebase preserves strictly 0 square brackets across all 64 modules",
-        "ElapsedMs":  166.2895,
+        "ElapsedMs":  130.90550000000002,
         "MeasuredData":  {
                              "TotalBrackets":  0
                          }
@@ -1639,7 +1639,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "HUD Cockpit App.tsx mirrors match with identical SHA-256 hash",
-        "ElapsedMs":  124.2188,
+        "ElapsedMs":  228.01610000000002,
         "MeasuredData":  {
                              "HudParity":  true
                          }
@@ -1655,7 +1655,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "HUD Card #7 displays Cloudflare 6-tier telemetry metrics",
-        "ElapsedMs":  11.3055,
+        "ElapsedMs":  8.211,
         "MeasuredData":  {
                              "Card7GovPresent":  true
                          }
@@ -1671,7 +1671,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Domain 8 Command Deck in HUD Cockpit registers Tool 317 dispatch card",
-        "ElapsedMs":  0.9846,
+        "ElapsedMs":  1.1222,
         "MeasuredData":  {
                              "Tool317DeckPresent":  true
                          }
@@ -1687,7 +1687,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Vite dist/index.html built with crawlable SSR attribute",
-        "ElapsedMs":  1.6893,
+        "ElapsedMs":  3.0235000000000003,
         "MeasuredData":  {
                              "DistBundleOk":  true
                          }
@@ -1703,7 +1703,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Permanent 53B Google Search Console certificate verified across all checked targets",
-        "ElapsedMs":  60.085800000000006,
+        "ElapsedMs":  47.854200000000006,
         "MeasuredData":  {
                              "Parity":  true,
                              "Checked":  6
@@ -1720,7 +1720,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Forged Zero Trust JWT correctly rejected with HTTP 403",
-        "ElapsedMs":  136.37120000000002,
+        "ElapsedMs":  77.6964,
         "MeasuredData":  {
                              "JwtRejected403":  true
                          }
@@ -1736,7 +1736,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Invalid Operator Key correctly rejected with HTTP 403",
-        "ElapsedMs":  119.4604,
+        "ElapsedMs":  158.5886,
         "MeasuredData":  {
                              "OpKeyRejected403":  true
                          }
@@ -1752,7 +1752,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Query string key parameter correctly rejected with HTTP 403 (enforcing header-only loopback gate)",
-        "ElapsedMs":  121.6286,
+        "ElapsedMs":  203.9966,
         "MeasuredData":  {
                              "QueryKeyRejected403":  true
                          }
@@ -1768,7 +1768,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Unconfigured/invalid Turnstile challenge fail-closed rejection verified (HTTP 403/503)",
-        "ElapsedMs":  120.8275,
+        "ElapsedMs":  200.69930000000002,
         "MeasuredData":  {
                              "TurnstileRejected":  true
                          }
@@ -1784,7 +1784,7 @@
         "Skipped":  false,
         "IsDryRun":  false,
         "Message":  "Live edge governor confirms transparent accounting basis DO_METERED_REQUEST_UNITS_UNRECONCILED_WITH_CF_BILLING and hard-cap governor status",
-        "ElapsedMs":  122.21260000000001,
+        "ElapsedMs":  155.8205,
         "MeasuredData":  {
                              "AccountingBasisOk":  true
                          }

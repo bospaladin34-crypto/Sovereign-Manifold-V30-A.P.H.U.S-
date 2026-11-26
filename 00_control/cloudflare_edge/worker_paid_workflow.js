@@ -392,7 +392,7 @@ async function executeHyperdrivePgWireQuery(hdBinding, querySpec) {
 
 async function probeVpcTargets(env) {
   const defs = [
-    { name: "act-omega-anchor-l0-vpc", binding: "ANCHOR_L0_VPC", url: "http://127.0.0.1:8097/api/v1/status" },
+    { name: "act-omega-anchor-l0-vpc", binding: "ANCHOR_L0_VPC", url: "http://127.0.0.1:8097/api/v1/health" },
     { name: "act-omega-deno-l2-vpc", binding: "DENO_L2_VPC", url: "http://127.0.0.1:8099/api/v1/pgwire/status" },
     { name: "act-omega-pixel10-edge-vpc", binding: "PIXEL10_EDGE_VPC", url: "http://127.0.0.1:19788/api/health" },
     { name: "act-omega-pixel8-apex-vpc", binding: "PIXEL8_APEX_VPC", url: "http://127.0.0.1:19792/api/health" }

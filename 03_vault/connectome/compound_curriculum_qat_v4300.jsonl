@@ -3973,3 +3973,4 @@
 {"epoch":3973,"domains":24,"vocab_size":131072,"combined_neurons":63360,"holdout_ppl":1.108827,"compound_transfer_pct":98.941,"cacheline_speedup_pct":12994.27,"dag_latency_ms":4.470,"m_atp":0.7920,"kops":447823.9}
 {"epoch":3974,"domains":24,"vocab_size":131072,"combined_neurons":63360,"holdout_ppl":1.108769,"compound_transfer_pct":98.730,"cacheline_speedup_pct":13055.64,"dag_latency_ms":1.027,"m_atp":0.7488,"kops":449922.9}
 {"epoch":3975,"domains":24,"vocab_size":131072,"combined_neurons":63360,"holdout_ppl":1.109034,"compound_transfer_pct":98.587,"cacheline_speedup_pct":10849.08,"dag_latency_ms":7.296,"m_atp":0.7193,"kops":374458.5}
+{"epoch":3976,"domains":24,"vocab_size":131072,"combined_neurons":63360,"holdout_ppl":1.108426,"compound_transfer_pct":98.683,"cacheline_speedup_pct":10121.85,"dag_latency_ms":0.847,"m_atp":0.7391,"kops":349587.1}

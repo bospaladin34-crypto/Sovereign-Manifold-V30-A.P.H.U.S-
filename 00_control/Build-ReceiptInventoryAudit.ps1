@@ -1,4 +1,4 @@
-# =============================================================================
+﻿# =============================================================================
 # ACT-OMEGA NET — RECEIPT NORMALIZER & INVENTORY AUDIT BUILDER (v73.2.5)
 # Normalizes 03_vault/receipts/* to UTF-8 (no BOM) LF, enforces zero BOM/CR/NUL,
 # enforces SH-XI turn-counter ledger/receipt parity, generates
@@ -211,6 +211,7 @@ $VolatilityMap = [ordered]@{
     "v74_0_0_android_apk_build_receipt.json" = "Clean v74.0.0 Gradle APK build (versionCode=79) and live Dual-Pixel ADB verification update generated_at_utc and ADB verification timestamps."
     "v74_0_0_freetier_e2e_pass.txt" = "Invoke-FreeTierGovernorE2ESuite.ps1 records live v74.0.0 per-test ElapsedMs, request timestamps, and DO/D1 quota counters on every run."
     "v74_0_0_gatekeeper_lifecycle_pass.txt" = "Invoke-BrutalAgentGatekeeper.ps1 -FullAudit and Sovereign-Lifecycle.ps1 -Action verify record live v74.0.0 cluster throughput, bus sequences, and probe timings on every run."
+    "v74_0_0_multicloud_storage_and_ledger_rotation_receipt.json" = "Sync-MultiCloudVaultAndGitLab.ps1 records generated_at_utc, R2 HTTP 206 range probe status, GitHub Release upload results, and JSONL ledger rotation stats."
     "v74_0_0_security_negative_tests_receipt.json" = "Test-V73_2_3-SecurityNegativeProbes.ps1 records v74.0.0 generated_at_utc, baseline Anchor-1 kops, and live Host+Edge probe timings across T01..T418 on every run."
     "week3_12test_torture_and_ablation_receipt.json" = "Tool 345 (v71_3_...:3328) overwrites elapsed_ms, speedup_factor, and active_bearer on execution."
 }

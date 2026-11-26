@@ -1,10 +1,10 @@
 {
-  "global_turn_seq": 2029,
+  "global_turn_seq": 2110,
   "historical_seeded_total": 280,
   "schema": "act_omega.sh_xi_session_turn_counters.v1",
   "session_count": 23,
   "sessions": {
-    "__stateless_default__": 220,
+    "__stateless_default__": 289,
     "challenger_12t_1795481197": 13,
     "challenger_iso_reset_1795481197": 1,
     "challenger_m3_get_1795477964": 2,
@@ -17,7 +17,7 @@
     "m3_live_verify_1795476723": 15,
     "mobile_p10_sh_xi": 5,
     "ps_w2_refactor_test": 6,
-    "secprobe_m3_openai_compat": 32,
+    "secprobe_m3_openai_compat": 36,
     "shxi_week2_gauntlet_8t": 8,
     "v74_utf8_test_sess": 1,
     "vesper_hud_mwginvx5": 1,

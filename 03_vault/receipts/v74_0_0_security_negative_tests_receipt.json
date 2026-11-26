@@ -1,8 +1,8 @@
 {
     "schema":  "act_omega_v73_2_4_security_negative_probes_v1",
     "version":  "v74.0.0",
-    "generated_utc":  "2026-11-26T15:05:01Z",
-    "started_utc":  "2026-11-26T15:03:05Z",
+    "generated_utc":  "2026-11-26T16:55:33Z",
+    "started_utc":  "2026-11-26T16:53:29Z",
     "host_uri":  "http://127.0.0.1:8097",
     "edge_worker_uri":  "https://act-omega-net.dev",
     "vec_probe_path":  "/sovereign_harmonic_iv_v5000.e8z",
@@ -63,8 +63,8 @@
                               "path":  "00_control\\weights\\synapses_v5700_2027520.spage",
                               "pre_bytes":  4055040,
                               "post_bytes":  4055040,
-                              "pre_sha256":  "635AAE516B42EF6889618D86CE94C87D38EB220B0D75321CF7E43492B266D712",
-                              "post_sha256":  "635AAE516B42EF6889618D86CE94C87D38EB220B0D75321CF7E43492B266D712",
+                              "pre_sha256":  "41B80A61C3B539447AA6E40C3AE0826F0327DB2CA40A8CF64245FD299D0562D7",
+                              "post_sha256":  "41B80A61C3B539447AA6E40C3AE0826F0327DB2CA40A8CF64245FD299D0562D7",
                               "unchanged":  true
                           },
                           {
@@ -77,18 +77,18 @@
                           },
                           {
                               "path":  "03_vault\\connectome\\message_bus_ledger_v4800.jsonl",
-                              "pre_bytes":  41887647,
-                              "post_bytes":  41887647,
-                              "pre_sha256":  "B0D5D8961F1F542581973688613107FDF5EBC0EB86F08FC2550856936FA6731F",
-                              "post_sha256":  "B0D5D8961F1F542581973688613107FDF5EBC0EB86F08FC2550856936FA6731F",
+                              "pre_bytes":  928816,
+                              "post_bytes":  928816,
+                              "pre_sha256":  "8B2BDDF019E9B89EAA74578B0C6A173B28D7D8E9CB6477FCF9AD6EF955BE532C",
+                              "post_sha256":  "8B2BDDF019E9B89EAA74578B0C6A173B28D7D8E9CB6477FCF9AD6EF955BE532C",
                               "unchanged":  true
                           },
                           {
                               "path":  "03_vault\\connectome\\codegen_integration_manifest_v4800.jsonl",
-                              "pre_bytes":  12655030,
-                              "post_bytes":  12655030,
-                              "pre_sha256":  "CE78D9F16B941B5ABCF088B3BA41B203971D3C995AE20F6BE73127DD9DB85C59",
-                              "post_sha256":  "CE78D9F16B941B5ABCF088B3BA41B203971D3C995AE20F6BE73127DD9DB85C59",
+                              "pre_bytes":  304150,
+                              "post_bytes":  304150,
+                              "pre_sha256":  "956945E92BF207DA8EA28DEE6C4148912A0F55540C64AC11B32A00382F0801A6",
+                              "post_sha256":  "956945E92BF207DA8EA28DEE6C4148912A0F55540C64AC11B32A00382F0801A6",
                               "unchanged":  true
                           }
                       ],
@@ -109,7 +109,7 @@
                        "section":  "r3_ingest",
                        "id":  "R3_Host_Health_1",
                        "passed":  true,
-                       "detail":  "status=LAMINAR_V73_2_DECADIC_15965HZ_LOCKSTEP version=ACT-Omega Net v74.0.0 (SH4Z v7400 TLV | CHAIN 418 | 1027/1027 QED) tools=418 qed=1027 gen=845010",
+                       "detail":  "status=LAMINAR_V73_2_DECADIC_15965HZ_LOCKSTEP version=ACT-Omega Net v74.0.0 (SH4Z v7400 TLV | CHAIN 418 | 1027/1027 QED) tools=418 qed=1027 gen=856973",
                        "method":  "GET",
                        "target":  "http://127.0.0.1:8097/api/v1/health",
                        "expected_status":  200,
@@ -119,7 +119,7 @@
                        "section":  "r3_ingest",
                        "id":  "R3_Host_Health_2",
                        "passed":  true,
-                       "detail":  "status=LAMINAR_V73_2_DECADIC_15965HZ_LOCKSTEP version=ACT-Omega Net v74.0.0 (SH4Z v7400 TLV | CHAIN 418 | 1027/1027 QED) tools=418 qed=1027 gen=845011",
+                       "detail":  "status=LAMINAR_V73_2_DECADIC_15965HZ_LOCKSTEP version=ACT-Omega Net v74.0.0 (SH4Z v7400 TLV | CHAIN 418 | 1027/1027 QED) tools=418 qed=1027 gen=856974",
                        "method":  "GET",
                        "target":  "http://127.0.0.1:8097/api/v1/health",
                        "expected_status":  200,
@@ -129,7 +129,7 @@
                        "section":  "r3_ingest",
                        "id":  "R3_Host_Health_Generation_Monotonic",
                        "passed":  true,
-                       "detail":  "gen1=845010 -\u003e gen2=845011",
+                       "detail":  "gen1=856973 -\u003e gen2=856974",
                        "method":  "GET",
                        "target":  "http://127.0.0.1:8097/api/v1/health"
                    },
@@ -147,7 +147,7 @@
                        "section":  "r3_ingest",
                        "id":  "R3_Edge_Health",
                        "passed":  true,
-                       "detail":  "status=LAMINAR_V73_2_DECADIC_15965HZ_LOCKSTEP version=ACT-Omega Net v74.0.0 (SH4Z v7400 TLV | CHAIN 418 | 1027/1027 QED) tools=418 qed=1027 gen=845013",
+                       "detail":  "status=LAMINAR_V73_2_DECADIC_15965HZ_LOCKSTEP version=ACT-Omega Net v74.0.0 (SH4Z v7400 TLV | CHAIN 418 | 1027/1027 QED) tools=418 qed=1027 gen=856977",
                        "method":  "GET",
                        "target":  "https://act-omega-net.dev/api/v1/health",
                        "expected_status":  200,
@@ -2627,7 +2627,7 @@
                        "section":  "r3_ingest",
                        "id":  "R3_ZeroMutation_SentinelCheck",
                        "passed":  true,
-                       "detail":  "p10_kops=1177.5 p8_kops=1550.5 loq_kops=402734.2 total=405462.2(limit=2500000) mag_x=-24.1 baro=908.1 p10_bearer=B1:USB(:8097) SHM-ZERO-COPY p8_bearer=B1:USB(:8097) SHM-ZERO-COPY",
+                       "detail":  "p10_kops=1174.4 p8_kops=1547 loq_kops=456834.8 total=459556.2(limit=2500000) mag_x=-24.1 baro=908.1 p10_bearer=B1:USB(:8097) SHM-ZERO-COPY p8_bearer=B1:USB(:8097) SHM-ZERO-COPY",
                        "method":  "GET",
                        "target":  "http://127.0.0.1:8097/api/v1/telemetry"
                    },
@@ -2835,7 +2835,7 @@
                        "section":  "r4_gates",
                        "id":  "R4_PreHash_00_control_weights_synapses_v5700_2027520_spage",
                        "passed":  true,
-                       "detail":  "bytes=4055040 sha256=635AAE516B42EF6889618D86CE94C87D38EB220B0D75321CF7E43492B266D712",
+                       "detail":  "bytes=4055040 sha256=41B80A61C3B539447AA6E40C3AE0826F0327DB2CA40A8CF64245FD299D0562D7",
                        "target":  "00_control\\weights\\synapses_v5700_2027520.spage"
                    },
                    {
@@ -2849,14 +2849,14 @@
                        "section":  "r4_gates",
                        "id":  "R4_PreHash_03_vault_connectome_message_bus_ledger_v4800_jsonl",
                        "passed":  true,
-                       "detail":  "bytes=41887647 sha256=B0D5D8961F1F542581973688613107FDF5EBC0EB86F08FC2550856936FA6731F",
+                       "detail":  "bytes=928816 sha256=8B2BDDF019E9B89EAA74578B0C6A173B28D7D8E9CB6477FCF9AD6EF955BE532C",
                        "target":  "03_vault\\connectome\\message_bus_ledger_v4800.jsonl"
                    },
                    {
                        "section":  "r4_gates",
                        "id":  "R4_PreHash_03_vault_connectome_codegen_integration_manifest_v4800_jsonl",
                        "passed":  true,
-                       "detail":  "bytes=12655030 sha256=CE78D9F16B941B5ABCF088B3BA41B203971D3C995AE20F6BE73127DD9DB85C59",
+                       "detail":  "bytes=304150 sha256=956945E92BF207DA8EA28DEE6C4148912A0F55540C64AC11B32A00382F0801A6",
                        "target":  "03_vault\\connectome\\codegen_integration_manifest_v4800.jsonl"
                    },
                    {
@@ -4623,7 +4623,7 @@
                        "section":  "r4_gates",
                        "id":  "R4_Invariance_00_control_weights_synapses_v5700_2027520_spage",
                        "passed":  true,
-                       "detail":  "pre=4055040B/635AAE516B42EF6889618D86CE94C87D38EB220B0D75321CF7E43492B266D712 post=4055040B/635AAE516B42EF6889618D86CE94C87D38EB220B0D75321CF7E43492B266D712",
+                       "detail":  "pre=4055040B/41B80A61C3B539447AA6E40C3AE0826F0327DB2CA40A8CF64245FD299D0562D7 post=4055040B/41B80A61C3B539447AA6E40C3AE0826F0327DB2CA40A8CF64245FD299D0562D7",
                        "target":  "00_control\\weights\\synapses_v5700_2027520.spage"
                    },
                    {
@@ -4637,14 +4637,14 @@
                        "section":  "r4_gates",
                        "id":  "R4_Invariance_03_vault_connectome_message_bus_ledger_v4800_jsonl",
                        "passed":  true,
-                       "detail":  "pre=41887647B/B0D5D8961F1F542581973688613107FDF5EBC0EB86F08FC2550856936FA6731F post=41887647B/B0D5D8961F1F542581973688613107FDF5EBC0EB86F08FC2550856936FA6731F",
+                       "detail":  "pre=928816B/8B2BDDF019E9B89EAA74578B0C6A173B28D7D8E9CB6477FCF9AD6EF955BE532C post=928816B/8B2BDDF019E9B89EAA74578B0C6A173B28D7D8E9CB6477FCF9AD6EF955BE532C",
                        "target":  "03_vault\\connectome\\message_bus_ledger_v4800.jsonl"
                    },
                    {
                        "section":  "r4_gates",
                        "id":  "R4_Invariance_03_vault_connectome_codegen_integration_manifest_v4800_jsonl",
                        "passed":  true,
-                       "detail":  "pre=12655030B/CE78D9F16B941B5ABCF088B3BA41B203971D3C995AE20F6BE73127DD9DB85C59 post=12655030B/CE78D9F16B941B5ABCF088B3BA41B203971D3C995AE20F6BE73127DD9DB85C59",
+                       "detail":  "pre=304150B/956945E92BF207DA8EA28DEE6C4148912A0F55540C64AC11B32A00382F0801A6 post=304150B/956945E92BF207DA8EA28DEE6C4148912A0F55540C64AC11B32A00382F0801A6",
                        "target":  "03_vault\\connectome\\codegen_integration_manifest_v4800.jsonl"
                    },
                    {
@@ -8602,7 +8602,7 @@
                        "section":  "item4_webgpu_poc",
                        "id":  "Item4_Negative_ZeroLeaseMutation_Invariance",
                        "passed":  true,
-                       "detail":  "pre=947615400D42CF4D170F79EA36721C3B0C2DC51A44A039FD9615E914110BA4E3 post=947615400D42CF4D170F79EA36721C3B0C2DC51A44A039FD9615E914110BA4E3",
+                       "detail":  "pre=CE9D2035385778CAA379D9C543B34C5074C2750411EF55D39E2A5156BF2ED00D post=CE9D2035385778CAA379D9C543B34C5074C2750411EF55D39E2A5156BF2ED00D",
                        "target":  "webgpu_active_leases_v4400.jsonl"
                    },
                    {

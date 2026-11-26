@@ -506,8 +506,14 @@ async function verifyZeroTrustAndOperatorHeaders(request, env) {
     };
   }
 
-  // 3. Header-only X-Sovereign-Operator-Key
-  const opKey = request.headers.get("X-Sovereign-Operator-Key");
+  // 3. Header-only X-Sovereign-Operator-Key or MCP Portal Authorization: Bearer <operator_key>
+  let opKey = request.headers.get("X-Sovereign-Operator-Key");
+  if (opKey === null || opKey === undefined || opKey === "") {
+    const authHeader = request.headers.get("Authorization");
+    if (authHeader && /^Bearer\s+\S+/i.test(authHeader)) {
+      opKey = authHeader.replace(/^Bearer\s+/i, "").trim();
+    }
+  }
   if (opKey !== null && opKey !== undefined && opKey !== "") {
     const expectedKey = env && typeof env.SOVEREIGN_OPERATOR_KEY === "string" ? env.SOVEREIGN_OPERATOR_KEY : null;
     if (expectedKey && expectedKey.length >= 24) {
@@ -1262,6 +1268,9 @@ export default {
               const authHdr = request.headers.get("Authorization");
               if (authHdr) {
                 forwardedAuthAndJsonHeaders["Authorization"] = authHdr;
+                if (!opKey && /^Bearer\s+\S+/i.test(authHdr)) {
+                  forwardedAuthAndJsonHeaders["X-Sovereign-Operator-Key"] = authHdr.replace(/^Bearer\s+/i, "").trim();
+                }
               }
 
               const originResp = await fetch("https://api.act-omega-net.dev/mcp", {
@@ -3035,19 +3044,25 @@ export default {
           let aiResponse = null;
           let aiGatewayRouted = false;
           let aiGatewayStatus = "BYPASSED_BY_FLAGSHIP";
+          let effectiveGatewayId = gatewayId;
           if (useAiGateway) {
-            try {
-              aiResponse = await env.AI.run(
-                "@cf/baai/bge-small-en-v1.5",
-                { text: [prompt] },
-                { gateway: { id: gatewayId, skipCache: false, cacheTtl: 3600 } }
-              );
-              if (aiResponse && aiResponse.data && aiResponse.data[0]) {
-                aiGatewayRouted = true;
-                aiGatewayStatus = "ROUTED_VIA_AI_GATEWAY";
+            const candidateGateways = gatewayId === "default" ? ["default"] : [gatewayId, "default"];
+            for (const candGw of candidateGateways) {
+              try {
+                aiResponse = await env.AI.run(
+                  "@cf/baai/bge-small-en-v1.5",
+                  { text: [prompt] },
+                  { gateway: { id: candGw, skipCache: false, cacheTtl: 3600 } }
+                );
+                if (aiResponse && aiResponse.data && aiResponse.data[0]) {
+                  aiGatewayRouted = true;
+                  effectiveGatewayId = candGw;
+                  aiGatewayStatus = `ROUTED_VIA_AI_GATEWAY_${candGw}`;
+                  break;
+                }
+              } catch (_gwErr) {
+                aiResponse = null;
               }
-            } catch (_gwErr) {
-              aiResponse = null;
             }
           }
           if (!aiResponse || !aiResponse.data || !aiResponse.data[0]) {
@@ -3072,7 +3087,7 @@ export default {
               embedding,
               dimension: embedding.length,
               source: "WORKERS_AI_BGE_SMALL",
-              ai_gateway_id: gatewayId,
+              ai_gateway_id: effectiveGatewayId,
               ai_gateway_routed: aiGatewayRouted,
               ai_gateway_status: aiGatewayStatus,
               neurons_consumed: estimatedNeurons,

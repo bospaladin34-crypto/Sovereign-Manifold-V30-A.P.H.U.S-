@@ -1,0 +1,91 @@
+{
+    "schema":  "act_omega.multicloud_storage_and_ledger_rotation_receipt.v1",
+    "version":  "v74.0.0",
+    "generated_at_utc":  "2026-11-26T16:50:32Z",
+    "canonical_tracked_apk":  {
+                                  "repo_path":  "04_edge_silicon/ACT-Omega-Pixel10-Sovereign.apk",
+                                  "bytes":  30612314,
+                                  "sha256":  "e2136a069679ecd55285010532e8e016929e5e2e7bc5a3a480a3f2799774ad58"
+                              },
+    "e_vault_archived_apks":  [
+                                  {
+                                      "file_name":  "ACT-Omega-v70.0.0-Pixel10-Sovereign.apk",
+                                      "e_vault_path":  "E:\\Sovereign_Manifold_SSD_Vault\\apk_archives\\ACT-Omega-v70.0.0-Pixel10-Sovereign.apk",
+                                      "bytes":  29825510,
+                                      "sha256":  "9dba4cbb0de5e465677698f3b4135bc90e4800adbf66abe614bc11650e721097"
+                                  },
+                                  {
+                                      "file_name":  "ACT-Omega-v72.2.0-Pixel10-Sovereign.apk",
+                                      "e_vault_path":  "E:\\Sovereign_Manifold_SSD_Vault\\apk_archives\\ACT-Omega-v72.2.0-Pixel10-Sovereign.apk",
+                                      "bytes":  30513714,
+                                      "sha256":  "22b6d9fff096f177911389ae8521fe48d473c47ea5af07b81a861ae143ffeaea"
+                                  },
+                                  {
+                                      "file_name":  "ACT-Omega-v73.2.0-Pixel10-Sovereign.apk",
+                                      "e_vault_path":  "E:\\Sovereign_Manifold_SSD_Vault\\apk_archives\\ACT-Omega-v73.2.0-Pixel10-Sovereign.apk",
+                                      "bytes":  32025764,
+                                      "sha256":  "0e9f649f29b4d65ed2419d2a09c552d87a50e6cd1002966124567bfe42f0dee4"
+                                  }
+                              ],
+    "cloudflare_r2_vault":  {
+                                "bucket":  "act-omega-r2-vault",
+                                "objects_uploaded":  [
+                                                         {
+                                                             "bucket":  "act-omega-r2-vault",
+                                                             "object_key":  "ota/ACT-Omega-v74.0.0-Pixel10-Sovereign.apk",
+                                                             "edge_range_url":  "https://act-omega-net.dev/api/v1/r2/vault/ota/ACT-Omega-v74.0.0-Pixel10-Sovereign.apk",
+                                                             "bytes":  30612314,
+                                                             "sha256":  "e2136a069679ecd55285010532e8e016929e5e2e7bc5a3a480a3f2799774ad58"
+                                                         },
+                                                         {
+                                                             "bucket":  "act-omega-r2-vault",
+                                                             "object_key":  "lean4/SovereignManifoldTheorems_v74.0.0.lean",
+                                                             "edge_range_url":  "https://act-omega-net.dev/api/v1/r2/vault/lean4/SovereignManifoldTheorems_v74.0.0.lean",
+                                                             "bytes":  597397,
+                                                             "sha256":  "6bd7eb7ca3093773ebf8c02b0eec6525fe5a86be25194475eedeedb29cf4de17"
+                                                         },
+                                                         {
+                                                             "bucket":  "act-omega-r2-vault",
+                                                             "object_key":  "ledger_archives/v74_0_0_pre_stage_b/message_bus_ledger_v4800.jsonl.gz",
+                                                             "edge_range_url":  "https://act-omega-net.dev/api/v1/r2/vault/ledger_archives/v74_0_0_pre_stage_b/message_bus_ledger_v4800.jsonl.gz",
+                                                             "bytes":  3114699,
+                                                             "sha256":  "4e0dadcbe105905d875d8efb365fd3adfb74c9eb59856750afd63190872a45b8"
+                                                         },
+                                                         {
+                                                             "bucket":  "act-omega-r2-vault",
+                                                             "object_key":  "ledger_archives/v74_0_0_pre_stage_b/aegis_autonomous_cron_ledger_v5700.jsonl.gz",
+                                                             "edge_range_url":  "https://act-omega-net.dev/api/v1/r2/vault/ledger_archives/v74_0_0_pre_stage_b/aegis_autonomous_cron_ledger_v5700.jsonl.gz",
+                                                             "bytes":  3352840,
+                                                             "sha256":  "f4c39ec19699ed7bb9fa46c50553421ab69644467698af07ab19893822bb012a"
+                                                         },
+                                                         {
+                                                             "bucket":  "act-omega-r2-vault",
+                                                             "object_key":  "ledger_archives/v74_0_0_pre_stage_b/codegen_integration_manifest_v4800.jsonl.gz",
+                                                             "edge_range_url":  "https://act-omega-net.dev/api/v1/r2/vault/ledger_archives/v74_0_0_pre_stage_b/codegen_integration_manifest_v4800.jsonl.gz",
+                                                             "bytes":  1866022,
+                                                             "sha256":  "22e433223851e32ce9e16f0613bcc25971f4500e1f2fc8a7e2a03ff97ec442a8"
+                                                         }
+                                                     ],
+                                "http206_range_probe_status":  "MEASURED_HTTP_206_ZIP_PK_MAGIC_VERIFIED",
+                                "http206_range_probe_bytes":  64
+                            },
+    "github_release_assets":  {
+                                  "tag":  "v74.0.0",
+                                  "status":  "SKIPPED",
+                                  "assets":  [
+
+                                             ]
+                              },
+    "gitlab_mirror_and_registry":  {
+                                       "remote_name":  "gitlab",
+                                       "remote_url":  "https://gitlab.com/act-omega-labs-group/sovereign-manifold.git",
+                                       "status":  "REMOTE_CONFIGURED_AWAITING_EXTERNAL_GITLAB_PAT",
+                                       "package_url":  null,
+                                       "external_pat_path":  "C:\\Users\\Nbell\\.act_omega_gitlab_token"
+                                   },
+    "jsonl_epoch_rotation":  {
+                                 "epoch_label":  "v74_0_0_pre_stage_b",
+                                 "total_reclaimed_bytes":  67922111,
+                                 "ledgers_rotated":  3
+                             }
+}

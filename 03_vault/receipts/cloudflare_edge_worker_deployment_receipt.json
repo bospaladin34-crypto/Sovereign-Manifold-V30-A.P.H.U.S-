@@ -1,16 +1,16 @@
 {
     "schema":  "act_omega.cloudflare_edge_worker_deployment_receipt.v1",
     "worker_name":  "sovereign-loq15-vpc-shadow",
-    "config_scope":  "edge_and_workflow",
-    "worker_version_id":  "e5d64547-222c-443d-a4b8-635da5db484e",
-    "deployment_id":  "9bcbb6c7-7b7e-404c-a75f-ab9063e0df4c",
-    "deployment_created_on":  "2026-11-26T15:00:30.293784Z",
+    "config_scope":  "edge",
+    "worker_version_id":  "a2a3df16-4d77-438f-826c-29e783477694",
+    "deployment_id":  "8bcec46e-6a44-4c37-bd09-643aed525639",
+    "deployment_created_on":  "2026-11-26T16:26:17.94295Z",
     "edge_base_uri":  "https://act-omega-net.dev",
     "version_code":  79,
     "version_name":  "v74.0.0",
     "apk_bytes":  30612314,
     "apk_sha256":  "e2136a069679ecd55285010532e8e016929e5e2e7bc5a3a480a3f2799774ad58",
-    "timestamp_utc":  "2026-11-26T15:00:41Z",
+    "timestamp_utc":  "2026-11-26T16:26:29Z",
     "request_paths":  [
                           "/api/v1/ota/pixel_manifest?edge_direct=1",
                           "/api/v1/tools/t284?edge_direct=1",
@@ -25,7 +25,7 @@
                                           "version_code":  79,
                                           "apk_bytes":  30612314,
                                           "apk_sha256":  "e2136a069679ecd55285010532e8e016929e5e2e7bc5a3a480a3f2799774ad58",
-                                          "timestamp_ms":  1795705240990
+                                          "timestamp_ms":  1795710388978
                                       },
                    "t284":  {
                                 "http_status":  200,
@@ -35,7 +35,7 @@
                                 "version_code":  79,
                                 "apk_bytes":  30612314,
                                 "apk_sha256":  "e2136a069679ecd55285010532e8e016929e5e2e7bc5a3a480a3f2799774ad58",
-                                "timestamp_ms":  1795705241187
+                                "timestamp_ms":  1795710389153
                             },
                    "health":  {
                                   "http_status":  200,

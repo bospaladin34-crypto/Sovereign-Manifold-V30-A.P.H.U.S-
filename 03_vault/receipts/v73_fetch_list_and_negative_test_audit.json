@@ -1,12 +1,12 @@
 {
     "schema":  "ACT_OMEGA_V73_FETCH_LIST_AND_NEGATIVE_TEST_AUDIT_V1",
     "version":  "v74.0.0",
-    "generated_at_utc":  "2026-11-26T15:11:39Z",
+    "generated_at_utc":  "2026-11-26T17:01:55Z",
     "author":  "Donevin Frownfelter (@bospaladin34-crypto)",
     "disposition":  "v73.2.5 Certified FULL ALL CLEAR -\u003e v74.0.0 Stage A (SH4Z v7400 + 15-Station Labs CHAIN 418; Gate 5 honestly UNMEASURED/OFFLINE pending Stage B)",
     "sh_xi_turn_counter_receipt_parity":  {
-                                              "final_global_turn_seq":  2029,
-                                              "ledger_sha256":  "ac4183b0887f2820a5586531c7cd75c3b36556cf795a03bb0a4c802d1827cc7e",
+                                              "final_global_turn_seq":  2110,
+                                              "ledger_sha256":  "6ab801066bb685bbfec1a478de8529005103067d0a03eaeabc8ba44b390a3627",
                                               "ledger_c_e_sha256_match":  true
                                           },
     "cloudflare_edge_worker_deployment_receipt_present":  true,
@@ -148,7 +148,7 @@
                                                               "sha256":  "2eb2b8735bcfbf29b3764d4d6f52927b2dc8253143bdadcd4f9eb0019c96c1c2",
                                                               "run_command":  "powershell -NoProfile -ExecutionPolicy Bypass -File 00_control\\Verify-ShXiTurnCountersReceipt.ps1 -AuditOnly",
                                                               "exit_code":  0,
-                                                              "summary":  "Read-only verification of C:==E: sh_xi_session_turn_counters.json SHA-256 (ac4183b0887f...) and global_turn_seq=2029 parity with v73_2_4_sh_xi_turn_counter_receipt.json."
+                                                              "summary":  "Read-only verification of C:==E: sh_xi_session_turn_counters.json SHA-256 (6ab801066bb6...) and global_turn_seq=2110 parity with v73_2_4_sh_xi_turn_counter_receipt.json."
                                                           },
                                                           {
                                                               "path":  "tests/e2e/test_m3_gatekeeper_negative.ps1",
@@ -170,11 +170,11 @@
                                                           },
                                                           {
                                                               "path":  "03_vault/receipts/",
-                                                              "existing_files_count":  74,
+                                                              "existing_files_count":  75,
                                                               "self_excluded":  "v73_fetch_list_and_negative_test_audit.json",
                                                               "run_command":  "powershell -NoProfile -ExecutionPolicy Bypass -File 00_control\\Build-ReceiptInventoryAudit.ps1",
                                                               "exit_code":  0,
-                                                              "summary":  "Full UTF-8 no-BOM LF SHA-256 + git hash-object inventory of all 74 receipts in 03_vault/receipts/ (excluding self), generated LAST after all verification suites completed; every volatile receipt carries an explicit volatility_reason.",
+                                                              "summary":  "Full UTF-8 no-BOM LF SHA-256 + git hash-object inventory of all 75 receipts in 03_vault/receipts/ (excluding self), generated LAST after all verification suites completed; every volatile receipt carries an explicit volatility_reason.",
                                                               "files":  [
                                                                             {
                                                                                 "name":  "c1_chain399_404_pass_and_corrupt_fail.json",
@@ -198,12 +198,12 @@
                                                                             },
                                                                             {
                                                                                 "name":  "cloudflare_edge_worker_deployment_receipt.json",
-                                                                                "bytes":  2764,
-                                                                                "sha256":  "59264fdbd1a56523e99714d54026e2ba95fba6e14973b5e24a72ba3dcecb2eea",
-                                                                                "git_blob_sha1":  "475a71f574bc880716a193464567b7900a6d7a1e",
+                                                                                "bytes":  2750,
+                                                                                "sha256":  "f8b8466b7549a0326ec34e213c780d1008693a20488c09081d9f71cfb824dec1",
+                                                                                "git_blob_sha1":  "0bfc23afe24d5a7bef7f981ea5d1021d4591a534",
                                                                                 "encoding":  "utf-8-no-bom",
                                                                                 "line_ending":  "LF",
-                                                                                "last_write_utc":  "2026-11-26T15:00:41Z",
+                                                                                "last_write_utc":  "2026-11-26T16:26:29Z",
                                                                                 "volatile_on_suite_rerun":  true,
                                                                                 "volatility_reason":  "Deploy-CloudflareEdge.ps1 / NF7b worker deployment capture updates worker_version_id, timestamp_utc, and observed edge_direct manifest values."
                                                                             },
@@ -816,11 +816,11 @@
                                                                             {
                                                                                 "name":  "v73_2_4_sh_xi_turn_counter_receipt.json",
                                                                                 "bytes":  11850,
-                                                                                "sha256":  "87a59498f5628e4e3731b04b96e16bafebf3f586d5fb11c04cdbe8d876bb3a9a",
-                                                                                "git_blob_sha1":  "31b9fba561ee26bb3e5db713f21a5b8b46aad752",
+                                                                                "sha256":  "15404febc85f7311f90a261a0e6cc4e7019a2c54e639bbb4e74e13845f21de1b",
+                                                                                "git_blob_sha1":  "74f0b06ca99575f7ac545d2b659d1bf2d78ae814",
                                                                                 "encoding":  "utf-8-no-bom",
                                                                                 "line_ending":  "LF",
-                                                                                "last_write_utc":  "2026-11-26T15:11:28Z",
+                                                                                "last_write_utc":  "2026-11-26T17:01:45Z",
                                                                                 "volatile_on_suite_rerun":  true,
                                                                                 "volatility_reason":  "Verify-ShXiTurnCountersReceipt.ps1 updates ledger_sha256, final_global_turn_seq, session_count, and generated_at_utc LAST after all /converse \u0026 /v1/chat/completions suites."
                                                                             },
@@ -935,13 +935,24 @@
                                                                                 "volatility_reason":  "Invoke-BrutalAgentGatekeeper.ps1 -FullAudit and Sovereign-Lifecycle.ps1 -Action verify record live v74.0.0 cluster throughput, bus sequences, and probe timings on every run."
                                                                             },
                                                                             {
-                                                                                "name":  "v74_0_0_security_negative_tests_receipt.json",
-                                                                                "bytes":  514675,
-                                                                                "sha256":  "b391e23a4a108172fc7e966ad7b62b1fd115edf831f1ee8c7ab80b8eb939536b",
-                                                                                "git_blob_sha1":  "d4884dd481bda79a85cde808fdfc23ecfe5f7cfc",
+                                                                                "name":  "v74_0_0_multicloud_storage_and_ledger_rotation_receipt.json",
+                                                                                "bytes":  7294,
+                                                                                "sha256":  "079c8864bb3d89d6d16dbe4cedf7732acf38c5e9c00986b87a08a2e575018f8f",
+                                                                                "git_blob_sha1":  "68b63be645b3b60926df9038f346985aa450efeb",
                                                                                 "encoding":  "utf-8-no-bom",
                                                                                 "line_ending":  "LF",
-                                                                                "last_write_utc":  "2026-11-26T15:05:01Z",
+                                                                                "last_write_utc":  "2026-11-26T16:50:32Z",
+                                                                                "volatile_on_suite_rerun":  true,
+                                                                                "volatility_reason":  "Sync-MultiCloudVaultAndGitLab.ps1 records generated_at_utc, R2 HTTP 206 range probe status, GitHub Release upload results, and JSONL ledger rotation stats."
+                                                                            },
+                                                                            {
+                                                                                "name":  "v74_0_0_security_negative_tests_receipt.json",
+                                                                                "bytes":  514653,
+                                                                                "sha256":  "942d24ce6cf797184fd6a0bc36aa6956b640f110192e12f1673d78de3f0eab8c",
+                                                                                "git_blob_sha1":  "76f3bf577f99ca0f67ba030e62539dff1273a5d6",
+                                                                                "encoding":  "utf-8-no-bom",
+                                                                                "line_ending":  "LF",
+                                                                                "last_write_utc":  "2026-11-26T16:55:33Z",
                                                                                 "volatile_on_suite_rerun":  true,
                                                                                 "volatility_reason":  "Test-V73_2_3-SecurityNegativeProbes.ps1 records v74.0.0 generated_at_utc, baseline Anchor-1 kops, and live Host+Edge probe timings across T01..T418 on every run."
                                                                             },
@@ -1165,9 +1176,9 @@
                                                   "status":  "FIXED",
                                                   "positive_test":  {
                                                                         "file":  "00_control/Build-ReceiptInventoryAudit.ps1",
-                                                                        "test_name":  "-VerifyOnly \u0026 -VerifyAgainstGitHead across 74 receipts",
+                                                                        "test_name":  "-VerifyOnly \u0026 -VerifyAgainstGitHead across 75 receipts",
                                                                         "exit_code":  0,
-                                                                        "observed":  "All 74/74 receipts UTF-8 no-BOM LF with 0 HEAD blob mismatches and explicit volatility_reason on volatile receipts."
+                                                                        "observed":  "All 75/75 receipts UTF-8 no-BOM LF with 0 HEAD blob mismatches and explicit volatility_reason on volatile receipts."
                                                                     },
                                                   "negative_test":  {
                                                                         "file":  "00_control/Invoke-BrutalAgentGatekeeper.ps1",
@@ -1277,7 +1288,7 @@
                                                                "file":  "00_control/Build-ReceiptInventoryAudit.ps1",
                                                                "test_name":  "-VerifyOnly \u0026 -VerifyAgainstGitHead",
                                                                "exit_code":  0,
-                                                               "observed":  "All 74 non-self receipts and audit JSON verified UTF-8 no-BOM LF (0 BOM, 0 CR, 0 NUL) with 100% git hash-object / HEAD blob parity and explicit volatility_reason on all volatile entries."
+                                                               "observed":  "All 75 non-self receipts and audit JSON verified UTF-8 no-BOM LF (0 BOM, 0 CR, 0 NUL) with 100% git hash-object / HEAD blob parity and explicit volatility_reason on all volatile entries."
                                                            },
                                          "negative_test":  {
                                                                "file":  "00_control/Build-ReceiptInventoryAudit.ps1",
@@ -1603,7 +1614,7 @@
                                                                        "file":  "01_l0_rust/tests/muse_v73_remediation_tests.rs",
                                                                        "test_name":  "test_v73_2_4_m3_item10_persistent_monotonic_sh_xi_turn_counters",
                                                                        "exit_code":  0,
-                                                                       "observed":  "15 sequential turns cross #8 monotonically (M3 baseline turn_15 seq=649, v73.2.4 versionCode=77; current v73.2.5 live ledger final_global_turn_seq=2029, Pixel 8/10 versionCode=79) and persist across hot-swap."
+                                                                       "observed":  "15 sequential turns cross #8 monotonically (M3 baseline turn_15 seq=649, v73.2.4 versionCode=77; current v73.2.5 live ledger final_global_turn_seq=2110, Pixel 8/10 versionCode=79) and persist across hot-swap."
                                                                    },
                                                  "negative_test":  {
                                                                        "file":  "00_control/Test-V73_2_3-SecurityNegativeProbes.ps1",
@@ -1703,7 +1714,7 @@
                        "verify_sh_xi_turn_counters_receipt":  {
                                                                   "command":  ".\\00_control\\Verify-ShXiTurnCountersReceipt.ps1 -AuditOnly",
                                                                   "exit_code":  0,
-                                                                  "summary":  "PASS: global_turn_seq=2029 sha256=ac4183b0887f... C:==E:=True"
+                                                                  "summary":  "PASS: global_turn_seq=2110 sha256=6ab801066bb6... C:==E:=True"
                                                               },
                        "android_apk_clean_build":  {
                                                        "command":  ".\\gradlew.bat clean assembleDebug --console=plain",
@@ -1718,7 +1729,7 @@
                        "receipt_inventory_audit":  {
                                                        "command":  ".\\00_control\\Build-ReceiptInventoryAudit.ps1 (-VerifyOnly / -VerifyAgainstGitHead)",
                                                        "exit_code":  0,
-                                                       "summary":  "PASS: 74/74 UTF-8 no-BOM LF receipts + SH-XI turn-counter parity + 100% git hash-object / HEAD blob parity"
+                                                       "summary":  "PASS: 75/75 UTF-8 no-BOM LF receipts + SH-XI turn-counter parity + 100% git hash-object / HEAD blob parity"
                                                    }
                    }
 }

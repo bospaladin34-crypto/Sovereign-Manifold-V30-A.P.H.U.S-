@@ -1,0 +1,57 @@
+{
+    "schema":  "act_omega.jsonl_epoch_archive_chain.v1",
+    "epoch_label":  "v74_0_0_pre_stage_b",
+    "rotated_at_utc":  "2026-11-26T16:49:46Z",
+    "e_archive_dir":  "E:\\Sovereign_Manifold_SSD_Vault\\epoch_ledger_archives\\v74_0_0_pre_stage_b",
+    "ledgers":  [
+                    {
+                        "repo_path":  "03_vault/connectome/message_bus_ledger_v4800.jsonl",
+                        "pre_rotation_bytes":  41947347,
+                        "pre_rotation_lines":  65964,
+                        "pre_rotation_sha256":  "8e3558ca906649d013644f1ecab95e55e29ec5587dbefd66b3b9235add378c0e",
+                        "post_rotation_bytes":  927577,
+                        "post_rotation_lines":  1500,
+                        "post_rotation_sha256":  "3ad481a9fd0011d6052b40fd4b7a0468ca5980e93e041cc80f89a9c7f0e50155",
+                        "bytes_reclaimed_in_git":  41019770,
+                        "e_vault_full_ledger":  "E:\\Sovereign_Manifold_SSD_Vault\\coordinator_bus\\message_bus_ledger_v4800.jsonl",
+                        "e_vault_full_bytes":  67125116,
+                        "e_epoch_raw_archive":  "E:\\Sovereign_Manifold_SSD_Vault\\epoch_ledger_archives\\v74_0_0_pre_stage_b\\message_bus_ledger_v4800.jsonl",
+                        "e_epoch_gzip_archive":  "E:\\Sovereign_Manifold_SSD_Vault\\epoch_ledger_archives\\v74_0_0_pre_stage_b\\message_bus_ledger_v4800.jsonl.gz",
+                        "e_epoch_gzip_bytes":  3114699,
+                        "e_epoch_gzip_sha256":  "4e0dadcbe105905d875d8efb365fd3adfb74c9eb59856750afd63190872a45b8"
+                    },
+                    {
+                        "repo_path":  "03_vault/connectome/aegis_autonomous_cron_ledger_v5700.jsonl",
+                        "pre_rotation_bytes":  14954777,
+                        "pre_rotation_lines":  28350,
+                        "pre_rotation_sha256":  "b19602c45d743c176b533ce63f032cecf74d3d35533d7a055c5c3b9fec907718",
+                        "post_rotation_bytes":  421921,
+                        "post_rotation_lines":  800,
+                        "post_rotation_sha256":  "21caaaa019ae14015d5d0d0b31f06f0e1f17da3709b36d0ecd40480b98c82ca5",
+                        "bytes_reclaimed_in_git":  14532856,
+                        "e_vault_full_ledger":  "E:\\Sovereign_Manifold_SSD_Vault\\connectome\\aegis_autonomous_cron_ledger_v5700.jsonl",
+                        "e_vault_full_bytes":  14954777,
+                        "e_epoch_raw_archive":  "E:\\Sovereign_Manifold_SSD_Vault\\epoch_ledger_archives\\v74_0_0_pre_stage_b\\aegis_autonomous_cron_ledger_v5700.jsonl",
+                        "e_epoch_gzip_archive":  "E:\\Sovereign_Manifold_SSD_Vault\\epoch_ledger_archives\\v74_0_0_pre_stage_b\\aegis_autonomous_cron_ledger_v5700.jsonl.gz",
+                        "e_epoch_gzip_bytes":  3352840,
+                        "e_epoch_gzip_sha256":  "f4c39ec19699ed7bb9fa46c50553421ab69644467698af07ab19893822bb012a"
+                    },
+                    {
+                        "repo_path":  "03_vault/connectome/codegen_integration_manifest_v4800.jsonl",
+                        "pre_rotation_bytes":  12673249,
+                        "pre_rotation_lines":  33360,
+                        "pre_rotation_sha256":  "677b2b7d0bb2c85b1c9c9f40bb86bd42b8140fd46800866e0fbcb32d7e18503d",
+                        "post_rotation_bytes":  303764,
+                        "post_rotation_lines":  800,
+                        "post_rotation_sha256":  "f70b938c11f5ef878c02bc11a827f8381eddf3ee0d555367ad751ad82b2f6a89",
+                        "bytes_reclaimed_in_git":  12369485,
+                        "e_vault_full_ledger":  "E:\\Sovereign_Manifold_SSD_Vault\\coordinator_bus\\codegen_integration_manifest_v4800.jsonl",
+                        "e_vault_full_bytes":  17440097,
+                        "e_epoch_raw_archive":  "E:\\Sovereign_Manifold_SSD_Vault\\epoch_ledger_archives\\v74_0_0_pre_stage_b\\codegen_integration_manifest_v4800.jsonl",
+                        "e_epoch_gzip_archive":  "E:\\Sovereign_Manifold_SSD_Vault\\epoch_ledger_archives\\v74_0_0_pre_stage_b\\codegen_integration_manifest_v4800.jsonl.gz",
+                        "e_epoch_gzip_bytes":  1866022,
+                        "e_epoch_gzip_sha256":  "22e433223851e32ce9e16f0613bcc25971f4500e1f2fc8a7e2a03ff97ec442a8"
+                    }
+                ],
+    "total_reclaimed_bytes":  67922111
+}

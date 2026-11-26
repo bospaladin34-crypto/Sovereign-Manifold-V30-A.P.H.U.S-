@@ -1,0 +1,34 @@
+{
+  "inputs": [
+    {
+      "id": "sovereign_operator_key",
+      "type": "promptString",
+      "description": "External X-Sovereign-Operator-Key (~/.act_omega_operator_vault_key)",
+      "password": true
+    }
+  ],
+  "servers": {
+    "act-omega-local-l0": {
+      "type": "http",
+      "url": "http://127.0.0.1:8097/mcp",
+      "headers": {
+        "X-Sovereign-Operator-Key": "${input:sovereign_operator_key}"
+      }
+    },
+    "act-omega-cloudflare-edge": {
+      "type": "http",
+      "url": "https://mcp.act-omega-net.dev/mcp",
+      "headers": {
+        "Authorization": "Bearer ${input:sovereign_operator_key}"
+      }
+    },
+    "act-omega-zero-trust-portal": {
+      "type": "http",
+      "url": "https://mcp-portal.act-omega-net.dev/mcp"
+    },
+    "github-official": {
+      "type": "http",
+      "url": "https://api.githubcopilot.com/mcp/"
+    }
+  }
+}

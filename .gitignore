@@ -43,6 +43,11 @@ target_stage/
 f4se_rust_governor/target/
 **/ACT_Omega_Sovereign_HUD_Mobile.apk
 **/act-omega-mobile.apk
+/ACT-Omega-Pixel10-Sovereign.apk
+docs/ACT-Omega-Pixel10-Sovereign.apk
+releases/*.apk
+03_vault/ota/*.apk
+!04_edge_silicon/ACT-Omega-Pixel10-Sovereign.apk
 crates/*/target/
 03_vault/connectome/episodic_longterm_memory_v4300.jsonl
 03_vault/logs/wal_bitemporal_v35.jsonl

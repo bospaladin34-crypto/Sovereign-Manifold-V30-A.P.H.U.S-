@@ -1,0 +1,29 @@
+{
+  "name": "ACT-Omega Sovereign Manifold (Rust + Lean 4 + Deno + WebGPU HUD)",
+  "image": "mcr.microsoft.com/devcontainers/rust:1-bookworm",
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "20"
+    }
+  },
+  "postCreateCommand": "curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | sh -s -- -y --default-toolchain leanprover/lean4:v4.15.0 && curl -fsSL https://deno.land/install.sh | sh && cd 05_hud_cockpit && npm ci",
+  "remoteEnv": {
+    "PATH": "${containerEnv:HOME}/.elan/bin:${containerEnv:HOME}/.deno/bin:${containerEnv:PATH}"
+  },
+  "forwardPorts": [5173, 8097, 8099],
+  "portsAttributes": {
+    "5173": { "label": "ACT-Omega WebGPU HUD" },
+    "8097": { "label": "ACT-Omega L0 REST & 70-Tool MCP" },
+    "8099": { "label": "ACT-Omega Deno L2 Gateway" }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "rust-lang.rust-analyzer",
+        "leanprover.lean4",
+        "denoland.vscode-deno",
+        "github.vscode-github-actions"
+      ]
+    }
+  }
+}

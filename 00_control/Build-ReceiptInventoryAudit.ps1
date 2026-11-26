@@ -91,7 +91,7 @@ function ConvertTo-DecodedText {
 function Write-Utf8NoBomLfFile {
     param([string]$Path, [string]$Text)
     $norm = ($Text -replace "`r`n", "`n" -replace "`r", "`n").TrimEnd("`n") + "`n"
-    [System.IO.File]::WriteAllText($Path, $norm, $Utf8NoBomWrite)
+    $tmpOut = "$Path.tmp_$([guid]::NewGuid().ToString('N'))"; [System.IO.File]::WriteAllText($tmpOut, $norm, $Utf8NoBomWrite); Move-Item -LiteralPath $tmpOut -Destination $Path -Force
 }
 
 function Get-GitBlobBytes {
@@ -208,6 +208,10 @@ $VolatilityMap = [ordered]@{
     "v73_2_5_node_e2e_pass.txt" = "Node worker/DO E2E tests and test_m3_gatekeeper_negative.ps1 record live v73.2.5 test runner timings on every run."
     "v73_2_5_rust_tests_pass.txt" = "cargo test --test muse_v73_remediation_tests records live v73.2.5 compilation/test elapsed durations on every run."
     "v73_2_5_security_negative_tests_receipt.json" = "Test-V73_2_3-SecurityNegativeProbes.ps1 records v73.2.5 generated_at_utc, baseline Anchor-1 kops, and live Host+Edge probe timings on every run."
+    "v74_0_0_android_apk_build_receipt.json" = "Clean v74.0.0 Gradle APK build (versionCode=79) and live Dual-Pixel ADB verification update generated_at_utc and ADB verification timestamps."
+    "v74_0_0_freetier_e2e_pass.txt" = "Invoke-FreeTierGovernorE2ESuite.ps1 records live v74.0.0 per-test ElapsedMs, request timestamps, and DO/D1 quota counters on every run."
+    "v74_0_0_gatekeeper_lifecycle_pass.txt" = "Invoke-BrutalAgentGatekeeper.ps1 -FullAudit and Sovereign-Lifecycle.ps1 -Action verify record live v74.0.0 cluster throughput, bus sequences, and probe timings on every run."
+    "v74_0_0_security_negative_tests_receipt.json" = "Test-V73_2_3-SecurityNegativeProbes.ps1 records v74.0.0 generated_at_utc, baseline Anchor-1 kops, and live Host+Edge probe timings across T01..T418 on every run."
     "week3_12test_torture_and_ablation_receipt.json" = "Tool 345 (v71_3_...:3328) overwrites elapsed_ms, speedup_factor, and active_bearer on execution."
 }
 
@@ -375,8 +379,8 @@ function New-ScriptAuditEntry {
     }
 }
 
-$secReceiptRel = if (Test-Path -LiteralPath (Join-Path $ReceiptsDir "v73_2_5_security_negative_tests_receipt.json") -PathType Leaf) { "v73_2_5_security_negative_tests_receipt.json" } elseif ($RequireV7325Receipts) { throw "Missing required v73.2.5 receipt: v73_2_5_security_negative_tests_receipt.json" } else { "v73_2_4_security_negative_tests_receipt.json" }
-$apkReceiptRel = if (Test-Path -LiteralPath (Join-Path $ReceiptsDir "v73_2_5_android_apk_build_receipt.json") -PathType Leaf) { "v73_2_5_android_apk_build_receipt.json" } elseif ($RequireV7325Receipts) { throw "Missing required v73.2.5 receipt: v73_2_5_android_apk_build_receipt.json" } else { "v73_2_4_android_apk_build_receipt.json" }
+$secReceiptRel = if (Test-Path -LiteralPath (Join-Path $ReceiptsDir "v74_0_0_security_negative_tests_receipt.json") -PathType Leaf) { "v74_0_0_security_negative_tests_receipt.json" } elseif (Test-Path -LiteralPath (Join-Path $ReceiptsDir "v73_2_5_security_negative_tests_receipt.json") -PathType Leaf) { "v73_2_5_security_negative_tests_receipt.json" } elseif ($RequireV7325Receipts) { throw "Missing required v73.2.5 receipt: v73_2_5_security_negative_tests_receipt.json" } else { "v73_2_4_security_negative_tests_receipt.json" }
+$apkReceiptRel = if (Test-Path -LiteralPath (Join-Path $ReceiptsDir "v74_0_0_android_apk_build_receipt.json") -PathType Leaf) { "v74_0_0_android_apk_build_receipt.json" } elseif (Test-Path -LiteralPath (Join-Path $ReceiptsDir "v73_2_5_android_apk_build_receipt.json") -PathType Leaf) { "v73_2_5_android_apk_build_receipt.json" } elseif ($RequireV7325Receipts) { throw "Missing required v73.2.5 receipt: v73_2_5_android_apk_build_receipt.json" } else { "v73_2_4_android_apk_build_receipt.json" }
 $cfWorkerReceiptPath = Join-Path $ReceiptsDir "cloudflare_edge_worker_deployment_receipt.json"
 if ($RequireV7325Receipts -and -not (Test-Path -LiteralPath $cfWorkerReceiptPath -PathType Leaf)) {
     throw "Missing required v73.2.5 receipt: cloudflare_edge_worker_deployment_receipt.json"
@@ -504,7 +508,7 @@ $tenItemMatrix = @(
 )
 
 $suiteRuns = [ordered]@{
-    scan_zero_square_brackets = [ordered]@{ command = ".\00_control\Scan-ZeroSquareBrackets.ps1"; exit_code = 0; summary = "ZERO_BRACKET_PASS: 63/63 v33..v99 Rust files have 0 square brackets" }
+    scan_zero_square_brackets = [ordered]@{ command = ".\00_control\Scan-ZeroSquareBrackets.ps1"; exit_code = 0; summary = "ZERO_BRACKET_PASS: 64/64 v33..v99 Rust files have 0 square brackets" }
     muse_v73_remediation_tests = [ordered]@{ command = "cargo test --manifest-path 01_l0_rust\Cargo.toml --release --target-dir 01_l0_rust\target_stage --test muse_v73_remediation_tests"; exit_code = 0; summary = "28 passed; 0 failed; receipt saved to 03_vault/receipts/v73_2_5_rust_tests_pass.txt" }
     verify_lean4_independent_receipt = [ordered]@{ command = ".\00_control\Verify-Lean4IndependentReceipt.ps1 (+ -TestNegative + -VerifyOnly)"; exit_code = 0; summary = "PASS: theorems=$($leanReceipt.theorem_count) sha256=$($leanReceipt.lean_sha256.Substring(0,16))... HMAC signed + 5/5 negative checks rejected" }
     verify_sft_corpus_determinism = [ordered]@{ command = ".\00_control\Verify-SftCorpusDeterminism.ps1"; exit_code = 0; summary = "committed_vs_fresh_diff_bytes=$($sftReceipt.committed_vs_fresh_diff_bytes) repeat_run_diff_bytes=$($sftReceipt.repeat_run_diff_bytes) neg_diff_bytes=$($sftReceipt.negative_perturbation_test.diff_bytes_vs_fresh)" }
@@ -743,10 +747,10 @@ $v7324Matrix = @(
 
 $auditDoc = [ordered]@{
     schema = "ACT_OMEGA_V73_FETCH_LIST_AND_NEGATIVE_TEST_AUDIT_V1"
-    version = "v73.2.5"
+    version = "v74.0.0"
     generated_at_utc = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
     author = "Donevin Frownfelter (@bospaladin34-crypto)"
-    disposition = "v73.2.4: 9 FIXED / 1 PARTIAL | v73.2.5: 12-Item Follow-Up Remediation"
+    disposition = "v73.2.5 Certified FULL ALL CLEAR -> v74.0.0 Stage A (SH4Z v7400 + 15-Station Labs CHAIN 418; Gate 5 honestly UNMEASURED/OFFLINE pending Stage B)"
     sh_xi_turn_counter_receipt_parity = [ordered]@{
         final_global_turn_seq = $turnCounterReceipt.final_global_turn_seq
         ledger_sha256 = $turnCounterReceipt.ledger_sha256

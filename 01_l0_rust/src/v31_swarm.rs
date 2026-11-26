@@ -2248,6 +2248,61 @@ fn resolve_tool_id_for_clean_path(
             return id;
         }
     }
+    if clean_path.contains("chain418") {
+        return 418;
+    }
+    if clean_path == "/api/v1/lab/omega_engine" || clean_path == "/api/v1/lab/otri_bus" {
+        return 417;
+    }
+    if clean_path == "/api/v1/lab/braid_re" || clean_path == "/api/v1/lab/omega_braid_re" {
+        return 416;
+    }
+    if clean_path == "/api/v1/sovereign_harmonic/lab_agent" || clean_path == "/api/v1/lab/agent" {
+        return 415;
+    }
+    if clean_path == "/api/v1/lab/ingest_corpus_to_rag"
+        || clean_path == "/api/v1/lab/ingest_corpus"
+        || clean_path == "/api/v1/lab/v303/ingest_corpus_to_rag"
+    {
+        return 414;
+    }
+    if clean_path == "/api/v1/lab/station_interact"
+        || clean_path == "/api/v1/lab/interact"
+        || clean_path == "/api/v1/lab/station/interact"
+    {
+        return 413;
+    }
+    if clean_path == "/api/v1/lab/station_control"
+        || clean_path == "/api/v1/lab/control"
+        || clean_path == "/api/v1/lab/station/control"
+    {
+        return 412;
+    }
+    if clean_path == "/api/v1/lab/v74_deck"
+        || clean_path == "/api/v1/lab/deck_v74"
+        || clean_path == "/api/v1/lab/15station_deck"
+        || clean_path == "/api/v1/lab/v303/deck"
+    {
+        return 411;
+    }
+    if clean_path == "/api/v1/lab/conductor_tensor" {
+        return 410;
+    }
+    if clean_path == "/api/v1/lab/forge_eval" {
+        return 409;
+    }
+    if clean_path == "/api/v1/lab/chaos_deck" {
+        return 408;
+    }
+    if clean_path == "/api/v1/lab/sha256sums" {
+        return 407;
+    }
+    if clean_path == "/api/v1/lab/osp4_bus" {
+        return 406;
+    }
+    if clean_path == "/api/v1/lab/core_audit" {
+        return 405;
+    }
     if clean_path.contains("chain404") {
         return 404;
     }
@@ -3970,7 +4025,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             let lean_bytes = lean_txt.len() as u64;
             let lean_thms = lean_txt.lines().filter(|l| l.trim_start().starts_with("theorem ")).count();
             let diag = match c_clamped {
-                0 => format!("CARD #1 15.965 Hz DECADIC EPOCH CLOCK (SH4Z v7321): {:.3} Hz (62,637us, 159.65 cyc/10s) / {:.2}x Coherence ({}) -- {} (.e8z={}B)", st.p10_sensor_hz, st.coherence_mult, st.coherence_mode, st.laplacian_face, e8z_bytes),
+                0 => format!("CARD #1 15.965 Hz DECADIC EPOCH CLOCK (SH4Z v7400): {:.3} Hz (62,637us, 159.65 cyc/10s) / {:.2}x Coherence ({}) -- {} (.e8z={}B)", st.p10_sensor_hz, st.coherence_mult, st.coherence_mode, st.laplacian_face, e8z_bytes),
                 1 => format!("CARD #2 PIXEL 10 24D MAGNETOMETER & DIPOLE (S48..S63): B=({:.1}, {:.1}, {:.1}) uT, norm(B)={:.1} uT, Baro={:.1} hPa (P10 Sync #{})", st.mag_x, st.mag_y, st.mag_z, st.b_norm, st.baro_hpa, st.p10_broadcasts),
                 2 => format!("CARD #3 PER-SENSOR STIEFEL St(16,80) & THEODORUS Q_n: norm(W^T W - I) = {:.7}, Kasami Cw={} (Fixes #{}), Theodorus Q_1..16 Exact (.e8z={}B)", st.stiefel_ortho_err, st.kasami_cw_hex, st.kasami_ecc_fixes, e8z_bytes),
                 3 => format!("CARD #4 {}-SHARD VAULT & {}-CACHELINE BIJECTION: {} Shards/Neurons ({}x Chair-44, {} Synapses, .npage={}B + .spage={}B + .e8z={}B = {} Bijected 64B CLs), ({:.1}k ops/s, {:.0} N/s, {:.0} CL/s)", npage_neurons, bijected_cls, npage_neurons, chair44_cols, total_synapses, npage_bytes, spage_bytes, e8z_bytes, bijected_cls, st.cluster_total_kops, st.neurons_per_sec, st.cachelines_per_sec),
@@ -5404,6 +5459,111 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             continue;
         }
 
+        // v74.0.0 Stage A: Pre-lock operator-gated 15-Station Omega Labs Bridge (T405..T418 / CHAIN 418)
+        let v74_exec_tid: Option<u64> = if clean_path == "/api/v1/tool/execute" {
+            extract_tool_id_from_payload(clean_path, raw_target, &post_body).map(|x| x as u64)
+        } else {
+            None
+        };
+        let v74_route_tid: Option<u64> = match lab_tool_num_opt.or(v74_exec_tid) {
+            Some(tid) if (405..=418).contains(&tid) => Some(tid),
+            _ => {
+                if clean_path == "/api/v1/lab/core_audit" {
+                    Some(405)
+                } else if clean_path == "/api/v1/lab/osp4_bus" {
+                    Some(406)
+                } else if clean_path == "/api/v1/lab/sha256sums" {
+                    Some(407)
+                } else if clean_path == "/api/v1/lab/chaos_deck" {
+                    Some(408)
+                } else if clean_path == "/api/v1/lab/forge_eval" {
+                    Some(409)
+                } else if clean_path == "/api/v1/lab/conductor_tensor" {
+                    Some(410)
+                } else if clean_path == "/api/v1/lab/v74_deck"
+                    || clean_path == "/api/v1/lab/deck_v74"
+                    || clean_path == "/api/v1/lab/15station_deck"
+                    || clean_path == "/api/v1/lab/v303/deck"
+                {
+                    Some(411)
+                } else if clean_path == "/api/v1/lab/station_control"
+                    || clean_path == "/api/v1/lab/control"
+                    || clean_path == "/api/v1/lab/station/control"
+                {
+                    Some(412)
+                } else if clean_path == "/api/v1/lab/station_interact"
+                    || clean_path == "/api/v1/lab/interact"
+                    || clean_path == "/api/v1/lab/station/interact"
+                {
+                    Some(413)
+                } else if clean_path == "/api/v1/lab/ingest_corpus_to_rag"
+                    || clean_path == "/api/v1/lab/ingest_corpus"
+                    || clean_path == "/api/v1/lab/v303/ingest_corpus_to_rag"
+                {
+                    Some(414)
+                } else if clean_path == "/api/v1/sovereign_harmonic/lab_agent" || clean_path == "/api/v1/lab/agent" {
+                    Some(415)
+                } else if clean_path == "/api/v1/lab/braid_re" || clean_path == "/api/v1/lab/omega_braid_re" {
+                    Some(416)
+                } else if clean_path == "/api/v1/lab/omega_engine" || clean_path == "/api/v1/lab/otri_bus" {
+                    Some(417)
+                } else if clean_path.starts_with("/api/v1/chain418") || clean_path == "/api/v1/cert/chain418" {
+                    Some(418)
+                } else {
+                    None
+                }
+            }
+        };
+        if let Some(tid) = v74_route_tid {
+            if v73_2_has_query_key_param(raw_target) {
+                let deny_json = format!(
+                    "{{\"status\":\"HTTP_403_OPERATOR_AUTH_REQUIRED\",\"endpoint\":\"{}\",\"is_loopback\":{},\"operator_vault_verified\":false,\"reason\":\"QUERY_KEY_PARAMETER_FORBIDDEN_USE_X_SOVEREIGN_OPERATOR_KEY_HEADER\"}}",
+                    json_escape_clean(clean_path),
+                    is_loopback
+                );
+                REQ_CACHE_CONTROL.with(|c| c.set("no-store"));
+                write_http_str(&mut stream, "403 Forbidden", "application/json; charset=utf-8", &deny_json);
+                continue;
+            }
+            if !enforce_operator_gate_403(&mut stream, clean_path, raw_target, &operator_header_key, is_loopback) {
+                continue;
+            }
+            let req_payload = if !post_body.trim().is_empty() {
+                &post_body
+            } else if !q_arg.is_empty() {
+                &q_arg
+            } else {
+                raw_target
+            };
+            let raw_json = v74_0_dispatch_tool(tid, req_payload, true);
+            let sub_epoch = match state.lock() {
+                Ok(g) => g.decadic_sub_epoch,
+                Err(p) => p.into_inner().decadic_sub_epoch,
+            };
+            let op_fp = sha256_bytes_hex(operator_header_key.as_bytes());
+            let op_fp_short = op_fp.get(..12).unwrap_or("auth");
+            let who_audit = format!("Loopback_Operator_KeySHA12_{}", op_fp_short);
+            let final_json = execute_universal_tool_bus_and_writeback(
+                tid,
+                clean_path,
+                "tool_outputs",
+                &raw_json,
+                sub_epoch,
+            );
+            let _ = publish_coordinator_bus_envelope(
+                if tid == 418 { "TOPIC_CHAIN418_MASTER_CERTIFICATION" } else { "TOPIC_V74_0_OMEGA_LABS_15STATION_BRIDGE" },
+                clean_path,
+                &who_audit,
+                "v74_0_unified_labs_bridge",
+                E_BUS_LEDGER_JSONL,
+                final_json.len() as u64,
+                sub_epoch,
+            );
+            REQ_CACHE_CONTROL.with(|c| c.set("no-store"));
+            write_http_str(&mut stream, "200 OK", "application/json; charset=utf-8", &final_json);
+            continue;
+        }
+
         if clean_path.starts_with("/api/v1/lab/") || is_lab_gated_tool {
             let has_query_key = v73_2_has_query_key_param(raw_target);
             let auth_ok = !has_query_key && verify_operator_header_auth(&operator_header_key, is_loopback);
@@ -6228,7 +6388,31 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                     || tool_called == "pgwire_duckdb_tls_bridge_audit"
                     || tool_called == "cloudflare_hyperdrive_duckdb_query"
                     || tool_called == "chain404_master_certification"
+                    || tool_called == "omega_lab_core_audit_selftest"
+                    || tool_called == "omega_lab_osp4_spatial_bus"
+                    || tool_called == "omega_lab_sha256sums_manifest_verifier"
+                    || tool_called == "omega_lab_15station_deck"
+                    || tool_called == "omega_lab_station_control"
+                    || tool_called == "omega_lab_station_interact"
+                    || tool_called == "omega_lab_ingest_corpus_to_rag"
+                    || tool_called == "sovereign_harmonic_lab_agent"
+                    || tool_called == "omega_lab_braid_re_workbench"
+                    || tool_called == "omega_lab_engine_otri_bridge"
+                    || tool_called == "chain418_master_certification"
                 {
+                    let is_mutating_lab_mcp = tool_called == "omega_lab_station_control"
+                        || tool_called == "omega_lab_station_interact"
+                        || tool_called == "omega_lab_ingest_corpus_to_rag"
+                        || tool_called == "sovereign_harmonic_lab_agent";
+                    if is_mutating_lab_mcp && !is_loopback {
+                        let trap_json = format!(
+                            "{{\"jsonrpc\":\"2.0\",\"id\":{},\"error\":{{\"code\":-32001,\"message\":\"LOOPBACK_ONLY_MUTATING_LAB_TOOL: Mutating Omega Labs tool '{}' requires 127.0.0.1 loopback operator auth.\"}}}}",
+                            id_raw,
+                            json_escape_clean(&tool_called)
+                        );
+                        write_http_str(&mut stream, "403 Forbidden", "application/json; charset=utf-8", &trap_json);
+                        continue;
+                    }
                     let req_body_str = if !post_body.trim().is_empty() { &post_body } else { &arg_text };
                     let (raw_out, tid, cat) = if tool_called == "aegis_autonomous_harness" {
                         (v57_aegis_autonomous_agent_harness::v57_execute_aegis_7stage_harness(&arg_text, sub_ep), 45u64, "npage_shard_deltas")
@@ -6381,6 +6565,28 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                         (v73_2_dispatch_tool(403, req_body_str), 403u64, "tool_outputs")
                     } else if tool_called == "chain404_master_certification" {
                         (v73_2_dispatch_chain404_master_certification(req_body_str), 404u64, "tool_outputs")
+                    } else if tool_called == "omega_lab_core_audit_selftest" {
+                        (v74_0_dispatch_tool(405, req_body_str, is_loopback), 405u64, "tool_outputs")
+                    } else if tool_called == "omega_lab_osp4_spatial_bus" {
+                        (v74_0_dispatch_tool(406, req_body_str, is_loopback), 406u64, "tool_outputs")
+                    } else if tool_called == "omega_lab_sha256sums_manifest_verifier" {
+                        (v74_0_dispatch_tool(407, req_body_str, is_loopback), 407u64, "tool_outputs")
+                    } else if tool_called == "omega_lab_15station_deck" {
+                        (v74_0_dispatch_tool(411, req_body_str, is_loopback), 411u64, "tool_outputs")
+                    } else if tool_called == "omega_lab_station_control" {
+                        (v74_0_dispatch_tool(412, req_body_str, is_loopback), 412u64, "tool_outputs")
+                    } else if tool_called == "omega_lab_station_interact" {
+                        (v74_0_dispatch_tool(413, req_body_str, is_loopback), 413u64, "tool_outputs")
+                    } else if tool_called == "omega_lab_ingest_corpus_to_rag" {
+                        (v74_0_dispatch_tool(414, req_body_str, is_loopback), 414u64, "tool_outputs")
+                    } else if tool_called == "sovereign_harmonic_lab_agent" {
+                        (v74_0_dispatch_tool(415, req_body_str, is_loopback), 415u64, "tool_outputs")
+                    } else if tool_called == "omega_lab_braid_re_workbench" {
+                        (v74_0_dispatch_tool(416, req_body_str, is_loopback), 416u64, "tool_outputs")
+                    } else if tool_called == "omega_lab_engine_otri_bridge" {
+                        (v74_0_dispatch_tool(417, req_body_str, is_loopback), 417u64, "tool_outputs")
+                    } else if tool_called == "chain418_master_certification" {
+                        (v74_0_dispatch_tool(418, req_body_str, is_loopback), 418u64, "tool_outputs")
                     } else {
                         let d1_db = v73_2_read_live_d1_database_name()
                             .unwrap_or_else(|| String::from("UNMEASURED/OFFLINE"));
@@ -8921,7 +9127,7 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
             continue;
         }
 
-        // 7b. Rejection for out-of-range tools (CHAIN 404 has tools 1..404)
+        // 7b. Rejection for out-of-range tools (CHAIN 418 has tools 1..418)
         if clean_path.starts_with("/api/v1/tools/t") || clean_path.starts_with("/api/v1/tool/") {
             let tool_id_opt = if let Some(s) = clean_path.strip_prefix("/api/v1/tools/t") {
                 s.chars().take_while(|c| c.is_ascii_digit()).collect::<String>().parse::<u64>().ok()
@@ -8931,9 +9137,9 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SwarmState>>) {
                 None
             };
             if let Some(id) = tool_id_opt {
-                if id > 404 || id == 0 {
+                if id > 418 || id == 0 {
                     let err_json = format!(
-                        "{{\"status\":\"ERROR_TOOL_OUT_OF_RANGE\",\"tool_id\":{},\"max_chain\":404,\"error\":\"Tool ID {} out of range for CHAIN 404\",\"endpoint\":\"{}\"}}",
+                        "{{\"status\":\"ERROR_TOOL_OUT_OF_RANGE\",\"tool_id\":{},\"max_chain\":418,\"error\":\"Tool ID {} out of range for CHAIN 418\",\"endpoint\":\"{}\"}}",
                         id,
                         id,
                         json_escape_clean(clean_path)
@@ -9398,13 +9604,13 @@ fn main() {
         inspected_hex: init_hex,
         inspected_trits: init_trits,
         last_card_idx: 0,
-        last_card_diag: format!("CARD #1 15.965 Hz DECADIC EPOCH CLOCK (SH4Z v7321): 62,637 us period (159.65 cycles / 10.000s Decadic Epoch E0..E9) -- Cycling 10 Faces of the Laplacian & 20 Quantum Equations (.e8z=557,056B 8,704CL, .npage=10,813,440B, .spage=5,406,720B, 84,480 Neurons, 4,055,040 Synapses, Unified Lab + VPC Mesh + Hyperdrive + Two-Phase Q8_0 SH-XI MoE, 524,288 BPE, 192 Sub-Domains, {} Lean 4 QED).", init_lean_badge),
+        last_card_diag: format!("CARD #1 15.965 Hz DECADIC EPOCH CLOCK (SH4Z v7400): 62,637 us period (159.65 cycles / 10.000s Decadic Epoch E0..E9) -- Cycling 10 Faces of the Laplacian & 20 Quantum Equations (.e8z=557,056B 8,704CL, .npage=10,813,440B, .spage=5,406,720B, 84,480 Neurons, 4,055,040 Synapses, 15-Station Omega Labs + VPC Mesh + Hyperdrive + Contextual SH4Z v7400 MoE, 524,288 BPE, 192 Sub-Domains, {} Lean 4 QED).", init_lean_badge),
         last_browser_url: String::from("https://act-omega-net.dev"),
-        last_browser_trace: format!("STAGE 1 (ER=EPR + 524,288 48-DOMAIN / 192-SUBDOMAIN DECODER): https://act-omega-net.dev <-> gamma_RT (I(A:B)=21.42 bits, Sinai h_mu=0.482>0) | STAGE 2 (10-LAPLACIAN 16-MODE FNO): L2_Err=0.00019, Re=416.8 < 2300 (LAMINAR) | STAGE 3 (84,480-NEURON VAULT + 4.055M SYNAPSES + SH-XI 3-SHELL MOE + VPC MESH): {} Lean 4 Proofs QED", init_lean_badge),
+        last_browser_trace: format!("STAGE 1 (ER=EPR + 524,288 48-DOMAIN / 192-SUBDOMAIN DECODER): https://act-omega-net.dev <-> gamma_RT (I(A:B)=21.42 bits, Sinai h_mu=0.482>0) | STAGE 2 (10-LAPLACIAN 16-MODE FNO): L2_Err=0.00019, Re=416.8 < 2300 (LAMINAR) | STAGE 3 (84,480-NEURON VAULT + 4.055M SYNAPSES + SH-XI 3-SHELL MOE + 15-STATION LABS + VPC MESH): {} Lean 4 Proofs QED", init_lean_badge),
         last_lean_query: format!("all_{}_substantive_theorems_qed", init_lean_thms),
-        last_lean_trace: format!("LEAN 4 QED VERIFIED: {} Substantive Proofs QED across 160 Sectors + SH-XI + Unified Lab + VPC Mesh/Hyperdrive (0 sorry, 0 axiom)", init_lean_badge),
-        last_term_cmd: String::from("CHAIN 404"),
-        last_term_out: String::from("EXEC(CHAIN_404_PARALLEL_DAG_QED) -> SH4Z v7321 Unified Lab (T369..T381) + Research Kernels (T382..T399) + Cloudflare QUIC VPC Mesh & Hyperdrive PGWire (T400..T404) + Two-Phase Q8_0 SH-XI MoE + 84,480 Neurons (262,144 Bijected CLs = 16.00 MiB, 4,055,040 Synapses) + Tools 1..404 Active"),
+        last_lean_trace: format!("LEAN 4 QED VERIFIED: {} Substantive Proofs QED across 160 Sectors + SH4Z v7400 + 15-Station Omega Labs + VPC Mesh/Hyperdrive (0 sorry, 0 axiom)", init_lean_badge),
+        last_term_cmd: String::from("CHAIN 418"),
+        last_term_out: String::from("EXEC(CHAIN_418_PARALLEL_DAG_QED) -> SH4Z v7400 15-Station Omega Labs (T405..T418, OMC6/OSP4/OTRI Seqlock Buses) + Research Kernels (T382..T399) + Cloudflare QUIC VPC Mesh & Hyperdrive PGWire (T400..T404) + Contextual SH-XI MoE + 84,480 Neurons (262,144 Bijected CLs = 16.00 MiB, 4,055,040 Synapses) + Tools 1..418 Active"),
     }));
 
     spawn_background_aggregator(Arc::clone(&state));

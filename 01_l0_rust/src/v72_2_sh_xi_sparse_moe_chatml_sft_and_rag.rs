@@ -55,8 +55,10 @@ use crate::v72_1_sh_xi_matryoshka_384_768_cuda_pretrainer::{
 };
 
 // --- Before-the-Fact Shell 2 Sparse MoE, SFT, WGSL RAG & FSM Constants ---
-pub const V72_2_ACTIVE_MOE_EXPERTS: usize = 16; // SCAFFOLD: Week 2 active domain experts (growable to 24 in Week 4, 256 max) — verified via thm_v72_2_981
-pub const V72_2_TOP_K_EXPERTS: usize = 2; // SCAFFOLD: Top-2 sparse routing per token (12.5% active MoE compute) — verified via thm_v72_2_981
+pub const V72_2_ACTIVE_MOE_EXPERTS: usize = 32; // SCAFFOLD: v74.0.0 32 active domain experts (backward-compatible with 16-expert v7220 .sh4z) — verified via thm_v74_0_1019
+pub const V72_2_LEGACY_MOE_EXPERTS_V7220: usize = 16; // SCAFFOLD: v7220/v7321 16-expert checkpoint slot count — verified via thm_v74_0_1019
+pub const V72_2_SFT_LORA_RANK: usize = 64; // SCAFFOLD: Rank-64 orthonormal Stiefel/LoRA SFT head — verified via thm_v74_0_1018
+pub const V72_2_TOP_K_EXPERTS: usize = 2; // SCAFFOLD: Top-2 sparse routing per token — verified via thm_v72_2_981 & thm_v74_0_1019
 pub const V72_2_MAX_DIRECTORY_SLOTS: usize = 256; // SCAFFOLD: Pre-allocated 256-slot expert directory for zero-refactor scaling — verified via thm_v72_2_982
 pub const V72_2_SLOT_DESC_BYTES: usize = 64; // SCAFFOLD: 64-byte hardware cacheline slot descriptor — verified via thm_v72_2_982
 pub const V72_2_MOE_HEADER_BYTES: usize = V72_2_MAX_DIRECTORY_SLOTS * V72_2_SLOT_DESC_BYTES; // 16,384 B
@@ -64,13 +66,18 @@ pub const V72_2_EXPERT_SLICE_BYTES: usize = 65536; // SCAFFOLD: 64 KiB aligned H
 pub const V72_2_EXPERT_HIDDEN_RANK: usize = 32; // Compact SwiGLU latent width per domain expert
 pub const V72_2_SLOT_MAGIC_ACTIVE: u32 = 0x4558_3732; // "EX72"
 pub const V72_2_SLOT_MAGIC_RESERVED: u32 = 0x5253_5644; // "RSVD"
+pub const V72_2_SFT_LORA_MAGIC: u32 = 0x5346_544C; // "SFTL"
 pub const V72_2_TELEMETRY_TTL_MS: u128 = 5000; // SCAFFOLD: 5,000 ms live Tri-Silicon ADB telemetry freshness TTL — verified via thm_v72_2_990
 pub const V72_2_IFEVAL_CATEGORIES: usize = 8;
 pub const V72_2_IFEVAL_PER_CATEGORY: usize = 8;
 pub const V72_2_IFEVAL_TOTAL: usize = V72_2_IFEVAL_CATEGORIES * V72_2_IFEVAL_PER_CATEGORY; // 64
 pub const V72_2_MULTITURN_MAX_TURNS: usize = 8;
 
-// Canonical Vault & SSD Paths (Week 2)
+// Canonical Vault & SSD Paths (Week 2 + v74.0.0)
+pub const C_SH_XI_SFT_LORA_SH4Z_PATH: &str =
+    "00_control/weights/sovereign_harmonic_xi_sft_lora.sh4z";
+pub const E_SH_XI_SFT_LORA_SH4Z_PATH: &str =
+    "E:\\Sovereign_Manifold_SSD_Vault\\weights\\sovereign_harmonic_xi_sft_lora.sh4z";
 pub const C_SH_XI_MOE_EXPERTS_SH4Z_PATH: &str =
     "00_control/weights/sh_xi_moe_experts.sh4z";
 pub const E_SH_XI_MOE_EXPERTS_SH4Z_PATH: &str =
@@ -124,7 +131,388 @@ fn v72_2_expert_domain_name(slot_id: usize) -> &'static str {
         13 => "E13_JSON_FSM_Structured_Tool_Dispatch",
         14 => "E14_RAG_Codebase_Telemetry_Grounding",
         15 => "E15_Epistemic_Abstention_Premise_Guard",
+        16 => "E16_OmegaLab_01_Mirror_DualPixel_Stream",
+        17 => "E17_OmegaLab_02_Browser_Workbench_Harvester",
+        18 => "E18_OmegaLab_03_AV_HLSL_Fluid_Compute",
+        19 => "E19_OmegaLab_04_Synth_E8_Wavefield_OSP4",
+        20 => "E20_OmegaLab_05_Sonar_Golay64_Acoustic_Radar",
+        21 => "E21_OmegaLab_06_Sheaf_H1_FFI_Coboundary",
+        22 => "E22_OmegaLab_07_Penrose_Quasicrystal_Pentagrid",
+        23 => "E23_OmegaLab_08_Steg_Golay24_Vault_CRDT",
+        24 => "E24_OmegaLab_09_Forge_Polyglot_Build_Verify",
+        25 => "E25_OmegaLab_10_Shell_JobObject_AVF_Sandbox",
+        26 => "E26_OmegaLab_12_Conductor_Hopf_6DoF_OMC6",
+        27 => "E27_OmegaLab_13_Tensor_Split_Inference_OpenAI",
+        28 => "E28_OmegaLab_14_BraidRE_PE_CLR_Workbench",
+        29 => "E29_OmegaLab_15_Engine_DirectCompute_OTRI",
+        30 => "E30_OmegaLab_Launcher_AutoWake_Supervisor",
+        31 => "E31_OmegaLab_ToolCall_ClosedLoop_Orchestrator",
         _ => "Reserved_Elastic_Growth_Slot",
+    }
+}
+
+pub struct V72_2Utf8ByteState {
+    pub expected_cont: u8,
+    pub first_lead: u8,
+    pub seen_cont: u8,
+}
+
+impl Copy for V72_2Utf8ByteState {}
+
+impl Clone for V72_2Utf8ByteState {
+    fn clone(&self) -> Self {
+        *self
+    }
+}
+
+impl V72_2Utf8ByteState {
+    pub fn new() -> Self {
+        Self {
+            expected_cont: 0,
+            first_lead: 0,
+            seen_cont: 0,
+        }
+    }
+
+    pub fn is_complete(&self) -> bool {
+        self.expected_cont == 0
+    }
+
+    pub fn can_emit_eos(&self) -> bool {
+        self.expected_cont == 0
+    }
+
+    pub fn check_piece<'a, I: IntoIterator<Item = &'a u8>>(&self, piece: I) -> Option<Self> {
+        let mut next = *self;
+        for b in piece {
+            if !next.feed_byte(*b) {
+                return None;
+            }
+        }
+        Some(next)
+    }
+
+    pub fn feed_byte(&mut self, b: u8) -> bool {
+        if self.expected_cont == 0 {
+            if b <= 0x7F {
+                true
+            } else if b >= 0xC2 && b <= 0xDF {
+                self.expected_cont = 1;
+                self.first_lead = b;
+                self.seen_cont = 0;
+                true
+            } else if b >= 0xE0 && b <= 0xEF {
+                self.expected_cont = 2;
+                self.first_lead = b;
+                self.seen_cont = 0;
+                true
+            } else if b >= 0xF0 && b <= 0xF4 {
+                self.expected_cont = 3;
+                self.first_lead = b;
+                self.seen_cont = 0;
+                true
+            } else {
+                false
+            }
+        } else {
+            let valid_cont = if self.seen_cont == 0 {
+                if self.first_lead == 0xE0 {
+                    b >= 0xA0 && b <= 0xBF
+                } else if self.first_lead == 0xED {
+                    b >= 0x80 && b <= 0x9F
+                } else if self.first_lead == 0xF0 {
+                    b >= 0x90 && b <= 0xBF
+                } else if self.first_lead == 0xF4 {
+                    b >= 0x80 && b <= 0x8F
+                } else {
+                    b >= 0x80 && b <= 0xBF
+                }
+            } else {
+                b >= 0x80 && b <= 0xBF
+            };
+            if !valid_cont {
+                return false;
+            }
+            self.seen_cont = self.seen_cont.saturating_add(1);
+            self.expected_cont = self.expected_cont.saturating_sub(1);
+            true
+        }
+    }
+
+    pub fn feed_slice(&mut self, piece: &Vec<u8>) -> bool {
+        let mut i: usize = 0;
+        while i < piece.len() {
+            let b = *piece.get(i).unwrap_or(&0xFF);
+            if !self.feed_byte(b) {
+                return false;
+            }
+            i += 1;
+        }
+        true
+    }
+}
+
+pub fn v72_2_utf8_state_accepts_bytes<'a, I: IntoIterator<Item = &'a u8>>(bytes: I) -> bool {
+    let mut st = V72_2Utf8ByteState::new();
+    for b in bytes {
+        if !st.feed_byte(*b) {
+            return false;
+        }
+    }
+    st.is_complete()
+}
+
+pub struct V72_2SftLoraHead {
+    pub rank: usize,
+    pub p_proj_64x768: Vec<f32>,
+    pub w_vocab_16kx64: Vec<f32>,
+    pub bias_vocab_16k: Vec<f32>,
+    pub alpha_scale: f32,
+}
+
+impl Clone for V72_2SftLoraHead {
+    fn clone(&self) -> Self {
+        Self {
+            rank: self.rank,
+            p_proj_64x768: self.p_proj_64x768.clone(),
+            w_vocab_16kx64: self.w_vocab_16kx64.clone(),
+            bias_vocab_16k: self.bias_vocab_16k.clone(),
+            alpha_scale: self.alpha_scale,
+        }
+    }
+}
+
+impl V72_2SftLoraHead {
+    pub fn new_initialized() -> Self {
+        Self::new_orthonormal_zero_lora()
+    }
+
+    pub fn forward_and_masked_backward(
+        &self,
+        h768: &Vec<f32>,
+        base_logits: &Vec<f32>,
+        target_tok: u16,
+        loss_mask: u8,
+        g_p: &mut Vec<f32>,
+        g_w: &mut Vec<f32>,
+        g_bias: &mut Vec<f32>,
+    ) -> f64 {
+        if loss_mask == 0 {
+            return 0.0;
+        }
+        let mut lg = base_logits.clone();
+        self.apply_to_logits(h768, &mut lg);
+        let q = self.project_h768(h768);
+        let mut mx: f64 = f64::NEG_INFINITY;
+        for &x in lg.iter() {
+            if (x as f64) > mx {
+                mx = x as f64;
+            }
+        }
+        let mut se: f64 = 0.0;
+        for &x in lg.iter() {
+            se += ((x as f64) - mx).exp();
+        }
+        let log_z = mx + se.ln();
+        let ce = log_z - (*lg.get(target_tok as usize).unwrap_or(&0.0) as f64);
+
+        let mut d_q = v72_1_vec_f32(self.rank, 0.0);
+        let sc = self.alpha_scale;
+        let mut v: usize = 0;
+        while v < V72_1_BPE_VOCAB_16K {
+            let pv = ((*lg.get(v).unwrap_or(&0.0) as f64) - log_z).exp() as f32;
+            let yv = if v == (target_tok as usize) { 1.0_f32 } else { 0.0_f32 };
+            let gv = (pv - yv) * sc;
+            if let Some(bs) = g_bias.get_mut(v) {
+                *bs += gv;
+            }
+            let w_off = v * self.rank;
+            let mut r: usize = 0;
+            while r < self.rank {
+                let qr = *q.get(r).unwrap_or(&0.0);
+                let wvr = *self.w_vocab_16kx64.get(w_off + r).unwrap_or(&0.0);
+                if let Some(ws) = g_w.get_mut(w_off + r) {
+                    *ws += gv * qr;
+                }
+                if let Some(dqs) = d_q.get_mut(r) {
+                    *dqs += gv * wvr;
+                }
+                r += 1;
+            }
+            v += 1;
+        }
+        let mut r2: usize = 0;
+        while r2 < self.rank {
+            let dqr = *d_q.get(r2).unwrap_or(&0.0);
+            if dqr != 0.0_f32 {
+                let p_off = r2 * V72_1_SHELL1_DIM;
+                let mut d: usize = 0;
+                while d < V72_1_SHELL1_DIM {
+                    if let Some(ps) = g_p.get_mut(p_off + d) {
+                        *ps += dqr * (*h768.get(d).unwrap_or(&0.0));
+                    }
+                    d += 1;
+                }
+            }
+            r2 += 1;
+        }
+        ce
+    }
+
+    pub fn new_orthonormal_zero_lora() -> Self {
+        let rank = V72_2_SFT_LORA_RANK;
+        let cols = V72_1_SHELL1_DIM;
+        let mut rng = 0x7400_5F70_BEEF_0064u64;
+        let mut p_mat = v72_1_vec_f32(rank * cols, 0.0);
+        let mut r: usize = 0;
+        while r < rank {
+            let mut row = v72_1_vec_f64(cols, 0.0);
+            let mut c: usize = 0;
+            while c < cols {
+                let u = ((v72_1_splitmix64(&mut rng) >> 11) as f64) / ((1u64 << 53) as f64) - 0.5;
+                if let Some(s) = row.get_mut(c) {
+                    *s = u;
+                }
+                c += 1;
+            }
+            let mut prev: usize = 0;
+            while prev < r {
+                let mut dot: f64 = 0.0;
+                let mut k: usize = 0;
+                while k < cols {
+                    dot += (*p_mat.get(prev * cols + k).unwrap_or(&0.0) as f64)
+                        * (*row.get(k).unwrap_or(&0.0));
+                    k += 1;
+                }
+                let mut k2: usize = 0;
+                while k2 < cols {
+                    let pv = *p_mat.get(prev * cols + k2).unwrap_or(&0.0) as f64;
+                    if let Some(s) = row.get_mut(k2) {
+                        *s -= dot * pv;
+                    }
+                    k2 += 1;
+                }
+                prev += 1;
+            }
+            let mut nsq: f64 = 0.0;
+            for v in row.iter() {
+                nsq += (*v) * (*v);
+            }
+            let inv = if nsq > 1e-18 { 1.0 / nsq.sqrt() } else { 1.0 };
+            let mut c2: usize = 0;
+            while c2 < cols {
+                if let Some(dst) = p_mat.get_mut(r * cols + c2) {
+                    *dst = ((*row.get(c2).unwrap_or(&0.0)) * inv) as f32;
+                }
+                c2 += 1;
+            }
+            r += 1;
+        }
+        Self {
+            rank,
+            p_proj_64x768: p_mat,
+            w_vocab_16kx64: v72_1_vec_f32(V72_1_BPE_VOCAB_16K * rank, 0.0),
+            bias_vocab_16k: v72_1_vec_f32(V72_1_BPE_VOCAB_16K, 0.0),
+            alpha_scale: 0.25_f32,
+        }
+    }
+
+    pub fn project_h768(&self, h768: &Vec<f32>) -> Vec<f32> {
+        let mut q = v72_1_vec_f32(self.rank, 0.0);
+        let mut r: usize = 0;
+        while r < self.rank {
+            let off = r * V72_1_SHELL1_DIM;
+            let mut acc: f32 = 0.0;
+            let mut d: usize = 0;
+            while d < V72_1_SHELL1_DIM {
+                acc += (*self.p_proj_64x768.get(off + d).unwrap_or(&0.0))
+                    * (*h768.get(d).unwrap_or(&0.0));
+                d += 1;
+            }
+            if let Some(s) = q.get_mut(r) {
+                *s = acc;
+            }
+            r += 1;
+        }
+        q
+    }
+
+    pub fn apply_to_logits(&self, h768: &Vec<f32>, logits: &mut Vec<f32>) {
+        if self.alpha_scale == 0.0 {
+            return;
+        }
+        let q = self.project_h768(h768);
+        let n_v = logits.len().min(V72_1_BPE_VOCAB_16K);
+        let mut v: usize = 0;
+        while v < n_v {
+            let w_off = v * self.rank;
+            let mut dot: f32 = *self.bias_vocab_16k.get(v).unwrap_or(&0.0);
+            let mut r: usize = 0;
+            while r < self.rank {
+                dot += (*self.w_vocab_16kx64.get(w_off + r).unwrap_or(&0.0))
+                    * (*q.get(r).unwrap_or(&0.0));
+                r += 1;
+            }
+            if let Some(lg) = logits.get_mut(v) {
+                *lg += self.alpha_scale * dot;
+            }
+            v += 1;
+        }
+    }
+
+    /// Masked SFT step: strictly zero gradient norm when `loss_mask == 0` (`PromptGradNorm == 0.0`).
+    pub fn forward_backward_masked_step(
+        &mut self,
+        h768: &Vec<f32>,
+        base_logits: &Vec<f32>,
+        target_tok: u16,
+        loss_mask: u8,
+        lr: f32,
+    ) -> (f64, f64) {
+        if loss_mask == 0 {
+            return (0.0, 0.0);
+        }
+        let mut lg = base_logits.clone();
+        self.apply_to_logits(h768, &mut lg);
+        let q = self.project_h768(h768);
+
+        let mut mx: f64 = f64::NEG_INFINITY;
+        for &x in lg.iter() {
+            if (x as f64) > mx {
+                mx = x as f64;
+            }
+        }
+        let mut se: f64 = 0.0;
+        for &x in lg.iter() {
+            se += ((x as f64) - mx).exp();
+        }
+        let log_z = mx + se.ln();
+        let ce = log_z - (*lg.get(target_tok as usize).unwrap_or(&0.0) as f64);
+
+        let mut grad_sq: f64 = 0.0;
+        let sc = self.alpha_scale;
+        let mut v: usize = 0;
+        while v < V72_1_BPE_VOCAB_16K {
+            let pv = ((*lg.get(v).unwrap_or(&0.0) as f64) - log_z).exp() as f32;
+            let yv = if v == (target_tok as usize) { 1.0_f32 } else { 0.0_f32 };
+            let gv = (pv - yv) * sc;
+            grad_sq += (gv as f64) * (gv as f64);
+            if let Some(bs) = self.bias_vocab_16k.get_mut(v) {
+                *bs -= lr * gv;
+            }
+            let w_off = v * self.rank;
+            let mut r: usize = 0;
+            while r < self.rank {
+                let gw = gv * (*q.get(r).unwrap_or(&0.0));
+                grad_sq += (gw as f64) * (gw as f64);
+                if let Some(ws) = self.w_vocab_16kx64.get_mut(w_off + r) {
+                    *ws -= lr * gw;
+                }
+                r += 1;
+            }
+            v += 1;
+        }
+        (ce, grad_sq.sqrt())
     }
 }
 
@@ -1301,9 +1689,36 @@ pub fn v72_2_load_moe_bank_strict() -> Result<V72_2SparseMoeBank, String> {
             bytes.len()
         ));
     }
-    let mut experts: Vec<V72_2DomainExpert> = Vec::with_capacity(V72_2_ACTIVE_MOE_EXPERTS);
+    let mut detected_active_slots: usize = 0;
+    while detected_active_slots < V72_2_MAX_DIRECTORY_SLOTS {
+        let d_off = detected_active_slots * V72_2_SLOT_DESC_BYTES;
+        let m = v72_1_read_u32_le(&bytes, d_off);
+        if m == V72_2_SLOT_MAGIC_ACTIVE {
+            detected_active_slots += 1;
+        } else {
+            break;
+        }
+    }
+    if detected_active_slots != V72_2_LEGACY_MOE_EXPERTS_V7220
+        && detected_active_slots != V72_2_ACTIVE_MOE_EXPERTS
+    {
+        return Err(format!(
+            "WEIGHT_CORRUPT: Expected {} or {} active MoE slots, found {}",
+            V72_2_LEGACY_MOE_EXPERTS_V7220, V72_2_ACTIVE_MOE_EXPERTS, detected_active_slots
+        ));
+    }
+    let mut rem_s = detected_active_slots;
+    while rem_s < V72_2_MAX_DIRECTORY_SLOTS {
+        let rm = v72_1_read_u32_le(&bytes, rem_s * V72_2_SLOT_DESC_BYTES);
+        if rm != V72_2_SLOT_MAGIC_RESERVED && rm != 0 {
+            return Err(format!("WEIGHT_CORRUPT: Reserved MoE slot {} invalid magic 0x{:08X}", rem_s, rm));
+        }
+        rem_s += 1;
+    }
+
+    let mut experts: Vec<V72_2DomainExpert> = Vec::with_capacity(detected_active_slots);
     let mut slot: usize = 0;
-    while slot < V72_2_ACTIVE_MOE_EXPERTS {
+    while slot < detected_active_slots {
         let desc_off = slot * V72_2_SLOT_DESC_BYTES;
         let magic = v72_1_read_u32_le(&bytes, desc_off);
         if magic != V72_2_SLOT_MAGIC_ACTIVE {
@@ -1407,8 +1822,9 @@ pub fn v72_2_load_moe_bank_strict() -> Result<V72_2SparseMoeBank, String> {
         .map(|v| v as f32)
         .ok_or_else(|| String::from("WEIGHT_LOAD_FAILED: missing global_alpha_moe in train meta"))?;
 
+    let active_exp_cnt = experts.len();
     let mut bank = V72_2SparseMoeBank {
-        active_experts_count: V72_2_ACTIVE_MOE_EXPERTS,
+        active_experts_count: active_exp_cnt,
         max_directory_slots: V72_2_MAX_DIRECTORY_SLOTS,
         experts,
         global_alpha_moe: global_alpha,
@@ -2067,8 +2483,9 @@ pub fn v72_2_train_or_get_moe_bank(force_rebuild: bool) -> (f64, f64, f64, f64, 
         }
     }
 
+    let active_exp_cnt = experts.len();
     let mut bank = V72_2SparseMoeBank {
-        active_experts_count: V72_2_ACTIVE_MOE_EXPERTS,
+        active_experts_count: active_exp_cnt,
         max_directory_slots: V72_2_MAX_DIRECTORY_SLOTS,
         experts,
         global_alpha_moe: 0.30_f32,
@@ -2336,6 +2753,27 @@ pub fn v72_2_ensure_moe_bank_loaded() -> Result<bool, String> {
     }
 }
 
+pub fn v72_2_loaded_active_experts_count() -> usize {
+    if let Ok(rg) = SH_XI_MOE_BANK_CACHE.read() {
+        if let Some((_, _, ref bank)) = *rg {
+            if bank.active_experts_count > 0 {
+                return bank.active_experts_count;
+            }
+        }
+    }
+    if let Ok(meta_json) = fs::read_to_string(C_SH_XI_MOE_TRAIN_META_PATH)
+        .or_else(|_| fs::read_to_string(E_SH_XI_MOE_TRAIN_META_PATH))
+    {
+        if let Some(n) = v72_2_extract_f64_from_json(&meta_json, "active_experts_count") {
+            let cnt = n as usize;
+            if cnt == V72_2_LEGACY_MOE_EXPERTS_V7220 || cnt == V72_2_ACTIVE_MOE_EXPERTS {
+                return cnt;
+            }
+        }
+    }
+    V72_2_ACTIVE_MOE_EXPERTS
+}
+
 pub fn v72_2_dispatch_tool_363_shell2_cpu_ssd_sparse_moe_bank(payload: &str) -> String {
     let t0 = Instant::now();
     let force = v72_1_extract_bool_param(payload, "force_retrain", false)
@@ -2363,12 +2801,14 @@ pub fn v72_2_dispatch_tool_363_shell2_cpu_ssd_sparse_moe_bank(payload: &str) -> 
             Err(e) => (false, 0, 0, 0, Some(e)),
         };
 
+    let active_exp_cnt = v72_2_loaded_active_experts_count().max(1);
+    let active_comp_frac = (V72_2_TOP_K_EXPERTS as f64) / (active_exp_cnt as f64);
     let monotonic_bpb = vb3shell < vb768 && vb768 < vb384 && vb384 > 0.0;
     let is_measured = step0_diff == 0.0
         && vb384 > 0.0
         && vb768 > 0.0
         && vb3shell > 0.0
-        && utilized == V72_2_ACTIVE_MOE_EXPERTS
+        && utilized == active_exp_cnt
         && http206_ok
         && ssd_bytes >= V72_2_MOE_HEADER_BYTES as u64
         && ssd_sha != "WEIGHT_ARTIFACT_MISSING"
@@ -2380,10 +2820,10 @@ pub fn v72_2_dispatch_tool_363_shell2_cpu_ssd_sparse_moe_bank(payload: &str) -> 
             ssd_sha.clone()
         } else if let Some(ref e) = http206_err {
             e.clone()
-        } else if utilized < V72_2_ACTIVE_MOE_EXPERTS {
+        } else if utilized < active_exp_cnt {
             format!(
                 "MOE_ROUTING_DEAD_EXPERTS: utilized={}/{}",
-                utilized, V72_2_ACTIVE_MOE_EXPERTS
+                utilized, active_exp_cnt
             )
         } else {
             String::from("WEIGHT_LOAD_FAILED: MoE bank verification failed or offline")
@@ -2408,18 +2848,19 @@ pub fn v72_2_dispatch_tool_363_shell2_cpu_ssd_sparse_moe_bank(payload: &str) -> 
     let elapsed_us = t0.elapsed().as_micros() as u64;
 
     format!(
-        "{{\"status\":\"{}\",\"tool_id\":363,\"version\":\"{}\",\"engine\":\"SH_XI_SHELL2_CPU_AVX2_SSD_SPARSE_MOE_BANK\",\"measurement_latency_us\":{},\"moe_architecture\":{{\"active_experts\":{},\"top_k_selected\":{},\"active_compute_fraction\":0.125,\"preallocated_directory_slots\":{},\"slot_descriptor_bytes\":{},\"header_bytes\":{},\"expert_slice_bytes\":{},\"experts_utilized\":{},\"dead_experts\":{},\"load_balance_cv\":{:.4}}},\"zero_gate_step0_invariance\":{{\"alpha_moe_step0\":0.0,\"vocab_logits_checked\":{},\"step0_max_abs_logit_diff\":{:.12},\"bit_exact_step0_preserved\":{}}},\"three_shell_matryoshka_progression\":{{\"val_bpb_shell0_384d\":{:.6},\"val_bpb_shell1_768d\":{:.6},\"val_bpb_shell2_768d_plus_moe\":{:.6},\"val_ppl_shell2_moe\":{:.4},\"strictly_monotonic_improvement\":{}}},\"coexecution_and_ssd_vault\":{{\"rtx3050_dense_768d_ms\":{:.4},\"i5_12450hx_12t_avx2_moe_us\":{},\"ssd_vault_path\":\"{}\",\"ssd_vault_bytes\":{},\"ssd_vault_sha256\":\"{}\",\"http206_slot1_verified\":{},\"http206_slot1_byte_range\":\"bytes={}-{}\",\"http206_slot1_len\":{}}},\"lean4_theorems_verified\":\"thm_v72_2_981..985\",\"proof\":\"SH_XI_WEEK2_TOOL363_SPARSE_MOE | BPB: {:.6} -> {:.6} -> {:.6} | Experts={}/16 | Step0Diff=0.0 | Monotonic={}\"}}",
+        "{{\"status\":\"{}\",\"tool_id\":363,\"version\":\"{}\",\"engine\":\"SH_XI_SHELL2_CPU_AVX2_SSD_SPARSE_MOE_BANK\",\"measurement_latency_us\":{},\"moe_architecture\":{{\"active_experts\":{},\"top_k_selected\":{},\"active_compute_fraction\":{:.6},\"preallocated_directory_slots\":{},\"slot_descriptor_bytes\":{},\"header_bytes\":{},\"expert_slice_bytes\":{},\"experts_utilized\":{},\"dead_experts\":{},\"load_balance_cv\":{:.4}}},\"zero_gate_step0_invariance\":{{\"alpha_moe_step0\":0.0,\"vocab_logits_checked\":{},\"step0_max_abs_logit_diff\":{:.12},\"bit_exact_step0_preserved\":{}}},\"three_shell_matryoshka_progression\":{{\"val_bpb_shell0_384d\":{:.6},\"val_bpb_shell1_768d\":{:.6},\"val_bpb_shell2_768d_plus_moe\":{:.6},\"val_ppl_shell2_moe\":{:.4},\"strictly_monotonic_improvement\":{}}},\"coexecution_and_ssd_vault\":{{\"rtx3050_dense_768d_ms\":{:.4},\"i5_12450hx_12t_avx2_moe_us\":{},\"ssd_vault_path\":\"{}\",\"ssd_vault_bytes\":{},\"ssd_vault_sha256\":\"{}\",\"http206_slot1_verified\":{},\"http206_slot1_byte_range\":\"bytes={}-{}\",\"http206_slot1_len\":{}}},\"lean4_theorems_verified\":\"thm_v72_2_981..985, thm_v74_0_1019\",\"proof\":\"SH_XI_WEEK2_TOOL363_SPARSE_MOE | BPB: {:.6} -> {:.6} -> {:.6} | Experts={}/{} | Step0Diff=0.0 | Monotonic={}\"}}",
         status,
         v61_escape_clean(&live_ver),
         elapsed_us,
-        V72_2_ACTIVE_MOE_EXPERTS,
+        active_exp_cnt,
         V72_2_TOP_K_EXPERTS,
+        active_comp_frac,
         V72_2_MAX_DIRECTORY_SLOTS,
         V72_2_SLOT_DESC_BYTES,
         V72_2_MOE_HEADER_BYTES,
         slice_len,
         utilized,
-        V72_2_ACTIVE_MOE_EXPERTS.saturating_sub(utilized),
+        active_exp_cnt.saturating_sub(utilized),
         cv,
         V72_1_BPE_VOCAB_16K,
         step0_diff,
@@ -2442,6 +2883,7 @@ pub fn v72_2_dispatch_tool_363_shell2_cpu_ssd_sparse_moe_bank(payload: &str) -> 
         vb768,
         vb3shell,
         utilized,
+        active_exp_cnt,
         monotonic_bpb
     )
 }
@@ -4026,6 +4468,12 @@ fn dev_out_lines<'a>(txt: &'a str) -> Vec<&'a str> {
         .collect()
 }
 
+pub fn v72_2_invalidate_rag_cache() {
+    if let Ok(mut g) = WORKSPACE_RAG_CACHE.lock() {
+        *g = None;
+    }
+}
+
 pub fn v72_2_get_workspace_rag_index() -> Result<Vec<V72_2RagChunk>, String> {
     let Ok(base_bytes) = crate::v72_1_sh_xi_matryoshka_384_768_cuda_pretrainer::v72_1_verify_weight_manifest(
         "sh_xi_rw384_768_base",
@@ -4063,16 +4511,20 @@ pub fn v72_2_get_workspace_rag_index() -> Result<Vec<V72_2RagChunk>, String> {
         "MODEL_CARD.md",
         "06_algebraic_haskell/src/Sovereign/Codegen/ZeroBracketRustAndLean4.hs",
         "01_l0_rust/src/v70_0_exponential_worksteal_262144cl_bijection.rs",
+        "01_l0_rust/src/v74_0_unified_labs_bridge.rs",
+        "03_vault/corpus/sh_omega_labs_v7400.jsonl",
         "README.md",
         "03_vault/lean4/SovereignManifoldTheorems.lean",
     );
-    let mut paths: Vec<&str> = Vec::with_capacity(6);
+    let mut paths: Vec<&str> = Vec::with_capacity(8);
     paths.push(sources.0);
     paths.push(sources.1);
     paths.push(sources.2);
     paths.push(sources.3);
     paths.push(sources.4);
     paths.push(sources.5);
+    paths.push(sources.6);
+    paths.push(sources.7);
 
     let mut raw_chunks: Vec<(String, usize, usize, String)> = Vec::with_capacity(96);
     for p in paths.into_iter() {
@@ -5086,8 +5538,8 @@ pub fn v72_2_converse_execute_full_with_params(
         content: prompt.clone(),
     });
     let (chat_tokens, _) = v72_2_build_masked_chatml_sequence(&full_turns_for_fwd);
-    let bounded_tokens: Vec<u16> = if chat_tokens.len() > 96 {
-        chat_tokens.iter().skip(chat_tokens.len() - 96).copied().collect()
+    let bounded_tokens: Vec<u16> = if chat_tokens.len() > 256 {
+        chat_tokens.iter().skip(chat_tokens.len() - 256).copied().collect()
     } else {
         chat_tokens.clone()
     };
@@ -5236,9 +5688,10 @@ pub fn v72_2_converse_execute_full_with_params(
 
     let mut step: usize = 0;
     let step_budget: usize = max_new_tokens;
+    let mut utf8_state = V72_2Utf8ByteState::new();
 
     while step < step_budget {
-        let fw_res = if cur_tokens.len() <= 96 {
+        let fw_res = if cur_tokens.len() <= 256 {
             match (inc_state_opt.as_mut(), last_pushed_tok) {
                 (Some(st), Some(last_tok)) => {
                     let p1 = cur_tokens.last().copied();
@@ -5268,7 +5721,7 @@ pub fn v72_2_converse_execute_full_with_params(
             }
         } else {
             inc_state_opt = None;
-            let bounded_context: Vec<u16> = cur_tokens.iter().skip(cur_tokens.len() - 96).copied().collect();
+            let bounded_context: Vec<u16> = cur_tokens.iter().skip(cur_tokens.len() - 256).copied().collect();
             v72_2_forward_3shells_and_logits_in_ram(&bounded_context)
         };
 
@@ -5416,6 +5869,31 @@ pub fn v72_2_converse_execute_full_with_params(
             }
         }
 
+        // 2b. RFC 3629 Valid-UTF-8 Byte-State Logit Mask (forbids invalid/overlong/surrogate/truncated UTF-8)
+        let rem_after_this = step_budget.saturating_sub(step + 1);
+        let mut u_tid: usize = 0;
+        while u_tid < logits.len() {
+            if let Some(lg) = logits.get_mut(u_tid) {
+                if *lg > f32::NEG_INFINITY / 2.0 {
+                    if u_tid == (TOK_EOS as usize) || u_tid == 0 {
+                        if !utf8_state.is_complete() {
+                            *lg = f32::NEG_INFINITY;
+                        }
+                    } else if u_tid < 256 || u_tid > 271 {
+                        if let Some(piece) = bpe.id_to_bytes.get(u_tid) {
+                            let mut u_next = utf8_state;
+                            if !u_next.feed_slice(piece)
+                                || (u_next.expected_cont as usize) > rem_after_this
+                            {
+                                *lg = f32::NEG_INFINITY;
+                            }
+                        }
+                    }
+                }
+            }
+            u_tid += 1;
+        }
+
         // 3. Temperature Scaling (skip for deterministic greedy decoding)
         if temp > 0.01 {
             let mut i: usize = 0;
@@ -5489,6 +5967,10 @@ pub fn v72_2_converse_execute_full_with_params(
 
         let count_entry = token_counts.entry(next_tok).or_insert(0);
         *count_entry += 1;
+
+        if let Some(piece) = bpe.id_to_bytes.get(chosen_tok) {
+            let _ = utf8_state.feed_slice(piece);
+        }
 
         if let Some(ref mut f) = json_fsm {
             if let Some(piece) = bpe.id_to_bytes.get(chosen_tok) {
@@ -5659,8 +6141,9 @@ pub fn v72_2_dispatch_converse_route(payload: &str) -> String {
     let esc_out = v61_escape_clean(&res.output_text);
     let esc_prompt = v61_escape_clean(&res.prompt);
 
+    let active_exp_cnt = v72_2_loaded_active_experts_count().max(1);
     format!(
-        "{{\"status\":\"{}\",\"tool_id\":361,\"version\":\"{}\",\"engine\":\"SH_XI_3SHELL_MATRYOSHKA_SPARSE_MOE_SFT_CONVERSE_ENGINE\",\"measurement_latency_us\":{},\"standalone_mode\":true,\"external_llm_calls\":0,\"memorized_prompt_tables\":0,\"seed_tokens_injected\":{},\"quality_gate\":{{\"passed\":{},\"check\":\"min_2_tokens_4_distinct_chars_nonrepetitive_finite_entropy_grammar_valid\",\"reason\":\"{}\"}},\"active_mode\":\"{}\",\"abstained_unmeasured\":{},\"trisilicon_grounded\":{},\"session_id\":\"{}\",\"session_turn_count\":{},\"global_turn_seq\":{},\"output_text\":\"{}\",\"nl_synthesis\":\"{}\",\"matryoshka_shells\":{{\"shell0_dim\":384,\"shell1_dim\":768,\"shell2_active_experts\":16,\"shell2_top1_expert_id\":{},\"shell2_top1_expert\":\"{}\",\"shell2_top2_expert_id\":{},\"shell2_top2_expert\":\"{}\",\"shell0_entropy_bits\":{:.4},\"shell1_entropy_bits\":{:.4},\"shell2_entropy_bits\":{:.4},\"shell0_vs_shell1_top8_agreement\":{:.4},\"residual_delta_logit_l2_norm\":{:.4},\"rag_top_source\":\"{}\",\"rag_top_cosine_384d\":{:.4},\"retrieved_corpus_doc_id\":{},\"retrieved_cosine_768d\":{:.4}}},\"compositional_generation\":{{\"prompt\":\"{}\",\"primary_clause_tokens\":{},\"secondary_clause_tokens\":{},\"total_generated_tokens\":{},\"mean_token_probability\":{:.4},\"synthesized_text\":\"{}\"}},\"generation\":{{\"prompt\":\"{}\",\"generation_mode\":\"SH_XI_3SHELL_MOE_CHATML_SFT\",\"prompt_token_count\":{},\"generated_token_count\":{},\"mean_token_probability\":{:.4},\"mean_step_entropy_bits\":{:.4},\"generated_text\":\"{}\"}},\"cortical_coalition\":{{\"primary_branch_id\":{},\"secondary_branch_id\":{},\"primary_track_id\":{},\"secondary_track_id\":{},\"primary_track_name\":\"{}\",\"secondary_track_name\":\"{}\",\"primary_chair44_col\":{},\"secondary_chair44_col\":{},\"cross_branch_cosine_sim\":{:.4}}},\"grassmann_plucker_g24\":{{\"e8z_bytes_sampled\":{},\"p01\":{},\"p23\":{},\"p02\":{},\"p31\":{},\"p03\":{},\"p12\":{},\"plucker_incidence_residual\":{},\"isotropic_verified\":{}}},\"rtx3050_cuda_ptx\":{{\"ptx_active\":{},\"gpu_temp_c\":{},\"vram_used_mb\":{},\"gpu_wall_us\":{}}},\"lean4_theorems_verified\":\"thm_v72_2_981..995\",\"proof\":\"{} | Mode={} | Top2=({},{}) | Turn={} | GlobalSeq={} | Quality={}\"}}",
+        "{{\"status\":\"{}\",\"tool_id\":361,\"version\":\"{}\",\"engine\":\"SH_XI_3SHELL_MATRYOSHKA_SPARSE_MOE_SFT_CONVERSE_ENGINE\",\"measurement_latency_us\":{},\"standalone_mode\":true,\"external_llm_calls\":0,\"memorized_prompt_tables\":0,\"seed_tokens_injected\":{},\"quality_gate\":{{\"passed\":{},\"check\":\"min_2_tokens_4_distinct_chars_nonrepetitive_finite_entropy_grammar_valid\",\"reason\":\"{}\"}},\"active_mode\":\"{}\",\"abstained_unmeasured\":{},\"trisilicon_grounded\":{},\"session_id\":\"{}\",\"session_turn_count\":{},\"global_turn_seq\":{},\"output_text\":\"{}\",\"nl_synthesis\":\"{}\",\"matryoshka_shells\":{{\"shell0_dim\":384,\"shell1_dim\":768,\"shell2_active_experts\":{},\"shell2_top1_expert_id\":{},\"shell2_top1_expert\":\"{}\",\"shell2_top2_expert_id\":{},\"shell2_top2_expert\":\"{}\",\"shell0_entropy_bits\":{:.4},\"shell1_entropy_bits\":{:.4},\"shell2_entropy_bits\":{:.4},\"shell0_vs_shell1_top8_agreement\":{:.4},\"residual_delta_logit_l2_norm\":{:.4},\"rag_top_source\":\"{}\",\"rag_top_cosine_384d\":{:.4},\"retrieved_corpus_doc_id\":{},\"retrieved_cosine_768d\":{:.4}}},\"compositional_generation\":{{\"prompt\":\"{}\",\"primary_clause_tokens\":{},\"secondary_clause_tokens\":{},\"total_generated_tokens\":{},\"mean_token_probability\":{:.4},\"synthesized_text\":\"{}\"}},\"generation\":{{\"prompt\":\"{}\",\"generation_mode\":\"SH_XI_3SHELL_MOE_CHATML_SFT\",\"prompt_token_count\":{},\"generated_token_count\":{},\"mean_token_probability\":{:.4},\"mean_step_entropy_bits\":{:.4},\"generated_text\":\"{}\"}},\"cortical_coalition\":{{\"primary_branch_id\":{},\"secondary_branch_id\":{},\"primary_track_id\":{},\"secondary_track_id\":{},\"primary_track_name\":\"{}\",\"secondary_track_name\":\"{}\",\"primary_chair44_col\":{},\"secondary_chair44_col\":{},\"cross_branch_cosine_sim\":{:.4}}},\"grassmann_plucker_g24\":{{\"e8z_bytes_sampled\":{},\"p01\":{},\"p23\":{},\"p02\":{},\"p31\":{},\"p03\":{},\"p12\":{},\"plucker_incidence_residual\":{},\"isotropic_verified\":{}}},\"rtx3050_cuda_ptx\":{{\"ptx_active\":{},\"gpu_temp_c\":{},\"vram_used_mb\":{},\"gpu_wall_us\":{}}},\"lean4_theorems_verified\":\"thm_v72_2_981..995\",\"proof\":\"{} | Mode={} | Top2=({},{}) | Turn={} | GlobalSeq={} | Quality={}\"}}",
         res.status,
         v61_escape_clean(&live_ver),
         res.elapsed_us,
@@ -5675,6 +6158,7 @@ pub fn v72_2_dispatch_converse_route(payload: &str) -> String {
         res.global_turn_seq,
         esc_out,
         esc_out,
+        active_exp_cnt,
         res.top1_expert_id,
         res.top1_expert_name,
         res.top2_expert_id,
@@ -6389,10 +6873,11 @@ pub fn v72_2_dispatch_tool_368_week2_chain368_master_certification(payload: &str
     let (t365_measured, g4_fsm_ok, t366_valid_100, t367_mt_ok) =
         v72_2_eval_tool_368_subjson_gates(&t365_json, &t366_json, &t367_json);
 
+    let active_exp_cnt = v72_2_loaded_active_experts_count().max(1);
     let g1_moe_ok = step0_diff == 0.0
         && vb3shell < vb768
         && vb768 < vb384
-        && utilized == V72_2_ACTIVE_MOE_EXPERTS
+        && utilized == active_exp_cnt
         && ssd_bytes >= V72_2_MOE_HEADER_BYTES as u64;
     let g2_sft_ok = sft_r.measured_prompt_grad_norm == 0.0
         && sft_r.final_assistant_ce_nats < sft_r.init_assistant_ce_nats
@@ -6437,7 +6922,7 @@ pub fn v72_2_dispatch_tool_368_week2_chain368_master_certification(payload: &str
         elapsed_us,
         all_week2_gates_passed,
         g1_moe_ok,
-        V72_2_ACTIVE_MOE_EXPERTS,
+        active_exp_cnt,
         V72_2_MAX_DIRECTORY_SLOTS,
         utilized,
         cv,

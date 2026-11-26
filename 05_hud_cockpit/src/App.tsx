@@ -11,6 +11,7 @@ import {
   EyeOff,
   FileCheck2,
   Fingerprint,
+  FlaskConical,
   Gauge,
   KeyRound,
   LayoutGrid,
@@ -365,7 +366,7 @@ export const DOMAINS_CATALOG: FunctionalDomainDef[] = [
       { id: 108, tag: "T108", label: "T108: SPRIZ Pillar", ep: "/api/v1/bio/spriz_intermembrane_pillar_spacer" },
       { id: 109, tag: "T109", label: "T109: Chandrasekhar", ep: "/api/v1/astro/chandrasekhar_relativistic_degeneracy_breaker" },
       { id: 110, tag: "T110", label: "T110: Adjoint Pullback", ep: "/api/v1/algebra/adjoint_transpose_covector_pullback" },
-      { id: 121, tag: "T121", label: "T121: Toroidal Mod9", ep: "/api/v1/vortex/toroidal_mod9_doubling_axis_auditor" },
+      { id: 121, tag: "T121", label: "T121: Toroidal Mod9", ep: "/api/v1/tool/121" },
       { id: 122, tag: "T122", label: "T122: Viviani Archimedes", ep: "/api/v1/geometry/viviani_archimedes_npage_partition_auditor" },
       { id: 123, tag: "T123", label: "T123: Kinesin 8nm", ep: "/api/v1/bio/kinesin_8nm_cacheline_zeeman_valley_stepper" },
       { id: 124, tag: "T124", label: "T124: MicroVM Shield", ep: "/api/v1/security/openai_microvm_constant_time_cache_shield" },
@@ -383,7 +384,7 @@ export const DOMAINS_CATALOG: FunctionalDomainDef[] = [
       { id: 167, tag: "T167", label: "T167: Lean 4 Theorem", ep: "/api/v1/cycle3/t167_lean4_theorem" },
       { id: 168, tag: "T168", label: "T168: QED Audit", ep: "/api/v1/cycle3/t168_qed_audit" },
       { id: 169, tag: "T169", label: "T169: Formal Sheaf", ep: "/api/v1/cycle3/t169_formal_sheaf" },
-      { id: 170, tag: "T170", label: "T170: F4SE Bridge", ep: "/api/v1/polyglot/f4se_bridge" },
+      { id: 170, tag: "T170", label: "T170: Native DLL ABI Bridge", ep: "/api/v1/tool/170" },
       { id: 196, tag: "T196", label: "T196: Proof Lattice", ep: "/api/v1/cycle5/t196_proof_lattice" },
       { id: 197, tag: "T197", label: "T197: Theorem Invariance", ep: "/api/v1/cycle5/t197_theorem_invariance" },
       { id: 198, tag: "T198", label: "T198: Homotopy Audit", ep: "/api/v1/cycle5/t198_homotopy_audit" }
@@ -625,16 +626,16 @@ export const DOMAINS_CATALOG: FunctionalDomainDef[] = [
   {
     id: 8,
     slug: "autopoietic_bus_vault_d1",
-    name: "Autopoietic Coordinator Bus, E:\\ Vault & Cloudflare D1",
+    name: "Autopoietic Coordinator Bus, Omega Labs, E:\\ Vault & Cloudflare D1",
     shortName: "Autopoietic Vault",
-    toolCount: 70,
-    toolRange: "T46-T48, T51, T53-T56, T59-T60, T69-T72, T81, T89-T90, T96-T100, T103, T281-T304, T317, T357-T404",
+    toolCount: 84,
+    toolRange: "T46-T48, T51, T53-T56, T59-T60, T69-T72, T81, T89-T90, T96-T100, T103, T281-T304, T317, T357-T418",
     writebackCat: "tool_outputs",
     ep: "/api/v1/unified/autopoietic_bus_vault_d1",
     accent: "#FFFEFB",
     bg: "#141D26",
     border: "#486581",
-    desc: "5W1H Coordinator Message Bus, Sovereign Harmonic XI (3-Shell Matryoshka + 16/256 Sparse MoE), 9-sink universal E:\\ SSD Vault, DuckDB analytics, and Cloudflare D1 sync.",
+    desc: "5W1H Coordinator Message Bus, 15-Station Omega Labs (OMC6/OSP4/OTRI Seqlock Mesh), Sovereign Harmonic XI, 9-sink universal E:\\ SSD Vault, DuckDB analytics, and Cloudflare D1 sync.",
     tools: [
       { id: 46, tag: "T46", label: "TOOL 46: MCP Server Portal", ep: "/api/v1/mcp/rpc" },
       { id: 47, tag: "T47", label: "TOOL 47: OpenAI /v1/chat/completions", ep: "/api/v1/openai/compat" },
@@ -709,7 +710,21 @@ export const DOMAINS_CATALOG: FunctionalDomainDef[] = [
       { id: 401, tag: "T401", label: "T401: Cloudflare Mesh Cluster Device Roster", ep: "/api/v1/tools/t401" },
       { id: 402, tag: "T402", label: "T402: TLS PGWire (:5439) -> DuckDB Audit", ep: "/api/v1/tools/t402" },
       { id: 403, tag: "T403", label: "T403: Cloudflare Hyperdrive DuckDB Query", ep: "/api/v1/tools/t403" },
-      { id: 404, tag: "T404", label: "T404: CHAIN 404 Master Certification (Live Lean 4 QED)", ep: "/api/v1/tools/t404" }
+      { id: 404, tag: "T404", label: "T404: CHAIN 404 Master Certification (Live Lean 4 QED)", ep: "/api/v1/tools/t404" },
+      { id: 405, tag: "T405", label: "T405: Omega Labs Core Audit & Chaos Deck (:19800)", ep: "/api/v1/tools/t405" },
+      { id: 406, tag: "T406", label: "T406: OmegaWorkbench SimHash-64, OSP4 Bus & JobObject", ep: "/api/v1/tools/t406" },
+      { id: 407, tag: "T407", label: "T407: SHA256SUMS Verifier & 7-Tier Pocket C11 Fusion", ep: "/api/v1/tools/t407" },
+      { id: 408, tag: "T408", label: "T408: Zero-Crate CAS Seqlock WAL & 3-Node LWW CRDT", ep: "/api/v1/tools/t408" },
+      { id: 409, tag: "T409", label: "T409: Spatial OSP4 + OMC6 Seqlock & Golay-64 Radar", ep: "/api/v1/tools/t409" },
+      { id: 410, tag: "T410", label: "T410: H1 Sheaf Cohomology & #[repr(C)] ABI Surgeon", ep: "/api/v1/tools/t410" },
+      { id: 411, tag: "T411", label: "T411: 15-Station Omega Labs Deck & Supply-Chain Firewall", ep: "/api/v1/lab/v303/deck?verify_sha=1" },
+      { id: 412, tag: "T412", label: "T412: Win32 Station Process Supervisor (SW_SHOWMINNOACTIVE)", ep: "/api/v1/tools/t412" },
+      { id: 413, tag: "T413", label: "T413: Bidirectional Station HTTP Interact Proxy", ep: "/api/v1/tools/t413" },
+      { id: 414, tag: "T414", label: "T414: Ingest Omega Labs Corpus -> DuckDB & 384D WGSL RAG", ep: "/api/v1/lab/v303/ingest_corpus_to_rag" },
+      { id: 415, tag: "T415", label: "T415: SH-XI <-> Live Station Agent Co-Pilot", ep: "/api/v1/sovereign_harmonic/lab_agent" },
+      { id: 416, tag: "T416", label: "T416: OmegaBraidRE (:19794) PE/CLR #~ CIL, .pdata & Binary Analysis Workbench", ep: "/api/v1/tools/t416" },
+      { id: 417, tag: "T417", label: "T417: OmegaEngine (:19795) 3D DirectCompute & HLSL Graphics/Compute Studio + OTRI", ep: "/api/v1/tools/t417" },
+      { id: 418, tag: "T418", label: "T418: CHAIN 418 Master Certification (Live Lean 4 QED)", ep: "/api/v1/chain418/master_certification" }
     ]
   }
 ];
@@ -2136,6 +2151,7 @@ export function VesperArachneHudShimeji({
 export type VesperShellMode =
   | "calm"
   | "hud"
+  | "labs"
   | "proof"
   | "vault"
   | "tools"
@@ -2145,6 +2161,7 @@ export type VesperShellMode =
 export type VesperRailLabel =
   | "Chat"
   | "HUD"
+  | "Labs"
   | "Vault"
   | "Proofs"
   | "Tools"
@@ -2165,6 +2182,7 @@ export interface VesperCalmMessage {
 const VALID_VESPER_MODES: readonly VesperShellMode[] = [
   "calm",
   "hud",
+  "labs",
   "proof",
   "vault",
   "tools",
@@ -2179,6 +2197,8 @@ function modeToRailLabel(mode: VesperShellMode): VesperRailLabel {
     case "hud":
     case "classic":
       return "HUD";
+    case "labs":
+      return "Labs";
     case "vault":
       return "Vault";
     case "proof":
@@ -2232,6 +2252,7 @@ export const VESPER_ICON_REGISTRY = {
   EyeOff,
   FileCheck2,
   Fingerprint,
+  FlaskConical,
   Gauge,
   KeyRound,
   LayoutGrid,
@@ -3182,6 +3203,7 @@ export function VesperHeaderBar({
   const modeTabs: Array<{ id: VesperShellMode; label: string; rail: VesperRailLabel }> = [
     { id: "calm", label: "Calm", rail: "Chat" },
     { id: "hud", label: "HUD", rail: "HUD" },
+    { id: "labs", label: "Labs", rail: "Labs" },
     { id: "proof", label: "Proof", rail: "Proofs" },
     { id: "vault", label: "Vault", rail: "Vault" },
     { id: "tools", label: "Tools", rail: "Tools" },
@@ -3541,6 +3563,7 @@ export function VesperNavRail({
   }> = [
     { label: "Chat", mode: "calm", Icon: MessageSquare },
     { label: "HUD", mode: "hud", Icon: LayoutGrid },
+    { label: "Labs", mode: "labs", Icon: FlaskConical },
     { label: "Vault", mode: "vault", Icon: Database },
     { label: "Proofs", mode: "proof", Icon: FileCheck2 },
     { label: "Tools", mode: "tools", Icon: Wrench },
@@ -4210,7 +4233,8 @@ export function VesperProofView({
   onRunVerifyEndpoint,
   onOpenHudLeanVerifier,
   lean4TheoremsQed = null,
-  lean4Qed = false
+  lean4Qed = false,
+  toolsCount = null
 }: {
   showSkeleton: boolean;
   telemetrySource: "LIVE_L0_SWARM" | "SNAPSHOT_FALLBACK" | "UNMEASURED/OFFLINE";
@@ -4227,6 +4251,7 @@ export function VesperProofView({
   onOpenHudLeanVerifier: () => void;
   lean4TheoremsQed?: number | null;
   lean4Qed?: boolean;
+  toolsCount?: number | null;
 }) {
   const isOffline = telemetrySource === "UNMEASURED/OFFLINE";
 
@@ -4247,13 +4272,13 @@ export function VesperProofView({
       ep: "/api/v1/sovereign_harmonic/week4/rlvf_grpo_compiler_in_the_loop"
     },
     {
-      title: "SH-XI Weeks 1-2 Empirical Gates (3-Shell Matryoshka + 16/256 MoE)",
-      status: isOffline ? "UNMEASURED/OFFLINE" : "LIVE VIA T404",
+      title: "SH-XI Empirical Gates & 15-Station Omega Labs (3-Shell + Sparse MoE + OTRI Mesh)",
+      status: isOffline ? "UNMEASURED/OFFLINE" : "LIVE VIA T418",
       detail: isOffline
-        ? ":8097 L0 daemon offline — SH-XI 3-shell Matryoshka + Sparse MoE certification awaiting live local probe."
-        : "384D Mobile + 768D Host + 16/256 Disk-Backed MoE · PromptGradNorm = 0.0 · Run T368 (SH-XI Cert) for live measured BPB, IFEval-Lite, MultiTurn & JSON FSM scores.",
-      btnLabel: "Verify CHAIN 404 (T404)",
-      ep: "/api/v1/tools/t404"
+        ? ":8097 L0 daemon offline — SH-XI 3-shell Matryoshka, Sparse MoE & 15-Station Omega Labs certification awaiting live local probe."
+        : "384D Mobile + 768D Host + Disk-Backed Sparse MoE · PromptGradNorm = 0.0 · 15-Station Omega Labs (OMC6/OSP4/OTRI Seqlock Mesh) · Run T418 (CHAIN 418) or T368 for live measured scores.",
+      btnLabel: "Verify CHAIN 418 (T418)",
+      ep: "/api/v1/chain418/master_certification"
     },
     {
       title: "7,777D CRT Partition of Unity",
@@ -4298,7 +4323,7 @@ export function VesperProofView({
       <div style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-end", justifyContent: "space-between", gap: 12 }}>
         <div>
           <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.14em", color: "#00E5A0" }}>
-            PROOF SHEET · CHAIN 404
+            {`PROOF SHEET · ${liveChainLabel(toolsCount, isOffline)}`}
           </div>
           <h1 style={{ margin: "6px 0 0 0", fontSize: 28, fontWeight: 800, letterSpacing: "-0.02em" }}>
             Everything checkable, right here
@@ -4311,7 +4336,7 @@ export function VesperProofView({
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
           <button
             type="button"
-            onClick={() => onRunVerifyEndpoint("/api/v1/chain368/master_certification", "T368 SH-XI MASTER CERTIFICATION")}
+            onClick={() => onRunVerifyEndpoint("/api/v1/chain418/master_certification", "CHAIN 418 MASTER CERTIFICATION")}
             style={{
               height: 36,
               borderRadius: 999,
@@ -4324,7 +4349,24 @@ export function VesperProofView({
               cursor: "pointer"
             }}
           >
-            Run CHAIN 404 Cert
+            Run CHAIN 418 Cert
+          </button>
+          <button
+            type="button"
+            onClick={() => onRunVerifyEndpoint("/api/v1/chain368/master_certification", "T368 SH-XI MASTER CERTIFICATION")}
+            style={{
+              height: 36,
+              borderRadius: 999,
+              border: "1px solid rgba(0, 229, 160, 0.45)",
+              background: "rgba(0, 229, 160, 0.10)",
+              color: "#7DFFD2",
+              padding: "0 14px",
+              fontSize: 12,
+              fontWeight: 700,
+              cursor: "pointer"
+            }}
+          >
+            Run T368 SH-XI Cert
           </button>
           <button
             type="button"
@@ -4824,8 +4866,10 @@ export function VesperToolsView({
   onRunEndpoint,
   onOpenCmdPalette,
   onOpenFullDrawer4,
+  onOpenLabsTab,
   lean4TheoremsQed = null,
-  lean4Qed = false
+  lean4Qed = false,
+  toolsCount = null
 }: {
   telemetrySource: "LIVE_L0_SWARM" | "SNAPSHOT_FALLBACK" | "UNMEASURED/OFFLINE";
   termOut: string;
@@ -4840,10 +4884,25 @@ export function VesperToolsView({
   onRunEndpoint: (ep: string, label: string) => void;
   onOpenCmdPalette: () => void;
   onOpenFullDrawer4: () => void;
+  onOpenLabsTab?: () => void;
   lean4TheoremsQed?: number | null;
   lean4Qed?: boolean;
+  toolsCount?: number | null;
 }) {
   const isOffline = telemetrySource === "UNMEASURED/OFFLINE";
+
+  const omegaLabsFeatured = [
+    { label: "T411 · 15-Station Labs Deck", ep: "/api/v1/lab/v303/deck?verify_sha=1" },
+    { label: "T405 · Core Audit & Chaos (:19800)", ep: "/api/v1/tools/t405" },
+    { label: "T406 · Workbench & OSP4 Bus", ep: "/api/v1/tools/t406" },
+    { label: "T407 · SHA256SUMS & Pocket C11", ep: "/api/v1/tools/t407" },
+    { label: "T412 · Win32 Supervisor (Min)", ep: "/api/v1/tools/t412" },
+    { label: "T414 · Corpus -> 384D RAG", ep: "/api/v1/lab/v303/ingest_corpus_to_rag" },
+    { label: "T415 · SH-XI Lab Agent", ep: "/api/v1/sovereign_harmonic/lab_agent" },
+    { label: "T416 · OmegaBraidRE (:19794)", ep: "/api/v1/tools/t416" },
+    { label: "T417 · OmegaEngine (:19795 + OTRI)", ep: "/api/v1/tools/t417" },
+    { label: "T418 · CHAIN 418 Master Cert", ep: "/api/v1/chain418/master_certification" }
+  ];
 
   const shXiFeatured = [
     { label: "T361 · SH-XI Converse", ep: "/api/v1/sovereign_harmonic/xi/week2/converse" },
@@ -4870,17 +4929,36 @@ export function VesperToolsView({
       <div style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-end", justifyContent: "space-between", gap: 12 }}>
         <div>
           <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.14em", color: "#00E5A0" }}>
-            TOOLS · CHAIN 404
+            {`TOOLS · ${liveChainLabel(toolsCount, isOffline)}`}
           </div>
           <h1 style={{ margin: "6px 0 0 0", fontSize: 28, fontWeight: 800, letterSpacing: "-0.02em" }}>
             8-Domain Functional Command Deck
           </h1>
           <p style={{ margin: "4px 0 0 0", fontSize: 14, color: "#A7B8B2" }}>
-            Every tool (Tools 1..404) routes through the Sovereign Autopoietic Coordinator Bus with measured E:\ SHA-256 write-back.
+            Every tool ({liveToolsRangeLabel(toolsCount, isOffline)}) routes through the Sovereign Autopoietic Coordinator Bus with measured E:\ SHA-256 write-back.
           </p>
         </div>
 
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+          {onOpenLabsTab && (
+            <button
+              type="button"
+              onClick={onOpenLabsTab}
+              style={{
+                height: 36,
+                borderRadius: 999,
+                border: "none",
+                background: "#00E5A0",
+                color: "#07110F",
+                padding: "0 14px",
+                fontSize: 12,
+                fontWeight: 800,
+                cursor: "pointer"
+              }}
+            >
+              Open 15-Station Labs Tab →
+            </button>
+          )}
           <button
             type="button"
             onClick={onOpenCmdPalette}
@@ -4896,7 +4974,7 @@ export function VesperToolsView({
               cursor: "pointer"
             }}
           >
-            Search All 404 Tools (Ctrl+K)
+            {`Search ${typeof toolsCount === "number" && toolsCount > 0 && !isOffline ? `All ${toolsCount} Tools` : "All Tools"} (Ctrl+K)`}
           </button>
           <button
             type="button"
@@ -4915,6 +4993,35 @@ export function VesperToolsView({
           >
             Open Full Drawer 4 Matrix →
           </button>
+        </div>
+      </div>
+
+      {/* 15-Station Omega Labs & CHAIN 418 Featured Strip */}
+      <div className="vesper-card" style={{ padding: 16, border: "1px solid rgba(110, 231, 255, 0.34)" }}>
+        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.1em", color: "#8BE9FF", marginBottom: 10 }}>
+          {`15-STATION OMEGA LABS, OMC6/OSP4/OTRI SEQLOCK MESH & CHAIN 418 SUITE (TOOLS 405..418 · ${liveLeanBadge(lean4TheoremsQed, isOffline, lean4Qed, true).toUpperCase()})`}
+        </div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+          {omegaLabsFeatured.map((item) => (
+            <button
+              key={item.label}
+              type="button"
+              onClick={() => onRunEndpoint(item.ep, item.label)}
+              style={{
+                height: 34,
+                borderRadius: 999,
+                border: "1px solid rgba(110, 231, 255, 0.35)",
+                background: "#091318",
+                color: "#8BE9FF",
+                padding: "0 13px",
+                fontSize: 12,
+                fontWeight: 700,
+                cursor: "pointer"
+              }}
+            >
+              {item.label}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -5079,6 +5186,1811 @@ export function VesperToolsView({
           {termOut}
         </div>
       </div>
+    </div>
+  );
+}
+
+interface VesperLabQuickAction {
+  label: string;
+  method: "GET" | "POST";
+  path: string;
+  body?: string;
+}
+
+interface VesperLabStationDef {
+  id: string;
+  stationNum: string;
+  alias: string;
+  toolTag: string;
+  name: string;
+  subtitle: string;
+  port: number;
+  kind: "local" | "edge";
+  minimal: boolean;
+  healthPath: string;
+  actions: VesperLabQuickAction[];
+}
+
+const VESPER_LAB_STATIONS: VesperLabStationDef[] = [
+  {
+    id: "00_launcher",
+    stationNum: "00",
+    alias: "deck",
+    toolTag: "T405",
+    name: "OmegaLabLauncher & Chaos Deck",
+    subtitle: "Master 15-Station Supervisor & 8-Vector R&D Chaos Torture Harness",
+    port: 19800,
+    kind: "local",
+    minimal: false,
+    healthPath: "/api/chaos",
+    actions: [
+      { label: "Chaos Matrix", method: "GET", path: "/api/chaos" },
+      { label: "Launcher Status", method: "GET", path: "/api/status" }
+    ]
+  },
+  {
+    id: "01_omega_mirror",
+    stationNum: "01",
+    alias: "mirror",
+    toolTag: "T369",
+    name: "OmegaMirror",
+    subtitle: "Dual-Pixel ADB USB/Wi-Fi Screen Stream & Push Bridge",
+    port: 19777,
+    kind: "local",
+    minimal: false,
+    healthPath: "/",
+    actions: [{ label: "Probe Mirror UI", method: "GET", path: "/" }]
+  },
+  {
+    id: "02_omega_browser",
+    stationNum: "02",
+    alias: "browser",
+    toolTag: "T406",
+    name: "OmegaBrowser",
+    subtitle: "Research Workbench, zlib PDF Harvester, SimHash-64 & HTTP 206",
+    port: 9778,
+    kind: "local",
+    minimal: true,
+    healthPath: "/api/status",
+    actions: [
+      { label: "Status", method: "GET", path: "/api/status" },
+      { label: "Performance", method: "GET", path: "/api/performance" },
+      { label: "Tabs", method: "GET", path: "/api/tabs" },
+      { label: "Markdown", method: "GET", path: "/api/markdown" },
+      { label: "Save Corpus", method: "POST", path: "/api/corpus/save", body: "{}" },
+      { label: "Navigate Portal", method: "POST", path: "/api/navigate", body: '{"url":"https://act-omega-net.dev"}' }
+    ]
+  },
+  {
+    id: "03_omega_av",
+    stationNum: "03",
+    alias: "av",
+    toolTag: "T371",
+    name: "OmegaAV",
+    subtitle: "DirectCompute cs_5_0 Fluid Studio, WASAPI Loopback & .OMSH",
+    port: 19779,
+    kind: "local",
+    minimal: false,
+    healthPath: "/api/wand",
+    actions: [
+      { label: "Get Wand", method: "GET", path: "/api/wand" },
+      { label: "Pulse Shader", method: "POST", path: "/api/wand", body: '{"x":0.5,"y":0.5,"energy":0.8}' }
+    ]
+  },
+  {
+    id: "04_omega_synth",
+    stationNum: "04",
+    alias: "synth",
+    toolTag: "T409",
+    name: "OmegaSynth",
+    subtitle: "E8 Wavefield Spatializer, Unit-Quaternion SLERP & OSP4 Producer",
+    port: 19782,
+    kind: "local",
+    minimal: false,
+    healthPath: "/api/status",
+    actions: [
+      { label: "Status", method: "GET", path: "/api/status" },
+      { label: "Wand 15.965Hz", method: "POST", path: "/api/wand", body: '{"freq_hz":15.965,"gain":0.35}' }
+    ]
+  },
+  {
+    id: "05_omega_sonar",
+    stationNum: "05",
+    alias: "sonar",
+    toolTag: "T409",
+    name: "OmegaSonar",
+    subtitle: "Ultrasonic Phased-Array & Zero-Sidelobe Golay-64 Acoustic Radar",
+    port: 19783,
+    kind: "local",
+    minimal: false,
+    healthPath: "/api/status",
+    actions: [
+      { label: "Status", method: "GET", path: "/api/status" },
+      { label: "Golay Ping", method: "GET", path: "/api/ping" },
+      { label: "Gestures", method: "GET", path: "/api/gestures" }
+    ]
+  },
+  {
+    id: "06_omega_sheaf",
+    stationNum: "06",
+    alias: "sheaf",
+    toolTag: "T410",
+    name: "OmegaSheaf",
+    subtitle: "Cellular Sheaf H1 Cohomology, #[repr(C)] ABI & SIMD AOB Surgeon",
+    port: 19784,
+    kind: "local",
+    minimal: false,
+    healthPath: "/api/status",
+    actions: [
+      { label: "Status", method: "GET", path: "/api/status" },
+      { label: "Surgeon Audit", method: "GET", path: "/api/surgeon/audit" },
+      { label: "Sheaf Graph", method: "GET", path: "/api/graph" },
+      { label: "Touch Node", method: "POST", path: "/api/touch", body: '{"node":0,"delta":1}' }
+    ]
+  },
+  {
+    id: "07_omega_penrose",
+    stationNum: "07",
+    alias: "penrose",
+    toolTag: "T375",
+    name: "OmegaPenrose",
+    subtitle: "De Bruijn Pentagrid Quasicrystal, Lenia & .STL/.OBJ Exporter",
+    port: 19785,
+    kind: "local",
+    minimal: false,
+    healthPath: "/api/status",
+    actions: [
+      { label: "Status", method: "GET", path: "/api/status" },
+      { label: "Touch Pentagrid", method: "POST", path: "/api/touch", body: '{"phase":0.618}' }
+    ]
+  },
+  {
+    id: "08_omega_steg",
+    stationNum: "08",
+    alias: "steg",
+    toolTag: "T408",
+    name: "OmegaSteg",
+    subtitle: "Extended Golay [24,12,8] CAS Vault, Seqlock WAL & 3-Node CRDT",
+    port: 19786,
+    kind: "local",
+    minimal: false,
+    healthPath: "/api/sec/status",
+    actions: [
+      { label: "Sec Status", method: "GET", path: "/api/sec/status" },
+      { label: "Vault Audit", method: "GET", path: "/api/vault/audit" },
+      { label: "Golay24 Stress", method: "POST", path: "/api/sec/stress", body: "{}" }
+    ]
+  },
+  {
+    id: "09_omega_forge",
+    stationNum: "09",
+    alias: "forge",
+    toolTag: "T411",
+    name: "OmegaForge",
+    subtitle: "Polyglot Build Studio (csc, rustc, clang++, dxc, lean) & Firewall",
+    port: 19780,
+    kind: "local",
+    minimal: true,
+    healthPath: "/api/tools",
+    actions: [
+      { label: "Toolchain", method: "GET", path: "/api/tools" },
+      { label: "Models", method: "GET", path: "/api/models" },
+      { label: "Verify Suite", method: "POST", path: "/api/verify", body: "{}" },
+      { label: "Run Rust Probe", method: "POST", path: "/api/exec", body: '{"lang":"rust","code":"fn main(){println!(\\"FORGE_QED\\");}"}' }
+    ]
+  },
+  {
+    id: "10_omega_shell",
+    stationNum: "10",
+    alias: "shell",
+    toolTag: "T406",
+    name: "OmegaShell",
+    subtitle: "Win32 JobObject Anti-Zombie Sandbox & Out-of-Repo AVF Bridge",
+    port: 19781,
+    kind: "local",
+    minimal: true,
+    healthPath: "/api/tuner",
+    actions: [
+      { label: "CPU/RAM Tuner", method: "GET", path: "/api/tuner" },
+      { label: "AVF VM Status", method: "GET", path: "/api/avf" },
+      { label: "Models", method: "GET", path: "/api/models" },
+      { label: "Echo Sandbox", method: "POST", path: "/api/exec", body: '{"cmd":"echo OMEGA_SHELL_LIVE"}' }
+    ]
+  },
+  {
+    id: "11_pixel10_native",
+    stationNum: "11A",
+    alias: "p10_worker",
+    toolTag: "T407",
+    name: "Edge Worker · Pixel 10 Native",
+    subtitle: "ARMv9.2 i8mm/dotprod + Tensor G5 Vulkan/NPU Worker",
+    port: 19788,
+    kind: "edge",
+    minimal: false,
+    healthPath: "/api/health",
+    actions: [
+      { label: "Health", method: "GET", path: "/api/health" },
+      { label: "Status", method: "GET", path: "/api/status" }
+    ]
+  },
+  {
+    id: "11_pixel10_avf",
+    stationNum: "11B",
+    alias: "p10_avf",
+    toolTag: "T407",
+    name: "Edge Worker · Pixel 10 AVF VM",
+    subtitle: "5.0 GB Android Virtualization Framework Debian 13 Worker",
+    port: 19789,
+    kind: "edge",
+    minimal: false,
+    healthPath: "/api/health",
+    actions: [{ label: "VM Health", method: "GET", path: "/api/health" }]
+  },
+  {
+    id: "11_pixel8_native",
+    stationNum: "11C",
+    alias: "p8_worker",
+    toolTag: "T407",
+    name: "Edge Worker · Pixel 8 C11",
+    subtitle: "Universal C11 Worker (Mali-G715 + 9-Core SMMLA Offload)",
+    port: 19792,
+    kind: "edge",
+    minimal: false,
+    healthPath: "/api/health",
+    actions: [{ label: "C11 Health", method: "GET", path: "/api/health" }]
+  },
+  {
+    id: "11_pixel8_avf",
+    stationNum: "11D",
+    alias: "p8_avf",
+    toolTag: "T407",
+    name: "Edge Worker · Pixel 8 AVF VM",
+    subtitle: "5.3 GB Android Virtualization Framework Debian 13 Worker",
+    port: 19793,
+    kind: "edge",
+    minimal: false,
+    healthPath: "/api/health",
+    actions: [{ label: "VM Health", method: "GET", path: "/api/health" }]
+  },
+  {
+    id: "12_omega_conductor",
+    stationNum: "12",
+    alias: "conductor",
+    toolTag: "T409",
+    name: "OmegaConductor",
+    subtitle: "Hopf 6DoF Timeline Orchestrator, Binary OSC 1.0 & OMC6 Seqlock",
+    port: 19790,
+    kind: "local",
+    minimal: true,
+    healthPath: "/api/status",
+    actions: [
+      { label: "Status", method: "GET", path: "/api/status" },
+      { label: "Seqlock SHM", method: "GET", path: "/api/shm" },
+      { label: "Wand", method: "GET", path: "/api/wand" }
+    ]
+  },
+  {
+    id: "13_omega_tensor",
+    stationNum: "13",
+    alias: "tensor",
+    toolTag: "T407",
+    name: "OmegaTensor",
+    subtitle: "Heterogeneous 5-Silicon Split Inference & /v1/chat/completions",
+    port: 19791,
+    kind: "local",
+    minimal: true,
+    healthPath: "/api/status",
+    actions: [
+      { label: "Status", method: "GET", path: "/api/status" },
+      { label: "OpenAI Models", method: "GET", path: "/v1/models" },
+      { label: "Layer Split", method: "GET", path: "/api/layers" },
+      { label: "Dispatch Prompt", method: "POST", path: "/v1/chat/completions", body: '{"prompt":"Verify E8 lattice parity"}' }
+    ]
+  },
+  {
+    id: "14_omega_braid_re",
+    stationNum: "14",
+    alias: "braid_re",
+    toolTag: "T416",
+    name: "OmegaBraidRE",
+    subtitle: "PE/CLR #~ CIL, .pdata & Binary Analysis Workbench",
+    port: 19794,
+    kind: "local",
+    minimal: false,
+    healthPath: "/api/status",
+    actions: [
+      { label: "PE/CLR Status", method: "GET", path: "/api/status" },
+      { label: "18-Vector Audit", method: "GET", path: "/api/audit" }
+    ]
+  },
+  {
+    id: "15_omega_engine",
+    stationNum: "15",
+    alias: "engine",
+    toolTag: "T417",
+    name: "OmegaEngine",
+    subtitle: "3D DirectCompute & HLSL Graphics/Compute Studio",
+    port: 19795,
+    kind: "local",
+    minimal: false,
+    healthPath: "/api/status",
+    actions: [
+      { label: "Engine Status", method: "GET", path: "/api/status" },
+      { label: "DXBC Shader Cache", method: "GET", path: "/api/shader_cache" },
+      { label: "OTRI Seqlock Mesh", method: "GET", path: "/api/mesh" },
+      { label: "Bake Dual-Contour OBJ", method: "GET", path: "/api/bake_dc_obj?res=32&sym=0" },
+      { label: "Forge 2K PBR Bundle", method: "GET", path: "/api/forge_bundle" },
+      { label: "Pulse Shockwave", method: "GET", path: "/api/shockwave?strength=1.40&freq=72.0" }
+    ]
+  }
+];
+
+function resolveLiveLabsSuiteVersion(deckData: any, isHostOffline: boolean): string {
+  if (
+    isHostOffline ||
+    !deckData ||
+    deckData.status === "UNMEASURED/OFFLINE" ||
+    deckData.mounted === false ||
+    deckData.lab_mounted === false ||
+    deckData.v303_mounted === false
+  ) {
+    return "UNMEASURED/OFFLINE";
+  }
+  const directCandidates = [
+    deckData.suite_version,
+    deckData.labs_version,
+    deckData.standalone_version,
+    deckData.lab_suite_version
+  ];
+  for (const cand of directCandidates) {
+    if (typeof cand === "string" && cand.trim().length > 0 && cand.trim() !== "UNMEASURED/OFFLINE") {
+      const clean = cand.trim();
+      return clean.startsWith("v") ? clean : `v${clean}`;
+    }
+  }
+  const textSources = [
+    deckData.suite,
+    deckData.sha256sums_audit?.zip_artifact,
+    deckData.sha256sums_audit?.zip_name,
+    deckData.sha256sums_audit?.note
+  ];
+  for (const src of textSources) {
+    if (typeof src === "string") {
+      const m = src.match(/\bv?(\d+\.\d+\.\d+(?:\s*GM)?)\b/i);
+      if (m && m[1]) {
+        return `v${m[1]}`;
+      }
+    }
+  }
+  return "UNMEASURED/OFFLINE";
+}
+
+export function VesperOmegaLabsView({
+  telemetrySource,
+  operatorPasskey,
+  onPasskeyChange,
+  operatorUnlocked,
+  onOperatorLocked403,
+  getOperatorHeaders,
+  onVerifyOperatorGate,
+  onRunEndpoint,
+  sessionId,
+  toolsCount = null,
+  lean4TheoremsQed = null,
+  lean4Qed = false
+}: {
+  telemetrySource: "LIVE_L0_SWARM" | "SNAPSHOT_FALLBACK" | "UNMEASURED/OFFLINE";
+  operatorPasskey: string;
+  onPasskeyChange: (v: string) => void;
+  operatorUnlocked: boolean;
+  onOperatorLocked403?: () => void;
+  getOperatorHeaders: (extra?: Record<string, string>) => Record<string, string>;
+  onVerifyOperatorGate: () => Promise<boolean> | boolean | void;
+  onRunEndpoint: (ep: string, label: string) => void;
+  sessionId?: string;
+  toolsCount?: number | null;
+  lean4TheoremsQed?: number | null;
+  lean4Qed?: boolean;
+}) {
+  const isHostOffline = telemetrySource === "UNMEASURED/OFFLINE";
+  const [deckData, setDeckData] = useState<any>(null);
+  const [t417Data, setT417Data] = useState<any>(null);
+  const [shaVerifyData, setShaVerifyData] = useState<any>(null);
+  const [deckBusy, setDeckBusy] = useState<boolean>(false);
+  const [labsLocked403, setLabsLocked403] = useState<boolean>(false);
+  const [labsLockedEndpoint, setLabsLockedEndpoint] = useState<string>("/api/v1/lab/v303/deck");
+  const [deckStatus, setDeckStatus] = useState<string>(
+    "UNMEASURED/OFFLINE — Click 'Probe 15-Station Deck & SHA256SUMS' with Operator Key unlocked"
+  );
+  const [selectedId, setSelectedId] = useState<string>("14_omega_braid_re");
+  const [customMethod, setCustomMethod] = useState<"GET" | "POST">("GET");
+  const [customPath, setCustomPath] = useState<string>("/api/status");
+  const [customBody, setCustomBody] = useState<string>("");
+  const [autoWakeMin, setAutoWakeMin] = useState<boolean>(true);
+  const [consoleOut, setConsoleOut] = useState<string>(
+    "UNMEASURED/OFFLINE — Select any Omega Labs station (00..15) and execute a live HTTP or supervisor action."
+  );
+  const [agentPrompt, setAgentPrompt] = useState<string>(
+    "Inspect PE/CLR #~ CIL and .pdata binary analysis status inside OmegaBraidRE"
+  );
+  const [agentBusy, setAgentBusy] = useState<boolean>(false);
+  const [agentResult, setAgentResult] = useState<any>(null);
+
+  // Prolonged Continuous Gate 5 Longitudinal Progression Monitor State
+  const [gate5Busy, setGate5Busy] = useState<boolean>(false);
+  const [chain362Data, setChain362Data] = useState<any>(null);
+  const [chain368Data, setChain368Data] = useState<any>(null);
+  const [gate5Note, setGate5Note] = useState<string>(
+    "UNMEASURED/OFFLINE — Click 'Poll Gate 5 Progression (T362 + T368)' to measure live longitudinal convergence."
+  );
+
+  useEffect(() => {
+    if (operatorUnlocked) {
+      setLabsLocked403(false);
+    }
+  }, [operatorUnlocked]);
+
+  const selectedStation =
+    VESPER_LAB_STATIONS.find((s) => s.id === selectedId) ?? VESPER_LAB_STATIONS[0];
+
+  const callAuthedLabApi = useCallback(
+    async (path: string, method: "GET" | "POST" = "GET", body?: any) => {
+      const bases =
+        typeof window !== "undefined" && window.location.protocol === "https:"
+          ? ["", "http://127.0.0.1:8097", "https://api.act-omega-net.dev"]
+          : ["", "http://127.0.0.1:8097"];
+      let sawAuth403 = false;
+      let authStatus = 403;
+      let authPayload: any = null;
+      let authRaw = "";
+      for (const b of bases) {
+        try {
+          const extraHdrs: Record<string, string> = method === "POST" ? { "Content-Type": "application/json" } : {};
+          const headers = getOperatorHeaders(extraHdrs);
+          const cleanKey = operatorPasskey.trim();
+          if (cleanKey && !headers["X-Sovereign-Operator-Key"]) {
+            headers["X-Sovereign-Operator-Key"] = cleanKey;
+          }
+          const res = await fetch(`${b}${path}`, {
+            method,
+            cache: "no-store",
+            headers,
+            body: method === "POST" && body !== undefined ? JSON.stringify(body) : undefined
+          });
+          if (res.status === 401 || res.status === 403) {
+            sawAuth403 = true;
+            authStatus = res.status;
+            authRaw = await res.text().catch(() => "");
+            try {
+              authPayload = JSON.parse(authRaw);
+            } catch {
+              authPayload = { status: "OPERATOR_VAULT_LOCKED", http_status: res.status, raw: authRaw };
+            }
+            continue;
+          }
+          if (res.ok || res.status === 400) {
+            const txt = await res.text();
+            let parsed: any = null;
+            try {
+              parsed = JSON.parse(txt);
+            } catch {
+              parsed = { raw: txt };
+            }
+            setLabsLocked403(false);
+            return { ok: res.ok, httpStatus: res.status, data: parsed, raw: txt, locked403: false };
+          }
+        } catch {
+          // try next base
+        }
+      }
+      if (sawAuth403) {
+        setLabsLocked403(true);
+        setLabsLockedEndpoint(path.split("?")[0]);
+        onOperatorLocked403?.();
+        setDeckStatus(
+          `OPERATOR VAULT LOCKED (HTTP ${authStatus}) — Loopback daemon is live, not offline; unlock X-Sovereign-Operator-Key`
+        );
+        return {
+          ok: false,
+          httpStatus: authStatus,
+          data: authPayload ?? { status: `OPERATOR_VAULT_LOCKED_HTTP_${authStatus}` },
+          raw: authRaw || `HTTP ${authStatus}`,
+          locked403: true
+        };
+      }
+      return {
+        ok: false,
+        httpStatus: 0,
+        data: { status: "UNMEASURED/OFFLINE" },
+        raw: "UNMEASURED/OFFLINE",
+        locked403: false
+      };
+    },
+    [getOperatorHeaders, onOperatorLocked403, operatorPasskey]
+  );
+
+  const refreshDeck = useCallback(
+    async (verifySha = false) => {
+      setDeckBusy(true);
+      const q = verifySha ? "?verify_sha=1" : "";
+      const r = await callAuthedLabApi(`/api/v1/lab/v303/deck${q}`, "GET");
+      setDeckBusy(false);
+      if (r.locked403) {
+        setConsoleOut(JSON.stringify(r.data, null, 2));
+        return;
+      }
+      if (!r.ok) {
+        setDeckStatus("UNMEASURED/OFFLINE — Local :8097 daemon unreachable");
+        return;
+      }
+      setDeckData(r.data);
+      if (r.data?.sha256sums_audit) {
+        setShaVerifyData(r.data.sha256sums_audit);
+      }
+      if (r.data?.otri_bus || r.data?.otri_mmf) {
+        setT417Data(r.data);
+      }
+      const online = typeof r.data?.online_count === "number" ? r.data.online_count : 0;
+      const tot =
+        typeof r.data?.total_stations === "number"
+          ? r.data.total_stations
+          : Array.isArray(r.data?.stations)
+          ? r.data.stations.length
+          : VESPER_LAB_STATIONS.length;
+      const shaVer = r.data?.sha256sums_audit?.verified_count;
+      const shaTot = r.data?.sha256sums_audit?.total_entries;
+      const liveSuiteVer = resolveLiveLabsSuiteVersion(r.data, false);
+      setDeckStatus(
+        `MEASURED LIVE (${liveSuiteVer} · ${online}/${tot} Endpoints Online${
+          typeof shaVer === "number" && typeof shaTot === "number" && r.data?.sha256sums_audit?.checked
+            ? ` · ${shaVer}/${shaTot} SHA256SUMS Verified`
+            : ""
+        })`
+      );
+    },
+    [callAuthedLabApi]
+  );
+
+  const handleProbeOtriAndSha = useCallback(
+    async (mode: "otri" | "sha") => {
+      setDeckBusy(true);
+      if (mode === "otri") {
+        const r = await callAuthedLabApi("/api/v1/tools/t417", "GET");
+        if (r.ok) {
+          setT417Data(r.data);
+        }
+        setConsoleOut(JSON.stringify(r.data, null, 2));
+      } else {
+        const rDeck = await callAuthedLabApi("/api/v1/lab/v303/deck?verify_sha=1", "GET");
+        if (rDeck.ok) {
+          setDeckData(rDeck.data);
+          if (rDeck.data?.sha256sums_audit) {
+            setShaVerifyData(rDeck.data.sha256sums_audit);
+          }
+          setConsoleOut(JSON.stringify(rDeck.data?.sha256sums_audit ?? rDeck.data, null, 2));
+        } else if (!rDeck.locked403) {
+          const r407 = await callAuthedLabApi("/api/v1/tools/t407", "GET");
+          if (r407.ok) {
+            setShaVerifyData(r407.data?.sha256sums_audit ?? r407.data);
+          }
+          setConsoleOut(JSON.stringify(r407.data, null, 2));
+        }
+      }
+      setDeckBusy(false);
+    },
+    [callAuthedLabApi]
+  );
+
+  const handleControl = useCallback(
+    async (
+      station: string,
+      action: "launch" | "stop" | "stop_all",
+      windowMode: "minimized" | "gui" = "minimized"
+    ) => {
+      setDeckBusy(true);
+      const r = await callAuthedLabApi("/api/v1/lab/station/control", "POST", {
+        station,
+        action,
+        window_mode: windowMode
+      });
+      setConsoleOut(JSON.stringify(r.data, null, 2));
+      setDeckBusy(false);
+      if (!r.locked403) {
+        await refreshDeck(false);
+      }
+    },
+    [callAuthedLabApi, refreshDeck]
+  );
+
+  const handleBatchLaunch = useCallback(
+    async (onlyMinimal: boolean) => {
+      setDeckBusy(true);
+      const targets = VESPER_LAB_STATIONS.filter(
+        (s) => s.kind === "local" && (!onlyMinimal || s.minimal)
+      );
+      const logs: any[] = [];
+      for (const st of targets) {
+        const r = await callAuthedLabApi("/api/v1/lab/station/control", "POST", {
+          station: st.id,
+          action: "launch",
+          window_mode: "minimized"
+        });
+        logs.push({
+          station: st.id,
+          port: st.port,
+          status: r.data?.status ?? r.httpStatus,
+          woke: r.data?.spawned_now
+        });
+        if (r.locked403) {
+          break;
+        }
+      }
+      setConsoleOut(JSON.stringify(logs, null, 2));
+      setDeckBusy(false);
+      await refreshDeck(false);
+    },
+    [callAuthedLabApi, refreshDeck]
+  );
+
+  const handleInteract = useCallback(
+    async (stationKey: string, method: "GET" | "POST", path: string, bodyStr?: string) => {
+      setConsoleOut(
+        `Dispatching ${method} ${path} -> ${stationKey} (auto_wake=${autoWakeMin}, SW_SHOWMINNOACTIVE)...`
+      );
+      const payload: Record<string, any> = {
+        station: stationKey,
+        method,
+        path,
+        auto_wake: autoWakeMin,
+        window_mode: "minimized"
+      };
+      if (method === "POST" && bodyStr && bodyStr.trim()) {
+        payload.body = bodyStr;
+      }
+      const r = await callAuthedLabApi("/api/v1/lab/station/interact", "POST", payload);
+      setConsoleOut(JSON.stringify(r.data, null, 2));
+      if (!r.locked403 && r.data?.auto_woke) {
+        await refreshDeck(false);
+      }
+    },
+    [autoWakeMin, callAuthedLabApi, refreshDeck]
+  );
+
+  const handleLabAgent = useCallback(
+    async (overridePrompt?: string) => {
+      const p = (overridePrompt ?? agentPrompt).trim();
+      if (!p) return;
+      if (overridePrompt) setAgentPrompt(overridePrompt);
+      setAgentBusy(true);
+      const r = await callAuthedLabApi("/api/v1/sovereign_harmonic/lab_agent", "POST", {
+        prompt: p,
+        session_id: sessionId
+      });
+      setAgentResult(r.data);
+      setConsoleOut(JSON.stringify(r.data, null, 2));
+      setAgentBusy(false);
+      if (!r.locked403) {
+        await refreshDeck(false);
+      }
+    },
+    [agentPrompt, callAuthedLabApi, refreshDeck, sessionId]
+  );
+
+  const pollGate5Longitudinal = useCallback(
+    async (target: "both" | "362" | "368" = "both") => {
+      setGate5Busy(true);
+      setGate5Note("Polling live Gate 5 longitudinal certification endpoints on :8097...");
+      let next362 = chain362Data;
+      let next368 = chain368Data;
+      let saw403 = false;
+
+      if (target === "both" || target === "362") {
+        const r362 = await callAuthedLabApi("/api/v1/chain362/master_certification", "POST", {});
+        if (r362.locked403) {
+          saw403 = true;
+        } else if (r362.ok && r362.data) {
+          next362 = r362.data;
+          setChain362Data(r362.data);
+        } else {
+          next362 = null;
+          setChain362Data(null);
+        }
+      }
+
+      if (!saw403 && (target === "both" || target === "368")) {
+        const r368 = await callAuthedLabApi("/api/v1/chain368/master_certification", "POST", {});
+        if (r368.locked403) {
+          saw403 = true;
+        } else if (r368.ok && r368.data) {
+          next368 = r368.data;
+          setChain368Data(r368.data);
+        } else {
+          next368 = null;
+          setChain368Data(null);
+        }
+      }
+
+      setGate5Busy(false);
+      if (saw403) {
+        setGate5Note(
+          "OPERATOR VAULT LOCKED (HTTP 403) — Unlock X-Sovereign-Operator-Key above to poll Gate 5 longitudinal metrics."
+        );
+        return;
+      }
+      if (!next362 && !next368) {
+        setGate5Note("UNMEASURED/OFFLINE — Local :8097 daemon unreachable for Gate 5 longitudinal certification.");
+        return;
+      }
+      const g5w1 = next362?.gate_5_live_unseen_diagnostics;
+      const g5w2 = next368?.gate_5_ifeval64_multiturn_and_rustc;
+      const w1Converged = Boolean(
+        g5w1?.rustc_gcd_unit_test_passed &&
+          g5w1?.mutex_vs_atomic_jargon_free &&
+          g5w1?.battery_40pct_grounded &&
+          g5w1?.disconnected_sensor_abstained
+      );
+      const w2Converged = Boolean(g5w2?.passed === true);
+      if (w1Converged && w2Converged) {
+        setGate5Note("MEASURED CONVERGENCE VERIFIED — Week 1 & Week 2 Gate 5 pure-neural obligations passed.");
+      } else {
+        setGate5Note(
+          "UNMEASURED/OFFLINE (LONGITUDINAL PROGRESSION IN FLIGHT) — Reporting honest live sub-gate status until organic pure-neural convergence."
+        );
+      }
+    },
+    [callAuthedLabApi, chain362Data, chain368Data]
+  );
+
+  const stationRows: any[] = Array.isArray(deckData?.stations) ? deckData.stations : [];
+  const omc6 = deckData?.omc6_bus ?? deckData?.omc6_mmf;
+  const osp4 = deckData?.osp4_bus ?? deckData?.osp4_mmf;
+  const otri =
+    deckData?.otri_bus ??
+    deckData?.otri_mmf ??
+    deckData?.tri_engine_bus ??
+    t417Data?.otri_bus ??
+    t417Data?.otri_mmf ??
+    t417Data?.seqlock_mesh;
+  const shaAudit = shaVerifyData ?? deckData?.sha256sums_audit;
+  const coreAudit = deckData?.core_audit;
+
+  const omc6Live = Boolean(omc6?.active || omc6?.mapped || omc6?.measured_live);
+  const osp4Live = Boolean(osp4?.active || osp4?.mapped || osp4?.measured_live);
+  const otriLive = Boolean(otri?.active || otri?.mapped || otri?.measured_live || otri?.crc32_valid);
+  const coreAllOk = Boolean(coreAudit?.all_invariants_ok ?? coreAudit?.golay24_roundtrip_ok ?? coreAudit?.golay24_healed_3bit);
+  const shaChecked = Boolean(
+    shaAudit &&
+      (shaAudit.checked === true ||
+        typeof shaAudit.sha256sums_all_ok === "boolean" ||
+        (typeof shaAudit.verified_count === "number" && shaAudit.verified_count > 0))
+  );
+  const shaAllOk = Boolean(shaAudit?.all_ok || shaAudit?.sha256sums_all_ok);
+
+  const liveSuiteVersion = resolveLiveLabsSuiteVersion(deckData, isHostOffline);
+  const liveChain = liveChainLabel(toolsCount, isHostOffline);
+  const liveQed = liveLeanBadge(lean4TheoremsQed, isHostOffline, lean4Qed, false);
+
+  const g5w1 = chain362Data?.gate_5_live_unseen_diagnostics;
+  const g5w2 = chain368Data?.gate_5_ifeval64_multiturn_and_rustc;
+  const g5w1Converged = Boolean(
+    g5w1 &&
+      g5w1.rustc_gcd_unit_test_passed &&
+      g5w1.mutex_vs_atomic_jargon_free &&
+      g5w1.battery_40pct_grounded &&
+      g5w1.disconnected_sensor_abstained
+  );
+  const g5w2Converged = Boolean(g5w2 && g5w2.passed === true);
+  const gate5Badge =
+    g5w1Converged && g5w2Converged
+      ? "MEASURED · GATE 5 CONVERGED"
+      : "UNMEASURED/OFFLINE";
+
+  return (
+    <div style={{ maxWidth: 1120, margin: "0 auto", display: "flex", flexDirection: "column", gap: 18, contain: "layout" }}>
+      <div style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-end", justifyContent: "space-between", gap: 12 }}>
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.14em", color: "#00E5A0" }}>
+            {`15-STATION OMEGA LABS (${liveSuiteVersion}) · ${liveChain} · ${liveQed}`}
+          </div>
+          <h1 style={{ margin: "6px 0 0 0", fontSize: 28, fontWeight: 800, letterSpacing: "-0.02em" }}>
+            Interactive Stations, 3-Bus Seqlock Mesh &amp; SH-XI Lab Co-Pilot
+          </h1>
+          <p style={{ margin: "4px 0 0 0", fontSize: 13.5, color: "#A7B8B2" }}>
+            Bi-directional control across OmegaLabLauncher (:19800) + Stations 01..15 (including Station 14 OmegaBraidRE PE/CLR #~ CIL &amp; .pdata Binary Analysis Workbench and Station 15 OmegaEngine 3D DirectCompute &amp; HLSL Graphics/Compute Studio). Model{" "}
+            <code className="vesper-mono">&lt;|tool_call|&gt;</code> actions auto-wake offline local stations minimized (<code className="vesper-mono">SW_SHOWMINNOACTIVE</code>) without stealing focus.
+          </p>
+        </div>
+
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+          <button
+            type="button"
+            disabled={deckBusy}
+            onClick={() => refreshDeck(true)}
+            style={{
+              height: 36,
+              borderRadius: 999,
+              border: "none",
+              background: "#00E5A0",
+              color: "#07110F",
+              padding: "0 14px",
+              fontSize: 12,
+              fontWeight: 800,
+              cursor: deckBusy ? "wait" : "pointer"
+            }}
+          >
+            {deckBusy ? "Probing…" : "Probe 15-Station Deck & SHA256SUMS (T411)"}
+          </button>
+          <button
+            type="button"
+            onClick={() => onRunEndpoint("/api/v1/chain418/master_certification", "CHAIN 418 MASTER CERTIFICATION")}
+            style={{
+              height: 36,
+              borderRadius: 999,
+              border: "1px solid var(--vesper-line)",
+              background: "var(--vesper-card)",
+              color: "#D7E4DF",
+              padding: "0 14px",
+              fontSize: 12,
+              fontWeight: 700,
+              cursor: "pointer"
+            }}
+          >
+            CHAIN 418 Cert (T418)
+          </button>
+        </div>
+      </div>
+
+      {/* Inline HTTP 403 Operator Vault Unlock Card (Never mislabels 403 as Backend Offline) */}
+      {labsLocked403 && !operatorUnlocked && (
+        <div
+          className="vesper-card vesper-reserve"
+          role="region"
+          aria-label="Labs Operator Vault Locked Unlock"
+          style={{
+            minHeight: 112,
+            padding: 18,
+            borderColor: "rgba(179, 136, 255, 0.48)",
+            background: "rgba(179, 136, 255, 0.09)"
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <Lock size={16} style={{ width: 16, height: 16, flexShrink: 0, color: "#B388FF" }} />
+              <span style={{ fontSize: 13.5, fontWeight: 800, color: "#E6D9FF" }}>
+                OPERATOR VAULT LOCKED (HTTP 403)
+              </span>
+            </div>
+            <span className="vesper-mono" style={{ fontSize: 11.5, color: "#B388FF", fontWeight: 700 }}>
+              {`Header Auth Required on ${labsLockedEndpoint} (X-Sovereign-Operator-Key)`}
+            </span>
+          </div>
+          <p style={{ margin: "6px 0 12px 0", fontSize: 13, lineHeight: "20px", color: "#D7E4DF" }}>
+            Loopback :8097 daemon is live, not offline. Enter your external Operator Key below to authenticate via the X-Sovereign-Operator-Key header (query-string ?key= is strictly rejected).
+          </p>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+            <input
+              type="password"
+              value={operatorPasskey}
+              onChange={(e) => onPasskeyChange(e.target.value)}
+              onKeyDown={async (e) => {
+                if (e.key === "Enter") {
+                  const ok = await onVerifyOperatorGate();
+                  if (ok) {
+                    setLabsLocked403(false);
+                    await refreshDeck(true);
+                  }
+                }
+              }}
+              placeholder="Enter external Operator Key (X-Sovereign-Operator-Key)…"
+              aria-label="Labs Inline Unlock Operator Vault Key"
+              style={{
+                flex: "1 1 280px",
+                height: 38,
+                borderRadius: 12,
+                border: "1px solid rgba(179, 136, 255, 0.45)",
+                background: "#0B0F0E",
+                color: "var(--vesper-text)",
+                padding: "0 14px",
+                fontSize: 13
+              }}
+            />
+            <button
+              type="button"
+              onClick={async () => {
+                const ok = await onVerifyOperatorGate();
+                if (ok) {
+                  setLabsLocked403(false);
+                  await refreshDeck(true);
+                }
+              }}
+              style={{
+                height: 38,
+                borderRadius: 999,
+                border: "none",
+                background: "#B388FF",
+                color: "#07110F",
+                padding: "0 18px",
+                fontSize: 12.5,
+                fontWeight: 800,
+                cursor: "pointer"
+              }}
+            >
+              Unlock Operator Vault
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Operator Auth Gate Strip (Loopback Header Only) */}
+      <section className="vesper-card vesper-reserve" style={{ minHeight: 74, padding: "14px 18px" }}>
+        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 10 }}>
+          <span
+            style={{
+              borderRadius: 999,
+              padding: "4px 10px",
+              fontSize: 11,
+              fontWeight: 800,
+              background: operatorUnlocked ? "rgba(0, 229, 160, 0.14)" : "rgba(255, 155, 107, 0.14)",
+              color: operatorUnlocked ? "#00E5A0" : "#FF9B6B"
+            }}
+          >
+            {operatorUnlocked ? "OPERATOR AUTH VERIFIED" : "LOOPBACK X-Sovereign-Operator-Key REQUIRED"}
+          </span>
+          <input
+            type="password"
+            value={operatorPasskey}
+            onChange={(e) => onPasskeyChange(e.target.value)}
+            onKeyDown={async (e) => {
+              if (e.key === "Enter") {
+                const ok = await onVerifyOperatorGate();
+                if (ok) {
+                  await refreshDeck(false);
+                }
+              }
+            }}
+            placeholder="External Operator Key (X-Sovereign-Operator-Key header over 127.0.0.1)…"
+            aria-label="Labs Operator Vault Key"
+            style={{
+              flex: "1 1 260px",
+              height: 34,
+              borderRadius: 10,
+              border: "1px solid var(--vesper-line)",
+              background: "#0B0F0E",
+              color: "var(--vesper-text)",
+              padding: "0 12px",
+              fontSize: 12.5
+            }}
+          />
+          <button
+            type="button"
+            onClick={async () => {
+              const ok = await onVerifyOperatorGate();
+              if (ok) {
+                await refreshDeck(false);
+              }
+            }}
+            style={{
+              height: 34,
+              borderRadius: 999,
+              border: "1px solid rgba(0, 229, 160, 0.45)",
+              background: "rgba(0, 229, 160, 0.14)",
+              color: "#7DFFD2",
+              padding: "0 14px",
+              fontSize: 12,
+              fontWeight: 800,
+              cursor: "pointer"
+            }}
+          >
+            Unlock Loopback
+          </button>
+          <span
+            className="vesper-mono"
+            style={{
+              fontSize: 11,
+              color: labsLocked403 ? "#E6D9FF" : isHostOffline ? "#FF9B6B" : "#A7B8B2"
+            }}
+          >
+            {deckStatus}
+          </span>
+        </div>
+      </section>
+
+      {/* Supervisor Batch Controls & 3 Shared-Memory Seqlock Buses (OMC6, OSP4, OTRI) + SHA256SUMS */}
+      <section className="vesper-card vesper-reserve" style={{ minHeight: 168, padding: 18 }}>
+        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            <button
+              type="button"
+              disabled={deckBusy}
+              onClick={() => handleBatchLaunch(true)}
+              style={{
+                height: 34,
+                borderRadius: 999,
+                border: "none",
+                background: "#1B332C",
+                color: "#7DFFD2",
+                padding: "0 13px",
+                fontSize: 11.5,
+                fontWeight: 800,
+                cursor: "pointer"
+              }}
+            >
+              Start Minimal Core (SW_SHOWMINNOACTIVE)
+            </button>
+            <button
+              type="button"
+              disabled={deckBusy}
+              onClick={() => handleBatchLaunch(false)}
+              style={{
+                height: 34,
+                borderRadius: 999,
+                border: "1px solid rgba(0, 229, 160, 0.35)",
+                background: "rgba(0, 229, 160, 0.08)",
+                color: "#D7E4DF",
+                padding: "0 13px",
+                fontSize: 11.5,
+                fontWeight: 700,
+                cursor: "pointer"
+              }}
+            >
+              Start All 15 Local Binaries (Minimized)
+            </button>
+            <button
+              type="button"
+              disabled={deckBusy}
+              onClick={() => handleControl("all", "stop_all")}
+              style={{
+                height: 34,
+                borderRadius: 999,
+                border: "1px solid rgba(255, 107, 107, 0.45)",
+                background: "rgba(255, 107, 107, 0.12)",
+                color: "#FF9B9B",
+                padding: "0 13px",
+                fontSize: 11.5,
+                fontWeight: 800,
+                cursor: "pointer"
+              }}
+            >
+              Stop All Stations (T412)
+            </button>
+            <button
+              type="button"
+              disabled={deckBusy}
+              onClick={async () => {
+                setConsoleOut("Ingesting Omega Labs corpus into DuckDB & 384D WGSL RAG (T414)...");
+                const r = await callAuthedLabApi("/api/v1/lab/v303/ingest_corpus_to_rag", "POST", {});
+                setConsoleOut(JSON.stringify(r.data, null, 2));
+              }}
+              style={{
+                height: 34,
+                borderRadius: 999,
+                border: "1px solid rgba(110, 231, 255, 0.4)",
+                background: "rgba(110, 231, 255, 0.10)",
+                color: "#8BE9FF",
+                padding: "0 13px",
+                fontSize: 11.5,
+                fontWeight: 800,
+                cursor: "pointer"
+              }}
+            >
+              Ingest Lab Corpus → 384D RAG (T414)
+            </button>
+            <button
+              type="button"
+              disabled={deckBusy}
+              onClick={async () => {
+                const r = await callAuthedLabApi("/api/v1/tools/t416", "GET");
+                setConsoleOut(JSON.stringify(r.data, null, 2));
+              }}
+              style={{
+                height: 34,
+                borderRadius: 999,
+                border: "1px solid rgba(179, 136, 255, 0.42)",
+                background: "rgba(179, 136, 255, 0.12)",
+                color: "#E2DAFF",
+                padding: "0 13px",
+                fontSize: 11.5,
+                fontWeight: 700,
+                cursor: "pointer"
+              }}
+            >
+              OmegaBraidRE Audit (T416)
+            </button>
+            <button
+              type="button"
+              disabled={deckBusy}
+              onClick={() => handleProbeOtriAndSha("otri")}
+              style={{
+                height: 34,
+                borderRadius: 999,
+                border: "1px solid rgba(255, 180, 84, 0.45)",
+                background: "rgba(255, 180, 84, 0.12)",
+                color: "#FFD28F",
+                padding: "0 13px",
+                fontSize: 11.5,
+                fontWeight: 700,
+                cursor: "pointer"
+              }}
+            >
+              OmegaEngine &amp; OTRI Mesh (T417)
+            </button>
+            <button
+              type="button"
+              disabled={deckBusy}
+              onClick={() => handleProbeOtriAndSha("sha")}
+              style={{
+                height: 34,
+                borderRadius: 999,
+                border: "1px solid var(--vesper-line)",
+                background: "rgba(255, 255, 255, 0.04)",
+                color: "#D7E4DF",
+                padding: "0 13px",
+                fontSize: 11.5,
+                fontWeight: 700,
+                cursor: "pointer"
+              }}
+            >
+              Verify SHA256SUMS (T407)
+            </button>
+          </div>
+        </div>
+
+        {/* 6-Tile Live Seqlock MMF & Supply-Chain Telemetry Strip */}
+        <div
+          className="vesper-mono"
+          style={{
+            marginTop: 12,
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(215px, 1fr))",
+            gap: 10,
+            fontSize: 11
+          }}
+        >
+          <div style={{ background: "#0B0F0E", borderRadius: 10, padding: "9px 12px", border: "1px solid var(--vesper-line)" }}>
+            <div style={{ color: "#7B8E88", fontSize: 10 }}>1. OMC6 Seqlock Bus (OmegaConductor)</div>
+            <div style={{ color: omc6Live ? "#00E5A0" : "#FF9B6B", fontWeight: 700, marginTop: 3 }}>
+              {omc6
+                ? omc6Live
+                  ? `LIVE · Frame #${omc6.frame_counter ?? omc6.seq ?? 0}`
+                  : omc6.status ?? "UNMEASURED/OFFLINE"
+                : "UNMEASURED/OFFLINE"}
+            </div>
+          </div>
+
+          <div style={{ background: "#0B0F0E", borderRadius: 10, padding: "9px 12px", border: "1px solid var(--vesper-line)" }}>
+            <div style={{ color: "#7B8E88", fontSize: 10 }}>2. OSP4 Bus (Local\OMEGA_RND_SPATIAL_BUS_V1 · T406)</div>
+            <div style={{ color: osp4Live ? "#00E5A0" : "#FF9B6B", fontWeight: 700, marginTop: 3 }}>
+              {osp4
+                ? osp4Live
+                  ? `LIVE · Seq #${osp4.seq ?? 0}${typeof osp4.golay64_peak === "number" ? ` · G64=${osp4.golay64_peak}` : ""}`
+                  : osp4.status ?? "UNMEASURED/OFFLINE"
+                : "UNMEASURED/OFFLINE"}
+            </div>
+          </div>
+
+          <div style={{ background: "#0B0F0E", borderRadius: 10, padding: "9px 12px", border: "1px solid var(--vesper-line)" }}>
+            <div style={{ color: "#7B8E88", fontSize: 10 }}>3. OTRI Mesh (Local\OmegaTriEngineUniforms 384 B CRC-32 · T417)</div>
+            <div style={{ color: otriLive ? "#00E5A0" : "#FF9B6B", fontWeight: 700, marginTop: 3 }}>
+              {otri
+                ? otriLive
+                  ? `LIVE · Seq #${otri.seq ?? otri.sequence ?? 0} · CRC32 ${
+                      otri.crc32_hex ??
+                      (typeof otri.crc32 === "number" ? `0x${otri.crc32.toString(16).toUpperCase()}` : "VERIFIED")
+                    } (${otri.uniform_bytes ?? 384} B)`
+                  : otri.status ?? "UNMEASURED/OFFLINE"
+                : "UNMEASURED/OFFLINE"}
+            </div>
+          </div>
+
+          <div style={{ background: "#0B0F0E", borderRadius: 10, padding: "9px 12px", border: "1px solid var(--vesper-line)" }}>
+            <div style={{ color: "#7B8E88", fontSize: 10 }}>4. Dynamic SHA256SUMS.txt Audit (T407 / T411)</div>
+            <div style={{ color: shaChecked && shaAllOk ? "#00E5A0" : "#FF9B6B", fontWeight: 700, marginTop: 3 }}>
+              {shaChecked
+                ? `${shaAudit?.verified_count ?? 0}/${shaAudit?.total_entries ?? 0} Verified (${
+                    shaAllOk ? "ALL MATCH" : shaAudit?.note ?? "MISMATCH"
+                  })`
+                : "UNMEASURED/OFFLINE"}
+            </div>
+          </div>
+
+          <div style={{ background: "#0B0F0E", borderRadius: 10, padding: "9px 12px", border: "1px solid var(--vesper-line)" }}>
+            <div style={{ color: "#7B8E88", fontSize: 10 }}>5. #![no_std] Zero-Crate Core Audit (T405)</div>
+            <div style={{ color: coreAllOk ? "#00E5A0" : "#FF9B6B", fontWeight: 700, marginTop: 3 }}>
+              {coreAudit
+                ? `Golay24=${coreAllOk ? "QED" : "ERR"} · G64=${
+                    coreAudit.golay64_zero_sidelobe ? "0-SIDELOBE" : "ERR"
+                  } · FFI=${coreAudit.sheaf_ffi_defect ?? 0}`
+                : "UNMEASURED/OFFLINE"}
+            </div>
+          </div>
+
+          <div style={{ background: "#0B0F0E", borderRadius: 10, padding: "9px 12px", border: "1px solid var(--vesper-line)" }}>
+            <div style={{ color: "#7B8E88", fontSize: 10 }}>6. ADB Edge SSH Tunnels (P10 / P8)</div>
+            <div style={{ color: deckData?.ssh_tunnels ? "#D7E4DF" : "#FF9B6B", fontWeight: 700, marginTop: 3 }}>
+              {deckData?.ssh_tunnels
+                ? `22222:${deckData.ssh_tunnels.pixel10_22222} · 22223:${deckData.ssh_tunnels.pixel8_22223}`
+                : "UNMEASURED/OFFLINE"}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 15-Station + Launcher Live Matrix & Interactive Station Console */}
+      <div style={{ display: "grid", gridTemplateColumns: "minmax(320px, 1.2fr) minmax(320px, 1fr)", gap: 16, alignItems: "start" }}>
+        {/* Left: Complete 00 Launcher + Stations 01..15 Matrix */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(236px, 1fr))", gap: 10 }}>
+          {VESPER_LAB_STATIONS.map((st) => {
+            const liveRow = stationRows.find(
+              (r) => r.id === st.id || r.port === st.port || r.alias === st.alias
+            );
+            const targetKey = typeof liveRow?.id === "string" && liveRow.id.length > 0 ? liveRow.id : st.id;
+            const isOnline = Boolean(liveRow?.online);
+            const isSelected = st.id === selectedId;
+            return (
+              <div
+                key={st.id}
+                onClick={() => {
+                  setSelectedId(st.id);
+                  const firstAct = st.actions[0];
+                  if (firstAct) {
+                    setCustomMethod(firstAct.method);
+                    setCustomPath(firstAct.path);
+                    setCustomBody(firstAct.body ?? "");
+                  }
+                }}
+                style={{
+                  cursor: "pointer",
+                  borderRadius: 14,
+                  border: isSelected ? "1px solid #00E5A0" : "1px solid var(--vesper-line)",
+                  background: isSelected ? "rgba(0, 229, 160, 0.08)" : "var(--vesper-card)",
+                  padding: "12px 13px",
+                  minHeight: 132,
+                  contain: "layout",
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "space-between",
+                  gap: 8
+                }}
+              >
+                <div>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 6 }}>
+                    <span className="vesper-mono" style={{ fontSize: 10, fontWeight: 800, color: "#00E5A0" }}>
+                      #{st.stationNum} · :{st.port} · {st.toolTag}
+                    </span>
+                    <span
+                      style={{
+                        borderRadius: 999,
+                        padding: "2px 8px",
+                        fontSize: 9.5,
+                        fontWeight: 800,
+                        background: isOnline ? "rgba(0, 229, 160, 0.16)" : "rgba(255, 155, 107, 0.14)",
+                        color: isOnline ? "#00E5A0" : "#FF9B6B"
+                      }}
+                    >
+                      {isOnline
+                        ? `LIVE ${typeof liveRow?.rtt_ms === "number" ? `${liveRow.rtt_ms.toFixed(1)}ms` : ""}`
+                        : liveRow
+                        ? "OFFLINE"
+                        : "UNMEASURED"}
+                    </span>
+                  </div>
+                  <div style={{ marginTop: 4, fontSize: 13.5, fontWeight: 800, color: "var(--vesper-text)" }}>
+                    {st.name}
+                  </div>
+                  <div style={{ marginTop: 3, fontSize: 11, lineHeight: "15px", color: "#A7B8B2" }}>
+                    {st.subtitle}
+                  </div>
+                </div>
+
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }} onClick={(e) => e.stopPropagation()}>
+                  {st.kind === "local" && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => handleControl(targetKey, "launch", "minimized")}
+                        title="Wake station minimized via Win32 SW_SHOWMINNOACTIVE without stealing focus (T412)"
+                        style={{
+                          height: 24,
+                          borderRadius: 999,
+                          border: "none",
+                          background: "rgba(0, 229, 160, 0.18)",
+                          color: "#7DFFD2",
+                          padding: "0 9px",
+                          fontSize: 10,
+                          fontWeight: 800,
+                          cursor: "pointer"
+                        }}
+                      >
+                        Wake Min
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleControl(targetKey, "launch", "gui")}
+                        title="Launch interactive desktop GUI window (T412)"
+                        style={{
+                          height: 24,
+                          borderRadius: 999,
+                          border: "1px solid var(--vesper-line)",
+                          background: "transparent",
+                          color: "#D7E4DF",
+                          padding: "0 9px",
+                          fontSize: 10,
+                          fontWeight: 700,
+                          cursor: "pointer"
+                        }}
+                      >
+                        GUI
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleControl(targetKey, "stop")}
+                        style={{
+                          height: 24,
+                          borderRadius: 999,
+                          border: "1px solid rgba(255, 107, 107, 0.35)",
+                          background: "transparent",
+                          color: "#FF9B9B",
+                          padding: "0 9px",
+                          fontSize: 10,
+                          fontWeight: 700,
+                          cursor: "pointer"
+                        }}
+                      >
+                        Stop
+                      </button>
+                    </>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => handleInteract(targetKey, "GET", st.healthPath)}
+                    style={{
+                      height: 24,
+                      borderRadius: 999,
+                      border: "1px solid rgba(110, 231, 255, 0.4)",
+                      background: "rgba(110, 231, 255, 0.08)",
+                      color: "#8BE9FF",
+                      padding: "0 9px",
+                      fontSize: 10,
+                      fontWeight: 800,
+                      cursor: "pointer"
+                    }}
+                  >
+                    Probe
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Right: Station HTTP Interact Console (T413) & SH-XI Lab Agent Console (T415) */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          <section className="vesper-card vesper-reserve" style={{ minHeight: 300, padding: 18 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+              <div>
+                <div style={{ fontSize: 10.5, fontWeight: 800, color: "#00E5A0", letterSpacing: "0.08em" }}>
+                  STATION HTTP INTERACT (T413) · #{selectedStation.stationNum} {selectedStation.id} (:{selectedStation.port})
+                </div>
+                <div style={{ fontSize: 16, fontWeight: 800, marginTop: 2 }}>{selectedStation.name}</div>
+                <div style={{ fontSize: 11.5, color: "#A7B8B2", marginTop: 2 }}>{selectedStation.subtitle}</div>
+              </div>
+              <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "#A7B8B2", cursor: "pointer" }}>
+                <input
+                  type="checkbox"
+                  checked={autoWakeMin}
+                  onChange={(e) => setAutoWakeMin(e.target.checked)}
+                />
+                Auto-Wake Min (SW_SHOWMINNOACTIVE)
+              </label>
+            </div>
+
+            <div style={{ marginTop: 10, display: "flex", flexWrap: "wrap", gap: 6 }}>
+              {selectedStation.actions.map((act) => (
+                <button
+                  key={`${act.method}:${act.path}:${act.label}`}
+                  type="button"
+                  onClick={() => {
+                    setCustomMethod(act.method);
+                    setCustomPath(act.path);
+                    setCustomBody(act.body ?? "");
+                    handleInteract(selectedStation.id, act.method, act.path, act.body);
+                  }}
+                  style={{
+                    height: 28,
+                    borderRadius: 999,
+                    border: "1px solid rgba(0, 229, 160, 0.35)",
+                    background: "rgba(0, 229, 160, 0.10)",
+                    color: "#7DFFD2",
+                    padding: "0 11px",
+                    fontSize: 11,
+                    fontWeight: 700,
+                    cursor: "pointer"
+                  }}
+                >
+                  {act.method} {act.label}
+                </button>
+              ))}
+            </div>
+
+            <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
+              <select
+                value={customMethod}
+                onChange={(e) => setCustomMethod(e.target.value as "GET" | "POST")}
+                aria-label="HTTP Method"
+                style={{
+                  height: 34,
+                  borderRadius: 10,
+                  border: "1px solid var(--vesper-line)",
+                  background: "#0B0F0E",
+                  color: "#FFFEFB",
+                  padding: "0 10px",
+                  fontSize: 12
+                }}
+              >
+                <option value="GET">GET</option>
+                <option value="POST">POST</option>
+              </select>
+              <input
+                value={customPath}
+                onChange={(e) => setCustomPath(e.target.value)}
+                placeholder="/api/status"
+                aria-label="Station HTTP Path"
+                style={{
+                  flex: 1,
+                  height: 34,
+                  borderRadius: 10,
+                  border: "1px solid var(--vesper-line)",
+                  background: "#0B0F0E",
+                  color: "#FFFEFB",
+                  padding: "0 10px",
+                  fontSize: 12,
+                  fontFamily: "monospace"
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => handleInteract(selectedStation.id, customMethod, customPath, customBody)}
+                style={{
+                  height: 34,
+                  borderRadius: 999,
+                  border: "none",
+                  background: "#00E5A0",
+                  color: "#07110F",
+                  padding: "0 14px",
+                  fontSize: 12,
+                  fontWeight: 800,
+                  cursor: "pointer"
+                }}
+              >
+                Execute
+              </button>
+            </div>
+
+            {customMethod === "POST" && (
+              <textarea
+                value={customBody}
+                onChange={(e) => setCustomBody(e.target.value)}
+                rows={2}
+                placeholder='{"cmd":"echo OMEGA_SHELL_LIVE"}'
+                aria-label="Station HTTP POST JSON Body"
+                style={{
+                  marginTop: 8,
+                  width: "100%",
+                  borderRadius: 10,
+                  border: "1px solid var(--vesper-line)",
+                  background: "#0B0F0E",
+                  color: "#BEEAD8",
+                  padding: "8px 10px",
+                  fontSize: 11.5,
+                  fontFamily: "monospace"
+                }}
+              />
+            )}
+
+            <pre
+              className="vesper-mono"
+              style={{
+                marginTop: 10,
+                borderRadius: 12,
+                background: "#0B0F0E",
+                border: "1px solid var(--vesper-line)",
+                padding: "10px 12px",
+                fontSize: 11,
+                lineHeight: "17px",
+                color: "#BEEAD8",
+                height: 176,
+                overflow: "auto",
+                whiteSpace: "pre-wrap",
+                wordBreak: "break-word"
+              }}
+            >
+              {consoleOut}
+            </pre>
+          </section>
+
+          {/* Embedded SH-XI <|tool_call|> -> Live Station -> <|tool_result|> Lab Agent Console (T415) */}
+          <section className="vesper-card vesper-reserve" style={{ minHeight: 230, padding: 18 }}>
+            <div style={{ fontSize: 10.5, fontWeight: 800, color: "#6EE7FF", letterSpacing: "0.08em" }}>
+              SH-XI &lt;|&gt; LIVE STATION AGENT CONSOLE (T415 · &lt;|tool_call|&gt; → LIVE STATION → &lt;|tool_result|&gt;)
+            </div>
+            <div style={{ marginTop: 8, display: "flex", gap: 8 }}>
+              <input
+                value={agentPrompt}
+                onChange={(e) => setAgentPrompt(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleLabAgent();
+                }}
+                placeholder="Ask SH-XI to dispatch any Omega Labs station (00..15)…"
+                aria-label="SH-XI Lab Agent Prompt"
+                style={{
+                  flex: 1,
+                  height: 36,
+                  borderRadius: 10,
+                  border: "1px solid var(--vesper-line)",
+                  background: "#0B0F0E",
+                  color: "#FFFEFB",
+                  padding: "0 12px",
+                  fontSize: 12.5
+                }}
+              />
+              <button
+                type="button"
+                disabled={agentBusy}
+                onClick={() => handleLabAgent()}
+                style={{
+                  height: 36,
+                  borderRadius: 999,
+                  border: "none",
+                  background: "#6EE7FF",
+                  color: "#051014",
+                  padding: "0 15px",
+                  fontSize: 12,
+                  fontWeight: 800,
+                  cursor: agentBusy ? "wait" : "pointer"
+                }}
+              >
+                {agentBusy ? "Running…" : "Run SH-XI Agent"}
+              </button>
+            </div>
+            <div style={{ marginTop: 8, display: "flex", flexWrap: "wrap", gap: 6 }}>
+              {[
+                "Inspect PE/CLR #~ CIL and .pdata binary analysis status inside OmegaBraidRE",
+                "Check 3D DirectCompute DXBC shader cache and OTRI mesh inside OmegaEngine",
+                "Check CPU tuner and AVF VM status inside OmegaShell",
+                "Run polyglot compiler toolchain check inside OmegaForge",
+                "Run Golay-24 CAS cryptographic vault audit in OmegaSteg",
+                "Inspect H1 sheaf coboundary ABI audit in OmegaSheaf"
+              ].map((preset) => (
+                <button
+                  key={preset}
+                  type="button"
+                  onClick={() => handleLabAgent(preset)}
+                  style={{
+                    height: 24,
+                    borderRadius: 999,
+                    border: "1px solid var(--vesper-line)",
+                    background: "rgba(255,255,255,0.03)",
+                    color: "#A7B8B2",
+                    padding: "0 10px",
+                    fontSize: 10.5,
+                    cursor: "pointer"
+                  }}
+                >
+                  {preset}
+                </button>
+              ))}
+            </div>
+            {agentResult && (
+              <div
+                className="vesper-mono"
+                style={{
+                  marginTop: 10,
+                  borderRadius: 10,
+                  background: "#0B0F0E",
+                  padding: "10px 12px",
+                  fontSize: 11,
+                  color: "#D7E4DF",
+                  border: "1px solid var(--vesper-line)"
+                }}
+              >
+                <div style={{ color: "#00E5A0", fontWeight: 800 }}>
+                  &lt;|tool_call|&gt; {agentResult.tool_call?.station ?? "UNMEASURED/OFFLINE"} ·{" "}
+                  {agentResult.tool_call?.method ?? "GET"} {agentResult.tool_call?.path ?? ""}
+                  {agentResult.station_execution?.auto_woke
+                    ? ` (AUTO-WOKEN MINIMIZED PID ${agentResult.station_execution?.wake_pid})`
+                    : ""}
+                </div>
+                <div style={{ color: "#FFD28F", marginTop: 4 }}>
+                  &lt;|tool_result|&gt; HTTP {agentResult.station_execution?.http_status ?? "N/A"} ·{" "}
+                  {typeof agentResult.station_execution?.rtt_ms === "number"
+                    ? `${agentResult.station_execution.rtt_ms.toFixed(2)} ms`
+                    : agentResult.station_execution?.status ?? "UNMEASURED/OFFLINE"}
+                </div>
+                <div style={{ color: "#8BE9FF", marginTop: 4 }}>
+                  SH-XI Expert: {agentResult.sh_xi_synthesis?.top1_expert ?? "UNMEASURED/OFFLINE"} · 384D RAG:{" "}
+                  {agentResult.sh_xi_synthesis?.rag_top_source ?? "UNMEASURED/OFFLINE"}
+                </div>
+                <div style={{ marginTop: 4, color: "#E7F4EE" }}>
+                  {agentResult.sh_xi_synthesis?.output_text ?? agentResult.reason ?? agentResult.status ?? "UNMEASURED/OFFLINE"}
+                </div>
+              </div>
+            )}
+          </section>
+        </div>
+      </div>
+
+      {/* Prolonged Continuous Gate 5 Longitudinal Progression Monitor Card */}
+      <section
+        className="vesper-card vesper-reserve"
+        aria-label="Prolonged Continuous Gate 5 Longitudinal Progression Monitor"
+        style={{ minHeight: 176, padding: 20, contain: "layout" }}
+      >
+        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+              <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.12em", color: "#7C5CFF" }}>
+                PROLONGED CONTINUOUS GATE 5 LONGITUDINAL PROGRESSION MONITOR
+              </span>
+              <span
+                className="vesper-mono"
+                style={{
+                  borderRadius: 999,
+                  padding: "3px 10px",
+                  fontSize: 10.5,
+                  fontWeight: 800,
+                  background:
+                    gate5Badge.startsWith("MEASURED")
+                      ? "rgba(0, 229, 160, 0.16)"
+                      : "rgba(255, 155, 107, 0.14)",
+                  color: gate5Badge.startsWith("MEASURED") ? "#00E5A0" : "#FF9B6B"
+                }}
+              >
+                {gate5Badge}
+              </span>
+            </div>
+            <p style={{ margin: "6px 0 0 0", fontSize: 12.5, color: "#A7B8B2" }}>
+              Live measured longitudinal convergence across <code className="vesper-mono">/api/v1/chain362/master_certification</code> and{" "}
+              <code className="vesper-mono">/api/v1/chain368/master_certification</code> — strictly displays{" "}
+              <code className="vesper-mono">UNMEASURED/OFFLINE</code> until organic pure-neural convergence.
+            </p>
+          </div>
+
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            <button
+              type="button"
+              disabled={gate5Busy}
+              onClick={() => pollGate5Longitudinal("both")}
+              style={{
+                height: 34,
+                borderRadius: 999,
+                border: "1px solid rgba(124, 92, 255, 0.5)",
+                background: "rgba(124, 92, 255, 0.18)",
+                color: "#E2DAFF",
+                padding: "0 14px",
+                fontSize: 11.5,
+                fontWeight: 800,
+                cursor: gate5Busy ? "wait" : "pointer"
+              }}
+            >
+              {gate5Busy ? "Polling Gate 5…" : "Poll Gate 5 Progression (T362 + T368)"}
+            </button>
+            <button
+              type="button"
+              disabled={gate5Busy}
+              onClick={() => pollGate5Longitudinal("362")}
+              style={{
+                height: 34,
+                borderRadius: 999,
+                border: "1px solid var(--vesper-line)",
+                background: "rgba(255, 255, 255, 0.04)",
+                color: "#D7E4DF",
+                padding: "0 12px",
+                fontSize: 11,
+                fontWeight: 700,
+                cursor: gate5Busy ? "wait" : "pointer"
+              }}
+            >
+              Week 1 (chain362)
+            </button>
+            <button
+              type="button"
+              disabled={gate5Busy}
+              onClick={() => pollGate5Longitudinal("368")}
+              style={{
+                height: 34,
+                borderRadius: 999,
+                border: "1px solid var(--vesper-line)",
+                background: "rgba(255, 255, 255, 0.04)",
+                color: "#D7E4DF",
+                padding: "0 12px",
+                fontSize: 11,
+                fontWeight: 700,
+                cursor: gate5Busy ? "wait" : "pointer"
+              }}
+            >
+              Week 2 (chain368)
+            </button>
+          </div>
+        </div>
+
+        <div
+          className="vesper-mono"
+          style={{
+            marginTop: 14,
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))",
+            gap: 10,
+            fontSize: 11
+          }}
+        >
+          <div style={{ background: "#0B0F0E", borderRadius: 12, padding: "10px 12px", border: "1px solid var(--vesper-line)" }}>
+            <div style={{ color: "#7B8E88", fontSize: 10 }}>Week 1 Gate 5 (chain362 Unseen Diagnostics)</div>
+            <div style={{ color: g5w1Converged ? "#00E5A0" : "#FF9B6B", fontWeight: 700, marginTop: 3 }}>
+              {g5w1
+                ? g5w1Converged
+                  ? `MEASURED PASS (${g5w1.rustc_verify_latency_us ?? 0} us)`
+                  : `UNMEASURED/OFFLINE (rustc=${String(Boolean(g5w1.rustc_gcd_unit_test_passed))}, abstain=${String(
+                      Boolean(g5w1.disconnected_sensor_abstained)
+                    )})`
+                : "UNMEASURED/OFFLINE"}
+            </div>
+          </div>
+
+          <div style={{ background: "#0B0F0E", borderRadius: 12, padding: "10px 12px", border: "1px solid var(--vesper-line)" }}>
+            <div style={{ color: "#7B8E88", fontSize: 10 }}>Week 2 Gate 5 (chain368 Pure-Neural IFEval &amp; Multi-Turn)</div>
+            <div style={{ color: g5w2Converged ? "#00E5A0" : "#FF9B6B", fontWeight: 700, marginTop: 3 }}>
+              {g5w2
+                ? g5w2Converged
+                  ? `MEASURED PASS · 0-Bracket=${String(Boolean(g5w2.l0_zero_brackets_verified))}`
+                  : `UNMEASURED/OFFLINE (Awaiting Organic Convergence · rustc=${String(
+                      Boolean(g5w2.rustc_l0_zero_bracket_unit_test_passed)
+                    )})`
+                : "UNMEASURED/OFFLINE"}
+            </div>
+          </div>
+
+          <div style={{ background: "#0B0F0E", borderRadius: 12, padding: "10px 12px", border: "1px solid var(--vesper-line)" }}>
+            <div style={{ color: "#7B8E88", fontSize: 10 }}>3-Shell + MoE BPB &amp; Masked SFT</div>
+            <div style={{ color: chain368Data?.gate_1_shell2_sparse_moe?.passed ? "#00E5A0" : "#FF9B6B", fontWeight: 700, marginTop: 3 }}>
+              {chain368Data?.gate_1_shell2_sparse_moe
+                ? `${Number(chain368Data.gate_1_shell2_sparse_moe.val_bpb_384d).toFixed(6)} → ${Number(
+                    chain368Data.gate_1_shell2_sparse_moe.val_bpb_768d
+                  ).toFixed(6)} → ${Number(chain368Data.gate_1_shell2_sparse_moe.val_bpb_3shell_moe).toFixed(6)} BPB`
+                : chain362Data?.gate_4_rtx3050_cuda_pretrain
+                ? `${Number(chain362Data.gate_4_rtx3050_cuda_pretrain.val_bpb_384d).toFixed(6)} → ${Number(
+                    chain362Data.gate_4_rtx3050_cuda_pretrain.val_bpb_768d
+                  ).toFixed(6)} BPB`
+                : "UNMEASURED/OFFLINE"}
+            </div>
+          </div>
+
+          <div style={{ background: "#0B0F0E", borderRadius: 12, padding: "10px 12px", border: "1px solid var(--vesper-line)" }}>
+            <div style={{ color: "#7B8E88", fontSize: 10 }}>Overall Certification &amp; Live Lean 4 Sync</div>
+            <div
+              style={{
+                color:
+                  chain368Data?.status === "MEASURED" && chain362Data?.status === "MEASURED"
+                    ? "#00E5A0"
+                    : "#FF9B6B",
+                fontWeight: 700,
+                marginTop: 3
+              }}
+            >
+              {chain368Data || chain362Data
+                ? `C362=${chain362Data?.status ?? "UNPOLLED"} · C368=${chain368Data?.status ?? "UNPOLLED"} · QED=${
+                    chain368Data?.gate_6_lean4_formal_proofs?.theorem_count ??
+                    chain362Data?.gate_6_lean4_formal_proofs?.theorem_count ??
+                    "UNMEASURED/OFFLINE"
+                  }`
+                : "UNMEASURED/OFFLINE"}
+            </div>
+          </div>
+        </div>
+
+        <div className="vesper-mono" style={{ marginTop: 10, fontSize: 11, color: "#A7B8B2" }}>
+          {gate5Note}
+        </div>
+      </section>
     </div>
   );
 }
@@ -7282,9 +9194,16 @@ export function App() {
       typeof window !== "undefined" && window.location.protocol === "https:"
         ? ["", "https://api.act-omega-net.dev", "http://127.0.0.1:8097"]
         : ["", "http://127.0.0.1:8097"];
+    let sawHttp403 = false;
+    let http403Code = 403;
     for (const b of bases) {
       try {
         const r = await fetch(b + path, { cache: "no-store", headers: getOperatorHeaders() });
+        if (r.status === 401 || r.status === 403) {
+          sawHttp403 = true;
+          http403Code = r.status;
+          continue;
+        }
         if (r.ok) {
           const txt = await r.text();
           let displayMsg = txt.replace(/\s+/g, " ").slice(0, 420);
@@ -7339,6 +9258,13 @@ export function App() {
       } catch {
         // fallback
       }
+    }
+    if (sawHttp403) {
+      setOperatorUnlocked(false);
+      const lockedMsg = `[${label} OPERATOR VAULT LOCKED (HTTP ${http403Code})]: Loopback daemon is live, not offline — unlock X-Sovereign-Operator-Key header.`;
+      setTermOut(lockedMsg);
+      setCardDiag(lockedMsg);
+      return;
     }
     const fallbackMsg = `[${label} OFFLINE / UNVERIFIED]: Backend probe unreachable -- verification did not run`;
     setTermOut(fallbackMsg);
@@ -9180,6 +11106,7 @@ export function App() {
                 }}
                 lean4TheoremsQed={tel.lean4_theorems_qed}
                 lean4Qed={tel.lean4_qed}
+                toolsCount={tel.tools_count}
               />
             )}
 
@@ -9209,6 +11136,25 @@ export function App() {
                   setDrawer4Open(true);
                   selectVesperMode("hud", "HUD");
                 }}
+                onOpenLabsTab={() => selectVesperMode("labs", "Labs")}
+                lean4TheoremsQed={tel.lean4_theorems_qed}
+                lean4Qed={tel.lean4_qed}
+                toolsCount={tel.tools_count}
+              />
+            )}
+
+            {vesperMode === "labs" && (
+              <VesperOmegaLabsView
+                telemetrySource={vesperTelemetrySource}
+                operatorPasskey={operatorPasskey}
+                onPasskeyChange={setOperatorPasskey}
+                operatorUnlocked={operatorUnlocked}
+                onOperatorLocked403={() => setOperatorUnlocked(false)}
+                getOperatorHeaders={getOperatorHeaders}
+                onVerifyOperatorGate={() => verifyOperatorVaultGate()}
+                onRunEndpoint={(ep, label) => callEndpoint(ep, label)}
+                sessionId={vesperSessionId}
+                toolsCount={tel.tools_count}
                 lean4TheoremsQed={tel.lean4_theorems_qed}
                 lean4Qed={tel.lean4_qed}
               />
@@ -9298,7 +11244,7 @@ export function App() {
                       Dense, when you ask for it
                     </h2>
                     <p style={{ margin: "3px 0 0 0", fontSize: 12.5, color: "#A7B8B2" }}>
-                      100% zero-data-loss Host WebGPU Cockpit: all 15 interactive telemetry cards, 60 FPS Stiefel/Theodorus scopes, 16×130 bijection heatmap, Sovereign Harmonic IX/X/XI studios (3-Shell + 16/256 MoE), and CHAIN 404 drawers live below.
+                      {`100% zero-data-loss Host WebGPU Cockpit: all 15 interactive telemetry cards, 60 FPS Stiefel/Theodorus scopes, 16×130 bijection heatmap, Sovereign Harmonic IX/X/XI studios (3-Shell + 16/256 MoE), 15-Station Omega Labs (OMC6/OSP4/OTRI Seqlock Mesh), and ${liveChainLabel(tel.tools_count, vesperTelemetrySource === "UNMEASURED/OFFLINE")} drawers live below.`}
                     </p>
                   </div>
 
@@ -9319,6 +11265,23 @@ export function App() {
                       }}
                     >
                       ← Back to Calm Mode
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => selectVesperMode("labs", "Labs")}
+                      style={{
+                        height: 36,
+                        borderRadius: 999,
+                        border: "1px solid rgba(110, 231, 255, 0.45)",
+                        background: "rgba(110, 231, 255, 0.12)",
+                        color: "#8BE9FF",
+                        padding: "0 14px",
+                        fontSize: 12,
+                        fontWeight: 800,
+                        cursor: "pointer"
+                      }}
+                    >
+                      🧪 15-Station Labs
                     </button>
                     <button
                       type="button"
@@ -9385,11 +11348,11 @@ export function App() {
                     },
                     {
                       tag: "DRAWER D (3 & 4)",
-                      title: "404-Tool Matrix & Lean 4",
+                      title: `${typeof tel.tools_count === "number" && tel.tools_count > 0 && vesperTelemetrySource !== "UNMEASURED/OFFLINE" ? `${tel.tools_count}-Tool` : "Full-Tool"} Matrix & Lean 4`,
                       metric:
                         vesperTelemetrySource === "UNMEASURED/OFFLINE"
                           ? "UNMEASURED/OFFLINE"
-                          : `CHAIN 404 · ${tel.cluster_total_kops.toFixed(1)}k ops/s`,
+                          : `${liveChainLabel(tel.tools_count, false)} · ${tel.cluster_total_kops.toFixed(1)}k ops/s`,
                       active: drawer3Open && drawer4Open,
                       toggle: () => {
                         const next = !(drawer3Open && drawer4Open);
@@ -9486,14 +11449,30 @@ export function App() {
                   fontSize: 13.5
                 }}
               >
-                {`SOVEREIGN MANIFOLD TELEMETRY CONSOLE — ACT-OMEGA NET ${liveReleaseLabel(tel.release_version, vesperTelemetrySource === "UNMEASURED/OFFLINE")} (SH4Z v7321 TLV | SH-XI 3-Shell + 16/256 MoE | 84,480 Neurons / 4,055,040 Synapses | 262,144 CLs | 524,288 BPE | ${liveChainLabel(tel.tools_count, vesperTelemetrySource === "UNMEASURED/OFFLINE")} | ${liveLeanBadge(tel.lean4_theorems_qed, vesperTelemetrySource === "UNMEASURED/OFFLINE", tel.lean4_qed, true)} | 4.235 POPS)`}
+                {`SOVEREIGN MANIFOLD TELEMETRY CONSOLE — ACT-OMEGA NET ${liveReleaseLabel(tel.release_version, vesperTelemetrySource === "UNMEASURED/OFFLINE")} (SH4Z v7400 TLV | SH-XI 3-Shell + 16/256 MoE | 15-Station Omega Labs | 84,480 Neurons / 4,055,040 Synapses | 262,144 CLs | 524,288 BPE | ${liveChainLabel(tel.tools_count, vesperTelemetrySource === "UNMEASURED/OFFLINE")} | ${liveLeanBadge(tel.lean4_theorems_qed, vesperTelemetrySource === "UNMEASURED/OFFLINE", tel.lean4_qed, true)} | 4.235 POPS)`}
               </div>
               <div style={{ color: "#9AA0A6", fontSize: 10, fontFamily: "'JetBrains Mono', Consolas, monospace" }}>
-                {`SH-XI ${liveReleaseLabel(tel.release_version, vesperTelemetrySource === "UNMEASURED/OFFLINE")} + SH-Deep-12L Active: 384D Mobile / 768D Host / 16-of-256 Sparse MoE • ChatML Masked SFT • 384D WGSL RAG • JSON FSM • 262,144 (2^18) Bijected CLs (16.00 MiB) • Vesper Mica CLS 0.00`}
+                {`SH-XI ${liveReleaseLabel(tel.release_version, vesperTelemetrySource === "UNMEASURED/OFFLINE")} + 15-Station Omega Labs (OMC6/OSP4/OTRI Seqlock Mesh): 384D Mobile / 768D Host / 16-of-256 Sparse MoE • ChatML Masked SFT • 384D WGSL RAG • JSON FSM • 262,144 (2^18) Bijected CLs (16.00 MiB) • Vesper Mica CLS 0.00`}
               </div>
             </div>
           </div>
           <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
+            <button
+              onClick={() => selectVesperMode("labs", "Labs")}
+              style={{
+                background: "linear-gradient(135deg, #00E5A0 0%, #6EE7FF 100%)",
+                color: "#05100E",
+                border: "none",
+                borderRadius: 999,
+                padding: "4px 12px",
+                fontWeight: 900,
+                cursor: "pointer",
+                fontSize: 10.5
+              }}
+              title="Open Interactive 15-Station Omega Labs Workbench, OMC6/OSP4/OTRI Seqlock Mesh & SH-XI Lab Agent (Tools T405..T418)"
+            >
+              🧪 OMEGA LABS (15-STATION)
+            </button>
             {vesperMode === "classic" && (
               <button
                 onClick={() => selectVesperMode("calm", "Chat")}
@@ -9507,9 +11486,9 @@ export function App() {
                   cursor: "pointer",
                   fontSize: 10.5
                 }}
-                title="Return to the Vesper Multi-Mode Mica Shell (Calm / HUD / Proof / Vault / Tools / Settings)"
+                title="Return to the Vesper Multi-Mode Mica Shell (Calm / HUD / Proof / Vault / Tools / Labs / Settings)"
               >
-                ✨ VESPER MICA SHELL (CALM / 6-MODE)
+                ✨ VESPER MICA SHELL (CALM / 7-MODE)
               </button>
             )}
             <button
@@ -12140,15 +14119,46 @@ export function App() {
                   [8-DOMAIN FUNCTIONAL COMMAND DECK — {liveToolsRangeLabel(tel.tools_count, vesperTelemetrySource === "UNMEASURED/OFFLINE").toUpperCase()} ({liveChainLabel(tel.tools_count, vesperTelemetrySource === "UNMEASURED/OFFLINE")} | {liveReleaseLabel(tel.release_version, vesperTelemetrySource === "UNMEASURED/OFFLINE")} | {liveLeanBadge(tel.lean4_theorems_qed, vesperTelemetrySource === "UNMEASURED/OFFLINE", tel.lean4_qed, true).toUpperCase()} | 262,144 CACHELINES | 84,480 NEURONS | 4.05M SYNAPSES)]:
                 </span>
                 <span style={{ color: "#FFB454", fontSize: 9.5, marginLeft: 8, fontWeight: "bold" }}>
-                  SH-XI 3-Shell (384D Mobile + 768D Host + 16/256 MoE) | 262,144 (2^18) Bijected CLs (16.00 MiB) | 5-Pool Work-Steal (t_A+F+t_B=1) | CPU+RTX 3050 CUDA Co-Exec + P8-APEX (:8098)
+                  15-Station Omega Labs (OMC6/OSP4/OTRI Seqlock Mesh) | SH-XI 3-Shell (384D Mobile + 768D Host + 16/256 MoE) | 262,144 (2^18) Bijected CLs (16.00 MiB) | 5-Pool Work-Steal (t_A+F+t_B=1) | CPU+RTX 3050 CUDA Co-Exec + P8-APEX (:8098)
                 </span>
               </div>
               <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
-                <button onClick={() => callEndpoint("/api/v1/tools/t404", "CHAIN 404: MASTER SH-XI, UNIFIED LAB, VPC MESH + HYPERDRIVE CERTIFICATION")} style={{ background: "#00E5A0", color: "#050A0E", border: "none", borderRadius: 4, padding: "3px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>👑 CHAIN 404 MASTER CERT</button><button onClick={() => callEndpoint("/api/v1/chain368/master_certification", "T368: SH-XI MASTER CERTIFICATION")} style={{ background: "#09261E", color: "#00FFCC", border: "1px solid #00FFCC", borderRadius: 4, padding: "3px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>T368 SH-XI CERT</button>
+                <button onClick={() => selectVesperMode("labs", "Labs")} style={{ background: "#6EE7FF", color: "#050A0E", border: "none", borderRadius: 4, padding: "3px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>🧪 OPEN LABS TAB</button>
+                <button onClick={() => callEndpoint("/api/v1/chain418/master_certification", "CHAIN 418: MASTER 15-STATION OMEGA LABS, OMC6/OSP4/OTRI SEQLOCK MESH & SH-XI CERTIFICATION")} style={{ background: "#00E5A0", color: "#050A0E", border: "none", borderRadius: 4, padding: "3px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>👑 CHAIN 418 MASTER CERT</button>
+                <button onClick={() => callEndpoint("/api/v1/tools/t404", "CHAIN 404: MASTER SH-XI, UNIFIED LAB, VPC MESH + HYPERDRIVE CERTIFICATION")} style={{ background: "#09261E", color: "#00E5A0", border: "1px solid #00E5A0", borderRadius: 4, padding: "3px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>CHAIN 404 CERT</button><button onClick={() => callEndpoint("/api/v1/chain368/master_certification", "T368: SH-XI MASTER CERTIFICATION")} style={{ background: "#09261E", color: "#00FFCC", border: "1px solid #00FFCC", borderRadius: 4, padding: "3px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>T368 SH-XI CERT</button>
                 <button onClick={() => callEndpoint("/api/v1/chain356/master_certification", "CHAIN 356: MASTER v71.5.0, SH-DEEP-12L & 965 QED CERTIFICATION")} style={{ background: "#FFD700", color: "#050A0E", border: "none", borderRadius: 4, padding: "3px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>CHAIN 356 CERT</button>
                 <button onClick={() => callEndpoint("/api/v1/chain316/master_certification", "CHAIN 316: MASTER v70.0.0, 262,144 BIJECTED CACHELINES, 5-POOL WORKSTEAL & 840 QED CERTIFICATION")} style={{ background: "#00E5FF", color: "#050A0E", border: "none", borderRadius: 4, padding: "3px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>CHAIN 316 CERT</button>
                 <button onClick={() => callEndpoint("/api/v1/chain308/master_certification", "CHAIN 308: MASTER v69.0.0, OMEGALANG v16 TLV, 84,480 NEURONS & 820 QED CERTIFICATION")} style={{ background: "#56D364", color: "#050A0E", border: "none", borderRadius: 4, padding: "3px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>CHAIN 308 CERT</button>
                 <button onClick={() => callEndpoint("/api/v1/harmonic/tool_chain?q=chain89_parallel_dag", "CHAIN 89: 89-TOOL PARALLEL DAG")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "3px 8px", fontWeight: "bold", cursor: "pointer", fontSize: 9.5 }}>CHAIN 89 DAG</button>
+              </div>
+            </div>
+
+            {/* Dedicated 15-Station Omega Labs, OMC6/OSP4/OTRI Seqlock Mesh & CHAIN 418 Suite (Tools 405..418 | Live Lean 4 QED) */}
+            <div style={{ background: "#06131A", border: "1.5px solid #6EE7FF", borderRadius: 5, padding: "7px 10px", marginBottom: 8 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 6, marginBottom: 5 }}>
+                <span style={{ color: "#8BE9FF", fontWeight: "bold", fontSize: 10.5 }}>
+                  [{liveReleaseLabel(tel.release_version, vesperTelemetrySource === "UNMEASURED/OFFLINE")} 15-STATION OMEGA LABS + OMC6/OSP4/OTRI 384B SEQLOCK MESH + SH-XI LAB AGENT (TOOLS 405..418 | {liveLeanBadge(tel.lean4_theorems_qed, vesperTelemetrySource === "UNMEASURED/OFFLINE", tel.lean4_qed, false).toUpperCase()})]:
+                </span>
+                <span style={{ color: "#00E5A0", fontSize: 9.5, fontWeight: "bold" }}>
+                  Stations 01..15 + :19800 Chaos Deck | OmegaBraidRE (:19794 PE/CLR #~ CIL &amp; .pdata) | OmegaEngine (:19795 3D DirectCompute/HLSL + OTRI)
+                </span>
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+                <button onClick={() => selectVesperMode("labs", "Labs")} style={{ background: "#6EE7FF", color: "#050A0E", border: "none", borderRadius: 4, padding: "4px 8px", cursor: "pointer", fontFamily: "monospace", fontSize: 9.5, fontWeight: "bold" }}>🧪 Open Interactive Labs Tab</button>
+                <button onClick={() => callEndpoint("/api/v1/tools/t405", "TOOL 405: LAB CORE AUDIT & CHAOS DECK (:19800)")} style={{ background: "#091F2C", color: "#00E5FF", border: "1px solid #00E5FF", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>T405: Core Audit (:19800)</button>
+                <button onClick={() => callEndpoint("/api/v1/tools/t406", "TOOL 406: NATIVE WORKBENCH & OSP4 SPATIAL SEQLOCK BUS")} style={{ background: "#0D2618", color: "#56D364", border: "1px solid #56D364", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>T406: Workbench + OSP4</button>
+                <button onClick={() => callEndpoint("/api/v1/tools/t407", "TOOL 407: POCKET C11 7-TIER FUSION & SHA256SUMS VERIFIER")} style={{ background: "#1F1030", color: "#B388FF", border: "1px solid #B388FF", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>T407: SHA256SUMS + C11</button>
+                <button onClick={() => callEndpoint("/api/v1/tools/t408", "TOOL 408: SEQLOCK CRDT VAULT & SPATIAL ACOUSTIC RIG")} style={{ background: "#002B24", color: "#00FFCC", border: "1px solid #00FFCC", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>T408: Vault &amp; Acoustic</button>
+                <button onClick={() => callEndpoint("/api/v1/tools/t409", "TOOL 409: SHEAF FFI SURGEON & UNIFIED DECK AUDIT")} style={{ background: "#3A1C00", color: "#FFB454", border: "1px solid #FFB454", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>T409: FFI Surgeon</button>
+                <button onClick={() => callEndpoint("/api/v1/tools/t410", "TOOL 410: EDGE WORKERS (:19788..:19793) HEALTH PROBE")} style={{ background: "#261038", color: "#FF9EFF", border: "1px solid #FF9EFF", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>T410: Edge (:19788..93)</button>
+                <button onClick={() => callEndpoint("/api/v1/lab/v303/deck?verify_sha=1", "TOOL 411: 15-STATION LABS LIVE DECK & SHA256SUMS PROBE")} style={{ background: "#091F2C", color: "#8BE9FF", border: "1px solid #8BE9FF", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>T411: 15-Station Deck</button>
+                <button onClick={() => callEndpoint("/api/v1/tools/t412", "TOOL 412: WIN32 NON-INTRUSIVE PROCESS SUPERVISOR (SW_SHOWMINNOACTIVE)")} style={{ background: "#2B2100", color: "#FFEA00", border: "1px solid #FFEA00", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>T412: Win32 Supervisor</button>
+                <button onClick={() => callEndpoint("/api/v1/tools/t413", "TOOL 413: STATION HTTP INTERACT GATEWAY")} style={{ background: "#1B1F2B", color: "#A8C7FA", border: "1px solid #A8C7FA", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>T413: Station Interact</button>
+                <button onClick={() => callEndpoint("/api/v1/lab/v303/ingest_corpus_to_rag", "TOOL 414: LAB CORPUS HARVESTER -> 384D WGSL RAG")} style={{ background: "#0D2618", color: "#56D364", border: "1px solid #56D364", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>T414: Corpus -&gt; 384D RAG</button>
+                <button onClick={() => callEndpoint(`/api/v1/sovereign_harmonic/lab_agent?q=${encodeURIComponent(cmdPrompt)}`, "TOOL 415: SH-XI EMBEDDED LAB AGENT (<|tool_call|> -> LIVE STATION)")} style={{ background: "#00E5A0", color: "#050A0E", border: "none", borderRadius: 4, padding: "4px 8px", cursor: "pointer", fontFamily: "monospace", fontSize: 9.5, fontWeight: "bold" }}>🤖 T415: SH-XI Lab Agent</button>
+                <button onClick={() => callEndpoint("/api/v1/tools/t416", "TOOL 416: STATION 14 OMEGABRAIDRE (:19794 PE/CLR #~ CIL, .PDATA & BINARY ANALYSIS WORKBENCH)")} style={{ background: "#1F1030", color: "#D0BCFF", border: "1px solid #D0BCFF", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>🔬 T416: OmegaBraidRE (:19794 PE/CIL/.pdata)</button>
+                <button onClick={() => callEndpoint("/api/v1/tools/t417", "TOOL 417: STATION 15 OMEGAENGINE (:19795 3D DIRECTCOMPUTE & HLSL GRAPHICS/COMPUTE STUDIO + OTRI 384B SEQLOCK)")} style={{ background: "#002B24", color: "#00FFCC", border: "1px solid #00FFCC", borderRadius: 4, padding: "4px 7px", cursor: "pointer", fontFamily: "monospace", fontSize: 9, fontWeight: "bold" }}>🎮 T417: OmegaEngine (:19795 DirectCompute + OTRI)</button>
+                <button onClick={() => callEndpoint("/api/v1/chain418/master_certification", "TOOL 418: CHAIN 418 MASTER CERTIFICATION (15-STATION LABS + OMC6/OSP4/OTRI + SH-XI)")} style={{ background: "#FFD700", color: "#050A0E", border: "none", borderRadius: 4, padding: "4px 8px", cursor: "pointer", fontFamily: "monospace", fontSize: 9.5, fontWeight: "bold" }}>👑 T418: CHAIN 418 CERT ({liveLeanBadge(tel.lean4_theorems_qed, vesperTelemetrySource === "UNMEASURED/OFFLINE", tel.lean4_qed, false)})</button>
               </div>
             </div>
 
@@ -12417,7 +14427,7 @@ export function App() {
             <div style={{ background: "#0A0D12", border: "1px solid #2A3B4D", borderRadius: 4, padding: 6, marginBottom: 6, fontSize: 10.5 }}>
               <div style={{ color: "#FFFEFB" }}>&gt; PROMPT: {cmdPrompt}</div>
               <div style={{ color: "#FFB454", marginTop: 2 }}>
-                [SH4Z v7321 (16.00 MiB Bijected / 15.965 Hz Decadic Epoch HUD)]: Work-Stealing={tel.ws_loq_lines}+{tel.ws_p10_lines}+{tel.ws_p8_lines}=2,080 Lines ({tel.cluster_total_kops.toFixed(1)}k ops/s) -- {liveLeanBadge(tel.lean4_theorems_qed, vesperTelemetrySource === "UNMEASURED/OFFLINE", tel.lean4_qed, true)} -- 84,480 Neurons (1,920x Chair44, 4,055,040 Synapses, 262,144 CLs) -- SH-XI 3-Shell + 16/256 MoE -- OmegaLang v16 (535.73 TOPS / 4.235 POPS) -- {liveToolsRangeLabel(tel.tools_count, vesperTelemetrySource === "UNMEASURED/OFFLINE")} ({liveChainLabel(tel.tools_count, vesperTelemetrySource === "UNMEASURED/OFFLINE")} Suite) -- PPL={e8LeechState.holdout_ppl > 0 ? e8LeechState.holdout_ppl.toFixed(6) : "UNMEASURED/OFFLINE"}
+                [SH4Z v7400 (16.00 MiB Bijected / 15.965 Hz Decadic Epoch HUD)]: Work-Stealing={tel.ws_loq_lines}+{tel.ws_p10_lines}+{tel.ws_p8_lines}=2,080 Lines ({tel.cluster_total_kops.toFixed(1)}k ops/s) -- {liveLeanBadge(tel.lean4_theorems_qed, vesperTelemetrySource === "UNMEASURED/OFFLINE", tel.lean4_qed, true)} -- 84,480 Neurons (1,920x Chair44, 4,055,040 Synapses, 262,144 CLs) -- 15-Station Omega Labs (OMC6/OSP4/OTRI) -- SH-XI 3-Shell + 16/256 MoE -- OmegaLang v16 (535.73 TOPS / 4.235 POPS) -- {liveToolsRangeLabel(tel.tools_count, vesperTelemetrySource === "UNMEASURED/OFFLINE")} ({liveChainLabel(tel.tools_count, vesperTelemetrySource === "UNMEASURED/OFFLINE")} Suite) -- PPL={e8LeechState.holdout_ppl > 0 ? e8LeechState.holdout_ppl.toFixed(6) : "UNMEASURED/OFFLINE"}
               </div>
               <div style={{ color: "#56D364", marginTop: 2 }}>&gt; OUTPUT: {termOut}</div>
             </div>
@@ -12427,7 +14437,9 @@ export function App() {
               <button onClick={() => callEndpoint(`/api/v1/converse/multiturn_memory?q=${encodeURIComponent(cmdPrompt)}`, "MULTI-TURN MEMORY T73")} style={{ background: "#261038", color: "#FFD700", border: "1px solid #FFD700", borderRadius: 4, padding: "4px 10px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>MEMORY (T73)</button>
               <button onClick={() => callEndpoint(`/api/v1/converse/dialectical_debate?q=${encodeURIComponent(cmdPrompt)}`, "SOCRATIC DEBATE T74")} style={{ background: "#002B24", color: "#00FFCC", border: "1px solid #00FFCC", borderRadius: 4, padding: "4px 10px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>DEBATE (T74)</button>
               <button onClick={() => callEndpoint(`/api/v1/agent_gateway/interact?agent_id=hud&q=${encodeURIComponent(cmdPrompt)}`, "EXECUTE PROMPT")} style={{ background: "#1C2632", color: "#FFFEFB", border: "1px solid #FFB454", borderRadius: 4, padding: "4px 12px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>EXECUTE</button>
-              <button onClick={() => callEndpoint("/api/v1/tools/t404", "CHAIN 404: MASTER CERT")} style={{ background: "#00E5A0", color: "#050A0E", border: "none", borderRadius: 4, padding: "4px 12px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>CHAIN 404</button><button onClick={() => callEndpoint("/api/v1/chain368/master_certification", "T368: SH-XI MASTER CERT")} style={{ background: "#14262E", color: "#00FFCC", border: "1px solid #00FFCC", borderRadius: 4, padding: "4px 10px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>T368 CERT</button>
+              <button onClick={() => selectVesperMode("labs", "Labs")} style={{ background: "#6EE7FF", color: "#050A0E", border: "none", borderRadius: 4, padding: "4px 10px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>🧪 LABS</button>
+              <button onClick={() => callEndpoint("/api/v1/chain418/master_certification", "CHAIN 418: MASTER CERT")} style={{ background: "#00E5A0", color: "#050A0E", border: "none", borderRadius: 4, padding: "4px 12px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>CHAIN 418</button>
+              <button onClick={() => callEndpoint("/api/v1/tools/t404", "CHAIN 404: MASTER CERT")} style={{ background: "#09261E", color: "#00E5A0", border: "1px solid #00E5A0", borderRadius: 4, padding: "4px 10px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>CHAIN 404</button><button onClick={() => callEndpoint("/api/v1/chain368/master_certification", "T368: SH-XI MASTER CERT")} style={{ background: "#14262E", color: "#00FFCC", border: "1px solid #00FFCC", borderRadius: 4, padding: "4px 10px", fontWeight: "bold", cursor: "pointer", fontSize: 10 }}>T368 CERT</button>
               <button onClick={() => callEndpoint("/api/v1/chain210/suite", "CHAIN 210: OMNI-SUITE")} style={{ background: "#00FFCC", color: "#050A0E", border: "none", borderRadius: 4, padding: "4px 12px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>CHAIN 210</button>
               <button onClick={() => callEndpoint("/api/v1/harmonic/tool_chain?q=chain89_parallel_dag", "CHAIN 89")} style={{ background: "#E94E34", color: "#FFFEFB", border: "none", borderRadius: 4, padding: "4px 12px", fontWeight: "bold", cursor: "pointer", fontSize: 10.5 }}>CHAIN 89</button>
               <button onClick={() => setTermOut("READY.")} style={{ background: "#1C2632", color: "#FFFEFB", border: "1px solid #2A3B4D", borderRadius: 4, padding: "4px 10px", cursor: "pointer", fontSize: 10.5 }}>CLEAR</button>
@@ -12440,7 +14452,7 @@ export function App() {
         </div>
       </div>
 
-      {/* Global Ctrl+K Quick Command Palette Modal (Available across all 6 Vesper Mica Modes & Classic Cockpit) */}
+      {/* Global Ctrl+K Quick Command Palette Modal (Available across all 7 Vesper Mica Modes & Classic Cockpit) */}
       {cmdPaletteOpen && (
         <div
           style={{
@@ -12469,7 +14481,7 @@ export function App() {
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10, gap: 8 }}>
               <span style={{ color: "#00E5A0", fontWeight: 800, fontSize: 12.5 }}>
-                SOVEREIGN COMMAND PALETTE (CTRL+K) — VESPER MODES, TOOLS 1..404 &amp; CARDS
+                {`SOVEREIGN COMMAND PALETTE (CTRL+K) — VESPER 7-MODES, ${liveToolsRangeLabel(tel.tools_count, vesperTelemetrySource === "UNMEASURED/OFFLINE").toUpperCase()} & CARDS`}
               </span>
               <button
                 onClick={() => setCmdPaletteOpen(false)}
@@ -12496,7 +14508,8 @@ export function App() {
                   { id: "hud", label: "HUD (Engineer Mode)", rail: "HUD" },
                   { id: "proof", label: `Proof Sheet (${liveLeanBadge(tel.lean4_theorems_qed, vesperTelemetrySource === "UNMEASURED/OFFLINE", tel.lean4_qed, false)})`, rail: "Proofs" },
                   { id: "vault", label: "Vault (16.00 MiB)", rail: "Vault" },
-                  { id: "tools", label: "Tools (CHAIN 404)", rail: "Tools" },
+                  { id: "tools", label: `Tools (${liveChainLabel(tel.tools_count, vesperTelemetrySource === "UNMEASURED/OFFLINE")})`, rail: "Tools" },
+                  { id: "labs", label: "Labs (15-Station Deck)", rail: "Labs" },
                   { id: "settings", label: "Settings & CLS 0.00", rail: "Settings" },
                   { id: "classic", label: "Classic Full Cockpit", rail: "HUD" }
                 ] as Array<{ id: VesperShellMode; label: string; rail: VesperRailLabel }>
@@ -12528,7 +14541,7 @@ export function App() {
               autoFocus
               value={cmdPaletteFilter}
               onChange={(e) => setCmdPaletteFilter(e.target.value)}
-              placeholder="Type tool number (e.g. T368, T365, T363, T361, T351, SH-XI, MoE, RAG, IFEval, 262144, RLVF, OmegaLang), card, or domain..."
+              placeholder="Type tool number (e.g. T418, T417, T416, T415, T411, Labs, OTRI, OSP4, OMC6, T368, SH-XI, MoE, RAG, 262144), card, or domain..."
               style={{
                 width: "100%",
                 background: "#05080C",
@@ -12543,6 +14556,20 @@ export function App() {
             />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 6, maxHeight: 340, overflowY: "auto" }}>
               {[
+                { label: `CHAIN 418: ${liveReleaseLabel(tel.release_version, vesperTelemetrySource === "UNMEASURED/OFFLINE")} 15-Station Omega Labs, OMC6/OSP4/OTRI Seqlock Mesh & SH-XI Master Certification (${liveToolsRangeLabel(tel.tools_count, vesperTelemetrySource === "UNMEASURED/OFFLINE")} & ${liveLeanBadge(tel.lean4_theorems_qed, vesperTelemetrySource === "UNMEASURED/OFFLINE", tel.lean4_qed, true)})`, ep: "/api/v1/chain418/master_certification" },
+                { label: "T417: Station 15 OmegaEngine (:19795 3D DirectCompute & HLSL Graphics/Compute Studio + OTRI 384B CRC-32 Seqlock Mesh)", ep: "/api/v1/tools/t417" },
+                { label: "T416: Station 14 OmegaBraidRE (:19794 PE/CLR #~ CIL, .pdata & Binary Analysis Workbench)", ep: "/api/v1/tools/t416" },
+                { label: "T415: Embedded SH-XI Lab Agent (<|tool_call|> -> Live Station -> <|tool_result|>)", ep: "/api/v1/sovereign_harmonic/lab_agent" },
+                { label: "T414: Omega Labs Corpus Harvester -> 384D Intel UHD WGSL Grounded RAG", ep: "/api/v1/lab/v303/ingest_corpus_to_rag" },
+                { label: "T413: Omega Labs Station HTTP Interact Gateway", ep: "/api/v1/tools/t413" },
+                { label: "T412: Win32 Non-Intrusive Process Supervisor (SW_SHOWMINNOACTIVE)", ep: "/api/v1/tools/t412" },
+                { label: "T411: 15-Station Omega Labs Live Deck & Dynamic SHA256SUMS Verifier", ep: "/api/v1/lab/v303/deck?verify_sha=1" },
+                { label: "T410: Station 11 Edge Workers (:19788..:19793) Health Probe", ep: "/api/v1/tools/t410" },
+                { label: "T409: Station 09 Sheaf FFI Surgeon & Station 10 Unified Deck Audit", ep: "/api/v1/tools/t409" },
+                { label: "T408: Station 07 Seqlock CRDT Vault & Station 08 Spatial Acoustic Rig", ep: "/api/v1/tools/t408" },
+                { label: "T407: Station 06 Pocket C11 7-Tier Fusion & SHA256SUMS.txt Verifier", ep: "/api/v1/tools/t407" },
+                { label: "T406: Station 05 Native Workbench & OSP4 Spatial Seqlock Bus", ep: "/api/v1/tools/t406" },
+                { label: "T405: OmegaLabLauncher Chaos Deck (:19800) & Lab Core Audit", ep: "/api/v1/tools/t405" },
                 { label: `CHAIN 404: ${liveReleaseLabel(tel.release_version, vesperTelemetrySource === "UNMEASURED/OFFLINE")} Unified Lab, Cloudflare VPC Mesh & Hyperdrive, Two-Phase Q8_0 Matryoshka Master Certification (${liveToolsRangeLabel(tel.tools_count, vesperTelemetrySource === "UNMEASURED/OFFLINE")} & ${liveLeanBadge(tel.lean4_theorems_qed, vesperTelemetrySource === "UNMEASURED/OFFLINE", tel.lean4_qed, true)})`, ep: "/api/v1/tools/t404" },
                 { label: "T400: Cloudflare VPC Service Registry Probe (4/4 Targets Online)", ep: "/api/v1/tools/t400" },
                 { label: "T403: Cloudflare Hyperdrive DuckDB Query (:5439 PGWire TLS)", ep: "/api/v1/tools/t403" },

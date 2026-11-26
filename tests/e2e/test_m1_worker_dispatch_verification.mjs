@@ -354,7 +354,15 @@ const env = {
     "/api/v1/tool/284?edge_direct=1",
     "/api/v1/vesper_arachne/ik_swarm_companion",
     "/api/v1/tools/t287",
-    "/api/v1/tool/287"
+    "/api/v1/tool/287",
+    "/api/v1/lab/v303/deck",
+    "/api/v1/lab/station/control",
+    "/api/v1/lab/station/interact",
+    "/api/v1/lab/v303/ingest_corpus_to_rag",
+    "/api/v1/tools/t405",
+    "/api/v1/tools/t418",
+    "/api/v1/tool/418",
+    "/api/v1/chain418/master_certification"
   ];
   for (const r of m1GatedRoutes) {
     const resUnauth = await worker.fetch(new Request("https://act-omega-net.dev" + r), env);

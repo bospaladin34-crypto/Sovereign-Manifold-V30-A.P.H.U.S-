@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">ACT-Omega Net (SH-XI | Vesper Mica | CHAIN 404)</string>
-    <string name="sovereign_dream_label">ACT-Omega Live Screensaver (3D Stiefel &amp; SH-XI)</string>
-    <string name="sovereign_wallpaper_label">ACT-Omega Live Wallpaper (15.965Hz Manifold)</string>
-    <string name="sovereign_wallpaper_desc">Real-time 15.965 Hz Decadic Stiefel Manifold, Theodorus Spiral, 16x130 Bijection Heatmap (262,144 CLs / 16.00 MiB), Sovereign Harmonic XI 3-Shell 384D/768D + 16/256 Sparse MoE, Vesper Multi-Mode Mica Shell (CLS 0.00)</string>
-    <string name="sovereign_widget_label">ACT-Omega Live 16x130 &amp; .npage/.spage SHM Widget (CHAIN 404)</string>
+    <string name="app_name">ACT-Omega v74.0.0 (SH4Z v7400 | Vesper Mica | CHAIN 418)</string>
+    <string name="sovereign_dream_label">ACT-Omega v74.0.0 Live Screensaver (3D Stiefel &amp; SH4Z v7400)</string>
+    <string name="sovereign_wallpaper_label">ACT-Omega v74.0.0 Live Wallpaper (15.965Hz Manifold)</string>
+    <string name="sovereign_wallpaper_desc">Real-time 15.965 Hz Decadic Stiefel Manifold, Theodorus Spiral, 16x130 Bijection Heatmap (262,144 CLs / 16.00 MiB), SH4Z v7400 + Unified Omega Labs, Vesper Multi-Mode Mica Shell (CLS 0.00)</string>
+    <string name="sovereign_widget_label">ACT-Omega v74.0.0 Live 16x130 &amp; .npage/.spage SHM Widget (CHAIN 418)</string>
 </resources>

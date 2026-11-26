@@ -63,11 +63,11 @@ function Test-Lean4ThresholdCheck {
     $sorryCount = ([regex]::Matches($leanText, '\bsorry\b')).Count
     $trivialEqCount = ([regex]::Matches($leanText, ':\s*(\w+)\s*=\s*\1\s*:=')).Count
     $trivialCommCount = ([regex]::Matches($leanText, '\(a\s+b\s*:\s*Nat\)\s*:\s*a\s*\+\s*b\s*=\s*b\s*\+\s*a')).Count
-    if ($thmCount -lt 1010) {
-        $errs.Add("LEAN4_COUNT_LOW: Found $thmCount theorems in $LeanPath (Req: >= 1010)")
+    if ($thmCount -lt 1027) {
+        $errs.Add("LEAN4_COUNT_LOW: Found $thmCount theorems in $LeanPath (Req: >= 1027)")
     }
-    if ($ReportedCount -ge 0 -and ($ReportedCount -lt 1010 -or $ReportedCount -ne $thmCount)) {
-        $errs.Add("LEAN4_REPORTED_MISMATCH: Reported $ReportedCount theorems != live $thmCount (Req: >= 1010 and exact match)")
+    if ($ReportedCount -ge 0 -and ($ReportedCount -lt 1027 -or $ReportedCount -ne $thmCount)) {
+        $errs.Add("LEAN4_REPORTED_MISMATCH: Reported $ReportedCount theorems != live $thmCount (Req: >= 1027 and exact match)")
     }
     if ($sorryCount -gt 0) {
         $errs.Add("LEAN4_SORRY_FOUND: Found $sorryCount 'sorry' tokens (Req: 0)")
@@ -1774,20 +1774,22 @@ if ($TestNegativeCloudflareInjection) {
             $negFailures++
         }
 
-        # Test 5: 1,009-theorem Lean 4 negative fixture -> MUST FAIL, 1,010 live -> MUST PASS
-        $fLean1009 = Join-Path $tmpNegDir "SovereignManifoldTheorems_1009.lean"
+        # Test 5: (live - 1)-theorem Lean 4 negative fixture -> MUST FAIL, live (>= 1,027) -> MUST PASS
+        $liveThmCntNeg = Get-LiveLean4TheoremCount -LeanPath "$RepoRoot\03_vault\lean4\SovereignManifoldTheorems.lean"
+        $belowFloorCnt = [Math]::Max(1, $liveThmCntNeg - 1)
+        $fLeanLow = Join-Path $tmpNegDir "SovereignManifoldTheorems_$belowFloorCnt.lean"
         $sb = New-Object System.Text.StringBuilder
-        for ($i = 1; $i -le 1009; $i++) {
+        for ($i = 1; $i -le $belowFloorCnt; $i++) {
             [void]$sb.AppendLine("theorem neg_ps_fixture_$i : True := by trivial")
         }
-        [System.IO.File]::WriteAllText($fLean1009, $sb.ToString())
-        $vLean1009 = Test-Lean4ThresholdCheck -LeanPath $fLean1009
-        $vLean1010 = Test-Lean4ThresholdCheck -LeanPath "$RepoRoot\03_vault\lean4\SovereignManifoldTheorems.lean" -ReportedCount 1010
-        $vLeanMismatch = Test-Lean4ThresholdCheck -LeanPath "$RepoRoot\03_vault\lean4\SovereignManifoldTheorems.lean" -ReportedCount 1009
-        if ($vLean1009.Count -gt 0 -and $vLeanMismatch.Count -gt 0 -and $vLean1010.Count -eq 0) {
-            Write-Host "  [NEG-TEST 5/5 LEAN 1009] [PASS] 1009-theorem fixture rejected ($($vLean1009[0])) | 1009-report rejected | 1010 live passed" -ForegroundColor Green
+        [System.IO.File]::WriteAllText($fLeanLow, $sb.ToString())
+        $vLeanLow = Test-Lean4ThresholdCheck -LeanPath $fLeanLow
+        $vLeanLive = Test-Lean4ThresholdCheck -LeanPath "$RepoRoot\03_vault\lean4\SovereignManifoldTheorems.lean" -ReportedCount $liveThmCntNeg
+        $vLeanMismatch = Test-Lean4ThresholdCheck -LeanPath "$RepoRoot\03_vault\lean4\SovereignManifoldTheorems.lean" -ReportedCount $belowFloorCnt
+        if ($liveThmCntNeg -ge 1027 -and $vLeanLow.Count -gt 0 -and $vLeanMismatch.Count -gt 0 -and $vLeanLive.Count -eq 0) {
+            Write-Host "  [NEG-TEST 5/5 LEAN $belowFloorCnt] [PASS] $belowFloorCnt-theorem fixture rejected ($($vLeanLow[0])) | $belowFloorCnt-report rejected | $liveThmCntNeg live passed" -ForegroundColor Green
         } else {
-            Write-Host "  [NEG-TEST 5/5 LEAN 1009] [FAIL] Lean threshold negative check failed" -ForegroundColor Red
+            Write-Host "  [NEG-TEST 5/5 LEAN $belowFloorCnt] [FAIL] Lean threshold negative check failed (live=$liveThmCntNeg lowErrs=$($vLeanLow.Count) misErrs=$($vLeanMismatch.Count) liveErrs=$($vLeanLive.Count))" -ForegroundColor Red
             $negFailures++
         }
     } finally {
@@ -2042,7 +2044,7 @@ if ($FullAudit) {
     $liveLeanCount = Get-LiveLean4TheoremCount -LeanPath "$RepoRoot\03_vault\lean4\SovereignManifoldTheorems.lean"
     $failures = Run-StaticGatekeeperChecks
     if ($failures.Count -eq 0) {
-        Write-Host "  [1-10 STATIC INVARIANTS][PASS] Zero-Bracket(v33..v73+)=0 | Lean4=$liveLeanCount(>=1010, HMAC=OK) | HUD/Mobile/Agent Mirrors=LOCKED | Secrets/CF/PixelSerials=0 | SSR & Bundles=VERIFIED | GSC 7-Mirror=LOCKED" -ForegroundColor Green
+        Write-Host "  [1-10 STATIC INVARIANTS][PASS] Zero-Bracket(v33..v74+)=0 | Lean4=$liveLeanCount(>=1027, HMAC=OK) | HUD/Mobile/Agent Mirrors=LOCKED | Secrets/CF/PixelSerials=0 | SSR & Bundles=VERIFIED | GSC 7-Mirror=LOCKED" -ForegroundColor Green
     } else {
         foreach ($f in $failures) {
             Write-Host "  [STATIC FAIL] $f" -ForegroundColor Red
@@ -2228,12 +2230,13 @@ if ($FullAudit) {
         $c350 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/chain350/master_certification" -Headers $opHdrs -TimeoutSec 120
         $c362 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/chain362/master_certification" -Method Post -Body '{}' -ContentType 'application/json' -Headers $opHdrs -TimeoutSec 180
         $c368 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/chain368/master_certification" -Method Post -Body '{}' -ContentType 'application/json' -Headers $opHdrs -TimeoutSec 240
+        $c418 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/chain418/master_certification" -Headers $opHdrs -TimeoutSec 60
         $toolsCount = if ($c300.tools_verified) { $c300.tools_verified } else { $c300.total_chain_tools }
         $thmCount = if ($c300.lean4_theorems_qed) { $c300.lean4_theorems_qed } else { $c300.lean4_qed_theorems }
         $c308Tools = if ($c308.tools_verified) { $c308.tools_verified } else { $c308.total_tools }
         $c312Tools = if ($c312.tools_verified) { $c312.tools_verified } else { $c312.total_tools }
         $c316Tools = if ($c316.tools_verified) { $c316.tools_verified } else { $c316.total_tools }
-        $c350HonestOk = ($c350.status -in @("MEASURED", "UNMEASURED/OFFLINE")) -and ($c350.total_tools -eq 350) -and ($liveLeanCount -ge 1010) -and ($c350.lean4_theorems_qed -ge 1010) -and ($c350.lean4_theorems_qed -eq $liveLeanCount)
+        $c350HonestOk = ($c350.status -in @("MEASURED", "UNMEASURED/OFFLINE")) -and ($c350.total_tools -eq 350) -and ($liveLeanCount -ge 1027) -and ($c350.lean4_theorems_qed -ge 1027) -and ($c350.lean4_theorems_qed -eq $liveLeanCount)
         $c362HonestOk = (
             ($c362.status -in @("MEASURED", "UNMEASURED/OFFLINE")) -and
             ($c362.gate_1_corpus_and_minhash.surviving_eval500_overlaps -eq 0) -and
@@ -2243,7 +2246,7 @@ if ($FullAudit) {
             ($c362.gate_4_rtx3050_cuda_pretrain.ptx_loaded -eq $true) -and
             ([double]$c362.gate_4_rtx3050_cuda_pretrain.val_bpb_768d -lt [double]$c362.gate_4_rtx3050_cuda_pretrain.val_bpb_384d) -and
             ($c362.gate_6_lean4_formal_proofs.vault_l0_sha256_synced -eq $true) -and
-            ($c362.gate_6_lean4_formal_proofs.theorem_count -ge 1010) -and
+            ($c362.gate_6_lean4_formal_proofs.theorem_count -ge 1027) -and
             ($c362.gate_6_lean4_formal_proofs.theorem_count -eq $liveLeanCount)
         )
         $c368HonestOk = (
@@ -2256,14 +2259,22 @@ if ($FullAudit) {
             ($c368.gate_2_masked_chatml_sft.rweval500_overlap -eq 0) -and
             ($c368.gate_3_wgsl_rag_and_trisilicon.passed -eq $true) -and
             ($c368.gate_6_lean4_formal_proofs.passed -eq $true) -and
-            ($c368.gate_6_lean4_formal_proofs.theorem_count -ge 1010) -and
+            ($c368.gate_6_lean4_formal_proofs.theorem_count -ge 1027) -and
             ($c368.gate_6_lean4_formal_proofs.theorem_count -eq $liveLeanCount)
         )
-        if ($c292.status -eq "CHAIN_292_MASTER_CERTIFIED_OK" -and $c292.all_gates_passed -eq $true -and $c292.gates_passed -eq 12 -and $c300.status -match "CHAIN_300" -and $toolsCount -eq 300 -and $thmCount -ge 1010 -and $thmCount -eq $liveLeanCount -and $c308.status -eq "MEASURED" -and $c308Tools -eq 308 -and $c312.status -eq "MEASURED" -and $c312Tools -eq 312 -and $c316.status -eq "MEASURED" -and $c316Tools -eq 316 -and $c350HonestOk -and $c362HonestOk -and $c368HonestOk) {
-            Write-Host "  [13 CHAIN 292..368]     [PASS] CHAIN292=$($c292.status) (12/12) | C350=$($c350.status) | C362=$($c362.status)(QED=$($c362.gate_6_lean4_formal_proofs.theorem_count)) | C368=$($c368.status)(QED=$($c368.gate_6_lean4_formal_proofs.theorem_count)) | CLs=$($c316.bijected_cachelines_262144)" -ForegroundColor Green
+        $c418Ok = (
+            ($c418.core_and_formal_ok -eq $true) -and
+            ($c418.tools_total -eq 418) -and
+            ($c418.mcp_tools_total -eq 70) -and
+            ($c418.lean_sorry_count -eq 0) -and
+            ($c418.lean4_theorems_qed -ge 1027) -and
+            ($c418.lean4_theorems_qed -eq $liveLeanCount)
+        )
+        if ($c292.status -eq "CHAIN_292_MASTER_CERTIFIED_OK" -and $c292.all_gates_passed -eq $true -and $c292.gates_passed -eq 12 -and $c300.status -match "CHAIN_300" -and $toolsCount -eq 300 -and $thmCount -ge 1027 -and $thmCount -eq $liveLeanCount -and $c308.status -eq "MEASURED" -and $c308Tools -eq 308 -and $c312.status -eq "MEASURED" -and $c312Tools -eq 312 -and $c316.status -eq "MEASURED" -and $c316Tools -eq 316 -and $c350HonestOk -and $c362HonestOk -and $c368HonestOk -and $c418Ok) {
+            Write-Host "  [13 CHAIN 292..418]     [PASS] CHAIN292=$($c292.status) (12/12) | C350=$($c350.status) | C362=$($c362.status)(QED=$($c362.gate_6_lean4_formal_proofs.theorem_count)) | C368=$($c368.status)(QED=$($c368.gate_6_lean4_formal_proofs.theorem_count)) | C418=$($c418.status)(Tools=$($c418.tools_total),MCP=$($c418.mcp_tools_total))" -ForegroundColor Green
         } else {
-            $failures.Add("CHAIN_CERT_AUDIT_FAIL: C292=$($c292.status) C300=$($c300.status) C308=$($c308.status) C312=$($c312.status) C316=$($c316.status) C350=$($c350.status) C362=$($c362.status) C368=$($c368.status)")
-            Write-Host "  [13 CHAIN 292..368]     [FAIL] C292=$($c292.status) C350=$($c350.status) C362=$($c362.status) C368=$($c368.status)" -ForegroundColor Red
+            $failures.Add("CHAIN_CERT_AUDIT_FAIL: C292=$($c292.status) C300=$($c300.status) C308=$($c308.status) C312=$($c312.status) C316=$($c316.status) C350=$($c350.status) C362=$($c362.status) C368=$($c368.status) C418=$($c418.status)")
+            Write-Host "  [13 CHAIN 292..418]     [FAIL] C292=$($c292.status) C350=$($c350.status) C362=$($c362.status) C368=$($c368.status) C418=$($c418.status)" -ForegroundColor Red
         }
     } catch {
         $failures.Add("CHAIN_CERT_PROBE_ERR: $_")

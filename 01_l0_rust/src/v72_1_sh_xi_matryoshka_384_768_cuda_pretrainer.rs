@@ -503,6 +503,135 @@ pub fn v72_1_update_weight_manifest(artifact_key: &str, byte_len: usize, sha256_
 }
 
 pub const V72_1_SH4Z_VERSION_Q8_HADAMARD: u32 = 7320;
+pub const V72_1_SH4Z_VERSION_V7400: u32 = 7400;
+pub const V72_1_MODEL_RANK_S0: usize = 96; // B1: Rank-96 Stiefel S0 = 48 (R0) + 48 (aux48)
+pub const V72_1_MODEL_RANK_S1: usize = 96; // B1: Rank-96 Stiefel S1 = 48 (R1) + 48 (aux48)
+pub const V72_1_AUX_RANK_48: usize = 48;
+pub const V72_1_E8_OCTETS_S0: usize = 48; // 48 x 8 = 384D Shell 0 E8 octets
+pub const V72_1_E8_OCTETS_768: usize = 96; // 96 x 8 = 768D Shell 1 E8 octets
+pub const V72_1_E8_MIX_BLOCK_ELEMS: usize = 64; // 8 x 8 learned E8 octet block matrix
+pub const V72_1_E8_MIX_LEN: usize = 96 * 64; // 6,144 f32 weights per layer
+pub const V72_1_CAUSAL_CHUNK_POSITIONS: usize = 4; // B2: multi-position causal chunk targets per sequence
+pub const V72_1_GQA_DEFAULT_RETENTION_LOGIT: f32 = 1.5163475_f32; // SCAFFOLD: ln(0.82 / 0.18) so step-0 GQA KV retention sigmoid equals 0.82 — learned via AdamW
+
+pub fn v72_1_apply_e8_block8_mix_forward(vals: &mut Vec<f32>, mix: &Vec<f32>, blocks: usize) {
+    let max_elems = blocks.saturating_mul(V72_1_E8_MIX_BLOCK_ELEMS).min(mix.len());
+    let mut any_nz = false;
+    let mut k_chk: usize = 0;
+    while k_chk < max_elems {
+        if *mix.get(k_chk).unwrap_or(&0.0) != 0.0_f32 {
+            any_nz = true;
+            break;
+        }
+        k_chk += 1;
+    }
+    if !any_nz {
+        return;
+    }
+    let mut b: usize = 0;
+    let mut x_blk = v72_1_vec_f32(8, 0.0);
+    while b < blocks {
+        let base = b * 8;
+        let w_off = b * 64;
+        if base + 8 > vals.len() || w_off + 64 > mix.len() {
+            break;
+        }
+        let mut c: usize = 0;
+        while c < 8 {
+            if let Some(s) = x_blk.get_mut(c) {
+                *s = *vals.get(base + c).unwrap_or(&0.0);
+            }
+            c += 1;
+        }
+        let mut i: usize = 0;
+        while i < 8 {
+            let mut acc = *x_blk.get(i).unwrap_or(&0.0);
+            let row_off = w_off + i * 8;
+            let mut j: usize = 0;
+            while j < 8 {
+                acc += (*mix.get(row_off + j).unwrap_or(&0.0)) * (*x_blk.get(j).unwrap_or(&0.0));
+                j += 1;
+            }
+            if let Some(dst) = vals.get_mut(base + i) {
+                *dst = acc;
+            }
+            i += 1;
+        }
+        b += 1;
+    }
+}
+
+pub fn v72_1_apply_e8_block8_mix_backward(
+    h_had: &Vec<f32>,
+    dh_out: &Vec<f32>,
+    mix: &Vec<f32>,
+    d_mix: &mut Vec<f32>,
+    block_start: usize,
+    block_end: usize,
+    total_dim: usize,
+) -> Vec<f32> {
+    let mut dh_had = v72_1_vec_f32(total_dim, 0.0);
+    let mut idx: usize = 0;
+    while idx < total_dim {
+        if let Some(s) = dh_had.get_mut(idx) {
+            *s = *dh_out.get(idx).unwrap_or(&0.0);
+        }
+        idx += 1;
+    }
+    let mut b: usize = block_start;
+    while b < block_end {
+        let base = b * 8;
+        let w_off = b * 64;
+        if base + 8 > total_dim || w_off + 64 > mix.len() || w_off + 64 > d_mix.len() {
+            break;
+        }
+        let mut i: usize = 0;
+        while i < 8 {
+            let dy_i = *dh_out.get(base + i).unwrap_or(&0.0);
+            let row_off = w_off + i * 8;
+            let mut j: usize = 0;
+            while j < 8 {
+                let x_j = *h_had.get(base + j).unwrap_or(&0.0);
+                let w_ij = *mix.get(row_off + j).unwrap_or(&0.0);
+                if let Some(gs) = d_mix.get_mut(row_off + j) {
+                    *gs += dy_i * x_j;
+                }
+                if let Some(hs) = dh_had.get_mut(base + j) {
+                    *hs += dy_i * w_ij;
+                }
+                j += 1;
+            }
+            i += 1;
+        }
+        b += 1;
+    }
+    dh_had
+}
+
+pub fn v72_1_collect_causal_chunk_positions(
+    seq_len: usize,
+    step: usize,
+    batch_item: usize,
+    chunk_targets: usize,
+) -> Vec<usize> {
+    let mut out: Vec<usize> = Vec::new();
+    if seq_len < 3 || chunk_targets == 0 {
+        return out;
+    }
+    let max_pos = seq_len.min(64);
+    let span = max_pos.saturating_sub(2).max(1);
+    let stride = (span / chunk_targets.max(1)).max(1);
+    let mut k: usize = 0;
+    while k < chunk_targets {
+        let cand = 2 + ((step.wrapping_mul(3) + batch_item.wrapping_mul(7) + k.wrapping_mul(stride)) % span);
+        if !out.contains(&cand) {
+            out.push(cand);
+        }
+        k += 1;
+    }
+    out.sort_unstable();
+    out
+}
 
 pub fn v72_1_block8_walsh_hadamard_f32(vals: &mut Vec<f32>) {
     let n = vals.len();
@@ -2436,9 +2565,12 @@ pub struct V72_1HybridLayerParams {
     pub gqa_q_scale_768: Vec<f32>,
     pub gqa_k_scale_768: Vec<f32>,
     pub gqa_v_scale_768: Vec<f32>,
+    pub gqa_decay_logits_768: Vec<f32>,
     pub swiglu_gate_768: Vec<f32>,
     pub swiglu_up_768: Vec<f32>,
     pub cross_shell_mix_384: Vec<f32>, // Couplings from 384..768 -> 0..384 multiplied by gamma_net2wider
+    pub e8_block8_mix: Vec<f32>, // B3: 96 x (8x8) learned E8-octet block mixing matrices
+    pub is_legacy_fixed_gqa_decay: bool,
 }
 
 impl Clone for V72_1HybridLayerParams {
@@ -2452,20 +2584,29 @@ impl Clone for V72_1HybridLayerParams {
             gqa_q_scale_768: self.gqa_q_scale_768.clone(),
             gqa_k_scale_768: self.gqa_k_scale_768.clone(),
             gqa_v_scale_768: self.gqa_v_scale_768.clone(),
+            gqa_decay_logits_768: self.gqa_decay_logits_768.clone(),
             swiglu_gate_768: self.swiglu_gate_768.clone(),
             swiglu_up_768: self.swiglu_up_768.clone(),
             cross_shell_mix_384: self.cross_shell_mix_384.clone(),
+            e8_block8_mix: self.e8_block8_mix.clone(),
+            is_legacy_fixed_gqa_decay: self.is_legacy_fixed_gqa_decay,
         }
     }
 }
 
 pub struct V72_1MatryoshkaModel {
-    // Stiefel orthonormal bases P0 (48 x 384) and P1 (48 x 384)
+    // Stiefel orthonormal bases P0 (48 x 384) + Aux48 (48 x 384) => Rank-96 S0, and P1 (48 x 384) + Aux48 => Rank-96 S1
     pub stiefel_p0: Vec<f32>,
     pub stiefel_p1: Vec<f32>,
-    // Token embedding & tied output coordinates: U0 (16384 x 48), U_delta1 (16384 x 48)
+    pub stiefel_p0_aux48: Vec<f32>,
+    pub stiefel_p1_aux48: Vec<f32>,
+    // Token embedding & tied output coordinates: U0 (16384 x 48), U_delta1 (16384 x 48), plus Rank-96 upper-48 tables
     pub u0_table: Vec<f32>,
     pub u_delta1_table: Vec<f32>,
+    pub u0_aux48_table: Vec<f32>,
+    pub u_delta1_aux48_table: Vec<f32>,
+    pub aux48_active: bool,
+    pub sh4z_loaded_version: u32,
     pub bias0_vocab: Vec<f32>,
     pub bias_delta1_vocab: Vec<f32>,
     // 12 Hybrid Layers (9 Mamba-3 SSM + 3 Causal GQA 15.965 Hz RoPE at L3, L7, L11)
@@ -2491,8 +2632,14 @@ impl Clone for V72_1MatryoshkaModel {
         Self {
             stiefel_p0: self.stiefel_p0.clone(),
             stiefel_p1: self.stiefel_p1.clone(),
+            stiefel_p0_aux48: self.stiefel_p0_aux48.clone(),
+            stiefel_p1_aux48: self.stiefel_p1_aux48.clone(),
             u0_table: self.u0_table.clone(),
             u_delta1_table: self.u_delta1_table.clone(),
+            u0_aux48_table: self.u0_aux48_table.clone(),
+            u_delta1_aux48_table: self.u_delta1_aux48_table.clone(),
+            aux48_active: self.aux48_active,
+            sh4z_loaded_version: self.sh4z_loaded_version,
             bias0_vocab: self.bias0_vocab.clone(),
             bias_delta1_vocab: self.bias_delta1_vocab.clone(),
             layers: self.layers.clone(),
@@ -2582,10 +2729,16 @@ fn v72_1_build_orthonormal_stiefel_basis(rows: usize, cols: usize, seed: u64) ->
 
 impl V72_1MatryoshkaModel {
     pub fn new_initialized(gamma_gate: f32) -> Self {
-        let stiefel_p0 =
-            v72_1_build_orthonormal_stiefel_basis(V72_1_LATENT_RANK_R0, V72_1_SHELL0_DIM, 0x7210_0001);
-        let stiefel_p1 =
-            v72_1_build_orthonormal_stiefel_basis(V72_1_LATENT_RANK_R1, V72_1_DELTA1_DIM, 0x7210_0002);
+        let p0_full96 =
+            v72_1_build_orthonormal_stiefel_basis(V72_1_MODEL_RANK_S0, V72_1_SHELL0_DIM, 0x7210_0001);
+        let p1_full96 =
+            v72_1_build_orthonormal_stiefel_basis(V72_1_MODEL_RANK_S1, V72_1_DELTA1_DIM, 0x7210_0002);
+        let p0_split = V72_1_LATENT_RANK_R0 * V72_1_SHELL0_DIM;
+        let p1_split = V72_1_LATENT_RANK_R1 * V72_1_DELTA1_DIM;
+        let stiefel_p0 = p0_full96.get(..p0_split).unwrap_or(&p0_full96).to_vec();
+        let stiefel_p0_aux48 = p0_full96.get(p0_split..).unwrap_or(&p0_full96).to_vec();
+        let stiefel_p1 = p1_full96.get(..p1_split).unwrap_or(&p1_full96).to_vec();
+        let stiefel_p1_aux48 = p1_full96.get(p1_split..).unwrap_or(&p1_full96).to_vec();
 
         let mut rng_u = 0x7210_1000_CAFE_0001u64;
         let u0_len = V72_1_BPE_VOCAB_16K * V72_1_LATENT_RANK_R0;
@@ -2604,6 +2757,8 @@ impl V72_1MatryoshkaModel {
             }
             idx += 1;
         }
+        let u0_aux48_table = v72_1_vec_f32(V72_1_BPE_VOCAB_16K * V72_1_AUX_RANK_48, 0.0);
+        let u_delta1_aux48_table = v72_1_vec_f32(V72_1_BPE_VOCAB_16K * V72_1_AUX_RANK_48, 0.0);
 
         let bias0_vocab = v72_1_vec_f32(V72_1_BPE_VOCAB_16K, 0.0);
         let bias_delta1_vocab = v72_1_vec_f32(V72_1_BPE_VOCAB_16K, 0.0);
@@ -2618,6 +2773,7 @@ impl V72_1MatryoshkaModel {
             let mut q_sc = v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0);
             let mut k_sc = v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0);
             let mut v_sc = v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0);
+            let gqa_dec = v72_1_vec_f32(V72_1_SHELL1_DIM, V72_1_GQA_DEFAULT_RETENTION_LOGIT);
             let mut sw_g = v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0);
             let mut sw_u = v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0);
             let mut rng_layer = 0x7210_3000u64.wrapping_add((l as u64).wrapping_mul(0x9E3779B97F4A7C15));
@@ -2666,9 +2822,12 @@ impl V72_1MatryoshkaModel {
                 gqa_q_scale_768: q_sc,
                 gqa_k_scale_768: k_sc,
                 gqa_v_scale_768: v_sc,
+                gqa_decay_logits_768: gqa_dec,
                 swiglu_gate_768: sw_g,
                 swiglu_up_768: sw_u,
                 cross_shell_mix_384: cross_mix,
+                e8_block8_mix: v72_1_vec_f32(V72_1_E8_MIX_LEN, 0.0),
+                is_legacy_fixed_gqa_decay: false,
             });
             l += 1;
         }
@@ -2676,8 +2835,14 @@ impl V72_1MatryoshkaModel {
         Self {
             stiefel_p0,
             stiefel_p1,
+            stiefel_p0_aux48,
+            stiefel_p1_aux48,
             u0_table,
             u_delta1_table,
+            u0_aux48_table,
+            u_delta1_aux48_table,
+            aux48_active: false,
+            sh4z_loaded_version: V72_1_SH4Z_VERSION_V7400,
             bias0_vocab,
             bias_delta1_vocab,
             layers,
@@ -2697,7 +2862,8 @@ impl V72_1MatryoshkaModel {
 
     pub fn embed_token_384(&self, tok: u16) -> Vec<f32> {
         let mut x0 = v72_1_vec_f32(V72_1_SHELL0_DIM, 0.0);
-        let row_off = (tok as usize).min(V72_1_BPE_VOCAB_16K - 1) * V72_1_LATENT_RANK_R0;
+        let tok_clamped = (tok as usize).min(V72_1_BPE_VOCAB_16K - 1);
+        let row_off = tok_clamped * V72_1_LATENT_RANK_R0;
         let mut r: usize = 0;
         while r < V72_1_LATENT_RANK_R0 {
             let u_val = *self.u0_table.get(row_off + r).unwrap_or(&0.0);
@@ -2710,6 +2876,24 @@ impl V72_1MatryoshkaModel {
                 d += 1;
             }
             r += 1;
+        }
+        if self.aux48_active {
+            let aux_off = tok_clamped * V72_1_AUX_RANK_48;
+            let mut ra: usize = 0;
+            while ra < V72_1_AUX_RANK_48 {
+                let ua_val = *self.u0_aux48_table.get(aux_off + ra).unwrap_or(&0.0);
+                if ua_val != 0.0_f32 {
+                    let pa_off = ra * V72_1_SHELL0_DIM;
+                    let mut d: usize = 0;
+                    while d < V72_1_SHELL0_DIM {
+                        if let Some(dst) = x0.get_mut(d) {
+                            *dst += ua_val * (*self.stiefel_p0_aux48.get(pa_off + d).unwrap_or(&0.0));
+                        }
+                        d += 1;
+                    }
+                }
+                ra += 1;
+            }
         }
         x0
     }
@@ -2724,7 +2908,8 @@ impl V72_1MatryoshkaModel {
             }
             d += 1;
         }
-        let row1_off = (tok as usize).min(V72_1_BPE_VOCAB_16K - 1) * V72_1_LATENT_RANK_R1;
+        let tok_clamped = (tok as usize).min(V72_1_BPE_VOCAB_16K - 1);
+        let row1_off = tok_clamped * V72_1_LATENT_RANK_R1;
         let mut r: usize = 0;
         while r < V72_1_LATENT_RANK_R1 {
             let u_val = *self.u_delta1_table.get(row1_off + r).unwrap_or(&0.0);
@@ -2737,6 +2922,24 @@ impl V72_1MatryoshkaModel {
                 d1 += 1;
             }
             r += 1;
+        }
+        if self.aux48_active {
+            let aux1_off = tok_clamped * V72_1_AUX_RANK_48;
+            let mut ra: usize = 0;
+            while ra < V72_1_AUX_RANK_48 {
+                let ua_val = *self.u_delta1_aux48_table.get(aux1_off + ra).unwrap_or(&0.0);
+                if ua_val != 0.0_f32 {
+                    let pa_off = ra * V72_1_DELTA1_DIM;
+                    let mut d1: usize = 0;
+                    while d1 < V72_1_DELTA1_DIM {
+                        if let Some(dst) = x.get_mut(V72_1_SHELL0_DIM + d1) {
+                            *dst += ua_val * (*self.stiefel_p1_aux48.get(pa_off + d1).unwrap_or(&0.0));
+                        }
+                        d1 += 1;
+                    }
+                }
+                ra += 1;
+            }
         }
         x
     }
@@ -2781,13 +2984,22 @@ impl V72_1MatryoshkaModel {
                         let v0 = n0 * (*lp.gqa_v_scale_768.get(d_i).unwrap_or(&0.2));
                         let v1 = n1 * (*lp.gqa_v_scale_768.get(d_i + 1).unwrap_or(&0.2));
 
-                        // Update causal KV running state (3:1 GQA head sharing)
+                        // Update causal KV running state (3:1 GQA head sharing + B4 learned retention when >= v7400)
                         let prev_kv0 = *gqa_kv_acc.get(st_off + d_i).unwrap_or(&0.0);
                         let prev_kv1 = *gqa_kv_acc.get(st_off + d_i + 1).unwrap_or(&0.0);
                         let gate0 = 1.0_f32 / (1.0_f32 + (-q0 * k0).exp());
                         let gate1 = 1.0_f32 / (1.0_f32 + (-q1 * k1).exp());
-                        let new_kv0 = 0.82_f32 * prev_kv0 + 0.18_f32 * v0;
-                        let new_kv1 = 0.82_f32 * prev_kv1 + 0.18_f32 * v1;
+                        let (beta0, omb0, beta1, omb1) = if lp.is_legacy_fixed_gqa_decay {
+                            (0.82_f32, 0.18_f32, 0.82_f32, 0.18_f32)
+                        } else {
+                            let rl0 = *lp.gqa_decay_logits_768.get(d_i).unwrap_or(&V72_1_GQA_DEFAULT_RETENTION_LOGIT);
+                            let rl1 = *lp.gqa_decay_logits_768.get(d_i + 1).unwrap_or(&V72_1_GQA_DEFAULT_RETENTION_LOGIT);
+                            let b0 = 1.0_f32 / (1.0_f32 + (-rl0).exp());
+                            let b1 = 1.0_f32 / (1.0_f32 + (-rl1).exp());
+                            (b0, 1.0_f32 - b0, b1, 1.0_f32 - b1)
+                        };
+                        let new_kv0 = beta0 * prev_kv0 + omb0 * v0;
+                        let new_kv1 = beta1 * prev_kv1 + omb1 * v1;
                         if let Some(kvs0) = gqa_kv_acc.get_mut(st_off + d_i) {
                             *kvs0 = new_kv0;
                         }
@@ -2836,6 +3048,7 @@ impl V72_1MatryoshkaModel {
                     }
                 }
                 v72_1_block8_walsh_hadamard_f32(&mut h);
+                v72_1_apply_e8_block8_mix_forward(&mut h, &lp.e8_block8_mix, V72_1_E8_OCTETS_S0);
             }
             l += 1;
         }
@@ -2910,8 +3123,17 @@ impl V72_1MatryoshkaModel {
                         let prev_kv1 = *gqa_kv_acc.get(st_off + d_i + 1).unwrap_or(&0.0);
                         let gate0 = 1.0_f32 / (1.0_f32 + (-q0 * k0).exp());
                         let gate1 = 1.0_f32 / (1.0_f32 + (-q1 * k1).exp());
-                        let new_kv0 = 0.82_f32 * prev_kv0 + 0.18_f32 * v0;
-                        let new_kv1 = 0.82_f32 * prev_kv1 + 0.18_f32 * v1;
+                        let (beta0, omb0, beta1, omb1) = if lp.is_legacy_fixed_gqa_decay {
+                            (0.82_f32, 0.18_f32, 0.82_f32, 0.18_f32)
+                        } else {
+                            let rl0 = *lp.gqa_decay_logits_768.get(d_i).unwrap_or(&V72_1_GQA_DEFAULT_RETENTION_LOGIT);
+                            let rl1 = *lp.gqa_decay_logits_768.get(d_i + 1).unwrap_or(&V72_1_GQA_DEFAULT_RETENTION_LOGIT);
+                            let b0 = 1.0_f32 / (1.0_f32 + (-rl0).exp());
+                            let b1 = 1.0_f32 / (1.0_f32 + (-rl1).exp());
+                            (b0, 1.0_f32 - b0, b1, 1.0_f32 - b1)
+                        };
+                        let new_kv0 = beta0 * prev_kv0 + omb0 * v0;
+                        let new_kv1 = beta1 * prev_kv1 + omb1 * v1;
                         if let Some(kvs0) = gqa_kv_acc.get_mut(st_off + d_i) {
                             *kvs0 = new_kv0;
                         }
@@ -2974,6 +3196,7 @@ impl V72_1MatryoshkaModel {
                     }
                 }
                 v72_1_block8_walsh_hadamard_f32(&mut h);
+                v72_1_apply_e8_block8_mix_forward(&mut h, &lp.e8_block8_mix, V72_1_E8_OCTETS_768);
             }
             l += 1;
         }
@@ -3046,8 +3269,61 @@ impl V72_1MatryoshkaModel {
         (q0, q1)
     }
 
+    pub fn project_h384_to_q0_aux48(&self, h384: &Vec<f32>) -> Vec<f32> {
+        let mut qa = v72_1_vec_f32(V72_1_AUX_RANK_48, 0.0);
+        let mut r: usize = 0;
+        while r < V72_1_AUX_RANK_48 {
+            let p_off = r * V72_1_SHELL0_DIM;
+            let mut acc: f32 = 0.0;
+            let mut d: usize = 0;
+            while d < V72_1_SHELL0_DIM {
+                acc += (*self.stiefel_p0_aux48.get(p_off + d).unwrap_or(&0.0))
+                    * (*h384.get(d).unwrap_or(&0.0));
+                d += 1;
+            }
+            if let Some(slot) = qa.get_mut(r) {
+                *slot = acc;
+            }
+            r += 1;
+        }
+        qa
+    }
+
+    pub fn project_h768_to_q0_q1_aux48(&self, h768: &Vec<f32>) -> (Vec<f32>, Vec<f32>) {
+        let mut qa0 = v72_1_vec_f32(V72_1_AUX_RANK_48, 0.0);
+        let mut qa1 = v72_1_vec_f32(V72_1_AUX_RANK_48, 0.0);
+        let mut r: usize = 0;
+        while r < V72_1_AUX_RANK_48 {
+            let p0_off = r * V72_1_SHELL0_DIM;
+            let p1_off = r * V72_1_DELTA1_DIM;
+            let mut acc0: f32 = 0.0;
+            let mut acc1: f32 = 0.0;
+            let mut d: usize = 0;
+            while d < V72_1_SHELL0_DIM {
+                acc0 += (*self.stiefel_p0_aux48.get(p0_off + d).unwrap_or(&0.0))
+                    * (*h768.get(d).unwrap_or(&0.0));
+                acc1 += (*self.stiefel_p1_aux48.get(p1_off + d).unwrap_or(&0.0))
+                    * (*h768.get(V72_1_SHELL0_DIM + d).unwrap_or(&0.0));
+                d += 1;
+            }
+            if let Some(s0) = qa0.get_mut(r) {
+                *s0 = acc0;
+            }
+            if let Some(s1) = qa1.get_mut(r) {
+                *s1 = acc1;
+            }
+            r += 1;
+        }
+        (qa0, qa1)
+    }
+
     pub fn compute_logits_shell0_16k(&self, h384: &Vec<f32>, _prev_tok: Option<u16>) -> Vec<f32> {
         let q0 = self.project_h384_to_q0(h384);
+        let qa0 = if self.aux48_active {
+            Some(self.project_h384_to_q0_aux48(h384))
+        } else {
+            None
+        };
         let mut logits = v72_1_vec_f32(V72_1_BPE_VOCAB_16K, 0.0);
         let mut v: usize = 0;
         while v < V72_1_BPE_VOCAB_16K {
@@ -3057,6 +3333,15 @@ impl V72_1MatryoshkaModel {
             while r < V72_1_LATENT_RANK_R0 {
                 dot += (*q0.get(r).unwrap_or(&0.0)) * (*self.u0_table.get(u_off + r).unwrap_or(&0.0));
                 r += 1;
+            }
+            if let Some(ref qa_vec) = qa0 {
+                let ua_off = v * V72_1_AUX_RANK_48;
+                let mut ra: usize = 0;
+                while ra < V72_1_AUX_RANK_48 {
+                    dot += (*qa_vec.get(ra).unwrap_or(&0.0))
+                        * (*self.u0_aux48_table.get(ua_off + ra).unwrap_or(&0.0));
+                    ra += 1;
+                }
             }
             if let Some(slot) = logits.get_mut(v) {
                 *slot = dot;
@@ -3073,6 +3358,11 @@ impl V72_1MatryoshkaModel {
         _prev1_tok: Option<u16>,
     ) -> Vec<f32> {
         let (q0, q1) = self.project_h768_to_q0_q1(h768);
+        let qa_pair = if self.aux48_active {
+            Some(self.project_h768_to_q0_q1_aux48(h768))
+        } else {
+            None
+        };
         let gamma = self.gamma_net2wider;
         let mut logits = v72_1_vec_f32(V72_1_BPE_VOCAB_16K, 0.0);
         let mut v: usize = 0;
@@ -3086,6 +3376,17 @@ impl V72_1MatryoshkaModel {
                 dot1 += (*q1.get(r).unwrap_or(&0.0))
                     * (*self.u_delta1_table.get(u_off + r).unwrap_or(&0.0));
                 r += 1;
+            }
+            if let Some((ref qa0, ref qa1)) = qa_pair {
+                let ua_off = v * V72_1_AUX_RANK_48;
+                let mut ra: usize = 0;
+                while ra < V72_1_AUX_RANK_48 {
+                    dot0 += (*qa0.get(ra).unwrap_or(&0.0))
+                        * (*self.u0_aux48_table.get(ua_off + ra).unwrap_or(&0.0));
+                    dot1 += (*qa1.get(ra).unwrap_or(&0.0))
+                        * (*self.u_delta1_aux48_table.get(ua_off + ra).unwrap_or(&0.0));
+                    ra += 1;
+                }
             }
             if let Some(slot) = logits.get_mut(v) {
                 *slot = dot0 + gamma * dot1;
@@ -3242,6 +3543,68 @@ pub fn v72_1_load_sh_xi_checkpoint_strict() -> Result<V72_1MatryoshkaModel, Stri
             }
         }
         l += 1;
+    }
+
+    model.sh4z_loaded_version = sh4z_ver;
+    if sh4z_ver < V72_1_SH4Z_VERSION_V7400 {
+        for lp in model.layers.iter_mut() {
+            lp.is_legacy_fixed_gqa_decay = true;
+        }
+        model.aux48_active = false;
+    } else {
+        // Slot 3 (SH4Z v7400+): Rank-96 Aux48 Stiefel + Q8_0 Aux48 Tables + Learned GQA Retention & E8 Block8 Mix
+        let pa0_len = V72_1_AUX_RANK_48 * V72_1_SHELL0_DIM;
+        let pa1_len = V72_1_AUX_RANK_48 * V72_1_DELTA1_DIM;
+        let ua0_len = V72_1_BPE_VOCAB_16K * V72_1_AUX_RANK_48;
+        let ua1_len = V72_1_BPE_VOCAB_16K * V72_1_AUX_RANK_48;
+        let sc_bytes = V72_1_BPE_VOCAB_16K * 4;
+        let layer_s3_bytes = V72_1_HYBRID_LAYERS * (V72_1_SHELL1_DIM + V72_1_E8_MIX_LEN) * 4;
+        let needed_s3 = (pa0_len + pa1_len) * 4 + sc_bytes + ua0_len + sc_bytes + ua1_len + layer_s3_bytes;
+        if bytes.len() < off + needed_s3 {
+            return Err(String::from("WEIGHT_CORRUPT: SH4Z v7400 checkpoint truncated in Slot 3"));
+        }
+        for slot in model.stiefel_p0_aux48.iter_mut() {
+            *slot = v72_1_read_f32_le(&bytes, off);
+            off += 4;
+        }
+        for slot in model.stiefel_p1_aux48.iter_mut() {
+            *slot = v72_1_read_f32_le(&bytes, off);
+            off += 4;
+        }
+        let mut sa0 = v72_1_vec_f32(V72_1_BPE_VOCAB_16K, 1e-7);
+        for slot in sa0.iter_mut() {
+            *slot = v72_1_read_f32_le(&bytes, off);
+            off += 4;
+        }
+        let qa0_slice = bytes.get(off..(off + ua0_len)).unwrap_or(&bytes).to_vec();
+        off += ua0_len;
+        model.u0_aux48_table =
+            v72_1_dequantize_q8_0_rows(&sa0, &qa0_slice, V72_1_BPE_VOCAB_16K, V72_1_AUX_RANK_48);
+
+        let mut sa1 = v72_1_vec_f32(V72_1_BPE_VOCAB_16K, 1e-7);
+        for slot in sa1.iter_mut() {
+            *slot = v72_1_read_f32_le(&bytes, off);
+            off += 4;
+        }
+        let qa1_slice = bytes.get(off..(off + ua1_len)).unwrap_or(&bytes).to_vec();
+        off += ua1_len;
+        model.u_delta1_aux48_table =
+            v72_1_dequantize_q8_0_rows(&sa1, &qa1_slice, V72_1_BPE_VOCAB_16K, V72_1_AUX_RANK_48);
+
+        model.aux48_active = model.u0_aux48_table.iter().any(|&v| v != 0.0_f32)
+            || model.u_delta1_aux48_table.iter().any(|&v| v != 0.0_f32);
+
+        for lp in model.layers.iter_mut() {
+            lp.is_legacy_fixed_gqa_decay = false;
+            for slot in lp.gqa_decay_logits_768.iter_mut() {
+                *slot = v72_1_read_f32_le(&bytes, off);
+                off += 4;
+            }
+            for slot in lp.e8_block8_mix.iter_mut() {
+                *slot = v72_1_read_f32_le(&bytes, off);
+                off += 4;
+            }
+        }
     }
 
     Ok(model)
@@ -3637,9 +4000,11 @@ pub struct V72_1LayerGrads {
     pub gqa_q_scale_768: Vec<f32>,
     pub gqa_k_scale_768: Vec<f32>,
     pub gqa_v_scale_768: Vec<f32>,
+    pub gqa_decay_logits_768: Vec<f32>,
     pub swiglu_gate_768: Vec<f32>,
     pub swiglu_up_768: Vec<f32>,
     pub cross_shell_mix_384: Vec<f32>,
+    pub e8_block8_mix: Vec<f32>,
 }
 
 impl V72_1LayerGrads {
@@ -3651,9 +4016,11 @@ impl V72_1LayerGrads {
             gqa_q_scale_768: v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0),
             gqa_k_scale_768: v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0),
             gqa_v_scale_768: v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0),
+            gqa_decay_logits_768: v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0),
             swiglu_gate_768: v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0),
             swiglu_up_768: v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0),
             cross_shell_mix_384: v72_1_vec_f32(V72_1_SHELL0_DIM, 0.0),
+            e8_block8_mix: v72_1_vec_f32(V72_1_E8_MIX_LEN, 0.0),
         }
     }
 }
@@ -3663,8 +4030,12 @@ pub struct V72_1ModelGradients {
     pub bias_delta1_vocab: Vec<f32>,
     pub u0_table: Vec<f32>,
     pub u_delta1_table: Vec<f32>,
+    pub u0_aux48_table: Vec<f32>,
+    pub u_delta1_aux48_table: Vec<f32>,
     pub stiefel_p0: Vec<f32>,
     pub stiefel_p1: Vec<f32>,
+    pub stiefel_p0_aux48: Vec<f32>,
+    pub stiefel_p1_aux48: Vec<f32>,
     pub layers: Vec<V72_1LayerGrads>,
 }
 
@@ -3673,17 +4044,7 @@ impl V72_1ModelGradients {
         let mut layers: Vec<V72_1LayerGrads> = Vec::with_capacity(V72_1_HYBRID_LAYERS);
         let mut l: usize = 0;
         while l < V72_1_HYBRID_LAYERS {
-            layers.push(V72_1LayerGrads {
-                rms_weight_768: v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0),
-                diag_in_768: v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0),
-                mamba_decay_logits_768: v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0),
-                gqa_q_scale_768: v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0),
-                gqa_k_scale_768: v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0),
-                gqa_v_scale_768: v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0),
-                swiglu_gate_768: v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0),
-                swiglu_up_768: v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0),
-                cross_shell_mix_384: v72_1_vec_f32(V72_1_SHELL0_DIM, 0.0),
-            });
+            layers.push(V72_1LayerGrads::zeros());
             l += 1;
         }
         Self {
@@ -3691,8 +4052,12 @@ impl V72_1ModelGradients {
             bias_delta1_vocab: v72_1_vec_f32(V72_1_BPE_VOCAB_16K, 0.0),
             u0_table: v72_1_vec_f32(V72_1_BPE_VOCAB_16K * V72_1_LATENT_RANK_R0, 0.0),
             u_delta1_table: v72_1_vec_f32(V72_1_BPE_VOCAB_16K * V72_1_LATENT_RANK_R1, 0.0),
+            u0_aux48_table: v72_1_vec_f32(V72_1_BPE_VOCAB_16K * V72_1_AUX_RANK_48, 0.0),
+            u_delta1_aux48_table: v72_1_vec_f32(V72_1_BPE_VOCAB_16K * V72_1_AUX_RANK_48, 0.0),
             stiefel_p0: v72_1_vec_f32(V72_1_LATENT_RANK_R0 * V72_1_SHELL0_DIM, 0.0),
             stiefel_p1: v72_1_vec_f32(V72_1_LATENT_RANK_R1 * V72_1_DELTA1_DIM, 0.0),
+            stiefel_p0_aux48: v72_1_vec_f32(V72_1_AUX_RANK_48 * V72_1_SHELL0_DIM, 0.0),
+            stiefel_p1_aux48: v72_1_vec_f32(V72_1_AUX_RANK_48 * V72_1_DELTA1_DIM, 0.0),
             layers,
         }
     }
@@ -3707,9 +4072,11 @@ impl V72_1ModelGradients {
             for x in lg.gqa_q_scale_768.iter() { sum_sq += (*x as f64) * (*x as f64); }
             for x in lg.gqa_k_scale_768.iter() { sum_sq += (*x as f64) * (*x as f64); }
             for x in lg.gqa_v_scale_768.iter() { sum_sq += (*x as f64) * (*x as f64); }
+            for x in lg.gqa_decay_logits_768.iter() { sum_sq += (*x as f64) * (*x as f64); }
             for x in lg.swiglu_gate_768.iter() { sum_sq += (*x as f64) * (*x as f64); }
             for x in lg.swiglu_up_768.iter() { sum_sq += (*x as f64) * (*x as f64); }
             for x in lg.cross_shell_mix_384.iter() { sum_sq += (*x as f64) * (*x as f64); }
+            for x in lg.e8_block8_mix.iter() { sum_sq += (*x as f64) * (*x as f64); }
             norms.push(sum_sq.sqrt());
         }
         norms
@@ -3720,8 +4087,12 @@ impl V72_1ModelGradients {
         for (d, s) in self.bias_delta1_vocab.iter_mut().zip(other.bias_delta1_vocab.iter()) { *d += *s; }
         for (d, s) in self.u0_table.iter_mut().zip(other.u0_table.iter()) { *d += *s; }
         for (d, s) in self.u_delta1_table.iter_mut().zip(other.u_delta1_table.iter()) { *d += *s; }
+        for (d, s) in self.u0_aux48_table.iter_mut().zip(other.u0_aux48_table.iter()) { *d += *s; }
+        for (d, s) in self.u_delta1_aux48_table.iter_mut().zip(other.u_delta1_aux48_table.iter()) { *d += *s; }
         for (d, s) in self.stiefel_p0.iter_mut().zip(other.stiefel_p0.iter()) { *d += *s; }
         for (d, s) in self.stiefel_p1.iter_mut().zip(other.stiefel_p1.iter()) { *d += *s; }
+        for (d, s) in self.stiefel_p0_aux48.iter_mut().zip(other.stiefel_p0_aux48.iter()) { *d += *s; }
+        for (d, s) in self.stiefel_p1_aux48.iter_mut().zip(other.stiefel_p1_aux48.iter()) { *d += *s; }
         for (ld, ls) in self.layers.iter_mut().zip(other.layers.iter()) {
             for (d, s) in ld.rms_weight_768.iter_mut().zip(ls.rms_weight_768.iter()) { *d += *s; }
             for (d, s) in ld.diag_in_768.iter_mut().zip(ls.diag_in_768.iter()) { *d += *s; }
@@ -3729,9 +4100,11 @@ impl V72_1ModelGradients {
             for (d, s) in ld.gqa_q_scale_768.iter_mut().zip(ls.gqa_q_scale_768.iter()) { *d += *s; }
             for (d, s) in ld.gqa_k_scale_768.iter_mut().zip(ls.gqa_k_scale_768.iter()) { *d += *s; }
             for (d, s) in ld.gqa_v_scale_768.iter_mut().zip(ls.gqa_v_scale_768.iter()) { *d += *s; }
+            for (d, s) in ld.gqa_decay_logits_768.iter_mut().zip(ls.gqa_decay_logits_768.iter()) { *d += *s; }
             for (d, s) in ld.swiglu_gate_768.iter_mut().zip(ls.swiglu_gate_768.iter()) { *d += *s; }
             for (d, s) in ld.swiglu_up_768.iter_mut().zip(ls.swiglu_up_768.iter()) { *d += *s; }
             for (d, s) in ld.cross_shell_mix_384.iter_mut().zip(ls.cross_shell_mix_384.iter()) { *d += *s; }
+            for (d, s) in ld.e8_block8_mix.iter_mut().zip(ls.e8_block8_mix.iter()) { *d += *s; }
         }
     }
 }
@@ -3859,12 +4232,47 @@ fn v72_1_reorthogonalize_stiefel(mat: &mut Vec<f32>, rows: usize, cols: usize) {
     }
 }
 
-impl V72_1MatryoshkaModel {
-    pub fn layer_forward_384(&self, lp: &V72_1HybridLayerParams, h_in: &Vec<f32>, rope_phase: f32) -> Vec<f32> {
-        self.layer_forward_384_state(lp, h_in, rope_phase, None, None, 0)
+fn v72_1_reorthogonalize_rank96_pair(
+    primary48: &mut Vec<f32>,
+    aux48: &mut Vec<f32>,
+    cols: usize,
+) {
+    let split = V72_1_LATENT_RANK_R0 * cols;
+    let total = V72_1_MODEL_RANK_S0 * cols;
+    let mut combined = v72_1_vec_f32(total, 0.0);
+    let mut i: usize = 0;
+    while i < split {
+        if let Some(s) = combined.get_mut(i) {
+            *s = *primary48.get(i).unwrap_or(&0.0);
+        }
+        i += 1;
     }
+    let mut j: usize = 0;
+    while j < V72_1_AUX_RANK_48 * cols {
+        if let Some(s) = combined.get_mut(split + j) {
+            *s = *aux48.get(j).unwrap_or(&0.0);
+        }
+        j += 1;
+    }
+    v72_1_reorthogonalize_stiefel(&mut combined, V72_1_MODEL_RANK_S0, cols);
+    let mut i2: usize = 0;
+    while i2 < split {
+        if let Some(d) = primary48.get_mut(i2) {
+            *d = *combined.get(i2).unwrap_or(&0.0);
+        }
+        i2 += 1;
+    }
+    let mut j2: usize = 0;
+    while j2 < V72_1_AUX_RANK_48 * cols {
+        if let Some(d) = aux48.get_mut(j2) {
+            *d = *combined.get(split + j2).unwrap_or(&0.0);
+        }
+        j2 += 1;
+    }
+}
 
-    pub fn layer_forward_384_state(
+impl V72_1MatryoshkaModel {
+    fn layer_pre_e8_mix_384(
         &self,
         lp: &V72_1HybridLayerParams,
         h_in: &Vec<f32>,
@@ -3901,8 +4309,17 @@ impl V72_1MatryoshkaModel {
                 let prev_kv1 = *prev_gqa.and_then(|g| g.get(state_off + d_i + 1)).unwrap_or(&0.0);
                 let gate0 = 1.0_f32 / (1.0_f32 + (-q0 * k0).exp());
                 let gate1 = 1.0_f32 / (1.0_f32 + (-q1 * k1).exp());
-                let new_kv0 = 0.82_f32 * prev_kv0 + 0.18_f32 * v0;
-                let new_kv1 = 0.82_f32 * prev_kv1 + 0.18_f32 * v1;
+                let (beta0, omb0, beta1, omb1) = if lp.is_legacy_fixed_gqa_decay {
+                    (0.82_f32, 0.18_f32, 0.82_f32, 0.18_f32)
+                } else {
+                    let rl0 = *lp.gqa_decay_logits_768.get(d_i).unwrap_or(&V72_1_GQA_DEFAULT_RETENTION_LOGIT);
+                    let rl1 = *lp.gqa_decay_logits_768.get(d_i + 1).unwrap_or(&V72_1_GQA_DEFAULT_RETENTION_LOGIT);
+                    let b0 = 1.0_f32 / (1.0_f32 + (-rl0).exp());
+                    let b1 = 1.0_f32 / (1.0_f32 + (-rl1).exp());
+                    (b0, 1.0_f32 - b0, b1, 1.0_f32 - b1)
+                };
+                let new_kv0 = beta0 * prev_kv0 + omb0 * v0;
+                let new_kv1 = beta1 * prev_kv1 + omb1 * v1;
 
                 let g0 = n0 * (*lp.swiglu_gate_768.get(d_i).unwrap_or(&0.4));
                 let g1 = n1 * (*lp.swiglu_gate_768.get(d_i + 1).unwrap_or(&0.4));
@@ -3941,11 +4358,25 @@ impl V72_1MatryoshkaModel {
         h
     }
 
-    pub fn layer_forward_768(&self, lp: &V72_1HybridLayerParams, h_in: &Vec<f32>, rope_phase: f32, gamma: f32) -> Vec<f32> {
-        self.layer_forward_768_state(lp, h_in, rope_phase, gamma, None, None, 0)
+    pub fn layer_forward_384(&self, lp: &V72_1HybridLayerParams, h_in: &Vec<f32>, rope_phase: f32) -> Vec<f32> {
+        self.layer_forward_384_state(lp, h_in, rope_phase, None, None, 0)
     }
 
-    pub fn layer_forward_768_state(
+    pub fn layer_forward_384_state(
+        &self,
+        lp: &V72_1HybridLayerParams,
+        h_in: &Vec<f32>,
+        rope_phase: f32,
+        prev_mamba: Option<&Vec<f32>>,
+        prev_gqa: Option<&Vec<f32>>,
+        state_off: usize,
+    ) -> Vec<f32> {
+        let mut h = self.layer_pre_e8_mix_384(lp, h_in, rope_phase, prev_mamba, prev_gqa, state_off);
+        v72_1_apply_e8_block8_mix_forward(&mut h, &lp.e8_block8_mix, V72_1_E8_OCTETS_S0);
+        h
+    }
+
+    fn layer_pre_e8_mix_768(
         &self,
         lp: &V72_1HybridLayerParams,
         h_in: &Vec<f32>,
@@ -3954,7 +4385,7 @@ impl V72_1MatryoshkaModel {
         prev_mamba: Option<&Vec<f32>>,
         prev_gqa: Option<&Vec<f32>>,
         state_off: usize,
-    ) -> Vec<f32> {
+    ) -> (Vec<f32>, Vec<f32>) {
         let mut h = h_in.clone();
         let mut sq0: f32 = 0.0;
         let mut sq1: f32 = 0.0;
@@ -3988,8 +4419,17 @@ impl V72_1MatryoshkaModel {
                 let prev_kv1 = *prev_gqa.and_then(|g| g.get(state_off + d_i + 1)).unwrap_or(&0.0);
                 let gate0 = 1.0_f32 / (1.0_f32 + (-q0 * k0).exp());
                 let gate1 = 1.0_f32 / (1.0_f32 + (-q1 * k1).exp());
-                let new_kv0 = 0.82_f32 * prev_kv0 + 0.18_f32 * v0;
-                let new_kv1 = 0.82_f32 * prev_kv1 + 0.18_f32 * v1;
+                let (beta0, omb0, beta1, omb1) = if lp.is_legacy_fixed_gqa_decay {
+                    (0.82_f32, 0.18_f32, 0.82_f32, 0.18_f32)
+                } else {
+                    let rl0 = *lp.gqa_decay_logits_768.get(d_i).unwrap_or(&V72_1_GQA_DEFAULT_RETENTION_LOGIT);
+                    let rl1 = *lp.gqa_decay_logits_768.get(d_i + 1).unwrap_or(&V72_1_GQA_DEFAULT_RETENTION_LOGIT);
+                    let b0 = 1.0_f32 / (1.0_f32 + (-rl0).exp());
+                    let b1 = 1.0_f32 / (1.0_f32 + (-rl1).exp());
+                    (b0, 1.0_f32 - b0, b1, 1.0_f32 - b1)
+                };
+                let new_kv0 = beta0 * prev_kv0 + omb0 * v0;
+                let new_kv1 = beta1 * prev_kv1 + omb1 * v1;
 
                 let g0 = n0 * (*lp.swiglu_gate_768.get(d_i).unwrap_or(&0.4));
                 let g1 = n1 * (*lp.swiglu_gate_768.get(d_i + 1).unwrap_or(&0.4));
@@ -4025,12 +4465,13 @@ impl V72_1MatryoshkaModel {
                 d_i += 1;
             }
         }
+        let h_pre_cross = h.clone();
         if gamma != 0.0_f32 {
             let mut c_d: usize = 0;
             while c_d < V72_1_SHELL0_DIM {
                 let mix_w = *lp.cross_shell_mix_384.get(c_d).unwrap_or(&0.0);
                 if mix_w != 0.0_f32 {
-                    let upper_v = *h.get(V72_1_SHELL0_DIM + c_d).unwrap_or(&0.0);
+                    let upper_v = *h_pre_cross.get(V72_1_SHELL0_DIM + c_d).unwrap_or(&0.0);
                     if let Some(low_slot) = h.get_mut(c_d) {
                         *low_slot += gamma * mix_w * upper_v;
                     }
@@ -4039,6 +4480,25 @@ impl V72_1MatryoshkaModel {
             }
         }
         v72_1_block8_walsh_hadamard_f32(&mut h);
+        (h_pre_cross, h)
+    }
+
+    pub fn layer_forward_768(&self, lp: &V72_1HybridLayerParams, h_in: &Vec<f32>, rope_phase: f32, gamma: f32) -> Vec<f32> {
+        self.layer_forward_768_state(lp, h_in, rope_phase, gamma, None, None, 0)
+    }
+
+    pub fn layer_forward_768_state(
+        &self,
+        lp: &V72_1HybridLayerParams,
+        h_in: &Vec<f32>,
+        rope_phase: f32,
+        gamma: f32,
+        prev_mamba: Option<&Vec<f32>>,
+        prev_gqa: Option<&Vec<f32>>,
+        state_off: usize,
+    ) -> Vec<f32> {
+        let (_, mut h) = self.layer_pre_e8_mix_768(lp, h_in, rope_phase, gamma, prev_mamba, prev_gqa, state_off);
+        v72_1_apply_e8_block8_mix_forward(&mut h, &lp.e8_block8_mix, V72_1_E8_OCTETS_768);
         h
     }
 
@@ -4064,7 +4524,16 @@ impl V72_1MatryoshkaModel {
         state_off: usize,
         l_grad: &mut V72_1LayerGrads,
     ) -> Vec<f32> {
-        let mut dh_rot = dh_out.clone();
+        let h_had = self.layer_pre_e8_mix_384(lp, h_in, rope_phase, prev_mamba, prev_gqa, state_off);
+        let mut dh_rot = v72_1_apply_e8_block8_mix_backward(
+            &h_had,
+            dh_out,
+            &lp.e8_block8_mix,
+            &mut l_grad.e8_block8_mix,
+            0,
+            V72_1_E8_OCTETS_S0,
+            V72_1_SHELL0_DIM,
+        );
         v72_1_block8_walsh_hadamard_f32(&mut dh_rot);
         let dh_out = &dh_rot;
         let mut dh_in = dh_out.clone();
@@ -4105,8 +4574,17 @@ impl V72_1MatryoshkaModel {
                 let prev_kv1 = *prev_gqa.and_then(|g| g.get(state_off + d_i + 1)).unwrap_or(&0.0);
                 let gate0 = 1.0_f32 / (1.0_f32 + (-q0 * k0).exp());
                 let gate1 = 1.0_f32 / (1.0_f32 + (-q1 * k1).exp());
-                let new_kv0 = 0.82_f32 * prev_kv0 + 0.18_f32 * v0;
-                let new_kv1 = 0.82_f32 * prev_kv1 + 0.18_f32 * v1;
+                let (beta0, omb0, beta1, omb1) = if lp.is_legacy_fixed_gqa_decay {
+                    (0.82_f32, 0.18_f32, 0.82_f32, 0.18_f32)
+                } else {
+                    let rl0 = *lp.gqa_decay_logits_768.get(d_i).unwrap_or(&V72_1_GQA_DEFAULT_RETENTION_LOGIT);
+                    let rl1 = *lp.gqa_decay_logits_768.get(d_i + 1).unwrap_or(&V72_1_GQA_DEFAULT_RETENTION_LOGIT);
+                    let b0 = 1.0_f32 / (1.0_f32 + (-rl0).exp());
+                    let b1 = 1.0_f32 / (1.0_f32 + (-rl1).exp());
+                    (b0, 1.0_f32 - b0, b1, 1.0_f32 - b1)
+                };
+                let new_kv0 = beta0 * prev_kv0 + omb0 * v0;
+                let new_kv1 = beta1 * prev_kv1 + omb1 * v1;
 
                 let sw_g0 = *lp.swiglu_gate_768.get(d_i).unwrap_or(&0.4);
                 let sw_g1 = *lp.swiglu_gate_768.get(d_i + 1).unwrap_or(&0.4);
@@ -4137,10 +4615,16 @@ impl V72_1MatryoshkaModel {
 
                 let d_new_kv0 = dh0 * gate0;
                 let d_new_kv1 = dh1 * gate1;
-                let dv0 = 0.18_f32 * d_new_kv0;
-                let dv1 = 0.18_f32 * d_new_kv1;
+                let dv0 = omb0 * d_new_kv0;
+                let dv1 = omb1 * d_new_kv1;
                 if let Some(s) = l_grad.gqa_v_scale_768.get_mut(d_i) { *s += dv0 * n0; }
                 if let Some(s) = l_grad.gqa_v_scale_768.get_mut(d_i + 1) { *s += dv1 * n1; }
+                if !lp.is_legacy_fixed_gqa_decay {
+                    let d_rl0 = d_new_kv0 * (prev_kv0 - v0) * beta0 * omb0;
+                    let d_rl1 = d_new_kv1 * (prev_kv1 - v1) * beta1 * omb1;
+                    if let Some(s) = l_grad.gqa_decay_logits_768.get_mut(d_i) { *s += d_rl0; }
+                    if let Some(s) = l_grad.gqa_decay_logits_768.get_mut(d_i + 1) { *s += d_rl1; }
+                }
 
                 let d_gate0 = dh0 * new_kv0;
                 let d_gate1 = dh1 * new_kv1;
@@ -4268,14 +4752,25 @@ impl V72_1MatryoshkaModel {
         skip_low_384: bool,
         l_grad: &mut V72_1LayerGrads,
     ) -> Vec<f32> {
-        let mut dh_rot = dh_out.clone();
+        let (h_pre_cross, h_had) =
+            self.layer_pre_e8_mix_768(lp, h_in, rope_phase, gamma, prev_mamba, prev_gqa, state_off);
+        let blk_start = if skip_low_384 { V72_1_E8_OCTETS_S0 } else { 0 };
+        let mut dh_rot = v72_1_apply_e8_block8_mix_backward(
+            &h_had,
+            dh_out,
+            &lp.e8_block8_mix,
+            &mut l_grad.e8_block8_mix,
+            blk_start,
+            V72_1_E8_OCTETS_768,
+            V72_1_SHELL1_DIM,
+        );
         v72_1_block8_walsh_hadamard_f32(&mut dh_rot);
         let dh_out = &dh_rot;
         let mut dh_curr = dh_out.clone();
         if gamma != 0.0_f32 && !skip_low_384 {
             let mut c_d: usize = 0;
             while c_d < V72_1_SHELL0_DIM {
-                let upper_v = *h_in.get(V72_1_SHELL0_DIM + c_d).unwrap_or(&0.0);
+                let upper_v = *h_pre_cross.get(V72_1_SHELL0_DIM + c_d).unwrap_or(&0.0);
                 let mix_w = *lp.cross_shell_mix_384.get(c_d).unwrap_or(&0.0);
                 let dh_low = *dh_out.get(c_d).unwrap_or(&0.0);
                 if let Some(s) = l_grad.cross_shell_mix_384.get_mut(c_d) {
@@ -4334,8 +4829,17 @@ impl V72_1MatryoshkaModel {
                 let prev_kv1 = *prev_gqa.and_then(|g| g.get(state_off + d_i + 1)).unwrap_or(&0.0);
                 let gate0 = 1.0_f32 / (1.0_f32 + (-q0 * k0).exp());
                 let gate1 = 1.0_f32 / (1.0_f32 + (-q1 * k1).exp());
-                let new_kv0 = 0.82_f32 * prev_kv0 + 0.18_f32 * v0;
-                let new_kv1 = 0.82_f32 * prev_kv1 + 0.18_f32 * v1;
+                let (beta0, omb0, beta1, omb1) = if lp.is_legacy_fixed_gqa_decay {
+                    (0.82_f32, 0.18_f32, 0.82_f32, 0.18_f32)
+                } else {
+                    let rl0 = *lp.gqa_decay_logits_768.get(d_i).unwrap_or(&V72_1_GQA_DEFAULT_RETENTION_LOGIT);
+                    let rl1 = *lp.gqa_decay_logits_768.get(d_i + 1).unwrap_or(&V72_1_GQA_DEFAULT_RETENTION_LOGIT);
+                    let b0 = 1.0_f32 / (1.0_f32 + (-rl0).exp());
+                    let b1 = 1.0_f32 / (1.0_f32 + (-rl1).exp());
+                    (b0, 1.0_f32 - b0, b1, 1.0_f32 - b1)
+                };
+                let new_kv0 = beta0 * prev_kv0 + omb0 * v0;
+                let new_kv1 = beta1 * prev_kv1 + omb1 * v1;
 
                 let sw_g0 = *lp.swiglu_gate_768.get(d_i).unwrap_or(&0.4);
                 let sw_g1 = *lp.swiglu_gate_768.get(d_i + 1).unwrap_or(&0.4);
@@ -4366,10 +4870,16 @@ impl V72_1MatryoshkaModel {
 
                 let d_new_kv0 = dh0 * gate0;
                 let d_new_kv1 = dh1 * gate1;
-                let dv0 = 0.18_f32 * d_new_kv0;
-                let dv1 = 0.18_f32 * d_new_kv1;
+                let dv0 = omb0 * d_new_kv0;
+                let dv1 = omb1 * d_new_kv1;
                 if let Some(s) = l_grad.gqa_v_scale_768.get_mut(d_i) { *s += dv0 * n0; }
                 if let Some(s) = l_grad.gqa_v_scale_768.get_mut(d_i + 1) { *s += dv1 * n1; }
+                if !lp.is_legacy_fixed_gqa_decay {
+                    let d_rl0 = d_new_kv0 * (prev_kv0 - v0) * beta0 * omb0;
+                    let d_rl1 = d_new_kv1 * (prev_kv1 - v1) * beta1 * omb1;
+                    if let Some(s) = l_grad.gqa_decay_logits_768.get_mut(d_i) { *s += d_rl0; }
+                    if let Some(s) = l_grad.gqa_decay_logits_768.get_mut(d_i + 1) { *s += d_rl1; }
+                }
 
                 let d_gate0 = dh0 * new_kv0;
                 let d_gate1 = dh1 * new_kv1;
@@ -4565,7 +5075,13 @@ impl V72_1MatryoshkaModel {
                 v += 1;
             }
             let q0_384 = self.project_h384_to_q0(&h384_final);
+            let qa0_384 = if self.aux48_active {
+                Some(self.project_h384_to_q0_aux48(&h384_final))
+            } else {
+                None
+            };
             let mut d_q0_384 = v72_1_vec_f32(V72_1_LATENT_RANK_R0, 0.0);
+            let mut d_qa0_384 = v72_1_vec_f32(V72_1_AUX_RANK_48, 0.0);
             let mut v_i: usize = 0;
             while v_i < V72_1_BPE_VOCAB_16K {
                 let dl0 = *d_lg0.get(v_i).unwrap_or(&0.0);
@@ -4578,6 +5094,18 @@ impl V72_1MatryoshkaModel {
                     }
                     if let Some(s) = d_q0_384.get_mut(r) { *s += dl0 * u0; }
                     r += 1;
+                }
+                if let Some(ref qa_v) = qa0_384 {
+                    let ua_off = v_i * V72_1_AUX_RANK_48;
+                    let mut ra: usize = 0;
+                    while ra < V72_1_AUX_RANK_48 {
+                        let ua0 = *self.u0_aux48_table.get(ua_off + ra).unwrap_or(&0.0);
+                        if let Some(s) = accum_grads.u0_aux48_table.get_mut(ua_off + ra) {
+                            *s += dl0 * (*qa_v.get(ra).unwrap_or(&0.0));
+                        }
+                        if let Some(s) = d_qa0_384.get_mut(ra) { *s += dl0 * ua0; }
+                        ra += 1;
+                    }
                 }
                 v_i += 1;
             }
@@ -4595,6 +5123,22 @@ impl V72_1MatryoshkaModel {
                     d += 1;
                 }
                 r_j += 1;
+            }
+            if self.aux48_active {
+                let mut ra_j: usize = 0;
+                while ra_j < V72_1_AUX_RANK_48 {
+                    let pa0_off = ra_j * V72_1_SHELL0_DIM;
+                    let dqa0_s = *d_qa0_384.get(ra_j).unwrap_or(&0.0);
+                    let mut d: usize = 0;
+                    while d < V72_1_SHELL0_DIM {
+                        let pa0 = *self.stiefel_p0_aux48.get(pa0_off + d).unwrap_or(&0.0);
+                        let h384_d = *h384_final.get(d).unwrap_or(&0.0);
+                        if let Some(s) = accum_grads.stiefel_p0_aux48.get_mut(pa0_off + d) { *s += dqa0_s * h384_d; }
+                        if let Some(s) = d_h384.get_mut(d) { *s += dqa0_s * pa0; }
+                        d += 1;
+                    }
+                    ra_j += 1;
+                }
             }
             let mut l_back: usize = V72_1_HYBRID_LAYERS;
             while l_back > 0 {
@@ -4631,6 +5175,23 @@ impl V72_1MatryoshkaModel {
                     d_emb += 1;
                 }
                 r_emb += 1;
+            }
+            if self.aux48_active {
+                let ua0_tok_off = tok_idx * V72_1_AUX_RANK_48;
+                let mut ra_emb: usize = 0;
+                while ra_emb < V72_1_AUX_RANK_48 {
+                    let pa0_off = ra_emb * V72_1_SHELL0_DIM;
+                    let ua0_val = *self.u0_aux48_table.get(ua0_tok_off + ra_emb).unwrap_or(&0.0);
+                    let mut d_emb: usize = 0;
+                    while d_emb < V72_1_SHELL0_DIM {
+                        let pa0 = *self.stiefel_p0_aux48.get(pa0_off + d_emb).unwrap_or(&0.0);
+                        let dh_in0 = *d_h384.get(d_emb).unwrap_or(&0.0);
+                        if let Some(s) = accum_grads.u0_aux48_table.get_mut(ua0_tok_off + ra_emb) { *s += dh_in0 * pa0; }
+                        if let Some(s) = accum_grads.stiefel_p0_aux48.get_mut(pa0_off + d_emb) { *s += dh_in0 * ua0_val; }
+                        d_emb += 1;
+                    }
+                    ra_emb += 1;
+                }
             }
             return (loss0, loss0, loss0);
         }
@@ -4698,7 +5259,13 @@ impl V72_1MatryoshkaModel {
                 v += 1;
             }
             let (_, q1_768) = self.project_h768_to_q0_q1(&h768_final);
+            let qa1_768 = if self.aux48_active {
+                Some(self.project_h768_to_q0_q1_aux48(&h768_final).1)
+            } else {
+                None
+            };
             let mut d_q1_768 = v72_1_vec_f32(V72_1_LATENT_RANK_R1, 0.0);
+            let mut d_qa1_768 = v72_1_vec_f32(V72_1_AUX_RANK_48, 0.0);
             let mut v_i: usize = 0;
             while v_i < V72_1_BPE_VOCAB_16K {
                 let dl1_g = (*d_lg1.get(v_i).unwrap_or(&0.0)) * gamma;
@@ -4711,6 +5278,18 @@ impl V72_1MatryoshkaModel {
                     }
                     if let Some(s) = d_q1_768.get_mut(r) { *s += dl1_g * u1; }
                     r += 1;
+                }
+                if let Some(ref qa1_v) = qa1_768 {
+                    let ua_off = v_i * V72_1_AUX_RANK_48;
+                    let mut ra: usize = 0;
+                    while ra < V72_1_AUX_RANK_48 {
+                        let ua1 = *self.u_delta1_aux48_table.get(ua_off + ra).unwrap_or(&0.0);
+                        if let Some(s) = accum_grads.u_delta1_aux48_table.get_mut(ua_off + ra) {
+                            *s += dl1_g * (*qa1_v.get(ra).unwrap_or(&0.0));
+                        }
+                        if let Some(s) = d_qa1_768.get_mut(ra) { *s += dl1_g * ua1; }
+                        ra += 1;
+                    }
                 }
                 v_i += 1;
             }
@@ -4728,6 +5307,22 @@ impl V72_1MatryoshkaModel {
                     d += 1;
                 }
                 r_j += 1;
+            }
+            if self.aux48_active {
+                let mut ra_j: usize = 0;
+                while ra_j < V72_1_AUX_RANK_48 {
+                    let pa1_off = ra_j * V72_1_DELTA1_DIM;
+                    let dqa1_h = *d_qa1_768.get(ra_j).unwrap_or(&0.0);
+                    let mut d: usize = 0;
+                    while d < V72_1_DELTA1_DIM {
+                        let pa1 = *self.stiefel_p1_aux48.get(pa1_off + d).unwrap_or(&0.0);
+                        let h768_up = *h768_final.get(V72_1_SHELL0_DIM + d).unwrap_or(&0.0);
+                        if let Some(s) = accum_grads.stiefel_p1_aux48.get_mut(pa1_off + d) { *s += dqa1_h * h768_up; }
+                        if let Some(s) = d_h768.get_mut(V72_1_SHELL0_DIM + d) { *s += dqa1_h * pa1; }
+                        d += 1;
+                    }
+                    ra_j += 1;
+                }
             }
             let mut l_back: usize = V72_1_HYBRID_LAYERS;
             while l_back > 0 {
@@ -4766,6 +5361,23 @@ impl V72_1MatryoshkaModel {
                     d_emb += 1;
                 }
                 r_emb += 1;
+            }
+            if self.aux48_active {
+                let ua1_tok_off = tok_idx * V72_1_AUX_RANK_48;
+                let mut ra_emb: usize = 0;
+                while ra_emb < V72_1_AUX_RANK_48 {
+                    let pa1_off = ra_emb * V72_1_DELTA1_DIM;
+                    let ua1_val = *self.u_delta1_aux48_table.get(ua1_tok_off + ra_emb).unwrap_or(&0.0);
+                    let mut d_emb: usize = 0;
+                    while d_emb < V72_1_DELTA1_DIM {
+                        let pa1 = *self.stiefel_p1_aux48.get(pa1_off + d_emb).unwrap_or(&0.0);
+                        let dh_in1 = *d_h768.get(V72_1_SHELL0_DIM + d_emb).unwrap_or(&0.0);
+                        if let Some(s) = accum_grads.u_delta1_aux48_table.get_mut(ua1_tok_off + ra_emb) { *s += dh_in1 * pa1; }
+                        if let Some(s) = accum_grads.stiefel_p1_aux48.get_mut(pa1_off + d_emb) { *s += dh_in1 * ua1_val; }
+                        d_emb += 1;
+                    }
+                    ra_emb += 1;
+                }
             }
             return (loss1, loss1, loss1);
         }
@@ -5172,7 +5784,7 @@ pub fn v72_1_run_finite_difference_gradient_check() -> Result<f64, String> {
     }
     checked_groups += 1;
 
-    // Group 5: Layer 11 (Mamba) - check swiglu_up_768
+    // Group 5: Layer 11 (GQA/Mamba) - check swiglu_up_768
     let l11_idx = 11_usize;
     {
         let test_d = 42_usize;
@@ -5304,8 +5916,93 @@ pub fn v72_1_run_finite_difference_gradient_check() -> Result<f64, String> {
     }
     checked_groups += 1;
 
-    if checked_groups < 7 {
-        return Err(format!("Checked groups {} < 7 required", checked_groups));
+    // Group 8: SH4Z v7400 B3 e8_block8_mix & B4 learned gqa_decay_logits_768 on Layer 7 (GQA)
+    {
+        let mut hin = v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0);
+        for (i, v) in hin.iter_mut().enumerate() {
+            *v = (((i % 31) as f32) - 15.0_f32) * 0.09_f32;
+        }
+        let mut prev_gqa = v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0);
+        for (i, v) in prev_gqa.iter_mut().enumerate() {
+            *v = (((i % 19) as f32) - 9.0_f32) * 0.85_f32;
+        }
+        let mut adj = v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0);
+        for (i, v) in adj.iter_mut().enumerate() {
+            *v = if (i % 8) < 4 { 0.45_f32 } else { -0.35_f32 };
+        }
+        let mut lp_v7400 = model.layers.get(7).unwrap().clone();
+        lp_v7400.is_legacy_fixed_gqa_decay = false;
+        for (mi, mv) in lp_v7400.e8_block8_mix.iter_mut().enumerate() {
+            *mv = (((mi % 17) as f32) - 8.0_f32) * 0.015_f32;
+        }
+        let mut lg8 = V72_1LayerGrads::zeros();
+        let _ = model.layer_backward_768_state(
+            &lp_v7400,
+            &hin,
+            &adj,
+            0.35_f32,
+            gamma,
+            None,
+            Some(&prev_gqa),
+            0,
+            false,
+            &mut lg8,
+        );
+        let eval_l7_state = |lp: &V72_1HybridLayerParams| -> f64 {
+            let hout = model.layer_forward_768_state(lp, &hin, 0.35_f32, gamma, None, Some(&prev_gqa), 0);
+            let mut acc: f64 = 0.0;
+            for (h, a) in hout.iter().zip(adj.iter()) {
+                acc += (*h as f64) * (*a as f64);
+            }
+            acc
+        };
+
+        let mut mix_idxs: Vec<usize> = Vec::new();
+        mix_idxs.push(19);
+        mix_idxs.push(48 * 64 + 27);
+        for &m_idx in mix_idxs.iter() {
+            let orig_m = *lp_v7400.e8_block8_mix.get(m_idx).unwrap_or(&0.0);
+            let ana_m = *lg8.e8_block8_mix.get(m_idx).unwrap_or(&0.0) as f64;
+            let eps_m: f32 = 0.1_f32;
+            let mut lp_p = lp_v7400.clone();
+            if let Some(s) = lp_p.e8_block8_mix.get_mut(m_idx) { *s = orig_m + eps_m; }
+            let l_plus = eval_l7_state(&lp_p);
+            if let Some(s) = lp_p.e8_block8_mix.get_mut(m_idx) { *s = orig_m - eps_m; }
+            let l_minus = eval_l7_state(&lp_p);
+            let num_g = (l_plus - l_minus) / (2.0 * (eps_m as f64));
+            let denom = ana_m.abs().max(num_g.abs()).max(1e-7);
+            let rel = (ana_m - num_g).abs() / denom;
+            if rel > max_model_rel_err { max_model_rel_err = rel; }
+            if rel >= 1e-4 {
+                return Err(format!("Group 8 e8_block8_mix idx {} rel_err {:.6e} >= 1e-4", m_idx, rel));
+            }
+        }
+
+        let mut gqa_idxs: Vec<usize> = Vec::new();
+        gqa_idxs.push(20);
+        gqa_idxs.push(404);
+        for &g_idx in gqa_idxs.iter() {
+            let orig_g = *lp_v7400.gqa_decay_logits_768.get(g_idx).unwrap_or(&0.0);
+            let ana_g = *lg8.gqa_decay_logits_768.get(g_idx).unwrap_or(&0.0) as f64;
+            let eps_g: f32 = 0.04_f32;
+            let mut lp_p = lp_v7400.clone();
+            if let Some(s) = lp_p.gqa_decay_logits_768.get_mut(g_idx) { *s = orig_g + eps_g; }
+            let l_plus = eval_l7_state(&lp_p);
+            if let Some(s) = lp_p.gqa_decay_logits_768.get_mut(g_idx) { *s = orig_g - eps_g; }
+            let l_minus = eval_l7_state(&lp_p);
+            let num_g = (l_plus - l_minus) / (2.0 * (eps_g as f64));
+            let denom = ana_g.abs().max(num_g.abs()).max(1e-7);
+            let rel = (ana_g - num_g).abs() / denom;
+            if rel > max_model_rel_err { max_model_rel_err = rel; }
+            if rel >= 1e-4 {
+                return Err(format!("Group 8 gqa_decay_logits idx {} rel_err {:.6e} >= 1e-4", g_idx, rel));
+            }
+        }
+    }
+    checked_groups += 1;
+
+    if checked_groups < 8 {
+        return Err(format!("Checked groups {} < 8 required", checked_groups));
     }
 
     // 2. Direct Gradient Verification on V72_2SparseMoeBank
@@ -6012,10 +6709,11 @@ pub fn v72_1_train_with_steps(force_retrain: bool, steps_override: Option<usize>
 
     // Initialize nested Matryoshka model at Net2Wider gate = 0.0 -> evaluate Step 0 baseline
     let mut model = V72_1MatryoshkaModel::new_initialized(0.0);
+    model.aux48_active = true;
     let (init_n384, init_n768, init_bpb384, init_bpb768, init_pdev, eval_toks) =
         v72_1_eval_validation_metrics(&model, &val_seqs);
 
-    // Setup full 12-layer AdamW moment states across all parameter tensors
+    // Setup full 12-layer AdamW moment states across all parameter tensors (including SH4Z v7400 Rank-96, GQA decay, E8 block8 mix)
     let mut m_b0 = v72_1_vec_f32(V72_1_BPE_VOCAB_16K, 0.0);
     let mut v_b0 = v72_1_vec_f32(V72_1_BPE_VOCAB_16K, 0.0);
     let mut m_b1 = v72_1_vec_f32(V72_1_BPE_VOCAB_16K, 0.0);
@@ -6023,17 +6721,28 @@ pub fn v72_1_train_with_steps(force_retrain: bool, steps_override: Option<usize>
 
     let u0_len = V72_1_BPE_VOCAB_16K * V72_1_LATENT_RANK_R0;
     let u1_len = V72_1_BPE_VOCAB_16K * V72_1_LATENT_RANK_R1;
+    let ua_len = V72_1_BPE_VOCAB_16K * V72_1_AUX_RANK_48;
     let mut m_u0 = v72_1_vec_f32(u0_len, 0.0);
     let mut v_u0 = v72_1_vec_f32(u0_len, 0.0);
     let mut m_u1 = v72_1_vec_f32(u1_len, 0.0);
     let mut v_u1 = v72_1_vec_f32(u1_len, 0.0);
+    let mut m_ua0 = v72_1_vec_f32(ua_len, 0.0);
+    let mut v_ua0 = v72_1_vec_f32(ua_len, 0.0);
+    let mut m_ua1 = v72_1_vec_f32(ua_len, 0.0);
+    let mut v_ua1 = v72_1_vec_f32(ua_len, 0.0);
 
     let p0_len = V72_1_LATENT_RANK_R0 * V72_1_SHELL0_DIM;
     let p1_len = V72_1_LATENT_RANK_R1 * V72_1_DELTA1_DIM;
+    let pa0_len = V72_1_AUX_RANK_48 * V72_1_SHELL0_DIM;
+    let pa1_len = V72_1_AUX_RANK_48 * V72_1_DELTA1_DIM;
     let mut m_p0 = v72_1_vec_f32(p0_len, 0.0);
     let mut v_p0 = v72_1_vec_f32(p0_len, 0.0);
     let mut m_p1 = v72_1_vec_f32(p1_len, 0.0);
     let mut v_p1 = v72_1_vec_f32(p1_len, 0.0);
+    let mut m_pa0 = v72_1_vec_f32(pa0_len, 0.0);
+    let mut v_pa0 = v72_1_vec_f32(pa0_len, 0.0);
+    let mut m_pa1 = v72_1_vec_f32(pa1_len, 0.0);
+    let mut v_pa1 = v72_1_vec_f32(pa1_len, 0.0);
 
     struct LayerAdamWState {
         m_rms: Vec<f32>,
@@ -6048,12 +6757,16 @@ pub fn v72_1_train_with_steps(force_retrain: bool, steps_override: Option<usize>
         v_gqa_k: Vec<f32>,
         m_gqa_v: Vec<f32>,
         v_gqa_v: Vec<f32>,
+        m_gqa_dec: Vec<f32>,
+        v_gqa_dec: Vec<f32>,
         m_sw_g: Vec<f32>,
         v_sw_g: Vec<f32>,
         m_sw_u: Vec<f32>,
         v_sw_u: Vec<f32>,
         m_cross: Vec<f32>,
         v_cross: Vec<f32>,
+        m_e8_mix: Vec<f32>,
+        v_e8_mix: Vec<f32>,
     }
 
     let mut layer_states: Vec<LayerAdamWState> = Vec::with_capacity(V72_1_HYBRID_LAYERS);
@@ -6072,12 +6785,16 @@ pub fn v72_1_train_with_steps(force_retrain: bool, steps_override: Option<usize>
             v_gqa_k: v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0),
             m_gqa_v: v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0),
             v_gqa_v: v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0),
+            m_gqa_dec: v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0),
+            v_gqa_dec: v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0),
             m_sw_g: v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0),
             v_sw_g: v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0),
             m_sw_u: v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0),
             v_sw_u: v72_1_vec_f32(V72_1_SHELL1_DIM, 0.0),
             m_cross: v72_1_vec_f32(V72_1_SHELL0_DIM, 0.0),
             v_cross: v72_1_vec_f32(V72_1_SHELL0_DIM, 0.0),
+            m_e8_mix: v72_1_vec_f32(V72_1_E8_MIX_LEN, 0.0),
+            v_e8_mix: v72_1_vec_f32(V72_1_E8_MIX_LEN, 0.0),
         });
         l_init += 1;
     }
@@ -6127,6 +6844,7 @@ pub fn v72_1_train_with_steps(force_retrain: bool, steps_override: Option<usize>
     let mut last_lr: f32 = 0.003_f32;
     let mut last_layer_norms = v72_1_vec_f64(V72_1_HYBRID_LAYERS, 0.01);
     let checkpoint_stride: usize = (total_steps / 10).max(1);
+    let e8_mix_s0_len: usize = V72_1_E8_OCTETS_S0 * V72_1_E8_MIX_BLOCK_ELEMS;
 
     while step <= total_steps {
         let progress = (step as f32) / (total_steps as f32);
@@ -6179,12 +6897,43 @@ pub fn v72_1_train_with_steps(force_retrain: bool, steps_override: Option<usize>
                 let seq_idx = (step * batch_size + b_i) % train_seqs.len().max(1);
                 if let Some((sq, _)) = train_seqs.get(seq_idx) {
                     if is_two_phase && sq.len() >= 4 {
-                        let max_pos = sq.len().min(48);
-                        let span = (max_pos - 2).max(1);
-                        let pos = 2 + ((step * 3 + b_i * 7) % span);
-                        let target = *sq.get(pos).unwrap_or(&0);
-                        let pref: Vec<u16> = sq.iter().take(pos).copied().collect();
-                        model.forward_and_backward_step_ex(&pref, target, cur_gamma, in_phase_b, &mut local_grads);
+                        let positions = v72_1_collect_causal_chunk_positions(
+                            sq.len(),
+                            step,
+                            b_i,
+                            V72_1_CAUSAL_CHUNK_POSITIONS,
+                        );
+                        let inv_cnt = 1.0_f32 / (positions.len().max(1) as f32);
+                        let mut chunk_grads = V72_1ModelGradients::zeros();
+                        for &pos in positions.iter() {
+                            let target = *sq.get(pos).unwrap_or(&0);
+                            let pref: Vec<u16> = sq.iter().take(pos).copied().collect();
+                            model.forward_and_backward_step_ex(&pref, target, cur_gamma, in_phase_b, &mut chunk_grads);
+                        }
+                        for g in chunk_grads.bias0_vocab.iter_mut() { *g *= inv_cnt; }
+                        for g in chunk_grads.bias_delta1_vocab.iter_mut() { *g *= inv_cnt; }
+                        for g in chunk_grads.u0_table.iter_mut() { *g *= inv_cnt; }
+                        for g in chunk_grads.u_delta1_table.iter_mut() { *g *= inv_cnt; }
+                        for g in chunk_grads.u0_aux48_table.iter_mut() { *g *= inv_cnt; }
+                        for g in chunk_grads.u_delta1_aux48_table.iter_mut() { *g *= inv_cnt; }
+                        for g in chunk_grads.stiefel_p0.iter_mut() { *g *= inv_cnt; }
+                        for g in chunk_grads.stiefel_p1.iter_mut() { *g *= inv_cnt; }
+                        for g in chunk_grads.stiefel_p0_aux48.iter_mut() { *g *= inv_cnt; }
+                        for g in chunk_grads.stiefel_p1_aux48.iter_mut() { *g *= inv_cnt; }
+                        for lg in chunk_grads.layers.iter_mut() {
+                            for g in lg.rms_weight_768.iter_mut() { *g *= inv_cnt; }
+                            for g in lg.diag_in_768.iter_mut() { *g *= inv_cnt; }
+                            for g in lg.mamba_decay_logits_768.iter_mut() { *g *= inv_cnt; }
+                            for g in lg.gqa_q_scale_768.iter_mut() { *g *= inv_cnt; }
+                            for g in lg.gqa_k_scale_768.iter_mut() { *g *= inv_cnt; }
+                            for g in lg.gqa_v_scale_768.iter_mut() { *g *= inv_cnt; }
+                            for g in lg.gqa_decay_logits_768.iter_mut() { *g *= inv_cnt; }
+                            for g in lg.swiglu_gate_768.iter_mut() { *g *= inv_cnt; }
+                            for g in lg.swiglu_up_768.iter_mut() { *g *= inv_cnt; }
+                            for g in lg.cross_shell_mix_384.iter_mut() { *g *= inv_cnt; }
+                            for g in lg.e8_block8_mix.iter_mut() { *g *= inv_cnt; }
+                        }
+                        local_grads.add_assign_from(&chunk_grads);
                     } else if sq.len() >= 4 {
                         let max_pos = sq.len().min(16);
                         let mut pos: usize = 2;
@@ -6216,8 +6965,12 @@ pub fn v72_1_train_with_steps(force_retrain: bool, steps_override: Option<usize>
         for g in step_grads.bias_delta1_vocab.iter() { sum_sq_all += (*g as f64) * (*g as f64); }
         for g in step_grads.u0_table.iter() { sum_sq_all += (*g as f64) * (*g as f64); }
         for g in step_grads.u_delta1_table.iter() { sum_sq_all += (*g as f64) * (*g as f64); }
+        for g in step_grads.u0_aux48_table.iter() { sum_sq_all += (*g as f64) * (*g as f64); }
+        for g in step_grads.u_delta1_aux48_table.iter() { sum_sq_all += (*g as f64) * (*g as f64); }
         for g in step_grads.stiefel_p0.iter() { sum_sq_all += (*g as f64) * (*g as f64); }
         for g in step_grads.stiefel_p1.iter() { sum_sq_all += (*g as f64) * (*g as f64); }
+        for g in step_grads.stiefel_p0_aux48.iter() { sum_sq_all += (*g as f64) * (*g as f64); }
+        for g in step_grads.stiefel_p1_aux48.iter() { sum_sq_all += (*g as f64) * (*g as f64); }
         for lg in step_grads.layers.iter() {
             for g in lg.rms_weight_768.iter() { sum_sq_all += (*g as f64) * (*g as f64); }
             for g in lg.diag_in_768.iter() { sum_sq_all += (*g as f64) * (*g as f64); }
@@ -6225,9 +6978,11 @@ pub fn v72_1_train_with_steps(force_retrain: bool, steps_override: Option<usize>
             for g in lg.gqa_q_scale_768.iter() { sum_sq_all += (*g as f64) * (*g as f64); }
             for g in lg.gqa_k_scale_768.iter() { sum_sq_all += (*g as f64) * (*g as f64); }
             for g in lg.gqa_v_scale_768.iter() { sum_sq_all += (*g as f64) * (*g as f64); }
+            for g in lg.gqa_decay_logits_768.iter() { sum_sq_all += (*g as f64) * (*g as f64); }
             for g in lg.swiglu_gate_768.iter() { sum_sq_all += (*g as f64) * (*g as f64); }
             for g in lg.swiglu_up_768.iter() { sum_sq_all += (*g as f64) * (*g as f64); }
             for g in lg.cross_shell_mix_384.iter() { sum_sq_all += (*g as f64) * (*g as f64); }
+            for g in lg.e8_block8_mix.iter() { sum_sq_all += (*g as f64) * (*g as f64); }
         }
         let total_norm = sum_sq_all.sqrt() as f32;
         let clip_scale = if total_norm > 1.0_f32 { 1.0_f32 / total_norm } else { 1.0_f32 };
@@ -6236,9 +6991,11 @@ pub fn v72_1_train_with_steps(force_retrain: bool, steps_override: Option<usize>
         if in_phase_a {
             v72_1_adamw_step_vector(&mut model.bias0_vocab, &step_grads.bias0_vocab, &mut m_b0, &mut v_b0, cosine_lr, beta1, beta2, 0.02_f32, bc1, bc2, clip_scale);
             v72_1_adamw_step_vector(&mut model.u0_table, &step_grads.u0_table, &mut m_u0, &mut v_u0, cosine_lr, beta1, beta2, 0.05_f32, bc1, bc2, clip_scale);
+            v72_1_adamw_step_vector(&mut model.u0_aux48_table, &step_grads.u0_aux48_table, &mut m_ua0, &mut v_ua0, cosine_lr, beta1, beta2, 0.05_f32, bc1, bc2, clip_scale);
             v72_1_adamw_step_vector(&mut model.stiefel_p0, &step_grads.stiefel_p0, &mut m_p0, &mut v_p0, cosine_lr, beta1, beta2, wd, bc1, bc2, clip_scale);
+            v72_1_adamw_step_vector(&mut model.stiefel_p0_aux48, &step_grads.stiefel_p0_aux48, &mut m_pa0, &mut v_pa0, cosine_lr, beta1, beta2, wd, bc1, bc2, clip_scale);
             if step % 16 == 0 || step == phase_a_steps {
-                v72_1_reorthogonalize_stiefel(&mut model.stiefel_p0, V72_1_LATENT_RANK_R0, V72_1_SHELL0_DIM);
+                v72_1_reorthogonalize_rank96_pair(&mut model.stiefel_p0, &mut model.stiefel_p0_aux48, V72_1_SHELL0_DIM);
             }
             let mut l_upd: usize = 0;
             while l_upd < V72_1_HYBRID_LAYERS {
@@ -6249,18 +7006,22 @@ pub fn v72_1_train_with_steps(force_retrain: bool, steps_override: Option<usize>
                     v72_1_adamw_step_slice(&mut lp.gqa_q_scale_768, &lg.gqa_q_scale_768, &mut ls.m_gqa_q, &mut ls.v_gqa_q, 0, V72_1_SHELL0_DIM, cosine_lr, beta1, beta2, wd, bc1, bc2, clip_scale);
                     v72_1_adamw_step_slice(&mut lp.gqa_k_scale_768, &lg.gqa_k_scale_768, &mut ls.m_gqa_k, &mut ls.v_gqa_k, 0, V72_1_SHELL0_DIM, cosine_lr, beta1, beta2, wd, bc1, bc2, clip_scale);
                     v72_1_adamw_step_slice(&mut lp.gqa_v_scale_768, &lg.gqa_v_scale_768, &mut ls.m_gqa_v, &mut ls.v_gqa_v, 0, V72_1_SHELL0_DIM, cosine_lr, beta1, beta2, wd, bc1, bc2, clip_scale);
+                    v72_1_adamw_step_slice(&mut lp.gqa_decay_logits_768, &lg.gqa_decay_logits_768, &mut ls.m_gqa_dec, &mut ls.v_gqa_dec, 0, V72_1_SHELL0_DIM, cosine_lr, beta1, beta2, wd, bc1, bc2, clip_scale);
                     v72_1_adamw_step_slice(&mut lp.swiglu_gate_768, &lg.swiglu_gate_768, &mut ls.m_sw_g, &mut ls.v_sw_g, 0, V72_1_SHELL0_DIM, cosine_lr, beta1, beta2, wd, bc1, bc2, clip_scale);
                     v72_1_adamw_step_slice(&mut lp.swiglu_up_768, &lg.swiglu_up_768, &mut ls.m_sw_u, &mut ls.v_sw_u, 0, V72_1_SHELL0_DIM, cosine_lr, beta1, beta2, wd, bc1, bc2, clip_scale);
+                    v72_1_adamw_step_slice(&mut lp.e8_block8_mix, &lg.e8_block8_mix, &mut ls.m_e8_mix, &mut ls.v_e8_mix, 0, e8_mix_s0_len, cosine_lr, beta1, beta2, wd, bc1, bc2, clip_scale);
                 }
                 l_upd += 1;
             }
         } else if in_phase_b {
             v72_1_adamw_step_vector(&mut model.bias_delta1_vocab, &step_grads.bias_delta1_vocab, &mut m_b1, &mut v_b1, cosine_lr, beta1, beta2, 0.02_f32, bc1, bc2, clip_scale);
             v72_1_adamw_step_vector(&mut model.u_delta1_table, &step_grads.u_delta1_table, &mut m_u1, &mut v_u1, cosine_lr, beta1, beta2, 0.06_f32, bc1, bc2, clip_scale);
+            v72_1_adamw_step_vector(&mut model.u_delta1_aux48_table, &step_grads.u_delta1_aux48_table, &mut m_ua1, &mut v_ua1, cosine_lr, beta1, beta2, 0.06_f32, bc1, bc2, clip_scale);
             v72_1_adamw_step_vector(&mut model.stiefel_p1, &step_grads.stiefel_p1, &mut m_p1, &mut v_p1, cosine_lr, beta1, beta2, wd, bc1, bc2, clip_scale);
+            v72_1_adamw_step_vector(&mut model.stiefel_p1_aux48, &step_grads.stiefel_p1_aux48, &mut m_pa1, &mut v_pa1, cosine_lr, beta1, beta2, wd, bc1, bc2, clip_scale);
             let b_step = step - phase_a_steps;
             if b_step % 16 == 0 || step == total_steps {
-                v72_1_reorthogonalize_stiefel(&mut model.stiefel_p1, V72_1_LATENT_RANK_R1, V72_1_DELTA1_DIM);
+                v72_1_reorthogonalize_rank96_pair(&mut model.stiefel_p1, &mut model.stiefel_p1_aux48, V72_1_DELTA1_DIM);
             }
             let mut l_upd: usize = 0;
             while l_upd < V72_1_HYBRID_LAYERS {
@@ -6271,8 +7032,10 @@ pub fn v72_1_train_with_steps(force_retrain: bool, steps_override: Option<usize>
                     v72_1_adamw_step_slice(&mut lp.gqa_q_scale_768, &lg.gqa_q_scale_768, &mut ls.m_gqa_q, &mut ls.v_gqa_q, V72_1_SHELL0_DIM, V72_1_SHELL1_DIM, cosine_lr, beta1, beta2, wd, bc1, bc2, clip_scale);
                     v72_1_adamw_step_slice(&mut lp.gqa_k_scale_768, &lg.gqa_k_scale_768, &mut ls.m_gqa_k, &mut ls.v_gqa_k, V72_1_SHELL0_DIM, V72_1_SHELL1_DIM, cosine_lr, beta1, beta2, wd, bc1, bc2, clip_scale);
                     v72_1_adamw_step_slice(&mut lp.gqa_v_scale_768, &lg.gqa_v_scale_768, &mut ls.m_gqa_v, &mut ls.v_gqa_v, V72_1_SHELL0_DIM, V72_1_SHELL1_DIM, cosine_lr, beta1, beta2, wd, bc1, bc2, clip_scale);
+                    v72_1_adamw_step_slice(&mut lp.gqa_decay_logits_768, &lg.gqa_decay_logits_768, &mut ls.m_gqa_dec, &mut ls.v_gqa_dec, V72_1_SHELL0_DIM, V72_1_SHELL1_DIM, cosine_lr, beta1, beta2, wd, bc1, bc2, clip_scale);
                     v72_1_adamw_step_slice(&mut lp.swiglu_gate_768, &lg.swiglu_gate_768, &mut ls.m_sw_g, &mut ls.v_sw_g, V72_1_SHELL0_DIM, V72_1_SHELL1_DIM, cosine_lr, beta1, beta2, wd, bc1, bc2, clip_scale);
                     v72_1_adamw_step_slice(&mut lp.swiglu_up_768, &lg.swiglu_up_768, &mut ls.m_sw_u, &mut ls.v_sw_u, V72_1_SHELL0_DIM, V72_1_SHELL1_DIM, cosine_lr, beta1, beta2, wd, bc1, bc2, clip_scale);
+                    v72_1_adamw_step_slice(&mut lp.e8_block8_mix, &lg.e8_block8_mix, &mut ls.m_e8_mix, &mut ls.v_e8_mix, e8_mix_s0_len, V72_1_E8_MIX_LEN, cosine_lr, beta1, beta2, wd, bc1, bc2, clip_scale);
                 }
                 l_upd += 1;
             }
@@ -6281,10 +7044,14 @@ pub fn v72_1_train_with_steps(force_retrain: bool, steps_override: Option<usize>
             v72_1_adamw_step_vector(&mut model.bias_delta1_vocab, &step_grads.bias_delta1_vocab, &mut m_b1, &mut v_b1, cosine_lr, beta1, beta2, wd, bc1, bc2, clip_scale);
             v72_1_adamw_step_vector(&mut model.u0_table, &step_grads.u0_table, &mut m_u0, &mut v_u0, cosine_lr, beta1, beta2, wd, bc1, bc2, clip_scale);
             v72_1_adamw_step_vector(&mut model.u_delta1_table, &step_grads.u_delta1_table, &mut m_u1, &mut v_u1, cosine_lr, beta1, beta2, wd, bc1, bc2, clip_scale);
+            v72_1_adamw_step_vector(&mut model.u0_aux48_table, &step_grads.u0_aux48_table, &mut m_ua0, &mut v_ua0, cosine_lr, beta1, beta2, wd, bc1, bc2, clip_scale);
+            v72_1_adamw_step_vector(&mut model.u_delta1_aux48_table, &step_grads.u_delta1_aux48_table, &mut m_ua1, &mut v_ua1, cosine_lr, beta1, beta2, wd, bc1, bc2, clip_scale);
             v72_1_adamw_step_vector(&mut model.stiefel_p0, &step_grads.stiefel_p0, &mut m_p0, &mut v_p0, cosine_lr, beta1, beta2, wd, bc1, bc2, clip_scale);
             v72_1_adamw_step_vector(&mut model.stiefel_p1, &step_grads.stiefel_p1, &mut m_p1, &mut v_p1, cosine_lr, beta1, beta2, wd, bc1, bc2, clip_scale);
-            v72_1_reorthogonalize_stiefel(&mut model.stiefel_p0, V72_1_LATENT_RANK_R0, V72_1_SHELL0_DIM);
-            v72_1_reorthogonalize_stiefel(&mut model.stiefel_p1, V72_1_LATENT_RANK_R1, V72_1_DELTA1_DIM);
+            v72_1_adamw_step_vector(&mut model.stiefel_p0_aux48, &step_grads.stiefel_p0_aux48, &mut m_pa0, &mut v_pa0, cosine_lr, beta1, beta2, wd, bc1, bc2, clip_scale);
+            v72_1_adamw_step_vector(&mut model.stiefel_p1_aux48, &step_grads.stiefel_p1_aux48, &mut m_pa1, &mut v_pa1, cosine_lr, beta1, beta2, wd, bc1, bc2, clip_scale);
+            v72_1_reorthogonalize_rank96_pair(&mut model.stiefel_p0, &mut model.stiefel_p0_aux48, V72_1_SHELL0_DIM);
+            v72_1_reorthogonalize_rank96_pair(&mut model.stiefel_p1, &mut model.stiefel_p1_aux48, V72_1_DELTA1_DIM);
             let mut l_upd: usize = 0;
             while l_upd < V72_1_HYBRID_LAYERS {
                 if let (Some(lp), Some(lg), Some(ls)) = (model.layers.get_mut(l_upd), step_grads.layers.get(l_upd), layer_states.get_mut(l_upd)) {
@@ -6294,9 +7061,11 @@ pub fn v72_1_train_with_steps(force_retrain: bool, steps_override: Option<usize>
                     v72_1_adamw_step_vector(&mut lp.gqa_q_scale_768, &lg.gqa_q_scale_768, &mut ls.m_gqa_q, &mut ls.v_gqa_q, cosine_lr, beta1, beta2, wd, bc1, bc2, clip_scale);
                     v72_1_adamw_step_vector(&mut lp.gqa_k_scale_768, &lg.gqa_k_scale_768, &mut ls.m_gqa_k, &mut ls.v_gqa_k, cosine_lr, beta1, beta2, wd, bc1, bc2, clip_scale);
                     v72_1_adamw_step_vector(&mut lp.gqa_v_scale_768, &lg.gqa_v_scale_768, &mut ls.m_gqa_v, &mut ls.v_gqa_v, cosine_lr, beta1, beta2, wd, bc1, bc2, clip_scale);
+                    v72_1_adamw_step_vector(&mut lp.gqa_decay_logits_768, &lg.gqa_decay_logits_768, &mut ls.m_gqa_dec, &mut ls.v_gqa_dec, cosine_lr, beta1, beta2, wd, bc1, bc2, clip_scale);
                     v72_1_adamw_step_vector(&mut lp.swiglu_gate_768, &lg.swiglu_gate_768, &mut ls.m_sw_g, &mut ls.v_sw_g, cosine_lr, beta1, beta2, wd, bc1, bc2, clip_scale);
                     v72_1_adamw_step_vector(&mut lp.swiglu_up_768, &lg.swiglu_up_768, &mut ls.m_sw_u, &mut ls.v_sw_u, cosine_lr, beta1, beta2, wd, bc1, bc2, clip_scale);
                     v72_1_adamw_step_vector(&mut lp.cross_shell_mix_384, &lg.cross_shell_mix_384, &mut ls.m_cross, &mut ls.v_cross, cosine_lr, beta1, beta2, wd, bc1, bc2, clip_scale);
+                    v72_1_adamw_step_vector(&mut lp.e8_block8_mix, &lg.e8_block8_mix, &mut ls.m_e8_mix, &mut ls.v_e8_mix, cosine_lr, beta1, beta2, wd, bc1, bc2, clip_scale);
                 }
                 l_upd += 1;
             }
@@ -6326,7 +7095,13 @@ pub fn v72_1_train_with_steps(force_retrain: bool, steps_override: Option<usize>
                     V72_1_BPE_VOCAB_16K,
                     V72_1_LATENT_RANK_R0,
                 );
+                let (_, _, ua0_q_locked) = v72_1_quantize_q8_0_rows(
+                    &model.u0_aux48_table,
+                    V72_1_BPE_VOCAB_16K,
+                    V72_1_AUX_RANK_48,
+                );
                 model.u0_table = u0_q_locked;
+                model.u0_aux48_table = ua0_q_locked;
                 model.gamma_net2wider = 0.65_f32;
                 v72_1_zero_slice(&mut model.bias_delta1_vocab, 0, V72_1_BPE_VOCAB_16K);
                 let mut rng_u1 = 0x7210_2000_CAFE_0002u64;
@@ -6334,12 +7109,17 @@ pub fn v72_1_train_with_steps(force_retrain: bool, steps_override: Option<usize>
                 for slot in model.u_delta1_table.iter_mut() {
                     *slot = (v72_1_box_muller(&mut rng_u1) as f32) * kaiming_s1 * 0.0005_f32;
                 }
+                v72_1_zero_slice(&mut model.u_delta1_aux48_table, 0, ua_len);
                 v72_1_zero_slice(&mut m_b1, 0, V72_1_BPE_VOCAB_16K);
                 v72_1_zero_slice(&mut v_b1, 0, V72_1_BPE_VOCAB_16K);
                 v72_1_zero_slice(&mut m_u1, 0, u1_len);
                 v72_1_zero_slice(&mut v_u1, 0, u1_len);
+                v72_1_zero_slice(&mut m_ua1, 0, ua_len);
+                v72_1_zero_slice(&mut v_ua1, 0, ua_len);
                 v72_1_zero_slice(&mut m_p1, 0, p1_len);
                 v72_1_zero_slice(&mut v_p1, 0, p1_len);
+                v72_1_zero_slice(&mut m_pa1, 0, pa1_len);
+                v72_1_zero_slice(&mut v_pa1, 0, pa1_len);
                 for ls in layer_states.iter_mut() {
                     v72_1_zero_slice(&mut ls.m_rms, V72_1_SHELL0_DIM, V72_1_SHELL1_DIM);
                     v72_1_zero_slice(&mut ls.v_rms, V72_1_SHELL0_DIM, V72_1_SHELL1_DIM);
@@ -6353,10 +7133,14 @@ pub fn v72_1_train_with_steps(force_retrain: bool, steps_override: Option<usize>
                     v72_1_zero_slice(&mut ls.v_gqa_k, V72_1_SHELL0_DIM, V72_1_SHELL1_DIM);
                     v72_1_zero_slice(&mut ls.m_gqa_v, V72_1_SHELL0_DIM, V72_1_SHELL1_DIM);
                     v72_1_zero_slice(&mut ls.v_gqa_v, V72_1_SHELL0_DIM, V72_1_SHELL1_DIM);
+                    v72_1_zero_slice(&mut ls.m_gqa_dec, V72_1_SHELL0_DIM, V72_1_SHELL1_DIM);
+                    v72_1_zero_slice(&mut ls.v_gqa_dec, V72_1_SHELL0_DIM, V72_1_SHELL1_DIM);
                     v72_1_zero_slice(&mut ls.m_sw_g, V72_1_SHELL0_DIM, V72_1_SHELL1_DIM);
                     v72_1_zero_slice(&mut ls.v_sw_g, V72_1_SHELL0_DIM, V72_1_SHELL1_DIM);
                     v72_1_zero_slice(&mut ls.m_sw_u, V72_1_SHELL0_DIM, V72_1_SHELL1_DIM);
                     v72_1_zero_slice(&mut ls.v_sw_u, V72_1_SHELL0_DIM, V72_1_SHELL1_DIM);
+                    v72_1_zero_slice(&mut ls.m_e8_mix, e8_mix_s0_len, V72_1_E8_MIX_LEN);
+                    v72_1_zero_slice(&mut ls.v_e8_mix, e8_mix_s0_len, V72_1_E8_MIX_LEN);
                 }
                 let (s0_n384, s0_n768, _, _, _, _) = v72_1_eval_validation_metrics(&model, &val_seqs);
                 best_vn768 = s0_n384.min(s0_n768);
@@ -6373,7 +7157,13 @@ pub fn v72_1_train_with_steps(force_retrain: bool, steps_override: Option<usize>
                     V72_1_BPE_VOCAB_16K,
                     V72_1_LATENT_RANK_R1,
                 );
+                let (_, _, ua1_q_cand) = v72_1_quantize_q8_0_rows(
+                    &cand_model.u_delta1_aux48_table,
+                    V72_1_BPE_VOCAB_16K,
+                    V72_1_AUX_RANK_48,
+                );
                 cand_model.u_delta1_table = u1_q_cand;
+                cand_model.u_delta1_aux48_table = ua1_q_cand;
                 let (cand_n384, vn768, cand_bpb384, cand_bpb768, _, _) =
                     v72_1_eval_validation_metrics(&cand_model, &val_seqs);
                 if step % checkpoint_stride == 0 && step < total_steps {
@@ -6420,8 +7210,23 @@ pub fn v72_1_train_with_steps(force_retrain: bool, steps_override: Option<usize>
         V72_1_BPE_VOCAB_16K,
         V72_1_LATENT_RANK_R1,
     );
+    let (ua0_scales, ua0_q8, ua0_recon) = v72_1_quantize_q8_0_rows(
+        &model.u0_aux48_table,
+        V72_1_BPE_VOCAB_16K,
+        V72_1_AUX_RANK_48,
+    );
+    let (ua1_scales, ua1_q8, ua1_recon) = v72_1_quantize_q8_0_rows(
+        &model.u_delta1_aux48_table,
+        V72_1_BPE_VOCAB_16K,
+        V72_1_AUX_RANK_48,
+    );
     model.u0_table = u0_recon;
     model.u_delta1_table = u1_recon;
+    model.u0_aux48_table = ua0_recon;
+    model.u_delta1_aux48_table = ua1_recon;
+    model.aux48_active = model.u0_aux48_table.iter().any(|&v| v != 0.0_f32)
+        || model.u_delta1_aux48_table.iter().any(|&v| v != 0.0_f32);
+    model.sh4z_loaded_version = V72_1_SH4Z_VERSION_V7400;
 
     let (fin_n384, fin_n768, fin_bpb384, fin_bpb768, fin_pdev, fin_eval_toks) =
         v72_1_eval_validation_metrics(&model, &val_seqs);
@@ -6485,10 +7290,10 @@ pub fn v72_1_train_with_steps(force_retrain: bool, steps_override: Option<usize>
     model.final_val_ppl_768d = fin_ppl768;
     model.prob_sum_max_dev = max_pdev;
 
-    // Serialize SH4Z v7320 Checkpoint with Before-the-Fact 8-Slot TLV Directory Header + Q8_0 Row Scales
-    let mut sh4z_buf: Vec<u8> = Vec::with_capacity(6950 * 1024);
+    // Serialize SH4Z v7400 Checkpoint with Slots 0..2 backward-compatible layout + Slot 3 (Rank-96, GQA decay, E8 block8 mix)
+    let mut sh4z_buf: Vec<u8> = Vec::with_capacity(9100 * 1024);
     v72_1_push_u32_le(&mut sh4z_buf, V72_1_SH4Z_MAGIC);
-    v72_1_push_u32_le(&mut sh4z_buf, V72_1_SH4Z_VERSION_Q8_HADAMARD);
+    v72_1_push_u32_le(&mut sh4z_buf, V72_1_SH4Z_VERSION_V7400);
     v72_1_push_u32_le(&mut sh4z_buf, V72_1_SHELL0_DIM as u32);
     v72_1_push_u32_le(&mut sh4z_buf, V72_1_SHELL1_DIM as u32);
     v72_1_push_u32_le(&mut sh4z_buf, V72_1_HYBRID_LAYERS as u32);
@@ -6496,7 +7301,7 @@ pub fn v72_1_train_with_steps(force_retrain: bool, steps_override: Option<usize>
     v72_1_push_f32_le(&mut sh4z_buf, model.gamma_net2wider);
     v72_1_push_u32_le(&mut sh4z_buf, 8_u32);
     while sh4z_buf.len() < 128 {
-        v72_1_push_u64_le(&mut sh4z_buf, 0x534C4F54_7320_0000);
+        v72_1_push_u64_le(&mut sh4z_buf, 0x534C4F54_7400_0000);
     }
     for f in model.stiefel_p0.iter() {
         v72_1_push_f32_le(&mut sh4z_buf, *f);
@@ -6518,7 +7323,7 @@ pub fn v72_1_train_with_steps(force_retrain: bool, steps_override: Option<usize>
         v72_1_push_f32_le(&mut sh4z_buf, *sc);
     }
     sh4z_buf.extend_from_slice(&u1_q8);
-    // Slot 2: 12 Hybrid Layer Tensors
+    // Slot 2: 12 Hybrid Layer Tensors (legacy 9 vectors)
     for lp in model.layers.iter() {
         for f in lp.rms_weight_768.iter() { v72_1_push_f32_le(&mut sh4z_buf, *f); }
         for f in lp.diag_in_768.iter() { v72_1_push_f32_le(&mut sh4z_buf, *f); }
@@ -6529,6 +7334,25 @@ pub fn v72_1_train_with_steps(force_retrain: bool, steps_override: Option<usize>
         for f in lp.swiglu_gate_768.iter() { v72_1_push_f32_le(&mut sh4z_buf, *f); }
         for f in lp.swiglu_up_768.iter() { v72_1_push_f32_le(&mut sh4z_buf, *f); }
         for f in lp.cross_shell_mix_384.iter() { v72_1_push_f32_le(&mut sh4z_buf, *f); }
+    }
+    // Slot 3 (SH4Z v7400): Aux48 Rank-96 Stiefel + Q8_0 Aux48 Tables + Learned GQA Retention & E8 Block8 Mix
+    for f in model.stiefel_p0_aux48.iter() {
+        v72_1_push_f32_le(&mut sh4z_buf, *f);
+    }
+    for f in model.stiefel_p1_aux48.iter() {
+        v72_1_push_f32_le(&mut sh4z_buf, *f);
+    }
+    for sc in ua0_scales.iter() {
+        v72_1_push_f32_le(&mut sh4z_buf, *sc);
+    }
+    sh4z_buf.extend_from_slice(&ua0_q8);
+    for sc in ua1_scales.iter() {
+        v72_1_push_f32_le(&mut sh4z_buf, *sc);
+    }
+    sh4z_buf.extend_from_slice(&ua1_q8);
+    for lp in model.layers.iter() {
+        for f in lp.gqa_decay_logits_768.iter() { v72_1_push_f32_le(&mut sh4z_buf, *f); }
+        for f in lp.e8_block8_mix.iter() { v72_1_push_f32_le(&mut sh4z_buf, *f); }
     }
 
     let sh4z_sha = v72_1_sha256_hex(&sh4z_buf);
@@ -7086,7 +7910,7 @@ pub fn v72_1_sample_12byte_e8z_plucker(seed_offset: usize) -> (usize, i64, i64, 
         return (0, 0, 0, 0, 0, 0, 0, -1);
     }
     let max_start = bytes.len() - 16;
-    let base = (seed_offset * 64) % max_start;
+    let base = ((seed_offset % max_start).wrapping_mul(64)) % max_start;
     // Sample 12/12 distinct bytes -> fold into two 4-vectors u=(u0,u1,u2,u3), v=(v0,v1,v2,v3) in Z^4
     // Every Plucker coordinate p_ij = u_i * v_j - u_j * v_i uses real .e8z bytes AND satisfies exact G(2,4) incidence!
     let b = |k: usize| -> i64 { ((*bytes.get(base + k).unwrap_or(&0)) as i8) as i64 };
@@ -7545,6 +8369,7 @@ pub fn v72_1_converse_execute_with_params(
         Err(p) => p.into_inner(),
     };
     if let Some((_, ref model)) = *guard {
+        let mut utf8_state = crate::v72_2_sh_xi_sparse_moe_chatml_sft_and_rag::V72_2Utf8ByteState::new();
         let mut step: usize = 0;
         while step < max_steps {
             let h_step = model.forward_sequence_shell1_768(&cur_tokens);
@@ -7638,6 +8463,31 @@ pub fn v72_1_converse_execute_with_params(
                 }
             }
 
+            // 2b. Valid-UTF-8 Byte-State Logit Mask (RFC 3629: 0..3 continuation bytes, zero U+FFFD)
+            {
+                let rem_utf8 = max_steps.saturating_sub(step);
+                let mut tid_u: usize = 0;
+                while tid_u < logits.len() {
+                    if tid_u == 0 || tid_u == 258 || (tid_u >= 256 && tid_u <= 271) {
+                        if !utf8_state.is_complete() {
+                            if let Some(lg) = logits.get_mut(tid_u) {
+                                *lg = f32::NEG_INFINITY;
+                            }
+                        }
+                    } else if let Some(piece) = bpe.id_to_bytes.get(tid_u) {
+                        let mut st_try = utf8_state;
+                        let ok_utf8 = st_try.feed_slice(piece)
+                            && ((st_try.expected_cont as usize) <= rem_utf8.saturating_sub(1));
+                        if !ok_utf8 {
+                            if let Some(lg) = logits.get_mut(tid_u) {
+                                *lg = f32::NEG_INFINITY;
+                            }
+                        }
+                    }
+                    tid_u += 1;
+                }
+            }
+
             // 3. Temperature Scaling (skip scaling when greedy temp <= 0.01)
             if temp > 0.01 {
                 let mut i: usize = 0;
@@ -7711,6 +8561,12 @@ pub fn v72_1_converse_execute_with_params(
 
             let count_entry = token_counts.entry(next_tok).or_insert(0);
             *count_entry += 1;
+
+            if chosen_tok < 256 || chosen_tok > 271 {
+                if let Some(piece) = bpe.id_to_bytes.get(chosen_tok) {
+                    let _ = utf8_state.feed_slice(piece);
+                }
+            }
 
             if let Some(ref mut f) = json_fsm {
                 if let Some(piece) = bpe.id_to_bytes.get(chosen_tok) {

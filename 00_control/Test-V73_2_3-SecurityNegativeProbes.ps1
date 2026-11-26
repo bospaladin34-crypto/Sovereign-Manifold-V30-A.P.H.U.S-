@@ -88,6 +88,7 @@ $sectionCounts = [ordered]@{
     item4_webgpu_poc     = [ordered]@{ passed = 0; failed = 0 }
     item5_query_key_9gates = [ordered]@{ passed = 0; failed = 0 }
     item10_d1_routes     = [ordered]@{ passed = 0; failed = 0 }
+    item11_v74_labs_chain418 = [ordered]@{ passed = 0; failed = 0 }
     runtime              = [ordered]@{ passed = 0; failed = 0 }
 }
 
@@ -1433,11 +1434,19 @@ try {
                 Add-CheckResult -Section "item5_query_key_9gates" -Id "Item5_EdgeDirect_OtaParity_$eSlug" -Passed $posOk -Method "GET" -Target $uPos -ExpectedStatus 200 -ActualStatus $rPos.StatusCode -Detail "version_name=$($posJson.version_name) version_code=$($posJson.version_code) expected_vc=$expectedApkVersionCode apk_bytes=$($posJson.apk_bytes) expected_bytes=$expectedApkBytes status=$($posJson.status)"
             }
 
+            $expectedTlvVersion = 7400
+            $geminiHdrPath = Join-Path $RepoRoot "GEMINI.md"
+            if (Test-Path $geminiHdrPath -PathType Leaf) {
+                $firstLine = (Get-Content -LiteralPath $geminiHdrPath -TotalCount 1)
+                if ($firstLine -match 'SH4Z\s+v(\d+)') {
+                    $expectedTlvVersion = ConvertTo-Int64Safe $Matches[1]
+                }
+            }
             $uEdgeHealth = "$EdgeWorkerUri/api/v1/health?edge_direct=1"
             $rEdgeHealth = Invoke-HttpProbe -Client $client -Method "GET" -Url $uEdgeHealth
             $ehJson = ConvertFrom-JsonSafe -Text $rEdgeHealth.Body
-            $ehOk = ($null -eq $rEdgeHealth.TransportError) -and ($rEdgeHealth.StatusCode -eq 200) -and ($null -ne $ehJson) -and ([string]$ehJson.version -eq $liveVersion) -and ((ConvertTo-Int64Safe $ehJson.tlv_version) -eq 7321) -and ([string]$ehJson.status -eq "ONLINE")
-            Add-CheckResult -Section "item5_query_key_9gates" -Id "Item5_EdgeDirect_Health_Parity" -Passed $ehOk -Method "GET" -Target $uEdgeHealth -ExpectedStatus 200 -ActualStatus $rEdgeHealth.StatusCode -Detail "version=$($ehJson.version) tlv_version=$($ehJson.tlv_version) status=$($ehJson.status)"
+            $ehOk = ($null -eq $rEdgeHealth.TransportError) -and ($rEdgeHealth.StatusCode -eq 200) -and ($null -ne $ehJson) -and ([string]$ehJson.version -eq $liveVersion) -and ((ConvertTo-Int64Safe $ehJson.tlv_version) -eq $expectedTlvVersion) -and ([string]$ehJson.status -eq "ONLINE")
+            Add-CheckResult -Section "item5_query_key_9gates" -Id "Item5_EdgeDirect_Health_Parity" -Passed $ehOk -Method "GET" -Target $uEdgeHealth -ExpectedStatus 200 -ActualStatus $rEdgeHealth.StatusCode -Detail "version=$($ehJson.version) tlv_version=$($ehJson.tlv_version) expected_tlv=$expectedTlvVersion status=$($ehJson.status)"
         }
     } else {
         Add-CheckResult -Section "item5_query_key_9gates" -Id "Item5_OperatorKey_Available" -Passed $false -Detail "Operator key missing"
@@ -1492,6 +1501,62 @@ try {
                 $opHdr = @{ "X-Sovereign-Operator-Key" = $opKey }
                 $rEdgeRetAuth = Invoke-HttpProbe -Client $client -Method "GET" -Url $uEdgeRetUnauth -Headers $opHdr
                 $null = Assert-HttpStatus -Section "item10_d1_routes" -Id "Item10_Edge_Retired_Auth_404_$retSlug" -Method "GET" -TargetUrl $uEdgeRetUnauth -ExpectedStatus 404 -Resp $rEdgeRetAuth
+            }
+        }
+    }
+
+    # =========================================================================
+    # SECTION 9 -- v74.0.0 15-Station Omega Labs Bridge (T405..T418) & CHAIN 418 Pre-Lock Auth Gates
+    # =========================================================================
+    Write-Host "`n[Section 9] v74.0.0 15-Station Omega Labs Bridge (T405..T418) & CHAIN 418 Auth Gates..." -ForegroundColor Yellow
+
+    $v74LabNamedRoutes = @(
+        "/api/v1/lab/v303/deck",
+        "/api/v1/lab/v74_deck",
+        "/api/v1/lab/station/control",
+        "/api/v1/lab/station/interact",
+        "/api/v1/lab/v303/ingest_corpus_to_rag",
+        "/api/v1/sovereign_harmonic/lab_agent",
+        "/api/v1/lab/braid_re",
+        "/api/v1/lab/omega_engine",
+        "/api/v1/chain418/master_certification"
+    )
+    foreach ($tgt in $targetsList) {
+        for ($tid = 405; $tid -le 418; $tid++) {
+            $uTool = "$($tgt.BaseUri)/api/v1/tools/t$tid"
+            $rUnGet = Invoke-HttpProbe -Client $client -Method "GET" -Url $uTool
+            $null = Assert-HttpStatus -Section "item11_v74_labs_chain418" -Id "V74_$($tgt.Label)_Unauth_GET_t$tid" -Method "GET" -TargetUrl $uTool -ExpectedStatus 403 -Resp $rUnGet
+
+            $rExec = Invoke-HttpProbe -Client $client -Method "POST" -Url "$($tgt.BaseUri)/api/v1/tool/execute" -Body ("{`"tool_id`":$tid}")
+            $null = Assert-HttpStatus -Section "item11_v74_labs_chain418" -Id "V74_$($tgt.Label)_Unauth_POST_exec_t$tid" -Method "POST" -TargetUrl "$($tgt.BaseUri)/api/v1/tool/execute" -ExpectedStatus 403 -Resp $rExec
+        }
+        foreach ($nr in $v74LabNamedRoutes) {
+            $nSlug = $nr.TrimStart('/').Replace('/', '_')
+            $uNamed = "$($tgt.BaseUri)$nr"
+            $rNGet = Invoke-HttpProbe -Client $client -Method "GET" -Url $uNamed
+            $null = Assert-HttpStatus -Section "item11_v74_labs_chain418" -Id "V74_$($tgt.Label)_Unauth_GET_$nSlug" -Method "GET" -TargetUrl $uNamed -ExpectedStatus 403 -Resp $rNGet
+            if ($opKeyInfo.Found) {
+                $opHdr = @{ "X-Sovereign-Operator-Key" = $opKey }
+                $uPct = "$($tgt.BaseUri)${nr}?%6bey=test"
+                $rNPct = Invoke-HttpProbe -Client $client -Method "GET" -Url $uPct -Headers $opHdr
+                $null = Assert-HttpStatus -Section "item11_v74_labs_chain418" -Id "V74_$($tgt.Label)_HeaderPlusPctKey_$nSlug" -Method "GET" -TargetUrl $uPct -ExpectedStatus 403 -Resp $rNPct
+            }
+        }
+    }
+    if ($opKeyInfo.Found) {
+        $opHdr = @{ "X-Sovereign-Operator-Key" = $opKey }
+        foreach ($posPath in @("/api/v1/tools/t405", "/api/v1/tools/t407", "/api/v1/lab/v303/deck", "/api/v1/tools/t416", "/api/v1/tools/t417", "/api/v1/chain418/master_certification")) {
+            $pSlug = $posPath.TrimStart('/').Replace('/', '_')
+            $uHostPos = "$HostUri$posPath"
+            $rHostPos = Invoke-HttpProbe -Client $client -Method "GET" -Url $uHostPos -Headers $opHdr
+            $null = Assert-HttpStatus -Section "item11_v74_labs_chain418" -Id "V74_Host_Auth_200_$pSlug" -Method "GET" -TargetUrl $uHostPos -ExpectedStatus 200 -Resp $rHostPos
+        }
+        if (-not $SkipEdge) {
+            foreach ($edgePosPath in @("/api/v1/lab/v303/deck", "/api/v1/chain418/master_certification")) {
+                $epSlug = $edgePosPath.TrimStart('/').Replace('/', '_')
+                $uEdgePos = "$EdgeWorkerUri$edgePosPath"
+                $rEdgePos = Invoke-HttpProbe -Client $client -Method "GET" -Url $uEdgePos -Headers $opHdr
+                $null = Assert-HttpStatus -Section "item11_v74_labs_chain418" -Id "V74_Edge_Auth_200_$epSlug" -Method "GET" -TargetUrl $uEdgePos -ExpectedStatus 200 -Resp $rEdgePos
             }
         }
     }

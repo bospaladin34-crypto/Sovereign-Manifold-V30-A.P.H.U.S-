@@ -84,7 +84,7 @@ public class VesperArachneSwarmDroneOverlay : Form
     private bool telemetryOnline = false;
     private string liveReleaseVersion = "UNMEASURED/OFFLINE";
     private System.Windows.Forms.Timer telemetryTimer;
-    private string speechText = "ACT-OMEGA v73.2.5 | VESPER-ARACHNE E8 IK SHIMEJI | Awaiting :8097 Telemetry...";
+    private string speechText = "ACT-OMEGA v74.0.0 | VESPER-ARACHNE E8 IK SHIMEJI | Awaiting :8097 Telemetry...";
     private int speechTimer = 340;
 
     private string FormatLiveVersion()
@@ -93,7 +93,7 @@ public class VesperArachneSwarmDroneOverlay : Form
         {
             return liveReleaseVersion;
         }
-        return "v73.2.5";
+        return "v74.0.0";
     }
 
     private string FormatLiveQedStatus()
@@ -224,7 +224,7 @@ public class VesperArachneSwarmDroneOverlay : Form
     public VesperArachneSwarmDroneOverlay()
     {
         Rectangle bounds = Screen.PrimaryScreen.Bounds;
-        this.Text = "ACT-OMEGA v73.2.5 | VESPER-ARACHNE E8 IK SHIMEJI | SH-XI MoE | Awaiting :8097 Telemetry";
+        this.Text = "ACT-OMEGA v74.0.0 | VESPER-ARACHNE E8 IK SHIMEJI | SH-XI MoE | Awaiting :8097 Telemetry";
         this.FormBorderStyle = FormBorderStyle.None;
         this.StartPosition = FormStartPosition.Manual;
         this.Bounds = bounds;

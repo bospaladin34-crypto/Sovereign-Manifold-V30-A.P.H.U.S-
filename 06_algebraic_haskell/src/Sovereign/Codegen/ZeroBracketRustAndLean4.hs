@@ -418,7 +418,7 @@ compileToZeroBracketRust specs =
 compileToLean4Theorems :: [AlgebraicInvariantSpec] -> String
 compileToLean4Theorems specs =
   unlines $
-    [ "-- v73.2.3 (SH4Z v7321 TLV | CHAIN 404 | Substantive Lean 4 QED) Layer 1.5 GHC Haskell Exact Algebra, Free5W1H, BraidIR, SH4Z, Vesper & v73 Multi-Silicon Theorems"
+    [ "-- v74.0.0 (SH4Z v7400 TLV | CHAIN 418 | 1,027/1,027 Substantive Lean 4 QED) Layer 1.5 GHC Haskell Exact Algebra, Free5W1H, BraidIR, SH4Z, OTRI 384B & v74 Multi-Silicon Theorems"
     , "def weylReflect1D (_r v : Int) : Int := v - 2 * v"
     , "def encodeChair44Neuron (col slot : Nat) : Nat := col * 44 + slot"
     , "def braidSwap12 (p : Prod Int (Prod Int Int)) : Prod Int (Prod Int Int) := (p.2.1, p.1, p.2.2)"

@@ -2,15 +2,15 @@
     "schema":  "act_omega.cloudflare_edge_worker_deployment_receipt.v1",
     "worker_name":  "sovereign-loq15-vpc-shadow",
     "config_scope":  "edge",
-    "worker_version_id":  "d96d9e51-2df9-4116-b4dd-e24644e0a324",
-    "deployment_id":  "653d4c6a-67b3-4386-8cca-8c924ada2f0a",
-    "deployment_created_on":  "2026-11-25T07:28:16.540759Z",
+    "worker_version_id":  "438b3c6c-87d7-432f-a08f-7706961e9239",
+    "deployment_id":  "7f47bce2-76c0-41cd-a7a8-e68afbd3015c",
+    "deployment_created_on":  "2026-11-26T05:17:40.945793Z",
     "edge_base_uri":  "https://act-omega-net.dev",
-    "version_code":  78,
-    "version_name":  "v73.2.5",
-    "apk_bytes":  30546770,
-    "apk_sha256":  "51cb494ecf45b623eacc46d1453333e6d16f509c5d5a45be7e15b33246609505",
-    "timestamp_utc":  "2026-11-25T07:28:24Z",
+    "version_code":  79,
+    "version_name":  "v74.0.0",
+    "apk_bytes":  30612314,
+    "apk_sha256":  "e2136a069679ecd55285010532e8e016929e5e2e7bc5a3a480a3f2799774ad58",
+    "timestamp_utc":  "2026-11-26T05:17:50Z",
     "request_paths":  [
                           "/api/v1/ota/pixel_manifest?edge_direct=1",
                           "/api/v1/tools/t284?edge_direct=1",
@@ -21,30 +21,30 @@
                                           "http_status":  200,
                                           "request_path":  "/api/v1/ota/pixel_manifest?edge_direct=1",
                                           "status":  "MEASURED_PIXEL_OTA_MANIFEST_READY",
-                                          "version_name":  "v73.2.5",
-                                          "version_code":  78,
-                                          "apk_bytes":  30546770,
-                                          "apk_sha256":  "51cb494ecf45b623eacc46d1453333e6d16f509c5d5a45be7e15b33246609505",
-                                          "timestamp_ms":  1795591704486
+                                          "version_name":  "v74.0.0",
+                                          "version_code":  79,
+                                          "apk_bytes":  30612314,
+                                          "apk_sha256":  "e2136a069679ecd55285010532e8e016929e5e2e7bc5a3a480a3f2799774ad58",
+                                          "timestamp_ms":  1795670270377
                                       },
                    "t284":  {
                                 "http_status":  200,
                                 "request_path":  "/api/v1/tools/t284?edge_direct=1",
                                 "status":  "MEASURED_PIXEL_OTA_MANIFEST_READY",
-                                "version_name":  "v73.2.5",
-                                "version_code":  78,
-                                "apk_bytes":  30546770,
-                                "apk_sha256":  "51cb494ecf45b623eacc46d1453333e6d16f509c5d5a45be7e15b33246609505",
-                                "timestamp_ms":  1795591704642
+                                "version_name":  "v74.0.0",
+                                "version_code":  79,
+                                "apk_bytes":  30612314,
+                                "apk_sha256":  "e2136a069679ecd55285010532e8e016929e5e2e7bc5a3a480a3f2799774ad58",
+                                "timestamp_ms":  1795670270503
                             },
                    "health":  {
                                   "http_status":  200,
                                   "request_path":  "/api/v1/health?edge_direct=1",
                                   "status":  "ONLINE",
-                                  "version":  "v73.2.5",
-                                  "chain_milestone":  "CHAIN 404",
-                                  "lean4_theorems_qed":  "1010/1010",
-                                  "tools_total":  404
+                                  "version":  "v74.0.0",
+                                  "chain_milestone":  "CHAIN 418",
+                                  "lean4_theorems_qed":  "1027/1027",
+                                  "tools_total":  418
                               }
                }
 }

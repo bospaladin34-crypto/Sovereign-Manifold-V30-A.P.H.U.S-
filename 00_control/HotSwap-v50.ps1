@@ -50,8 +50,8 @@ try {
     if ($opKey.Length -ge 24) {
         $headers["X-Sovereign-Operator-Key"] = $opKey
     }
-    $c404 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/tools/t404" -Headers $headers -TimeoutSec 45
-    Write-Host "Hot-Swap Verification: Status=$($c404.status) | Tools=$($c404.tools_total) | Theorems=$($c404.lean4_theorems_qed)"
+    $c418 = Invoke-RestMethod -Uri "http://127.0.0.1:8097/api/v1/tools/t418" -Headers $headers -TimeoutSec 45
+    Write-Host "Hot-Swap Verification: Status=$($c418.status) | Tools=$($c418.tools_total) | Theorems=$($c418.lean4_theorems_qed)"
 } catch {
     Write-Host "Hot-Swap Warning: :8097 responded with error: $($_.Exception.Message)"
 }

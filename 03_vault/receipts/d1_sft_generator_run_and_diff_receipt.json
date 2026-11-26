@@ -1,14 +1,14 @@
 {
     "schema":  "ACT-Omega-SFT-Determinism-Receipt-v73.2.4",
-    "generated_at_utc":  "2026-11-25T07:43:12Z",
+    "generated_at_utc":  "2026-11-26T05:35:05Z",
     "generator_script":  "00_control/generate_sft_corpus.mjs",
     "committed_corpus_path":  "03_vault/corpus/sh_xi_sourced_multiturn_sft_v1.jsonl",
     "committed_corpus_bytes":  246087,
-    "committed_corpus_sha256":  "d958bc0ee76a56cbdeb21e88e42fcf6576370a7e825f373273029881a1df9b4e",
+    "committed_corpus_sha256":  "087536e400d75d717aaeb3fa21ebc814c3a1b7638bf6722c60d4943671d211fb",
     "fresh_run_bytes":  246087,
-    "fresh_run_sha256":  "d958bc0ee76a56cbdeb21e88e42fcf6576370a7e825f373273029881a1df9b4e",
+    "fresh_run_sha256":  "087536e400d75d717aaeb3fa21ebc814c3a1b7638bf6722c60d4943671d211fb",
     "fresh_run2_bytes":  246087,
-    "fresh_run2_sha256":  "d958bc0ee76a56cbdeb21e88e42fcf6576370a7e825f373273029881a1df9b4e",
+    "fresh_run2_sha256":  "087536e400d75d717aaeb3fa21ebc814c3a1b7638bf6722c60d4943671d211fb",
     "committed_vs_fresh_diff_bytes":  0,
     "committed_vs_fresh_exact_match":  true,
     "repeat_run_diff_bytes":  0,
@@ -22,7 +22,7 @@
                                        "perturbation_bytes":  1,
                                        "perturbation_description":  "1-byte comment header flip (byte[2] ! -\u003e ?) in isolated temp workspace",
                                        "perturbed_output_bytes":  246087,
-                                       "perturbed_output_sha256":  "0dbd84a63efff2f8e2feb3abd6c036b0c1f448c29e6f26145394dd70267d0f53",
+                                       "perturbed_output_sha256":  "fbc81c7a8ad6e2d3d9aa43da738dad150798245f0f1e221e51c313b078514c6b",
                                        "sha256_changed_vs_fresh":  true,
                                        "diff_bytes_vs_fresh":  228,
                                        "passed":  true
@@ -30,13 +30,13 @@
     "source_specs_checked":  [
                                  {
                                      "source_path":  "03_vault/lean4/SovereignManifoldTheorems.lean",
-                                     "bytes":  585189,
-                                     "sha256":  "07f281865f2405216b79c5bc0218ea7a2ff4f6719c6a649494d56745fb51f445"
+                                     "bytes":  597397,
+                                     "sha256":  "6bd7eb7ca3093773ebf8c02b0eec6525fe5a86be25194475eedeedb29cf4de17"
                                  },
                                  {
                                      "source_path":  "06_algebraic_haskell/src/Sovereign/Codegen/ZeroBracketRustAndLean4.hs",
-                                     "bytes":  22802,
-                                     "sha256":  "5abb9f552d9a170a4a7bae9abee8b73d9196dfbd66ace2121ee0f5b247910bcf"
+                                     "bytes":  22817,
+                                     "sha256":  "3346494e57f9c885e570f3713a802cfb7cbd7b34edd3bf6c244b8db36f7a1aa2"
                                  },
                                  {
                                      "source_path":  "06_algebraic_haskell/src/Sovereign/Lattice/ExactE8Leech24.hs",
@@ -95,8 +95,8 @@
                                  },
                                  {
                                      "source_path":  "01_l0_rust/src/v73_2_cloudflare_vpc_mesh_and_pgwire_hyperdrive.rs",
-                                     "bytes":  66499,
-                                     "sha256":  "4ecca1cc8405b0cd3960d5c47d214a05aba6245cb0bfd33eb0c95533d92f40f5"
+                                     "bytes":  66539,
+                                     "sha256":  "846c8b5b744c1fe789c620c6b3eaa16146dc00ceb24a9211228e5ef29404292a"
                                  },
                                  {
                                      "source_path":  "01_l0_rust/src/v57_aegis_autonomous_agent_harness.rs",

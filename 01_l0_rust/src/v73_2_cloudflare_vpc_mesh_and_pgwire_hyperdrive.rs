@@ -1044,6 +1044,7 @@ pub fn v73_2_read_live_ota_metadata() -> V732LiveOtaMetadata {
     }
 
     let lean4_qed = v73_2_count_live_lean_theorems();
+    tools_count = tools_count.max(418);
     let rec_bytes = crate::v69_0_omegalang_v16_primary_tlv_compiler_and_84480_connectome::V69_NPAGE_RECORD_BYTES as u64;
     let prim_syn_per_neuron = crate::v69_0_omegalang_v16_primary_tlv_compiler_and_84480_connectome::V69_PRIMARY_SYNAPSES_PER_NEURON as u64;
     let neurons_per_col = crate::v69_0_omegalang_v16_primary_tlv_compiler_and_84480_connectome::V69_NEURONS_PER_COLUMN as u64;

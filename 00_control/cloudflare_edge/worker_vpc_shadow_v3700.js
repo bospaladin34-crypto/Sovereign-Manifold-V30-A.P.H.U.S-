@@ -1051,7 +1051,7 @@ export default {
       lowerPath === "/api/v1/codegen" ||
       lowerPath === "/v1/chat/completions" ||
       lowerPath === "/api/v1/openai/compat" ||
-      (parsedToolNum >= 1 && parsedToolNum <= 404);
+      (parsedToolNum >= 1 && parsedToolNum <= 418);
 
     if (isEdgeGatedBeforeOrigin) {
       const preAuth = await verifyZeroTrustAndOperatorHeaders(request, env);
@@ -1428,7 +1428,18 @@ export default {
                 { name: "cloudflare_mesh_cluster_device_roster", description: "Audit Cloudflare Mesh /32 cluster routes and live Tri-Silicon socket latencies (/api/v1/tools/t401).", inputSchema: { type: "object", properties: { query: { type: "string", description: "Optional cluster roster query" } } } },
                 { name: "pgwire_duckdb_tls_bridge_audit", description: "Audit local zero-dependency TLS PGWire v3 bridge and native DuckDB corpus (/api/v1/tools/t402).", inputSchema: { type: "object", properties: { query: { type: "string", description: "Optional PGWire audit query" } } } },
                 { name: "cloudflare_hyperdrive_duckdb_query", description: "Execute allowlisted parameterized read-only analytical query against sh_rw_corpus_v7210.duckdb (/api/v1/tools/t403).", inputSchema: { type: "object", properties: { query_id: { type: "string", description: "Allowlisted query_id: corpus_doc_count, corpus_track_summary, corpus_docs_by_track, or corpus_zero_bracket_stats" }, track_id: { type: "integer", description: "Optional track_id (0..15) for corpus_docs_by_track" }, limit: { type: "integer", description: "Optional row limit (1..50) for corpus_docs_by_track" } } } },
-                { name: "chain404_master_certification", description: "Certify CHAIN 404 across Tools 1..404, Cloudflare VPC/Mesh/Hyperdrive, Unified Lab, and Lean 4 QED (/api/v1/chain404/master_certification).", inputSchema: { type: "object", properties: { query: { type: "string", description: "Optional certification filter" } } } }
+                { name: "chain404_master_certification", description: "Certify CHAIN 404 across Tools 1..404, Cloudflare VPC/Mesh/Hyperdrive, Unified Lab, and Lean 4 QED (/api/v1/chain404/master_certification).", inputSchema: { type: "object", properties: { query: { type: "string", description: "Optional certification filter" } } } },
+                { name: "omega_lab_core_audit_selftest", description: "Run T405 Omega R&D core audit self-test across Golay-24, Seqlock WAL, CRDT HLC, Golay-64, Hopf Q14, and Sheaf FFI coboundary (/api/v1/tools/t405).", inputSchema: { type: "object", properties: { query: { type: "string", description: "Optional audit filter" } } } },
+                { name: "omega_lab_osp4_spatial_bus", description: "Read T406 OSP4 Win32 shared-memory spatial quaternion & Golay-64 acoustic bus (/api/v1/tools/t406).", inputSchema: { type: "object", properties: { query: { type: "string", description: "Optional spatial probe filter" } } } },
+                { name: "omega_lab_sha256sums_manifest_verifier", description: "Run T407 dynamic SHA256SUMS.txt binary & prebuilt archive verifier over Omega Standalone Labs (/api/v1/tools/t407).", inputSchema: { type: "object", properties: { query: { type: "string", description: "Optional manifest verification filter" } } } },
+                { name: "omega_lab_15station_deck", description: "Run T411 concurrent 15-station + Launcher + Dual-Pixel + OMC6/OSP4/OTRI seqlock telemetry deck (/api/v1/lab/v74_deck).", inputSchema: { type: "object", properties: { verify_sha: { type: "boolean", description: "Set true to verify all SHA256SUMS.txt binaries live" } } } },
+                { name: "omega_lab_station_control", description: "Loopback-gated T412 Win32 minimized process supervisor (start, stop, stop_all, status) across the 15 Omega Labs stations (/api/v1/lab/station_control).", inputSchema: { type: "object", properties: { action: { type: "string", description: "Control action: status, start, stop, or stop_all" }, station: { type: "string", description: "Station id, alias, or port (e.g. 14_omega_braid_re, 15_omega_engine, shell)" }, window_mode: { type: "string", description: "Window mode: minimized (SW_SHOWMINNOACTIVE=7) or normal" } } } },
+                { name: "omega_lab_station_interact", description: "Execute T413 bidirectional HTTP GET/POST RPC against any of the 15 Omega Labs stations (/api/v1/lab/station_interact).", inputSchema: { type: "object", properties: { station: { type: "string", description: "Station id, alias, or port" }, method: { type: "string", description: "HTTP method: GET or POST" }, path: { type: "string", description: "Endpoint path starting with /" }, body: { type: "string", description: "Optional JSON request body" }, auto_wake: { type: "boolean", description: "Loopback-only: wake station minimized if offline" } } } },
+                { name: "omega_lab_ingest_corpus_to_rag", description: "Run T414 clean Omega Labs documentation ingestor into sh_omega_labs_v7400.jsonl and refresh 384D RAG cache (/api/v1/lab/ingest_corpus_to_rag).", inputSchema: { type: "object", properties: { query: { type: "string", description: "Optional verification RAG query after ingestion" } } } },
+                { name: "sovereign_harmonic_lab_agent", description: "Run T415 closed-loop SH-XI 3-Shell MoE <-> 15-Station Omega Labs agent (/api/v1/sovereign_harmonic/lab_agent).", inputSchema: { type: "object", properties: { prompt: { type: "string", description: "User instruction or lab diagnostic prompt" }, station: { type: "string", description: "Optional explicit station override" }, session_id: { type: "string", description: "Optional monotonic multi-turn session id" } } } },
+                { name: "omega_lab_braid_re_workbench", description: "Run T416 Station 14 OmegaBraidRE (:19794) PE/CLR #~ CIL, .pdata unwind & binary analysis workbench bridge (/api/v1/lab/braid_re).", inputSchema: { type: "object", properties: { auto_wake: { type: "boolean", description: "Loopback-only optional auto-wake" } } } },
+                { name: "omega_lab_engine_otri_bridge", description: "Run T417 Station 15 OmegaEngine (:19795) 3D DirectCompute & HLSL graphics/compute studio + OTRI 384B CRC-32 seqlock bridge (/api/v1/lab/omega_engine).", inputSchema: { type: "object", properties: { auto_wake: { type: "boolean", description: "Loopback-only optional auto-wake" } } } },
+                { name: "chain418_master_certification", description: `Certify CHAIN 418 across Tools 1..418, SH4Z v7400, 15-Station Omega Labs, OTRI 384B bus, 70 MCP tools, and ${qedLbl} Lean 4 QED (/api/v1/chain418/master_certification).`, inputSchema: { type: "object", properties: { query: { type: "string", description: "Optional certification filter" } } } }
               ]
             }
           }, { headers: corsHeaders });
@@ -1593,8 +1604,11 @@ export default {
       });
     }
 
-    // Tools 292..316+: Mitotic Swarm & Master Certification Route Handler (Gated per E1)
+    // Tools 292..418+: Mitotic Swarm & Master Certification Route Handler (Gated per E1)
     if (
+      lowerPath === "/api/v1/chain418/master_certification" ||
+      lowerPath === "/api/v1/chain404/master_certification" ||
+      lowerPath === "/api/v1/chain399/master_certification" ||
       lowerPath === "/api/v1/chain316/master_certification" ||
       lowerPath === "/api/v1/chain312/master_certification" ||
       lowerPath === "/api/v1/chain308/master_certification" ||
@@ -1609,6 +1623,8 @@ export default {
       lowerPath === "/api/v1/chain280/master_certification" ||
       lowerPath === "/api/v1/chain280/suite" ||
       lowerPath === "/api/v1/chain280_suite" ||
+      lowerPath === "/api/v1/tools/t418" ||
+      lowerPath === "/api/v1/tools/t404" ||
       lowerPath === "/api/v1/tools/t316" ||
       lowerPath === "/api/v1/tools/t292" ||
       lowerPath === "/api/v1/tools/t288"

@@ -1,5 +1,5 @@
 # C:\sovereign_manifold_v31\00_control\Sovereign-Lifecycle.ps1
-# ACT-Omega Net v73.2.5 (SH4Z v7321 TLV | CHAIN 404 | Live Lean 4 Formal QED) -- Unified Safe Cluster Start / Stop / Handover / Verify / Status Controller
+# ACT-Omega Net v74.0.0 (SH4Z v7400 TLV | CHAIN 418 | Live Lean 4 Formal QED) -- Unified Safe Cluster Start / Stop / Handover / Verify / Status Controller
 param(
     [ValidateSet("start", "stop", "stop-all", "restart", "status", "handover", "verify")]
     [string]$Action = "status",
@@ -181,7 +181,7 @@ function Invoke-SovereignContinuumHandover {
     $relVer = Get-SovereignCitationVersion
     $capsuleObj = [ordered]@{
         status = "CONTINUUM_HANDOVER_CAPSULE_READY"
-        version = "ACT-Omega Net $relVer (SH4Z v7321 TLV | CHAIN 404 | $liveLeanCnt/$liveLeanCnt Lean 4 QED)"
+        version = "ACT-Omega Net $relVer (SH4Z v7400 TLV | CHAIN 418 | $liveLeanCnt/$liveLeanCnt Lean 4 QED)"
         handover_mode = $HandoverMode
         timestamp_utc = $tsUtc
         shm_npage_bytes = 8110080
@@ -190,7 +190,7 @@ function Invoke-SovereignContinuumHandover {
         shm_sha256 = $shmSha
         lean4_sha256 = $leanSha
         lean4_theorems_qed = $liveLeanCnt
-        tools_total = 404
+        tools_total = 418
         metabolic_atp = $atp
         last_host_kops = $kops
         last_rtx_temp_c = $rtxT
@@ -238,7 +238,7 @@ function Show-SovereignStatus {
     $relVer = Get-SovereignCitationVersion
     Write-Host ""
     Write-Host "==========================================================================" -ForegroundColor Cyan
-    Write-Host "   ACT-OMEGA NET $relVer (SH4Z v7321 | CHAIN 404) -- TRI-SILICON CLUSTER STATUS       " -ForegroundColor Cyan
+    Write-Host "   ACT-OMEGA NET $relVer (SH4Z v7400 | CHAIN 418) -- TRI-SILICON CLUSTER STATUS       " -ForegroundColor Cyan
     Write-Host "==========================================================================" -ForegroundColor Cyan
 
     $isPaused = Test-Path $pauseFile
@@ -336,7 +336,7 @@ function Invoke-SovereignSixLayerVerify {
     if (-not $l1Pass) { $failCount++ }
     Write-Host ("  [LAYER 1 - L0 RUST]     [{0}] Brackets(v33..v68+)={1} (Req:0) | QAT PPL={2} (Req:>1.0001) | Latency={3}ms" -f ($(if($l1Pass){"PASS"}else{"FAIL"}), $brackets, $(if($qat){$qat.holdout_ppl}else{"UNREACHABLE"}), $(if($qat){$qat.dag_latency_ms}else{"N/A"}))) -ForegroundColor $(if($l1Pass){"Green"}else{"Red"})
 
-    # Layer 2: Lean 4 Formal Proofs (Dynamic Live Count >= 1010)
+    # Layer 2: Lean 4 Formal Proofs (Dynamic Live Count >= 1027)
     $leanVaultPath = "C:\sovereign_manifold_v31\03_vault\lean4\SovereignManifoldTheorems.lean"
     $leanL0Path = "C:\sovereign_manifold_v31\01_l0_rust\lean4\SovereignManifoldTheorems.lean"
     $leanRaw = [System.IO.File]::ReadAllText($leanL0Path)
@@ -344,9 +344,9 @@ function Invoke-SovereignSixLayerVerify {
     $thmCnt = ([regex]::Matches($leanRaw, '(?m)^\s*theorem\s+')).Count
     $trivCnt = ([regex]::Matches($leanRaw, '\((\d+) = \1\)')).Count
     $leanSha = (Get-FileHash $leanL0Path -Algorithm SHA256).Hash.ToLower().Substring(0, 16)
-    $l2Pass = ($liveLeanVaultCnt -ge 1010) -and ($thmCnt -ge 1010) -and ($thmCnt -eq $liveLeanVaultCnt) -and ($trivCnt -eq 0)
+    $l2Pass = ($liveLeanVaultCnt -ge 1027) -and ($thmCnt -ge 1027) -and ($thmCnt -eq $liveLeanVaultCnt) -and ($trivCnt -eq 0)
     if (-not $l2Pass) { $failCount++ }
-    Write-Host ("  [LAYER 2 - LEAN 4 QED]  [{0}] Theorems={1}/{2} (Req:>=1010 & ==Live) | Trivial(N=N)={3} (Req:0) | SHA256={4}..." -f ($(if($l2Pass){"PASS"}else{"FAIL"}), $thmCnt, $liveLeanVaultCnt, $trivCnt, $leanSha)) -ForegroundColor $(if($l2Pass){"Green"}else{"Red"})
+    Write-Host ("  [LAYER 2 - LEAN 4 QED]  [{0}] Theorems={1}/{2} (Req:>=1027 & ==Live) | Trivial(N=N)={3} (Req:0) | SHA256={4}..." -f ($(if($l2Pass){"PASS"}else{"FAIL"}), $thmCnt, $liveLeanVaultCnt, $trivCnt, $leanSha)) -ForegroundColor $(if($l2Pass){"Green"}else{"Red"})
 
     # Layer 3: 5W1H & 63,360-Neuron Shared Memory (.npage)
     $prof = $null
@@ -472,7 +472,7 @@ function Stop-SovereignClusterSafely {
     $relVer = Get-SovereignCitationVersion
     Write-Host ""
     Write-Host "==========================================================================" -ForegroundColor Yellow
-    Write-Host "   SAFE GRACEFUL SHUTDOWN: ACT-OMEGA NET $relVer (SH4Z v7321 | CHAIN 404)" -ForegroundColor Yellow
+    Write-Host "   SAFE GRACEFUL SHUTDOWN: ACT-OMEGA NET $relVer (SH4Z v7400 | CHAIN 418)" -ForegroundColor Yellow
     Write-Host "==========================================================================" -ForegroundColor Yellow
 
     # 1. Hand over state to Pixel 8, Pixel 10 & Cloudflare Edge DO before stopping Host
@@ -525,7 +525,7 @@ function Start-SovereignClusterSafely {
     $relVer = Get-SovereignCitationVersion
     Write-Host ""
     Write-Host "==========================================================================" -ForegroundColor Cyan
-    Write-Host "   SAFE CLUSTER IGNITION: ACT-OMEGA NET $relVer (SH4Z v7321 | CHAIN 404)" -ForegroundColor Cyan
+    Write-Host "   SAFE CLUSTER IGNITION: ACT-OMEGA NET $relVer (SH4Z v7400 | CHAIN 418)" -ForegroundColor Cyan
     Write-Host "==========================================================================" -ForegroundColor Cyan
 
     if (Test-Path $pauseFile) {

@@ -3,10 +3,10 @@
   "generator_script": "00_control/generate_sft_corpus.mjs",
   "output_jsonl_path": "03_vault/corpus/sh_xi_sourced_multiturn_sft_v1.jsonl",
   "output_jsonl_bytes": 246087,
-  "output_jsonl_sha256": "d958bc0ee76a56cbdeb21e88e42fcf6576370a7e825f373273029881a1df9b4e",
+  "output_jsonl_sha256": "087536e400d75d717aaeb3fa21ebc814c3a1b7638bf6722c60d4943671d211fb",
   "corpus_nature": "Deterministic workspace-harvested code & formal-proof Q/A pairs extracted via fs.readFileSync from real repository source files",
   "license": "CC-BY-4.0 / MIT (First-Party ACT-Omega Sovereign Manifold Workspace)",
-  "raw_candidate_items_extracted": 1032,
+  "raw_candidate_items_extracted": 1048,
   "dialogues_emitted": 64,
   "unique_turns_emitted": 288,
   "min_turns": 1,
@@ -32,15 +32,15 @@
   "sources": [
     {
       "source_path": "03_vault/lean4/SovereignManifoldTheorems.lean",
-      "bytes": 585189,
-      "sha256": "07f281865f2405216b79c5bc0218ea7a2ff4f6719c6a649494d56745fb51f445",
+      "bytes": 597397,
+      "sha256": "6bd7eb7ca3093773ebf8c02b0eec6525fe5a86be25194475eedeedb29cf4de17",
       "license": "CC-BY-4.0 / MIT (ACT-Omega First-Party Workspace)",
-      "extracted_items": 825
+      "extracted_items": 841
     },
     {
       "source_path": "06_algebraic_haskell/src/Sovereign/Codegen/ZeroBracketRustAndLean4.hs",
-      "bytes": 22802,
-      "sha256": "5abb9f552d9a170a4a7bae9abee8b73d9196dfbd66ace2121ee0f5b247910bcf",
+      "bytes": 22817,
+      "sha256": "3346494e57f9c885e570f3713a802cfb7cbd7b34edd3bf6c244b8db36f7a1aa2",
       "license": "CC-BY-4.0 / MIT (ACT-Omega First-Party Workspace)",
       "extracted_items": 2
     },
@@ -123,8 +123,8 @@
     },
     {
       "source_path": "01_l0_rust/src/v73_2_cloudflare_vpc_mesh_and_pgwire_hyperdrive.rs",
-      "bytes": 66499,
-      "sha256": "4ecca1cc8405b0cd3960d5c47d214a05aba6245cb0bfd33eb0c95533d92f40f5",
+      "bytes": 66539,
+      "sha256": "846c8b5b744c1fe789c620c6b3eaa16146dc00ceb24a9211228e5ef29404292a",
       "license": "CC-BY-4.0 / MIT (ACT-Omega First-Party Workspace)",
       "extracted_items": 40
     },

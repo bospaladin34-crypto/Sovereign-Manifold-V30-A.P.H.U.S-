@@ -1,0 +1,88 @@
+{
+    "schema":  "act_omega.android_apk_build_receipt.v1",
+    "version":  "v74.0.0",
+    "version_code":  79,
+    "version_name":  "74.0.0",
+    "gradle_command":  "JAVA_HOME=\u0027C:\\Program Files\\Android\\Android Studio\\jbr\u0027 .\\gradlew.bat clean assembleDebug --console=plain",
+    "gradle_exit_code":  0,
+    "apk_source_path":  "04_edge_silicon/pixel10_ndk_app/app/build/outputs/apk/debug/app-debug.apk",
+    "apk_bytes":  30612314,
+    "apk_sha256":  "e2136a069679ecd55285010532e8e016929e5e2e7bc5a3a480a3f2799774ad58",
+    "signing_cert_sha256":  "6bf532ee3a0836ad537d1194a8ebcb3686ba8367f3d17f05c3f987413515494c",
+    "mirrors":  [
+                    {
+                        "path":  "03_vault/ota/ACT-Omega-Pixel10-Sovereign.apk",
+                        "bytes":  30612314,
+                        "sha256":  "e2136a069679ecd55285010532e8e016929e5e2e7bc5a3a480a3f2799774ad58",
+                        "matches_build":  true
+                    },
+                    {
+                        "path":  "03_vault/ota/act_omega_manifold_latest.apk",
+                        "bytes":  30612314,
+                        "sha256":  "e2136a069679ecd55285010532e8e016929e5e2e7bc5a3a480a3f2799774ad58",
+                        "matches_build":  true
+                    },
+                    {
+                        "path":  "04_edge_silicon/ACT-Omega-Pixel10-Sovereign.apk",
+                        "bytes":  30612314,
+                        "sha256":  "e2136a069679ecd55285010532e8e016929e5e2e7bc5a3a480a3f2799774ad58",
+                        "matches_build":  true
+                    },
+                    {
+                        "path":  "docs/ACT-Omega-Pixel10-Sovereign.apk",
+                        "bytes":  30612314,
+                        "sha256":  "e2136a069679ecd55285010532e8e016929e5e2e7bc5a3a480a3f2799774ad58",
+                        "matches_build":  true
+                    },
+                    {
+                        "path":  "releases/ACT-Omega-Pixel10-Sovereign.apk",
+                        "bytes":  30612314,
+                        "sha256":  "e2136a069679ecd55285010532e8e016929e5e2e7bc5a3a480a3f2799774ad58",
+                        "matches_build":  true
+                    },
+                    {
+                        "path":  "ACT-Omega-Pixel10-Sovereign.apk",
+                        "bytes":  30612314,
+                        "sha256":  "e2136a069679ecd55285010532e8e016929e5e2e7bc5a3a480a3f2799774ad58",
+                        "matches_build":  true
+                    }
+                ],
+    "all_6_mirrors_sha256_match":  true,
+    "zero_secret_in_apk_verified":  true,
+    "main_activity_3way_sha256":  "c0eeacb40dadc5e19b20c6e6ef017ada6151514e525c26a09406315f7e9cb1b8",
+    "p8_daemon_2way_sha256":  "a855b2c0566dd5457235576175833cc39722ff617a985ffc8e7205b41af07bca",
+    "devices_provisioned_and_installed":  [
+                                              {
+                                                  "role":  "pixel10",
+                                                  "package_name":  "com.actomega.manifold",
+                                                  "version_code":  79,
+                                                  "version_name":  "74.0.0",
+                                                  "app_private_key_path":  "files/.act_omega_telemetry_ingest_key",
+                                                  "app_private_key_mode":  "0600",
+                                                  "app_private_key_bytes":  64,
+                                                  "adb_reverse":  "tcp:8097-\u003etcp:8097",
+                                                  "live_ingest_verified":  true,
+                                                  "verified_utc":  "2026-11-26T03:23:26Z",
+                                                  "live_adb_status_note":  "Live USB ADB active (adb reverse tcp:8097-\u003etcp:8097 \u0026 tcp:5173-\u003etcp:5173; pid 7309; versionCode=79, versionName=74.0.0, 64 B 0600 ingest key, 5406720 B SHM, p10_broadcasts advancing 34083-\u003e34093, p10_bearer=B1:USB(:8097) SHM-ZERO-COPY, d1_tables_synced=11)"
+                                              },
+                                              {
+                                                  "role":  "pixel8",
+                                                  "package_name":  "com.actomega.manifold",
+                                                  "version_code":  79,
+                                                  "version_name":  "74.0.0",
+                                                  "app_private_key_path":  "files/.act_omega_telemetry_ingest_key",
+                                                  "app_private_key_mode":  "0600",
+                                                  "app_private_key_bytes":  64,
+                                                  "root_daemon_key_path":  "/data/local/tmp/.act_omega_telemetry_ingest_key",
+                                                  "root_daemon_key_mode":  "0600",
+                                                  "root_daemon_key_bytes":  64,
+                                                  "p8_daemon_sha256":  "a855b2c0566dd5457235576175833cc39722ff617a985ffc8e7205b41af07bca",
+                                                  "p8_ksu_apex_daemon_status":  "UNMEASURED/OFFLINE",
+                                                  "p8_ksu_apex_daemon_note":  "KernelSU su/ksud inaccessible to ADB uid=2000(shell) (/system/bin/sh: su: inaccessible or not found); :8098 offline; com.actomega.manifold APK v74.0.0 (versionCode=79, pid 18993) + adb reverse tcp:8097-\u003etcp:8097 \u0026 tcp:5173-\u003etcp:5173 + 5406720 B SHM active (p8_broadcasts advancing 20134-\u003e20144)",
+                                                  "adb_reverse":  "tcp:8097-\u003etcp:8097",
+                                                  "live_ingest_verified":  true,
+                                                  "verified_utc":  "2026-11-26T03:23:26Z"
+                                              }
+                                          ],
+    "generated_at_utc":  "2026-11-26T03:23:26Z"
+}

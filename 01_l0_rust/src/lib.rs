@@ -389,13 +389,23 @@ pub use v72_1_sh_xi_matryoshka_384_768_cuda_pretrainer::{
     E_SH_XI_CORPUS_DUCKDB_PATH,
     E_SH_XI_MASTER_F32_PATH,
     V72_1_BPE_VOCAB_16K,
+    V72_1_CAUSAL_CHUNK_POSITIONS,
+    V72_1_E8_MIX_LEN,
+    V72_1_E8_OCTETS_768,
+    V72_1_E8_OCTETS_S0,
     V72_1_HYBRID_LAYERS,
+    V72_1_MODEL_RANK_S0,
+    V72_1_MODEL_RANK_S1,
     V72_1_RW_EVAL_500_TOTAL,
+    V72_1_SH4Z_VERSION_V7400,
     V72_1_SHELL0_DIM,
     V72_1_SHELL1_DIM,
+    v72_1_apply_e8_block8_mix_backward,
+    v72_1_apply_e8_block8_mix_forward,
     v72_1_bpe16k_decode,
     v72_1_bpe16k_encode,
     v72_1_build_sse_chat_completion_stream,
+    v72_1_collect_causal_chunk_positions,
     v72_1_converse_execute,
     v72_1_dispatch_tool_357_corpus_builder_minhash,
     v72_1_dispatch_tool_358_bpe_16k_chatml_tokenizer,
@@ -405,13 +415,14 @@ pub use v72_1_sh_xi_matryoshka_384_768_cuda_pretrainer::{
     v72_1_dispatch_tool_362_week1_master_certification,
     v72_1_extract_bool_param,
     v72_1_load_sh_xi_checkpoint_strict,
+    v72_1_run_finite_difference_gradient_check,
     v72_1_sha256_hex,
     v72_1_update_weight_manifest,
     v72_1_verify_weight_manifest,
 };
 
 // Sovereign Harmonic XI Week 2 (SH-XI-SPARSE-MOE-SFT-RAG | Tools 363..368 | CHAIN 368):
-// Shell 2 CPU+SSD Growable Sparse MoE Bank (16 Active / 256 Pre-Allocated 64B Cacheline Slots, Top-2 Lattice Router),
+// Shell 2 CPU+SSD Growable Sparse MoE Bank (16/32 Active / 256 Pre-Allocated 64B Cacheline Slots, Top-2 Lattice Router),
 // Masked-Prompt Multi-Turn (1..8 Turns) ChatML Instruction SFT Trainer (prompt_grad_norm == 0.0),
 // Intel iGPU WebGPU WGSL + 12T AVX2 384D Shell 0 Workspace RAG & Live Tri-Silicon Telemetry (RTX 3050 + Pixel 10 + Wireless Pixel 8),
 // Deterministic Pushdown JSON Grammar FSM (<|tool_call|> 100% Valid JSON) + 5W1H Coordinator Bus & Epistemic Abstention,
@@ -421,20 +432,26 @@ pub mod v72_2_sh_xi_sparse_moe_chatml_sft_and_rag;
 pub use v72_2_sh_xi_sparse_moe_chatml_sft_and_rag::{
     C_SH_XI_MOE_DIR_MIRROR_PATH,
     C_SH_XI_SESSION_COUNTERS_PATH,
+    C_SH_XI_SFT_LORA_SH4Z_PATH,
     C_SH_XI_SFT_MANIFEST_PATH,
     C_SH_XI_WEEK2_RECEIPT_PATH,
     C_SH_XI_WGSL_RAG_SHADER_PATH,
     E_SH_XI_MOE_EXPERTS_SH4Z_PATH,
     E_SH_XI_SESSION_COUNTERS_PATH,
     E_SH_XI_SFT_CORPUS_JSONL_PATH,
+    E_SH_XI_SFT_LORA_SH4Z_PATH,
     E_SH_XI_WEEK2_RECEIPT_PATH,
     V72_2_ACTIVE_MOE_EXPERTS,
     V72_2_EXPERT_SLICE_BYTES,
     V72_2_IFEVAL_TOTAL,
+    V72_2_LEGACY_MOE_EXPERTS_V7220,
     V72_2_MAX_DIRECTORY_SLOTS,
     V72_2_MULTITURN_MAX_TURNS,
+    V72_2_SFT_LORA_RANK,
     V72_2_TOP_K_EXPERTS,
+    V72_2SftLoraHead,
     V72_2TurnCounterLedger,
+    V72_2Utf8ByteState,
     v72_2_advance_turn_counters,
     v72_2_build_sse_chat_completion_stream,
     v72_2_clear_session_history_for_test,
@@ -444,12 +461,15 @@ pub use v72_2_sh_xi_sparse_moe_chatml_sft_and_rag::{
     v72_2_ensure_moe_bank_loaded,
     v72_2_get_session_turns,
     v72_2_get_turn_counters_snapshot,
+    v72_2_invalidate_rag_cache,
     v72_2_load_counter_ledger_from_paths,
+    v72_2_loaded_active_experts_count,
     v72_2_reload_turn_counters_from_disk_for_test,
     v72_2_save_counter_ledger_to_paths,
     v72_2_seed_counters_from_historical_tool_361,
     v72_2_seed_counters_from_historical_tool_361_at,
     v72_2_set_test_counter_paths_override,
+    v72_2_utf8_state_accepts_bytes,
     v72_2_dispatch_tool_363_shell2_cpu_ssd_sparse_moe_bank,
     v72_2_dispatch_tool_364_chatml_masked_sft_trainer,
     v72_2_dispatch_tool_365_igpu_grounded_rag_and_telemetry,
@@ -471,6 +491,10 @@ pub use v73_1_nov12_15_research_kernels::*;
 
 pub mod v73_2_cloudflare_vpc_mesh_and_pgwire_hyperdrive;
 pub use v73_2_cloudflare_vpc_mesh_and_pgwire_hyperdrive::*;
+
+pub mod v74_0_unified_labs_bridge;
+pub use v74_0_unified_labs_bridge::*;
+
 
 
 

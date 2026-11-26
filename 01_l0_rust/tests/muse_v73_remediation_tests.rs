@@ -590,7 +590,11 @@ fn test_m1_item8_live_ota_metadata_and_source_invariants() {
     assert_ne!(meta.ota_version, "v61.0.0-sh4z-v6000");
     assert_ne!(meta.ota_version, "30.0.0");
     assert_ne!(meta.ota_version, "UNMEASURED/OFFLINE");
-    assert!(meta.ota_version.starts_with("v73."), "Unexpected ota_version: {}", meta.ota_version);
+    assert!(
+        meta.ota_version.starts_with("v73.") || meta.ota_version.starts_with("v74."),
+        "Unexpected ota_version: {}",
+        meta.ota_version
+    );
     assert!(meta.tools_count >= 404, "tools_count {} must be >= 404", meta.tools_count);
     assert_eq!(meta.lean4_qed, lean_cnt);
     assert_eq!(meta.combined_shards, 84_480);
@@ -1192,8 +1196,8 @@ fn test_m4_item10_dynamic_version_no_pixel_serials_and_android_parity() {
     // 1. Runtime release version helper must NOT return stale v72.2.0 or Cargo 30.0.0
     let live_ver = v73_2_read_live_release_version();
     assert!(
-        live_ver.starts_with("v73."),
-        "Live release version must start with v73., got {}",
+        live_ver.starts_with("v73.") || live_ver.starts_with("v74."),
+        "Live release version must start with v73. or v74., got {}",
         live_ver
     );
     assert_ne!(live_ver, "v72.2.0");
@@ -1996,7 +2000,7 @@ fn test_v73_2_4_m1_security_gates_v44_poc_and_query_key_parity() {
         "lowerPath === \"/v1/chat/completions\"",
         "lowerPath === \"/api/v1/openai/compat\"",
         "(lowerPath.startsWith(\"/api/v1/unified/\") && lowerPath !== \"/api/v1/unified/catalog\")",
-        "(parsedToolNum >= 1 && parsedToolNum <= 404)",
+        "(parsedToolNum >= 1 && parsedToolNum <= 418)",
     ] {
         assert!(worker_js.contains(edge_marker), "Missing Edge gate marker: {}", edge_marker);
     }

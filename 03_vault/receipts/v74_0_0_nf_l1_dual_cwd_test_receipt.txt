@@ -1,0 +1,78 @@
+# ACT-Omega v74.0.0 — NF-L1 Dual-CWD Legacy Test Target Verification Receipt
+generated_at_utc: 2026-11-26T18:57:53Z
+test_target: 01_l0_rust/tests/test_v73_unified_lab_and_research.rs
+test_file_sha256: 336b938d61010ae45bd94fa602cf753362621558426bc7826bcb2351ff3ab562
+sft_corpus_jsonl_sha256: 087536e400d75d717aaeb3fa21ebc814c3a1b7638bf6722c60d4943671d211fb
+sft_manifest_receipt_sha256: 828b9437342d0e5da9e2febe5115b8c64d41b34691f85678f33e9f7624349648
+run_1_cwd_relative: 01_l0_rust
+run_1_exit_code: 0
+run_2_cwd_relative: .
+run_2_exit_code: 0
+
+==============================================================================
+RUN 1 — CWD: 01_l0_rust
+COMMAND: cargo test --release --target-dir target_stage --test test_v73_unified_lab_and_research -- --nocapture --test-threads=1
+==============================================================================
+   Compiling omega_sec_manifold v0.2.0 (C:\sovereign_manifold_v31\crates\omega_sec_manifold)
+   Compiling act_omega_l0_core v30.0.0 (C:\sovereign_manifold_v31\01_l0_rust)
+    Finished `release` profile [optimized] target(s) in 1m 20s
+     Running tests\test_v73_unified_lab_and_research.rs (target_stage\release\deps\test_v73_unified_lab_and_research-bbe994443fd39ab4.exe)
+
+running 16 tests
+test test_v73_0_fail_closed_offline_probe_and_deck ... ok
+test test_v73_0_operator_key_ct_equality_and_empty_rejection ... ok
+test test_v73_1_bitcos_roundtrip_and_invalid_trit_reject ... ok
+test test_v73_1_research_kernels_t383_and_t386_to_t393 ... ok
+test test_v73_1_ube_lossless_dual_alphabet_and_rejects ... ok
+test test_v73_1_volk_o1_incremental_sheaf_audit ... ok
+test v73_2_phase_p5_suite::test_v71_3_deltanet_448b_o1_memory_and_corruption_gate ... ok
+test v73_2_phase_p5_suite::test_v71_4_dendritic_tree_drafter_shd2_and_kl_invariance ... ok
+test v73_2_phase_p5_suite::test_v72_1_walsh_hadamard_involution_and_q8_0_roundtrip ... ok
+test v73_2_phase_p5_suite::test_v72_2_pushdown_json_fsm_and_grounded_sft_corpus ... [NF-L1] SFT corpus dialogue bound verified live: lines=64 == manifest.dialogues_emitted=64
+ok
+test v73_2_phase_p5_suite::test_v73_2_vpc_mesh_pgwire_hyperdrive_and_chain404_surface ... ok
+test v74_0_stage_a_suite::test_v74_0_dynamic_sha256sums_parser_and_modding_firewall ... ok
+test v74_0_stage_a_suite::test_v74_0_otri_384b_crc32_seqlock_and_rejects ... ok
+MOE_G1 (w_out): sp_i=0 tok_id=10 ana=1.23427462e-5 num=1.23424873e-5 rel=2.097564e-5
+MOE_G1 (w_out): sp_i=1 tok_id=25 ana=-1.80235788e-1 num=-1.80232009e-1 rel=2.096906e-5
+MOE_G1 (w_out): sp_i=2 tok_id=50 ana=1.16003039e-5 num=1.16005422e-5 rel=2.054380e-5
+MOE_G1 (w_out): sp_i=3 tok_id=100 ana=1.17927111e-5 num=1.17924651e-5 rel=2.086119e-5
+test v74_0_stage_a_suite::test_v74_0_sh4z_v7400_rank96_step0_identity_and_gradcheck ... ok
+test v74_0_stage_a_suite::test_v74_0_tools_t405_to_t418_and_chain418_perturbation_fail_closed ... ok
+test v74_0_stage_a_suite::test_v74_0_utf8_byte_state_mask_and_sft_lora_zero_prompt_grad ... ok
+
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 35.43s
+
+==============================================================================
+RUN 2 — CWD: <REPO_ROOT>
+COMMAND: cargo test --manifest-path 01_l0_rust/Cargo.toml --release --target-dir 01_l0_rust/target_stage --test test_v73_unified_lab_and_research -- --nocapture --test-threads=1
+==============================================================================
+   Compiling omega_sec_manifold v0.2.0 (C:\sovereign_manifold_v31\crates\omega_sec_manifold)
+   Compiling act_omega_l0_core v30.0.0 (C:\sovereign_manifold_v31\01_l0_rust)
+    Finished `release` profile [optimized] target(s) in 1m 22s
+     Running tests\test_v73_unified_lab_and_research.rs (01_l0_rust/target_stage\release\deps\test_v73_unified_lab_and_research-3a837469c69a4dc0.exe)
+
+running 16 tests
+test test_v73_0_fail_closed_offline_probe_and_deck ... ok
+test test_v73_0_operator_key_ct_equality_and_empty_rejection ... ok
+test test_v73_1_bitcos_roundtrip_and_invalid_trit_reject ... ok
+test test_v73_1_research_kernels_t383_and_t386_to_t393 ... ok
+test test_v73_1_ube_lossless_dual_alphabet_and_rejects ... ok
+test test_v73_1_volk_o1_incremental_sheaf_audit ... ok
+test v73_2_phase_p5_suite::test_v71_3_deltanet_448b_o1_memory_and_corruption_gate ... ok
+test v73_2_phase_p5_suite::test_v71_4_dendritic_tree_drafter_shd2_and_kl_invariance ... ok
+test v73_2_phase_p5_suite::test_v72_1_walsh_hadamard_involution_and_q8_0_roundtrip ... ok
+test v73_2_phase_p5_suite::test_v72_2_pushdown_json_fsm_and_grounded_sft_corpus ... [NF-L1] SFT corpus dialogue bound verified live: lines=64 == manifest.dialogues_emitted=64
+ok
+test v73_2_phase_p5_suite::test_v73_2_vpc_mesh_pgwire_hyperdrive_and_chain404_surface ... ok
+test v74_0_stage_a_suite::test_v74_0_dynamic_sha256sums_parser_and_modding_firewall ... ok
+test v74_0_stage_a_suite::test_v74_0_otri_384b_crc32_seqlock_and_rejects ... ok
+MOE_G1 (w_out): sp_i=0 tok_id=10 ana=1.23427462e-5 num=1.23424873e-5 rel=2.097564e-5
+MOE_G1 (w_out): sp_i=1 tok_id=25 ana=-1.80235788e-1 num=-1.80232009e-1 rel=2.096906e-5
+MOE_G1 (w_out): sp_i=2 tok_id=50 ana=1.16003039e-5 num=1.16005422e-5 rel=2.054380e-5
+MOE_G1 (w_out): sp_i=3 tok_id=100 ana=1.17927111e-5 num=1.17924651e-5 rel=2.086119e-5
+test v74_0_stage_a_suite::test_v74_0_sh4z_v7400_rank96_step0_identity_and_gradcheck ... ok
+test v74_0_stage_a_suite::test_v74_0_tools_t405_to_t418_and_chain418_perturbation_fail_closed ... ok
+test v74_0_stage_a_suite::test_v74_0_utf8_byte_state_mask_and_sft_lora_zero_prompt_grad ... ok
+
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 35.43s

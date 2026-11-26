@@ -86,22 +86,19 @@ function Test-ConstantTimeHex64 {
 function Get-CitationReleaseVersion {
     param([string]$Root)
     $cff = Join-Path $Root "CITATION.cff"
-    if (Test-Path $cff -PathType Leaf) {
-        $txt = [System.IO.File]::ReadAllText($cff)
-        if ($txt -match '(?m)^version:\s*"?([^"\r\n]+)"?\s*$') {
-            $v = $Matches[1].Trim()
-            if (-not $v.StartsWith("v")) { return "v$v" }
-            return $v
-        }
+    if (-not (Test-Path -LiteralPath $cff -PathType Leaf)) {
+        throw "FAIL_CLOSED: Release version source CITATION.cff missing at $cff"
     }
-    $gem = Join-Path $Root "GEMINI.md"
-    if (Test-Path $gem -PathType Leaf) {
-        $gtxt = [System.IO.File]::ReadAllText($gem)
-        if ($gtxt -match 'ACT-Omega Net (v\d+\.\d+\.\d+)') {
-            return $Matches[1]
+    $txt = [System.IO.File]::ReadAllText($cff)
+    if ($txt -match '(?m)^version:\s*"?([^"\r\n"]+)"?\s*$') {
+        $v = $Matches[1].Trim()
+        if ([string]::IsNullOrWhiteSpace($v)) {
+            throw "FAIL_CLOSED: Empty version field in $cff"
         }
+        if (-not $v.StartsWith("v")) { return "v$v" }
+        return $v
     }
-    return "UNMEASURED/OFFLINE"
+    throw "FAIL_CLOSED: Could not parse release version from $cff"
 }
 
 function Get-LeanSourceIntegrity {
@@ -166,7 +163,8 @@ function Test-SignedLeanReceiptFile {
     param(
         [string]$ReceiptPath,
         [hashtable]$LeanInfo,
-        [byte[]]$KeyBytes
+        [byte[]]$KeyBytes,
+        [string]$ExpectedReleaseVersion = ""
     )
     if (-not (Test-Path $ReceiptPath -PathType Leaf)) {
         return @{ ok = $false; reason = "RECEIPT_MISSING: $ReceiptPath" }
@@ -178,6 +176,9 @@ function Test-SignedLeanReceiptFile {
     }
     if ($null -eq $r) {
         return @{ ok = $false; reason = "RECEIPT_NULL_JSON" }
+    }
+    if (-not [string]::IsNullOrWhiteSpace($ExpectedReleaseVersion) -and ([string]$r.version -ne $ExpectedReleaseVersion)) {
+        return @{ ok = $false; reason = "RELEASE_VERSION_MISMATCH ($($r.version) != $ExpectedReleaseVersion)" }
     }
     if ([string]$r.lean_sha256 -ne $LeanInfo.lean_sha256) {
         return @{ ok = $false; reason = "LEAN_SHA256_MISMATCH" }
@@ -219,7 +220,7 @@ function Test-SignedLeanReceiptFile {
     if (-not (Test-ConstantTimeHex64 -Actual $actualHmac -Expected $expectedHmac)) {
         return @{ ok = $false; reason = "HMAC_SIGNATURE_INVALID" }
     }
-    return @{ ok = $true; reason = "VERIFIED"; lean_version = $leanVerStr; theorem_count = $rThm }
+    return @{ ok = $true; reason = "VERIFIED"; lean_version = $leanVerStr; theorem_count = $rThm; release_version = [string]$r.version }
 }
 
 if ($TestNegative) {
@@ -241,13 +242,14 @@ if ($TestNegative) {
         [System.IO.File]::WriteAllText($tmpMirrorLean, $sb.ToString(), $utf8NoBom)
         $leanInfo = Get-LeanSourceIntegrity -VaultPath $tmpVaultLean -MirrorPath $tmpMirrorLean
         $testKeyBytes = $utf8NoBom.GetBytes("ephemeral-isolated-hmac-test-key-32bytes!")
-        $leanVer = "Lean (version 4.36.0, test-fixture)"
+        $leanVer = "Lean-compiler-isolated-fixture"
+        $expectedVer = Get-CitationReleaseVersion -Root $RepoRoot
         $payload = New-CanonicalLeanPayload -LeanSha256 $leanInfo.lean_sha256 -LeanVersion $leanVer -TheoremCount $leanInfo.theorem_count -SorryCount 0 -ExitCode 0
         $validHmac = Get-HmacSha256HexLower -KeyBytes $testKeyBytes -Payload $payload
 
         $baseReceipt = [ordered]@{
             schema = "ACT_OMEGA_LEAN4_COMPILER_VERIFICATION_RECEIPT_V2"
-            version = "v73.2.2"
+            version = $expectedVer
             lean_file = "03_vault/lean4/SovereignManifoldTheorems.lean"
             lean_mirror = "01_l0_rust/lean4/SovereignManifoldTheorems.lean"
             lean_sha256 = $leanInfo.lean_sha256
@@ -272,7 +274,7 @@ if ($TestNegative) {
         # (a) Valid signed passes
         $pValid = Join-Path $tmpRoot "valid.json"
         [System.IO.File]::WriteAllText($pValid, ($baseReceipt | ConvertTo-Json -Depth 4), $utf8NoBom)
-        $rValid = Test-SignedLeanReceiptFile -ReceiptPath $pValid -LeanInfo $leanInfo -KeyBytes $testKeyBytes
+        $rValid = Test-SignedLeanReceiptFile -ReceiptPath $pValid -LeanInfo $leanInfo -KeyBytes $testKeyBytes -ExpectedReleaseVersion $expectedVer
         if ($rValid.ok) {
             Write-Host "  [NEG 1/5 VALID SIGNED]     [PASS] Valid HMAC receipt accepted" -ForegroundColor Green
         } else {
@@ -281,7 +283,7 @@ if ($TestNegative) {
         }
 
         # (b) Missing fails
-        $rMiss = Test-SignedLeanReceiptFile -ReceiptPath (Join-Path $tmpRoot "missing.json") -LeanInfo $leanInfo -KeyBytes $testKeyBytes
+        $rMiss = Test-SignedLeanReceiptFile -ReceiptPath (Join-Path $tmpRoot "missing.json") -LeanInfo $leanInfo -KeyBytes $testKeyBytes -ExpectedReleaseVersion $expectedVer
         if (-not $rMiss.ok -and $rMiss.reason -match "RECEIPT_MISSING") {
             Write-Host "  [NEG 2/5 MISSING]          [PASS] Missing receipt rejected ($($rMiss.reason))" -ForegroundColor Green
         } else {
@@ -294,7 +296,7 @@ if ($TestNegative) {
         $rUnsignedObj["hmac_sha256"] = ""
         $pUnsigned = Join-Path $tmpRoot "unsigned.json"
         [System.IO.File]::WriteAllText($pUnsigned, ($rUnsignedObj | ConvertTo-Json -Depth 4), $utf8NoBom)
-        $rUnsigned = Test-SignedLeanReceiptFile -ReceiptPath $pUnsigned -LeanInfo $leanInfo -KeyBytes $testKeyBytes
+        $rUnsigned = Test-SignedLeanReceiptFile -ReceiptPath $pUnsigned -LeanInfo $leanInfo -KeyBytes $testKeyBytes -ExpectedReleaseVersion $expectedVer
         if (-not $rUnsigned.ok -and $rUnsigned.reason -eq "HMAC_SIGNATURE_INVALID") {
             Write-Host "  [NEG 3/5 UNSIGNED]         [PASS] Empty hmac_sha256 rejected ($($rUnsigned.reason))" -ForegroundColor Green
         } else {
@@ -308,7 +310,7 @@ if ($TestNegative) {
         $rForgedObj["hmac_sha256"] = $flipChar + $validHmac.Substring(1)
         $pForged = Join-Path $tmpRoot "forged.json"
         [System.IO.File]::WriteAllText($pForged, ($rForgedObj | ConvertTo-Json -Depth 4), $utf8NoBom)
-        $rForged = Test-SignedLeanReceiptFile -ReceiptPath $pForged -LeanInfo $leanInfo -KeyBytes $testKeyBytes
+        $rForged = Test-SignedLeanReceiptFile -ReceiptPath $pForged -LeanInfo $leanInfo -KeyBytes $testKeyBytes -ExpectedReleaseVersion $expectedVer
         if (-not $rForged.ok -and $rForged.reason -eq "HMAC_SIGNATURE_INVALID") {
             Write-Host "  [NEG 4/5 FORGED HMAC]      [PASS] 1-char flipped HMAC rejected ($($rForged.reason))" -ForegroundColor Green
         } else {
@@ -316,22 +318,26 @@ if ($TestNegative) {
             $negFailures++
         }
 
-        # (e) Tampered theorem_count, exit_code, and lean_sha256 fail
+        # (e) Tampered version, theorem_count, exit_code, and lean_sha256 fail
         $tamperPass = $true
         $t1 = [ordered]@{} + $baseReceipt; $t1["theorem_count"] = 1009; $t1["theorems_verified"] = 1009
         $pT1 = Join-Path $tmpRoot "t1.json"; [System.IO.File]::WriteAllText($pT1, ($t1 | ConvertTo-Json -Depth 4), $utf8NoBom)
-        if ((Test-SignedLeanReceiptFile -ReceiptPath $pT1 -LeanInfo $leanInfo -KeyBytes $testKeyBytes).ok) { $tamperPass = $false }
+        if ((Test-SignedLeanReceiptFile -ReceiptPath $pT1 -LeanInfo $leanInfo -KeyBytes $testKeyBytes -ExpectedReleaseVersion $expectedVer).ok) { $tamperPass = $false }
 
         $t2 = [ordered]@{} + $baseReceipt; $t2["exit_code"] = 1; $t2["compiler_exit_code"] = 1
         $pT2 = Join-Path $tmpRoot "t2.json"; [System.IO.File]::WriteAllText($pT2, ($t2 | ConvertTo-Json -Depth 4), $utf8NoBom)
-        if ((Test-SignedLeanReceiptFile -ReceiptPath $pT2 -LeanInfo $leanInfo -KeyBytes $testKeyBytes).ok) { $tamperPass = $false }
+        if ((Test-SignedLeanReceiptFile -ReceiptPath $pT2 -LeanInfo $leanInfo -KeyBytes $testKeyBytes -ExpectedReleaseVersion $expectedVer).ok) { $tamperPass = $false }
 
         $t3 = [ordered]@{} + $baseReceipt; $t3["lean_sha256"] = ("0" * 64)
         $pT3 = Join-Path $tmpRoot "t3.json"; [System.IO.File]::WriteAllText($pT3, ($t3 | ConvertTo-Json -Depth 4), $utf8NoBom)
-        if ((Test-SignedLeanReceiptFile -ReceiptPath $pT3 -LeanInfo $leanInfo -KeyBytes $testKeyBytes).ok) { $tamperPass = $false }
+        if ((Test-SignedLeanReceiptFile -ReceiptPath $pT3 -LeanInfo $leanInfo -KeyBytes $testKeyBytes -ExpectedReleaseVersion $expectedVer).ok) { $tamperPass = $false }
+
+        $t4 = [ordered]@{} + $baseReceipt; $t4["version"] = "stale_release_tag"
+        $pT4 = Join-Path $tmpRoot "t4.json"; [System.IO.File]::WriteAllText($pT4, ($t4 | ConvertTo-Json -Depth 4), $utf8NoBom)
+        if ((Test-SignedLeanReceiptFile -ReceiptPath $pT4 -LeanInfo $leanInfo -KeyBytes $testKeyBytes -ExpectedReleaseVersion $expectedVer).ok) { $tamperPass = $false }
 
         if ($tamperPass) {
-            Write-Host "  [NEG 5/5 TAMPERED FIELDS]  [PASS] Tampered theorem_count / exit_code / lean_sha256 all rejected" -ForegroundColor Green
+            Write-Host "  [NEG 5/5 TAMPERED FIELDS]  [PASS] Tampered version / theorem_count / exit_code / lean_sha256 all rejected" -ForegroundColor Green
         } else {
             Write-Host "  [NEG 5/5 TAMPERED FIELDS]  [FAIL] One or more tampered fields accepted" -ForegroundColor Red
             $negFailures++
@@ -350,17 +356,18 @@ $receiptConnectome = Join-Path $RepoRoot "03_vault\connectome\lean4_compiler_ver
 
 $keyBytes = Get-ExternalOperatorKeyBytes
 $leanInfo = Get-LeanSourceIntegrity -VaultPath $vaultLean -MirrorPath $mirrorLean
+$expectedReleaseVersion = Get-CitationReleaseVersion -Root $RepoRoot
 
 if ($VerifyOnly) {
-    $res1 = Test-SignedLeanReceiptFile -ReceiptPath $receiptPrimary -LeanInfo $leanInfo -KeyBytes $keyBytes
-    $res2 = Test-SignedLeanReceiptFile -ReceiptPath $receiptConnectome -LeanInfo $leanInfo -KeyBytes $keyBytes
+    $res1 = Test-SignedLeanReceiptFile -ReceiptPath $receiptPrimary -LeanInfo $leanInfo -KeyBytes $keyBytes -ExpectedReleaseVersion $expectedReleaseVersion
+    $res2 = Test-SignedLeanReceiptFile -ReceiptPath $receiptConnectome -LeanInfo $leanInfo -KeyBytes $keyBytes -ExpectedReleaseVersion $expectedReleaseVersion
     if (-not $res1.ok) {
         throw "FAIL_CLOSED: Primary Lean receipt invalid ($($res1.reason)) at $receiptPrimary"
     }
     if (-not $res2.ok) {
         throw "FAIL_CLOSED: Connectome Lean receipt invalid ($($res2.reason)) at $receiptConnectome"
     }
-    Write-Output ("[LEAN4-RECEIPT VERIFY-ONLY PASS] theorems={0} sha256={1} lean_version=`"{2}`"" -f $leanInfo.theorem_count, $leanInfo.lean_sha256.Substring(0, 16), $res1.lean_version)
+    Write-Output ("[LEAN4-RECEIPT VERIFY-ONLY PASS] version={0} theorems={1} sha256={2} lean_version=`"{3}`"" -f $res1.release_version, $leanInfo.theorem_count, $leanInfo.lean_sha256.Substring(0, 16), $res1.lean_version)
     exit 0
 }
 

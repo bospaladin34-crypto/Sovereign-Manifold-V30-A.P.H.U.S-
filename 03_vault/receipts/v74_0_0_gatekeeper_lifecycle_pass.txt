@@ -4,48 +4,23 @@
   [1-10 STATIC INVARIANTS][PASS] Zero-Bracket(v33..v74+)=0 | Lean4=1027(>=1027, HMAC=OK) | HUD/Mobile/Agent Mirrors=LOCKED | Secrets/CF/PixelSerials=0 | SSR & Bundles=VERIFIED | GSC 7-Mirror=LOCKED
   [6 LEAN 4 COMPILER]     [PASS] lean.exe verified 03_vault/lean4/SovereignManifoldTheorems.lean (EXIT:0)
   [7 PLUCKER 12/12 .E8Z]  [PASS] Pab=0.564108 | Attestation=0x977780_CPU_E8_PLUCKER_6D_INNER_MEASURED
-  [8 V44 RELEASE JITTER]  [PASS] Measured Release Jitter=4.700 us (> 0.0) | poc_verified=True
+  [8 V44 RELEASE JITTER]  [PASS] Measured Release Jitter=6.300 us (> 0.0) | poc_verified=True
   [9 OPERATOR AUTH GATE]  [PASS] QueryParam(?key= & ?%6bey=)=403 | Header(X-Sovereign-Operator-Key)=AUTHORIZED
-  [10 COORDINATOR & E:\]  [PASS] E_Mounted=True | LedgerBytes=67044380 | Envelopes=103227
+  [10 COORDINATOR & E:\]  [PASS] E_Mounted=True | LedgerBytes=67188053 | Envelopes=103460
   [11 GSC HTTP ENDPOINTS] [PASS] :8097 & :5173 returned exact 53-byte GSC token
   [12 YUBIKEY 5C NFC HROT][PASS] Dynamic FIDO2 Configured (SHA256:KwsDUzdrEWHpWFSt0BXhx0ryT/tOM78n0mlhwgLAzBo) | Status=YUBIKEY_FIDO2_CONFIGURED_TOKEN_UNPLUGGED
-  [13 CHAIN 292..418]     [PASS] CHAIN292=CHAIN_292_MASTER_CERTIFIED_OK (12/12) | C350=MEASURED | C362=UNMEASURED/OFFLINE(QED=1027) | C368=UNMEASURED/OFFLINE(QED=1027) | C418=MEASURED_CHAIN418_CORE_VERIFIED_MESH_OFFLINE(Tools=418,MCP=70)
+  [13 CHAIN 292..418]     [PASS] CHAIN292=CHAIN_292_MASTER_CERTIFIED_OK (12/12) | C350=MEASURED | C362=UNMEASURED/OFFLINE(QED=1027) | C368=UNMEASURED/OFFLINE(QED=1027) | C418=MEASURED_CHAIN418_CERTIFIED(Tools=418,MCP=70)
 ==========================================================================
   [BRUTAL GATEKEEPER RESULT: PASSED (13/13 INVARIANTS VERIFIED)]
-==========================================================================
-   ACT-OMEGA GATEKEEPER: NEGATIVE-INJECTION VERIFICATION (ITEMS #5 & #6)  
-==========================================================================
-  [NEG-TEST 1/5 CLEAN]     [PASS] Repo-wide git ls-files CF scan = 0 leaks
-  [NEG-TEST 2/5 ACTIVE CF] [PASS] Scanner caught injected active CF ID (CF_ACTIVE_ID_LEAK: Key 'd1_database_id' matched in 'C:\Users\Nbell\AppData\Local\Temp\act_omega_m3_neg_36980\injected_active_cf.txt')
-  [NEG-TEST 3/5 WRANGLER]  [PASS] Scanner caught literal hex assignment (CF_WRANGLER_LITERAL_HEX_LEAK: C:\Users\Nbell\AppData\Local\Temp\act_omega_m3_neg_36980\wrangler.toml contains literal 32-hex account_id)
-  [NEG-TEST 4/5 RETIRED]   [PASS] Scanner caught retired SHA-256 token (CF_RETIRED_ID_SHA256_LEAK: Retired CF ID sha256=76089e7673b54eb7... found in 'C:\Users\Nbell\AppData\Local\Temp\act_omega_m3_neg_36980\injected_retired_cf.txt')
-  [NEG-TEST 5/5 LEAN 1026] [PASS] 1026-theorem fixture rejected (LEAN4_COUNT_LOW: Found 1026 theorems in C:\Users\Nbell\AppData\Local\Temp\act_omega_m3_neg_36980\SovereignManifoldTheorems_1026.lean (Req: >= 1027)) | 1026-report rejected | 1027 live passed
-  [NEGATIVE-INJECTION SUITE: PASSED (5/5)]
-==========================================================================
-   ACT-OMEGA GATEKEEPER: PIXEL SERIAL NEGATIVE-INJECTION VERIFY (ITEM #10)
-==========================================================================
-  [PX-NEG 1/4 CLEAN]       [PASS] Repo-wide git ls-files Pixel serial scan = 0 leaks
-  [PX-NEG 2/4 ACTIVE P10]  [PASS] Scanner caught injected Pixel 10 serial (PIXEL_ACTIVE_SERIAL_LEAK: Role 'pixel10' serial matched in 'C:\Users\Nbell\AppData\Local\Temp\act_omega_m4_pxneg_11940\injected_p10.txt')
-  [PX-NEG 3/4 ACTIVE P8]   [PASS] Scanner caught injected Pixel 8 serial (PIXEL_ACTIVE_SERIAL_LEAK: Role 'pixel8' serial matched in 'C:\Users\Nbell\AppData\Local\Temp\act_omega_m4_pxneg_11940\injected_p8.txt')
-  [PX-NEG 4/4 RETIRED]     [PASS] Scanner caught retired serial SHA-256 (PIXEL_RETIRED_SERIAL_SHA256_LEAK: Retired serial sha256=64cef0ddd5b5ee1b... found in 'C:\Users\Nbell\AppData\Local\Temp\act_omega_m4_pxneg_11940\injected_retired_px.txt')
-  [PIXEL SERIAL NEGATIVE-INJECTION SUITE: PASSED (4/4)]
-==========================================================================
-   ACT-OMEGA GATEKEEPER: TELEMETRY/OPERATOR KEY NEGATIVE-INJECTION VERIFY 
-==========================================================================
-  [KEY-NEG 1/5 CLEAN]      [PASS] Repo-wide git ls-files -z + in-process stream scan = 0 leaks
-  [KEY-NEG 2/5 TELEMETRY]  [PASS] Scanner caught synthetic telemetry key (SECRET_LEAK_TELEMETRY_KEY: Active external telemetry ingest key found in C:\Users\Nbell\AppData\Local\Temp\act_omega_m4_keyneg_33424\injected_telemetry_key.txt)
-  [KEY-NEG 3/5 OPERATOR]   [PASS] Scanner caught synthetic operator key (SECRET_LEAK_ACTIVE: Active external operator key found in C:\Users\Nbell\AppData\Local\Temp\act_omega_m4_keyneg_33424\injected_operator_key.txt)
-  [KEY-NEG 4/5 RETIRED]    [PASS] Scanner caught injected retired passkey (SECRET_LEAK_RETIRED: Retired passkey literal found in C:\Users\Nbell\AppData\Local\Temp\act_omega_m4_keyneg_33424\injected_retired_passkey.txt)
-  [KEY-NEG 5/5 FAIL-CLOSE] [PASS] Scanner failed closed when telemetry key file missing (TELEMETRY_KEY_MISSING: External telemetry ingest key file not found)
-  [KEY-NEG HYGIENE]        [PASS] 0 live key bytes in Win32_Process.CommandLine and %TEMP%
-  [KEY NEGATIVE-INJECTION SUITE: PASSED (5/5 + HYGIENE)]
+
+=== SOVEREIGN-LIFECYCLE -Action verify ===
 
 ==========================================================================
    ACT-OMEGA v74.0.0: 6-LAYER TRUE-DATA & ANTI-502 VERIFICATION AUDIT     
 ==========================================================================
-  [LAYER 1 - L0 RUST]     [PASS] Brackets(v33..v68+)=0 (Req:0) | QAT PPL=1.108769 (Req:>1.0001) | Latency=1.027ms
+  [LAYER 1 - L0 RUST]     [PASS] Brackets(v33..v68+)=0 (Req:0) | QAT PPL=1.108249 (Req:>1.0001) | Latency=12.498ms
   [LAYER 2 - LEAN 4 QED]  [PASS] Theorems=1027/1027 (Req:>=1027 & ==Live) | Trivial(N=N)=0 (Req:0) | SHA256=6bd7eb7ca3093773...
-  [LAYER 3 - CONNECTOME]  [PASS] Core=21120/21120 + Exp/Tier3=42240 (42240 shards = 63,360 Total) | SHM=8110080B (Req:8110080B) | Grade=UNITARY_OPTIMAL_A_PLUS (96)
+  [LAYER 3 - CONNECTOME]  [PASS] Core=21120/21120 + Exp/Tier3=42240 (42240 shards = 63,360 Total) | SHM=8110080B (Req:8110080B) | Grade=UNITARY_OPTIMAL_A_PLUS (98)
   [LAYER 4 - WEBGPU HUD]  [PASS] BundleReady=True | HardcodedPasskeys(src+dist)=0 (Req:0) | GSC(FS+HTTP)=True/True
   [LAYER 5 - DUAL PIXEL]  [PASS] P8 Tethered SHM(8.11MB)=True | P10 SHM(8.11MB)=True
   [LAYER 6 - CLOUDFLARE]  [PASS] https://act-omega-net.dev HTTP=200 (Req:200) | Edge DO=EDGE_CONTINUUM_OBSERVED_TELEMETRY | Edge GSC=PASS(53B)

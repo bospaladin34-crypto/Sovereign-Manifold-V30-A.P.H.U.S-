@@ -213,6 +213,7 @@ $VolatilityMap = [ordered]@{
     "v74_0_0_gatekeeper_lifecycle_pass.txt" = "Invoke-BrutalAgentGatekeeper.ps1 -FullAudit and Sovereign-Lifecycle.ps1 -Action verify record live v74.0.0 cluster throughput, bus sequences, and probe timings on every run."
     "v74_0_0_multicloud_storage_and_ledger_rotation_receipt.json" = "Sync-MultiCloudVaultAndGitLab.ps1 records generated_at_utc, R2 HTTP 206 range probe status, GitHub Release upload results, and JSONL ledger rotation stats."
     "v74_0_0_security_negative_tests_receipt.json" = "Test-V73_2_3-SecurityNegativeProbes.ps1 records v74.0.0 generated_at_utc, baseline Anchor-1 kops, and live Host+Edge probe timings across T01..T418 on every run."
+    "v74_0_0_nf_l1_dual_cwd_test_receipt.txt" = "Dual-CWD cargo test --release --test test_v73_unified_lab_and_research transcript (from 01_l0_rust/ and repository root) records live compilation/test elapsed durations and runtime SFT corpus dialogue count."
     "week3_12test_torture_and_ablation_receipt.json" = "Tool 345 (v71_3_...:3328) overwrites elapsed_ms, speedup_factor, and active_bearer on execution."
 }
 

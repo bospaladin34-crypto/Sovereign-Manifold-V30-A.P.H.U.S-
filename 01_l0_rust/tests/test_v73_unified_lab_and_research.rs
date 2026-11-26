@@ -209,21 +209,64 @@ mod v73_2_phase_p5_suite {
         let (ok3, _, _, _) = v72_2_validate_json_object_fsm("{\"a\":{\"b\":1}");
         assert!(!ok3);
 
-        if std::path::Path::new(C_SH_XI_SOURCED_SFT_JSONL_PATH).exists() {
-            let raw = std::fs::read_to_string(C_SH_XI_SOURCED_SFT_JSONL_PATH).unwrap();
-            let lines: Vec<&str> = raw.lines().filter(|l| !l.trim().is_empty()).collect();
-            assert!(lines.len() >= 64, "Expected >= 64 SFT dialogues, found {}", lines.len());
-            for line in lines.iter().take(10) {
-                let parsed: Value =
-                    serde_json::from_str(line.trim()).expect("Invalid JSONL line in SFT corpus");
-                let has_msgs = parsed
-                    .get("messages")
-                    .and_then(|m| m.as_array())
-                    .map(|a| a.len() >= 2)
-                    .unwrap_or(false);
-                assert!(has_msgs, "SFT JSONL line missing >=2 ChatML messages");
-            }
+        assert!(
+            std::path::Path::new(C_SH_XI_SOURCED_SFT_JSONL_PATH).exists(),
+            "Missing grounded SFT corpus at {}",
+            C_SH_XI_SOURCED_SFT_JSONL_PATH
+        );
+        let manifest_path = "03_vault/corpus/sh_xi_sft_generator_receipt.json";
+        let manifest_raw = std::fs::read_to_string(manifest_path)
+            .expect("Missing SFT corpus generator manifest receipt");
+        let manifest_val: Value =
+            serde_json::from_str(&manifest_raw).expect("Invalid SFT manifest JSON");
+        let declared_dialogues = manifest_val
+            .get("dialogues_emitted")
+            .and_then(|v| v.as_u64())
+            .expect("SFT manifest missing dialogues_emitted")
+            as usize;
+        assert!(declared_dialogues > 0, "Manifest dialogues_emitted must be > 0");
+        let raw = std::fs::read_to_string(C_SH_XI_SOURCED_SFT_JSONL_PATH).unwrap();
+        let lines: Vec<&str> = raw.lines().filter(|l| !l.trim().is_empty()).collect();
+        assert!(!lines.is_empty(), "Grounded SFT JSONL corpus must be non-empty");
+        assert_eq!(
+            lines.len(),
+            declared_dialogues,
+            "Live SFT dialogue count ({}) must match corpus manifest dialogues_emitted ({})",
+            lines.len(),
+            declared_dialogues
+        );
+        for (idx, line) in lines.iter().enumerate() {
+            let parsed: Value = serde_json::from_str(line.trim())
+                .unwrap_or_else(|e| panic!("Invalid JSONL at SFT line {}: {}", idx, e));
+            let msgs = parsed
+                .get("messages")
+                .and_then(|m| m.as_array())
+                .unwrap_or_else(|| panic!("SFT line {} missing messages array", idx));
+            let has_user = msgs.iter().any(|t| {
+                t.get("role").and_then(|r| r.as_str()) == Some("user")
+                    && t.get("content")
+                        .and_then(|c| c.as_str())
+                        .map(|s| !s.trim().is_empty())
+                        .unwrap_or(false)
+            });
+            let has_assistant = msgs.iter().any(|t| {
+                t.get("role").and_then(|r| r.as_str()) == Some("assistant")
+                    && t.get("content")
+                        .and_then(|c| c.as_str())
+                        .map(|s| !s.trim().is_empty())
+                        .unwrap_or(false)
+            });
+            assert!(
+                has_user && has_assistant,
+                "SFT dialogue record {} missing non-empty user/assistant turn pair",
+                idx
+            );
         }
+        println!(
+            "[NF-L1] SFT corpus dialogue bound verified live: lines={} == manifest.dialogues_emitted={}",
+            lines.len(),
+            declared_dialogues
+        );
     }
 
     #[test]

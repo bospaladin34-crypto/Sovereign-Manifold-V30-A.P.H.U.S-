@@ -2,14 +2,19 @@ param(
     [string]$RepoRoot = ""
 )
 
-$baseDir = if ($RepoRoot -and (Test-Path $RepoRoot)) {
-    (Resolve-Path $RepoRoot).Path
-} elseif ($env:GITHUB_WORKSPACE -and (Test-Path $env:GITHUB_WORKSPACE)) {
-    (Resolve-Path $env:GITHUB_WORKSPACE).Path
-} elseif ($PSScriptRoot -and (Test-Path (Split-Path -Parent $PSScriptRoot))) {
-    (Resolve-Path (Split-Path -Parent $PSScriptRoot)).Path
+if (-not [string]::IsNullOrWhiteSpace($RepoRoot)) {
+    if (-not (Test-Path -LiteralPath $RepoRoot -PathType Container)) {
+        Write-Host "ZERO_BRACKET_ERROR: Explicit -RepoRoot directory does not exist: '$RepoRoot'" -ForegroundColor Red
+        exit 1
+    }
+    $baseDir = (Resolve-Path -LiteralPath $RepoRoot).Path
+} elseif (-not [string]::IsNullOrWhiteSpace($env:GITHUB_WORKSPACE) -and (Test-Path -LiteralPath $env:GITHUB_WORKSPACE -PathType Container)) {
+    $baseDir = (Resolve-Path -LiteralPath $env:GITHUB_WORKSPACE).Path
+} elseif (-not [string]::IsNullOrWhiteSpace($PSScriptRoot) -and (Test-Path -LiteralPath (Split-Path -Parent $PSScriptRoot) -PathType Container)) {
+    $baseDir = (Resolve-Path -LiteralPath (Split-Path -Parent $PSScriptRoot)).Path
 } else {
-    "C:\sovereign_manifold_v31"
+    Write-Host "ZERO_BRACKET_ERROR: Failed to resolve repository root from -RepoRoot, GITHUB_WORKSPACE, or PSScriptRoot." -ForegroundColor Red
+    exit 1
 }
 
 $srcDir = Join-Path $baseDir "01_l0_rust\src"

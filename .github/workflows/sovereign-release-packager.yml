@@ -82,7 +82,12 @@ jobs:
               Copy-Item "CITATION.cff" "release_artifacts\CITATION.cff" -Force
           }
           if (Test-Path ".zenodo.json") {
-              Copy-Item ".zenodo.json" "release_artifacts\.zenodo.json" -Force
+              # GitHub Releases' upload backend (uploads.github.com) rewrites leading-dot
+              # asset filenames (.zenodo.json -> default.zenodo.json). Stage explicitly as
+              # default.zenodo.json so SHA256SUMS.txt, the uploaded GitHub Release asset
+              # list, and completion reports match verbatim (while Zenodo's GitHub archive
+              # webhook ingests .zenodo.json directly from the tagged repository tree).
+              Copy-Item ".zenodo.json" "release_artifacts\default.zenodo.json" -Force
           }
 
           cd release_artifacts

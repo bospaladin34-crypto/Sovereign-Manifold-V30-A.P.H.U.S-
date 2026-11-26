@@ -1,7 +1,7 @@
 {
     "schema":  "ACT_OMEGA_V73_FETCH_LIST_AND_NEGATIVE_TEST_AUDIT_V1",
     "version":  "v74.0.0",
-    "generated_at_utc":  "2026-11-26T17:01:55Z",
+    "generated_at_utc":  "2026-11-26T17:29:15Z",
     "author":  "Donevin Frownfelter (@bospaladin34-crypto)",
     "disposition":  "v73.2.5 Certified FULL ALL CLEAR -\u003e v74.0.0 Stage A (SH4Z v7400 + 15-Station Labs CHAIN 418; Gate 5 honestly UNMEASURED/OFFLINE pending Stage B)",
     "sh_xi_turn_counter_receipt_parity":  {
@@ -53,9 +53,9 @@
                                                           },
                                                           {
                                                               "path":  "00_control/Invoke-BrutalAgentGatekeeper.ps1",
-                                                              "lines":  2292,
-                                                              "bytes":  115539,
-                                                              "sha256":  "cfea42e48338295b72f60a6ab6354a9d8f82e80c7674c7fb8146b081f8b8ba7f",
+                                                              "lines":  2308,
+                                                              "bytes":  116773,
+                                                              "sha256":  "e63d8c3d104f713e83b37dc65ef8f04b850769dd1a1935d0e950b9633334b861",
                                                               "run_command":  "powershell -NoProfile -ExecutionPolicy Bypass -File 00_control\\Invoke-BrutalAgentGatekeeper.ps1 -FullAudit (+ 3 negative injection flags)",
                                                               "exit_code":  0,
                                                               "summary":  "Passed Brutal Gatekeeper -FullAudit plus CF/Lean-1009 (5/5), Pixel ADB serial (4/4), and in-memory telemetry key (5/5) negative injections; string-literal-aware Rust lexer; MainActivity.kt D1 scan; 0 live secrets in CLI args or %TEMP%."
@@ -816,11 +816,11 @@
                                                                             {
                                                                                 "name":  "v73_2_4_sh_xi_turn_counter_receipt.json",
                                                                                 "bytes":  11850,
-                                                                                "sha256":  "15404febc85f7311f90a261a0e6cc4e7019a2c54e639bbb4e74e13845f21de1b",
-                                                                                "git_blob_sha1":  "74f0b06ca99575f7ac545d2b659d1bf2d78ae814",
+                                                                                "sha256":  "521195094e2ff8b1c5c9ffe7f1f342f0f088bae8179c5c779cb6c9523d043e95",
+                                                                                "git_blob_sha1":  "0379dfcdfea0be4d1c711205bd0533c99592605d",
                                                                                 "encoding":  "utf-8-no-bom",
                                                                                 "line_ending":  "LF",
-                                                                                "last_write_utc":  "2026-11-26T17:01:45Z",
+                                                                                "last_write_utc":  "2026-11-26T17:29:05Z",
                                                                                 "volatile_on_suite_rerun":  true,
                                                                                 "volatility_reason":  "Verify-ShXiTurnCountersReceipt.ps1 updates ledger_sha256, final_global_turn_seq, session_count, and generated_at_utc LAST after all /converse \u0026 /v1/chat/completions suites."
                                                                             },

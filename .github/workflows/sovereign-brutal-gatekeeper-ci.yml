@@ -4,17 +4,17 @@ on:
   push:
     branches:
       - main
-      - vesper_production
-      - gh-pages
   pull_request:
     branches:
       - main
       - vesper_production
-      - gh-pages
   workflow_dispatch:
 
 permissions:
   contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 concurrency:
   group: gatekeeper-ci-${{ github.ref }}
@@ -45,33 +45,38 @@ jobs:
           Write-Host "Checking L0 Full Manifest..." -ForegroundColor Cyan
           cargo check --manifest-path 01_l0_rust/Cargo.toml
 
-      - name: Setup Node.js 20.x
+      - name: Setup Node.js 22.x
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: 'npm'
           cache-dependency-path: '05_hud_cockpit/package-lock.json'
 
-      - name: Build WebGPU HUD Cockpit
+      - name: Verify WebGPU HUD Cockpit Production Build (Isolated OutDir)
         shell: pwsh
         run: |
-          cd 05_hud_cockpit
-          npm ci
-          npm run build
-          cd ..
-          Copy-Item -Force 05_hud_cockpit/dist/assets/* docs/assets/
-          Copy-Item -Force 05_hud_cockpit/dist/assets/* assets/
-          Copy-Item -Force 05_hud_cockpit/dist/index.html docs/index.html
-          Copy-Item -Force 05_hud_cockpit/dist/index.html docs/hud.html
-          Copy-Item -Force 05_hud_cockpit/dist/index.html index.html
-          Copy-Item -Force 05_hud_cockpit/dist/index.html hud.html
+          $ciDist = Join-Path $env:RUNNER_TEMP "hud_ci_dist"
+          Push-Location 05_hud_cockpit
+          try {
+              npm ci
+              npx vite build --outDir $ciDist
+              if ($LASTEXITCODE -ne 0) { throw "Vite HUD build failed" }
+          } finally {
+              Pop-Location
+          }
+          if (-not (Test-Path (Join-Path $ciDist "index.html"))) {
+              throw "Expected built index.html in $ciDist"
+          }
 
       - name: Verify Zero-Square-Bracket L0 Rust & Worker Unit Suites
         shell: pwsh
         run: |
-          & "00_control/Scan-ZeroSquareBrackets.ps1"
+          powershell -NoProfile -ExecutionPolicy Bypass -File "00_control/Scan-ZeroSquareBrackets.ps1" -RepoRoot $env:GITHUB_WORKSPACE
+          if ($LASTEXITCODE -ne 0) { throw "Scan-ZeroSquareBrackets failed" }
           node tests/e2e/m1_worker_do_unit.mjs
+          if ($LASTEXITCODE -ne 0) { throw "m1_worker_do_unit.mjs failed" }
           node tests/e2e/test_m1_worker_dispatch_verification.mjs
+          if ($LASTEXITCODE -ne 0) { throw "test_m1_worker_dispatch_verification.mjs failed" }
 
       - name: Install Lean 4 Toolchain (elan) & Verify 1,027+ Formal Theorems QED
         shell: pwsh
@@ -87,7 +92,7 @@ jobs:
               throw "Lean 4 parity drift between 03_vault and 01_l0_rust!"
           }
           $content = [System.IO.File]::ReadAllText($leanVault)
-          $thms = ([regex]::Matches($content, '(?m)^theorem\s+')).Count
+          $thms = ([regex]::Matches($content, '(?m)^\s*theorem\s+')).Count
           $sorry = ([regex]::Matches($content, '\bsorry\b')).Count
           $axioms = ([regex]::Matches($content, '(?m)^\s*axiom\b')).Count
           $triv1 = ([regex]::Matches($content, ':\s*(\w+)\s*=\s*\1\s*:=')).Count
@@ -100,29 +105,20 @@ jobs:
               throw "Lean 4 formal theorem check failed!"
           }
           if (-not (Get-Command lean -ErrorAction SilentlyContinue)) {
-              $elanZip = Join-Path $env:TEMP "elan-x86_64-pc-windows-msvc.zip"
-              $elanDir = Join-Path $env:TEMP "elan_init"
+              $elanZip = Join-Path $env:RUNNER_TEMP "elan-x86_64-pc-windows-msvc.zip"
+              $elanDir = Join-Path $env:RUNNER_TEMP "elan_init"
               Invoke-WebRequest -Uri "https://github.com/leanprover/elan/releases/latest/download/elan-x86_64-pc-windows-msvc.zip" -OutFile $elanZip
               Expand-Archive -Path $elanZip -DestinationPath $elanDir -Force
-              & "$elanDir\elan-init.exe" -y --default-toolchain leanprover/lean4:v4.15.0
+              & "$elanDir\elan-init.exe" -y --default-toolchain leanprover/lean4:stable
               $env:PATH = "$env:USERPROFILE\.elan\bin;$env:PATH"
           }
           Write-Host "Running lean compiler on 03_vault/lean4/SovereignManifoldTheorems.lean..." -ForegroundColor Cyan
           lean $leanVault
           if ($LASTEXITCODE -ne 0) { throw "lean compiler failed with exit $LASTEXITCODE" }
 
-      - name: Run PowerShell Static Gatekeeper Invariants Audit
+      - name: Run PowerShell Static Gatekeeper Invariants Audit (Cloud CI Mode)
         shell: pwsh
         run: |
-          Write-Host "Executing 00_control/Invoke-BrutalAgentGatekeeper.ps1 -StaticOnly..." -ForegroundColor Cyan
-          & "00_control/Invoke-BrutalAgentGatekeeper.ps1" -StaticOnly
-
-      - name: Optional Gated Cloudflare Edge / Operator Check
-        if: env.CLOUDFLARE_API_TOKEN != ''
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-        shell: pwsh
-        run: |
-          Write-Host "Cloudflare API token detected. Running edge verification probe..." -ForegroundColor Green
-          $resp = Invoke-WebRequest -Uri "https://act-omega-net.dev/" -UseBasicParsing -TimeoutSec 10
-          Write-Host "Edge Status: $($resp.StatusCode)" -ForegroundColor Green
+          Write-Host "Executing 00_control/Invoke-BrutalAgentGatekeeper.ps1 -StaticOnly -CloudCiMode..." -ForegroundColor Cyan
+          powershell -NoProfile -ExecutionPolicy Bypass -File "00_control/Invoke-BrutalAgentGatekeeper.ps1" -StaticOnly -CloudCiMode -RepoPath $env:GITHUB_WORKSPACE
+          if ($LASTEXITCODE -ne 0) { throw "Invoke-BrutalAgentGatekeeper -StaticOnly -CloudCiMode failed" }

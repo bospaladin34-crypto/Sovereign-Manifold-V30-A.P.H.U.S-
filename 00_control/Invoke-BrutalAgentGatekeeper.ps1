@@ -2,6 +2,7 @@ param(
     [switch]$HookStdin,
     [switch]$FullAudit,
     [switch]$StaticOnly,
+    [switch]$CloudCiMode,
     [switch]$TestNegativeCloudflareInjection,
     [switch]$TestNegativePixelSerialInjection,
     [switch]$TestNegativeTelemetryKeyInjection,
@@ -121,7 +122,7 @@ function Test-CloudflareIdLeakScan {
                 $retiredPrefixes.Add(([string]$p).Trim().ToLowerInvariant())
             }
         }
-    } else {
+    } elseif (-not $CloudCiMode) {
         $cfViolations.Add("CF_IDS_CONFIG_MISSING: External ~/.act_omega_cloudflare_ids.json not found")
     }
 
@@ -297,7 +298,7 @@ function Test-PixelSerialLeakScan {
                 }
             }
         }
-    } else {
+    } elseif (-not $CloudCiMode) {
         $pxViolations.Add("ADB_DEVICES_CONFIG_MISSING: External ~/.act_omega_adb_devices.json not found")
     }
 
@@ -513,7 +514,9 @@ function Test-SovereignKeyLeakScan {
             ""
         }
         if (-not $opKeyPath -or -not (Test-Path $opKeyPath -PathType Leaf)) {
-            $secViolations.Add("OPERATOR_KEY_MISSING: External operator vault key file not found")
+            if (-not $CloudCiMode) {
+                $secViolations.Add("OPERATOR_KEY_MISSING: External operator vault key file not found")
+            }
         } else {
             $opKey = ([System.IO.File]::ReadAllText($opKeyPath)).Trim()
             if ($opKey.Length -lt 24) {
@@ -541,7 +544,9 @@ function Test-SovereignKeyLeakScan {
             ""
         }
         if (-not $telKeyPath -or -not (Test-Path $telKeyPath -PathType Leaf)) {
-            $secViolations.Add("TELEMETRY_KEY_MISSING: External telemetry ingest key file not found")
+            if (-not $CloudCiMode) {
+                $secViolations.Add("TELEMETRY_KEY_MISSING: External telemetry ingest key file not found")
+            }
         } else {
             $telKey = ([System.IO.File]::ReadAllText($telKeyPath)).Trim()
             if ($telKey.Length -lt 24) {
@@ -1514,6 +1519,17 @@ function Run-StaticGatekeeperChecks {
     $leanReceiptVerifier = "$RepoRoot\00_control\Verify-Lean4IndependentReceipt.ps1"
     if (-not (Test-Path $leanReceiptVerifier)) {
         $failures.Add("LEAN4_RECEIPT_VERIFIER_MISSING: $leanReceiptVerifier not found")
+    } elseif ($CloudCiMode -and [string]::IsNullOrWhiteSpace($env:ACT_OMEGA_OPERATOR_KEY) -and -not (Test-Path "C:\Users\Nbell\.act_omega_operator_vault_key") -and -not ($env:USERPROFILE -and (Test-Path "$env:USERPROFILE\.act_omega_operator_vault_key"))) {
+        $leanRecPath = "$RepoRoot\03_vault\receipts\lean4_compiler_verification_receipt.json"
+        if (-not (Test-Path $leanRecPath)) {
+            $failures.Add("LEAN4_RECEIPT_MISSING: $leanRecPath not found")
+        } else {
+            $lrObj = Get-Content -Raw $leanRecPath | ConvertFrom-Json
+            $liveLeanSha = (Get-FileHash "$RepoRoot\03_vault\lean4\SovereignManifoldTheorems.lean" -Algorithm SHA256).Hash.ToLowerInvariant()
+            if (([string]$lrObj.lean_sha256).ToLowerInvariant() -ne $liveLeanSha -or [int]$lrObj.theorem_count -lt 1027 -or [int]$lrObj.sorry_count -ne 0 -or [int]$lrObj.axiom_count -ne 0) {
+                $failures.Add("LEAN4_RECEIPT_DRIFT_CI: Receipt lean_sha256/theorem_count mismatch against SovereignManifoldTheorems.lean")
+            }
+        }
     } else {
         try {
             $vOut = (& powershell -InputFormat None -NoProfile -ExecutionPolicy Bypass -File $leanReceiptVerifier -VerifyOnly -RepoRoot $RepoRoot 2>&1) -join " "

@@ -6,7 +6,7 @@
       "version": "20"
     }
   },
-  "postCreateCommand": "curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | sh -s -- -y --default-toolchain leanprover/lean4:v4.15.0 && curl -fsSL https://deno.land/install.sh | sh && cd 05_hud_cockpit && npm ci",
+  "postCreateCommand": "curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | sh -s -- -y --default-toolchain leanprover/lean4:stable && curl -fsSL https://deno.land/install.sh | sh && cd 05_hud_cockpit && npm ci",
   "remoteEnv": {
     "PATH": "${containerEnv:HOME}/.elan/bin:${containerEnv:HOME}/.deno/bin:${containerEnv:PATH}"
   },

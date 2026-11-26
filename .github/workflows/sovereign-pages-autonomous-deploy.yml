@@ -3,13 +3,14 @@ name: Sovereign Pages Autonomous Deploy
 on:
   push:
     branches:
-      - vesper_production
       - gh-pages
-      - main
   workflow_dispatch:
 
 permissions:
   contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 concurrency:
   group: pages-deploy-${{ github.ref }}
